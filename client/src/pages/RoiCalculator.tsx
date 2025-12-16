@@ -553,43 +553,43 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
               <div className="p-6 space-y-6 max-w-7xl">
                 <KpiGrid>
                   <KpiCard
-                    label="ROI Multiple"
+                    label="Return (x)"
                     value={`${adjustedRoiMultiple.toFixed(2)}x`}
                     icon={<TrendingUp className="h-8 w-8" />}
                     variant={adjustedRoiMultiple >= 1 ? "positive" : "negative"}
                   />
                   <KpiCard
-                    label="Total Annual Benefit"
+                    label="Annual Impact"
                     value={formatCurrency(totalBenefitFromSelectedLevers)}
                     icon={<DollarSign className="h-8 w-8" />}
                     variant="positive"
                   />
                   <KpiCard
-                    label="Investment Cost Year 1"
+                    label="Annual Program Cost"
                     value={formatCurrency(annualAbridgeCost)}
                     icon={<DollarSign className="h-8 w-8" />}
                     variant="negative"
                   />
                   <KpiCard
-                    label="Net Value Created"
+                    label="Net Gain"
                     value={formatCurrency(adjustedNetValue)}
                     icon={<TrendingUp className="h-8 w-8" />}
                     variant={adjustedNetValue >= 0 ? "positive" : "negative"}
                   />
                   <KpiCard
-                    label="Provider Hours Reclaimed"
+                    label="Clinician Hours Recovered"
                     value={formatNumber(results.totalProviderHoursReclaimed)}
                     icon={<Clock className="h-8 w-8" />}
                     variant="neutral"
                   />
                   <KpiCard
-                    label="Post-Abridge wRVU"
+                    label="Projected wRVU/Visit"
                     value={results.postWrvuPerEncounter.toFixed(2)}
                     icon={<Users className="h-8 w-8" />}
                     variant="neutral"
                   />
                   <KpiCard
-                    label="New Effective Denial Rate"
+                    label="Adjusted Denial Rate"
                     value={formatPercent(results.newEffectiveDenialRate)}
                     icon={<Percent className="h-8 w-8" />}
                     variant="positive"
