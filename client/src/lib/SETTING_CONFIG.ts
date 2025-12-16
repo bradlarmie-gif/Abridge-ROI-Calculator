@@ -30,7 +30,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       description: "Administrative overload is a major driver of burnout and turnover. Lightening documentation improves clinician sustainability and helps teams stay intact.",
     },
     {
-      id: "riskAdjustment",
+      id: "hcc",
       label: "HCC & Chronic Condition Capture",
       category: "documentation",
       description: "Incomplete documentation often understates patient complexity. Capturing conditions more consistently supports accurate risk adjustment and care planning.",

@@ -4,7 +4,7 @@ export type LeverId =
   | "workforce" 
   | "wrvu" 
   | "denials" 
-  | "riskAdjustment";
+  | "hcc";
 
 export type LeverCategory = "time" | "documentation";
 
@@ -58,7 +58,7 @@ export interface RoiInputs {
     pctDenialsFromDocumentation: number;
     pctDocDenialsRecovered: number;
   };
-  riskAdjustment: {
+  hcc: {
     impactedMaPatients: number;
     avgConditionsPerMember: number;
     pctConditionsMissed: number;
@@ -100,7 +100,7 @@ export const defaultInputs: RoiInputs = {
     workforce: true,
     wrvu: true,
     denials: true,
-    riskAdjustment: true,
+    hcc: true,
   },
   patientAccess: {
     pctTimeToNewVisits: 10,
@@ -129,7 +129,7 @@ export const defaultInputs: RoiInputs = {
     pctDenialsFromDocumentation: 30,
     pctDocDenialsRecovered: 75,
   },
-  riskAdjustment: {
+  hcc: {
     impactedMaPatients: 7000,
     avgConditionsPerMember: 1.5,
     pctConditionsMissed: 33,
@@ -147,7 +147,7 @@ export const leverDescriptions: Record<LeverId, string> = {
   workforce: "Burnout is driven less by clinical load and more by the administrative drag wrapped around it. Reducing that drag keeps clinicians in the organization and preserves experience.",
   wrvu: "Visit complexity is frequently understated because documentation leaves parts of the clinical story unsaid. Better narrative detail allows coding to reflect the work actually performed.",
   denials: "Many denials originate from thin documentation rather than clinical disagreement. Strengthening the narrative closes those gaps and reduces avoidable reimbursement friction.",
-  riskAdjustment: "Care teams often know patients' chronic conditions, but documentation doesn't always carry those details forward. Capturing the full clinical picture leads to more accurate risk modeling and resource planning.",
+  hcc: "Care teams often know patients' chronic conditions, but documentation doesn't always carry those details forward. Capturing the full clinical picture leads to more accurate risk modeling and resource planning.",
 };
 
 export const leverLabels: Record<LeverId, string> = {
@@ -156,5 +156,5 @@ export const leverLabels: Record<LeverId, string> = {
   workforce: "Clinician Retention",
   wrvu: "Level of Service Alignment",
   denials: "Medical Necessity–Driven Denials",
-  riskAdjustment: "HCC & Chronic Condition Capture",
+  hcc: "HCC & Chronic Condition Capture",
 };

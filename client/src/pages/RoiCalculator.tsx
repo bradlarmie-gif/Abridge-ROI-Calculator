@@ -132,7 +132,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   
   const [inputs, setInputs] = useState<RoiInputs>(() => {
     const initial: RoiInputs = JSON.parse(JSON.stringify(defaultInputs));
-    const allLeverIds: LeverId[] = ["patientAccess", "overtime", "workforce", "wrvu", "denials", "riskAdjustment"];
+    const allLeverIds: LeverId[] = ["patientAccess", "overtime", "workforce", "wrvu", "denials", "hcc"];
     allLeverIds.forEach((id) => {
       initial.levers[id] = selectedLevers.some(
         (l) => l.leverId === id && l.active

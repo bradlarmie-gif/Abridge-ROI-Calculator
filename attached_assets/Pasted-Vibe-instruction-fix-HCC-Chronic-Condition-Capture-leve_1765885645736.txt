@@ -1,0 +1,81 @@
+Vibe instruction – fix HCC & Chronic Condition Capture lever
+
+Make sure the HCC lever is treated like the others
+
+In the shared config for outpatient strategic drivers (where Patient Access, Overtime & Locum Cost Avoidance, Clinician Retention, Level of Service Alignment, Medical Necessity–Driven Denials live), update the HCC item so it matches the structure of the rest:
+
+id: "hcc" (or whatever id the calculator logic already uses for HCC).
+
+label: "HCC & Chronic Condition Capture".
+
+category: "documentation" (or the same enum used for documentation-type levers).
+
+enabledByDefault: false (same pattern as Level of Service, Denials).
+
+supportsShowWork: true (or whatever boolean/flag we’re using to decide whether to render the “Show Work” link).
+
+Bind the annual value so it stops showing “–”
+
+In the ROI calculations layer (where we compute annual impact per lever for the waterfall and the “Understanding Your Drivers” table), map the HCC lever to the existing HCC calc object:
+
+Set the annual impact for the lever with id === "hcc" to hccConditionCaptureCalculations.annualImpact (or the current HCC annual impact function).
+
+Confirm that:
+
+The HCC lever is included in the array that feeds:
+
+Total Annual Benefit / Net Gain / Return (x)
+
+Impact Breakdown for Current Scope
+
+Enterprise Expansion View (when HCC is active).
+
+The goal: when HCC is checked as Active, its Annual Value cell should show a dollar value (not an em dash) and contribute to all rollups exactly like the other levers.
+
+Add the HCC Show-Your-Work drawer hook
+
+In the table component for Understanding Your Drivers, wherever we render the “Show Work” link, add HCC to the same routing logic used for the other levers:
+
+When the row’s lever.id === "hcc" and the lever is active, show the “Show Work” link.
+
+On click, call the same drawer open handler used for the other levers, but pass "hcc" so it loads the HCC configuration.
+
+In the show-your-work drawer component:
+
+Add a case/mapper for "hcc" that points to the HCC & Chronic Condition Capture drawer config we defined earlier (assumptions section + calculated outputs + “How this is calculated” block).
+
+Reuse the same layout as Patient Access / Overtime / Retention so the HCC drawer visually matches:
+
+Top: short explanatory paragraph.
+
+ASSUMPTIONS block with editable inputs (e.g., Abridge-impacted MA panel size, baseline missed condition %, recapture %, new conditions %, RAF haircut, PMPM, etc.).
+
+CALCULATED OUTPUTS with annual dollar impact and a couple supporting metrics.
+
+HOW THIS IS CALCULATED code-style formula that mirrors the old workbook math.
+
+Keep naming and copy aligned
+
+Everywhere in the calculator UI (selection screen, strategic driver chips, table rows, charts, drawer title), the user-facing label must be exactly:
+
+HCC & Chronic Condition Capture
+
+Don’t change any of the other lever names or copy while you do this.
+
+Quick sanity checks
+
+With HCC unchecked:
+
+Annual Value cell shows “–”.
+
+HCC bar disappears from both charts.
+
+Total Annual Benefit / Net Gain drop.
+
+With HCC checked:
+
+Annual Value shows a number.
+
+HCC appears in both charts for current scope and expansion.
+
+“Show Work” appears and opens the HCC drawer with editable inputs and calculated outputs.

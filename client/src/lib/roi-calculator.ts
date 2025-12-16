@@ -44,11 +44,11 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
       category: "time",
     },
     {
-      id: "riskAdjustment",
-      label: leverLabels.riskAdjustment,
+      id: "hcc",
+      label: leverLabels.hcc,
       value: riskAdjRevenue,
-      enabled: inputs.levers.riskAdjustment,
-      description: leverDescriptions.riskAdjustment,
+      enabled: inputs.levers.hcc,
+      description: leverDescriptions.hcc,
       category: "documentation",
     },
     {
@@ -168,7 +168,7 @@ function calculateRiskAdjustment(inputs: RoiInputs): number {
     rafGainPerCondition, 
     rafRealizationHaircut, 
     pmpmBenchmark 
-  } = inputs.riskAdjustment;
+  } = inputs.hcc;
   
   const totalConditions = impactedMaPatients * avgConditionsPerMember;
   const missedConditions = totalConditions * (pctConditionsMissed / 100);
