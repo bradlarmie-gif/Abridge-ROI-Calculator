@@ -151,10 +151,10 @@ export const leverDescriptions: Record<LeverId, string> = {
 };
 
 export const leverLabels: Record<LeverId, string> = {
-  patientAccess: "Clinician Time Recovered",
-  overtime: "Overtime Reduction",
+  patientAccess: "Patient Access",
+  overtime: "Overtime & Locum Cost Avoidance",
   workforce: "Clinician Retention",
-  wrvu: "Visit Complexity Documentation",
-  denials: "Documentation-Related Denials",
-  riskAdjustment: "Condition Documentation Completeness",
+  wrvu: "Level of Service Alignment",
+  denials: "Medical Necessity–Driven Denials",
+  riskAdjustment: "HCC & Chronic Condition Capture",
 };

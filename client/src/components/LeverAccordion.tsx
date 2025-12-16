@@ -17,12 +17,12 @@ interface LeverAccordionProps {
 
 export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
   const leverItems: { id: LeverId; label: string }[] = [
-    { id: "patientAccess", label: "Clinical Time Recovered" },
-    { id: "overtime", label: "Overtime Reduction" },
+    { id: "patientAccess", label: "Patient Access" },
+    { id: "overtime", label: "Overtime & Locum Cost Avoidance" },
     { id: "workforce", label: "Clinician Retention" },
-    { id: "riskAdjustment", label: "Condition Documentation Completeness" },
-    { id: "wrvu", label: "Visit Complexity Documentation" },
-    { id: "denials", label: "Documentation-Related Denials" },
+    { id: "riskAdjustment", label: "HCC & Chronic Condition Capture" },
+    { id: "wrvu", label: "Level of Service Alignment" },
+    { id: "denials", label: "Medical Necessity–Driven Denials" },
   ];
 
   return (
@@ -50,7 +50,7 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
       <Accordion type="multiple" className="w-full space-y-2">
         <AccordionItem value="patientAccess" className="border rounded-md px-4">
           <AccordionTrigger className="text-sm font-medium py-3">
-            Clinical Time Settings
+            Patient Access Settings
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <div className="space-y-2">
@@ -100,7 +100,7 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
 
         <AccordionItem value="overtime" className="border rounded-md px-4">
           <AccordionTrigger className="text-sm font-medium py-3">
-            Overtime Settings
+            Overtime & Locum Cost Avoidance Settings
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <div className="space-y-2">
@@ -204,7 +204,7 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
 
         <AccordionItem value="wrvu" className="border rounded-md px-4">
           <AccordionTrigger className="text-sm font-medium py-3">
-            Visit Complexity Settings
+            Level of Service Alignment Settings
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <div className="grid grid-cols-2 gap-3">
@@ -236,7 +236,7 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
 
         <AccordionItem value="denials" className="border rounded-md px-4">
           <AccordionTrigger className="text-sm font-medium py-3">
-            Documentation-Related Denials Settings
+            Medical Necessity–Driven Denials Settings
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <div className="grid grid-cols-2 gap-3">
@@ -292,7 +292,7 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
 
         <AccordionItem value="riskAdjustment" className="border rounded-md px-4">
           <AccordionTrigger className="text-sm font-medium py-3">
-            Condition Documentation Settings
+            HCC & Chronic Condition Capture Settings
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <div className="grid grid-cols-2 gap-3">
