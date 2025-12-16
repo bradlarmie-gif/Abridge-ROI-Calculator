@@ -1,0 +1,91 @@
+Please update the Care Setting Selection page using the following minimal,
+purpose-driven refinements. The goal is to create a clean, clinical, confident
+front page that reflects Abridge’s brand and communicates trust through
+restraint. Avoid decorative or “cute” elements and avoid corporate buzzwords.
+
+────────────────────────────────────────
+1. Remove the existing subtitle under the title
+────────────────────────────────────────
+• Delete the full explanatory sentence beginning with “Explore ROI across…”
+• It is too verbose and does not match the desired aesthetic.
+
+────────────────────────────────────────
+2. Replace the page title with:
+────────────────────────────────────────
+      “The ROI Calculator”
+      “by Abridge”
+
+• Two-line title, both centered.
+• “Abridge” should use Abridge Red (#F03319).
+• Everything else in neutral black (#111111).
+• Title should feel confident, not large or loud.
+
+────────────────────────────────────────
+3. Move the instructional text UP and simplify it
+────────────────────────────────────────
+Replace the existing instruction line with:
+
+   “Select the care setting(s) you want to explore.”
+
+Place it directly underneath the title, centered, muted:
+   - text-sm
+   - text-neutral-600
+   - no additional phrasing
+
+────────────────────────────────────────
+4. Adjust spacing to reduce visual emptiness
+────────────────────────────────────────
+• Reduce the vertical space between the title block and the setting cards.
+• Increase space slightly between the rows of setting cards (vertical rhythm).
+• Ensure spacing feels balanced, not stretched.
+
+────────────────────────────────────────
+5. Update care setting card visuals
+────────────────────────────────────────
+• Increase icon size by ~25% (target 32–40px).
+• Icons should be black or deep neutral, not washed out.
+• Reduce vertical padding inside cards to remove “empty box” feeling.
+• Increase horizontal spacing between left and right cards.
+• Use a subtle radius (not fully rounded).
+• Enable a subtle shadow-sm on hover (desktop only).
+
+────────────────────────────────────────
+6. Update selected state to use Abridge Red (brand correct)
+────────────────────────────────────────
+When a setting is selected:
+   • Border color = #F03319
+   • Checkmark color = #F03319
+   • Add slight scale-up (2–3%) for tactile feedback
+   • Add subtle elevation (shadow-sm)
+
+Remove all blue from checkboxes or borders.
+
+────────────────────────────────────────
+7. Update CTA button text and style
+────────────────────────────────────────
+Change label to:
+     **“Explore the Calculator”**
+
+• Style:
+   – Black background
+   – Off-white text
+   – Medium padding
+   – Slight hover darken
+   – Right-aligned on desktop
+   – Full-width on mobile
+
+This button should feel confident and understated, not salesy.
+
+────────────────────────────────────────
+8. Page Background
+────────────────────────────────────────
+• Use Abridge off-white:
+       #FAFAF8
+• This provides warmth and professionalism without decoration.
+
+────────────────────────────────────────
+9. Scope
+────────────────────────────────────────
+• Do NOT modify logic, navigation, setting selection behavior, or ROI math.
+• These changes must remain purely aesthetic and structural to elevate the
+  first experience of the tool.

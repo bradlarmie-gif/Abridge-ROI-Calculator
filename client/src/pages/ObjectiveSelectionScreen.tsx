@@ -204,18 +204,21 @@ export default function ObjectiveSelectionScreen({
       <BackgroundShape />
       
       <div className="relative z-10 flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto pt-16 pb-8 px-8">
-          <div className="space-y-10">
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl font-semibold text-black">
-                <span style={{ color: '#F03319' }}>Abridge</span> ROI Calculator
+        <div className="max-w-6xl mx-auto pt-12 pb-8 px-8">
+          <div className="space-y-6">
+            <div className="text-center space-y-1">
+              <h1 className="text-2xl font-semibold" style={{ color: '#111111' }}>
+                The ROI Calculator
               </h1>
-              <p className="text-base text-neutral-600 max-w-2xl mx-auto">
-                Explore ROI across the clinical environments where ambient documentation meaningfully improves operational and clinical performance.
+              <p className="text-xl font-semibold" style={{ color: '#F03319' }}>
+                by Abridge
+              </p>
+              <p className="text-sm text-neutral-600 pt-2">
+                Select the care setting(s) you want to explore.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
               {ALL_SETTINGS.map((setting) => {
                 const isInpatient = setting === "inpatient";
                 return (
@@ -230,10 +233,6 @@ export default function ObjectiveSelectionScreen({
                 );
               })}
             </div>
-            
-            <p className="text-sm text-neutral-600 text-center">
-              Select the care setting(s) you want to explore. The ROI experience adapts instantly to your selections.
-            </p>
 
             {selectedSettings.length > 0 && (
               <div className="space-y-6">
@@ -262,7 +261,7 @@ export default function ObjectiveSelectionScreen({
         className="relative z-20 border-t border-neutral-200 py-4 px-8"
         style={{ backgroundColor: '#FAFAF8' }}
       >
-        <div className="max-w-6xl mx-auto flex flex-col items-center gap-2">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:justify-end items-center gap-2">
           {showValidationError && !hasSelectedPriorities && (
             <p className="text-sm text-red-600" data-testid="error-no-priority">
               Select at least one strategic priority to continue.
@@ -273,8 +272,8 @@ export default function ObjectiveSelectionScreen({
             disabled={!hasSelectedPriorities}
             onClick={handleButtonClick}
             className={`
-              inline-flex items-center justify-center gap-2 px-8 py-3 
-              rounded-xl border font-semibold text-base
+              inline-flex items-center justify-center gap-2 px-6 py-2.5 
+              rounded-lg border font-medium text-base
               transition-all duration-200
               w-full sm:w-auto
               ${hasSelectedPriorities
@@ -284,7 +283,7 @@ export default function ObjectiveSelectionScreen({
             `}
             data-testid="button-continue"
           >
-            Explore the ROI Calculator
+            Explore the Calculator
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
