@@ -1,0 +1,59 @@
+Please wire up the “Show Work” button for the HCC & Chronic Condition Capture lever
+in the Outpatient ROI Calculator.
+
+1) In the strategicDriver / lever config for Outpatient, make sure HCC has:
+   {
+     id: "hccCapture",
+     label: "HCC & Chronic Condition Capture",
+     category: "documentation",
+     hasShowWork: true,
+     ...
+   }
+
+   • Keep `id` a short stable key like "hccCapture".
+   • Only the display label should be the long name “HCC & Chronic Condition Capture”.
+
+2) In the “Understanding Your Drivers” table component:
+   • The row that renders each lever should show a “Show Work” link or button
+     whenever `driver.hasShowWork` is true.
+   • Right now Patient Access and Overtime & Locum Cost Avoidance are working.
+     Make sure the HCC driver config is included in the same list so it passes
+     `hasShowWork: true` into the row.
+
+   Example logic (don’t change styling, just the condition):
+
+     {driver.hasShowWork && (
+       <button onClick={() => openShowWork(driver.id)}>Show Work</button>
+     )}
+
+3) In the `openShowWork` handler (or equivalent switch statement that decides
+   which drawer content to show), add a branch for HCC:
+
+   switch (driverId) {
+     case "patientAccess":
+       setActiveDrawer("patientAccess");
+       break;
+     case "overtimeLocum":
+       setActiveDrawer("overtimeLocum");
+       break;
+     case "clinicianRetention":
+       setActiveDrawer("clinicianRetention");
+       break;
+     case "hccCapture":
+       setActiveDrawer("hccCapture"); // <-- NEW
+       break;
+     ...
+   }
+
+4) Confirm:
+   • The HCC row in “Understanding Your Drivers” shows a “Show Work” link in the
+     right column, just like Patient Access.
+   • Clicking it opens the HCC drawer we just defined (title:
+     “HCC & Chronic Condition Capture”) and the inputs update the annual value for
+     that lever and all the rollups.
+
+Only change what’s needed to:
+   – add `hasShowWork: true` to the HCC lever config,
+   – render the Show Work button for that row,
+   – and route `openShowWork("hccCapture")` to the HCC drawer content.
+Leave the other levers and drawers exactly as they are.
