@@ -25,12 +25,12 @@ export function CareSettingCard({
       disabled={disabled}
       className={cn(
         "relative bg-white rounded-xl flex items-center gap-3 text-left transition-all duration-200",
-        compact ? "px-4 py-3" : "px-5 py-4",
+        compact ? "px-4 py-3" : "px-4 py-3",
         disabled
           ? "opacity-60 cursor-not-allowed border border-neutral-200"
           : selected
-          ? "border-2 shadow-md"
-          : "border border-neutral-200 shadow-sm hover:shadow-md"
+          ? "border-2 shadow-md scale-[1.02]"
+          : "border border-[#D1D5DB] md:hover:shadow-md"
       )}
       style={selected && !disabled ? { borderColor: '#F03319' } : undefined}
       data-testid={`card-setting-${title.toLowerCase().replace(/\s+/g, "-")}`}
@@ -38,11 +38,11 @@ export function CareSettingCard({
       <div
         className={cn(
           "rounded-full flex items-center justify-center flex-shrink-0",
-          compact ? "h-8 w-8" : "h-10 w-10",
+          compact ? "h-10 w-10" : "h-12 w-12",
           "bg-[#F3E9DD]"
         )}
       >
-        <Icon className={cn("text-black", compact ? "h-4 w-4" : "h-5 w-5")} />
+        <Icon className={cn("text-black", compact ? "h-5 w-5" : "h-7 w-7")} />
       </div>
       
       <div className="flex-1 min-w-0">

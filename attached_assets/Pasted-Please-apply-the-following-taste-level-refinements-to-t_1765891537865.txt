@@ -1,0 +1,110 @@
+Please apply the following taste-level refinements to the Care Setting Selection
+page. These changes must reflect Abridge’s brand: calm, clinical, intentional,
+and trustworthy. No gimmicks, no decorative elements — only purposeful design
+that supports clarity and decision-making.
+
+DO NOT change any navigation or ROI logic. This is a visual, spacing, and
+hierarchy polish only.
+
+────────────────────────────────────────
+1. Page Background — Abridge Off-White
+────────────────────────────────────────
+• Update the background of the Care Setting Selection page to a warm, soft
+  off-white:
+       #FAFAF8
+  This should NOT be used as a gradient or pattern — just a clean backdrop that
+  softens the experience and makes the cards stand out without noise.
+
+────────────────────────────────────────
+2. Header & Framing — Calm, Executive-Ready
+────────────────────────────────────────
+At the top of the page, above the care setting cards:
+
+• Title (centered or left-aligned):
+      "Abridge ROI Calculator"
+
+• Subtitle, muted, concise (one line):
+      "Explore ROI across the clinical environments where ambient documentation meaningfully improves operational and clinical performance."
+
+Constraints:
+• Must NOT feel salesy.
+• Should read like something a clinician, operator, or ELT member would trust.
+
+────────────────────────────────────────
+3. Care Setting Cards — Increase Icon Presence, Remove Subtext
+────────────────────────────────────────
+• Remove ALL descriptive text under each care setting card.  
+  Cards should contain ONLY:
+      – Icon
+      – Setting name
+      – Selection indicator (checkmark)
+
+• Increase icon size by ~25% so each setting card feels purposeful rather than decorative.
+  Target icon size: ~32–40px.
+
+• Adjust vertical spacing so cards feel tighter and intentional:
+      – Reduce empty vertical whitespace inside cards.
+      – Increase horizontal spacing between cards slightly for clarity.
+
+• Add a very subtle hover elevation (shadow-sm), ONLY on desktop.
+
+────────────────────────────────────────
+4. Selected State — Abridge Red, Clear but Not Loud
+────────────────────────────────────────
+When a care setting is selected:
+
+• Border color: Abridge Red (#F03319)
+• Checkmark color: #F03319
+• Minor scale lift on selection (~2–3%) for tactile feedback
+• Optional: Small top-right pill with:
+        text: "Selected"
+        text color: #F03319
+        background: #FEECEC
+        text-xs, rounded-full, px-2 py-0.5
+
+NO blue elements should remain.
+
+When unselected:
+• Soft neutral border (#D1D5DB)
+• No shadow, no color
+
+────────────────────────────────────────
+5. Instruction Line — Quiet Guidance
+────────────────────────────────────────
+Below the row of cards, add a small muted instruction line to anchor user intent:
+
+   "Select the care setting(s) you want to explore. The ROI experience adapts instantly to your selections."
+
+Styling:
+• text-sm
+• text-neutral-600
+• Centered or aligned with existing typography rhythm
+
+This line should feel like quiet guidance, not a command.
+
+────────────────────────────────────────
+6. CTA Button — Authoritative, Not Flashy
+────────────────────────────────────────
+Update the button text to:
+      **"Explore the ROI Calculator"**
+
+Styling:
+• Black background with off-white text (consistent with the calculator’s button styling)
+• Slight hover darkening (no animations beyond subtle transitions)
+• Full-width on mobile; standard width on desktop
+
+Do NOT use gradients or bright colors. This button should feel like a steady, confident next step.
+
+────────────────────────────────────────
+7. Overall Aesthetic Direction — Minimal, Clinical, Trustworthy
+────────────────────────────────────────
+• No gradients, no decorative icons, no cute treatments.
+• Visual hierarchy should be driven by spacing, font weight, and color discipline.
+• Everything must read as: “Built by people who understand healthcare operations.”
+
+────────────────────────────────────────
+8. Scope of This Update
+────────────────────────────────────────
+• Apply these refinements ONLY to the Care Setting Selection page.
+• Do NOT modify math, drawers, levers, charts, or KPI logic.
+• Preserve existing navigation and selection behavior.

@@ -206,19 +206,16 @@ export default function ObjectiveSelectionScreen({
       <div className="relative z-10 flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto pt-16 pb-8 px-8">
           <div className="space-y-10">
-            <div className="text-center space-y-3">
+            <div className="text-center space-y-2">
               <h1 className="text-3xl font-semibold text-black">
-                The ROI Calculator by <span style={{ color: '#F03319' }}>Abridge</span>
+                <span style={{ color: '#F03319' }}>Abridge</span> ROI Calculator
               </h1>
-              <h2 className="text-xl font-semibold text-neutral-800">
-                Select Care Setting(s) Below
-              </h2>
-              <p className="text-sm text-neutral-500">
-                Your ROI experience adapts instantly based on your selections.
+              <p className="text-base text-neutral-600 max-w-2xl mx-auto">
+                Explore ROI across the clinical environments where ambient documentation meaningfully improves operational and clinical performance.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {ALL_SETTINGS.map((setting) => {
                 const isInpatient = setting === "inpatient";
                 return (
@@ -233,6 +230,10 @@ export default function ObjectiveSelectionScreen({
                 );
               })}
             </div>
+            
+            <p className="text-sm text-neutral-600 text-center">
+              Select the care setting(s) you want to explore. The ROI experience adapts instantly to your selections.
+            </p>
 
             {selectedSettings.length > 0 && (
               <div className="space-y-6">
@@ -275,8 +276,9 @@ export default function ObjectiveSelectionScreen({
               inline-flex items-center justify-center gap-2 px-8 py-3 
               rounded-xl border font-semibold text-base
               transition-all duration-200
+              w-full sm:w-auto
               ${hasSelectedPriorities
-                ? 'bg-black border-black text-white cursor-pointer hover:opacity-90'
+                ? 'bg-black border-black text-[#FAFAF8] cursor-pointer hover:bg-neutral-800'
                 : 'opacity-60 bg-white border-black text-black cursor-pointer'
               }
             `}
