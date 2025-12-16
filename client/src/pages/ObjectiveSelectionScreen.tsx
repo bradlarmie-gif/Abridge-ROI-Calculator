@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   SETTING_CONFIG,
   CARE_SETTING_LABELS,
@@ -77,21 +76,20 @@ export default function ObjectiveSelectionScreen({
     : [];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <div className="w-full max-w-5xl space-y-8">
-        <div className="text-center space-y-2">
+    <div className="min-h-screen bg-background flex items-center justify-center p-8">
+      <div className="w-full max-w-5xl space-y-12">
+        <div className="text-center space-y-3">
           <h1 className="text-3xl font-bold">Abridge ROI Studio</h1>
           <p className="text-muted-foreground">
-            Select your care setting and customize which value drivers to include
+            Select your care setting and customize which impact areas to include
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {ALL_SETTINGS.map((setting) => {
             const Icon = SETTING_ICONS[setting];
             const isInpatient = setting === "inpatient";
             const isSelected = selectedSetting === setting;
-            const leverCount = isInpatient ? 0 : SETTING_CONFIG[setting as CareSettingType].length;
 
             return (
               <Card
@@ -104,28 +102,24 @@ export default function ObjectiveSelectionScreen({
                 onClick={() => handleSettingSelect(setting)}
                 data-testid={`card-setting-${setting}`}
               >
-                <CardContent className="p-6 text-center space-y-3">
+                <CardContent className="p-8 text-center space-y-4">
                   <div
-                    className={`mx-auto w-14 h-14 rounded-full flex items-center justify-center ${
+                    className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center ${
                       isSelected
                         ? "bg-foreground text-background"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    <Icon className="h-7 w-7" />
+                    <Icon className="h-8 w-8" />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <h3 className="font-semibold text-lg">
                       {CARE_SETTING_LABELS[setting]}
                     </h3>
-                    {isInpatient ? (
+                    {isInpatient && (
                       <Badge variant="secondary" className="text-xs">
                         Coming soon
                       </Badge>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        {leverCount} value drivers
-                      </p>
                     )}
                   </div>
                 </CardContent>
@@ -144,26 +138,29 @@ export default function ObjectiveSelectionScreen({
 
         {selectedSetting && (
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <Settings2 className="h-5 w-5" />
-                Select Value Drivers for {CARE_SETTING_LABELS[selectedSetting]}
+                Select Impact Areas for {CARE_SETTING_LABELS[selectedSetting]}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-80">
-                <div className="space-y-3">
+            <CardContent className="px-6 pb-6">
+              <div 
+                className="max-h-[340px] overflow-y-auto pr-2"
+                style={{ scrollbarGutter: "stable" }}
+              >
+                <div className="space-y-4">
                   {levers.map((lever) => (
                     <div
                       key={lever.id}
-                      className="flex items-start space-x-3 p-3 rounded-md border border-border hover:border-foreground/30 transition-colors"
+                      className="flex items-start space-x-4 p-4 rounded-md border border-border hover:border-foreground/30 transition-colors"
                       data-testid={`lever-option-${lever.id}`}
                     >
                       <Checkbox
                         id={lever.id}
                         checked={selectedLevers.has(lever.id)}
                         onCheckedChange={() => handleLeverToggle(lever.id)}
-                        className="mt-0.5"
+                        className="mt-1"
                         data-testid={`checkbox-lever-${lever.id}`}
                       />
                       <div className="flex-1">
@@ -173,19 +170,19 @@ export default function ObjectiveSelectionScreen({
                         >
                           {lever.label}
                         </Label>
-                        <p className="text-sm text-muted-foreground mt-0.5">
+                        <p className="text-sm text-muted-foreground mt-1">
                           {lever.description}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         )}
 
-        <div className="flex justify-center">
+        <div className="flex justify-center pt-2">
           <Button
             size="lg"
             disabled={!selectedSetting || selectedLevers.size === 0}
