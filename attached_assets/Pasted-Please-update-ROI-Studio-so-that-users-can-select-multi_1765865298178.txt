@@ -1,0 +1,91 @@
+Please update ROI Studio so that users can select multiple care settings in one scenario, review priorities for each, and then see a combined ROI view.
+
+────────────────────────────────────────────────────────
+1) CARE SETTING SELECTION — ALLOW MULTI-SELECT
+────────────────────────────────────────────────────────
+• Currently, care setting cards behave like a single-select (radio) choice. Change this to multi-select:
+  - Maintain an array state like `selectedCareSettings: string[]`.
+  - Clicking a care setting card should toggle that setting in the array:
+    • If it is not in the array, add it.
+    • If it is already in the array, remove it.
+  - Visually:
+    • Selected cards keep the “Selected” pill and border-black state.
+    • Unselected cards show the default border-neutral-200 state.
+• Keep Inpatient as a disabled “Coming soon” card:
+  - It should not toggle into `selectedCareSettings`.
+  - Styling can remain muted/disabled.
+
+• Validation:
+  - If the user clicks “Enter the ROI Studio” with no care settings selected, show a small inline message near the button:
+    “Select at least one care setting to continue.”
+  - Do not navigate to priorities until at least one setting is chosen.
+
+────────────────────────────────────────────────────────
+2) PRIORITIES SCREEN — ONE SECTION PER SELECTED SETTING
+────────────────────────────────────────────────────────
+• Instead of showing priorities for only a single setting, render them for each setting in `selectedCareSettings`, in the order they were selected.
+• For each setting, render a separate section:
+
+  For example:
+    - H2 heading: "Outpatient Strategic Priorities"
+    - Subheading (small, muted): "Time"
+    - All Time levers for Outpatient
+    - Subheading: "Documentation Quality"
+    - All Documentation levers for Outpatient
+
+    Then below that:
+    - H2 heading: "Emergency Department Strategic Priorities"
+    - Same Time/Documentation grouping for ED
+    - And so on for Nursing.
+
+• Each lever should still be a full-row clickable card:
+  - Clicking anywhere on the row toggles its selection.
+  - Include the lever checkbox as a visual indicator only; it should toggle as part of the row click.
+  - Use the updated lever labels and descriptions already defined:
+    - Outpatient: Clinical Time Recovered, Overtime Reduction, Clinician Retention, Condition Documentation Completeness, Visit Complexity Documentation, Documentation-Related Denials.
+    - Emergency Department: ED Flow & LWBS, ED Clinician Retention, ED Clinical Documentation Quality, ED Denials, Scribe Utilization.
+    - Nursing: Nursing Time Recovered, Nursing Retention, Patient Safety Documentation, Severity Documentation.
+
+• Group heading at the very top of this screen should remain:
+  - "Select your strategic priorities"
+  - Context label just under it:
+    - "Current Selection: [comma-separated list of selected setting names]"
+
+• Default state:
+  - All levers start UNCHECKED.
+  - User selects levers per setting as they scroll down.
+
+────────────────────────────────────────────────────────
+3) PASS SELECTED LEVERS INTO ROI CALCULATOR
+────────────────────────────────────────────────────────
+• When the user clicks the button to move from the priorities screen into the ROI calculator:
+  - Collect all selected levers across ALL selected care settings.
+  - Store them in a structure like:
+    `selectedLevers: { settingId: string; leverId: string; active: boolean }[]`
+  - Only levers with `active === true` (checked) at this moment should be included in the initial ROI calculation.
+
+• In the ROI calculator view:
+  - The initial waterfall chart and “Annual Impact by Lever” table should:
+    • Include ONLY those levers that were selected on the priorities screen.
+    • Aggregate their financial impact into the total ROI.
+  - Each lever entry in the table should indicate which care setting it belongs to (e.g., a small label or column like "Outpatient", "ED", "Nursing").
+
+• If the ROI calculator already has a per-lever inclusion toggle:
+  - Initialize these toggles from the `selectedLevers` array so that all previously selected levers start as “included.”
+  - Keep existing behavior that allows the user to turn levers on/off inside the calculator, but the initial state must come from their choices on the priorities screen.
+
+────────────────────────────────────────────────────────
+4) NAVIGATION & ORDERING
+────────────────────────────────────────────────────────
+• Preserve the order of settings as the user selects them on the landing screen:
+  - If the user clicks Outpatient first and ED second, then the priorities screen should show:
+    1) Outpatient Strategic Priorities
+    2) Emergency Department Strategic Priorities
+  - The same order should be reflected when you summarize levers or group results inside the ROI calculator where appropriate.
+
+• Do not change any underlying math formulas at this step.
+  - Just ensure that:
+    • multiple settings can be selected,
+    • each selected setting’s priorities can be configured,
+    • and only those selected levers feed into the initial ROI / waterfall view.
+

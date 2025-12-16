@@ -3,16 +3,26 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { InputSection, InputField } from "@/components/InputSection";
 import { KpiCard, KpiGrid } from "@/components/KpiCard";
 import { WaterfallChart } from "@/components/WaterfallChart";
-import { LeverTable } from "@/components/LeverTable";
 import { LeverAccordion } from "@/components/LeverAccordion";
 import { CommentaryBox } from "@/components/CommentaryBox";
-import { CareSettingCard } from "@/components/CareSettingCard";
-import { defaultInputs, type RoiInputs, type LeverId } from "@/lib/roi-types";
+import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
+import { defaultInputs, type RoiInputs, type LeverId, type Lever, leverLabels, leverDescriptions } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
-import { CARE_SETTING_LABELS, type CareSettingType, type AllSettingType } from "@/lib/SETTING_CONFIG";
+import { CARE_SETTING_LABELS, type CareSettingType } from "@/lib/SETTING_CONFIG";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DollarSign,
   Users,
@@ -21,43 +31,38 @@ import {
   Clock,
   Percent,
   Calculator,
-  Stethoscope,
-  Siren,
-  HeartPulse,
-  Building2,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
-  setting: CareSettingType;
-  selectedLevers: string[];
+  selectedSettings: CareSettingType[];
+  selectedLevers: SelectedLever[];
   onBack: () => void;
-  onSettingChange?: (setting: CareSettingType) => void;
 }
 
-const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
-  outpatient: Stethoscope,
-  ed: Siren,
-  nursing: HeartPulse,
-  inpatient: Building2,
-};
+interface LeverWithSetting extends Lever {
+  settingId: CareSettingType;
+}
 
-const SETTING_SUBTITLES: Record<AllSettingType, string> = {
-  outpatient: "Clinical Note",
-  ed: "Clinical Note",
-  nursing: "Flowsheet Documentation",
-  inpatient: "Coming soon",
-};
-
-const ALL_SETTINGS: AllSettingType[] = ["outpatient", "ed", "nursing", "inpatient"];
-
-export default function RoiCalculator({ setting, selectedLevers, onBack, onSettingChange }: RoiCalculatorProps) {
-  const [inputs, setInputs] = useState<RoiInputs>(defaultInputs);
+export default function RoiCalculator({ selectedSettings, selectedLevers, onBack }: RoiCalculatorProps) {
+  const [leverStates, setLeverStates] = useState<Map<string, boolean>>(() => {
+    const map = new Map<string, boolean>();
+    selectedLevers.forEach((l) => {
+      map.set(`${l.settingId}:${l.leverId}`, l.active);
+    });
+    return map;
+  });
+  
+  const [inputs, setInputs] = useState<RoiInputs>(() => {
+    const initial: RoiInputs = JSON.parse(JSON.stringify(defaultInputs));
+    const allLeverIds: LeverId[] = ["patientAccess", "overtime", "workforce", "wrvu", "denials", "riskAdjustment"];
+    allLeverIds.forEach((id) => {
+      initial.levers[id] = selectedLevers.some(
+        (l) => l.leverId === id && l.active
+      );
+    });
+    return initial;
+  });
   const [commentary, setCommentary] = useState("");
-
-  useEffect(() => {
-    setInputs(defaultInputs);
-    setCommentary("");
-  }, [setting]);
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
 
@@ -67,6 +72,42 @@ export default function RoiCalculator({ setting, selectedLevers, onBack, onSetti
       inputs.implementationCostYear1,
     [inputs.numberOfProviders, inputs.monthlyCostPerProvider, inputs.implementationCostYear1]
   );
+
+  const leversWithSettings: LeverWithSetting[] = useMemo(() => {
+    const leverList: LeverWithSetting[] = [];
+    
+    selectedSettings.forEach((settingId) => {
+      selectedLevers
+        .filter((l) => l.settingId === settingId)
+        .forEach((l) => {
+          const matchingLever = results.levers.find((rl) => rl.id === l.leverId);
+          if (matchingLever) {
+            const key = `${settingId}:${l.leverId}`;
+            leverList.push({
+              ...matchingLever,
+              settingId,
+              enabled: leverStates.get(key) ?? l.active,
+            });
+          }
+        });
+    });
+    
+    return leverList;
+  }, [selectedSettings, selectedLevers, results.levers, leverStates]);
+
+  const totalBenefitFromSelectedLevers = useMemo(() => {
+    return leversWithSettings
+      .filter((l) => l.enabled)
+      .reduce((sum, l) => sum + l.value, 0);
+  }, [leversWithSettings]);
+
+  const adjustedRoiMultiple = useMemo(() => {
+    return annualAbridgeCost > 0 ? totalBenefitFromSelectedLevers / annualAbridgeCost : 0;
+  }, [totalBenefitFromSelectedLevers, annualAbridgeCost]);
+
+  const adjustedNetValue = useMemo(() => {
+    return totalBenefitFromSelectedLevers - annualAbridgeCost;
+  }, [totalBenefitFromSelectedLevers, annualAbridgeCost]);
 
   const handleInputChange = (path: string, value: number | boolean) => {
     setInputs((prev) => {
@@ -84,37 +125,70 @@ export default function RoiCalculator({ setting, selectedLevers, onBack, onSetti
     });
   };
 
-  const handleLeverToggle = (id: LeverId) => {
-    handleInputChange(`levers.${id}`, !inputs.levers[id]);
+  const handleLeverToggle = (settingId: CareSettingType, leverId: LeverId) => {
+    const key = `${settingId}:${leverId}`;
+    const newState = !leverStates.get(key);
+    
+    setLeverStates((prev) => {
+      const next = new Map(prev);
+      next.set(key, newState);
+      return next;
+    });
+    
+    setInputs((prev) => {
+      const newInputs = JSON.parse(JSON.stringify(prev)) as RoiInputs;
+      const anyLeverActiveForId = Array.from(leverStates.entries()).some(
+        ([k, v]) => k.endsWith(`:${leverId}`) && k !== key && v
+      ) || newState;
+      newInputs.levers[leverId] = anyLeverActiveForId;
+      return newInputs;
+    });
   };
 
-  const handleSettingClick = (clickedSetting: AllSettingType) => {
-    if (clickedSetting === "inpatient") return;
-    if (clickedSetting !== setting && onSettingChange) {
-      onSettingChange(clickedSetting);
-    }
-  };
+  const waterfallLevers: Lever[] = useMemo(() => {
+    const leverMap = new Map<LeverId, Lever>();
+    
+    leversWithSettings.forEach((l) => {
+      const existing = leverMap.get(l.id);
+      if (existing) {
+        if (l.enabled) {
+          leverMap.set(l.id, {
+            ...existing,
+            value: existing.value + l.value,
+            enabled: true,
+          });
+        }
+      } else {
+        leverMap.set(l.id, {
+          id: l.id,
+          label: l.label,
+          value: l.enabled ? l.value : 0,
+          enabled: l.enabled,
+          description: l.description,
+        });
+      }
+    });
+    
+    return Array.from(leverMap.values()).filter((l) => l.enabled);
+  }, [leversWithSettings]);
+
+  const settingsText = selectedSettings.map((s) => CARE_SETTING_LABELS[s]).join(", ");
 
   return (
     <div className="min-h-screen relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
       <div className="relative z-10 flex flex-col h-screen">
         <div className="bg-white border-b border-neutral-200 px-6 py-3">
-          <div className="flex items-center gap-3 overflow-x-auto">
-            {ALL_SETTINGS.map((s) => {
-              const isInpatient = s === "inpatient";
-              return (
-                <CareSettingCard
-                  key={s}
-                  icon={SETTING_ICONS[s]}
-                  title={CARE_SETTING_LABELS[s]}
-                  subtitle={SETTING_SUBTITLES[s]}
-                  selected={setting === s}
-                  disabled={isInpatient}
-                  compact
-                  onClick={() => handleSettingClick(s)}
-                />
-              );
-            })}
+          <div className="flex items-center gap-3">
+            <span 
+              className="text-xl font-semibold tracking-wide"
+              style={{ color: '#F03319' }}
+            >
+              ABRIDGE
+            </span>
+            <span className="text-neutral-300">|</span>
+            <span className="text-sm text-neutral-600">
+              {settingsText}
+            </span>
           </div>
         </div>
 
@@ -130,9 +204,9 @@ export default function RoiCalculator({ setting, selectedLevers, onBack, onSetti
               >
                 Back to Selection
               </Button>
-              <h1 className="text-2xl font-bold text-black">Abridge ROI Studio</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {CARE_SETTING_LABELS[setting]} Analysis
+              <h1 className="text-2xl font-bold text-black">ROI Studio</h1>
+              <p className="text-xs text-neutral-500 mt-1">
+                Current Selection: {settingsText}
               </p>
             </div>
             <ScrollArea className="flex-1">
@@ -287,27 +361,27 @@ export default function RoiCalculator({ setting, selectedLevers, onBack, onSetti
                 <KpiGrid>
                   <KpiCard
                     label="ROI Multiple"
-                    value={`${results.roiMultiple.toFixed(2)}x`}
+                    value={`${adjustedRoiMultiple.toFixed(2)}x`}
                     icon={<TrendingUp className="h-8 w-8" />}
-                    variant={results.roiMultiple >= 1 ? "positive" : "negative"}
+                    variant={adjustedRoiMultiple >= 1 ? "positive" : "negative"}
                   />
                   <KpiCard
                     label="Total Annual Benefit"
-                    value={formatCurrency(results.totalAnnualBenefit)}
+                    value={formatCurrency(totalBenefitFromSelectedLevers)}
                     icon={<DollarSign className="h-8 w-8" />}
                     variant="positive"
                   />
                   <KpiCard
                     label="Investment Cost Year 1"
-                    value={formatCurrency(results.annualAbridgeCost)}
+                    value={formatCurrency(annualAbridgeCost)}
                     icon={<DollarSign className="h-8 w-8" />}
                     variant="negative"
                   />
                   <KpiCard
                     label="Net Value Created"
-                    value={formatCurrency(results.netValueCreated)}
+                    value={formatCurrency(adjustedNetValue)}
                     icon={<TrendingUp className="h-8 w-8" />}
-                    variant={results.netValueCreated >= 0 ? "positive" : "negative"}
+                    variant={adjustedNetValue >= 0 ? "positive" : "negative"}
                   />
                   <KpiCard
                     label="Provider Hours Reclaimed"
@@ -330,12 +404,70 @@ export default function RoiCalculator({ setting, selectedLevers, onBack, onSetti
                 </KpiGrid>
 
                 <WaterfallChart
-                  levers={results.levers}
-                  investmentCost={results.annualAbridgeCost}
-                  netValue={results.netValueCreated}
+                  levers={waterfallLevers}
+                  investmentCost={annualAbridgeCost}
+                  netValue={adjustedNetValue}
                 />
 
-                <LeverTable levers={results.levers} onToggle={handleLeverToggle} />
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold">Annual Impact by Lever</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-16 text-center">Active</TableHead>
+                          <TableHead>Lever</TableHead>
+                          <TableHead>Setting</TableHead>
+                          <TableHead className="text-right">Annual Value</TableHead>
+                          <TableHead className="hidden md:table-cell">Description</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {leversWithSettings.map((lever) => {
+                          const key = `${lever.settingId}:${lever.id}`;
+                          return (
+                            <TableRow 
+                              key={key} 
+                              className={!lever.enabled ? "opacity-50" : ""}
+                              data-testid={`lever-row-${key}`}
+                            >
+                              <TableCell className="text-center">
+                                <Checkbox
+                                  checked={lever.enabled}
+                                  onCheckedChange={() => handleLeverToggle(lever.settingId, lever.id)}
+                                  data-testid={`checkbox-${key}`}
+                                />
+                              </TableCell>
+                              <TableCell className="font-medium">{lever.label}</TableCell>
+                              <TableCell>
+                                <Badge variant="secondary" className="text-xs">
+                                  {CARE_SETTING_LABELS[lever.settingId]}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right font-mono">
+                                {lever.enabled ? formatCurrency(lever.value) : "—"}
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                                {lever.description}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                        <TableRow className="font-semibold bg-muted/50">
+                          <TableCell></TableCell>
+                          <TableCell>Total Annual Benefit</TableCell>
+                          <TableCell></TableCell>
+                          <TableCell className="text-right font-mono">
+                            {formatCurrency(totalBenefitFromSelectedLevers)}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell"></TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
 
                 <CommentaryBox value={commentary} onChange={setCommentary} />
               </div>
