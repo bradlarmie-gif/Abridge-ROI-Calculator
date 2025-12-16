@@ -1,0 +1,81 @@
+Please refine the visual design of ROI Studio to match Abridge’s true brand tone. Make the following updates precisely:
+
+────────────────────────────────────────────────────────
+1) BACKGROUND — VERY SUBTLE OFF-WHITE + SINGLE ABRIDGE ELEMENT
+────────────────────────────────────────────────────────
+• Set the global page background to a soft off-white: #FAFAF8.
+• Remove all previous patterns, textures, or repeated shapes.
+• Add ONE faint geometric Abridge-style shape tucked into a corner (bottom-right preferred):
+  - Use a tan color around #E8DCCE at 6–8% opacity.
+  - Shape should reflect Abridge’s fractured geometric brand forms (not rounded, not blob-like).
+  - Large enough to feel intentional, but faint enough to never distract.
+  - Position absolutely behind all content with low z-index.
+  - Do NOT repeat or tile the shape.
+
+────────────────────────────────────────────────────────
+2) LAYOUT + TYPOGRAPHY
+────────────────────────────────────────────────────────
+• Remove the large white inner card. Instead, place content directly on the off-white background.
+• Content container:
+   - max-w-6xl
+   - mx-auto
+   - pt-16 pb-24 px-8
+• Import Inter font and set Tailwind’s font-sans to Inter.
+• Use font-semibold for headings.
+• Use relaxed line-height for body text (e.g., leading-relaxed).
+
+────────────────────────────────────────────────────────
+3) CARE SETTING CARDS (Outpatient, ED, Nursing, Inpatient)
+────────────────────────────────────────────────────────
+• Keep horizontal card layout but refine:
+   - White background
+   - rounded-xl
+   - border border-neutral-200
+   - shadow-sm
+   - px-6 py-4 flex items-center gap-4
+• Hover state:
+   - border-black
+   - subtle shadow-md
+   - minimal or no scale animation (keep movement subtle)
+• Subtitle text:
+   - Outpatient → “Clinical Note”
+   - Emergency Department → “Clinical Note”
+   - Nursing → “Flowsheet Documentation”
+   - Inpatient → “Coming soon”
+• Ensure the selected card has border-black and a small “Selected” pill.
+
+────────────────────────────────────────────────────────
+4) STRATEGIC PRIORITIES SCREEN
+────────────────────────────────────────────────────────
+• Replace the heading with:
+   "Select your strategic priorities"
+• Under the heading, show a small muted label:
+   "Current setting: [SettingName]"
+• Group levers into two sections:
+   - "Time"
+   - "Documentation Quality"
+• Each lever item should:
+   - Be a full-width clickable card/row (click anywhere toggles selection)
+   - Have hover outline (border-black on hover)
+   - Include the new lever name (provided previously)
+   - Show the new strategic description (provided previously)
+• All checkboxes should start UNCHECKED.
+
+────────────────────────────────────────────────────────
+5) PRIMARY BUTTON — ENTER THE ROI STUDIO
+────────────────────────────────────────────────────────
+• Update button text to:
+   "Enter the ROI Studio"
+• Default state styling:
+   - bg-white
+   - border border-black
+   - text-black
+   - rounded-xl
+• Hover/active state:
+   - bg-black
+   - text-white
+• Remove any blue styles.
+
+────────────────────────────────────────────────────────
+6) DO NOT MODIFY ANY ROI MATH OR CALCULATION LOGIC.
+Only adjust visuals, layout, spacing, typography, selection behaviors, and text as described.

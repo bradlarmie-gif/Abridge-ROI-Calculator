@@ -96,7 +96,7 @@ export default function RoiCalculator({ setting, selectedLevers, onBack, onSetti
   };
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: '#FAF6F0' }}>
+    <div className="min-h-screen relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
       <div className="relative z-10 flex flex-col h-screen">
         <div className="bg-white border-b border-neutral-200 px-6 py-3">
           <div className="flex items-center gap-3 overflow-x-auto">

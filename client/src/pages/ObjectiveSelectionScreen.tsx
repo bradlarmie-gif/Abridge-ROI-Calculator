@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CareSettingCard } from "@/components/CareSettingCard";
+import { BackgroundShape } from "@/components/BackgroundShape";
 import {
   SETTING_CONFIG,
   CARE_SETTING_LABELS,
@@ -18,7 +18,6 @@ import {
   HeartPulse,
   Building2,
   ChevronRight,
-  Settings2,
   Clock,
   FileText,
 } from "lucide-react";
@@ -96,7 +95,7 @@ export default function ObjectiveSelectionScreen({
           handleLeverToggle(lever.id);
         }
       }}
-      className="w-full flex items-start space-x-4 p-4 rounded-md border border-neutral-200 hover:border-neutral-400 transition-colors bg-white text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      className="w-full flex items-start space-x-4 p-4 rounded-xl bg-white border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition-all duration-200 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
       data-testid={`lever-option-${lever.id}`}
     >
       <Checkbox
@@ -108,10 +107,10 @@ export default function ObjectiveSelectionScreen({
         data-testid={`checkbox-lever-${lever.id}`}
       />
       <div className="flex-1">
-        <span className="font-medium text-black">
+        <span className="font-semibold text-black">
           {lever.label}
         </span>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
           {lever.description}
         </p>
       </div>
@@ -138,12 +137,14 @@ export default function ObjectiveSelectionScreen({
   const isButtonDisabled = !selectedSetting || selectedLevers.size === 0;
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: '#FAF6F0' }}>
-      <div className="relative z-10 px-8 py-12 min-h-screen">
-        <div className="w-full max-w-6xl mx-auto space-y-10">
+    <div className="min-h-screen relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
+      <BackgroundShape />
+      
+      <div className="relative z-10 max-w-6xl mx-auto pt-16 pb-24 px-8">
+        <div className="space-y-10">
           <div className="text-center space-y-3">
-            <h1 className="text-3xl font-bold text-black font-sans">Abridge ROI Studio</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-semibold text-black">Abridge ROI Studio</h1>
+            <p className="text-muted-foreground leading-relaxed">
               Select your care setting and customize which strategic initiatives to include
             </p>
           </div>
@@ -166,44 +167,40 @@ export default function ObjectiveSelectionScreen({
           </div>
 
           {selectedSetting && leversByCategory && (
-            <Card className="border-neutral-200">
-              <CardHeader className="pb-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">
-                    Current setting: {CARE_SETTING_LABELS[selectedSetting]}
-                  </p>
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2 text-black">
-                    <Settings2 className="h-5 w-5" />
-                    Select your strategic priorities
-                  </CardTitle>
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">
+                  Current setting: {CARE_SETTING_LABELS[selectedSetting]}
+                </p>
+                <h2 className="text-xl font-semibold text-black">
+                  Select your strategic priorities
+                </h2>
+              </div>
+              
+              <div 
+                className="max-h-[400px] overflow-y-auto pr-2"
+                style={{ scrollbarGutter: "stable" }}
+              >
+                <div className="space-y-8">
+                  {renderCategorySection("time", leversByCategory.time)}
+                  {renderCategorySection("documentation", leversByCategory.documentation)}
                 </div>
-              </CardHeader>
-              <CardContent className="px-6 pb-6">
-                <div 
-                  className="max-h-[340px] overflow-y-auto pr-2"
-                  style={{ scrollbarGutter: "stable" }}
-                >
-                  <div className="space-y-6">
-                    {renderCategorySection("time", leversByCategory.time)}
-                    {renderCategorySection("documentation", leversByCategory.documentation)}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
-          <div className="flex justify-center pt-2">
+          <div className="flex justify-center pt-4">
             <button
               type="button"
               disabled={isButtonDisabled}
               onClick={handleContinue}
               className={`
-                inline-flex items-center justify-center gap-2 px-6 py-3 
-                rounded-xl border-2 border-black font-medium text-base
-                transition-colors duration-200
+                inline-flex items-center justify-center gap-2 px-8 py-3 
+                rounded-xl border font-semibold text-base
+                transition-all duration-200
                 ${isButtonDisabled 
-                  ? 'opacity-50 cursor-not-allowed bg-white text-black' 
-                  : 'bg-white text-black hover:bg-black hover:text-white cursor-pointer'
+                  ? 'opacity-50 cursor-not-allowed bg-white border-neutral-300 text-neutral-400' 
+                  : 'bg-white border-black text-black hover:bg-black hover:text-white cursor-pointer'
                 }
               `}
               data-testid="button-continue"
