@@ -80,19 +80,34 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     const leverList: LeverWithSetting[] = [];
     
     selectedSettings.forEach((settingId) => {
-      selectedLevers
-        .filter((l) => l.settingId === settingId)
-        .forEach((l) => {
-          const matchingLever = results.levers.find((rl) => rl.id === l.leverId);
+      if (settingId === "outpatient" && selectedSettings.length === 1) {
+        SETTING_CONFIG.outpatient.forEach((leverConfig) => {
+          const matchingLever = results.levers.find((rl) => rl.id === leverConfig.id);
           if (matchingLever) {
-            const key = `${settingId}:${l.leverId}`;
+            const key = `${settingId}:${leverConfig.id}`;
+            const isEnabled = leverStates.get(key) ?? false;
             leverList.push({
               ...matchingLever,
               settingId,
-              enabled: leverStates.get(key) ?? l.active,
+              enabled: isEnabled,
             });
           }
         });
+      } else {
+        selectedLevers
+          .filter((l) => l.settingId === settingId)
+          .forEach((l) => {
+            const matchingLever = results.levers.find((rl) => rl.id === l.leverId);
+            if (matchingLever) {
+              const key = `${settingId}:${l.leverId}`;
+              leverList.push({
+                ...matchingLever,
+                settingId,
+                enabled: leverStates.get(key) ?? l.active,
+              });
+            }
+          });
+      }
     });
     
     return leverList;
