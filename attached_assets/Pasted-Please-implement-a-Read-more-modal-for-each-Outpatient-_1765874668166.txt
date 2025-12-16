@@ -1,0 +1,50 @@
+Please implement a “Read more…” modal for each Outpatient strategic lever in the “Annual Impact by Lever” section. This feature should open an educational explanation of the lever in a centered pop-up modal. Do not modify any math, ROI logic, lever states, or layout outside of what is described below.
+
+────────────────────────────────────────────────────────
+1) Add “Read more…” links to the Description column
+────────────────────────────────────────────────────────
+• In the “Annual Impact by Lever” table (or card list), shorten each lever description to its first sentence only.
+• At the end of the shortened description, add a small muted text link:
+      “Read more…”
+• Clicking “Read more…” opens a modal with the full expanded educational explanation for that lever.
+
+Styling for the link:
+   - text-neutral-500
+   - text-sm
+   - underline on hover
+   - cursor-pointer
+
+────────────────────────────────────────────────────────
+2) Modal behavior and layout
+────────────────────────────────────────────────────────
+When “Read more…” is clicked:
+
+• Open a centered modal overlay with:
+   - White background
+   - Rounded-xl corners
+   - Soft shadow (e.g., shadow-xl)
+   - Padding (e.g., p-6 or p-8)
+   - Max-width: 600px
+   - Width: 100% on mobile, auto on desktop
+   - Scrollable only inside the modal if content exceeds viewport height
+
+• Behind the modal:
+   - Use a semi-transparent black backdrop (e.g., bg-black/40)
+
+• Modal close behavior:
+   - Include an “X” close icon in the top-right inside the modal
+   - Clicking the backdrop closes the modal
+   - Pressing ESC closes the modal
+
+• Modal contents should not disrupt underlying table or waterfall.
+
+────────────────────────────────────────────────────────
+3) Modal content for each Outpatient lever
+────────────────────────────────────────────────────────
+Populate the modal with the lever name as the title and the following educational copy exactly as shown.
+
+––––––––––––––––––––––––––––––––––––––––––––––––––––––
+Clinician Time Recovered:
+"Most capacity problems in outpatient care aren’t caused by a shortage of clinicians — they come from the quiet minutes lost to documentation throughout the day. Those minutes squeeze schedules, push work past clinic hours, and create the sense that ‘we’d see more patients if we had more time.’ When those minutes are returned, even modestly, schedules stabilize and access improves without changing staffing.
+
+Abridge gives clinicians back the time that documentation has been quietly stealing for years. By capturing the story in real time and producing drafts that reflect what was actually said, documentation stops leaking into every corner of the day. More of the clinician’s energy stays with patients. And access expands not because
