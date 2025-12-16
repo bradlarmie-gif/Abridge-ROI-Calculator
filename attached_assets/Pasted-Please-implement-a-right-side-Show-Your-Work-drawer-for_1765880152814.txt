@@ -1,0 +1,142 @@
+Please implement a right-side “Show Your Work” drawer for the Outpatient lever “Patient Access.”  
+This drawer should appear when the user clicks the “Show Work” control on the Patient Access lever card in the Results Summary or Strategic Drivers section.  
+Do NOT modify any math outside of the logic described below and do NOT affect other levers yet.
+
+────────────────────────────────────────
+1. Drawer Behavior & Layout
+────────────────────────────────────────
+• When the user clicks “Show Work” on the Patient Access lever card:
+    – Slide in a right-hand drawer (approx. 400–420px wide).
+    – The drawer should not navigate away; it overlays the right side of the screen.
+    – Use a white background, rounded-xl corners on the left edge, and a subtle shadow.
+    – Main ROI Calculator view should remain visible behind the drawer and should NOT shift layout.
+
+• Add a close (X) icon in the top-right of the drawer.
+    – Clicking it closes the drawer.
+    – Pressing ESC should also close the drawer.
+    – Clicking the semi-transparent backdrop (if used) should close it.
+
+────────────────────────────────────────
+2. Drawer Content Structure
+────────────────────────────────────────
+
+Inside the drawer, create the following sections:
+
+(A) Header
+    • Title: “Patient Access”
+    • Subtitle (muted): “Assumptions and logic behind this driver”
+    • Divider below header.
+
+(B) Orientation / Educational Block (1 short paragraph)
+    Use the following text:
+    "Patient access is shaped by how much of the clinical day remains usable. Documentation steals small blocks of time across each visit, and those minutes compress schedules and limit available slots. These inputs describe how much time returns to clinicians and how that flows into added access."
+
+(C) Assumptions (Editable Inputs)
+    Add the following inputs. All changes should update state AND reevaluate the patient access calculation immediately.
+
+    1. Minutes saved per encounter
+       – Label: “Minutes saved per encounter”
+       – Input: slider or numeric input
+       – Range: 1 to 6 minutes
+       – Helper text: “Typical Abridge range is 1–6 minutes per visit.”
+
+    2. Clinicians in scope
+       – Label: “Clinicians included in this analysis”
+       – Default value: populated from Scenario Inputs (“Providers in Scope”)
+       – Type: numeric input
+
+    3. Annual encounters per clinician
+       – Label: “Annual encounters per clinician”
+       – Default: (Annual Outpatient Encounters in scope ÷ Clinicians in scope)
+       – Editable numeric field
+
+    4. Visit duration
+       – Label: “Typical visit length”
+       – Input: segmented control or dropdown (options: 15, 20, 30, 60 minutes)
+
+    5. % of reclaimed time used to see more patients
+       – Label: “% of reclaimed time used to see more patients”
+       – Input: slider or numeric input
+       – Range: 0% to 50%
+
+    6. Average net revenue per encounter
+       – Label: “Net revenue per encounter ($)”
+       – Default bound to Scenario Inputs' “Average Revenue per Encounter”
+       – Editable numeric field
+
+(D) Step-Down Calculations (Read-only Live Outputs)
+    • These values should recalc automatically as assumptions change.
+    • Display the following outputs clearly, each with its label and formatted number:
+
+       1. Total clinician hours recovered (annual)
+       2. Reinvested hours (used for added capacity)
+       3. Additional visits enabled
+       4. Incremental annual revenue (this lever’s contribution)
+
+    • Use derived values from the formulas in Section 3.
+
+(E) Formula Block
+    Under a small heading “How this is calculated,” display the formula in monospace text:
+
+    "Incremental annual revenue =
+      Clinicians × Annual encounters per clinician × (Minutes saved per encounter ÷ 60)
+      × % of reclaimed time used to see more patients
+      × (60 ÷ visit duration)
+      × Net revenue per encounter"
+
+    • This section is explanatory only; it should not be editable.
+
+(F) Footer Note
+    Add muted text:
+    "Changes here update the waterfall, KPIs, impact cards, and enterprise projections automatically."
+
+────────────────────────────────────────
+3. Patient Access Calculation Logic (Bind to Existing ROI Engine)
+────────────────────────────────────────
+Bind the drawer inputs to the following derived values used in the ROI model.  
+Do NOT modify any other lever logic.
+
+Let:
+    minutesSavedPerEncounter
+    cliniciansInScope
+    encountersPerClinician
+    visitMinutes
+    reinvestRate (0.0–0.5)
+    netRevenuePerEncounter
+
+Compute:
+
+1) hoursSavedPerEncounter = minutesSavedPerEncounter / 60
+
+2) totalEncounters = cliniciansInScope * encountersPerClinician
+
+3) totalHoursSaved = totalEncounters * hoursSavedPerEncounter
+
+4) reinvestedHours = totalHoursSaved * reinvestRate
+
+5) visitsPerHour = 60 / visitMinutes
+
+6) additionalVisits = reinvestedHours * visitsPerHour
+
+7) incrementalRevenue = additionalVisits * netRevenuePerEncounter
+
+Then:
+• Update the Patient Access lever’s annual value to incrementalRevenue.
+• Update “Clinician Hours Recovered” KPI by adding totalHoursSaved for this lever.
+• Update Total Annual Impact, Net Gain, Return (x), and the waterfall bar.
+• Update Enterprise Expansion View by scaling incrementalRevenue appropriately.
+
+────────────────────────────────────────
+4. UI Integration & Triggering
+────────────────────────────────────────
+• Add a “Show Work” icon or text link on the Patient Access card (both in Strategic Drivers panel and the Results Summary lever card).
+• Clicking it must open THIS drawer.
+• Closing the drawer must NOT reset inputs.
+
+────────────────────────────────────────
+5. Scope
+────────────────────────────────────────
+• Apply ONLY to the Patient Access lever.
+• Do NOT add Show Work to any other lever yet.
+• Do NOT modify any other page structure, waterfall grouping, colors, or KPI naming.
+
