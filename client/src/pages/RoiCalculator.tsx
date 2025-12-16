@@ -11,6 +11,7 @@ import { EnterpriseExpansionChart } from "@/components/EnterpriseExpansionChart"
 import { LeverAccordion } from "@/components/LeverAccordion";
 import { CommentaryBox } from "@/components/CommentaryBox";
 import { StrategicDriverCard } from "@/components/StrategicDriverCard";
+import { PatientAccessDrawer, type PatientAccessInputs, type PatientAccessCalculations } from "@/components/PatientAccessDrawer";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { defaultInputs, type RoiInputs, type LeverId, type Lever, leverLabels, leverDescriptions } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
@@ -136,6 +137,49 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   });
   const [commentary, setCommentary] = useState("");
   const [selectedLeverForModal, setSelectedLeverForModal] = useState<LeverWithSetting | null>(null);
+  const [patientAccessDrawerOpen, setPatientAccessDrawerOpen] = useState(false);
+  
+  const [patientAccessInputs, setPatientAccessInputs] = useState<PatientAccessInputs>(() => {
+    const clinicians = inputs.numberOfProviders;
+    const encountersPerClinician = clinicians > 0 
+      ? Math.round(inputs.annualOutpatientEncounters / clinicians) 
+      : 0;
+    return {
+      minutesSavedPerEncounter: 4,
+      cliniciansInScope: clinicians,
+      encountersPerClinician,
+      visitMinutes: 30,
+      reinvestRate: 0.10,
+      netRevenuePerEncounter: inputs.avgNetRevenuePerEncounter,
+    };
+  });
+  
+  useEffect(() => {
+    setPatientAccessInputs(prev => ({
+      ...prev,
+      cliniciansInScope: inputs.numberOfProviders,
+      encountersPerClinician: inputs.numberOfProviders > 0 
+        ? Math.round(inputs.annualOutpatientEncounters / inputs.numberOfProviders) 
+        : 0,
+      netRevenuePerEncounter: inputs.avgNetRevenuePerEncounter,
+    }));
+  }, [inputs.numberOfProviders, inputs.annualOutpatientEncounters, inputs.avgNetRevenuePerEncounter]);
+  
+  const patientAccessCalculations: PatientAccessCalculations = useMemo(() => {
+    const { minutesSavedPerEncounter, cliniciansInScope, encountersPerClinician, visitMinutes, reinvestRate, netRevenuePerEncounter } = patientAccessInputs;
+    const totalEncounters = cliniciansInScope * encountersPerClinician;
+    const hoursSavedPerEncounter = minutesSavedPerEncounter / 60;
+    const totalHoursSaved = totalEncounters * hoursSavedPerEncounter;
+    const reinvestedHours = totalHoursSaved * reinvestRate;
+    const visitsPerHour = 60 / visitMinutes;
+    const additionalVisits = reinvestedHours * visitsPerHour;
+    const incrementalRevenue = additionalVisits * netRevenuePerEncounter;
+    return { totalHoursSaved, reinvestedHours, additionalVisits, incrementalRevenue };
+  }, [patientAccessInputs]);
+  
+  const handlePatientAccessInputChange = (field: keyof PatientAccessInputs, value: number) => {
+    setPatientAccessInputs(prev => ({ ...prev, [field]: value }));
+  };
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
 
@@ -156,8 +200,12 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
           if (matchingLever) {
             const key = `${settingId}:${leverConfig.id}`;
             const isEnabled = leverStates.get(key) ?? false;
+            const overriddenValue = leverConfig.id === "patientAccess" 
+              ? patientAccessCalculations.incrementalRevenue 
+              : matchingLever.value;
             leverList.push({
               ...matchingLever,
+              value: overriddenValue,
               settingId,
               enabled: isEnabled,
             });
@@ -170,8 +218,12 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
             const matchingLever = results.levers.find((rl) => rl.id === l.leverId);
             if (matchingLever) {
               const key = `${settingId}:${l.leverId}`;
+              const overriddenValue = l.leverId === "patientAccess" && settingId === "outpatient"
+                ? patientAccessCalculations.incrementalRevenue 
+                : matchingLever.value;
               leverList.push({
                 ...matchingLever,
+                value: overriddenValue,
                 settingId,
                 enabled: leverStates.get(key) ?? l.active,
               });
@@ -181,7 +233,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     });
     
     return leverList;
-  }, [selectedSettings, selectedLevers, results.levers, leverStates]);
+  }, [selectedSettings, selectedLevers, results.levers, leverStates, patientAccessCalculations.incrementalRevenue]);
 
   const totalBenefitFromSelectedLevers = useMemo(() => {
     return leversWithSettings
@@ -647,6 +699,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           <TableHead>Setting</TableHead>
                           <TableHead className="text-right">Annual Value</TableHead>
                           <TableHead className="hidden md:table-cell">Description</TableHead>
+                          <TableHead className="w-24"></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -689,6 +742,19 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                                   </>
                                 )}
                               </TableCell>
+                              <TableCell>
+                                {lever.id === "patientAccess" && lever.settingId === "outpatient" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setPatientAccessDrawerOpen(true)}
+                                    className="text-xs"
+                                    data-testid="button-show-work-patient-access"
+                                  >
+                                    Show Work
+                                  </Button>
+                                )}
+                              </TableCell>
                             </TableRow>
                           );
                         })}
@@ -700,6 +766,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                             {formatCurrency(totalBenefitFromSelectedLevers)}
                           </TableCell>
                           <TableCell className="hidden md:table-cell"></TableCell>
+                          <TableCell></TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
@@ -725,6 +792,14 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
           </div>
         </DialogContent>
       </Dialog>
+
+      <PatientAccessDrawer
+        open={patientAccessDrawerOpen}
+        onClose={() => setPatientAccessDrawerOpen(false)}
+        inputs={patientAccessInputs}
+        onChange={handlePatientAccessInputChange}
+        calculations={patientAccessCalculations}
+      />
     </div>
   );
 }
