@@ -125,7 +125,12 @@ export default function ObjectiveSelectionScreen({
             handleLeverToggle(settingId, lever.id);
           }
         }}
-        className="w-full flex items-start space-x-4 p-4 rounded-xl bg-white border border-neutral-200 shadow-sm hover:border-black hover:shadow-md transition-all duration-200 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+        className={`w-full flex items-start space-x-4 p-4 rounded-xl bg-white transition-all duration-200 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[rgba(240,51,25,0.5)] ${
+          isSelected 
+            ? "border-2 shadow-md" 
+            : "border border-neutral-200 shadow-sm hover:shadow-md"
+        }`}
+        style={{ borderColor: isSelected ? '#F03319' : undefined }}
         data-testid={`lever-option-${settingId}-${lever.id}`}
       >
         <Checkbox
