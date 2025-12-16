@@ -1,0 +1,72 @@
+Please update the Emergency Department and Nursing lever definitions to use the finalized lever names, corrected categories, and improved educational descriptions below. Do NOT change any lever IDs or any ROI math. Only update label, category, and description fields.
+
+────────────────────────────────────────────────────────
+EMERGENCY DEPARTMENT — UPDATED LEVERS
+────────────────────────────────────────────────────────
+
+1) Move “Scribe Utilization” from the Documentation category to the Time category.
+
+Then use the following exact definitions:
+
+ID: edPatientAccess
+label: "ED Flow & LWBS"
+category: "time"
+description: "Flow in the ED depends as much on documentation speed as it does on staffing or room availability. When clinicians can complete documentation during the encounter, patients are dispositioned sooner—reducing LWBS and restoring predictable throughput."
+
+ID: edProviderRetention
+label: "ED Clinician Retention"
+category: "time"
+description: "Emergency clinicians tolerate intensity; what erodes them is the administrative load layered on top of it. Reducing that load preserves cognitive bandwidth and stabilizes staffing, which strongly influences overall ED performance."
+
+ID: edScribeSavings
+label: "Scribe Utilization"
+category: "time"
+description: "Scribes help ED teams keep pace when documentation demands exceed real-time capacity. When documentation becomes lighter and more synchronous with care, organizations can rebalance scribe use—aligning support with true clinical need."
+
+ID: edDocumentationQuality
+label: "ED Clinical Documentation Quality"
+category: "documentation"
+description: "A strong ED note captures the clinical reasoning behind urgency, acuity, and disposition. When the story is clearer, coding, downstream teams, and quality reviews align more closely with the clinician’s intent."
+
+ID: edDenialSavings
+label: "ED Denials"
+category: "documentation"
+description: "Medical-necessity denials in the ED often occur when documentation doesn’t fully convey the rationale for the visit or the decisions made. Strengthening those elements reduces preventable denials and supports smoother billing."
+
+────────────────────────────────────────────────────────
+NURSING — UPDATED LEVERS
+────────────────────────────────────────────────────────
+
+ID: rnLaborEfficiency
+label: "Nursing Time Recovered"
+category: "time"
+description: "A surprising portion of nursing overtime originates from documentation tasks that spill past shift end. When assessments and flowsheets are completed more efficiently, time returns to direct care and schedule reliability improves."
+
+ID: rnRetention
+label: "Nursing Retention"
+category: "time"
+description: "Nurses rarely cite patient care as their reason for leaving—they cite the administrative burden surrounding it. Reducing that burden helps teams stay intact, preserving experience and reducing turnover-related costs."
+
+ID: rnSafetyEvents
+label: "Patient Safety Documentation"
+category: "documentation"
+description: "Early indicators of patient deterioration often appear first in nursing documentation—or are missed when documentation lags behind care. More timely and structured charting strengthens situational awareness and supports prevention of avoidable events."
+
+ID: rnDrgSeverity
+label: "Severity Documentation"
+category: "documentation"
+description: "Many elements that influence CC/MCC status originate in nursing assessments. When these details are consistently documented, recorded severity aligns more closely with the patient’s true condition and improves care planning."
+
+────────────────────────────────────────────────────────
+GENERAL REQUIREMENTS
+────────────────────────────────────────────────────────
+
+• Maintain all existing lever IDs exactly as they are.
+• Keep all outpatient lever names, descriptions, and categories unchanged.
+• Do not modify any ROI formulas, math, waterfall calculations, or navigation logic.
+• Only update the label, category, and description fields for the ED and Nursing levers as defined above.
+• Ensure that on the Strategic Priorities screen, these updated levers appear under the correct grouping:
+     - "Time" for edPatientAccess, edProviderRetention, edScribeSavings, rnLaborEfficiency, rnRetention
+     - "Documentation Quality" for edDocumentationQuality, edDenialSavings, rnSafetyEvents, rnDrgSeverity
+
+Complete only these updates; no other elements of the UI should change.
