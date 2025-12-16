@@ -204,7 +204,7 @@ export default function ObjectiveSelectionScreen({
           <div className="space-y-10">
             <div className="text-center space-y-2">
               <h1 className="text-3xl font-semibold text-black">
-                The ROI Workbook by <span style={{ color: '#F03319' }}>Abridge</span>
+                The ROI Calculator by <span style={{ color: '#F03319' }}>Abridge</span>
               </h1>
               <p className="text-base text-neutral-600">
                 Select care setting(s) to begin
@@ -274,7 +274,7 @@ export default function ObjectiveSelectionScreen({
             `}
             data-testid="button-continue"
           >
-            Enter The Workbook
+            Enter The Calculator
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
