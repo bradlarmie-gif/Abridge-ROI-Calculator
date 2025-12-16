@@ -1,0 +1,115 @@
+Please update the ROI Studio lever configuration and priorities screen to use the following final naming, categories, and strategic descriptions. Replace ALL previous lever labels and descriptions with the definitions below. Keep the existing lever IDs the same.
+
+Each lever should have:
+{
+  id: string,
+  label: string,
+  category: "time" | "documentation",
+  description: string
+}
+
+────────────────────────────────────────────────────────
+OUTPATIENT
+────────────────────────────────────────────────────────
+
+ID: patientAccess
+label: "Clinical Time Recovered"
+category: "time"
+description: "Most outpatient access problems come from time lost to documentation, not lack of demand. Recovering that time stabilizes schedules, shortens third-next-available, and keeps referrals from backing up."
+
+ID: overtime
+label: "Overtime Reduction"
+category: "time"
+description: "Overtime commonly reflects workflow spillover rather than true staffing gaps. When documentation fits inside the workday, premium labor drops naturally and predictably."
+
+ID: workforce
+label: "Clinician Retention"
+category: "time"
+description: "Burnout is driven less by clinical load and more by the administrative drag wrapped around it. Reducing that drag keeps clinicians in the organization and preserves experience."
+
+ID: riskAdjustment
+label: "Condition Documentation Completeness"
+category: "documentation"
+description: "Care teams often know patients’ chronic conditions, but documentation doesn’t always carry those details forward. Capturing the full clinical picture leads to more accurate risk modeling and resource planning."
+
+ID: wrvuAlignment
+label: "Visit Complexity Documentation"
+category: "documentation"
+description: "Visit complexity is frequently understated because documentation leaves parts of the clinical story unsaid. Better narrative detail allows coding to reflect the work actually performed."
+
+ID: denialReduction
+label: "Documentation-Related Denials"
+category: "documentation"
+description: "Many denials originate from thin documentation rather than clinical disagreement. Strengthening the narrative closes those gaps and reduces avoidable reimbursement friction."
+
+────────────────────────────────────────────────────────
+EMERGENCY DEPARTMENT
+────────────────────────────────────────────────────────
+
+ID: edPatientAccess
+label: "ED Flow & LWBS"
+category: "time"
+description: "Flow in the ED is governed by how quickly clinicians can evaluate, document, and disposition patients. When documentation moves faster, fewer patients leave without being seen and throughput improves."
+
+ID: edProviderRetention
+label: "ED Clinician Retention"
+category: "time"
+description: "Emergency clinicians tolerate acuity but not administrative overload. Reducing that overload lowers turnover and reduces dependence on locums."
+
+ID: edDocumentationQuality
+label: "ED Clinical Documentation Quality"
+category: "documentation"
+description: "ED visits rely on clear articulation of acuity and decision-making. More complete documentation strengthens coding accuracy and transitions of care."
+
+ID: edDenialSavings
+label: "ED Denials"
+category: "documentation"
+description: "Medical-necessity denials often stem from incomplete documentation of urgency or rationale. Capturing those elements reliably reduces these preventable denials."
+
+ID: edScribeSavings
+label: "Scribe Utilization"
+category: "documentation"
+description: "Scribes compensate for documentation bottlenecks. When notes keep pace with care, scribes become optional rather than operationally required."
+
+────────────────────────────────────────────────────────
+NURSING
+────────────────────────────────────────────────────────
+
+ID: rnLaborEfficiency
+label: "Nursing Time Recovered"
+category: "time"
+description: "A significant share of nursing overtime comes from documentation that spills past shift end. Streamlined charting returns time to nurses and reduces reliance on travelers."
+
+ID: rnRetention
+label: "Nursing Retention"
+category: "time"
+description: "Nurses rarely leave because of patient care—they leave because documentation pulls them away from it. Lightening that burden stabilizes staffing and reduces turnover."
+
+ID: rnSafetyEvents
+label: "Patient Safety Documentation"
+category: "documentation"
+description: "Missed or delayed documentation can obscure early signs of deterioration. More timely and structured charting improves situational awareness and supports safer care."
+
+ID: rnDrgSeverity
+label: "Severity Documentation"
+category: "documentation"
+description: "Many CC/MCC indicators originate in nursing assessments. When these are documented consistently, a patient’s recorded severity better matches their clinical reality."
+
+────────────────────────────────────────────────────────
+PRIORITIES SCREEN STRUCTURE
+────────────────────────────────────────────────────────
+
+• Group levers visually into two sections:
+   - "Time"
+   - "Documentation Quality"
+
+• The main heading should read:
+   "Select your strategic priorities"
+
+• Clicking anywhere on a lever row should toggle its checkbox on and off (not just clicking the square).
+
+• Default state for ALL levers: unchecked.
+
+────────────────────────────────────────────────────────
+DO NOT CHANGE ANY MATH OR CALCULATIONS.
+Only update labels, descriptions, categories, grouping, and interaction.

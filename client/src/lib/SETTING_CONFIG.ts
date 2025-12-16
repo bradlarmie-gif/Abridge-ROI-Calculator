@@ -13,97 +13,97 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
   outpatient: [
     {
       id: "patientAccess",
-      label: "Patient Capacity Enablement",
+      label: "Clinical Time Recovered",
       category: "time",
-      description: "When documentation takes less time, schedule capacity stops leaking; providers can reduce third-next-available and capture referrals they currently turn away.",
+      description: "Most outpatient access problems come from time lost to documentation, not lack of demand. Recovering that time stabilizes schedules, shortens third-next-available, and keeps referrals from backing up.",
     },
     {
       id: "overtime",
-      label: "Overtime & Premium Labor Avoidance",
+      label: "Overtime Reduction",
       category: "time",
-      description: "End-of-day work isn't inevitable—it's a symptom of friction. Removing that friction shrinks overtime and premium pay that shouldn't exist.",
+      description: "Overtime commonly reflects workflow spillover rather than true staffing gaps. When documentation fits inside the workday, premium labor drops naturally and predictably.",
     },
     {
       id: "workforce",
-      label: "Clinician Retention Support",
+      label: "Clinician Retention",
       category: "time",
-      description: "Most turnover is driven by cognitive overload, not the medicine. Lighter documentation helps keep clinicians, preserving your most expensive asset: experience.",
+      description: "Burnout is driven less by clinical load and more by the administrative drag wrapped around it. Reducing that drag keeps clinicians in the organization and preserves experience.",
     },
     {
       id: "riskAdjustment",
-      label: "Risk Adjustment Completeness",
+      label: "Condition Documentation Completeness",
       category: "documentation",
-      description: "When the full clinical picture is documented consistently, risk scores stop under-representing patient complexity and stabilize value-based performance.",
+      description: "Care teams often know patients' chronic conditions, but documentation doesn't always carry those details forward. Capturing the full clinical picture leads to more accurate risk modeling and resource planning.",
     },
     {
       id: "wrvu",
-      label: "E/M Level Appropriateness",
+      label: "Visit Complexity Documentation",
       category: "documentation",
-      description: "Under-leveling happens when details are missing, not when complexity is low. Abridge restores the completeness needed for coding to reflect real clinical work.",
+      description: "Visit complexity is frequently understated because documentation leaves parts of the clinical story unsaid. Better narrative detail allows coding to reflect the work actually performed.",
     },
     {
       id: "denials",
-      label: "Denial Risk Reduction",
+      label: "Documentation-Related Denials",
       category: "documentation",
-      description: "Many denials trace back to thin or ambiguous documentation. Strengthening the clinical narrative from the start collapses avoidable denial pathways.",
+      description: "Many denials originate from thin documentation rather than clinical disagreement. Strengthening the narrative closes those gaps and reduces avoidable reimbursement friction.",
     },
   ],
   ed: [
     {
       id: "edPatientAccess",
-      label: "Throughput & LWBS Improvement",
+      label: "ED Flow & LWBS",
       category: "time",
-      description: "Throughput is mostly documentation time in disguise. When notes move faster, clinicians disposition patients earlier and LWBS falls.",
+      description: "Flow in the ED is governed by how quickly clinicians can evaluate, document, and disposition patients. When documentation moves faster, fewer patients leave without being seen and throughput improves.",
     },
     {
       id: "edProviderRetention",
-      label: "ED Clinician Retention Support",
+      label: "ED Clinician Retention",
       category: "time",
-      description: "ED burnout isn't acuity—it's the administrative drag layered on top of acuity. Reducing that drag stabilizes staffing and lowers locum dependence.",
+      description: "Emergency clinicians tolerate acuity but not administrative overload. Reducing that overload lowers turnover and reduces dependence on locums.",
     },
     {
       id: "edDocumentationQuality",
-      label: "ED Documentation Completeness",
+      label: "ED Clinical Documentation Quality",
       category: "documentation",
-      description: "Chaotic environments shouldn't produce chaotic notes. More complete ED documentation supports accurate acuity capture and clearer clinical stories.",
+      description: "ED visits rely on clear articulation of acuity and decision-making. More complete documentation strengthens coding accuracy and transitions of care.",
     },
     {
       id: "edDenialSavings",
-      label: "ED Denial Risk Reduction",
+      label: "ED Denials",
       category: "documentation",
-      description: "Emergency claims falter when the narrative doesn't justify urgency. Stronger ED documentation meets medical necessity thresholds from the outset.",
+      description: "Medical-necessity denials often stem from incomplete documentation of urgency or rationale. Capturing those elements reliably reduces these preventable denials.",
     },
     {
       id: "edScribeSavings",
-      label: "Scribe Utilization Reduction",
+      label: "Scribe Utilization",
       category: "documentation",
-      description: "When real-time documentation keeps up with the encounter, scribes shift from 'required coverage' to 'optional support,' converting recurring costs into choice.",
+      description: "Scribes compensate for documentation bottlenecks. When notes keep pace with care, scribes become optional rather than operationally required.",
     },
   ],
   nursing: [
     {
       id: "rnLaborEfficiency",
-      label: "Nursing Labor Efficiency",
+      label: "Nursing Time Recovered",
       category: "time",
-      description: "A large share of overtime comes from documentation spillover. Faster flowsheeting brings shifts back on time and reduces reliance on travelers.",
+      description: "A significant share of nursing overtime comes from documentation that spills past shift end. Streamlined charting returns time to nurses and reduces reliance on travelers.",
     },
     {
       id: "rnRetention",
-      label: "Nursing Retention Support",
+      label: "Nursing Retention",
       category: "time",
-      description: "Nurses don't leave the bedside—they leave the burden. Reducing documentation strain helps retain teams and lowers constant backfill costs.",
+      description: "Nurses rarely leave because of patient care—they leave because documentation pulls them away from it. Lightening that burden stabilizes staffing and reduces turnover.",
     },
     {
       id: "rnSafetyEvents",
-      label: "Patient Safety Event Prevention Support",
+      label: "Patient Safety Documentation",
       category: "documentation",
-      description: "Most preventable events start with missed signals. Timely, structured documentation strengthens awareness and supports safety bundle adherence.",
+      description: "Missed or delayed documentation can obscure early signs of deterioration. More timely and structured charting improves situational awareness and supports safer care.",
     },
     {
       id: "rnDrgSeverity",
-      label: "DRG Severity Documentation Support",
+      label: "Severity Documentation",
       category: "documentation",
-      description: "Many CC/MCC opportunities originate in nursing assessments. When these are consistently captured, case severity aligns with clinical reality.",
+      description: "Many CC/MCC indicators originate in nursing assessments. When these are documented consistently, a patient's recorded severity better matches their clinical reality.",
     },
   ],
 };
@@ -116,8 +116,8 @@ export const CARE_SETTING_LABELS: Record<AllSettingType, string> = {
 };
 
 export const CATEGORY_LABELS: Record<LeverCategory, string> = {
-  time: "Time Benefits",
-  documentation: "Documentation Quality Benefits",
+  time: "Time",
+  documentation: "Documentation Quality",
 };
 
 export function getLeversByCategory(setting: CareSettingType): Record<LeverCategory, LeverConfig[]> {

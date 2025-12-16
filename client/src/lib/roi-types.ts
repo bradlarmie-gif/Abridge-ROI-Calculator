@@ -135,19 +135,19 @@ export const defaultInputs: RoiInputs = {
 };
 
 export const leverDescriptions: Record<LeverId, string> = {
-  patientAccess: "When documentation takes less time, schedule capacity stops leaking; providers can reduce third-next-available and capture referrals they currently turn away.",
-  overtime: "End-of-day work isn't inevitable—it's a symptom of friction. Removing that friction shrinks overtime and premium pay that shouldn't exist.",
-  workforce: "Most turnover is driven by cognitive overload, not the medicine. Lighter documentation helps keep clinicians, preserving your most expensive asset: experience.",
-  wrvu: "Under-leveling happens when details are missing, not when complexity is low. Abridge restores the completeness needed for coding to reflect real clinical work.",
-  denials: "Many denials trace back to thin or ambiguous documentation. Strengthening the clinical narrative from the start collapses avoidable denial pathways.",
-  riskAdjustment: "When the full clinical picture is documented consistently, risk scores stop under-representing patient complexity and stabilize value-based performance.",
+  patientAccess: "Most outpatient access problems come from time lost to documentation, not lack of demand. Recovering that time stabilizes schedules, shortens third-next-available, and keeps referrals from backing up.",
+  overtime: "Overtime commonly reflects workflow spillover rather than true staffing gaps. When documentation fits inside the workday, premium labor drops naturally and predictably.",
+  workforce: "Burnout is driven less by clinical load and more by the administrative drag wrapped around it. Reducing that drag keeps clinicians in the organization and preserves experience.",
+  wrvu: "Visit complexity is frequently understated because documentation leaves parts of the clinical story unsaid. Better narrative detail allows coding to reflect the work actually performed.",
+  denials: "Many denials originate from thin documentation rather than clinical disagreement. Strengthening the narrative closes those gaps and reduces avoidable reimbursement friction.",
+  riskAdjustment: "Care teams often know patients' chronic conditions, but documentation doesn't always carry those details forward. Capturing the full clinical picture leads to more accurate risk modeling and resource planning.",
 };
 
 export const leverLabels: Record<LeverId, string> = {
-  patientAccess: "Patient Capacity Enablement",
-  overtime: "Overtime & Premium Labor Avoidance",
-  workforce: "Clinician Retention Support",
-  wrvu: "E/M Level Appropriateness",
-  denials: "Denial Risk Reduction",
-  riskAdjustment: "Risk Adjustment Completeness",
+  patientAccess: "Clinical Time Recovered",
+  overtime: "Overtime Reduction",
+  workforce: "Clinician Retention",
+  wrvu: "Visit Complexity Documentation",
+  denials: "Documentation-Related Denials",
+  riskAdjustment: "Condition Documentation Completeness",
 };
