@@ -1,0 +1,315 @@
+Build a single-page “Abridge Outpatient ROI Calculator” web app using React + TypeScript and Tailwind CSS. Use a clean, modern layout with a left-hand input panel and a right-hand results panel with a waterfall chart. Use Recharts (or a similar React chart library) for the chart.
+
+High-level behavior
+
+The app lets a user enter a small set of assumptions about their ambulatory practice and see:
+
+ROI multiple
+
+Total annual financial benefit
+
+Year-1 investment cost
+
+Net value created
+
+Total provider hours reclaimed
+
+Post-Abridge average wRVU per encounter
+
+New effective denial rate
+
+The app also lets the user toggle 6 different ROI “levers” on or off (checkboxes). The waterfall chart and totals update in real time based on which levers are enabled.
+
+All logic runs in the browser; no backend is required.
+
+Layout
+
+Full-screen layout, split into:
+
+Left column (fixed width ~360px) labeled “Inputs & Assumptions”.
+
+Right column (flex) with:
+
+A row of KPI cards at the top.
+
+A waterfall / stacked bar chart.
+
+A table showing each lever and its annual impact.
+
+A text box for free-form “Additional Commentary”.
+
+Use Tailwind for styling. Make it readable and not cramped (margins, padding, etc).
+
+Inputs (left panel)
+
+Group inputs into clear sections with headings and helper text.
+
+Commercial Terms
+
+Contract Length (years) – number input, default 3.
+
+Number of Providers – number input, default 100.
+
+Monthly Cost per Provider – currency input, default 225.
+
+Implementation Cost (Year 1) – currency input, default 0.
+
+Display read-only: “Annual Abridge Cost (Year 1)” computed as:
+
+annualCost = numberOfProviders * monthlyCostPerProvider * 12 + implementationCostYear1
+
+Baseline Volume & Economics
+
+Annual Outpatient Encounters – default 100000.
+
+Abridge Utilization % – slider or input, default 70 (%).
+
+Average Net Revenue per Encounter – default 200.
+
+Baseline wRVU per Encounter – default 2.1.
+
+Total Medicare Advantage Attributed Patients – default 10000.
+
+Total Provider Hours Reclaimed – default 6400.
+
+Lever toggles (“Primary Levers”)
+
+Checkboxes with defaults = checked:
+
+Patient Access
+
+Overtime & Locum Savings
+
+Workforce Retention
+
+Risk Adjustment / HCC
+
+wRVU & Level-of-Service Alignment
+
+Denial Reduction Savings
+
+Lever-specific assumptions (use collapsible sections or accordions)
+
+Patient Access
+
+% of reclaimed time reinvested into new visits (default 10%).
+
+Average visit duration (minutes, default 30).
+
+Average net revenue per visit (default 200).
+
+Overtime & Locum
+
+% of overtime / locum hours avoided (default 20%).
+
+Blended overtime / locum hourly cost (default 145).
+
+Workforce Retention
+
+Provider count (default 100, tie to top-level if you like).
+
+Baseline annual attrition rate % (default 4%).
+
+% of attrition linked to burnout (default 40%).
+
+% of burnout attrition we avoid with Abridge (default 50%).
+
+Cost per provider departure (default 250000).
+
+wRVU & Level-of-Service Alignment
+
+wRVU conversion factor ($ per wRVU, default 34).
+
+% increase in wRVUs per encounter due to better documentation (default 5%).
+
+Denial Reduction
+
+Net collectible outpatient revenue (default 14000000).
+
+Baseline denial rate % (default 5%).
+
+% of denied revenue typically recovered after rework (default 60%).
+
+% of denials attributable to documentation / coding quality (default 30%).
+
+% of documentation-related denied revenue recovered by Abridge (default 75%).
+
+Risk Adjustment / HCC
+
+Impacted MA patients (default 7000).
+
+Average chronic conditions per member (default 1.5).
+
+% of conditions missed annually (default 33%).
+
+% of missed conditions recaptured with Abridge (default 60%).
+
+% of new conditions identified (default 5%).
+
+RAF gain per captured/recaptured condition (default 0.015).
+
+RAF realization haircut % (default 70%).
+
+PMPM benchmark at RAF = 1.0 (default 750).
+
+Calculation logic (TypeScript functions)
+
+Create a central calculateRoi(inputs) function that:
+
+Derives shared values:
+
+encountersWithAbridge = annualOutpatientEncounters * abridgeUtilizationPct
+
+annualAbridgeCost = numProviders * monthlyCostPerProvider * 12 + implementationCostYear1
+
+Patient Access value:
+
+visitDurationHours = avgVisitDurationMinutes / 60
+
+reinvestedHours = totalProviderHoursReclaimed * pctTimeToNewVisits
+
+addedVisits = reinvestedHours / visitDurationHours
+
+patientAccessValue = addedVisits * avgNetRevenuePerVisit
+
+Overtime & Locum savings:
+
+overtimeHoursReduced = totalProviderHoursReclaimed * pctOvertimeReduced
+
+overtimeSavings = overtimeHoursReduced * blendedOvertimeRate
+
+Workforce retention savings:
+
+baselineDepartures = providerCount * baselineAttritionRate
+
+burnoutDepartures = baselineDepartures * pctAttritionLinkedToBurnout
+
+departuresAvoided = burnoutDepartures * pctBurnoutExitsAvoided
+
+workforceSavings = departuresAvoided * costPerDeparture
+
+wRVU & LOS alignment revenue:
+
+postWrvuPerEncounter = baselineWrvuPerEncounter * (1 + pctIncreaseWrvuPerEncounter)
+
+incrementalWrvuPerEncounter = postWrvuPerEncounter - baselineWrvuPerEncounter
+
+totalIncrementalWrvus = incrementalWrvuPerEncounter * encountersWithAbridge
+
+wrvuRevenue = totalIncrementalWrvus * wrvuConversionFactor
+
+Denial reduction revenue:
+
+baselineDeniedRevenue = netCollectibleRevenue * baselineDenialRate
+
+documentationDeniedRevenue = baselineDeniedRevenue * pctDenialsFromDocumentation
+
+denialRevenueRecovered = documentationDeniedRevenue * pctDocDenialsRecovered
+
+newEffectiveDenialRate = (baselineDeniedRevenue - denialRevenueRecovered) / netCollectibleRevenue
+
+Risk adjustment / HCC revenue (simplified):
+
+totalConditions = impactedMaPatients * avgConditionsPerMember
+
+missedConditions = totalConditions * pctConditionsMissed
+
+recapturedConditions = missedConditions * pctMissedConditionsRecaptured
+
+newConditions = totalConditions * pctNewConditionsIdentified
+
+totalImprovedConditions = recapturedConditions + newConditions
+
+rawRafPointsGained = totalImprovedConditions * rafGainPerCondition
+
+rawRafChange = rawRafPointsGained / impactedMaPatients
+
+adjustedRafChange = rawRafChange * (1 - rafRealizationHaircut)
+
+riskAdjAnnualRevenue = impactedMaPatients * adjustedRafChange * pmpmBenchmark * 12
+
+Build a list of levers objects like:
+
+type LeverId = "patientAccess" | "overtime" | "workforce" | "wrvu" | "denials" | "riskAdjustment";
+type Lever = { id: LeverId; label: string; value: number; enabled: boolean };
+
+
+Compute totalAnnualBenefit as the sum of value for all enabled levers.
+
+Compute:
+
+roiMultiple = totalAnnualBenefit / annualAbridgeCost
+
+netValueCreated = totalAnnualBenefit - annualAbridgeCost
+
+Return all these fields so the UI can render them.
+
+Results UI (right panel)
+
+KPI cards showing:
+
+ROI Multiple (X.XX)
+
+Total Annual Benefit ($, formatted with commas)
+
+Investment Cost Year 1 ($)
+
+Net Value Created ($)
+
+Total Provider Hours Reclaimed (hours)
+
+Avg wRVU per Encounter (post-Abridge)
+
+New Effective Denial Rate (%)
+
+A waterfall-style bar chart (using Recharts) with X-axis categories:
+
+Investment (negative bar)
+
+Patient Access
+
+Overtime & Locum
+
+Workforce
+
+Risk Adjustment / HCC
+
+wRVU & LOS
+
+Denial Reduction
+
+Net Value
+
+Each bar’s height is the annual dollar impact of that lever; hide bars for levers that are disabled.
+
+Below the chart, show a table listing:
+
+Lever name
+
+Enabled? (checkbox)
+
+Annual value ($)
+
+Short description of what that lever represents (hard-code simple explanations in a map).
+
+At the bottom, add a textarea labeled “Additional Commentary” where the user can type notes; keep this in component state only.
+
+Engineering details
+
+Use functional components and React hooks.
+
+Keep all numeric state in a single useReducer or a custom hook so it’s easy to extend.
+
+Centralize all default assumptions in one defaults object.
+
+Format all currency values using Intl.NumberFormat for USD.
+
+Make sure that changing any input automatically recomputes everything with no page reload.
+
+Please generate all the code needed to run this app in Replit, including:
+
+The main React component
+
+Any subcomponents for input sections, KPI cards, and the chart
+
+Tailwind config / index file setup as needed.
