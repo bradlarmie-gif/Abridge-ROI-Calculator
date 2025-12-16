@@ -204,8 +204,8 @@ export default function ObjectiveSelectionScreen({
       <BackgroundShape />
       
       <div className="relative z-10 flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto pt-12 pb-8 px-8">
-          <div className="space-y-6">
+        <div className="max-w-6xl mx-auto pt-12 pb-6 px-8">
+          <div className="space-y-4">
             <div className="text-center space-y-1">
               <h1 className="text-2xl font-semibold" style={{ color: '#111111' }}>
                 The ROI Calculator
@@ -218,7 +218,7 @@ export default function ObjectiveSelectionScreen({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-5">
               {ALL_SETTINGS.map((setting) => {
                 const isInpatient = setting === "inpatient";
                 return (
