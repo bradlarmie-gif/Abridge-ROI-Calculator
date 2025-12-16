@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { InputSection, InputField } from "@/components/InputSection";
 import { KpiCard, KpiGrid } from "@/components/KpiCard";
@@ -11,6 +11,7 @@ import { LeverAccordion } from "@/components/LeverAccordion";
 import { CommentaryBox } from "@/components/CommentaryBox";
 import { defaultInputs, type RoiInputs, type LeverId } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
+import { SETTING_CONFIG, CARE_SETTING_LABELS, type CareSettingType } from "@/lib/SETTING_CONFIG";
 import {
   DollarSign,
   Users,
@@ -19,9 +20,16 @@ import {
   Clock,
   Percent,
   Calculator,
+  ArrowLeft,
 } from "lucide-react";
 
-export default function RoiCalculator() {
+interface RoiCalculatorProps {
+  setting: CareSettingType;
+  selectedLevers: string[];
+  onBack: () => void;
+}
+
+export default function RoiCalculator({ setting, selectedLevers, onBack }: RoiCalculatorProps) {
   const [inputs, setInputs] = useState<RoiInputs>(defaultInputs);
   const [commentary, setCommentary] = useState("");
 
@@ -58,9 +66,19 @@ export default function RoiCalculator() {
     <div className="flex h-screen bg-background">
       <aside className="w-96 border-r border-border flex flex-col">
         <div className="p-6 border-b border-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="mb-2 -ml-2"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Change Setting
+          </Button>
           <h1 className="text-2xl font-bold">Abridge ROI Calculator</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Outpatient Practice Analysis
+            {CARE_SETTING_LABELS[setting]} Analysis
           </p>
         </div>
         <ScrollArea className="flex-1">
