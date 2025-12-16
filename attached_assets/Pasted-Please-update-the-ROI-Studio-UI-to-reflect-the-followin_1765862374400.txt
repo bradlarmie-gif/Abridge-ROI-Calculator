@@ -1,0 +1,153 @@
+Please update the ROI Studio UI to reflect the following design, copy, and branding improvements.
+
+────────────────────────────────────────────────────────
+1. GLOBAL BACKGROUND (Abridge pattern backdrop)
+────────────────────────────────────────────────────────
+Replace the current faint background with a more intentional Abridge-style “step-and-repeat” backdrop:
+
+• Use sharper geometric fragments inspired by the broken Abridge logo (not rounded blobs).
+• Color: tan (#EDE0D0 or close), opacity around 25–30%.
+• Position as a repeating tiled pattern across the entire viewport, similar to a red-carpet or gala backdrop.
+• Ensure shapes appear behind all content with low z-index.
+• Keep the main page background white for clean contrast.
+
+The overall feel should be modern, soft, and premium—not distracting, but clearly “Abridge.”
+
+────────────────────────────────────────────────────────
+2. PAGE LAYOUT + TYPOGRAPHY
+────────────────────────────────────────────────────────
+• Expand the main content width to approx. max-w-6xl and center it.
+• Remove the large white capsule-style container; just use a clean centered layout with reasonable padding (px-8 py-12).
+• Switch the app font to Inter (import via Google Fonts or configure Tailwind’s font-sans to Inter).
+• Ensure headings are clean and bold using Inter.
+
+────────────────────────────────────────────────────────
+3. CARE SETTING CARDS (Outpatient, ED, Nursing, Inpatient)
+────────────────────────────────────────────────────────
+Keep the horizontal card format but update subtitles and styling:
+
+SUBTITLES (replace existing):
+• Outpatient → “Clinical Note”
+• Emergency Department → “Clinical Note”
+• Nursing → “Flowsheet Documentation”
+• Inpatient → “Coming soon”
+
+Keep icons as black outline inside a soft tan circle.  
+Card styling:
+• white background  
+• border-neutral-200  
+• rounded-xl (around 10–12px)  
+• shadow-sm  
+• On hover: subtle scale (scale-105), border-black, shadow-md  
+• Selected state: border-black + “Selected” pill in top-right  
+
+────────────────────────────────────────────────────────
+4. PRIORITIES SCREEN — COPY CHANGES
+────────────────────────────────────────────────────────
+Replace the heading with:
+
+“Select which strategic initiatives you would like Abridge to assist you with.”
+
+Below it, add a small muted label showing the active setting:
+“Current setting: Outpatient” (or ED / Nursing)
+
+Remove any phrasing that references “value drivers.”
+
+────────────────────────────────────────────────────────
+5. DEFAULT CHECKBOX STATE
+────────────────────────────────────────────────────────
+All strategic initiatives should be UNCHECKED by default.  
+The user actively selects which initiatives to include.
+
+────────────────────────────────────────────────────────
+6. PRIMARY BUTTON (“Enter the ROI Studio”)
+────────────────────────────────────────────────────────
+Change the button text to:
+
+“Enter the ROI Studio”
+
+Style:
+• background: black (`bg-black`)  
+• hover: darker neutral (`hover:bg-neutral-900`)  
+• text color: tan (`text-[#D7C8B6]`)  
+
+Remove any blue styling.
+
+────────────────────────────────────────────────────────
+7. UPDATE LEVER LABELS + STRATEGIC SENTENCES
+────────────────────────────────────────────────────────
+Update lever definitions (label + description) as follows.  
+Keep existing IDs but replace label and description exactly with this copy.
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+OUTPATIENT
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+patientAccess:
+  label: "Patient Capacity Enablement"
+  description: "When documentation takes less time, schedule capacity stops leaking; providers can reduce third-next-available and capture referrals they currently turn away."
+
+overtime:
+  label: "Overtime & Premium Labor Avoidance"
+  description: "End-of-day work isn’t inevitable—it’s a symptom of friction. Removing that friction shrinks overtime and premium pay that shouldn’t exist."
+
+workforce:
+  label: "Clinician Retention Support"
+  description: "Most turnover is driven by cognitive overload, not the medicine. Lighter documentation helps keep clinicians, preserving your most expensive asset: experience."
+
+riskAdjustment:
+  label: "Risk Adjustment Completeness"
+  description: "When the full clinical picture is documented consistently, risk scores stop under-representing patient complexity and stabilize value-based performance."
+
+wrvuAlignment:
+  label: "E/M Level Appropriateness"
+  description: "Under-leveling happens when details are missing, not when complexity is low. Abridge restores the completeness needed for coding to reflect real clinical work."
+
+denialReduction:
+  label: "Denial Risk Reduction"
+  description: "Many denials trace back to thin or ambiguous documentation. Strengthening the clinical narrative from the start collapses avoidable denial pathways."
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+EMERGENCY DEPARTMENT
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+edPatientAccess:
+  label: "Throughput & LWBS Improvement"
+  description: "Throughput is mostly documentation time in disguise. When notes move faster, clinicians disposition patients earlier and LWBS falls."
+
+edProviderRetention:
+  label: "ED Clinician Retention Support"
+  description: "ED burnout isn’t acuity—it’s the administrative drag layered on top of acuity. Reducing that drag stabilizes staffing and lowers locum dependence."
+
+edDocumentationQuality:
+  label: "ED Documentation Completeness"
+  description: "Chaotic environments shouldn’t produce chaotic notes. More complete ED documentation supports accurate acuity capture and clearer clinical stories."
+
+edDenialSavings:
+  label: "ED Denial Risk Reduction"
+  description: "Emergency claims falter when the narrative doesn’t justify urgency. Stronger ED documentation meets medical necessity thresholds from the outset."
+
+edScribeSavings:
+  label: "Scribe Utilization Reduction"
+  description: "When real-time documentation keeps up with the encounter, scribes shift from 'required coverage' to 'optional support,' converting recurring costs into choice."
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+NURSING
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+rnLaborEfficiency:
+  label: "Nursing Labor Efficiency"
+  description: "A large share of overtime comes from documentation spillover. Faster flowsheeting brings shifts back on time and reduces reliance on travelers."
+
+rnRetention:
+  label: "Nursing Retention Support"
+  description: "Nurses don’t leave the bedside—they leave the burden. Reducing documentation strain helps retain teams and lowers constant backfill costs."
+
+rnSafetyEvents:
+  label: "Patient Safety Event Prevention Support"
+  description: "Most preventable events start with missed signals. Timely, structured documentation strengthens awareness and supports safety bundle adherence."
+
+rnDrgSeverity:
+  label: "DRG Severity Documentation Support"
+  description: "Many CC/MCC opportunities originate in nursing assessments. When these are consistently captured, case severity aligns with clinical reality."
+
+────────────────────────────────────────────────────────
+
+Make these updates without modifying any calculation logic or math. This task is visual, structural, and copy-only.
