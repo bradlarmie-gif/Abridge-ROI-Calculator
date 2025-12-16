@@ -42,7 +42,15 @@ Preferred communication style: Simple, everyday language.
 ### Styling Approach
 - Material Design principles adapted for enterprise data applications
 - Typography: Inter for UI text, JetBrains Mono for numerical displays
-- Color scheme: Black/neutral grays for accents (no blue), warm off-white backgrounds with tan decorative patterns
+- Color scheme: Black/neutral grays for accents (no blue), warm off-white backgrounds (#FAFAF8) with tan decorative patterns
+- **Brand Colors**:
+  - Abridge Red: #F03319 (used for section headers, brand logo, key accents)
+  - Muted grey: #9CA3AF (used for current scope in charts, investment costs)
+  - Green: #0E9F6E (used for benefits in charts)
+  - Black: #000000 (used for enterprise projections)
+- **KPI Cards**: Support optional subtitle/micro-labels for improved clarity
+- **Section Spacing**: Major sections use space-y-8 for visual breathing room
+- **Scenario Summary Block**: At-a-glance summary with Abridge Red headers showing providers, encounters, and utilization
 
 ### Responsive Design
 - **Breakpoints**: Uses Tailwind's `md` (768px) and `lg` (1024px) breakpoints
