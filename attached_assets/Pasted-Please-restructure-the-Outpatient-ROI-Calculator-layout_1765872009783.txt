@@ -1,0 +1,88 @@
+Please restructure the Outpatient ROI Calculator layout to match the following design architecture. This update applies ONLY to the Outpatient setting for now.
+
+────────────────────────────────────────────────────────
+1) Create a dedicated “Scenario Inputs” section at the top of the left panel
+────────────────────────────────────────────────────────
+• This section must always be visible and always open (no collapsing).
+• Title: “Scenario Inputs”
+• Include the following inputs in this order:
+
+   1. Abridge Utilization (%) – slider
+   2. Annual Outpatient Encounters (in scope) – numeric input
+   3. Annual Outpatient Encounters (enterprise) – numeric input
+   4. Providers in Scope – numeric input
+   5. Enterprise Provider Count – numeric input
+   6. Average Revenue per Encounter ($) – numeric input
+
+• These values directly influence calculations across levers and expansion modeling.
+• Maintain the existing bindings to ROI math; this change is only visual and structural.
+
+────────────────────────────────────────────────────────
+2) Replace the current checkbox list with lever CARDS
+────────────────────────────────────────────────────────
+Under the Scenario Inputs, add a new section:
+
+Title: “Strategic Drivers”
+
+Each driver should be a clickable card instead of a checkbox row:
+• Active lever card:
+   - White background
+   - Border: 2px solid black
+   - Full opacity
+   - Bold title
+   - Small “Show Work” icon or link on the right side
+• Inactive lever card:
+   - White background
+   - Border: 1px solid neutral-200
+   - `opacity-40`
+   - Muted text
+   - No shadow
+• Users toggle a lever by clicking the entire card.
+• The “Show Work” icon on the card should open the future right-hand drawer.
+• The order of lever cards:
+
+   1. Clinician Time Recovered
+   2. Overtime Reduction
+   3. Clinician Retention
+   4. HCC & Chronic Condition Capture
+   5. Level of Service Alignment
+   6. Documentation-Driven Denials
+
+• Do not remove the existing lever descriptions or logic; simply bind card active/inactive to existing lever states.
+
+────────────────────────────────────────────────────────
+3) Update the center panel layout but DO NOT remove the waterfall
+────────────────────────────────────────────────────────
+• Maintain the following order:
+   A) KPI Summary Band (unchanged)
+   B) Waterfall Chart (unchanged)
+   C) Annual Impact by Lever table or impact cards (unchanged behavior)
+   D) Additional sections to come (Expansion, Notes)
+
+• No logic or math should be altered.
+
+────────────────────────────────────────────────────────
+4) Styling notes for lever cards (important)
+────────────────────────────────────────────────────────
+• Active card styles:
+   - `bg-white border border-black rounded-xl px-4 py-3 shadow-sm`
+   - Title text: black, bold
+   - Add a subtle right-arrow or “Show Work” icon
+
+• Inactive card styles:
+   - `bg-white border border-neutral-200 rounded-xl px-4 py-3 opacity-40`
+   - Title text: muted gray
+   - Greyed-out, no shadow
+
+• Ensure clicking the card toggles lever active state AND updates waterfall/KPIs.
+
+────────────────────────────────────────────────────────
+5) Do not change any Show Your Work functionality yet
+────────────────────────────────────────────────────────
+• This update only restructures the left panel and lever selection behavior.
+• Future updates will add the side drawer detail view and editable assumptions.
+
+────────────────────────────────────────────────────────
+6) Do not modify ROI formulas or math in this step.
+Only visual and structural changes should be applied.
+────────────────────────────────────────────────────────

@@ -9,10 +9,11 @@ import { KpiCard, KpiGrid } from "@/components/KpiCard";
 import { WaterfallChart } from "@/components/WaterfallChart";
 import { LeverAccordion } from "@/components/LeverAccordion";
 import { CommentaryBox } from "@/components/CommentaryBox";
+import { StrategicDriverCard } from "@/components/StrategicDriverCard";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { defaultInputs, type RoiInputs, type LeverId, type Lever, leverLabels, leverDescriptions } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
-import { CARE_SETTING_LABELS, type CareSettingType } from "@/lib/SETTING_CONFIG";
+import { CARE_SETTING_LABELS, SETTING_CONFIG, type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -31,6 +32,8 @@ import {
   Clock,
   Percent,
   Calculator,
+  Settings,
+  Target,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -211,143 +214,226 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
             </div>
             <ScrollArea className="flex-1">
               <div className="p-6 space-y-6">
-                <InputSection title="Commercial Terms" icon={<DollarSign className="h-5 w-5" />}>
-                  <InputField label="Contract Length (years)">
-                    <Input
-                      type="number"
-                      value={inputs.contractLengthYears}
-                      onChange={(e) =>
-                        handleInputChange("contractLengthYears", Number(e.target.value))
-                      }
-                      data-testid="input-contract-length"
-                    />
-                  </InputField>
-                  <InputField label="Number of Providers">
-                    <Input
-                      type="number"
-                      value={inputs.numberOfProviders}
-                      onChange={(e) =>
-                        handleInputChange("numberOfProviders", Number(e.target.value))
-                      }
-                      data-testid="input-num-providers"
-                    />
-                  </InputField>
-                  <InputField label="Monthly Cost per Provider ($)">
-                    <Input
-                      type="number"
-                      value={inputs.monthlyCostPerProvider}
-                      onChange={(e) =>
-                        handleInputChange("monthlyCostPerProvider", Number(e.target.value))
-                      }
-                      data-testid="input-monthly-cost"
-                    />
-                  </InputField>
-                  <InputField label="Implementation Cost Year 1 ($)">
-                    <Input
-                      type="number"
-                      value={inputs.implementationCostYear1}
-                      onChange={(e) =>
-                        handleInputChange("implementationCostYear1", Number(e.target.value))
-                      }
-                      data-testid="input-impl-cost"
-                    />
-                  </InputField>
-                  <InputField label="Annual Abridge Cost (Year 1)" readOnly>
-                    <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2">
-                      <Calculator className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-semibold font-mono" data-testid="text-annual-cost">
-                        {formatCurrency(annualAbridgeCost)}
-                      </span>
-                    </div>
-                  </InputField>
-                </InputSection>
-
-                <InputSection
-                  title="Baseline Volume & Economics"
-                  icon={<BarChart3 className="h-5 w-5" />}
-                >
-                  <InputField label="Annual Outpatient Encounters">
-                    <Input
-                      type="number"
-                      value={inputs.annualOutpatientEncounters}
-                      onChange={(e) =>
-                        handleInputChange("annualOutpatientEncounters", Number(e.target.value))
-                      }
-                      data-testid="input-encounters"
-                    />
-                  </InputField>
-                  <InputField label="Abridge Utilization (%)">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <Slider
-                          value={[inputs.abridgeUtilizationPct]}
-                          onValueChange={([v]) =>
-                            handleInputChange("abridgeUtilizationPct", v)
+                {selectedSettings.includes("outpatient") && selectedSettings.length === 1 ? (
+                  <>
+                    <InputSection title="Scenario Inputs" icon={<Settings className="h-5 w-5" />}>
+                      <InputField label="Abridge Utilization (%)">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Slider
+                              value={[inputs.abridgeUtilizationPct]}
+                              onValueChange={([v]) =>
+                                handleInputChange("abridgeUtilizationPct", v)
+                              }
+                              max={100}
+                              step={1}
+                              className="flex-1"
+                              data-testid="slider-utilization"
+                            />
+                            <span className="text-sm font-mono w-12">
+                              {inputs.abridgeUtilizationPct}%
+                            </span>
+                          </div>
+                        </div>
+                      </InputField>
+                      <InputField label="Annual Outpatient Encounters (in scope)">
+                        <Input
+                          type="number"
+                          value={inputs.annualOutpatientEncounters}
+                          onChange={(e) =>
+                            handleInputChange("annualOutpatientEncounters", Number(e.target.value))
                           }
-                          max={100}
-                          step={1}
-                          className="flex-1"
-                          data-testid="slider-utilization"
+                          data-testid="input-encounters"
                         />
-                        <span className="text-sm font-mono w-12">
-                          {inputs.abridgeUtilizationPct}%
-                        </span>
+                      </InputField>
+                      <InputField label="Providers in Scope">
+                        <Input
+                          type="number"
+                          value={inputs.numberOfProviders}
+                          onChange={(e) =>
+                            handleInputChange("numberOfProviders", Number(e.target.value))
+                          }
+                          data-testid="input-num-providers"
+                        />
+                      </InputField>
+                      <InputField label="Average Revenue per Encounter ($)">
+                        <Input
+                          type="number"
+                          value={inputs.avgNetRevenuePerEncounter}
+                          onChange={(e) =>
+                            handleInputChange("avgNetRevenuePerEncounter", Number(e.target.value))
+                          }
+                          data-testid="input-avg-revenue"
+                        />
+                      </InputField>
+                    </InputSection>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-5 w-5 text-neutral-600" />
+                        <h3 className="text-sm font-semibold text-neutral-800 uppercase tracking-wide">
+                          Strategic Drivers
+                        </h3>
+                      </div>
+                      <div className="space-y-2">
+                        {SETTING_CONFIG.outpatient.map((lever) => {
+                          const key = `outpatient:${lever.id}`;
+                          const isActive = leverStates.get(key) ?? false;
+                          return (
+                            <StrategicDriverCard
+                              key={lever.id}
+                              title={lever.label}
+                              active={isActive}
+                              onClick={() => handleLeverToggle("outpatient", lever.id as LeverId)}
+                              onShowWork={() => {}}
+                              testId={`driver-card-${lever.id}`}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
-                  </InputField>
-                  <InputField label="Avg Net Revenue per Encounter ($)">
-                    <Input
-                      type="number"
-                      value={inputs.avgNetRevenuePerEncounter}
-                      onChange={(e) =>
-                        handleInputChange("avgNetRevenuePerEncounter", Number(e.target.value))
-                      }
-                      data-testid="input-avg-revenue"
-                    />
-                  </InputField>
-                  <InputField label="Baseline wRVU per Encounter">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={inputs.baselineWrvuPerEncounter}
-                      onChange={(e) =>
-                        handleInputChange("baselineWrvuPerEncounter", Number(e.target.value))
-                      }
-                      data-testid="input-baseline-wrvu"
-                    />
-                  </InputField>
-                  <InputField label="Total MA Attributed Patients">
-                    <Input
-                      type="number"
-                      value={inputs.totalMedicareAdvantagePatients}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "totalMedicareAdvantagePatients",
-                          Number(e.target.value)
-                        )
-                      }
-                      data-testid="input-ma-patients"
-                    />
-                  </InputField>
-                  <InputField
-                    label="Total Provider Hours Reclaimed"
-                    helperText="Annual hours saved across all providers"
-                  >
-                    <Input
-                      type="number"
-                      value={inputs.totalProviderHoursReclaimed}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "totalProviderHoursReclaimed",
-                          Number(e.target.value)
-                        )
-                      }
-                      data-testid="input-hours-reclaimed"
-                    />
-                  </InputField>
-                </InputSection>
+                  </>
+                ) : (
+                  <>
+                    <InputSection title="Commercial Terms" icon={<DollarSign className="h-5 w-5" />}>
+                      <InputField label="Contract Length (years)">
+                        <Input
+                          type="number"
+                          value={inputs.contractLengthYears}
+                          onChange={(e) =>
+                            handleInputChange("contractLengthYears", Number(e.target.value))
+                          }
+                          data-testid="input-contract-length"
+                        />
+                      </InputField>
+                      <InputField label="Number of Providers">
+                        <Input
+                          type="number"
+                          value={inputs.numberOfProviders}
+                          onChange={(e) =>
+                            handleInputChange("numberOfProviders", Number(e.target.value))
+                          }
+                          data-testid="input-num-providers"
+                        />
+                      </InputField>
+                      <InputField label="Monthly Cost per Provider ($)">
+                        <Input
+                          type="number"
+                          value={inputs.monthlyCostPerProvider}
+                          onChange={(e) =>
+                            handleInputChange("monthlyCostPerProvider", Number(e.target.value))
+                          }
+                          data-testid="input-monthly-cost"
+                        />
+                      </InputField>
+                      <InputField label="Implementation Cost Year 1 ($)">
+                        <Input
+                          type="number"
+                          value={inputs.implementationCostYear1}
+                          onChange={(e) =>
+                            handleInputChange("implementationCostYear1", Number(e.target.value))
+                          }
+                          data-testid="input-impl-cost"
+                        />
+                      </InputField>
+                      <InputField label="Annual Abridge Cost (Year 1)" readOnly>
+                        <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2">
+                          <Calculator className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-semibold font-mono" data-testid="text-annual-cost">
+                            {formatCurrency(annualAbridgeCost)}
+                          </span>
+                        </div>
+                      </InputField>
+                    </InputSection>
 
-                <LeverAccordion inputs={inputs} onInputChange={handleInputChange} />
+                    <InputSection
+                      title="Baseline Volume & Economics"
+                      icon={<BarChart3 className="h-5 w-5" />}
+                    >
+                      <InputField label="Annual Outpatient Encounters">
+                        <Input
+                          type="number"
+                          value={inputs.annualOutpatientEncounters}
+                          onChange={(e) =>
+                            handleInputChange("annualOutpatientEncounters", Number(e.target.value))
+                          }
+                          data-testid="input-encounters"
+                        />
+                      </InputField>
+                      <InputField label="Abridge Utilization (%)">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Slider
+                              value={[inputs.abridgeUtilizationPct]}
+                              onValueChange={([v]) =>
+                                handleInputChange("abridgeUtilizationPct", v)
+                              }
+                              max={100}
+                              step={1}
+                              className="flex-1"
+                              data-testid="slider-utilization"
+                            />
+                            <span className="text-sm font-mono w-12">
+                              {inputs.abridgeUtilizationPct}%
+                            </span>
+                          </div>
+                        </div>
+                      </InputField>
+                      <InputField label="Avg Net Revenue per Encounter ($)">
+                        <Input
+                          type="number"
+                          value={inputs.avgNetRevenuePerEncounter}
+                          onChange={(e) =>
+                            handleInputChange("avgNetRevenuePerEncounter", Number(e.target.value))
+                          }
+                          data-testid="input-avg-revenue"
+                        />
+                      </InputField>
+                      <InputField label="Baseline wRVU per Encounter">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={inputs.baselineWrvuPerEncounter}
+                          onChange={(e) =>
+                            handleInputChange("baselineWrvuPerEncounter", Number(e.target.value))
+                          }
+                          data-testid="input-baseline-wrvu"
+                        />
+                      </InputField>
+                      <InputField label="Total MA Attributed Patients">
+                        <Input
+                          type="number"
+                          value={inputs.totalMedicareAdvantagePatients}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "totalMedicareAdvantagePatients",
+                              Number(e.target.value)
+                            )
+                          }
+                          data-testid="input-ma-patients"
+                        />
+                      </InputField>
+                      <InputField
+                        label="Total Provider Hours Reclaimed"
+                        helperText="Annual hours saved across all providers"
+                      >
+                        <Input
+                          type="number"
+                          value={inputs.totalProviderHoursReclaimed}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "totalProviderHoursReclaimed",
+                              Number(e.target.value)
+                            )
+                          }
+                          data-testid="input-hours-reclaimed"
+                        />
+                      </InputField>
+                    </InputSection>
+
+                    <LeverAccordion inputs={inputs} onInputChange={handleInputChange} />
+                  </>
+                )}
               </div>
             </ScrollArea>
           </aside>
