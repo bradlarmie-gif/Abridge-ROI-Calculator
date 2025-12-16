@@ -1,0 +1,30 @@
+Please update the “Annual Impact by Lever” / Results Summary section to use the following 4–6 sentence educational explanations for Outpatient levers. These should replace the current long-form descriptions shown directly in the table. Do NOT modify the “Read More” modal content or ROI math.
+
+Also add a section header above this table:
+   Title: “Understanding Your Drivers”
+   Subtitle (muted): “Interpretation of how each selected driver influences your current scope.”
+
+Replace each description with the following:
+
+Patient Access:
+"Patient access is shaped by how well time inside the clinic day is protected. Even a few minutes lost to documentation across each visit multiply into hours clinicians can no longer use for patient care. When that friction is reduced, schedules become more predictable, backlog shrinks, and third-next-available shortens naturally. Abridge enables this shift by capturing the clinical story in real time, reducing the cognitive and mechanical work clinicians must carry into the margins of their day. The result isn’t just time saved — it’s a clinic that can reliably serve more patients without expanding staffing."
+
+Overtime & Locum Cost Avoidance:
+"Overtime and locum use often arise not from real staffing shortages, but from documentation spilling past scheduled hours. When clinicians regularly stay late to finish notes, clinics accumulate premium labor quietly and steadily. These costs climb especially fast in high-volume specialties or at access-constrained sites. Abridge reduces the after-hours burden by helping clinicians complete documentation during the visit itself. As spillover decreases, so does the need for costly stopgaps like overtime or locum coverage."
+
+Clinician Retention:
+"Retention is deeply tied to how sustainable the workday feels. Administrative burden, not clinical complexity, is one of the strongest predictors of burnout and departure. When documentation demands stretch into evenings or eat into breaks, clinicians lose the sense that their work is manageable. Abridge reduces this burden by producing drafts in real time and decreasing after-hours obligations. As the workday becomes more predictable and humane, clinicians are more likely to stay — preserving experience and continuity for the organization."
+
+HCC & Chronic Condition Capture:
+"Accurate risk adjustment depends on consistently capturing the chronic conditions that define patient complexity. Yet in many organizations, these conditions appear sporadically in documentation, leading to understated acuity and mismatches between care needs and reimbursement. Abridge enhances condition capture by producing richer encounter narratives that surface relevant chronic problems clinicians already addressed. This supports more reliable coding without adding steps to the clinician’s workflow. Over time, the population model more accurately reflects the patients being served."
+
+Level of Service Alignment:
+"Visits frequently end up undercoded because documentation does not fully communicate the clinician’s reasoning. Even when the cognitive work is high, missing or abbreviated details lead coding teams to choose lower levels to mitigate compliance risk. Abridge preserves more of the clinical thinking expressed during the encounter, producing documentation that more faithfully represents the decisions made. This allows coding to align with actual visit complexity — not to increase levels arbitrarily, but to avoid chronic underrepresentation of the care being delivered."
+
+Medical Necessity–Driven Denials:
+"Some denials cannot be appealed because the documentation simply doesn’t demonstrate medical necessity clearly enough to stand. These denials represent real, permanent revenue loss — and they are often preventable. Abridge strengthens the clinical story by capturing more detail during the visit, particularly around the MDM and rationale for decisions. When that reasoning is present up front, fewer claims fall into the category of unrecoverable documentation-driven denials. This reduces administrative churn and improves the predictability of revenue cycle performance."
+
+Scope:
+• Apply these updates only to the Outpatient results summary.
+• Do not change ED or Nursing yet.
+• Do not modify ROI calculations.

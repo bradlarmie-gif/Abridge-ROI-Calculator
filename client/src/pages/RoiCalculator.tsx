@@ -53,6 +53,15 @@ interface LeverWithSetting extends Lever {
   settingId: CareSettingType;
 }
 
+const leverTableDescriptions: Record<string, string> = {
+  patientAccess: "Patient access is shaped by how well time inside the clinic day is protected. Even a few minutes lost to documentation across each visit multiply into hours clinicians can no longer use for patient care. When that friction is reduced, schedules become more predictable, backlog shrinks, and third-next-available shortens naturally. Abridge enables this shift by capturing the clinical story in real time, reducing the cognitive and mechanical work clinicians must carry into the margins of their day.",
+  overtime: "Overtime and locum use often arise not from real staffing shortages, but from documentation spilling past scheduled hours. When clinicians regularly stay late to finish notes, clinics accumulate premium labor quietly and steadily. These costs climb especially fast in high-volume specialties or at access-constrained sites. Abridge reduces the after-hours burden by helping clinicians complete documentation during the visit itself. As spillover decreases, so does the need for costly coverage extensions.",
+  workforce: "Retention is deeply tied to how sustainable the workday feels. Administrative burden, not clinical complexity, is one of the strongest predictors of burnout and departure. When documentation demands stretch into evenings or eat into breaks, clinicians lose the sense that their work is manageable. Abridge reduces this burden by producing drafts in real time and decreasing after-hours obligations. As the workday becomes more predictable and humane, clinicians are more likely to stay.",
+  riskAdjustment: "Accurate risk adjustment depends on consistently capturing the chronic conditions that define patient complexity. Yet in many organizations, these conditions appear sporadically in documentation, leading to understated acuity and mismatches between care needs and reimbursement. Abridge enhances condition capture by producing richer encounter narratives that surface relevant chronic problems clinicians already addressed. This supports more reliable coding without adding steps to the clinical workflow.",
+  wrvu: "Visits frequently end up undercoded because documentation does not fully communicate the clinician's reasoning. Even when the cognitive work is high, missing or abbreviated details lead coding teams to choose lower levels to mitigate compliance risk. Abridge preserves more of the clinical thinking expressed during the encounter, producing documentation that more faithfully represents the decisions made. This allows coding to align with actual visit complexity — not to increase it artificially, but to reflect it accurately.",
+  denials: "Some denials cannot be appealed because the documentation simply doesn't demonstrate medical necessity clearly enough to stand. These denials represent real, permanent revenue loss — and they are often preventable. Abridge strengthens the clinical story by capturing more detail during the visit, particularly around the MDM and rationale for decisions. When that reasoning is present up front, fewer claims fall into the category of unrecoverable documentation-driven denials.",
+};
+
 const leverEducationalContent: Record<string, string> = {
   patientAccess: `Patient access constraints often originate from minutes lost to documentation throughout the clinic day. These small inefficiencies compress schedules, extend wait times, and limit how many visits a provider can realistically support. When documentation burden decreases, schedules stabilize, backlog shrinks, and access expands without adding hours.
 
@@ -626,7 +635,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
 
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-semibold">Annual Impact by Lever</CardTitle>
+                    <CardTitle className="text-lg font-semibold">Understanding Your Drivers</CardTitle>
+                    <p className="text-sm text-neutral-500">Interpretation of how each selected driver influences your current scope.</p>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -664,8 +674,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                               <TableCell className="text-right font-mono">
                                 {lever.enabled ? formatCurrency(lever.value) : "—"}
                               </TableCell>
-                              <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                                <span>{getFirstSentence(lever.description)}</span>
+                              <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-md">
+                                <span>{leverTableDescriptions[lever.id] || lever.description}</span>
                                 {leverEducationalContent[lever.id] && (
                                   <>
                                     {" "}
