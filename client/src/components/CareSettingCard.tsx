@@ -31,9 +31,10 @@ export function CareSettingCard({
         disabled
           ? "opacity-60 cursor-not-allowed border border-neutral-200"
           : selected
-          ? "border-2 border-black shadow-md"
-          : "border border-neutral-200 shadow-sm hover:border-black hover:shadow-md"
+          ? "border-2 shadow-md"
+          : "border border-neutral-200 shadow-sm hover:shadow-md"
       )}
+      style={selected && !disabled ? { borderColor: '#F03319' } : undefined}
       data-testid={`card-setting-${title.toLowerCase().replace(/\s+/g, "-")}`}
     >
       <div
@@ -56,7 +57,10 @@ export function CareSettingCard({
       </div>
 
       {selected && !disabled && (
-        <span className="absolute top-2 right-2 text-xs px-2 py-0.5 bg-black text-white rounded-full">
+        <span 
+          className="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: '#FEECEC', color: '#F03319' }}
+        >
           Selected
         </span>
       )}

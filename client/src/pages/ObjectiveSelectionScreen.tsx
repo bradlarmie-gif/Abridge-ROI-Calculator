@@ -39,10 +39,10 @@ const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
 };
 
 const SETTING_SUBTITLES: Record<AllSettingType, string> = {
-  outpatient: "Clinical Note",
-  ed: "Clinical Note",
-  nursing: "Flowsheet Documentation",
-  inpatient: "Coming soon",
+  outpatient: "Visit efficiency, patient access, documentation completeness",
+  ed: "Throughput, LWBS reduction, acuity documentation",
+  nursing: "Flowsheets, shift overhang, safety documentation",
+  inpatient: "Progress notes, care coordination, severity capture",
 };
 
 const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
