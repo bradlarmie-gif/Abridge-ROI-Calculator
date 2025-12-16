@@ -206,14 +206,16 @@ export default function ObjectiveSelectionScreen({
       <div className="relative z-10 flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto pt-12 pb-6 px-8">
           <div className="space-y-4">
-            <div className="text-center space-y-1">
-              <h1 className="text-2xl font-semibold" style={{ color: '#111111' }}>
-                The ROI Calculator
-              </h1>
-              <p className="text-xl font-semibold" style={{ color: '#F03319' }}>
-                by Abridge
-              </p>
-              <p className="text-sm text-neutral-600 pt-2">
+            <div className="text-center">
+              <div className="leading-tight">
+                <h1 className="text-3xl font-semibold" style={{ color: '#111111' }}>
+                  The ROI Calculator
+                </h1>
+                <p className="text-lg font-semibold" style={{ color: '#F03319' }}>
+                  by Abridge
+                </p>
+              </div>
+              <p className="text-sm text-neutral-600 pt-4">
                 Select the care setting(s) you want to explore.
               </p>
             </div>
@@ -260,40 +262,36 @@ export default function ObjectiveSelectionScreen({
       </div>
       
       <div 
-        className="relative z-20 border-t border-neutral-200 py-4 px-8"
-        style={{ backgroundColor: '#FAFAF8' }}
+        className="fixed bottom-6 right-6 z-20 flex flex-col items-end gap-1.5"
       >
-        <div className="max-w-6xl mx-auto flex flex-col items-center gap-2">
-          {selectedSettings.length > 0 && hasSelectedPriorities && (
-            <p className="text-sm text-neutral-500">
-              Ready when you are.
-            </p>
-          )}
-          {showValidationError && !hasSelectedPriorities && (
-            <p className="text-sm text-red-600" data-testid="error-no-priority">
-              Select at least one strategic priority to continue.
-            </p>
-          )}
-          <button
-            type="button"
-            disabled={!hasSelectedPriorities}
-            onClick={handleButtonClick}
-            className={`
-              inline-flex items-center justify-center gap-2 px-6 py-2.5 
-              rounded-lg border font-medium text-base
-              transition-all duration-200
-              w-full sm:w-auto
-              ${hasSelectedPriorities
-                ? 'bg-black border-black text-[#FAFAF8] cursor-pointer hover:bg-neutral-800'
-                : 'opacity-60 bg-white border-black text-black cursor-pointer'
-              }
-            `}
-            data-testid="button-continue"
-          >
-            Explore the Calculator
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
+        {selectedSettings.length > 0 && hasSelectedPriorities && (
+          <p className="text-sm text-neutral-500">
+            Ready when you are.
+          </p>
+        )}
+        {showValidationError && !hasSelectedPriorities && (
+          <p className="text-sm text-red-600" data-testid="error-no-priority">
+            Select at least one strategic priority to continue.
+          </p>
+        )}
+        <button
+          type="button"
+          disabled={!hasSelectedPriorities}
+          onClick={handleButtonClick}
+          className={`
+            inline-flex items-center justify-center gap-2 px-6 py-2.5 
+            rounded-lg border font-medium text-base
+            transition-all duration-200
+            ${hasSelectedPriorities
+              ? 'bg-black border-black text-[#FAFAF8] cursor-pointer hover:bg-neutral-800'
+              : 'opacity-60 bg-white border-black text-black cursor-pointer'
+            }
+          `}
+          data-testid="button-continue"
+        >
+          Explore the Calculator
+          <ChevronRight className="h-5 w-5" />
+        </button>
       </div>
     </div>
   );
