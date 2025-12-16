@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { InputSection, InputField } from "@/components/InputSection";
 import { KpiCard, KpiGrid } from "@/components/KpiCard";
 import { WaterfallChart } from "@/components/WaterfallChart";
+import { EnterpriseExpansionChart } from "@/components/EnterpriseExpansionChart";
 import { LeverAccordion } from "@/components/LeverAccordion";
 import { CommentaryBox } from "@/components/CommentaryBox";
 import { StrategicDriverCard } from "@/components/StrategicDriverCard";
@@ -228,6 +229,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
           value: l.enabled ? l.value : 0,
           enabled: l.enabled,
           description: l.description,
+          category: l.category,
         });
       }
     });
@@ -598,6 +600,13 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   levers={waterfallLevers}
                   investmentCost={annualAbridgeCost}
                   netValue={adjustedNetValue}
+                />
+
+                <EnterpriseExpansionChart
+                  levers={waterfallLevers}
+                  totalAnnualBenefit={totalBenefitFromSelectedLevers}
+                  scopeEncounterCount={inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100)}
+                  enterpriseEncounterCount={inputs.enterpriseAnnualEncounters * (inputs.abridgeUtilizationPct / 100)}
                 />
 
                 <Card>

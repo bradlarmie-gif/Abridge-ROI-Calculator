@@ -1,0 +1,82 @@
+Please add a new chart under the ROI Waterfall called “Enterprise Expansion View” that compares the current in-scope scenario to a full enterprise rollout.
+
+SECTION & COPY
+──────────────
+Insert a new section directly under the ROI Waterfall:
+
+• Section title: "Enterprise Expansion View"
+• Subtitle (muted): "Comparing impact for this in-scope cohort vs a full enterprise rollout."
+
+CHART TYPE
+──────────
+Use a grouped column chart:
+
+• X-axis categories: one category for each *active* lever, plus a final category:
+    - Clinician Time Recovered (if active)
+    - Overtime Reduction (if active)
+    - Clinician Retention (if active)
+    - HCC & Chronic Condition Capture (if active)
+    - Level of Service Alignment (if active)
+    - Documentation-Driven Denials (if active)
+    - Total Annual Benefit (always shown)
+
+• For each category, render two bars:
+    1) Current Scenario (in-scope)
+    2) Enterprise Projection
+
+COLOR & STYLE
+─────────────
+• Current Scenario bar:
+    - Solid muted green (same family as benefit bars in the waterfall).
+• Enterprise Projection bar:
+    - Same hue, but lighter shade / ~50% opacity, OR
+    - White fill with a green outline.
+• Light gray axis lines, small neutral labels.
+• Legend at top-left of the chart:
+    - Solid bar label: "Current scenario (in-scope)"
+    - Outlined / lighter bar label: "Enterprise projection"
+
+CALCULATION LOGIC
+──────────────────
+We already calculate a dollar value per lever for the current in-scope group (what displays in the Annual Impact by Lever table). Reuse that value and scale it to enterprise using the existing enterprise inputs on the left panel.
+
+Inputs available:
+• Annual Outpatient Encounters (in scope)
+• Annual Outpatient Encounters (enterprise)
+• Providers in Scope
+• Enterprise Provider Count
+• Any utilization % we already apply for encounters in scope.
+
+Implementation guidance:
+1) For each active lever, compute a per-encounter benefit based on the in-scope group:
+      perEncounterBenefit = scopeLeverValue / max(1, scopeEncounterCount)
+
+2) Compute the enterprise version by scaling that per-encounter benefit:
+      enterpriseLeverValue = perEncounterBenefit * enterpriseEncounterCount
+
+   (Use the "Annual Outpatient Encounters (enterprise)" field for enterpriseEncounterCount.)
+
+3) For "Total Annual Benefit":
+   • Current scenario total = sum of all active lever values (we already have this).
+   • Enterprise total = sum of all enterpriseLeverValue values.
+
+4) If a lever is disabled in the UI:
+   • Do not include it as a category on the x-axis.
+   • Exclude its value from both the current and enterprise totals.
+
+INTERACTION
+───────────
+• Hovering a bar should show a tooltip:
+    - Lever name or "Total Annual Benefit"
+    - Scenario type: "Current scenario" or "Enterprise projection"
+    - Dollar value (e.g., "$1,150,000")
+
+• The chart should update live whenever:
+    - Scenario inputs change (providers in scope, enterprise providers, encounters, etc.)
+    - A strategic driver is enabled/disabled.
+
+SCOPE
+─────
+• Do NOT change the existing ROI Waterfall or lever math.
+• Only add this new chart and any necessary calculations to support it.
+• Keep styling consistent with the rest of the app (same fonts, spacing, and neutral colors).
