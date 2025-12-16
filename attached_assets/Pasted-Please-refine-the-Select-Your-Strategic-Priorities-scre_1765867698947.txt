@@ -1,0 +1,49 @@
+Please refine the "Select Your Strategic Priorities" screen so users never lose the main action and the button state clearly reflects whether a scenario is ready.
+
+1) Make the "Enter The Workbook" button always visible
+   - Change the layout of the priorities screen so that:
+     • The header + explanation text stays at the top.
+     • The list of strategic priorities (all the lever cards) scrolls independently.
+     • The "Enter The Workbook" button remains visible at the bottom of the viewport at all times.
+   - One way to do this:
+     • Wrap the entire screen in `min-h-screen flex flex-col`.
+     • Put the header and priorities list in a flex-grow container: `flex-1 overflow-y-auto`.
+     • Place the button in a footer container at the bottom: 
+       - `border-t border-neutral-200 bg-[#FAFAF8]` (or same background as page)
+       - `py-4 px-8`
+       - This footer should not scroll away; it should stay docked to the bottom because it is outside the scrollable area.
+   - Alternatively, you can make the footer `sticky`:
+       - Wrap the main content in a container and set the footer to `sticky bottom-0` so it stays pinned to the bottom while the priorities list scrolls above it.
+   - The key behavior: scrolling through priorities should not move the button off-screen; the button must always remain accessible.
+
+2) Update the button state to turn "active black" once any priority is selected
+   - The button label should be:
+       "Enter The Workbook"
+   - Default (when zero priorities are selected):
+       - bg-white
+       - border border-black
+       - text-black
+       - slightly lower opacity (e.g., `opacity-60`)
+       - disabled state in logic (cannot proceed)
+   - When at least ONE strategic priority across any setting is selected:
+       - Immediately switch to the active style:
+           bg-black
+           text-white
+           border-black
+           opacity-100
+       - The button should remain in this black active style as long as at least one priority is selected.
+       - No need to wait for hover; the color change should be driven by the selection state.
+   - Implement this using a derived boolean like:
+       `const hasSelectedPriorities = selectedLevers.length > 0;`
+     and bind both `disabled` and the Tailwind classes to this value.
+
+3) Ensure the user never feels "stuck"
+   - If the user clicks "Enter The Workbook" with no priorities selected, show a small inline message above the button (or in the footer) such as:
+       "Select at least one strategic priority to continue."
+   - Do not navigate to the ROI view until `hasSelectedPriorities` is true.
+
+4) Do not change any lever names, descriptions, or ROI math.
+   - Only adjust:
+       • Layout (scrolling behavior)
+       • Button placement and styling
+       • Button enabled/disabled behavior tied to priority selection

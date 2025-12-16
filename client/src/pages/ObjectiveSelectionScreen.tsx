@@ -182,93 +182,101 @@ export default function ObjectiveSelectionScreen({
     );
   };
 
-  const isButtonDisabled = selectedSettings.length === 0 || selectedLevers.size === 0;
+  const hasSelectedPriorities = selectedLevers.size > 0;
   const currentSelectionText = selectedSettings.length > 0
     ? selectedSettings.map((s) => CARE_SETTING_LABELS[s]).join(", ")
     : "None";
 
+  const handleButtonClick = () => {
+    if (!hasSelectedPriorities) {
+      setShowValidationError(true);
+      return;
+    }
+    handleContinue();
+  };
+
   return (
-    <div className="min-h-screen relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
+    <div className="min-h-screen flex flex-col relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
       <BackgroundShape />
       
-      <div className="relative z-10 max-w-6xl mx-auto pt-16 pb-24 px-8">
-        <div className="space-y-10">
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-semibold text-black">
-              The ROI Workbook by <span style={{ color: '#F03319' }}>Abridge</span>
-            </h1>
-            <p className="text-base text-neutral-600">
-              Select care setting(s) to begin
-            </p>
-          </div>
+      <div className="relative z-10 flex-1 overflow-y-auto">
+        <div className="max-w-6xl mx-auto pt-16 pb-8 px-8">
+          <div className="space-y-10">
+            <div className="text-center space-y-2">
+              <h1 className="text-3xl font-semibold text-black">
+                The ROI Workbook by <span style={{ color: '#F03319' }}>Abridge</span>
+              </h1>
+              <p className="text-base text-neutral-600">
+                Select care setting(s) to begin
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {ALL_SETTINGS.map((setting) => {
-              const isInpatient = setting === "inpatient";
-              return (
-                <CareSettingCard
-                  key={setting}
-                  icon={SETTING_ICONS[setting]}
-                  title={CARE_SETTING_LABELS[setting]}
-                  subtitle={SETTING_SUBTITLES[setting]}
-                  selected={selectedSettings.includes(setting as CareSettingType)}
-                  disabled={isInpatient}
-                  onClick={() => handleSettingToggle(setting)}
-                  data-testid={`card-setting-${setting}`}
-                />
-              );
-            })}
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {ALL_SETTINGS.map((setting) => {
+                const isInpatient = setting === "inpatient";
+                return (
+                  <CareSettingCard
+                    key={setting}
+                    icon={SETTING_ICONS[setting]}
+                    title={CARE_SETTING_LABELS[setting]}
+                    subtitle={SETTING_SUBTITLES[setting]}
+                    selected={selectedSettings.includes(setting as CareSettingType)}
+                    disabled={isInpatient}
+                    onClick={() => handleSettingToggle(setting)}
+                    data-testid={`card-setting-${setting}`}
+                  />
+                );
+              })}
+            </div>
 
-          {selectedSettings.length > 0 && (
-            <div className="space-y-6">
-              <div className="space-y-1">
-                <p className="text-xs text-neutral-500">
-                  Current Selection: {currentSelectionText}
-                </p>
-                <h2 className="text-xl font-semibold text-black">
-                  Select Your Strategic Priorities
-                </h2>
-              </div>
-              
-              <div 
-                className="max-h-[500px] overflow-y-auto pr-2"
-                style={{ scrollbarGutter: "stable" }}
-              >
+            {selectedSettings.length > 0 && (
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <p className="text-xs text-neutral-500">
+                    Current Selection: {currentSelectionText}
+                  </p>
+                  <h2 className="text-xl font-semibold text-black">
+                    Select Your Strategic Priorities
+                  </h2>
+                </div>
+                
                 <div className="space-y-12">
                   {selectedSettings.map((settingId) => renderSettingSection(settingId))}
                 </div>
               </div>
-            </div>
-          )}
-
-          <div className="flex flex-col items-center gap-2 pt-4">
-            {showValidationError && (
-              <p className="text-sm text-red-600" data-testid="error-no-setting">
-                Select at least one care setting to continue.
-              </p>
             )}
-            <button
-              type="button"
-              disabled={selectedSettings.length === 0}
-              onClick={handleContinue}
-              className={`
-                inline-flex items-center justify-center gap-2 px-8 py-3 
-                rounded-xl border font-semibold text-base
-                transition-all duration-200
-                ${selectedSettings.length === 0
-                  ? 'opacity-50 cursor-not-allowed bg-white border-neutral-300 text-neutral-400'
-                  : selectedLevers.size === 0
-                    ? 'opacity-70 bg-white border-black text-black cursor-pointer hover:bg-black hover:text-white'
-                    : 'bg-black border-black text-white cursor-pointer hover:opacity-90'
-                }
-              `}
-              data-testid="button-continue"
-            >
-              Enter The Workbook
-              <ChevronRight className="h-5 w-5" />
-            </button>
           </div>
+        </div>
+      </div>
+      
+      <div 
+        className="relative z-20 border-t border-neutral-200 py-4 px-8"
+        style={{ backgroundColor: '#FAFAF8' }}
+      >
+        <div className="max-w-6xl mx-auto flex flex-col items-center gap-2">
+          {showValidationError && !hasSelectedPriorities && (
+            <p className="text-sm text-red-600" data-testid="error-no-priority">
+              Select at least one strategic priority to continue.
+            </p>
+          )}
+          <button
+            type="button"
+            disabled={!hasSelectedPriorities}
+            onClick={handleButtonClick}
+            className={`
+              inline-flex items-center justify-center gap-2 px-8 py-3 
+              rounded-xl border font-semibold text-base
+              transition-all duration-200
+              ${hasSelectedPriorities
+                ? 'bg-black border-black text-white cursor-pointer hover:opacity-90'
+                : 'opacity-60 bg-white border-black text-black cursor-pointer'
+              }
+            `}
+            data-testid="button-continue"
+          >
+            Enter The Workbook
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
       </div>
     </div>
