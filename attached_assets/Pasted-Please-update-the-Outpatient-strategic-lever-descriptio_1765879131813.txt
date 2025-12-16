@@ -1,0 +1,37 @@
+Please update the Outpatient strategic lever descriptions on the **Setting Selection / Strategic Priorities** page. These are the short 1–2 sentence summaries shown directly under each lever name. Do NOT change the long descriptions used in Read More modals, and do NOT modify any ROI math or logic.
+
+Replace ONLY the setting-page descriptions with the following concise versions:
+
+────────────────────────────────────────
+OUTPATIENT — TIME / ACCESS LEVERS
+────────────────────────────────────────
+
+Patient Access
+→ "Small documentation delays accumulate and limit how many patients a clinician can reasonably see. Reducing that friction restores time to the day, improving access without increasing staffing."
+
+Overtime & Locum Cost Avoidance
+→ "After-hours charting often drives avoidable overtime and reliance on locums. Completing more documentation during the visit reduces premium labor needs."
+
+Clinician Retention
+→ "Administrative overload is a major driver of burnout and turnover. Lightening documentation improves clinician sustainability and helps teams stay intact."
+
+────────────────────────────────────────
+OUTPATIENT — DOCUMENTATION QUALITY LEVERS
+────────────────────────────────────────
+
+HCC & Chronic Condition Capture
+→ "Incomplete documentation often understates patient complexity. Capturing conditions more consistently supports accurate risk adjustment and care planning."
+
+Level of Service Alignment
+→ "Visits are frequently coded below their true complexity because key reasoning isn’t fully documented. Clearer narratives help coding align with the work actually performed."
+
+Medical Necessity–Driven Denials
+→ "Many denials occur because documentation doesn’t reflect medical necessity clearly enough to stand on its own. Stronger encounter narratives reduce these unrecoverable losses."
+
+────────────────────────────────────────
+ADDITIONAL REQUIREMENTS
+────────────────────────────────────────
+• These text updates apply ONLY to the Setting Selection / Strategic Priorities screen.
+• Do NOT update any “Read More…” modal content; those should continue using the long-form educational explanations.
+• Do NOT alter lever names, categories, math, or waterfall labels.
+• The UI structure and styling should remain unchanged; only the description text content should be replaced.
