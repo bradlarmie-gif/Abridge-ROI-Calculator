@@ -36,13 +36,13 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       description: "More complete and structured clinical documentation helps ensure chronic conditions are consistently captured, supporting accurate risk adjustment under value-based programs.",
     },
     {
-      id: "wrvuAlignment",
+      id: "wrvu",
       label: "E/M Level Appropriateness",
       category: "documentation",
       description: "Enhanced documentation quality provides clearer clinical detail, helping coding teams assign the most appropriate E/M level based on medical decision-making.",
     },
     {
-      id: "denialReduction",
+      id: "denials",
       label: "Denial Risk Reduction",
       category: "documentation",
       description: "Improved clarity and completeness of documentation reduce common causes of documentation-related denials, supporting higher first-pass claim acceptance.",

@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { BackgroundPattern } from "@/components/BackgroundPattern";
+import { CareSettingCard } from "@/components/CareSettingCard";
 import {
   SETTING_CONFIG,
   CARE_SETTING_LABELS,
@@ -36,6 +37,13 @@ const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
   inpatient: Building2,
 };
 
+const SETTING_SUBTITLES: Record<AllSettingType, string> = {
+  outpatient: "Outpatient practice scenarios",
+  ed: "Emergency department scenarios",
+  nursing: "Nursing workflows",
+  inpatient: "Coming soon",
+};
+
 const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
   time: Clock,
   documentation: FileText,
@@ -48,16 +56,11 @@ export default function ObjectiveSelectionScreen({
 }: ObjectiveSelectionScreenProps) {
   const [selectedSetting, setSelectedSetting] = useState<CareSettingType | null>(null);
   const [selectedLevers, setSelectedLevers] = useState<Set<string>>(new Set());
-  const [showInpatientMessage, setShowInpatientMessage] = useState(false);
 
   const handleSettingSelect = (setting: AllSettingType) => {
     if (setting === "inpatient") {
-      setShowInpatientMessage(true);
-      setSelectedSetting(null);
-      setSelectedLevers(new Set());
       return;
     }
-    setShowInpatientMessage(false);
     setSelectedSetting(setting);
     const allLeverIds = SETTING_CONFIG[setting].map((l) => l.id);
     setSelectedLevers(new Set(allLeverIds));
@@ -88,7 +91,7 @@ export default function ObjectiveSelectionScreen({
   const renderLeverItem = (lever: LeverConfig) => (
     <div
       key={lever.id}
-      className="flex items-start space-x-4 p-4 rounded-md border border-border hover:border-foreground/30 transition-colors"
+      className="flex items-start space-x-4 p-4 rounded-md border border-neutral-200 hover:border-neutral-400 transition-colors bg-white"
       data-testid={`lever-option-${lever.id}`}
     >
       <Checkbox
@@ -101,7 +104,7 @@ export default function ObjectiveSelectionScreen({
       <div className="flex-1">
         <Label
           htmlFor={lever.id}
-          className="font-medium cursor-pointer"
+          className="font-medium cursor-pointer text-black"
         >
           {lever.label}
         </Label>
@@ -130,98 +133,68 @@ export default function ObjectiveSelectionScreen({
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-8">
-      <div className="w-full max-w-5xl space-y-12">
-        <div className="text-center space-y-3">
-          <h1 className="text-3xl font-bold">Abridge ROI Studio</h1>
-          <p className="text-muted-foreground">
-            Select your care setting and customize which strategic priorities to include
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {ALL_SETTINGS.map((setting) => {
-            const Icon = SETTING_ICONS[setting];
-            const isInpatient = setting === "inpatient";
-            const isSelected = selectedSetting === setting;
-
-            return (
-              <Card
-                key={setting}
-                className={`cursor-pointer transition-all border-2 ${
-                  isSelected
-                    ? "border-foreground shadow-md"
-                    : "border-transparent hover:border-foreground/50"
-                } ${isInpatient ? "opacity-80" : ""}`}
-                onClick={() => handleSettingSelect(setting)}
-                data-testid={`card-setting-${setting}`}
-              >
-                <CardContent className="p-8 text-center space-y-4">
-                  <div
-                    className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center ${
-                      isSelected
-                        ? "bg-foreground text-background"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    <Icon className="h-8 w-8" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">
-                      {CARE_SETTING_LABELS[setting]}
-                    </h3>
-                    {isInpatient && (
-                      <Badge variant="secondary" className="text-xs">
-                        Coming soon
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {showInpatientMessage && (
-          <div className="text-center">
-            <p className="text-muted-foreground text-sm">
-              Inpatient ROI model is under development.
+    <div className="min-h-screen bg-[#F9F5EF] relative">
+      <BackgroundPattern />
+      
+      <div className="relative z-10 flex items-center justify-center p-8 min-h-screen">
+        <div className="w-full max-w-5xl bg-white rounded-2xl shadow-sm p-8 space-y-10">
+          <div className="text-center space-y-3">
+            <h1 className="text-3xl font-bold text-black">Abridge ROI Studio</h1>
+            <p className="text-muted-foreground">
+              Select your care setting and customize which strategic priorities to include
             </p>
           </div>
-        )}
 
-        {selectedSetting && leversByCategory && (
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <Settings2 className="h-5 w-5" />
-                Select Your Strategic Priorities for {CARE_SETTING_LABELS[selectedSetting]}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-6 pb-6">
-              <div 
-                className="max-h-[340px] overflow-y-auto pr-2"
-                style={{ scrollbarGutter: "stable" }}
-              >
-                <div className="space-y-6">
-                  {renderCategorySection("time", leversByCategory.time)}
-                  {renderCategorySection("documentation", leversByCategory.documentation)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {ALL_SETTINGS.map((setting) => {
+              const isInpatient = setting === "inpatient";
+              return (
+                <CareSettingCard
+                  key={setting}
+                  icon={SETTING_ICONS[setting]}
+                  title={CARE_SETTING_LABELS[setting]}
+                  subtitle={SETTING_SUBTITLES[setting]}
+                  selected={selectedSetting === setting}
+                  disabled={isInpatient}
+                  onClick={() => handleSettingSelect(setting)}
+                />
+              );
+            })}
+          </div>
+
+          {selectedSetting && leversByCategory && (
+            <Card className="border-neutral-200">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-black">
+                  <Settings2 className="h-5 w-5" />
+                  Select Your Strategic Priorities for {CARE_SETTING_LABELS[selectedSetting]}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div 
+                  className="max-h-[340px] overflow-y-auto pr-2"
+                  style={{ scrollbarGutter: "stable" }}
+                >
+                  <div className="space-y-6">
+                    {renderCategorySection("time", leversByCategory.time)}
+                    {renderCategorySection("documentation", leversByCategory.documentation)}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
-        <div className="flex justify-center pt-2">
-          <Button
-            size="lg"
-            disabled={!selectedSetting || selectedLevers.size === 0}
-            onClick={handleContinue}
-            data-testid="button-continue"
-          >
-            Continue to ROI Studio
-            <ChevronRight className="ml-2 h-5 w-5" />
-          </Button>
+          <div className="flex justify-center pt-2">
+            <Button
+              size="lg"
+              disabled={!selectedSetting || selectedLevers.size === 0}
+              onClick={handleContinue}
+              data-testid="button-continue"
+            >
+              Continue to ROI Studio
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

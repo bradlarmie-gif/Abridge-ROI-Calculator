@@ -1,0 +1,52 @@
+Please update the ROI Studio UI with a new background and redesigned care setting cards as follows.
+
+1) Add a subtle Abridge-style background pattern:
+   - Create a reusable React component (e.g., `BackgroundPattern`) that renders a few abstract shapes inspired by the tan "broken logo" asset.
+   - Implement it using simple divs or an inline SVG positioned absolutely behind the main content:
+     - Use a soft tan color like `#EDE0D0` with low opacity (around 10–15%).
+     - Place one large shape cluster in the top-left corner and one in the bottom-right, partially off-screen.
+   - Set the overall page background to a warm off-white, e.g. `bg-[#F9F5EF]`.
+   - Ensure the main content sits in a centered container with white background (e.g., `bg-white rounded-2xl shadow-sm p-8`) so text remains very readable.
+   - Use this background pattern on the care setting selection screen, the strategic priorities screen, and the calculator screen.
+
+2) Redesign the care setting cards (Outpatient, Emergency Department, Nursing, Inpatient) to be medium horizontal cards that match this style:
+   - Create a reusable component, e.g. `CareSettingCard`, with props: `icon`, `title`, `subtitle`, `selected`, and `onClick`.
+   - Layout:
+     - White card with rounded corners around 10–12px (Tailwind `rounded-xl`).
+     - Left side: a circular icon container (e.g., `h-10 w-10 rounded-full bg-[#F3E9DD] flex items-center justify-center`) containing a simple black outline icon.
+       - Outpatient: stethoscope-style icon.
+       - Emergency Department: alert/triangle or emergency bell-style icon.
+       - Nursing: heart or nurse-related icon.
+       - Inpatient: bed or hospital building icon.
+     - Right side: text stack:
+       - Title in bold (e.g., “Outpatient”).
+       - Smaller subtitle, such as “Outpatient practice scenarios”, “Emergency department scenarios”, “Nursing workflows”, “Inpatient (coming soon)”.
+   - Default state:
+     - `bg-white border border-neutral-200 rounded-xl shadow-sm px-6 py-4 flex items-center gap-4`.
+   - Hover state (Option 1, but subtle):
+     - Slight scale up (e.g., `transition transform hover:scale-105`).
+     - Border becomes black (`hover:border-black`).
+     - Shadow increases slightly (`hover:shadow-md`).
+   - Selected state:
+     - Always show a black border (`border-black`).
+     - Slightly stronger default shadow (`shadow-md`).
+     - Add a small pill in the top-right of the card saying “Selected” (e.g., `text-xs px-2 py-0.5 bg-black text-white rounded-full`).
+   - Remove any blue styling; use black and neutral grays instead.
+
+3) Use these redesigned care setting cards in two places:
+   a) On the initial care setting selection screen:
+      - Display the cards in a horizontal row on desktop (stacked vertically on small screens).
+      - Each card remains clickable and sets the selected setting.
+      - The Inpatient card should have a subtitle like “Coming soon” and should show a non-clickable or disabled state if we are not ready to support that setting yet.
+   b) As a compact “current setting” strip at the top of the strategic priorities and calculator pages:
+      - Render the same `CareSettingCard` components but in a more compact form (smaller padding, reduced subtitle font size).
+      - Keep all four cards visible so the user can always see which setting is active.
+      - The currently active setting has the selected styling (black border, “Selected” pill); others are unselected but still clickable so the user can switch settings if desired.
+
+4) Make sure the new cards and background compliment the tan backsplash:
+   - Keep the cards white (`bg-white`) with black text so they stand out cleanly against the tan off-white background.
+   - Avoid any blue colors; primary accents should be black and neutral gray.
+   - Ensure the background shapes never obscure text or cards (keep them behind content with a low z-index and low opacity).
+
+5) Do not change any existing business logic, math, or lever selection behavior. Only update the visual background, card component styling, and placement of the care setting cards as described above.
+
