@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 interface CareSettingCardProps {
   icon: LucideIcon;
   title: string;
-  subtitle: string;
   selected: boolean;
   disabled?: boolean;
   compact?: boolean;
@@ -14,7 +13,6 @@ interface CareSettingCardProps {
 export function CareSettingCard({
   icon: Icon,
   title,
-  subtitle,
   selected,
   disabled = false,
   compact = false,
@@ -26,8 +24,8 @@ export function CareSettingCard({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "relative bg-white rounded-xl flex items-center gap-4 text-left transition-all duration-200",
-        compact ? "px-4 py-3" : "px-6 py-4",
+        "relative bg-white rounded-xl flex items-center gap-3 text-left transition-all duration-200",
+        compact ? "px-4 py-3" : "px-5 py-4",
         disabled
           ? "opacity-60 cursor-not-allowed border border-neutral-200"
           : selected
@@ -51,10 +49,13 @@ export function CareSettingCard({
         <div className={cn("font-semibold text-black", compact ? "text-sm" : "text-base")}>
           {title}
         </div>
-        <div className={cn("text-muted-foreground truncate", compact ? "text-xs" : "text-sm")}>
-          {subtitle}
-        </div>
       </div>
+
+      {disabled && (
+        <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500">
+          Coming Soon
+        </span>
+      )}
 
       {selected && !disabled && (
         <span 

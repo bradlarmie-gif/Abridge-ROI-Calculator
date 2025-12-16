@@ -7,34 +7,43 @@ import ObjectiveSelectionScreen, { type SelectedLever } from "@/pages/ObjectiveS
 import RoiCalculator from "@/pages/RoiCalculator";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 
-interface CalculatorState {
+interface SelectionState {
   selectedSettings: CareSettingType[];
   selectedLevers: SelectedLever[];
 }
 
 function App() {
-  const [calculatorState, setCalculatorState] = useState<CalculatorState | null>(null);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [selectionState, setSelectionState] = useState<SelectionState>({
+    selectedSettings: [],
+    selectedLevers: [],
+  });
 
   const handleSelectionComplete = (selectedSettings: CareSettingType[], selectedLevers: SelectedLever[]) => {
-    setCalculatorState({ selectedSettings, selectedLevers });
+    setSelectionState({ selectedSettings, selectedLevers });
+    setShowCalculator(true);
   };
 
   const handleBack = () => {
-    setCalculatorState(null);
+    setShowCalculator(false);
   };
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        {calculatorState ? (
+        {showCalculator && selectionState.selectedSettings.length > 0 ? (
           <RoiCalculator
-            selectedSettings={calculatorState.selectedSettings}
-            selectedLevers={calculatorState.selectedLevers}
+            selectedSettings={selectionState.selectedSettings}
+            selectedLevers={selectionState.selectedLevers}
             onBack={handleBack}
           />
         ) : (
-          <ObjectiveSelectionScreen onComplete={handleSelectionComplete} />
+          <ObjectiveSelectionScreen 
+            onComplete={handleSelectionComplete}
+            initialSelectedSettings={selectionState.selectedSettings}
+            initialSelectedLevers={selectionState.selectedLevers}
+          />
         )}
       </TooltipProvider>
     </QueryClientProvider>

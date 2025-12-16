@@ -1,0 +1,63 @@
+Please apply the following UI updates to clean up the care setting page and add navigation back to settings from the calculator view.
+
+────────────────────────────────────────
+1. Remove descriptors beneath care setting cards
+────────────────────────────────────────
+• Remove ALL descriptive text under each care setting card (Outpatient, ED, Nursing, Inpatient).
+• Each card should display ONLY:
+   - Icon
+   - Setting name
+   - (Optional) “Coming Soon” pill for Inpatient
+
+Do NOT reposition the cards; just remove the subtext.
+
+────────────────────────────────────────
+2. Change care setting selection checkmark to Abridge red
+────────────────────────────────────────
+When a care setting card is selected:
+
+• The checkmark icon must use Abridge Red:
+      #F03319
+
+• If the card receives a selection ring/border, that border must also be:
+      #F03319
+
+• Remove any remaining blue coloration from checkmarks or selection states.
+
+• If the card uses a “Selected” pill, ensure:
+      background: #FEECEC
+      text: #F03319
+
+────────────────────────────────────────
+3. Add “Back to Care Settings” navigation on the Calculator page
+────────────────────────────────────────
+At the TOP of the ROI Calculator page (above KPI row and scenario inputs):
+
+• Add a navigation link styled as:
+     ← Back to Care Settings
+
+• Requirements:
+     - Arrow icon pointing left
+     - Text color: #F03319 (Abridge Red)
+     - Font: text-sm or text-base, semibold
+     - No heavy button styling; it should look like a simple navigation link
+     - Small padding above/below (8px)
+
+• Behavior:
+     - Clicking this returns the user to the care setting selection screen.
+     - Drawer (if open) should close automatically before navigating.
+     - Do NOT clear existing scenario state unless explicitly required elsewhere.
+
+────────────────────────────────────────
+4. Scope
+────────────────────────────────────────
+• This update is purely visual + navigation.
+• Do NOT modify:
+     - ROI math
+     - Lever logic
+     - Drawer logic
+     - Chart functionality
+     - KPI logic
+• Apply changes ONLY to:
+     - Care setting selection page
+     - Calculator page header

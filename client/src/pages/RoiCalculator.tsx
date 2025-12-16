@@ -48,6 +48,7 @@ import {
   Settings,
   Target,
   FileText,
+  ArrowLeft,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -515,15 +516,16 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
         <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
           <aside className="w-full lg:w-96 bg-white border-b lg:border-b-0 lg:border-r border-neutral-200 flex flex-col shrink-0">
             <div className="p-6 border-b border-neutral-200">
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={onBack}
-                className="mb-2 -ml-2"
-                data-testid="button-back"
+                className="flex items-center gap-1 mb-3 text-sm font-semibold transition-opacity hover:opacity-80"
+                style={{ color: '#F03319' }}
+                data-testid="button-back-to-settings"
               >
-                Back to Selection
-              </Button>
+                <ArrowLeft className="h-4 w-4" />
+                Back to Care Settings
+              </button>
               <h1 className="text-2xl font-bold text-black">ROI Calculator</h1>
               <p className="text-xs text-neutral-500 mt-1">
                 Current Selection: {settingsText}

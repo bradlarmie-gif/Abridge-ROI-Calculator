@@ -29,6 +29,8 @@ export interface SelectedLever {
 
 interface ObjectiveSelectionScreenProps {
   onComplete: (selectedSettings: CareSettingType[], selectedLevers: SelectedLever[]) => void;
+  initialSelectedSettings?: CareSettingType[];
+  initialSelectedLevers?: SelectedLever[];
 }
 
 const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
@@ -36,13 +38,6 @@ const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
   ed: Siren,
   nursing: HeartPulse,
   inpatient: Building2,
-};
-
-const SETTING_SUBTITLES: Record<AllSettingType, string> = {
-  outpatient: "Visit efficiency, patient access, documentation completeness",
-  ed: "Throughput, LWBS reduction, acuity documentation",
-  nursing: "Flowsheets, shift overhang, safety documentation",
-  inpatient: "Progress notes, care coordination, severity capture",
 };
 
 const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
@@ -54,9 +49,13 @@ const ALL_SETTINGS: AllSettingType[] = ["outpatient", "ed", "nursing", "inpatien
 
 export default function ObjectiveSelectionScreen({
   onComplete,
+  initialSelectedSettings = [],
+  initialSelectedLevers = [],
 }: ObjectiveSelectionScreenProps) {
-  const [selectedSettings, setSelectedSettings] = useState<CareSettingType[]>([]);
-  const [selectedLevers, setSelectedLevers] = useState<Set<string>>(new Set());
+  const [selectedSettings, setSelectedSettings] = useState<CareSettingType[]>(initialSelectedSettings);
+  const [selectedLevers, setSelectedLevers] = useState<Set<string>>(() => {
+    return new Set(initialSelectedLevers.map(l => `${l.settingId}:${l.leverId}`));
+  });
   const [showValidationError, setShowValidationError] = useState(false);
 
   const handleSettingToggle = (setting: AllSettingType) => {
@@ -222,11 +221,9 @@ export default function ObjectiveSelectionScreen({
                     key={setting}
                     icon={SETTING_ICONS[setting]}
                     title={CARE_SETTING_LABELS[setting]}
-                    subtitle={SETTING_SUBTITLES[setting]}
                     selected={selectedSettings.includes(setting as CareSettingType)}
                     disabled={isInpatient}
                     onClick={() => handleSettingToggle(setting)}
-                    data-testid={`card-setting-${setting}`}
                   />
                 );
               })}
