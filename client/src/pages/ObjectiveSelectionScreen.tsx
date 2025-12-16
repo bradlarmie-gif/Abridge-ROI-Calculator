@@ -274,7 +274,7 @@ export default function ObjectiveSelectionScreen({
             `}
             data-testid="button-continue"
           >
-            Enter The Calculator
+            Explore the ROI Calculator
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
