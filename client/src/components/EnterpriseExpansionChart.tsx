@@ -19,7 +19,7 @@ interface EnterpriseExpansionChartProps {
 }
 
 const CURRENT_COLOR = "#9CA3AF";
-const ENTERPRISE_COLOR = "#000000";
+const ENTERPRISE_COLOR = "#0E9F6E";
 
 const SHORT_LABELS: Record<string, string> = {
   "Patient Access": "Access",
@@ -143,13 +143,13 @@ export function EnterpriseExpansionChart({
             </div>
             <div>
               <p className="text-xs text-neutral-500 mb-1">Enterprise Projection</p>
-              <p className="text-lg font-mono font-semibold text-black">
+              <p className="text-lg font-mono font-semibold" style={{ color: '#0E9F6E' }}>
                 {formatCurrency(totalEnterprise)}
               </p>
             </div>
             <div>
               <p className="text-xs text-neutral-500 mb-1">Lift</p>
-              <p className="text-lg font-mono font-semibold text-black">
+              <p className="text-lg font-mono font-semibold" style={{ color: '#0E9F6E' }}>
                 {multiplier}x
               </p>
             </div>

@@ -147,7 +147,7 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
             >
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 10, fill: "#737373" }}
+                tick={{ fontSize: 11, fontWeight: 500, fill: "#525252" }}
                 tickLine={false}
                 axisLine={{ stroke: "#e5e5e5", strokeWidth: 1 }}
                 height={40}

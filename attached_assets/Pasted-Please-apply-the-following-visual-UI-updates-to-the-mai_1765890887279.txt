@@ -1,0 +1,66 @@
+Please apply the following visual/UI updates to the main Outpatient Calculator page.  
+Do NOT change any ROI math or data logic. This update is strictly layout, colors,  
+and display components.
+
+────────────────────────────────────────
+1. Improve readability of labels in the Waterfall chart
+────────────────────────────────────────
+• Increase x-axis label font size to 11–12px.
+• Use fontWeight: 500 for x-axis labels.
+• Keep all x-axis labels horizontal (no steep diagonal angles).
+• Use the shortened names already implemented (Cost, Access, Overtime/Locum, HCC, LOS, Denials, Net).
+
+• Increase y-axis label font size slightly (11px).
+• Adjust y-axis ticks to cleaner increments ($0, $200K, $400K, etc.).
+
+────────────────────────────────────────
+2. Update the Enterprise Expansion View bar colors
+────────────────────────────────────────
+• Remove black bars entirely.
+• Keep "Current Scope" bars in the existing soft grey.
+• Render "Enterprise Projection" bars using the SAME green color family  
+  used for benefit bars in the waterfall chart.
+• Keep the legend:  
+    - Grey = Current scope  
+    - Green = Enterprise projection
+
+────────────────────────────────────────
+3. Make “Total Annual Benefit” visually stand out
+────────────────────────────────────────
+In the Understanding Your Drivers summary table:
+
+• Style the final row ("Total Annual Benefit") as a summary/footer row:
+   – Add a very light grey background (#F8F8F7 or similar).
+   – Remove any checkbox from this row.
+   – Bold the label “Total Annual Benefit”.
+   – Bold the dollar value field.
+   – Add a subtle top border (1px solid #E0E0E0) to separate it from driver rows.
+
+• Do NOT change the math or value.
+
+────────────────────────────────────────
+4. Add a new KPI tile for Abridge Utilization
+────────────────────────────────────────
+• Add a new KPI card to the KPI strip directly AFTER “Clinician Hours Recovered”.
+• Label: “Abridge Utilization”
+• Value: bind to the current in-scope utilization slider (the % displayed in Scenario Inputs).
+• Styling:
+   – Keep the card layout consistent with other KPIs.
+   – Use a BLACK accent instead of green or red (e.g., black icon or left border highlight).
+   – All text remains neutral unless otherwise consistent.
+
+────────────────────────────────────────
+5. Change Projected wRVU/Visit KPI to green
+────────────────────────────────────────
+• Update the styling of the “Projected wRVU/Visit” KPI card:
+   – Replace the current blue accent with the same green accent style used for benefit metrics.
+   – Do NOT change the value or math.
+   – Icon, border, or highlight should use the green that matches waterfall benefit bars.
+
+────────────────────────────────────────
+6. Scope
+────────────────────────────────────────
+• Do NOT modify ROI calculations, lever logic, or data pipelines.
+• Do NOT adjust drawer logic or responsiveness unless previously instructed.
+• Apply only the UI/visual polish listed above.
+

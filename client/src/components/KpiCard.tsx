@@ -7,7 +7,7 @@ interface KpiCardProps {
   value: string;
   subtitle?: string;
   icon?: ReactNode;
-  variant?: "default" | "positive" | "negative" | "neutral";
+  variant?: "default" | "positive" | "negative" | "neutral" | "black";
 }
 
 export function KpiCard({ label, value, subtitle, icon, variant = "default" }: KpiCardProps) {
@@ -16,10 +16,11 @@ export function KpiCard({ label, value, subtitle, icon, variant = "default" }: K
     positive: "border-l-green-500 dark:border-l-green-400",
     negative: "border-l-red-500 dark:border-l-red-400",
     neutral: "border-l-blue-500 dark:border-l-blue-400",
+    black: "border-l-neutral-900 dark:border-l-neutral-300",
   };
 
   return (
-    <Card className={cn("border-l-4 relative overflow-visible border-neutral-200", borderColors[variant])}>
+    <Card className={cn("relative overflow-visible border-t border-r border-b border-neutral-200 border-l-4", borderColors[variant])}>
       <CardContent className="p-4">
         {icon && (
           <div className="absolute top-3 right-3 opacity-15">{icon}</div>

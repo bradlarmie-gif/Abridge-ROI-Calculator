@@ -867,11 +867,18 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                     variant="neutral"
                   />
                   <KpiCard
+                    label="Abridge Utilization"
+                    value={`${inputs.abridgeUtilizationPct}%`}
+                    subtitle="Current in-scope utilization"
+                    icon={<Target className="h-8 w-8" />}
+                    variant="black"
+                  />
+                  <KpiCard
                     label="Projected wRVU/Visit"
                     value={results.postWrvuPerEncounter.toFixed(2)}
                     subtitle="After documentation improvement"
                     icon={<Users className="h-8 w-8" />}
-                    variant="neutral"
+                    variant="positive"
                   />
                   <KpiCard
                     label="Adjusted Denial Rate"
@@ -1024,11 +1031,15 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                             </TableRow>
                           );
                         })}
-                        <TableRow className="font-semibold bg-muted/50">
+                        <TableRow 
+                          className="border-t border-neutral-300"
+                          style={{ backgroundColor: '#F8F8F7' }}
+                          data-testid="lever-row-total"
+                        >
                           <TableCell></TableCell>
-                          <TableCell>Total Annual Benefit</TableCell>
+                          <TableCell className="font-bold text-neutral-900">Total Annual Benefit</TableCell>
                           <TableCell></TableCell>
-                          <TableCell className="text-right font-mono">
+                          <TableCell className="text-right font-mono font-bold text-neutral-900">
                             {formatCurrency(totalBenefitFromSelectedLevers)}
                           </TableCell>
                           <TableCell className="hidden md:table-cell"></TableCell>
