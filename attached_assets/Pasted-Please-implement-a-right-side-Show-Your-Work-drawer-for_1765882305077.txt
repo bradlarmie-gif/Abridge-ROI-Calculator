@@ -1,0 +1,180 @@
+Please implement a right-side “Show Your Work” drawer for the Outpatient
+lever **Clinician Retention**, using the exact same visual layout, components,
+and behavior as the existing **Patient Access** drawer.
+
+Do NOT change any other drawers or levers. This drawer should calculate the
+annual savings from avoided clinician turnover and feed that value into the
+Clinician Retention lever’s contribution in all summaries and charts.
+
+────────────────────────────────────────
+1. Drawer Behavior & Layout
+────────────────────────────────────────
+
+• Trigger:
+  – Add a “Show Work” text link (or icon) to the Clinician Retention row
+    anywhere it appears (Strategic Drivers list + Understanding Your Drivers table).
+  – Clicking this opens the drawer on the right.
+
+• Drawer:
+  – Width: same as Patient Access drawer (approx. 400–420px).
+  – Slide-in animation, shadow, and border radius must match Patient Access.
+  – Main ROI Calculator view stays visible behind the drawer (no navigation).
+  – Close via the “X” icon in the top-right.
+
+• Header:
+  – Title: **Clinician Retention**
+  – Subtitle (muted): “Assumptions and logic behind this driver”
+  – Divider under header before content sections.
+
+────────────────────────────────────────
+2. Orientation / Education Text
+────────────────────────────────────────
+
+Place this paragraph at the top of the drawer, above the input section:
+
+"Retention is shaped as much by the workday structure as by clinical complexity. When documentation routinely spills into evenings, clinicians quietly absorb those hours as personal time, attrition risk climbs, and replacement costs mount. These inputs estimate how much of your current turnover is tied to documentation burden and what portion reasonably improves when that burden is reduced."
+
+────────────────────────────────────────
+3. ASSUMPTIONS (Editable Inputs)
+────────────────────────────────────────
+
+Use the same control styles as the other drawers: sliders where ranges
+matter, numeric inputs where precision matters. Group them with a bold
+section title: **ASSUMPTIONS**.
+
+(A) Provider population & baseline turnover
+
+1. **Clinicians included in this analysis**
+   • Numeric input (integer)
+   • Default: pre-filled from “Providers in Scope”
+   • Label: “Clinicians included in this analysis”
+   • Helper: “Total clinicians in scope for this scenario.”
+
+2. **Baseline annual attrition rate (%)**
+   • Slider or numeric (%) input
+   • Range: 0–30%
+   • Sensible default (e.g., 8–10%)
+   • Label: “Baseline annual attrition rate (%)”
+   • Helper: “Typical percentage of clinicians leaving per year today.”
+
+3. **% of attrition attributed to burnout / documentation**
+   • Slider (%)
+   • Range: 0–80%
+   • Default: 40%
+   • Label: “% of attrition tied to burnout and documentation burden”
+   • Helper: “Share of exits where workload and documentation are major drivers.”
+
+(B) Impact of Abridge on burnout-related exits
+
+4. **Expected reduction in burnout-related exits with Abridge (%)**
+   • Slider (%)
+   • Range: 0–75%
+   • Default: 50%
+   • Label: “Expected reduction in burnout-related exits with Abridge”
+   • Helper: “Portion of burnout-linked departures you expect to prevent.”
+
+5. **Realization factor (% of avoided exits you are comfortable claiming)**
+   • Slider (%)
+   • Range: 0–100%
+   • Default: 75%
+   • Label: “Realization factor for avoided exits”
+   • Helper: “Conservative share of modeled exits avoided that you are comfortable taking credit for.”
+
+(C) Financial impact per departure
+
+6. **Cost per departure ($)**
+   • Numeric input
+   • Label: “Cost per departure ($)”
+   • Helper: “All-in cost to replace one clinician (recruiting, onboarding, ramp-up, lost productivity).”
+
+────────────────────────────────────────
+4. CALCULATED OUTPUTS (Read-only)
+────────────────────────────────────────
+
+Add a bold section header: **CALCULATED OUTPUTS**
+
+Under it, display the following read-only metrics, matching the Patient
+Access style (label left, value right). Values update in real time as inputs
+change.
+
+1. **Total annual exits (baseline)**
+2. **Burnout-linked exits (baseline)**
+3. **Exits avoided (modeled)**
+4. **Realized exits avoided (after haircut)**
+5. **Estimated annual savings**
+
+Use the same numeric formatting as other drawers (commas, no decimals for
+counts, dollars with commas).
+
+────────────────────────────────────────
+5. Calculation Logic (Wire into the ROI Engine)
+────────────────────────────────────────
+
+Let:
+
+  cliniciansInScope = input (Clinicians included in this analysis)
+  attritionRate = baseline annual attrition rate (0–1)
+  burnoutShare = % attrition tied to burnout (0–1)
+  reductionWithAbridge = expected reduction in burnout exits (0–1)
+  realizationFactor = realization factor for avoided exits (0–1)
+  costPerDeparture = cost per departure ($)
+
+Compute:
+
+1) totalExits =
+      cliniciansInScope * attritionRate
+
+2) burnoutExits =
+      totalExits * burnoutShare
+
+3) modeledExitsAvoided =
+      burnoutExits * reductionWithAbridge
+
+4) realizedExitsAvoided =
+      modeledExitsAvoided * realizationFactor
+
+5) annualSavings =
+      realizedExitsAvoided * costPerDeparture
+
+Bind `annualSavings` as the **Clinician Retention** lever’s annual value:
+  • Update the Clinician Retention row in “Understanding Your Drivers”
+    (Annual Value column).
+  • Feed into “Total Annual Impact” and “Net Gain”.
+  • Feed into the ROI Waterfall bar for Clinician Retention.
+  • Scale proportionally in the Enterprise Expansion View for this lever.
+
+────────────────────────────────────────
+6. Formula Block — “How this is calculated”
+────────────────────────────────────────
+
+At the bottom of the drawer, add a muted subheader:
+
+  **HOW THIS IS CALCULATED**
+
+Then show a monospace formula explanation like this:
+
+"Annual retention savings =
+  Clinicians in scope
+  × Baseline attrition rate
+  × % of exits linked to burnout and documentation
+  × % reduction in burnout-related exits with Abridge
+  × Realization factor
+  × Cost per departure"
+
+────────────────────────────────────────
+7. Footer Note
+────────────────────────────────────────
+
+Below the formula, add small, muted text:
+
+"Adjust these assumptions to match your organization. The model updates your retention impact, waterfall, KPIs, and enterprise projections automatically."
+
+────────────────────────────────────────
+8. Scope & Consistency
+────────────────────────────────────────
+
+• Apply this drawer ONLY to the **Clinician Retention** lever in Outpatient.
+• Keep typography, spacing, slider styles, and input components consistent
+  with the Patient Access and Overtime & Locum drawers.
+• Do not alter other levers’ logic or UI.
+
