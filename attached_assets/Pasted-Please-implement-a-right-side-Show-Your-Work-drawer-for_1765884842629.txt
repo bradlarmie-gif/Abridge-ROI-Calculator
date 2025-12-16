@@ -1,0 +1,189 @@
+Please implement a right-side “Show Your Work” drawer for the Outpatient lever  
+**HCC & Chronic Condition Capture**, using the exact same UI layout, component  
+structure, spacing, and behavior as the Patient Access drawer.
+
+This drawer calculates the annual revenue impact from correctly capturing  
+previously undocumented chronic conditions. Do NOT modify any other levers  
+or ROI logic besides tying this drawer’s computed value to this lever.
+
+────────────────────────────────────────
+1. Drawer Behavior & Layout
+────────────────────────────────────────
+
+• Trigger:
+  – Add a “Show Work” control (link/icon) on the HCC & Chronic Condition Capture  
+    lever card in:
+        • Strategic Drivers (left panel)
+        • Understanding Your Drivers table
+  – Clicking opens the right-side drawer.
+
+• Drawer styling:
+  – Same width (400–420px), animation, typography, and visual style as the  
+    Patient Access drawer.
+  – Must overlay on the right without shifting page layout.
+  – Close via “X” icon in top-right or ESC.
+
+• Header:
+  – Title: **HCC & Chronic Condition Capture**
+  – Subtitle (muted): “Assumptions and logic behind this driver”
+  – Divider below header
+
+────────────────────────────────────────
+2. Introductory Explanation (Educational Block)
+────────────────────────────────────────
+
+Insert this paragraph directly under the header:
+
+"Risk scores fall when chronic conditions that are clinically present fail to appear in the documentation. Some of these conditions are known but not consistently restated, and some surface only when the encounter narrative is complete enough to reveal them. These inputs estimate how many conditions are being missed today and how much of that gap Abridge can realistically help clinicians close."
+
+────────────────────────────────────────
+3. ASSUMPTIONS (Editable Inputs)
+────────────────────────────────────────
+
+Add a bold section header: **ASSUMPTIONS**
+
+Use sliders for percentage-based inputs and numeric inputs where precision  
+matters. Include helper text in muted gray below each field.
+
+(A) Population & baseline condition burden
+
+1. **Risk-based patients in this analysis**
+   • Numeric input (integer)
+   • Label: “Risk-based patients in this analysis”
+   • Helper: “Patients under Medicare Advantage or other risk-bearing contracts.”
+
+2. **Average chronic conditions per patient**
+   • Numeric input (decimal allowed, e.g. 1.5–3.0)
+   • Label: “Average chronic conditions per patient”
+   • Helper: “Typical number of clinically present chronic conditions per member.”
+
+3. **% of clinically present conditions not documented annually**
+   • Slider (0–60%)
+   • Default: 33%
+   • Label: “% of present conditions not documented annually”
+   • Helper: “Conditions known or present but not consistently captured in documentation.”
+
+(B) Abridge’s documentation impact
+
+4. **% of missed conditions captured with Abridge**
+   • Slider (0–80%)
+   • Default: 60%
+   • Label: “% of missed conditions captured with Abridge”
+   • Helper: “Portion of under-documented conditions surfaced through richer narratives.”
+
+5. **% newly surfaced conditions**
+   • Slider (0–10%)
+   • Default: 5%
+   • Label: “% newly identified conditions”
+   • Helper: “New diagnoses that emerge when the clinical narrative is more complete.”
+
+6. **Realization factor (%)**
+   • Slider (0–100%)
+   • Default: 70%
+   • Label: “Realization factor”
+   • Helper: “Conservative share of modeled RAF improvement you want to claim.”
+
+(C) Revenue mapping
+
+7. **Incremental revenue per captured condition ($)**
+   • Numeric input
+   • Label: “Incremental revenue per captured condition ($)”
+   • Helper: “RAF lift × PMPM × months per year, per captured condition.”
+
+────────────────────────────────────────
+4. CALCULATED OUTPUTS (Read-only)
+────────────────────────────────────────
+
+Add section header: **CALCULATED OUTPUTS**
+
+Display the following values (auto-updating, well-formatted):
+
+1. **Total chronic conditions (expected)**
+2. **Conditions currently missed (annual)**
+3. **Conditions captured with Abridge (modeled)**
+4. **Newly surfaced conditions**
+5. **Realized captured conditions (after haircut)**
+6. **Incremental annual revenue**
+
+Format:
+• Commas for large numbers  
+• Dollar formatting where applicable  
+• No decimals for counts  
+
+────────────────────────────────────────
+5. Calculation Logic (Bind to ROI Engine)
+────────────────────────────────────────
+
+Let:
+
+  patients = risk-based patients in this analysis
+  avgConditions = avg chronic conditions per patient
+  missedPct = % present but undocumented (0–1)
+  capturePct = % of missed conditions captured with Abridge (0–1)
+  newlyIdentifiedPct = % of newly surfaced conditions (0–1)
+  realization = realization factor (0–1)
+  revenuePerCondition = incremental revenue per condition ($)
+
+Compute:
+
+1) totalConditions =
+      patients * avgConditions
+
+2) missedConditions =
+      totalConditions * missedPct
+
+3) capturedMissedConditions =
+      missedConditions * capturePct
+
+4) newlyIdentifiedConditions =
+      totalConditions * newlyIdentifiedPct
+
+5) modeledCaptured =
+      capturedMissedConditions + newlyIdentifiedConditions
+
+6) realizedCaptured =
+      modeledCaptured * realization
+
+7) annualImpact =
+      realizedCaptured * revenuePerCondition
+
+Bind:
+• annualImpact → HCC & Chronic Condition Capture lever’s Annual Value
+• Feed into Total Annual Impact, Net Gain, Return (x)
+• Update waterfall bar for “HCC”
+• Update Enterprise Expansion View scaled by enterprise encounters
+
+────────────────────────────────────────
+6. Formula Block — “How this is calculated”
+────────────────────────────────────────
+
+At the bottom, add muted header:
+  **HOW THIS IS CALCULATED**
+
+Monospace block:
+
+"Annual revenue impact =
+  Risk-based patients
+  × Average chronic conditions per patient
+  × % of present conditions not documented
+  × % captured with Abridge
+  + (Risk-based patients × Average conditions × % newly identified)
+  → multiplied by realization factor
+  → multiplied by incremental revenue per condition"
+
+────────────────────────────────────────
+7. Footer
+────────────────────────────────────────
+
+Muted text:
+"Adjust these assumptions as needed. The model updates your waterfall, KPIs, total impact, and enterprise projections automatically."
+
+────────────────────────────────────────
+8. Scope
+────────────────────────────────────────
+
+• Apply this drawer ONLY to **HCC & Chronic Condition Capture**.
+• Mirror the exact UI styling, spacing, and layout used in Patient Access,
+  Overtime & Locum Cost Avoidance, and Clinician Retention drawers.
+• Do not modify any other functionality or lever logic in this step.
+

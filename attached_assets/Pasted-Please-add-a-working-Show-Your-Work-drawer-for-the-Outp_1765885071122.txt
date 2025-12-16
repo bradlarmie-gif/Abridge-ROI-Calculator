@@ -1,0 +1,159 @@
+Please add a working “Show Your Work” drawer for the Outpatient lever
+**HCC & Chronic Condition Capture**, using the SAME drawer component and layout
+that is already working for **Patient Access** and **Overtime & Locum Cost Avoidance**.
+
+Do not change any other drawers. This new drawer should appear when the user
+clicks “Show Work” for the HCC & Chronic Condition Capture lever, and it should
+drive the annual value for that lever.
+
+────────────────────────────────────────
+1. Hook up the trigger
+────────────────────────────────────────
+
+• In the Outpatient view, wherever the HCC & Chronic Condition Capture lever
+  appears (Strategic Drivers panel and Understanding Your Drivers table),
+  add a “Show Work” link or icon just like the other levers.
+
+• Clicking that should open the right-hand drawer and load the HCC configuration.
+
+────────────────────────────────────────
+2. Drawer header & intro
+────────────────────────────────────────
+
+The HCC drawer should match other drawers in style (width, padding, shadow).
+
+Inside the drawer, use:
+
+• Title: HCC & Chronic Condition Capture
+• Subtitle: Assumptions and logic behind this driver
+
+Intro paragraph (top of drawer):
+
+"Risk scores fall when chronic conditions that are clinically present fail to appear in the documentation. Some of these conditions are known but not consistently restated, and some surface only when the encounter narrative is complete. These inputs estimate how many conditions are being missed today and how much of that gap Abridge can realistically help clinicians close."
+
+────────────────────────────────────────
+3. ASSUMPTIONS (inputs)
+────────────────────────────────────────
+
+Under a header “ASSUMPTIONS”, add these editable inputs (reuse existing input components):
+
+1) Risk-based patients in this analysis
+   - Type: numeric input (integer)
+   - Label: “Risk-based patients in this analysis”
+   - Helper: “Patients under Medicare Advantage or other risk-bearing contracts.”
+
+2) Average chronic conditions per patient
+   - Type: numeric input (allow decimals)
+   - Label: “Average chronic conditions per patient”
+   - Helper: “Typical number of clinically present chronic conditions per patient.”
+
+3) % of clinically present conditions not documented
+   - Type: slider or numeric (%)
+   - Range: 0–60%
+   - Label: “% of present conditions not documented annually”
+   - Helper: “Portion of conditions that exist but don’t show up in documentation.”
+
+4) % of missed conditions captured with Abridge
+   - Type: slider or numeric (%)
+   - Range: 0–80%
+   - Label: “% of missed conditions captured with Abridge”
+   - Helper: “Share of those otherwise-overlooked conditions you expect to capture.”
+
+5) Realization factor (%)
+   - Type: slider or numeric (%)
+   - Range: 0–100%
+   - Label: “Realization factor”
+   - Helper: “Conservative portion of the modeled impact you want to count.”
+
+6) Incremental revenue per captured condition ($)
+   - Type: numeric input
+   - Label: “Incremental revenue per captured condition ($)”
+   - Helper: “Revenue per correctly captured chronic condition (RAF × PMPM × months).”
+
+────────────────────────────────────────
+4. CALCULATED OUTPUTS (read-only)
+────────────────────────────────────────
+
+Under a header “CALCULATED OUTPUTS”, show these read-only values, updating
+live as inputs change:
+
+1) Total chronic conditions (expected)
+2) Conditions currently missed (annual)
+3) Conditions captured with Abridge (modeled)
+4) Realized captured conditions (after haircut)
+5) Incremental annual revenue
+
+Display them just like the Patient Access outputs:
+label on the left, value on the right, formatted with commas and $ where needed.
+
+────────────────────────────────────────
+5. Math / logic for HCC lever
+────────────────────────────────────────
+
+Use these variables:
+
+  patients = risk-based patients in this analysis
+  avgConditions = average chronic conditions per patient
+  missedPct = % of present conditions not documented (0–1)
+  capturedPct = % of missed conditions captured with Abridge (0–1)
+  realization = realization factor (0–1)
+  revenuePerCondition = incremental revenue per captured condition ($)
+
+Compute:
+
+1) totalConditions =
+      patients * avgConditions
+
+2) missedConditions =
+      totalConditions * missedPct
+
+3) capturedWithAbridge =
+      missedConditions * capturedPct
+
+4) realizedCapturedConditions =
+      capturedWithAbridge * realization
+
+5) annualImpact =
+      realizedCapturedConditions * revenuePerCondition
+
+• Bind `annualImpact` as the Annual Value for the
+  **HCC & Chronic Condition Capture** lever.
+• This value must update:
+   - The HCC row in Understanding Your Drivers
+   - Total Annual Impact
+   - Net Gain
+   - Return (x)
+   - The “HCC” bar in the waterfall
+   - The HCC portion of the Enterprise Expansion View
+
+────────────────────────────────────────
+6. “How this is calculated” block
+────────────────────────────────────────
+
+At the bottom of the drawer, add a “HOW THIS IS CALCULATED” section with
+a monospace explanation:
+
+"Total chronic conditions =
+  Risk-based patients × Average chronic conditions per patient
+
+Conditions currently missed =
+  Total chronic conditions × % of present conditions not documented
+
+Conditions captured with Abridge =
+  Conditions currently missed × % of missed conditions captured
+
+Realized captured conditions =
+  Conditions captured with Abridge × Realization factor
+
+Incremental annual revenue =
+  Realized captured conditions × Incremental revenue per captured condition"
+
+────────────────────────────────────────
+7. Scope
+────────────────────────────────────────
+
+• Apply all of this ONLY to the HCC & Chronic Condition Capture lever.
+• Reuse the existing Show Your Work drawer component and styling.
+• Do not modify Patient Access, Overtime & Locum Cost Avoidance, Clinician Retention,
+  Level of Service Alignment, or Medical Necessity–Driven Denials drawers.
+
