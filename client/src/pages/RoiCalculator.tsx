@@ -76,7 +76,7 @@ export default function RoiCalculator({ setting, selectedLevers, onBack }: RoiCa
             <ArrowLeft className="h-4 w-4 mr-1" />
             Change Setting
           </Button>
-          <h1 className="text-2xl font-bold">Abridge ROI Calculator</h1>
+          <h1 className="text-2xl font-bold">Abridge ROI Studio</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {CARE_SETTING_LABELS[setting]} Analysis
           </p>

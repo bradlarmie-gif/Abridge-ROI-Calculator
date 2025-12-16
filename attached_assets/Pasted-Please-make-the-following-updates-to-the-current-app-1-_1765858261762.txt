@@ -1,0 +1,59 @@
+Please make the following updates to the current app:
+
+1) Rename the product from "Abridge ROI Calculator" to "Abridge ROI Studio" everywhere it appears in the UI:
+   - The big title on the landing / care-setting selection screen.
+   - The title on the calculator page itself.
+   Keep the existing subtitle on the landing page, but update it if needed so it still reads naturally with "ROI Studio."
+
+2) On the care-setting selection screen, add a fourth card for "Inpatient":
+   - Label: "Inpatient"
+   - Subtitle: "Coming soon"
+   - Visually match the other cards, but show a small "Coming soon" pill or badge.
+   - When the user clicks Inpatient, do NOT navigate to the calculator; instead show a small inline message under the cards saying "Inpatient ROI model is under development."
+
+3) Update the styling of the care-setting cards:
+   - Remove the blue accent color.
+   - For hover state, use a black/dark gray outline and text (for example Tailwind classes like hover:border-black hover:text-black).
+   - For the selected card, use a solid black or dark gray border and slightly stronger shadow instead of blue (for example border-black instead of border-blue-500).
+   - Keep the layout and typography the same.
+
+4) Update the lever descriptions (the text shown under each lever name in the value-driver selection view and in the Annual Impact table) using the following copy:
+
+   OUTPATIENT:
+   - Patient Access:
+     "Abridge reduces time spent documenting, freeing provider capacity that can be reinvested into additional visits. As more visit slots open, organizations can convert that time into incremental revenue and shorter wait times."
+   - Overtime & Locum Savings:
+     "By shrinking after-hours documentation and inbox work, Abridge reduces the need for overtime and expensive locum coverage. Fewer premium-rate hours directly lower labor spend for the same (or higher) visit volume."
+   - Workforce Retention:
+     "Reducing administrative burden lowers burnout and turnover among clinicians. Avoided departures save recruiting, onboarding, and ramp time costs while preserving continuity of care."
+   - Risk Adjustment / HCC:
+     "More complete visit documentation makes it easier to capture chronic conditions that accurately reflect patient risk. Better RAF capture improves value-based and capitated revenue without changing panel size."
+   - wRVU & Level-of-Service Alignment:
+     "Abridge supports more complete HPI, ROS, and MDM, which shifts encounters to the appropriate E/M level. That documentation-driven wRVU uplift increases revenue per visit while staying compliant."
+   - Denial Reduction Savings:
+     "Cleaner, more consistent documentation reduces missing elements that trigger payer denials. Fewer documentation-related denials mean less rework and more revenue paid on first submission."
+
+   EMERGENCY DEPARTMENT:
+   - ED Patient Access:
+     "By cutting documentation time per shift, Abridge lets ED clinicians see and disposition more patients without extending hours. As LWBS and walkouts fall, more patients are treated or admitted and their contribution margin is retained."
+   - Documentation Quality:
+     "Structured, complete ED notes and MDM support appropriate E/M levels and accurate coding for high-acuity visits. This improves revenue per ED encounter while reducing audit and compliance risk."
+   - ED Denial Savings:
+     "Richer ED documentation makes it easier to meet payer requirements for medical necessity, services rendered, and severity. That reduces documentation-driven denials and clawbacks on ED claims."
+   - ED Provider Retention:
+     "Lower cognitive and clerical load per shift can reduce burnout and annual clinician turnover. Fewer departures avoid the high cost of recruiting, onboarding, and covering gaps with locums."
+   - Scribe Cost Savings:
+     "As Abridge takes over real-time note generation, dependence on in-person or virtual scribes can be reduced. Those avoided scribe hours or FTEs become direct, recurring cost savings."
+
+   NURSING:
+   - Annual Labor Efficiency Savings:
+     "Abridge shortens the time nurses spend charting flowsheets and assessments each shift. Those reclaimed hours reduce overtime and reliance on traveler or agency nurses for the same nursing workload."
+   - Workforce Retention & Sustainability:
+     "Reducing documentation burden lowers stress and burnout that drive nurse turnover. Avoided RN departures prevent recruiting and training costs while stabilizing unit staffing."
+   - Safety Events Avoidance Cost:
+     "More timely, accurate documentation and prompts improve awareness of risk factors for falls and HAPI. Fewer serious safety events mean avoided treatment costs, penalties, and quality hits."
+   - DRG Severity Capture:
+     "Richer nursing documentation helps surface comorbidities and complications that support CC/MCC assignment. Better DRG severity capture increases reimbursement per inpatient stay for the same census."
+
+5) For now, do NOT change any of the underlying ROI math or numbers for ED and Nursing. We will adjust those formulas in a separate step. Just update the labels, descriptions, product name, Inpatient card, and hover/selected colors as described above.
+
