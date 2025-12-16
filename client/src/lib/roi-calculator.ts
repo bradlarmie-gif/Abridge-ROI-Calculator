@@ -1,4 +1,4 @@
-import { type RoiInputs, type RoiResults, type Lever, leverDescriptions } from "./roi-types";
+import { type RoiInputs, type RoiResults, type Lever, leverDescriptions, leverLabels } from "./roi-types";
 
 export function calculateRoi(inputs: RoiInputs): RoiResults {
   const encountersWithAbridge = 
@@ -21,42 +21,42 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
   const levers: Lever[] = [
     {
       id: "patientAccess",
-      label: "Patient Access",
+      label: leverLabels.patientAccess,
       value: patientAccessValue,
       enabled: inputs.levers.patientAccess,
       description: leverDescriptions.patientAccess,
     },
     {
       id: "overtime",
-      label: "Overtime & Locum Savings",
+      label: leverLabels.overtime,
       value: overtimeSavings,
       enabled: inputs.levers.overtime,
       description: leverDescriptions.overtime,
     },
     {
       id: "workforce",
-      label: "Workforce Retention",
+      label: leverLabels.workforce,
       value: workforceSavings,
       enabled: inputs.levers.workforce,
       description: leverDescriptions.workforce,
     },
     {
       id: "riskAdjustment",
-      label: "Risk Adjustment / HCC",
+      label: leverLabels.riskAdjustment,
       value: riskAdjRevenue,
       enabled: inputs.levers.riskAdjustment,
       description: leverDescriptions.riskAdjustment,
     },
     {
       id: "wrvu",
-      label: "wRVU & Level-of-Service",
+      label: leverLabels.wrvu,
       value: wrvuRevenue,
       enabled: inputs.levers.wrvu,
       description: leverDescriptions.wrvu,
     },
     {
       id: "denials",
-      label: "Denial Reduction",
+      label: leverLabels.denials,
       value: denialResults.revenueRecovered,
       enabled: inputs.levers.denials,
       description: leverDescriptions.denials,

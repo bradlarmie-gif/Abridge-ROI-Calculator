@@ -1,0 +1,115 @@
+Please update the ROI Studio app so that each lever has an official name, category, and description, and the strategic priorities screen is grouped by category.
+
+1) In the lever configuration (whatever file or object defines the levers today – e.g., SETTING_CONFIG or leverDefinitions), update each lever to have the following shape:
+
+type LeverCategory = "time" | "documentation";
+
+type LeverDefinition = {
+  id: string;
+  label: string;
+  category: LeverCategory;
+  description: string;
+};
+
+2) For each setting, keep the existing lever ids but update the label, category, and description exactly as follows.
+
+OUTPATIENT:
+- patientAccess:
+  - label: "Patient Capacity Enablement"
+  - category: "time"
+  - description: "Abridge reduces documentation time, enabling clinicians to redirect a portion of their day toward direct patient care. This creates the potential for additional visit capacity without extending schedules."
+
+- overtime:
+  - label: "Overtime & Premium Labor Avoidance"
+  - category: "time"
+  - description: "By decreasing after-hours and end-of-day documentation, Abridge supports lower reliance on overtime and premium-rate labor needed to complete charting."
+
+- workforce:
+  - label: "Clinician Retention Support"
+  - category: "time"
+  - description: "Reducing administrative load can help decrease burnout-related attrition, lowering the operational and financial burden associated with clinician turnover."
+
+- riskAdjustment:
+  - label: "Risk Adjustment Completeness"
+  - category: "documentation"
+  - description: "More complete and structured clinical documentation helps ensure chronic conditions are consistently captured, supporting accurate risk adjustment under value-based programs."
+
+- wrvuAlignment:
+  - label: "E/M Level Appropriateness"
+  - category: "documentation"
+  - description: "Enhanced documentation quality provides clearer clinical detail, helping coding teams assign the most appropriate E/M level based on medical decision-making."
+
+- denialReduction:
+  - label: "Denial Risk Reduction"
+  - category: "documentation"
+  - description: "Improved clarity and completeness of documentation reduce common causes of documentation-related denials, supporting higher first-pass claim acceptance."
+
+EMERGENCY DEPARTMENT:
+- edPatientAccess:
+  - label: "Throughput & LWBS Improvement"
+  - category: "time"
+  - description: "By reducing the time clinicians spend documenting each shift, Abridge can help increase patient throughput and reduce the number of patients leaving without being seen."
+
+- edProviderRetention:
+  - label: "ED Clinician Retention Support"
+  - category: "time"
+  - description: "Decreasing clerical burden can help mitigate burnout, lowering the likelihood of turnover and the associated operational disruption."
+
+- edDocumentationQuality:
+  - label: "ED Documentation Completeness"
+  - category: "documentation"
+  - description: "More complete ED documentation strengthens the clinical story, supporting appropriate acuity capture and improved coding accuracy."
+
+- edDenialSavings:
+  - label: "ED Denial Risk Reduction"
+  - category: "documentation"
+  - description: "Higher-quality documentation reduces gaps that commonly lead to medical necessity or clinical validation denials within emergency services."
+
+- edScribeSavings:
+  - label: "Scribe Utilization Reduction"
+  - category: "documentation"
+  - description: "As real-time documentation support improves note completeness, organizations may reduce reliance on in-person or virtual scribes."
+
+NURSING:
+- rnLaborEfficiency:
+  - label: "Nursing Labor Efficiency"
+  - category: "time"
+  - description: "Streamlined flowsheet and assessment documentation gives nurses meaningful time back during their shifts, which can reduce overtime and reliance on traveler or agency staff."
+
+- rnRetention:
+  - label: "Nursing Retention Support"
+  - category: "time"
+  - description: "Lower documentation burden can help lessen burnout-related RN turnover, reducing replacement, orientation, and onboarding costs."
+
+- rnSafetyEvents:
+  - label: "Patient Safety Event Prevention Support"
+  - category: "documentation"
+  - description: "More timely, accurate documentation supports situational awareness and adherence to care bundles, helping reduce the likelihood of preventable safety events."
+
+- rnDrgSeverity:
+  - label: "DRG Severity Documentation Support"
+  - category: "documentation"
+  - description: "Improved nursing documentation helps surface clinically relevant comorbidities and complications, supporting more accurate severity capture for inpatient cases."
+
+3) Update the “Select your strategic priorities” screen so that priorities are grouped and rendered by category instead of one flat list:
+   - Derive two groups based on the lever definition:
+     - Time Benefits: all levers where category === "time"
+     - Documentation Quality Benefits: all levers where category === "documentation"
+   - Render a section header for each group:
+     - "Time Benefits"
+     - "Documentation Quality Benefits"
+   - Under each header, show the relevant levers with:
+     - Checkbox (black styling, as previously configured)
+     - Lever label
+     - Single-line description (the description field above)
+
+4) Keep all existing selection behavior the same:
+   - Checking or unchecking a lever still updates the same selectedLevers state and controls which levers flow into the ROI calculations and charts.
+   - Do not change any math or downstream logic, only the labels, grouping, and descriptions.
+
+5) Ensure that any place in the UI that references lever names now uses the updated `label` field so that the new canonical names appear consistently in:
+   - The strategic priorities screen
+   - The Annual Impact / lever table
+   - Any tooltips or descriptions associated with levers
+
+Please make these changes without altering the overall layout or navigation flow of ROI Studio.

@@ -7,9 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import {
   SETTING_CONFIG,
   CARE_SETTING_LABELS,
+  CATEGORY_LABELS,
+  getLeversByCategory,
   type CareSettingType,
   type AllSettingType,
   type LeverConfig,
+  type LeverCategory,
 } from "@/lib/SETTING_CONFIG";
 import {
   Stethoscope,
@@ -18,6 +21,8 @@ import {
   Building2,
   ChevronRight,
   Settings2,
+  Clock,
+  FileText,
 } from "lucide-react";
 
 interface ObjectiveSelectionScreenProps {
@@ -29,6 +34,11 @@ const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
   ed: Siren,
   nursing: HeartPulse,
   inpatient: Building2,
+};
+
+const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
+  time: Clock,
+  documentation: FileText,
 };
 
 const ALL_SETTINGS: AllSettingType[] = ["outpatient", "ed", "nursing", "inpatient"];
@@ -71,9 +81,53 @@ export default function ObjectiveSelectionScreen({
     }
   };
 
-  const levers: LeverConfig[] = selectedSetting
-    ? SETTING_CONFIG[selectedSetting]
-    : [];
+  const leversByCategory = selectedSetting
+    ? getLeversByCategory(selectedSetting)
+    : null;
+
+  const renderLeverItem = (lever: LeverConfig) => (
+    <div
+      key={lever.id}
+      className="flex items-start space-x-4 p-4 rounded-md border border-border hover:border-foreground/30 transition-colors"
+      data-testid={`lever-option-${lever.id}`}
+    >
+      <Checkbox
+        id={lever.id}
+        checked={selectedLevers.has(lever.id)}
+        onCheckedChange={() => handleLeverToggle(lever.id)}
+        className="mt-1"
+        data-testid={`checkbox-lever-${lever.id}`}
+      />
+      <div className="flex-1">
+        <Label
+          htmlFor={lever.id}
+          className="font-medium cursor-pointer"
+        >
+          {lever.label}
+        </Label>
+        <p className="text-sm text-muted-foreground mt-1">
+          {lever.description}
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderCategorySection = (category: LeverCategory, levers: LeverConfig[]) => {
+    if (levers.length === 0) return null;
+    const CategoryIcon = CATEGORY_ICONS[category];
+
+    return (
+      <div key={category} className="space-y-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <CategoryIcon className="h-4 w-4" />
+          {CATEGORY_LABELS[category]}
+        </div>
+        <div className="space-y-3">
+          {levers.map(renderLeverItem)}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
@@ -81,7 +135,7 @@ export default function ObjectiveSelectionScreen({
         <div className="text-center space-y-3">
           <h1 className="text-3xl font-bold">Abridge ROI Studio</h1>
           <p className="text-muted-foreground">
-            Select your care setting and customize which impact areas to include
+            Select your care setting and customize which strategic priorities to include
           </p>
         </div>
 
@@ -136,12 +190,12 @@ export default function ObjectiveSelectionScreen({
           </div>
         )}
 
-        {selectedSetting && (
+        {selectedSetting && leversByCategory && (
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <Settings2 className="h-5 w-5" />
-                Select Impact Areas for {CARE_SETTING_LABELS[selectedSetting]}
+                Select Your Strategic Priorities for {CARE_SETTING_LABELS[selectedSetting]}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-6 pb-6">
@@ -149,33 +203,9 @@ export default function ObjectiveSelectionScreen({
                 className="max-h-[340px] overflow-y-auto pr-2"
                 style={{ scrollbarGutter: "stable" }}
               >
-                <div className="space-y-4">
-                  {levers.map((lever) => (
-                    <div
-                      key={lever.id}
-                      className="flex items-start space-x-4 p-4 rounded-md border border-border hover:border-foreground/30 transition-colors"
-                      data-testid={`lever-option-${lever.id}`}
-                    >
-                      <Checkbox
-                        id={lever.id}
-                        checked={selectedLevers.has(lever.id)}
-                        onCheckedChange={() => handleLeverToggle(lever.id)}
-                        className="mt-1"
-                        data-testid={`checkbox-lever-${lever.id}`}
-                      />
-                      <div className="flex-1">
-                        <Label
-                          htmlFor={lever.id}
-                          className="font-medium cursor-pointer"
-                        >
-                          {lever.label}
-                        </Label>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {lever.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="space-y-6">
+                  {renderCategorySection("time", leversByCategory.time)}
+                  {renderCategorySection("documentation", leversByCategory.documentation)}
                 </div>
               </div>
             </CardContent>

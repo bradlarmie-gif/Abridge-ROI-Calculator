@@ -135,10 +135,19 @@ export const defaultInputs: RoiInputs = {
 };
 
 export const leverDescriptions: Record<LeverId, string> = {
-  patientAccess: "Revenue from additional patient visits enabled by reclaimed provider time",
-  overtime: "Cost savings from reduced overtime and locum coverage requirements",
-  workforce: "Savings from reduced burnout-driven provider turnover",
-  wrvu: "Additional revenue from improved documentation and coding accuracy",
-  denials: "Revenue recovered by reducing documentation-related claim denials",
-  riskAdjustment: "Additional MA revenue from improved HCC condition capture",
+  patientAccess: "Abridge reduces documentation time, enabling clinicians to redirect a portion of their day toward direct patient care. This creates the potential for additional visit capacity without extending schedules.",
+  overtime: "By decreasing after-hours and end-of-day documentation, Abridge supports lower reliance on overtime and premium-rate labor needed to complete charting.",
+  workforce: "Reducing administrative load can help decrease burnout-related attrition, lowering the operational and financial burden associated with clinician turnover.",
+  wrvu: "Enhanced documentation quality provides clearer clinical detail, helping coding teams assign the most appropriate E/M level based on medical decision-making.",
+  denials: "Improved clarity and completeness of documentation reduce common causes of documentation-related denials, supporting higher first-pass claim acceptance.",
+  riskAdjustment: "More complete and structured clinical documentation helps ensure chronic conditions are consistently captured, supporting accurate risk adjustment under value-based programs.",
+};
+
+export const leverLabels: Record<LeverId, string> = {
+  patientAccess: "Patient Capacity Enablement",
+  overtime: "Overtime & Premium Labor Avoidance",
+  workforce: "Clinician Retention Support",
+  wrvu: "E/M Level Appropriateness",
+  denials: "Denial Risk Reduction",
+  riskAdjustment: "Risk Adjustment Completeness",
 };
