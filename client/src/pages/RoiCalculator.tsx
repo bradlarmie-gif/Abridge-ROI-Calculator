@@ -16,6 +16,7 @@ import { OvertimeLocumDrawer, type OvertimeLocumInputs, type OvertimeLocumCalcul
 import { ClinicianRetentionDrawer, type ClinicianRetentionInputs, type ClinicianRetentionCalculations } from "@/components/ClinicianRetentionDrawer";
 import { LevelOfServiceDrawer, type LevelOfServiceInputs, type LevelOfServiceCalculations } from "@/components/LevelOfServiceDrawer";
 import { MedicalNecessityDenialsDrawer, type MedicalNecessityDenialsInputs, type MedicalNecessityDenialsCalculations } from "@/components/MedicalNecessityDenialsDrawer";
+import { HccConditionCaptureDrawer, type HccConditionCaptureInputs, type HccConditionCaptureCalculations } from "@/components/HccConditionCaptureDrawer";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { defaultInputs, type RoiInputs, type LeverId, type Lever, leverLabels, leverDescriptions } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
@@ -146,6 +147,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const [clinicianRetentionDrawerOpen, setClinicianRetentionDrawerOpen] = useState(false);
   const [levelOfServiceDrawerOpen, setLevelOfServiceDrawerOpen] = useState(false);
   const [medicalNecessityDenialsDrawerOpen, setMedicalNecessityDenialsDrawerOpen] = useState(false);
+  const [hccConditionCaptureDrawerOpen, setHccConditionCaptureDrawerOpen] = useState(false);
   
   const [patientAccessInputs, setPatientAccessInputs] = useState<PatientAccessInputs>(() => {
     const clinicians = inputs.numberOfProviders;
@@ -252,6 +254,20 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const handleMedicalNecessityDenialsInputChange = (field: keyof MedicalNecessityDenialsInputs, value: number) => {
     setMedicalNecessityDenialsInputs(prev => ({ ...prev, [field]: value }));
   };
+  
+  const [hccConditionCaptureInputs, setHccConditionCaptureInputs] = useState<HccConditionCaptureInputs>(() => ({
+    riskBasedPatients: 7000,
+    avgConditionsPerPatient: 1.5,
+    pctConditionsNotDocumented: 33,
+    pctMissedConditionsCaptured: 60,
+    pctNewlyIdentifiedConditions: 5,
+    realizationFactor: 70,
+    revenuePerCondition: 135,
+  }));
+  
+  const handleHccConditionCaptureInputChange = (field: keyof HccConditionCaptureInputs, value: number) => {
+    setHccConditionCaptureInputs(prev => ({ ...prev, [field]: value }));
+  };
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
   
@@ -304,6 +320,18 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     const realizedRecovered = modeledRecovered * (realizationFactor / 100);
     return { baselineDeniedRevenue, unrecoveredAfterRework, documentationDrivenUnrecoverable, modeledRecovered, realizedRecovered };
   }, [medicalNecessityDenialsInputs]);
+  
+  const hccConditionCaptureCalculations: HccConditionCaptureCalculations = useMemo(() => {
+    const { riskBasedPatients, avgConditionsPerPatient, pctConditionsNotDocumented, pctMissedConditionsCaptured, pctNewlyIdentifiedConditions, realizationFactor, revenuePerCondition } = hccConditionCaptureInputs;
+    const totalConditions = riskBasedPatients * avgConditionsPerPatient;
+    const missedConditions = totalConditions * (pctConditionsNotDocumented / 100);
+    const capturedMissedConditions = missedConditions * (pctMissedConditionsCaptured / 100);
+    const newlyIdentifiedConditions = totalConditions * (pctNewlyIdentifiedConditions / 100);
+    const modeledCaptured = capturedMissedConditions + newlyIdentifiedConditions;
+    const realizedCaptured = modeledCaptured * (realizationFactor / 100);
+    const annualImpact = realizedCaptured * revenuePerCondition;
+    return { totalConditions, missedConditions, capturedMissedConditions, newlyIdentifiedConditions, modeledCaptured, realizedCaptured, annualImpact };
+  }, [hccConditionCaptureInputs]);
 
   const annualAbridgeCost = useMemo(
     () =>
@@ -334,6 +362,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                 overriddenValue = levelOfServiceCalculations.incrementalRevenue;
               } else if (leverConfig.id === "denials") {
                 overriddenValue = medicalNecessityDenialsCalculations.realizedRecovered;
+              } else if (leverConfig.id === "hcc") {
+                overriddenValue = hccConditionCaptureCalculations.annualImpact;
               }
             }
             leverList.push({
@@ -364,6 +394,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   overriddenValue = levelOfServiceCalculations.incrementalRevenue;
                 } else if (l.leverId === "denials" && settingId === "outpatient") {
                   overriddenValue = medicalNecessityDenialsCalculations.realizedRecovered;
+                } else if (l.leverId === "hcc" && settingId === "outpatient") {
+                  overriddenValue = hccConditionCaptureCalculations.annualImpact;
                 }
               }
               leverList.push({
@@ -379,7 +411,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     
     return leverList;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue, overtimeLocumCalculations.annualSavings, clinicianRetentionCalculations.annualSavings, levelOfServiceCalculations.incrementalRevenue, medicalNecessityDenialsCalculations.realizedRecovered]);
+  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue, overtimeLocumCalculations.annualSavings, clinicianRetentionCalculations.annualSavings, levelOfServiceCalculations.incrementalRevenue, medicalNecessityDenialsCalculations.realizedRecovered, hccConditionCaptureCalculations.annualImpact]);
 
   const totalBenefitFromSelectedLevers = useMemo(() => {
     return leversWithSettings
@@ -944,6 +976,17 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                                     Show Work
                                   </Button>
                                 )}
+                                {lever.id === "hcc" && lever.settingId === "outpatient" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setHccConditionCaptureDrawerOpen(true)}
+                                    className="text-xs"
+                                    data-testid="button-show-work-hcc"
+                                  >
+                                    Show Work
+                                  </Button>
+                                )}
                               </TableCell>
                             </TableRow>
                           );
@@ -1021,6 +1064,14 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
         inputs={medicalNecessityDenialsInputs}
         onChange={handleMedicalNecessityDenialsInputChange}
         calculations={medicalNecessityDenialsCalculations}
+      />
+
+      <HccConditionCaptureDrawer
+        open={hccConditionCaptureDrawerOpen}
+        onClose={() => setHccConditionCaptureDrawerOpen(false)}
+        inputs={hccConditionCaptureInputs}
+        onChange={handleHccConditionCaptureInputChange}
+        calculations={hccConditionCaptureCalculations}
       />
     </div>
   );
