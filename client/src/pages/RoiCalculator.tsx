@@ -267,7 +267,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
               >
                 Back to Selection
               </Button>
-              <h1 className="text-2xl font-bold text-black">ROI Studio</h1>
+              <h1 className="text-2xl font-bold text-black">ROI Calculator</h1>
               <p className="text-xs text-neutral-500 mt-1">
                 Current Selection: {settingsText}
               </p>
@@ -283,7 +283,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
 
                     <div className="space-y-6">
                       <div className="space-y-3">
-                        <h3 className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">Current Scope</h3>
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">Current Scope</h3>
                         <InputField label="Providers in Scope" helperText="Clinicians included in this scenario.">
                           <Input
                             type="number"
@@ -326,7 +326,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                       </div>
 
                       <div className="space-y-3">
-                        <h3 className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">Enterprise Footprint</h3>
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">Enterprise Footprint</h3>
                         <InputField label="Enterprise Provider Count" helperText="Total clinicians across your enterprise.">
                           <Input
                             type="number"
@@ -350,7 +350,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                       </div>
 
                       <div className="space-y-3">
-                        <h3 className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">Economics</h3>
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">Economics</h3>
                         <InputField label="Average Revenue per Encounter ($)" helperText="Typical net revenue collected per outpatient visit.">
                           <Input
                             type="number"
