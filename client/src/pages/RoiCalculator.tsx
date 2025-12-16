@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -54,6 +54,11 @@ const ALL_SETTINGS: AllSettingType[] = ["outpatient", "ed", "nursing", "inpatien
 export default function RoiCalculator({ setting, selectedLevers, onBack, onSettingChange }: RoiCalculatorProps) {
   const [inputs, setInputs] = useState<RoiInputs>(defaultInputs);
   const [commentary, setCommentary] = useState("");
+
+  useEffect(() => {
+    setInputs(defaultInputs);
+    setCommentary("");
+  }, [setting]);
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
 

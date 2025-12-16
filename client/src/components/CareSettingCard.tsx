@@ -32,7 +32,7 @@ export function CareSettingCard({
           ? "opacity-60 cursor-not-allowed border border-neutral-200"
           : selected
           ? "border-2 border-black shadow-md"
-          : "border border-neutral-200 shadow-sm hover:border-black hover:shadow-md hover:scale-[1.02]"
+          : "border border-neutral-200 shadow-sm hover:border-black hover:shadow-md"
       )}
       data-testid={`card-setting-${title.toLowerCase().replace(/\s+/g, "-")}`}
     >

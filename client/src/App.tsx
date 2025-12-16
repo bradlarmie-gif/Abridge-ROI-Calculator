@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ObjectiveSelectionScreen from "@/pages/ObjectiveSelectionScreen";
 import RoiCalculator from "@/pages/RoiCalculator";
-import { type CareSettingType } from "@/lib/SETTING_CONFIG";
+import { type CareSettingType, SETTING_CONFIG } from "@/lib/SETTING_CONFIG";
 
 interface CalculatorState {
   setting: CareSettingType;
@@ -23,6 +23,11 @@ function App() {
     setCalculatorState(null);
   };
 
+  const handleSettingChange = (newSetting: CareSettingType) => {
+    const allLeverIds = SETTING_CONFIG[newSetting].map((l) => l.id);
+    setCalculatorState({ setting: newSetting, selectedLevers: allLeverIds });
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -32,6 +37,7 @@ function App() {
             setting={calculatorState.setting}
             selectedLevers={calculatorState.selectedLevers}
             onBack={handleBack}
+            onSettingChange={handleSettingChange}
           />
         ) : (
           <ObjectiveSelectionScreen onComplete={handleSelectionComplete} />
