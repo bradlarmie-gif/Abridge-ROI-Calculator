@@ -12,6 +12,7 @@ import { LeverAccordion } from "@/components/LeverAccordion";
 import { CommentaryBox } from "@/components/CommentaryBox";
 import { StrategicDriverCard } from "@/components/StrategicDriverCard";
 import { PatientAccessDrawer, type PatientAccessInputs, type PatientAccessCalculations } from "@/components/PatientAccessDrawer";
+import { OvertimeLocumDrawer, type OvertimeLocumInputs, type OvertimeLocumCalculations } from "@/components/OvertimeLocumDrawer";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { defaultInputs, type RoiInputs, type LeverId, type Lever, leverLabels, leverDescriptions } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
@@ -138,6 +139,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const [commentary, setCommentary] = useState("");
   const [selectedLeverForModal, setSelectedLeverForModal] = useState<LeverWithSetting | null>(null);
   const [patientAccessDrawerOpen, setPatientAccessDrawerOpen] = useState(false);
+  const [overtimeLocumDrawerOpen, setOvertimeLocumDrawerOpen] = useState(false);
   
   const [patientAccessInputs, setPatientAccessInputs] = useState<PatientAccessInputs>(() => {
     const clinicians = inputs.numberOfProviders;
@@ -180,6 +182,18 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const handlePatientAccessInputChange = (field: keyof PatientAccessInputs, value: number) => {
     setPatientAccessInputs(prev => ({ ...prev, [field]: value }));
   };
+  
+  const [overtimeLocumInputs, setOvertimeLocumInputs] = useState<OvertimeLocumInputs>({
+    pctHoursPreviouslyPremium: 0.20,
+    pctPremiumRealized: 0.75,
+    overtimeRate: 150,
+    locumRate: 250,
+    locumShare: 0.50,
+  });
+  
+  const handleOvertimeLocumInputChange = (field: keyof OvertimeLocumInputs, value: number) => {
+    setOvertimeLocumInputs(prev => ({ ...prev, [field]: value }));
+  };
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
   
@@ -192,6 +206,17 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     }
     return results.totalProviderHoursReclaimed;
   }, [patientAccessCalculations.totalHoursSaved, results.totalProviderHoursReclaimed, patientAccessEnabled, isOutpatientSelected]);
+  
+  const overtimeLocumCalculations: OvertimeLocumCalculations = useMemo(() => {
+    const reclaimedHours = adjustedClinicianHoursRecovered;
+    const premiumHoursExposed = reclaimedHours * overtimeLocumInputs.pctHoursPreviouslyPremium;
+    const premiumHoursReduced = premiumHoursExposed * overtimeLocumInputs.pctPremiumRealized;
+    const overtimeShare = 1 - overtimeLocumInputs.locumShare;
+    const blendedRate = (overtimeLocumInputs.locumShare * overtimeLocumInputs.locumRate) + 
+                        (overtimeShare * overtimeLocumInputs.overtimeRate);
+    const annualSavings = premiumHoursReduced * blendedRate;
+    return { reclaimedHours, premiumHoursExposed, premiumHoursReduced, blendedRate, annualSavings };
+  }, [adjustedClinicianHoursRecovered, overtimeLocumInputs]);
 
   const annualAbridgeCost = useMemo(
     () =>
@@ -210,9 +235,12 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
           if (matchingLever) {
             const key = `${settingId}:${leverConfig.id}`;
             const isEnabled = leverStates.get(key) ?? false;
-            const overriddenValue = leverConfig.id === "patientAccess" 
-              ? patientAccessCalculations.incrementalRevenue 
-              : matchingLever.value;
+            let overriddenValue = matchingLever.value;
+            if (leverConfig.id === "patientAccess") {
+              overriddenValue = patientAccessCalculations.incrementalRevenue;
+            } else if (leverConfig.id === "overtime") {
+              overriddenValue = overtimeLocumCalculations.annualSavings;
+            }
             leverList.push({
               ...matchingLever,
               value: overriddenValue,
@@ -228,9 +256,12 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
             const matchingLever = results.levers.find((rl) => rl.id === l.leverId);
             if (matchingLever) {
               const key = `${settingId}:${l.leverId}`;
-              const overriddenValue = l.leverId === "patientAccess" && settingId === "outpatient"
-                ? patientAccessCalculations.incrementalRevenue 
-                : matchingLever.value;
+              let overriddenValue = matchingLever.value;
+              if (l.leverId === "patientAccess" && settingId === "outpatient") {
+                overriddenValue = patientAccessCalculations.incrementalRevenue;
+              } else if (l.leverId === "overtime" && settingId === "outpatient") {
+                overriddenValue = overtimeLocumCalculations.annualSavings;
+              }
               leverList.push({
                 ...matchingLever,
                 value: overriddenValue,
@@ -244,7 +275,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     
     return leverList;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue]);
+  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue, overtimeLocumCalculations.annualSavings]);
 
   const totalBenefitFromSelectedLevers = useMemo(() => {
     return leversWithSettings
@@ -765,6 +796,17 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                                     Show Work
                                   </Button>
                                 )}
+                                {lever.id === "overtime" && lever.settingId === "outpatient" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setOvertimeLocumDrawerOpen(true)}
+                                    className="text-xs"
+                                    data-testid="button-show-work-overtime"
+                                  >
+                                    Show Work
+                                  </Button>
+                                )}
                               </TableCell>
                             </TableRow>
                           );
@@ -810,6 +852,14 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
         inputs={patientAccessInputs}
         onChange={handlePatientAccessInputChange}
         calculations={patientAccessCalculations}
+      />
+
+      <OvertimeLocumDrawer
+        open={overtimeLocumDrawerOpen}
+        onClose={() => setOvertimeLocumDrawerOpen(false)}
+        inputs={overtimeLocumInputs}
+        onChange={handleOvertimeLocumInputChange}
+        calculations={overtimeLocumCalculations}
       />
     </div>
   );
