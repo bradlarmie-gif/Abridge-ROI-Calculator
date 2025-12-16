@@ -135,12 +135,12 @@ export const defaultInputs: RoiInputs = {
 };
 
 export const leverDescriptions: Record<LeverId, string> = {
-  patientAccess: "Abridge reduces documentation time, enabling clinicians to redirect a portion of their day toward direct patient care. This creates the potential for additional visit capacity without extending schedules.",
-  overtime: "By decreasing after-hours and end-of-day documentation, Abridge supports lower reliance on overtime and premium-rate labor needed to complete charting.",
-  workforce: "Reducing administrative load can help decrease burnout-related attrition, lowering the operational and financial burden associated with clinician turnover.",
-  wrvu: "Enhanced documentation quality provides clearer clinical detail, helping coding teams assign the most appropriate E/M level based on medical decision-making.",
-  denials: "Improved clarity and completeness of documentation reduce common causes of documentation-related denials, supporting higher first-pass claim acceptance.",
-  riskAdjustment: "More complete and structured clinical documentation helps ensure chronic conditions are consistently captured, supporting accurate risk adjustment under value-based programs.",
+  patientAccess: "When documentation takes less time, schedule capacity stops leaking; providers can reduce third-next-available and capture referrals they currently turn away.",
+  overtime: "End-of-day work isn't inevitable—it's a symptom of friction. Removing that friction shrinks overtime and premium pay that shouldn't exist.",
+  workforce: "Most turnover is driven by cognitive overload, not the medicine. Lighter documentation helps keep clinicians, preserving your most expensive asset: experience.",
+  wrvu: "Under-leveling happens when details are missing, not when complexity is low. Abridge restores the completeness needed for coding to reflect real clinical work.",
+  denials: "Many denials trace back to thin or ambiguous documentation. Strengthening the clinical narrative from the start collapses avoidable denial pathways.",
+  riskAdjustment: "When the full clinical picture is documented consistently, risk scores stop under-representing patient complexity and stabilize value-based performance.",
 };
 
 export const leverLabels: Record<LeverId, string> = {

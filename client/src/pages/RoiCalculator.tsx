@@ -43,9 +43,9 @@ const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
 };
 
 const SETTING_SUBTITLES: Record<AllSettingType, string> = {
-  outpatient: "Outpatient practice scenarios",
-  ed: "Emergency department scenarios",
-  nursing: "Nursing workflows",
+  outpatient: "Clinical Note",
+  ed: "Clinical Note",
+  nursing: "Flowsheet Documentation",
   inpatient: "Coming soon",
 };
 

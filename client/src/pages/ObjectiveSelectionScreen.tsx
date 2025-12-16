@@ -136,7 +136,7 @@ export default function ObjectiveSelectionScreen({
       <BackgroundPattern />
       
       <div className="relative z-10 px-8 py-12 min-h-screen">
-        <div className="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-sm p-8 space-y-10">
+        <div className="w-full max-w-6xl mx-auto space-y-10">
           <div className="text-center space-y-3">
             <h1 className="text-3xl font-bold text-black font-sans">Abridge ROI Studio</h1>
             <p className="text-muted-foreground">
@@ -193,10 +193,10 @@ export default function ObjectiveSelectionScreen({
               size="lg"
               disabled={!selectedSetting || selectedLevers.size === 0}
               onClick={handleContinue}
-              className="bg-black hover:bg-neutral-900 text-white"
+              className="bg-black hover:bg-neutral-900 text-[#D7C8B6]"
               data-testid="button-continue"
             >
-              Enter ROI Studio
+              Enter the ROI Studio
               <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </div>

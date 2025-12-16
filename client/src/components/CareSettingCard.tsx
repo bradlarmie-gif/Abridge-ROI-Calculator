@@ -26,7 +26,7 @@ export function CareSettingCard({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "relative bg-white rounded-xl flex items-center gap-4 text-left transition-all",
+        "relative bg-white rounded-xl flex items-center gap-4 text-left transition-all duration-200",
         compact ? "px-4 py-3" : "px-6 py-4",
         disabled
           ? "opacity-60 cursor-not-allowed border border-neutral-200"
