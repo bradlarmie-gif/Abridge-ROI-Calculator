@@ -511,8 +511,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
           </div>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          <aside className="w-96 bg-white border-r border-neutral-200 flex flex-col">
+        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+          <aside className="w-full lg:w-96 bg-white border-b lg:border-b-0 lg:border-r border-neutral-200 flex flex-col shrink-0">
             <div className="p-6 border-b border-neutral-200">
               <Button
                 variant="ghost"
@@ -869,7 +869,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                     <p className="text-sm text-neutral-500">Interpretation of how each selected driver influences your current scope.</p>
                   </CardHeader>
                   <CardContent>
-                    <Table>
+                    <div className="overflow-x-auto -mx-6 px-6">
+                    <Table className="min-w-[800px]">
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-16 text-center">Active</TableHead>
@@ -1003,6 +1004,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                         </TableRow>
                       </TableBody>
                     </Table>
+                    </div>
                   </CardContent>
                 </Card>
 

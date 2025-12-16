@@ -65,7 +65,7 @@ export function PatientAccessDrawer({
         data-testid="drawer-backdrop"
       />
       <div
-        className="fixed right-0 top-0 h-full w-[420px] bg-white shadow-xl z-50 rounded-l-xl overflow-y-auto"
+        className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-white shadow-xl z-50 md:rounded-l-xl overflow-y-auto"
         data-testid="patient-access-drawer"
       >
         <div className="p-6">
