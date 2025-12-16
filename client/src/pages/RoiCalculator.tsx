@@ -182,6 +182,16 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   };
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
+  
+  const patientAccessEnabled = leverStates.get("outpatient:patientAccess") ?? false;
+  const isOutpatientSelected = selectedSettings.includes("outpatient");
+  
+  const adjustedClinicianHoursRecovered = useMemo(() => {
+    if (patientAccessEnabled && isOutpatientSelected) {
+      return patientAccessCalculations.totalHoursSaved;
+    }
+    return results.totalProviderHoursReclaimed;
+  }, [patientAccessCalculations.totalHoursSaved, results.totalProviderHoursReclaimed, patientAccessEnabled, isOutpatientSelected]);
 
   const annualAbridgeCost = useMemo(
     () =>
@@ -233,7 +243,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     });
     
     return leverList;
-  }, [selectedSettings, selectedLevers, results.levers, leverStates, patientAccessCalculations.incrementalRevenue]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue]);
 
   const totalBenefitFromSelectedLevers = useMemo(() => {
     return leversWithSettings
@@ -654,7 +665,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   />
                   <KpiCard
                     label="Clinician Hours Recovered"
-                    value={formatNumber(results.totalProviderHoursReclaimed)}
+                    value={formatNumber(adjustedClinicianHoursRecovered)}
                     icon={<Clock className="h-8 w-8" />}
                     variant="neutral"
                   />

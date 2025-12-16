@@ -220,29 +220,29 @@ export function PatientAccessDrawer({
               Calculated Outputs
             </h3>
 
-            <div className="bg-neutral-50 rounded-lg p-4 space-y-3">
+            <div className="bg-neutral-50 rounded-lg p-4 space-y-3" data-testid="patient-access-calculated-outputs">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-neutral-600">Total clinician hours recovered (annual)</span>
-                <span className="font-mono text-sm font-medium">
+                <span className="font-mono text-sm font-medium" data-testid="output-total-hours-saved">
                   {formatNumber(calculations.totalHoursSaved)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-neutral-600">Reinvested hours (used for added capacity)</span>
-                <span className="font-mono text-sm font-medium">
+                <span className="font-mono text-sm font-medium" data-testid="output-reinvested-hours">
                   {formatNumber(calculations.reinvestedHours)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-neutral-600">Additional visits enabled</span>
-                <span className="font-mono text-sm font-medium">
+                <span className="font-mono text-sm font-medium" data-testid="output-additional-visits">
                   {formatNumber(calculations.additionalVisits)}
                 </span>
               </div>
               <Separator />
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-neutral-800">Incremental annual revenue</span>
-                <span className="font-mono text-base font-semibold text-neutral-900">
+                <span className="font-mono text-base font-semibold text-neutral-900" data-testid="output-incremental-revenue">
                   {formatCurrency(calculations.incrementalRevenue)}
                 </span>
               </div>
