@@ -14,6 +14,7 @@ import { StrategicDriverCard } from "@/components/StrategicDriverCard";
 import { PatientAccessDrawer, type PatientAccessInputs, type PatientAccessCalculations } from "@/components/PatientAccessDrawer";
 import { OvertimeLocumDrawer, type OvertimeLocumInputs, type OvertimeLocumCalculations } from "@/components/OvertimeLocumDrawer";
 import { ClinicianRetentionDrawer, type ClinicianRetentionInputs, type ClinicianRetentionCalculations } from "@/components/ClinicianRetentionDrawer";
+import { LevelOfServiceDrawer, type LevelOfServiceInputs, type LevelOfServiceCalculations } from "@/components/LevelOfServiceDrawer";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { defaultInputs, type RoiInputs, type LeverId, type Lever, leverLabels, leverDescriptions } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
@@ -142,6 +143,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const [patientAccessDrawerOpen, setPatientAccessDrawerOpen] = useState(false);
   const [overtimeLocumDrawerOpen, setOvertimeLocumDrawerOpen] = useState(false);
   const [clinicianRetentionDrawerOpen, setClinicianRetentionDrawerOpen] = useState(false);
+  const [levelOfServiceDrawerOpen, setLevelOfServiceDrawerOpen] = useState(false);
   
   const [patientAccessInputs, setPatientAccessInputs] = useState<PatientAccessInputs>(() => {
     const clinicians = inputs.numberOfProviders;
@@ -216,6 +218,25 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const handleClinicianRetentionInputChange = (field: keyof ClinicianRetentionInputs, value: number) => {
     setClinicianRetentionInputs(prev => ({ ...prev, [field]: value }));
   };
+  
+  const [levelOfServiceInputs, setLevelOfServiceInputs] = useState<LevelOfServiceInputs>(() => ({
+    annualEncounters: inputs.annualOutpatientEncounters,
+    baselineUnderCodedRate: 15,
+    pctUnderCodedCorrected: 50,
+    incrementalWrvuPerVisit: 0.3,
+    wrvuConversionFactor: 34,
+  }));
+  
+  useEffect(() => {
+    setLevelOfServiceInputs(prev => ({
+      ...prev,
+      annualEncounters: inputs.annualOutpatientEncounters,
+    }));
+  }, [inputs.annualOutpatientEncounters]);
+  
+  const handleLevelOfServiceInputChange = (field: keyof LevelOfServiceInputs, value: number) => {
+    setLevelOfServiceInputs(prev => ({ ...prev, [field]: value }));
+  };
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
   
@@ -249,6 +270,15 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     const annualSavings = realizedExitsAvoided * costPerDeparture;
     return { totalExits, burnoutExits, modeledExitsAvoided, realizedExitsAvoided, annualSavings };
   }, [clinicianRetentionInputs]);
+  
+  const levelOfServiceCalculations: LevelOfServiceCalculations = useMemo(() => {
+    const { annualEncounters, baselineUnderCodedRate, pctUnderCodedCorrected, incrementalWrvuPerVisit, wrvuConversionFactor } = levelOfServiceInputs;
+    const totalUnderCodedVisits = annualEncounters * (baselineUnderCodedRate / 100);
+    const correctedVisits = totalUnderCodedVisits * (pctUnderCodedCorrected / 100);
+    const addedWrvus = correctedVisits * incrementalWrvuPerVisit;
+    const incrementalRevenue = addedWrvus * wrvuConversionFactor;
+    return { totalUnderCodedVisits, correctedVisits, addedWrvus, incrementalRevenue };
+  }, [levelOfServiceInputs]);
 
   const annualAbridgeCost = useMemo(
     () =>
@@ -275,6 +305,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                 overriddenValue = overtimeLocumCalculations.annualSavings;
               } else if (leverConfig.id === "workforce") {
                 overriddenValue = clinicianRetentionCalculations.annualSavings;
+              } else if (leverConfig.id === "wrvu") {
+                overriddenValue = levelOfServiceCalculations.incrementalRevenue;
               }
             }
             leverList.push({
@@ -301,6 +333,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   overriddenValue = overtimeLocumCalculations.annualSavings;
                 } else if (l.leverId === "workforce" && settingId === "outpatient") {
                   overriddenValue = clinicianRetentionCalculations.annualSavings;
+                } else if (l.leverId === "wrvu" && settingId === "outpatient") {
+                  overriddenValue = levelOfServiceCalculations.incrementalRevenue;
                 }
               }
               leverList.push({
@@ -316,7 +350,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     
     return leverList;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue, overtimeLocumCalculations.annualSavings, clinicianRetentionCalculations.annualSavings]);
+  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue, overtimeLocumCalculations.annualSavings, clinicianRetentionCalculations.annualSavings, levelOfServiceCalculations.incrementalRevenue]);
 
   const totalBenefitFromSelectedLevers = useMemo(() => {
     return leversWithSettings
@@ -859,6 +893,17 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                                     Show Work
                                   </Button>
                                 )}
+                                {lever.id === "wrvu" && lever.settingId === "outpatient" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setLevelOfServiceDrawerOpen(true)}
+                                    className="text-xs"
+                                    data-testid="button-show-work-los"
+                                  >
+                                    Show Work
+                                  </Button>
+                                )}
                               </TableCell>
                             </TableRow>
                           );
@@ -920,6 +965,14 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
         inputs={clinicianRetentionInputs}
         onChange={handleClinicianRetentionInputChange}
         calculations={clinicianRetentionCalculations}
+      />
+
+      <LevelOfServiceDrawer
+        open={levelOfServiceDrawerOpen}
+        onClose={() => setLevelOfServiceDrawerOpen(false)}
+        inputs={levelOfServiceInputs}
+        onChange={handleLevelOfServiceInputChange}
+        calculations={levelOfServiceCalculations}
       />
     </div>
   );
