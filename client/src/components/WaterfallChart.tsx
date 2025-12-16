@@ -22,6 +22,17 @@ const INVESTMENT_COLOR = "#F03319";
 const BENEFIT_COLOR = "#0E9F6E";
 const NET_VALUE_COLOR = "#2563EB";
 
+const SHORT_LABELS: Record<string, string> = {
+  "Investment": "Cost",
+  "Patient Access": "Access",
+  "Overtime & Locum Cost Avoidance": "Overtime/Locum",
+  "Clinician Retention": "Retention",
+  "HCC & Chronic Condition Capture": "HCC",
+  "Level of Service Alignment": "LOS",
+  "Medical Necessity–Driven Denials": "Denials",
+  "Net Value": "Net",
+};
+
 interface ChartDataItem {
   name: string;
   fullName: string;
@@ -51,14 +62,14 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
 
   const chartData: ChartDataItem[] = [
     {
-      name: "Investment",
+      name: SHORT_LABELS["Investment"] || "Cost",
       fullName: "Investment",
       value: -investmentCost,
       fill: INVESTMENT_COLOR,
       isNegative: true,
     },
     ...sortedLevers.map((lever) => ({
-      name: lever.label,
+      name: SHORT_LABELS[lever.label] || lever.label,
       fullName: lever.label,
       value: lever.value,
       fill: BENEFIT_COLOR,
@@ -66,7 +77,7 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
       description: lever.description,
     })),
     {
-      name: "Net Value",
+      name: SHORT_LABELS["Net Value"] || "Net",
       fullName: "Net Value",
       value: netValue,
       fill: netValue >= 0 ? NET_VALUE_COLOR : INVESTMENT_COLOR,
@@ -111,7 +122,7 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
     <Card className="bg-white">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold text-neutral-900">Impact Breakdown for Current Scope</CardTitle>
-        <p className="text-sm text-neutral-500">Showing the contribution of selected strategic drivers for the in-scope provider group.</p>
+        <p className="text-xs text-neutral-500">Contribution of selected drivers</p>
         <div className="flex flex-wrap gap-4 mt-3">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: INVESTMENT_COLOR }} />
@@ -132,16 +143,14 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 20, right: 20, left: 50, bottom: 80 }}
+              margin={{ top: 20, right: 20, left: 50, bottom: 40 }}
             >
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, fill: "#737373" }}
+                tick={{ fontSize: 10, fill: "#737373" }}
                 tickLine={false}
                 axisLine={{ stroke: "#e5e5e5", strokeWidth: 1 }}
-                angle={-35}
-                textAnchor="end"
-                height={80}
+                height={40}
                 interval={0}
               />
               <YAxis

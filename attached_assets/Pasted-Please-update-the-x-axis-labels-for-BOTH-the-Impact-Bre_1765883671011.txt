@@ -1,0 +1,72 @@
+Please update the x-axis labels for BOTH the “Impact Breakdown for Current Scope”
+waterfall chart and the “Enterprise Expansion View” chart.
+
+The current labels are long, rotated, and visually disruptive. Replace them with
+short, clean, horizontally rendered labels and move full names into tooltips.
+
+────────────────────────────────────────
+1. Update x-axis labels on the Waterfall
+────────────────────────────────────────
+
+Replace the x-axis bar labels with the following short labels:
+
+• Investment → “Cost”
+• Patient Access → “Access”
+• Overtime & Locum Cost Avoidance → “Overtime/Locum”
+• HCC & Chronic Condition Capture → “HCC”
+• Level of Service Alignment → “LOS”
+• Medical Necessity–Driven Denials → “Denials”
+• Net Value → “Net”
+
+Requirements:
+• Labels must appear fully horizontal (no rotation).
+• Use muted small text (e.g., text-xs text-neutral-500).
+• Ensure adequate spacing between labels so none overlap.
+• Full lever names should appear ONLY in tooltips.
+
+────────────────────────────────────────
+2. Update x-axis labels on the Enterprise Expansion View
+────────────────────────────────────────
+
+Replace the existing x-axis labels with:
+
+• Patient Access → “Access”
+• Overtime & Locum Cost Avoidance → “Overtime/Locum”
+• HCC & Chronic Condition Capture → “HCC”
+• Level of Service Alignment → “LOS”
+• Medical Necessity–Driven Denials → “Denials”
+• Total Annual Benefit → “Total Impact”
+
+Same style:
+• Horizontal text
+• Small, muted typography
+• No truncation, no rotation
+
+────────────────────────────────────────
+3. Tooltip Behavior
+────────────────────────────────────────
+
+For both charts, tooltips must display:
+
+• Full lever name (e.g., “HCC & Chronic Condition Capture”)
+• Scenario type (current vs. enterprise, where applicable)
+• Dollar value
+
+────────────────────────────────────────
+4. Optional (recommended) chart subtitles
+────────────────────────────────────────
+
+Add a muted subtitle under each chart title:
+
+For Waterfall:
+   “Contribution of selected drivers”
+
+For Enterprise Expansion View:
+   “Driver-level comparison (current vs enterprise)”
+
+────────────────────────────────────────
+5. Scope
+────────────────────────────────────────
+
+• Do NOT modify ROI math or lever logic.
+• Do NOT alter bar colors; this change is for axis labels and tooltip content only.

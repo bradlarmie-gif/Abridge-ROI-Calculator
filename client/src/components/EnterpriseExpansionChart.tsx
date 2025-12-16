@@ -21,6 +21,16 @@ interface EnterpriseExpansionChartProps {
 const CURRENT_COLOR = "#F03319";
 const ENTERPRISE_COLOR = "#000000";
 
+const SHORT_LABELS: Record<string, string> = {
+  "Patient Access": "Access",
+  "Overtime & Locum Cost Avoidance": "Overtime/Locum",
+  "Clinician Retention": "Retention",
+  "HCC & Chronic Condition Capture": "HCC",
+  "Level of Service Alignment": "LOS",
+  "Medical Necessity–Driven Denials": "Denials",
+  "Total Annual Benefit": "Total Impact",
+};
+
 interface ChartDataItem {
   name: string;
   fullName: string;
@@ -58,14 +68,14 @@ export function EnterpriseExpansionChart({
     ...sortedLevers.map((lever) => {
       const enterpriseValue = lever.value * scaleFactor;
       return {
-        name: lever.label.length > 20 ? lever.label.substring(0, 18) + "..." : lever.label,
+        name: SHORT_LABELS[lever.label] || lever.label,
         fullName: lever.label,
         current: lever.value,
         enterprise: enterpriseValue,
       };
     }),
     {
-      name: "Total Annual Benefit",
+      name: SHORT_LABELS["Total Annual Benefit"] || "Total Impact",
       fullName: "Total Annual Benefit",
       current: totalAnnualBenefit,
       enterprise: totalAnnualBenefit * scaleFactor,
@@ -114,7 +124,7 @@ export function EnterpriseExpansionChart({
     <Card className="bg-white">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold text-neutral-900">Enterprise Expansion View</CardTitle>
-        <p className="text-sm text-neutral-500">Comparing impact for this in-scope cohort vs a full enterprise rollout.</p>
+        <p className="text-xs text-neutral-500">Driver-level comparison (current vs enterprise)</p>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-4 mb-4">
@@ -131,16 +141,14 @@ export function EnterpriseExpansionChart({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 20, right: 20, left: 50, bottom: 80 }}
+              margin={{ top: 20, right: 20, left: 50, bottom: 40 }}
             >
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, fill: "#737373" }}
+                tick={{ fontSize: 10, fill: "#737373" }}
                 tickLine={false}
                 axisLine={{ stroke: "#e5e5e5", strokeWidth: 1 }}
-                angle={-35}
-                textAnchor="end"
-                height={80}
+                height={40}
                 interval={0}
               />
               <YAxis
