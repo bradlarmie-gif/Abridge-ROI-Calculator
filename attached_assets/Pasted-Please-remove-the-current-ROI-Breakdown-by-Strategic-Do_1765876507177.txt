@@ -1,0 +1,70 @@
+Please remove the current “ROI Breakdown by Strategic Domain” chart and restore a single waterfall chart. Replace it with a clean, minimal Abridge-style waterfall that displays each active outpatient lever sequentially. Do not change any ROI math, only the chart styling and grouping.
+
+───────────────────────────────────────────────
+1. Waterfall Bar Order
+───────────────────────────────────────────────
+Render the waterfall with these bars from left to right:
+
+1) Investment (negative bar)
+2) Clinician Time Recovered
+3) Overtime Reduction
+4) Clinician Retention
+5) HCC & Chronic Condition Capture
+6) Level of Service Alignment
+7) Documentation-Driven Denials
+8) Net Value (final bar)
+
+• If a lever is disabled, simply skip that bar.
+• The waterfall should collapse cleanly with any subset of levers.
+
+───────────────────────────────────────────────
+2. Color Palette (Abridge style)
+───────────────────────────────────────────────
+• Investment: Abridge Red (#F03319)
+• All benefit bars (lever bars): muted green (e.g., #0E9F6E or similar)
+• Net value: muted blue (e.g., #2563EB)
+
+Do NOT use multiple greens or multiple colors — simplicity is the goal.
+
+───────────────────────────────────────────────
+3. Bar Styling
+───────────────────────────────────────────────
+• Slight corner radius (3–4px)
+• Very thin bar outlines: 1px solid neutral gray
+• No heavy gridlines; keep grid extremely light or remove it
+• White background, lots of whitespace around the chart
+• Reduce legend clutter; if needed, show “Investment / Benefits / Net Value” at top-left
+
+───────────────────────────────────────────────
+4. Axis & Labels
+───────────────────────────────────────────────
+• Axis lines should be thin and muted gray
+• Tick labels should be small and subtle (text-neutral-500)
+• X-axis labels should show full lever names, not truncated
+• Title above chart:
+      "ROI Waterfall"
+   Subtitle (muted):
+      "Showing contribution of selected strategic drivers"
+
+───────────────────────────────────────────────
+5. Hover Interaction
+───────────────────────────────────────────────
+On hover, show a tooltip with:
+
+• Lever name
+• Dollar value (e.g., "$256,000")
+• (Optional) A short 1-line explanation from the lever’s brief description
+
+───────────────────────────────────────────────
+6. Do NOT add grouping or stacked segments
+───────────────────────────────────────────────
+• Each lever gets its own bar.
+• No domain grouping (Time vs Documentation).
+• Maintain your existing Net Value logic.
+
+───────────────────────────────────────────────
+7. Scope
+───────────────────────────────────────────────
+• Replace ONLY the waterfall chart.
+• Keep all other UI, KPI cards, left panel behavior, and lever logic the same.
+• Preserve ROI formulas exactly as they are.

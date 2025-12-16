@@ -18,119 +18,59 @@ interface WaterfallChartProps {
   netValue: number;
 }
 
-const TIME_LEVER_COLORS = [
-  "#4A9F6E",
-  "#5DB578",
-  "#71C287",
-];
-
-const DOC_LEVER_COLORS = [
-  "#2B8A9E",
-  "#3BA3B8",
-  "#4DBDCF",
-];
-
 const INVESTMENT_COLOR = "#F03319";
-const NET_VALUE_COLOR = "#4A7AAF";
+const BENEFIT_COLOR = "#0E9F6E";
+const NET_VALUE_COLOR = "#2563EB";
 
-interface LeverSegment {
-  id: string;
-  label: string;
-  value: number;
-  color: string;
-  percentOfDomain: number;
-}
-
-interface DomainBar {
+interface ChartDataItem {
   name: string;
-  displayName: string;
-  total: number;
-  segments: LeverSegment[];
-  baseColor: string;
+  fullName: string;
+  value: number;
+  fill: string;
+  isNegative: boolean;
+  description?: string;
 }
 
 export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallChartProps) {
   const enabledLevers = levers.filter((l) => l.enabled);
-  
-  const timeLevers = enabledLevers.filter((l) => l.category === "time");
-  const docLevers = enabledLevers.filter((l) => l.category === "documentation");
-  
-  const timeTotal = timeLevers.reduce((sum, l) => sum + l.value, 0);
-  const docTotal = docLevers.reduce((sum, l) => sum + l.value, 0);
 
-  const timeSegments: LeverSegment[] = timeLevers.map((lever, i) => ({
-    id: lever.id,
-    label: lever.label,
-    value: lever.value,
-    color: TIME_LEVER_COLORS[i % TIME_LEVER_COLORS.length],
-    percentOfDomain: timeTotal > 0 ? (lever.value / timeTotal) * 100 : 0,
-  }));
+  const leverOrder = [
+    "patientAccess",
+    "overtime",
+    "workforce",
+    "riskAdjustment",
+    "wrvu",
+    "denials",
+  ];
 
-  const docSegments: LeverSegment[] = docLevers.map((lever, i) => ({
-    id: lever.id,
-    label: lever.label,
-    value: lever.value,
-    color: DOC_LEVER_COLORS[i % DOC_LEVER_COLORS.length],
-    percentOfDomain: docTotal > 0 ? (lever.value / docTotal) * 100 : 0,
-  }));
-
-  const domains: DomainBar[] = [];
-  
-  if (timeTotal > 0) {
-    domains.push({
-      name: "time",
-      displayName: "Time Benefits",
-      total: timeTotal,
-      segments: timeSegments,
-      baseColor: TIME_LEVER_COLORS[0],
-    });
-  }
-  
-  if (docTotal > 0) {
-    domains.push({
-      name: "documentation",
-      displayName: "Documentation Benefits",
-      total: docTotal,
-      segments: docSegments,
-      baseColor: DOC_LEVER_COLORS[0],
-    });
-  }
-
-  interface ChartDataItem {
-    name: string;
-    displayName: string;
-    value: number;
-    fill: string;
-    isNegative: boolean;
-    type: "investment" | "domain" | "netValue";
-    segments?: LeverSegment[];
-  }
+  const sortedLevers = [...enabledLevers].sort((a, b) => {
+    const aIndex = leverOrder.indexOf(a.id);
+    const bIndex = leverOrder.indexOf(b.id);
+    return aIndex - bIndex;
+  });
 
   const chartData: ChartDataItem[] = [
     {
-      name: "investment",
-      displayName: "Investment",
+      name: "Investment",
+      fullName: "Investment",
       value: -investmentCost,
       fill: INVESTMENT_COLOR,
       isNegative: true,
-      type: "investment",
     },
-    ...domains.map((domain) => ({
-      name: domain.name,
-      displayName: domain.displayName,
-      value: domain.total,
-      fill: domain.baseColor,
+    ...sortedLevers.map((lever) => ({
+      name: lever.label,
+      fullName: lever.label,
+      value: lever.value,
+      fill: BENEFIT_COLOR,
       isNegative: false,
-      type: "domain" as const,
-      segments: domain.segments,
+      description: lever.description,
     })),
     {
-      name: "netValue",
-      displayName: "Net Value",
+      name: "Net Value",
+      fullName: "Net Value",
       value: netValue,
       fill: netValue >= 0 ? NET_VALUE_COLOR : INVESTMENT_COLOR,
       isNegative: netValue < 0,
-      type: "netValue",
     },
   ];
 
@@ -144,67 +84,46 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
     if (active && payload && payload.length) {
       const item = payload[0].payload;
       
-      if (item.type === "domain" && item.segments && item.segments.length > 0) {
-        return (
-          <div className="bg-white border border-neutral-200 rounded-md p-3 shadow-lg max-w-xs">
-            <p className="font-semibold text-sm text-neutral-900 mb-2">{item.displayName}</p>
-            <p className="text-sm text-neutral-600 mb-3">
-              Total: <span className="font-mono text-green-600">{formatCurrency(item.value)}</span>
-            </p>
-            <div className="space-y-2 border-t border-neutral-100 pt-2">
-              {item.segments.map((seg) => (
-                <div key={seg.id} className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-sm flex-shrink-0" 
-                    style={{ backgroundColor: seg.color }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-neutral-700 truncate">{seg.label}</p>
-                    <p className="text-xs text-neutral-500">
-                      <span className="font-mono">{formatCurrency(seg.value)}</span>
-                      <span className="ml-1">({seg.percentOfDomain.toFixed(0)}%)</span>
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      }
-      
       return (
-        <div className="bg-white border border-neutral-200 rounded-md p-3 shadow-lg">
-          <p className="font-semibold text-sm text-neutral-900">{item.displayName}</p>
-          <p className={`font-mono text-sm ${item.isNegative ? 'text-red-600' : 'text-blue-600'}`}>
+        <div className="bg-white border border-neutral-200 rounded-md p-3 shadow-lg max-w-xs">
+          <p className="font-semibold text-sm text-neutral-900">{item.fullName}</p>
+          <p className={`font-mono text-sm mt-1 ${item.isNegative ? 'text-red-600' : item.fullName === 'Net Value' ? 'text-blue-600' : 'text-green-600'}`}>
             {formatCurrency(item.value)}
           </p>
+          {item.description && (
+            <p className="text-xs text-neutral-500 mt-2 leading-relaxed">
+              {item.description.split('.')[0]}.
+            </p>
+          )}
         </div>
       );
     }
     return null;
   };
 
-  const maxAbsValue = Math.max(
-    investmentCost,
-    timeTotal,
-    docTotal,
-    Math.abs(netValue)
-  );
-  const yAxisMax = Math.ceil(maxAbsValue * 1.15 / 100000) * 100000;
-  const yAxisMin = -Math.ceil(investmentCost * 1.15 / 100000) * 100000;
+  const allValues = chartData.map(d => d.value);
+  const maxVal = Math.max(...allValues);
+  const minVal = Math.min(...allValues);
+  const yAxisMax = Math.ceil(maxVal * 1.1 / 100000) * 100000 || 100000;
+  const yAxisMin = Math.floor(minVal * 1.1 / 100000) * 100000 || -100000;
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">ROI Breakdown by Strategic Domain</CardTitle>
-        <div className="flex flex-wrap gap-4 mt-2">
+        <CardTitle className="text-lg font-semibold text-neutral-900">ROI Waterfall</CardTitle>
+        <p className="text-sm text-neutral-500">Showing contribution of selected strategic drivers</p>
+        <div className="flex flex-wrap gap-4 mt-3">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: TIME_LEVER_COLORS[0] }} />
-            <span className="text-xs text-neutral-500">Time Benefits</span>
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: INVESTMENT_COLOR }} />
+            <span className="text-xs text-neutral-500">Investment</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: DOC_LEVER_COLORS[0] }} />
-            <span className="text-xs text-neutral-500">Documentation Benefits</span>
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: BENEFIT_COLOR }} />
+            <span className="text-xs text-neutral-500">Benefits</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: NET_VALUE_COLOR }} />
+            <span className="text-xs text-neutral-500">Net Value</span>
           </div>
         </div>
       </CardHeader>
@@ -213,14 +132,17 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 20, right: 30, left: 50, bottom: 40 }}
+              margin={{ top: 20, right: 20, left: 50, bottom: 80 }}
             >
               <XAxis
-                dataKey="displayName"
+                dataKey="name"
                 tick={{ fontSize: 11, fill: "#737373" }}
                 tickLine={false}
                 axisLine={{ stroke: "#e5e5e5", strokeWidth: 1 }}
-                dy={8}
+                angle={-35}
+                textAnchor="end"
+                height={80}
+                interval={0}
               />
               <YAxis
                 domain={[yAxisMin, yAxisMax]}
@@ -237,11 +159,11 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
                 width={60}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-              <ReferenceLine y={0} stroke="#d4d4d4" strokeWidth={1} />
+              <ReferenceLine y={0} stroke="#e5e5e5" strokeWidth={1} />
               <Bar 
                 dataKey="value" 
-                radius={[4, 4, 4, 4]}
-                maxBarSize={80}
+                radius={[3, 3, 3, 3]}
+                maxBarSize={60}
                 stroke="#a3a3a3"
                 strokeWidth={1}
               >
