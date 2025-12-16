@@ -1,0 +1,41 @@
+Please make the following copy and visual refinements to align with the updated framing.
+
+1) Change main title from ROI Studio to ROI Workbook
+   - On the landing/entry screen, replace the current title (e.g., “Abridge ROI Studio”) with:
+     "The ROI Workbook by Abridge"
+   - Style:
+     • Use the same heading size and weight currently used for the main title.
+     • Within that title, render the word “Abridge” in the brand red color used in the logo (e.g., #F03319).
+     • The rest of the title (“The ROI Workbook by” and “Abridge”) should remain black.
+
+2) Update the instruction text above the care setting cards
+   - Replace any existing phrase at the top of the care-setting-selection area (e.g., “Select your care setting and customize…”) with:
+     "Select Care Setting(s) Below"
+   - This should be a medium-weight subheading (smaller than the main title, larger than body text).
+   - Keep the tone calm and instructional, not salesy.
+
+3) Tone down per-setting “Strategic Priorities” headings
+   - On the priorities screen, where you currently render headings like:
+       "Outpatient Strategic Priorities"
+       "Emergency Department Strategic Priorities"
+       "Nursing Strategic Priorities"
+     do the following:
+     • Reduce their visual prominence relative to the main heading “Select your strategic priorities.”
+       - Use a smaller font size and/or lighter weight than the main heading.
+       - For example:
+         - Main heading: text-xl or text-2xl, font-semibold.
+         - Per-setting headings: text-lg, font-medium.
+     • Ensure they look like section labels, not competing page titles.
+
+   - The main heading at the very top of the priorities screen should remain:
+       "Select your strategic priorities"
+     with the per-setting headings visually subordinate to it.
+
+4) Keep all previously implemented behavior and styling intact:
+   - Off-white background and subtle corner element.
+   - Updated lever names and descriptions.
+   - Full-row clickable levers with checkboxes as indicators.
+   - “Enter the ROI Studio” button behavior and styling, EXCEPT:
+     • Update its label to reflect the new language if referenced anywhere else later (you may leave the current button label for now; this change request is focused on titles and headings).
+
+Do not alter any ROI math or logic. Only adjust titles, headings, colors, and hierarchy as described above.

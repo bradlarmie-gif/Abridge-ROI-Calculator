@@ -171,9 +171,9 @@ export default function ObjectiveSelectionScreen({
     
     return (
       <div key={settingId} className="space-y-6">
-        <h2 className="text-xl font-semibold text-black">
-          {CARE_SETTING_LABELS[settingId]} Strategic Priorities
-        </h2>
+        <h3 className="text-lg font-medium text-neutral-700">
+          {CARE_SETTING_LABELS[settingId]}
+        </h3>
         <div className="space-y-8">
           {renderCategorySection(settingId, "time", leversByCategory.time)}
           {renderCategorySection(settingId, "documentation", leversByCategory.documentation)}
@@ -203,9 +203,11 @@ export default function ObjectiveSelectionScreen({
       <div className="relative z-10 max-w-6xl mx-auto pt-24 pb-24 px-8">
         <div className="space-y-10">
           <div className="text-center space-y-3">
-            <h1 className="text-3xl font-semibold text-black">Abridge ROI Studio</h1>
-            <p className="text-neutral-600 leading-relaxed">
-              Choose your care setting to begin.
+            <h1 className="text-3xl font-semibold text-black">
+              The ROI Workbook by <span style={{ color: '#F03319' }}>Abridge</span>
+            </h1>
+            <p className="text-lg font-medium text-neutral-700">
+              Select Care Setting(s) Below
             </p>
           </div>
 
