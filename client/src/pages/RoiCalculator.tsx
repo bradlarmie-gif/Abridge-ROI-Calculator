@@ -15,6 +15,7 @@ import { PatientAccessDrawer, type PatientAccessInputs, type PatientAccessCalcul
 import { OvertimeLocumDrawer, type OvertimeLocumInputs, type OvertimeLocumCalculations } from "@/components/OvertimeLocumDrawer";
 import { ClinicianRetentionDrawer, type ClinicianRetentionInputs, type ClinicianRetentionCalculations } from "@/components/ClinicianRetentionDrawer";
 import { LevelOfServiceDrawer, type LevelOfServiceInputs, type LevelOfServiceCalculations } from "@/components/LevelOfServiceDrawer";
+import { MedicalNecessityDenialsDrawer, type MedicalNecessityDenialsInputs, type MedicalNecessityDenialsCalculations } from "@/components/MedicalNecessityDenialsDrawer";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { defaultInputs, type RoiInputs, type LeverId, type Lever, leverLabels, leverDescriptions } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
@@ -144,6 +145,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const [overtimeLocumDrawerOpen, setOvertimeLocumDrawerOpen] = useState(false);
   const [clinicianRetentionDrawerOpen, setClinicianRetentionDrawerOpen] = useState(false);
   const [levelOfServiceDrawerOpen, setLevelOfServiceDrawerOpen] = useState(false);
+  const [medicalNecessityDenialsDrawerOpen, setMedicalNecessityDenialsDrawerOpen] = useState(false);
   
   const [patientAccessInputs, setPatientAccessInputs] = useState<PatientAccessInputs>(() => {
     const clinicians = inputs.numberOfProviders;
@@ -237,6 +239,19 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const handleLevelOfServiceInputChange = (field: keyof LevelOfServiceInputs, value: number) => {
     setLevelOfServiceInputs(prev => ({ ...prev, [field]: value }));
   };
+  
+  const [medicalNecessityDenialsInputs, setMedicalNecessityDenialsInputs] = useState<MedicalNecessityDenialsInputs>(() => ({
+    netCollectibleRevenue: 14000000,
+    baselineDenialRate: 5,
+    pctRecoveredWithRework: 60,
+    pctUnrecoverableDueToDocumentation: 30,
+    pctReductionWithAbridge: 50,
+    realizationFactor: 75,
+  }));
+  
+  const handleMedicalNecessityDenialsInputChange = (field: keyof MedicalNecessityDenialsInputs, value: number) => {
+    setMedicalNecessityDenialsInputs(prev => ({ ...prev, [field]: value }));
+  };
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
   
@@ -279,6 +294,16 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     const incrementalRevenue = addedWrvus * wrvuConversionFactor;
     return { totalUnderCodedVisits, correctedVisits, addedWrvus, incrementalRevenue };
   }, [levelOfServiceInputs]);
+  
+  const medicalNecessityDenialsCalculations: MedicalNecessityDenialsCalculations = useMemo(() => {
+    const { netCollectibleRevenue, baselineDenialRate, pctRecoveredWithRework, pctUnrecoverableDueToDocumentation, pctReductionWithAbridge, realizationFactor } = medicalNecessityDenialsInputs;
+    const baselineDeniedRevenue = netCollectibleRevenue * (baselineDenialRate / 100);
+    const unrecoveredAfterRework = baselineDeniedRevenue * (1 - pctRecoveredWithRework / 100);
+    const documentationDrivenUnrecoverable = unrecoveredAfterRework * (pctUnrecoverableDueToDocumentation / 100);
+    const modeledRecovered = documentationDrivenUnrecoverable * (pctReductionWithAbridge / 100);
+    const realizedRecovered = modeledRecovered * (realizationFactor / 100);
+    return { baselineDeniedRevenue, unrecoveredAfterRework, documentationDrivenUnrecoverable, modeledRecovered, realizedRecovered };
+  }, [medicalNecessityDenialsInputs]);
 
   const annualAbridgeCost = useMemo(
     () =>
@@ -307,6 +332,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                 overriddenValue = clinicianRetentionCalculations.annualSavings;
               } else if (leverConfig.id === "wrvu") {
                 overriddenValue = levelOfServiceCalculations.incrementalRevenue;
+              } else if (leverConfig.id === "denials") {
+                overriddenValue = medicalNecessityDenialsCalculations.realizedRecovered;
               }
             }
             leverList.push({
@@ -335,6 +362,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   overriddenValue = clinicianRetentionCalculations.annualSavings;
                 } else if (l.leverId === "wrvu" && settingId === "outpatient") {
                   overriddenValue = levelOfServiceCalculations.incrementalRevenue;
+                } else if (l.leverId === "denials" && settingId === "outpatient") {
+                  overriddenValue = medicalNecessityDenialsCalculations.realizedRecovered;
                 }
               }
               leverList.push({
@@ -350,7 +379,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     
     return leverList;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue, overtimeLocumCalculations.annualSavings, clinicianRetentionCalculations.annualSavings, levelOfServiceCalculations.incrementalRevenue]);
+  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue, overtimeLocumCalculations.annualSavings, clinicianRetentionCalculations.annualSavings, levelOfServiceCalculations.incrementalRevenue, medicalNecessityDenialsCalculations.realizedRecovered]);
 
   const totalBenefitFromSelectedLevers = useMemo(() => {
     return leversWithSettings
@@ -904,6 +933,17 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                                     Show Work
                                   </Button>
                                 )}
+                                {lever.id === "denials" && lever.settingId === "outpatient" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setMedicalNecessityDenialsDrawerOpen(true)}
+                                    className="text-xs"
+                                    data-testid="button-show-work-denials"
+                                  >
+                                    Show Work
+                                  </Button>
+                                )}
                               </TableCell>
                             </TableRow>
                           );
@@ -973,6 +1013,14 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
         inputs={levelOfServiceInputs}
         onChange={handleLevelOfServiceInputChange}
         calculations={levelOfServiceCalculations}
+      />
+
+      <MedicalNecessityDenialsDrawer
+        open={medicalNecessityDenialsDrawerOpen}
+        onClose={() => setMedicalNecessityDenialsDrawerOpen(false)}
+        inputs={medicalNecessityDenialsInputs}
+        onChange={handleMedicalNecessityDenialsInputChange}
+        calculations={medicalNecessityDenialsCalculations}
       />
     </div>
   );

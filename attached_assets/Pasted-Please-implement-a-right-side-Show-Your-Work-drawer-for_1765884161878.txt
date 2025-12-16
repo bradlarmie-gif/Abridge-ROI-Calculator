@@ -1,0 +1,179 @@
+Please implement a right-side “Show Your Work” drawer for the Outpatient lever  
+**Medical Necessity–Driven Denials**, matching the exact style, layout, and  
+interaction of the existing Patient Access drawer.
+
+Do NOT modify any other levers or global logic except where described here.  
+This drawer computes the annual revenue recovered by reducing denials caused  
+by insufficient documentation of medical necessity or unclear clinical rationale.
+
+────────────────────────────────────────
+1. Drawer Behavior & Layout
+────────────────────────────────────────
+
+• Trigger:
+  – Add a “Show Work” link/icon on the Medical Necessity–Driven Denials row in:
+       • Strategic Drivers (left panel)
+       • Understanding Your Drivers table
+  – Clicking opens the drawer on the right.
+
+• Drawer specifics:
+  – Width ~400–420px (same as all other drawers)
+  – Slide-in animation, white background, rounded-xl left edge, subtle shadow
+  – Main calculator view stays visible behind the drawer
+  – Close via “X” in top-right
+
+• Header:
+  – Title: **Medical Necessity–Driven Denials**
+  – Subtitle (muted): “Assumptions and logic behind this driver”
+  – Divider below header
+
+────────────────────────────────────────
+2. Orientation / Education Text
+────────────────────────────────────────
+
+Place this paragraph immediately under the header:
+
+"Many denials cannot be recovered because the documentation does not clearly justify why care was medically necessary. When the note lacks sufficient detail in the MDM or fails to show the clinical reasoning behind decisions, payers treat the claim as unsupported. These inputs estimate how much of your current denial volume falls into this unrecoverable category and how much of that Abridge can realistically help prevent."
+
+────────────────────────────────────────
+3. ASSUMPTIONS (Editable Inputs)
+────────────────────────────────────────
+
+Under a bold **ASSUMPTIONS** header, include the following inputs:
+
+(A) Baseline denial landscape
+
+1. **Net collectible outpatient revenue ($)**  
+   • Numeric input  
+   • Label: “Net collectible outpatient revenue ($)”  
+   • Helper: “Revenue expected after contract adjustments.”
+
+2. **Baseline denial rate (%)**  
+   • Slider or numeric input (0–20%)  
+   • Label: “Baseline denial rate (%)”  
+   • Helper: “Portion of collectible revenue initially denied by payers.”
+
+3. **% of denials typically recovered with rework/appeals**  
+   • Slider (0–100%)  
+   • Label: “% of denied revenue typically recovered”  
+   • Helper: “Denied revenue that is usually overturned through rework or appeals.”
+
+(B) Documentation-related unrecoverable portion
+
+4. **% of remaining denied revenue that is unrecoverable due to documentation gaps**  
+   • Slider (0–60%)  
+   • Default: 30%  
+   • Label: “% of denied revenue unrecoverable due to documentation gaps”  
+   • Helper: “Portion of denials that cannot be overturned because medical necessity was not sufficiently documented.”
+
+(C) Abridge’s impact
+
+5. **% of documentation-driven denials prevented with Abridge**  
+   • Slider (0–100%)  
+   • Default: 50%  
+   • Label: “% reduction in documentation-driven denials with Abridge”  
+   • Helper: “Estimated improvement from clearer MDM and stronger encounter narratives.”
+
+(D) Realization factor
+
+6. **Realization factor (% of modeled improvement to count)**  
+   • Slider (0–100%)  
+   • Default: 75%  
+   • Label: “Realization factor”  
+   • Helper: “Conservative portion of the modeled reduction you want to claim.”
+
+────────────────────────────────────────
+4. CALCULATED OUTPUTS (Read-only)
+────────────────────────────────────────
+
+Create a bold section header: **CALCULATED OUTPUTS**
+
+Show the following values (auto-updating, formatted with commas/dollars):
+
+1. **Baseline denied revenue**  
+2. **Unrecoverable documentation-driven denied revenue**  
+3. **Documentation-driven denials prevented (modeled)**  
+4. **Realized denied revenue avoided**  
+5. **Incremental annual revenue (final value)**
+
+────────────────────────────────────────
+5. Calculation Logic (Bind to ROI Engine)
+────────────────────────────────────────
+
+Let:
+
+  revenue = net collectible outpatient revenue
+  denialRate = baseline denial rate (0–1)
+  recoveredPct = % of denied revenue typically recovered (0–1)
+  unrecoverablePct = % of remaining denied revenue unrecoverable (0–1)
+  reductionPct = % reduction in documentation-driven denials with Abridge (0–1)
+  realization = realization factor (0–1)
+
+Compute:
+
+1) baselineDeniedRevenue =
+      revenue * denialRate
+
+2) unrecoveredAfterRework =
+      baselineDeniedRevenue * (1 - recoveredPct)
+
+3) documentationDrivenUnrecoverable =
+      unrecoveredAfterRework * unrecoverablePct
+
+4) modeledRecovered =
+      documentationDrivenUnrecoverable * reductionPct
+
+5) realizedRecovered =
+      modeledRecovered * realization
+
+Bind:
+
+• `realizedRecovered` → lever’s Annual Value  
+• Feed into:
+   – Total Annual Impact  
+   – Net Gain  
+   – Return (x)  
+   – Waterfall bar (“Denials”)  
+   – Enterprise Expansion scaling  
+
+────────────────────────────────────────
+6. Formula Block — “How this is calculated”
+────────────────────────────────────────
+
+Add a muted header:
+
+  **HOW THIS IS CALCULATED**
+
+Monospace block:
+
+"Baseline denied revenue =
+  Net collectible outpatient revenue × Baseline denial rate
+
+Unrecoverable documentation-driven portion =
+  Baseline denied revenue
+  × (1 − % recovered with rework)
+  × % unrecoverable due to documentation gaps
+
+Annual revenue recovered =
+  Unrecoverable documentation-driven portion
+  × % reduction with Abridge
+  × Realization factor"
+
+────────────────────────────────────────
+7. Footer Note
+────────────────────────────────────────
+
+Add muted text:
+
+"Changes here update the denials impact, waterfall, KPIs, and enterprise projections automatically."
+
+────────────────────────────────────────
+8. Scope
+────────────────────────────────────────
+
+• Apply this drawer ONLY to the lever  
+  **Medical Necessity–Driven Denials**  
+• Match component styling and layout to Patient Access, Overtime/Locum,  
+  and Clinician Retention drawers.  
+• Do NOT change other levers or global ROI logic in this step.
+
