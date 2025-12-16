@@ -1,0 +1,123 @@
+Please refactor and restyle the ROI waterfall chart to match the following Brad-style waterfall spec. Do NOT change any underlying ROI math or lever values; only how the chart aggregates and displays them.
+
+GOAL
+────
+Keep a single waterfall chart, but:
+• Group levers into two domains (Time vs Documentation Quality).
+• Show those domains as two positive bars between Investment and Net Value.
+• Inside each domain bar, show stacked segments for each active lever.
+• Ensure the chart still works if some levers are turned off.
+• Make the styling feel clean and in line with Abridge’s brand.
+
+DATA & GROUPING
+────────────────
+We already have annual dollar values calculated per lever. Use those existing values and group them as:
+
+TIME DOMAIN
+• Clinician Time Recovered
+• Overtime Reduction
+• Clinician Retention
+
+DOCUMENTATION DOMAIN
+• Condition Documentation Completeness
+• Visit Complexity Documentation
+• Documentation-Related Denials
+
+For each domain, compute:
+• timeTotal = sum of active time-domain lever values
+• docTotal  = sum of active documentation-domain lever values
+
+If a lever is disabled via the “Active” checkbox, that lever’s value should:
+• Still be computed in the data model if needed elsewhere
+• Be excluded from the domain total used for the chart
+• Not appear as a visible segment in the stacked bar
+
+WATERFALL STRUCTURE
+────────────────────
+Replace the existing multi-bar waterfall with a 4-step sequence in this exact order:
+
+1) Investment (cost)    – a single red bar, negative relative to baseline
+2) Time Benefits        – one green bar, composed of stacked segments for each active time lever
+3) Documentation Benefits – one teal/blue-green bar, composed of stacked segments for each active documentation lever
+4) Net Value            – a single blue bar showing total net benefit (all active levers minus investment)
+
+Important:
+• The overall waterfall should still visually show “starting at 0 → down for Investment → up for Time → up for Documentation → final Net Value”.
+• If an entire domain has no active levers (e.g., all documentation levers unchecked), hide that bar entirely and adjust the sequence to skip it. The waterfall should still make narrative sense in any combination.
+
+VISUAL DESIGN
+──────────────
+General:
+• Title for the chart: "ROI Breakdown by Strategic Domain".
+• Reduce visual noise: light or no gridlines, thin axes, plenty of whitespace.
+• Slightly rounded corners on all bars to feel more product-like and less “Excel”.
+
+Color palette (please use or approximate these):
+• Investment bar: Abridge red – #F03319
+• Time Benefits bar: base green (muted clinical green)
+• Documentation Benefits bar: teal / blue-green
+• Net Value bar: muted blue
+
+Within the Time Benefits bar:
+• Use 2–3 shades of green for the stacked segments, one per lever:
+  - Clinician Time Recovered
+  - Overtime Reduction
+  - Clinician Retention
+
+Within the Documentation Benefits bar:
+• Use 2–3 shades of teal/blue for segments:
+  - Condition Documentation Completeness
+  - Visit Complexity Documentation
+  - Documentation-Related Denials
+
+Styling details:
+• Bars should have a thin outline (1–1.5px) in a neutral gray to keep shape definition.
+• Axis labels and tick labels should be small and muted (gray), not bold.
+• Show dollar values on hover, not as big labels on every bar.
+
+INTERACTION & TOGGLING
+───────────────────────
+1) Lever checkboxes:
+   • When a lever is unchecked in the “Annual Impact by Lever” table or Primary Levers list:
+     - Remove its segment from the stacked bar in its domain.
+     - Subtract its value from the domain total used in the waterfall.
+     - Recalculate Net Value accordingly.
+   • When a lever is checked again, re-add its segment and recalc.
+
+2) Tooltips:
+   • Hovering on a domain bar segment should show:
+       - Lever name
+       - Dollar value (e.g., "$256,000")
+       - Percent of that domain’s total (e.g., "46% of Time Benefits")
+   • Hovering on the main domain bar area (if not on a specific segment) can show:
+       - Domain name (Time Benefits / Documentation Benefits)
+       - Total domain value
+
+3) Responsiveness:
+   • Ensure y-axis automatically rescales based on the maximum absolute bar value.
+   • With fewer levers active, bars should remain properly sized and spaced.
+
+LABELING
+────────
+Under each bar, use short labels:
+
+• Investment
+• Time Benefits
+• Documentation Benefits
+• Net Value
+
+Above the chart or in a small legend, you can include a subtle domain legend:
+
+• Time Benefits – Time returned to the clinician workday
+• Documentation Benefits – Improvements in documentation and coding quality
+
+SCOPE & CONSTRAINTS
+────────────────────
+• Do NOT change any underlying formulas for lever calculations or net value; reuse the existing numbers that feed the old waterfall.
+• The only behavior change is how the bars are grouped and how they respond to lever toggles.
+• Keep the chart in the same location within the Results Summary.
+• If implementing stacked bars within the waterfall is difficult, approximate the effect using grouped segments but preserve the 4-domain order above.
+
+The goal is that the waterfall visually tells this story:
+   Investment → Time Benefits → Documentation Benefits → Net Value,
+and that the chart still looks clean and correct as levers are turned on and off.

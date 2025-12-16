@@ -6,12 +6,15 @@ export type LeverId =
   | "denials" 
   | "riskAdjustment";
 
+export type LeverCategory = "time" | "documentation";
+
 export interface Lever {
   id: LeverId;
   label: string;
   value: number;
   enabled: boolean;
   description: string;
+  category: LeverCategory;
 }
 
 export interface RoiInputs {

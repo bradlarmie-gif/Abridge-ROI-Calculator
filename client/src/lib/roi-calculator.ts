@@ -25,6 +25,7 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
       value: patientAccessValue,
       enabled: inputs.levers.patientAccess,
       description: leverDescriptions.patientAccess,
+      category: "time",
     },
     {
       id: "overtime",
@@ -32,6 +33,7 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
       value: overtimeSavings,
       enabled: inputs.levers.overtime,
       description: leverDescriptions.overtime,
+      category: "time",
     },
     {
       id: "workforce",
@@ -39,6 +41,7 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
       value: workforceSavings,
       enabled: inputs.levers.workforce,
       description: leverDescriptions.workforce,
+      category: "time",
     },
     {
       id: "riskAdjustment",
@@ -46,6 +49,7 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
       value: riskAdjRevenue,
       enabled: inputs.levers.riskAdjustment,
       description: leverDescriptions.riskAdjustment,
+      category: "documentation",
     },
     {
       id: "wrvu",
@@ -53,6 +57,7 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
       value: wrvuRevenue,
       enabled: inputs.levers.wrvu,
       description: leverDescriptions.wrvu,
+      category: "documentation",
     },
     {
       id: "denials",
@@ -60,6 +65,7 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
       value: denialResults.revenueRecovered,
       enabled: inputs.levers.denials,
       description: leverDescriptions.denials,
+      category: "documentation",
     },
   ];
 
