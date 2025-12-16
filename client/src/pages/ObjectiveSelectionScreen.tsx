@@ -191,23 +191,14 @@ export default function ObjectiveSelectionScreen({
     <div className="min-h-screen relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
       <BackgroundShape />
       
-      <div className="absolute top-0 left-0 px-6 pt-6 z-20">
-        <span 
-          className="text-2xl font-semibold tracking-wide"
-          style={{ color: '#F03319' }}
-        >
-          ABRIDGE
-        </span>
-      </div>
-      
-      <div className="relative z-10 max-w-6xl mx-auto pt-24 pb-24 px-8">
+      <div className="relative z-10 max-w-6xl mx-auto pt-16 pb-24 px-8">
         <div className="space-y-10">
-          <div className="text-center space-y-3">
+          <div className="text-center space-y-2">
             <h1 className="text-3xl font-semibold text-black">
               The ROI Workbook by <span style={{ color: '#F03319' }}>Abridge</span>
             </h1>
-            <p className="text-lg font-medium text-neutral-700">
-              Select Care Setting(s) Below
+            <p className="text-base text-neutral-600">
+              Select care setting(s) to begin
             </p>
           </div>
 
