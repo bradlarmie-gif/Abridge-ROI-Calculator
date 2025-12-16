@@ -54,36 +54,51 @@ interface LeverWithSetting extends Lever {
 }
 
 const leverEducationalContent: Record<string, string> = {
-  patientAccess: `Most capacity problems in outpatient care aren't caused by a shortage of clinicians — they come from the quiet minutes lost to documentation throughout the day. Those minutes squeeze schedules, push work past clinic hours, and create the sense that "we'd see more patients if we had more time." When those minutes are returned, even modestly, schedules stabilize and access improves without changing staffing.
+  patientAccess: `Patient access constraints often originate from minutes lost to documentation throughout the clinic day. These small inefficiencies compress schedules, extend wait times, and limit how many visits a provider can realistically support. When documentation burden decreases, schedules stabilize, backlog shrinks, and access expands without adding hours.
 
-Abridge gives clinicians back the time that documentation has been quietly stealing for years. By capturing the story in real time and producing drafts that reflect what was actually said, documentation stops leaking into every corner of the day. More of the clinician's energy stays with patients. And access expands not because you've added staff — but because you've removed the friction that was holding them back.`,
-  overtime: `Overtime in outpatient care is rarely about patient volume — it's about documentation that doesn't fit inside the workday. Clinicians stay late to finish notes, catch up on inbox messages, or close charts that couldn't be completed between visits. Over time, this becomes normalized, but the cost compounds: premium labor, burnout, and declining morale.
+Abridge returns those minutes by capturing the clinical story in real time, allowing more of the clinician's day to remain available for patient care. Documentation stops leaking into every corner of the day, and access expands not because you've added staff — but because you've removed the friction that was holding them back.`,
+  overtime: `Premium labor in outpatient clinics is often a symptom of documentation spilling past scheduled hours, not true staffing shortages. When clinicians stay late to finish notes, organizations quietly accumulate overtime and rely more heavily on locums to maintain coverage.
 
-Abridge reduces overtime by compressing documentation into the encounter itself. When notes are drafted in real time and require only light editing, there's less to carry into evening hours. Work ends closer to when clinic ends. And the savings show up not just in labor costs, but in the sustainability of the work itself.`,
-  workforce: `Turnover among outpatient clinicians is often attributed to compensation or workload — but the deeper driver is frequently the cumulative weight of administrative burden. Documentation that follows clinicians home, inbox messages that pile up, and the sense that "the job has changed" all erode satisfaction. When clinicians leave, the cost is substantial: recruiting, onboarding, lost patient relationships, and coverage gaps.
+Abridge reduces spillover work by enabling more documentation to be completed inside the visit, helping clinics reduce overtime and avoid avoidable locum spend. Work ends closer to when clinic ends, and the savings show up not just in labor costs, but in the sustainability of the work itself.`,
+  workforce: `Burnout is driven less by clinical complexity and more by administrative overload. When documentation consistently extends the workday, clinicians experience higher fatigue and turnover risk.
 
-Abridge addresses the root cause. By reducing the documentation load and giving clinicians back time they thought was permanently lost, it restores a sense of control. Clinicians who feel less burdened are more likely to stay — and that retention compounds into organizational stability.`,
-  riskAdjustment: `Risk adjustment depends on documentation — but not on heroic efforts to "code better." It depends on whether the clinical story captures what's actually happening with the patient. Chronic conditions that are discussed but not documented, nuances that are understood but not written down — these gaps quietly erode RAF scores and downstream reimbursement.
+Abridge lightens that load by reducing after-hours charting, helping create a more sustainable daily workflow that supports clinician well-being and retention. Clinicians who feel less burdened are more likely to stay — and that retention compounds into organizational stability.`,
+  riskAdjustment: `Many chronic conditions exist in the record but are inconsistently restated across encounters, leading to under-reported patient complexity and weakened risk models.
 
-Abridge captures the full clinical conversation, including the conditions and context that often go unrecorded. When the note reflects what was actually said, previously known conditions are more consistently documented, and newly identified ones are less likely to be missed. The result is a more complete picture — and more accurate risk scoring — without asking clinicians to do more.`,
-  wrvu: `Many outpatient encounters are billed below their actual complexity — not because the work wasn't done, but because the documentation doesn't fully reflect it. Clinical reasoning, time spent, and the nuance of shared decision-making often don't make it into the note. The result is systematic under-coding that leaves revenue on the table.
+Abridge generates richer clinical narratives that surface relevant conditions naturally, making it easier for clinicians to confirm or update them. This supports more accurate risk adjustment without adding administrative burden — the result is a more complete picture and more accurate risk scoring.`,
+  wrvu: `Visits are frequently coded below their true complexity because documentation does not fully capture the clinical reasoning behind the encounter. When essential details of assessment and decision-making are missing, coders default to safer, lower levels.
 
-Abridge captures the richness of the clinical conversation, including the reasoning and detail that support accurate coding. When notes reflect the full complexity of the visit, coding teams can assign the level that matches the work. This isn't about upcoding — it's about aligning documentation with reality.`,
-  denials: `A significant share of claim denials originate not from coding errors, but from documentation that doesn't clearly support medical necessity. The clinical reasoning was sound, the care was appropriate — but the note didn't tell the story well enough for the payer. These denials create rework, delays, and lost revenue.
+Abridge preserves more of the clinician's thought process, enabling coding to reflect the visit's actual complexity: not upcoding, just accurate alignment. When notes reflect the full complexity of the visit, coding teams can assign the level that matches the work.`,
+  denials: `A significant share of unrecoverable denials stem from insufficient documentation of medical necessity or incomplete MDM. These denials cannot be overturned through rework and represent avoidable revenue loss.
 
-Abridge strengthens the clinical narrative by capturing what was actually discussed, including the reasoning behind decisions. When the story is clearer, there's less room for payers to question necessity. Denials drop, appeals decrease, and revenue cycle teams spend less time chasing preventable problems.`,
-  edPatientAccess: `Flow in the ED depends as much on documentation speed as it does on staffing or room availability. When clinicians can complete documentation during the encounter, patients are dispositioned sooner — reducing LWBS and restoring predictable throughput.
+Abridge strengthens the clinical narrative by capturing clear reasoning for decisions during the visit, reducing denials that originate from documentation gaps rather than clinical care. When the story is clearer, there's less room for payers to question necessity.`,
+  edPatientAccess: `Throughput in the ED is governed not only by staffing but by the pace at which clinicians can evaluate, document, and disposition patients. When documentation happens more efficiently, patients move through the system faster and fewer leave without being seen.
 
-Abridge captures the clinical conversation in real time, producing drafts that reflect what was actually said. Documentation becomes part of the encounter rather than something that happens after it. The result is faster disposition, shorter waits, and fewer patients who leave without being seen.`,
-  edProviderRetention: `Emergency clinicians tolerate intensity — what erodes them is the administrative load layered on top of it. Documentation that piles up, charts that can't be closed, and the sense that "the job has become something else" all contribute to burnout and turnover.
+Abridge enables more in-flow documentation, improving ED efficiency and reducing LWBS. Documentation becomes part of the encounter rather than something that happens after it, resulting in faster disposition and shorter waits.`,
+  edProviderRetention: `ED clinicians tolerate acuity, but administrative drag erodes resilience. Documentation burden contributes heavily to burnout and turnover, creating staffing instability.
 
-Abridge reduces that load by handling documentation in real time. When notes are drafted during the encounter and require only light review, clinicians can focus on care rather than paperwork. The job feels more like medicine again — and that makes a difference in who stays.`,
-  edScribeSavings: `Scribes help ED teams keep pace when documentation demands exceed real-time capacity. But scribe programs are expensive, variable in quality, and create their own coordination overhead.
+By reducing cognitive load and end-of-shift documentation work, Abridge helps ED teams maintain more sustainable workloads and improves clinician retention. The job feels more like medicine again — and that makes a difference in who stays.`,
+  edScribeSavings: `Scribes are often used to compensate for documentation volume that outpaces clinician capacity. When documentation becomes lighter and more synchronous with care, organizations can rebalance how scribes are used.
 
-When documentation becomes lighter and more synchronous with care, organizations can rebalance scribe use — maintaining support where it's truly needed while reducing dependence where it's become a workaround for broken workflows.`,
-  edDocumentationQuality: `A strong ED note captures the clinical reasoning behind urgency, acuity, and disposition. When the story is clearer, coding, downstream teams, and quality reviews align more closely with the clinician's intent.
+Abridge helps maintain support where needed while reducing dependency where documentation friction decreases. Organizations can optimize scribe programs rather than simply scaling them to meet volume.`,
+  edDocumentationQuality: `Accurate ED coding and care transitions depend on clear articulation of acuity and clinical reasoning. When documentation is incomplete or rushed, it weakens both coding fidelity and downstream clinical handoffs.
 
-Abridge captures the full clinical conversation, including the reasoning and context that often don't make it into typed notes. The result is documentation that better reflects what actually happened — and that supports more accurate coding, fewer queries, and clearer handoffs.`,
+Abridge captures more detail from the encounter, improving documentation quality without slowing clinicians down. The result is documentation that better reflects what actually happened — supporting more accurate coding and clearer handoffs.`,
+  edDenialSavings: `Many ED denials stem from insufficient documentation of urgency, rationale, or medical decision-making. These denials consume significant administrative effort and often represent preventable revenue loss.
+
+By strengthening the clinical narrative, Abridge reduces documentation-related ED denials tied to unclear or incomplete justification. When the story is clearer, denials drop and revenue cycle teams spend less time chasing preventable problems.`,
+  rnLaborEfficiency: `A large portion of nursing overtime originates from documentation tasks that accumulate throughout the shift. When flowsheets and assessments take longer than planned, nurses finish documentation after their shift ends.
+
+Abridge streamlines documentation in real time, helping shifts end on time and reducing avoidable overtime. Time returns to direct care and schedule reliability improves.`,
+  rnRetention: `Nurses often cite documentation burden as a major driver of burnout and turnover. Heavy administrative load reduces time spent on direct patient care and increases fatigue.
+
+Abridge lightens this burden, supporting more sustainable workflows and improving nurse retention. When the administrative load lifts, nurses can focus on what brought them to the profession — caring for patients.`,
+  rnSafetyEvents: `Early indicators of patient deterioration often appear first in nursing documentation. When documentation lags or is incomplete, safety signals can be missed.
+
+Abridge helps capture assessments more consistently and promptly, strengthening situational awareness and supporting prevention of avoidable safety events. More timely charting means earlier recognition of changes in patient status.`,
+  rnDrgSeverity: `Many CC/MCC elements originate in nursing assessments and observations. When these details are inconsistently documented, patient severity is understated, affecting care planning and case mix accuracy.
+
+Abridge improves consistency of nursing documentation, supporting more accurate severity capture. When nursing observations are reliably recorded, the full picture of patient acuity becomes visible.`,
 };
 
 function getFirstSentence(text: string): string {

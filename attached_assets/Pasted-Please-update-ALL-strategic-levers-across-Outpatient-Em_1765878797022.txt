@@ -1,0 +1,133 @@
+Please update ALL strategic levers across Outpatient, Emergency Department, and Nursing to use the finalized names, categories, and descriptions below. These updates must be applied everywhere the levers appear:
+
+• Strategic Priorities selection screen  
+• Left panel lever cards  
+• Waterfall chart labels  
+• Impact-by-lever cards/tables  
+• Enterprise Expansion chart  
+• Any tooltips or lever references  
+• Any “Read More” modals associated with lever descriptions  
+
+Do NOT change ROI math or logic. Only update text labels, category assignments, and descriptions.
+
+────────────────────────────────────────────────────────
+OUTPATIENT — FINAL LEVER SET
+────────────────────────────────────────────────────────
+
+1) Patient Access  
+   category: "time"
+   description (2–4 sentences, educational tone):
+   "Patient access constraints often originate from minutes lost to documentation throughout the clinic day. These small inefficiencies compress schedules, extend wait times, and limit how many visits a provider can realistically support. When documentation burden decreases, schedules stabilize, backlog shrinks, and access expands without adding hours. Abridge returns those minutes by capturing the clinical story in real time, allowing more of the clinician’s day to remain available for patient care."
+
+2) Overtime & Locum Cost Avoidance  
+   category: "time"
+   description:
+   "Premium labor in outpatient clinics is often a symptom of documentation spilling past scheduled hours, not true staffing shortages. When clinicians stay late to finish notes, organizations quietly accumulate overtime and rely more heavily on locums to maintain coverage. Abridge reduces spillover work by enabling more documentation to be completed inside the visit, helping clinics reduce overtime and avoid avoidable locum spend."
+
+3) Clinician Retention  
+   category: "time"
+   description:
+   "Burnout is driven less by clinical complexity and more by administrative overload. When documentation consistently extends the workday, clinicians experience higher fatigue and turnover risk. Abridge lightens that load by reducing after-hours charting, helping create a more sustainable daily workflow that supports clinician well-being and retention."
+
+4) HCC & Chronic Condition Capture  
+   category: "documentation"
+   description:
+   "Many chronic conditions exist in the record but are inconsistently restated across encounters, leading to under-reported patient complexity and weakened risk models. Abridge generates richer clinical narratives that surface relevant conditions naturally, making it easier for clinicians to confirm or update them. This supports more accurate risk adjustment without adding administrative burden."
+
+5) Level of Service Alignment  
+   category: "documentation"
+   description:
+   "Visits are frequently coded below their true complexity because documentation does not fully capture the clinical reasoning behind the encounter. When essential details of assessment and decision-making are missing, coders default to safer, lower levels. Abridge preserves more of the clinician’s thought process, enabling coding to reflect the visit’s actual complexity: not upcoding, just accurate alignment."
+
+6) Medical Necessity–Driven Denials  
+   category: "documentation"
+   description:
+   "A significant share of unrecoverable denials stem from insufficient documentation of medical necessity or incomplete MDM. These denials cannot be overturned through rework and represent avoidable revenue loss. Abridge strengthens the clinical narrative by capturing clear reasoning for decisions during the visit, reducing denials that originate from documentation gaps rather than clinical care."
+
+────────────────────────────────────────────────────────
+EMERGENCY DEPARTMENT — FINAL LEVER SET
+────────────────────────────────────────────────────────
+
+1) ED Flow & LWBS  
+   category: "time"
+   description:
+   "Throughput in the ED is governed not only by staffing but by the pace at which clinicians can evaluate, document, and disposition patients. When documentation happens more efficiently, patients move through the system faster and fewer leave without being seen. Abridge enables more in-flow documentation, improving ED efficiency and reducing LWBS."
+
+2) ED Clinician Retention  
+   category: "time"
+   description:
+   "ED clinicians tolerate acuity, but administrative drag erodes resilience. Documentation burden contributes heavily to burnout and turnover, creating staffing instability. By reducing cognitive load and end-of-shift documentation work, Abridge helps ED teams maintain more sustainable workloads and improves clinician retention."
+
+3) Scribe Utilization  
+   category: "time"
+   description:
+   "Scribes are often used to compensate for documentation volume that outpaces clinician capacity. When documentation becomes lighter and more synchronous with care, organizations can rebalance how scribes are used—maintaining support where needed while reducing dependency where documentation friction decreases."
+
+4) ED Clinical Documentation Quality  
+   category: "documentation"
+   description:
+   "Accurate ED coding and care transitions depend on clear articulation of acuity and clinical reasoning. When documentation is incomplete or rushed, it weakens both coding fidelity and downstream clinical handoffs. Abridge captures more detail from the encounter, improving documentation quality without slowing clinicians down."
+
+5) ED Denials  
+   category: "documentation"
+   description:
+   "Many ED denials stem from insufficient documentation of urgency, rationale, or medical decision-making. These denials consume significant administrative effort and often represent preventable revenue loss. By strengthening the clinical narrative, Abridge reduces documentation-related ED denials tied to unclear or incomplete justification."
+
+────────────────────────────────────────────────────────
+NURSING — FINAL LEVER SET
+────────────────────────────────────────────────────────
+
+1) Nursing Time Recovered  
+   category: "time"
+   description:
+   "A large portion of nursing overtime originates from documentation tasks that accumulate throughout the shift. When flowsheets and assessments take longer than planned, nurses finish documentation after their shift ends. Abridge streamlines documentation in real time, helping shifts end on time and reducing avoidable overtime."
+
+2) Nursing Retention  
+   category: "time"
+   description:
+   "Nurses often cite documentation burden as a major driver of burnout and turnover. Heavy administrative load reduces time spent on direct patient care and increases fatigue. Abridge lightens this burden, supporting more sustainable workflows and improving nurse retention."
+
+3) Patient Safety Documentation  
+   category: "documentation"
+   description:
+   "Early indicators of patient deterioration often appear first in nursing documentation. When documentation lags or is incomplete, safety signals can be missed. Abridge helps capture assessments more consistently and promptly, strengthening situational awareness and supporting prevention of avoidable safety events."
+
+4) Severity Documentation  
+   category: "documentation"
+   description:
+   "Many CC/MCC elements originate in nursing assessments and observations. When these details are inconsistently documented, patient severity is understated, affecting care planning and case mix accuracy. Abridge improves consistency of nursing documentation, supporting more accurate severity capture."
+
+────────────────────────────────────────────────────────
+APPLYING THE CHANGES
+────────────────────────────────────────────────────────
+
+Update ALL of the following to reflect the final lever names and descriptions:
+
+• Strategic priority selector screen  
+• Left panel lever cards (names, descriptions, Enabled/Disabled states)  
+• Waterfall chart labels and bar names  
+• Enterprise Expansion chart labels  
+• Impact-by-lever table/card labels  
+• Tooltips on bars  
+• Read-more modals (use the descriptions above)  
+• Any internal mapping, key-value dictionaries, or lever-defining objects  
+
+CATEGORY MAPPING
+──────────────────
+Ensure each lever is mapped to its correct category:
+• "time" for all time-based levers  
+• "documentation" for all documentation-based levers  
+
+This category mapping should drive:
+• Lever grouping logic  
+• Priorities screen  
+• Future “Show Your Work” drawers  
+• Any visual grouping or filtering  
+
+DO NOT modify:
+• ROI formulas  
+• Lever math  
+• Investment calculation logic  
+• Any ED or Nursing math previously implemented  
+
+Only text labels, descriptions, and category assignments should change.
