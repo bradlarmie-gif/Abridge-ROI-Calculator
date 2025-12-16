@@ -1,0 +1,169 @@
+Please implement a right-side “Show Your Work” drawer for the Outpatient lever  
+**Overtime & Locum Cost Avoidance**, using the same drawer layout, styling,  
+and interaction behavior as the existing “Patient Access” drawer.
+
+Do NOT modify any other levers. Do NOT alter ROI formulas except where  
+specified here. This drawer should calculate the annual savings for this  
+lever and immediately update the waterfall, KPI cards, impact table, and  
+enterprise expansion view.
+
+────────────────────────────────────────
+1. Drawer Behavior & Layout
+────────────────────────────────────────
+
+• Trigger: Add a “Show Work” link or icon on the Overtime & Locum Cost  
+  Avoidance lever card (both in Strategic Drivers and in Results Summary).
+
+• When clicked:
+   – A right-hand drawer (approx. 400–420px wide) slides in.
+   – Must match the Patient Access drawer animation, styling, shadow, corner radius.
+   – The main ROI Calculator view REMAINS visible behind the drawer.
+   – No page navigation; drawer overlays on the right side.
+
+• Include:
+   – Title: “Overtime & Locum Cost Avoidance”
+   – Subtitle (muted): “Assumptions and logic behind this driver”
+   – Close (X) button in the top-right
+   – Divider below header
+
+────────────────────────────────────────
+2. Orientation / Educational Text
+────────────────────────────────────────
+
+Insert the following paragraph below the header:
+
+"Overtime and locum spend usually arise when documentation spills past the clinic day, not because staffing suddenly changes. When notes get finished inside scheduled hours, fewer shifts bleed into premium time and clinics rely less on locums to keep coverage stable. These inputs estimate how much of the time reclaimed by Abridge translates into avoided overtime and locum costs."
+
+────────────────────────────────────────
+3. ASSUMPTIONS (Editable Inputs)
+────────────────────────────────────────
+
+Use the same UI components as the Patient Access drawer.
+
+(A) Hours available to reduce premium labor
+
+1. **Realized clinician hours (annual)**  
+   - Label: “Reclaimed clinician hours (annual)”  
+   - Value: READ-ONLY  
+   - Bind to the global “clinician hours recovered” for the in-scope cohort  
+     (the same value used for Patient Access).  
+   - Helper: “Total hours regained from reduced documentation time.”
+
+2. **% of reclaimed hours that were previously premium labor**  
+   - Input type: slider  
+   - Range: 0–50%  
+   - Default: 20%  
+   - Label: “% of reclaimed hours that would have been overtime/locum”  
+   - Helper: “Portion of reclaimed hours that today appear as overtime or locum coverage.”
+
+3. **Realization factor (portion of premium hours actually reduced)**  
+   - Input type: slider  
+   - Range: 0–100%  
+   - Default: 75%  
+   - Label: “% of premium hours realistically avoided”  
+   - Helper: “Not all premium hours disappear; this estimates the share that truly goes away.”
+
+(B) Premium labor cost structure
+
+4. **Overtime hourly rate ($)**  
+   - Numeric input  
+   - Label: “Overtime hourly rate ($)”  
+   - Helper: “Hourly overtime cost for employed clinicians or support staff.”
+
+5. **Locum hourly rate ($)**  
+   - Numeric input  
+   - Label: “Locum hourly rate ($)”  
+   - Helper: “Typical hourly rate for locum or premium provider coverage.”
+
+6. **% of premium hours covered by locums**  
+   - Slider  
+   - Range: 0–100%  
+   - Default: 50%  
+   - Label: “% of premium hours covered by locums”  
+   - Helper: “The remainder is assumed to be paid as overtime.”
+
+────────────────────────────────────────
+4. CALCULATED OUTPUTS (Read-only, auto-updating)
+────────────────────────────────────────
+
+Under a bold section header: **CALCULATED OUTPUTS**
+
+Display the following values (formatted clearly), updating instantly as  
+inputs change:
+
+1. **Premium hours reduced (annual)**  
+2. **Blended premium hourly rate**  
+3. **Estimated annual savings**
+
+Labels should be left-aligned; values right-aligned.
+
+────────────────────────────────────────
+5. Calculation Logic (Bind to ROI Engine)
+────────────────────────────────────────
+
+Let:
+    reclaimedHours = global annual clinician hours recovered (read-only)
+    pctHoursPreviouslyPremium = slider (0–0.5)
+    pctPremiumRealized = slider (0–1.0)
+    overtimeRate
+    locumRate
+    locumShare = slider (0–1.0)
+    overtimeShare = (1 - locumShare)
+
+Compute:
+
+1) premiumHoursExposed =
+      reclaimedHours * pctHoursPreviouslyPremium
+
+2) premiumHoursReduced =
+      premiumHoursExposed * pctPremiumRealized
+
+3) blendedRate =
+      (locumShare * locumRate) +
+      (overtimeShare * overtimeRate)
+
+4) annualSavings =
+      premiumHoursReduced * blendedRate
+
+Bind this value to:
+   • The Overtime & Locum Cost Avoidance lever’s annual impact
+   • Total Annual Impact
+   • Net Gain
+   • Return (x)
+   • Waterfall bar for this lever
+   • Enterprise Expansion View scaling logic
+
+────────────────────────────────────────
+6. Formula Block (“How this is calculated”)
+────────────────────────────────────────
+
+Include this text in monospace formatting:
+
+"Annual savings =
+  Reclaimed clinician hours
+  × % of hours that would have been overtime or locum
+  × % of those hours realistically avoided
+  × Blended premium hourly rate
+
+Blended premium hourly rate =
+  (Locum share × Locum hourly rate)
+  + (Overtime share × Overtime hourly rate)"
+
+────────────────────────────────────────
+7. Footer Note
+────────────────────────────────────────
+
+Add muted small text:
+
+"Changes here update the waterfall, KPIs, impact cards, and enterprise projections automatically."
+
+────────────────────────────────────────
+8. Scope
+────────────────────────────────────────
+
+• Apply this drawer ONLY to the Outpatient lever  
+  “Overtime & Locum Cost Avoidance.”  
+• Do NOT modify other levers or drawer content.  
+• Use the same visual style, spacing, and component structure as the  
+  Patient Access drawer.  
+
