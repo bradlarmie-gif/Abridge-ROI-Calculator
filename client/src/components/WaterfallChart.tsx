@@ -110,8 +110,8 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
   return (
     <Card className="bg-white">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold text-neutral-900">ROI Waterfall</CardTitle>
-        <p className="text-sm text-neutral-500">Showing contribution of selected strategic drivers</p>
+        <CardTitle className="text-lg font-semibold text-neutral-900">Impact Breakdown for Current Scope</CardTitle>
+        <p className="text-sm text-neutral-500">Showing the contribution of selected strategic drivers for the in-scope provider group.</p>
         <div className="flex flex-wrap gap-4 mt-3">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: INVESTMENT_COLOR }} />
