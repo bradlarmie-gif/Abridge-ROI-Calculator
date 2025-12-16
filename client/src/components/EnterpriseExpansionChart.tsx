@@ -18,8 +18,8 @@ interface EnterpriseExpansionChartProps {
   enterpriseEncounterCount: number;
 }
 
-const CURRENT_COLOR = "#0E9F6E";
-const ENTERPRISE_COLOR = "#86EFAC";
+const CURRENT_COLOR = "#F03319";
+const ENTERPRISE_COLOR = "#000000";
 
 interface ChartDataItem {
   name: string;
@@ -93,9 +93,9 @@ export function EnterpriseExpansionChart({
                 style={{ backgroundColor: entry.dataKey === 'current' ? CURRENT_COLOR : ENTERPRISE_COLOR }}
               />
               <span className="text-xs text-neutral-600">
-                {entry.dataKey === 'current' ? 'Current scenario' : 'Enterprise projection'}:
+                {entry.dataKey === 'current' ? 'Current scope' : 'Enterprise projection'}:
               </span>
-              <span className="font-mono text-xs text-green-600">
+              <span className="font-mono text-xs text-neutral-900">
                 {formatCurrency(entry.value)}
               </span>
             </div>
@@ -120,10 +120,10 @@ export function EnterpriseExpansionChart({
         <div className="flex flex-wrap gap-4 mb-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: CURRENT_COLOR }} />
-            <span className="text-xs text-neutral-500">Current scenario (in-scope)</span>
+            <span className="text-xs text-neutral-500">Current scope</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm border border-green-400" style={{ backgroundColor: ENTERPRISE_COLOR }} />
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: ENTERPRISE_COLOR }} />
             <span className="text-xs text-neutral-500">Enterprise projection</span>
           </div>
         </div>
@@ -162,16 +162,12 @@ export function EnterpriseExpansionChart({
                 fill={CURRENT_COLOR}
                 radius={[3, 3, 0, 0]}
                 maxBarSize={40}
-                stroke="#a3a3a3"
-                strokeWidth={1}
               />
               <Bar 
                 dataKey="enterprise" 
                 fill={ENTERPRISE_COLOR}
                 radius={[3, 3, 0, 0]}
                 maxBarSize={40}
-                stroke="#22c55e"
-                strokeWidth={1}
               />
             </BarChart>
           </ResponsiveContainer>
