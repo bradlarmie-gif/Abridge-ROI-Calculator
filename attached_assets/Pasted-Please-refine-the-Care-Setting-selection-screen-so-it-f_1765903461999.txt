@@ -1,0 +1,79 @@
+Please refine the Care Setting selection screen so it feels more intentional, confident, and product-ready. Keep the current title and copy, but adjust the layout and sizing as follows.
+
+Grid layout
+
+Use a 2×2 grid on desktop:
+
+Top row: Outpatient, Emergency Department
+
+Bottom row: Nursing, Inpatient (with “Coming Soon” pill).
+
+On tablet/mobile, stack into a single column with generous spacing.
+
+Center the grid inside a max-width container (around 960–1100px) so it doesn’t run edge-to-edge.
+
+Card sizing & proportions
+
+Make each card feel like a substantial tile, not a skinny strip:
+
+Height: roughly 120–140px on desktop.
+
+Width: wide enough that icon + label breathe, but not so wide that the card feels empty.
+
+Keep corners softly rounded, not pill-shaped.
+
+Ensure full-card click target (anywhere in the tile selects the setting).
+
+Icon + label treatment
+
+Keep the current icons but slightly increase size (~36–40px) and give them comfortable padding.
+
+Align icon and label on a single row, left-aligned, with clear visual hierarchy:
+
+Icon
+
+Setting name in a strong, readable weight.
+
+No extra subtitle under the setting name on this page.
+
+Spacing & hierarchy
+
+Reduce the vertical gap between:
+
+The title block (“The ROI Calculator by Abridge”) and the grid.
+
+Add a bit more space between the two rows of cards so it doesn’t feel cramped.
+
+Pull the whole grid slightly higher on the page so it feels like the focal point, not like it’s sinking.
+
+Color & states
+
+Background stays a very subtle off-white.
+
+Default card: white with a light neutral border.
+
+Selected card:
+
+Border in Abridge red.
+
+Very light warm tint in the background (barely visible).
+
+Check marks, if shown, should also use Abridge red or solid black – no blue anywhere.
+
+CTA behavior
+
+Keep the “Explore the Calculator” button anchored near the bottom of the viewport.
+
+Add a small label above it that only appears after at least one setting is selected:
+
+“Ready when you are.”
+
+Do NOT change
+
+The title text, “by Abridge” styling, or the care-setting names.
+
+Any logic for multi-select or navigation into the calculator.
+
+Any other pages.
+
+The goal: the grid should feel like four confident, high-signal tiles in the center of the page — something a C-suite leader can trust at a glance, not a thin row of buttons floating in space.

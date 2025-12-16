@@ -218,20 +218,22 @@ export default function ObjectiveSelectionScreen({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-5">
-              {ALL_SETTINGS.map((setting) => {
-                const isInpatient = setting === "inpatient";
-                return (
-                  <CareSettingCard
-                    key={setting}
-                    icon={SETTING_ICONS[setting]}
-                    title={CARE_SETTING_LABELS[setting]}
-                    selected={selectedSettings.includes(setting as CareSettingType)}
-                    disabled={isInpatient}
-                    onClick={() => handleSettingToggle(setting)}
-                  />
-                );
-              })}
+            <div className="max-w-3xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                {ALL_SETTINGS.map((setting) => {
+                  const isInpatient = setting === "inpatient";
+                  return (
+                    <CareSettingCard
+                      key={setting}
+                      icon={SETTING_ICONS[setting]}
+                      title={CARE_SETTING_LABELS[setting]}
+                      selected={selectedSettings.includes(setting as CareSettingType)}
+                      disabled={isInpatient}
+                      onClick={() => handleSettingToggle(setting)}
+                    />
+                  );
+                })}
+              </div>
             </div>
 
             {selectedSettings.length > 0 && (
@@ -261,7 +263,12 @@ export default function ObjectiveSelectionScreen({
         className="relative z-20 border-t border-neutral-200 py-4 px-8"
         style={{ backgroundColor: '#FAFAF8' }}
       >
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:justify-end items-center gap-2">
+        <div className="max-w-6xl mx-auto flex flex-col items-center gap-2">
+          {selectedSettings.length > 0 && hasSelectedPriorities && (
+            <p className="text-sm text-neutral-500">
+              Ready when you are.
+            </p>
+          )}
           {showValidationError && !hasSelectedPriorities && (
             <p className="text-sm text-red-600" data-testid="error-no-priority">
               Select at least one strategic priority to continue.

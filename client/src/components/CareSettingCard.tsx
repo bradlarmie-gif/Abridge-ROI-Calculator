@@ -25,14 +25,14 @@ export function CareSettingCard({
       disabled={disabled}
       className={cn(
         "relative bg-white rounded-lg flex items-center gap-4 text-left transition-all duration-200",
-        compact ? "px-4 py-3" : "px-5 py-5",
+        compact ? "px-4 py-3" : "px-6 py-6 min-h-[120px]",
         disabled
           ? "opacity-60 cursor-not-allowed border border-neutral-200"
           : selected
           ? "border-2 shadow-sm scale-[1.02]"
           : "border border-[#D1D5DB] md:hover:shadow-sm"
       )}
-      style={selected && !disabled ? { borderColor: '#F03319' } : undefined}
+      style={selected && !disabled ? { borderColor: '#F03319', backgroundColor: '#FFFBFA' } : undefined}
       data-testid={`card-setting-${title.toLowerCase().replace(/\s+/g, "-")}`}
     >
       <div
