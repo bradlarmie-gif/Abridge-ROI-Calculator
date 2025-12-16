@@ -1,0 +1,36 @@
+Please make the following refinements to the ROI Studio UI:
+
+1) Background
+   - Remove the Abridge pattern / logo backdrop entirely from the landing and priorities screens.
+   - Set the page background to a very light tan, almost white. For example, use a color like `#FAF6F0` (or similar) as the body/background color.
+   - Keep the main content on this off-white background; no additional pattern is needed.
+
+2) Heading copy on the priorities screen
+   - Replace the current heading text above the lever list with the simpler:
+     "Select your strategic priorities"
+   - Remove any mention of “strategic initiatives you would like Abridge to assist you with.”
+   - Keep the smaller “Current setting: …” label if it exists; only change the main heading.
+
+3) Make the entire priority row clickable (not just the small checkbox)
+   - For each strategic priority / lever item in the list:
+     - Wrap the checkbox and text in a clickable container (e.g., the card or row div).
+     - Clicking anywhere on that row/card should toggle the underlying checkbox on/off.
+   - Keep the existing black checkbox styling for visual state, but treat the checkbox as a visual indicator; the user should not have to click only on the small square.
+   - Ensure keyboard accessibility remains (space/enter should still toggle focusable items).
+
+4) Update the "Enter the ROI Studio" button styling
+   - Keep the label text: "Enter the ROI Studio".
+   - Change the button to behave visually like the care setting cards:
+     - Default state:
+       - White background
+       - Black border
+       - Black text
+       - Rounded corners consistent with the cards (e.g., `rounded-xl`)
+     - Hover/active state:
+       - Background becomes black
+       - Text becomes white
+     - Remove any blue backgrounds or text colors.
+   - This button does not need to be a toggle; just apply the black background/white text on hover/press to visually match the “selected” feel you used on the cards.
+
+5) Do not change any ROI math or navigation logic.
+   - Only adjust background color, heading text, click targets for lever rows, and the Enter button styling as described above.

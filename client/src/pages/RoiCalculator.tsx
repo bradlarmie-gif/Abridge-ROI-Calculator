@@ -9,7 +9,6 @@ import { WaterfallChart } from "@/components/WaterfallChart";
 import { LeverTable } from "@/components/LeverTable";
 import { LeverAccordion } from "@/components/LeverAccordion";
 import { CommentaryBox } from "@/components/CommentaryBox";
-import { BackgroundPattern } from "@/components/BackgroundPattern";
 import { CareSettingCard } from "@/components/CareSettingCard";
 import { defaultInputs, type RoiInputs, type LeverId } from "@/lib/roi-types";
 import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
@@ -97,11 +96,9 @@ export default function RoiCalculator({ setting, selectedLevers, onBack, onSetti
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F5EF] relative">
-      <BackgroundPattern />
-      
+    <div className="min-h-screen relative" style={{ backgroundColor: '#FAF6F0' }}>
       <div className="relative z-10 flex flex-col h-screen">
-        <div className="bg-white/80 backdrop-blur-sm border-b border-neutral-200 px-6 py-3">
+        <div className="bg-white border-b border-neutral-200 px-6 py-3">
           <div className="flex items-center gap-3 overflow-x-auto">
             {ALL_SETTINGS.map((s) => {
               const isInpatient = s === "inpatient";
@@ -281,7 +278,7 @@ export default function RoiCalculator({ setting, selectedLevers, onBack, onSetti
             </ScrollArea>
           </aside>
 
-          <main className="flex-1 flex flex-col overflow-hidden bg-white/50 backdrop-blur-sm">
+          <main className="flex-1 flex flex-col overflow-hidden bg-white/50">
             <header className="p-6 border-b border-neutral-200 bg-white">
               <h2 className="text-xl font-semibold text-black">Results Summary</h2>
             </header>

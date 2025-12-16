@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { BackgroundPattern } from "@/components/BackgroundPattern";
 import { CareSettingCard } from "@/components/CareSettingCard";
 import {
   SETTING_CONFIG,
@@ -90,23 +87,30 @@ export default function ObjectiveSelectionScreen({
   const renderLeverItem = (lever: LeverConfig) => (
     <div
       key={lever.id}
-      className="flex items-start space-x-4 p-4 rounded-md border border-neutral-200 hover:border-neutral-400 transition-colors bg-white"
+      role="button"
+      tabIndex={0}
+      onClick={() => handleLeverToggle(lever.id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleLeverToggle(lever.id);
+        }
+      }}
+      className="w-full flex items-start space-x-4 p-4 rounded-md border border-neutral-200 hover:border-neutral-400 transition-colors bg-white text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
       data-testid={`lever-option-${lever.id}`}
     >
       <Checkbox
         id={lever.id}
         checked={selectedLevers.has(lever.id)}
         onCheckedChange={() => handleLeverToggle(lever.id)}
-        className="mt-1"
+        className="mt-1 pointer-events-none"
+        tabIndex={-1}
         data-testid={`checkbox-lever-${lever.id}`}
       />
       <div className="flex-1">
-        <Label
-          htmlFor={lever.id}
-          className="font-medium cursor-pointer text-black"
-        >
+        <span className="font-medium text-black">
           {lever.label}
-        </Label>
+        </span>
         <p className="text-sm text-muted-foreground mt-1">
           {lever.description}
         </p>
@@ -131,10 +135,10 @@ export default function ObjectiveSelectionScreen({
     );
   };
 
+  const isButtonDisabled = !selectedSetting || selectedLevers.size === 0;
+
   return (
-    <div className="min-h-screen bg-white relative">
-      <BackgroundPattern />
-      
+    <div className="min-h-screen relative" style={{ backgroundColor: '#FAF6F0' }}>
       <div className="relative z-10 px-8 py-12 min-h-screen">
         <div className="w-full max-w-6xl mx-auto space-y-10">
           <div className="text-center space-y-3">
@@ -170,7 +174,7 @@ export default function ObjectiveSelectionScreen({
                   </p>
                   <CardTitle className="text-lg font-semibold flex items-center gap-2 text-black">
                     <Settings2 className="h-5 w-5" />
-                    Select which strategic initiatives you would like Abridge to assist you with.
+                    Select your strategic priorities
                   </CardTitle>
                 </div>
               </CardHeader>
@@ -189,16 +193,24 @@ export default function ObjectiveSelectionScreen({
           )}
 
           <div className="flex justify-center pt-2">
-            <Button
-              size="lg"
-              disabled={!selectedSetting || selectedLevers.size === 0}
+            <button
+              type="button"
+              disabled={isButtonDisabled}
               onClick={handleContinue}
-              className="bg-black hover:bg-neutral-900 text-[#D7C8B6]"
+              className={`
+                inline-flex items-center justify-center gap-2 px-6 py-3 
+                rounded-xl border-2 border-black font-medium text-base
+                transition-colors duration-200
+                ${isButtonDisabled 
+                  ? 'opacity-50 cursor-not-allowed bg-white text-black' 
+                  : 'bg-white text-black hover:bg-black hover:text-white cursor-pointer'
+                }
+              `}
               data-testid="button-continue"
             >
               Enter the ROI Studio
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </Button>
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </div>
