@@ -17,9 +17,11 @@ export interface Lever {
 export interface RoiInputs {
   contractLengthYears: number;
   numberOfProviders: number;
+  enterpriseProviderCount: number;
   monthlyCostPerProvider: number;
   implementationCostYear1: number;
   annualOutpatientEncounters: number;
+  enterpriseAnnualEncounters: number;
   abridgeUtilizationPct: number;
   avgNetRevenuePerEncounter: number;
   baselineWrvuPerEncounter: number;
@@ -79,9 +81,11 @@ export interface RoiResults {
 export const defaultInputs: RoiInputs = {
   contractLengthYears: 3,
   numberOfProviders: 100,
+  enterpriseProviderCount: 500,
   monthlyCostPerProvider: 225,
   implementationCostYear1: 0,
   annualOutpatientEncounters: 100000,
+  enterpriseAnnualEncounters: 500000,
   abridgeUtilizationPct: 70,
   avgNetRevenuePerEncounter: 200,
   baselineWrvuPerEncounter: 2.1,

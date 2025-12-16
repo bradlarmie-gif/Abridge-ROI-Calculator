@@ -246,6 +246,16 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           data-testid="input-encounters"
                         />
                       </InputField>
+                      <InputField label="Annual Outpatient Encounters (enterprise)">
+                        <Input
+                          type="number"
+                          value={inputs.enterpriseAnnualEncounters}
+                          onChange={(e) =>
+                            handleInputChange("enterpriseAnnualEncounters", Number(e.target.value))
+                          }
+                          data-testid="input-enterprise-encounters"
+                        />
+                      </InputField>
                       <InputField label="Providers in Scope">
                         <Input
                           type="number"
@@ -256,6 +266,16 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           data-testid="input-num-providers"
                         />
                       </InputField>
+                      <InputField label="Enterprise Provider Count">
+                        <Input
+                          type="number"
+                          value={inputs.enterpriseProviderCount}
+                          onChange={(e) =>
+                            handleInputChange("enterpriseProviderCount", Number(e.target.value))
+                          }
+                          data-testid="input-enterprise-providers"
+                        />
+                      </InputField>
                       <InputField label="Average Revenue per Encounter ($)">
                         <Input
                           type="number"
@@ -264,6 +284,16 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                             handleInputChange("avgNetRevenuePerEncounter", Number(e.target.value))
                           }
                           data-testid="input-avg-revenue"
+                        />
+                      </InputField>
+                      <InputField label="Cost per provider per month ($)">
+                        <Input
+                          type="number"
+                          value={inputs.monthlyCostPerProvider}
+                          onChange={(e) =>
+                            handleInputChange("monthlyCostPerProvider", Number(e.target.value))
+                          }
+                          data-testid="input-cost-per-provider"
                         />
                       </InputField>
                     </InputSection>

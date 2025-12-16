@@ -1,0 +1,79 @@
+Please update the Outpatient ROI Calculator so that:
+
+1) A new "Cost per provider per month" input is added to Scenario Inputs and drives the Investment Per Year calculation, and
+
+2) Strategic Driver card enable/disable state controls which levers are included in the waterfall, impact cards, and top-line metrics.
+
+────────────────────────────────────────────────────────
+1) Scenario Inputs: add Cost per provider per month
+────────────────────────────────────────────────────────
+In the left panel "Scenario Inputs" section (or create it if it does not yet exist), include the following inputs in this order:
+
+   • Abridge Utilization (%)
+   • Annual Outpatient Encounters (in scope)
+   • Annual Outpatient Encounters (enterprise)
+   • Providers in Scope
+   • Enterprise Provider Count
+   • Average Revenue per Encounter ($)
+   • NEW: Cost per provider per month ($)
+
+For the new field:
+   - Label: "Cost per provider per month ($)"
+   - Type: numeric input
+   - This should represent the contracted Abridge subscription cost per provider, per month for Outpatient in this scenario.
+
+Update the Investment logic:
+   • Define Investment Per Year as:
+       investmentPerYear = costPerProviderPerMonth * providersInScope * 12
+   • Use this calculated `investmentPerYear` value for:
+       - The "Investment Per Year" KPI at the top of the ROI Calculator
+       - Net Value Created = Total Annual Benefit – Investment Per Year
+       - ROI Multiple = Total Annual Benefit ÷ Investment Per Year
+   • If there is an existing direct “Investment” manual input, either:
+       - Remove it, or
+       - Treat it as read-only and derive it entirely from Cost per provider per month and Providers in Scope.
+
+Do not change how Utilization (%) is used in the benefits logic; this change is only about having cost per provider per month explicitly drive the investment side of the model.
+
+────────────────────────────────────────────────────────
+2) Strategic Driver cards control inclusion in ROI
+────────────────────────────────────────────────────────
+For the Strategic Driver cards in the left panel (Clinician Time Recovered, Overtime Reduction, Clinician Retention, HCC & Chronic Condition Capture, Level of Service Alignment, Documentation-Driven Denials):
+
+   • Each card should have an `enabled` state (true/false) that toggles when the card is clicked.
+   • When a card is Enabled:
+       - It is visually in the "Enabled" state (full opacity, black border, “Enabled” pill, etc., per previous instructions).
+       - Its associated lever is INCLUDED in:
+           • The waterfall chart
+           • The "Annual Impact by Lever" table or impact cards
+           • The Total Annual Benefit calculation
+           • The Total Clinician Hours Recovered (if that lever contributes time)
+   • When a card is Disabled:
+       - It is visually in the "Disabled" state (muted, greyed out).
+       - Its associated lever is EXCLUDED from:
+           • The waterfall chart (no bar for that lever)
+           • The impact by lever table/cards
+           • The Total Annual Benefit calculation
+           • The Total Clinician Hours Recovered (no contribution from that lever)
+
+Implementation details:
+   • Use a single source of truth for lever state, e.g.:
+       `strategicDrivers = [{ id, enabled, ... }]`
+   • The waterfall chart and impact table should be rendered based only on drivers where `enabled === true`.
+   • As the user toggles a driver, recalculate:
+       - Total Annual Benefit
+       - Net Value Created
+       - ROI Multiple
+       - Total Clinician Hours Recovered
+       - Waterfall bars
+       - Impact by lever values
+
+────────────────────────────────────────────────────────
+3) Scope of this change
+────────────────────────────────────────────────────────
+• Apply these changes only to the Outpatient ROI Calculator for now.
+• Do not add Show Your Work drawers yet.
+• Do not modify any ED or Nursing configurations yet.
+• Preserve all existing math structures and only plug in:
+   - Cost per provider per month into Investment,
+   - Strategic driver enable/disable states into inclusion/exclusion logic.
