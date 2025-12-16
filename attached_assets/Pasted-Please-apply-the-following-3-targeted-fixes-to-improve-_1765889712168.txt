@@ -1,0 +1,51 @@
+Please apply the following 3 targeted fixes to improve usability and quality of
+the Outpatient ROI Calculator.
+
+────────────────────────────────────────
+1. Fix layout trapping on medium-width screens
+────────────────────────────────────────
+Issue: On half-screen desktop layouts, the user cannot scroll and gets trapped
+inside the Scenario Inputs panel.
+
+Fix:
+• At all screen widths below 1200px, collapse the layout from two columns into
+  a single column (Scenario Inputs stacked above Results).
+• Scenario Inputs should NOT be scroll-locked on medium screens.
+• The entire page must scroll as one unified document.
+• On mobile (< 768px), ensure the Show Work drawer becomes full-screen height.
+
+────────────────────────────────────────
+2. Update Enterprise Expansion section for stronger storytelling
+────────────────────────────────────────
+
+Add an "Enterprise Snapshot" block ABOVE the chart:
+
+• Header: “Enterprise Potential”
+• Body text (muted):
+     - Current impact: $X
+     - Enterprise projection: $Y
+     - Lift: Z× (enterprise ÷ current)
+• Values should pull directly from existing calculator state.
+• Use subtle Abridge Red for the current value text and black for enterprise.
+
+Keep the chart below this snapshot, but ensure:
+• It communicates scale clearly.
+• If grouped bars are used, current = muted gray, enterprise = black.
+• x-axis labels use shortened forms (Access, Overtime/Locum, HCC, LOS, Denials).
+
+────────────────────────────────────────
+3. Enhance the "Additional Notes" section to serve as a scenario summary
+────────────────────────────────────────
+
+• Update the placeholder text to:
+    “Use this space to capture scenario notes, assumptions, decisions, and follow-ups.”
+
+• Increase the height of the notes box (approx. 200–250px).
+• Add soft background fill (#F7F7F5), rounded corners, and padding.
+• Ensure the notes box content is included in the Download Report (PDF)
+  under a section titled “Scenario Notes & Decisions”.
+
+────────────────────────────────────────
+Scope:
+• These updates change layout, responsiveness, and storytelling.
+• Do NOT modify ROI formulas, lever logic, or Show Work drawers.

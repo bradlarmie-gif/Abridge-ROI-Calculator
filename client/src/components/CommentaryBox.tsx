@@ -13,15 +13,20 @@ export function CommentaryBox({ value, onChange }: CommentaryBoxProps) {
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
-          Additional Commentary
+          Scenario Notes & Decisions
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Textarea
-          placeholder="Add notes about assumptions, methodology, or key discussion points..."
+          placeholder="Use this space to capture scenario notes, assumptions, decisions, and follow-ups."
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="min-h-32 resize-y"
+          className="resize-y rounded-lg"
+          style={{ 
+            minHeight: '220px',
+            backgroundColor: '#F7F7F5',
+            padding: '16px'
+          }}
           data-testid="textarea-commentary"
         />
       </CardContent>

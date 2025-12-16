@@ -128,17 +128,34 @@ export function EnterpriseExpansionChart({
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold text-neutral-900">Enterprise Expansion View</CardTitle>
         <p className="text-sm text-neutral-500">Driver-level comparison (current vs. enterprise)</p>
-        <div className="mt-3 p-3 bg-neutral-50 rounded-md">
-          <p className="text-sm font-medium text-neutral-700">
-            Current impact: <span className="font-mono">{formatCurrency(totalAnnualBenefit)}</span>
-            <span className="mx-2 text-neutral-400">|</span>
-            Enterprise potential: <span className="font-mono">{formatCurrency(totalEnterprise)}</span>
-            <span className="mx-2 text-neutral-400">|</span>
-            <span className="text-neutral-500">({multiplier}x difference)</span>
-          </p>
-        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
+        <div className="p-4 rounded-lg" style={{ backgroundColor: '#F7F7F5' }}>
+          <h3 className="text-xs font-semibold uppercase tracking-wide mb-4" style={{ color: '#F03319' }}>
+            Enterprise Potential
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <p className="text-xs text-neutral-500 mb-1">Current Impact</p>
+              <p className="text-lg font-mono font-semibold" style={{ color: '#F03319' }}>
+                {formatCurrency(totalAnnualBenefit)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-neutral-500 mb-1">Enterprise Projection</p>
+              <p className="text-lg font-mono font-semibold text-black">
+                {formatCurrency(totalEnterprise)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-neutral-500 mb-1">Lift</p>
+              <p className="text-lg font-mono font-semibold text-black">
+                {multiplier}x
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-4 mb-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: CURRENT_COLOR }} />

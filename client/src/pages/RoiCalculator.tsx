@@ -497,7 +497,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
 
   return (
     <div className="min-h-screen relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
-      <div className="relative z-10 flex flex-col h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen min-[1200px]:h-screen">
         <div className="bg-white border-b border-neutral-200 px-6 py-3">
           <div className="flex items-center gap-3">
             <span 
@@ -513,8 +513,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-          <aside className="w-full lg:w-96 bg-white border-b lg:border-b-0 lg:border-r border-neutral-200 flex flex-col shrink-0">
+        <div className="flex flex-col min-[1200px]:flex-row flex-1 min-[1200px]:overflow-hidden">
+          <aside className="w-full min-[1200px]:w-96 bg-white border-b min-[1200px]:border-b-0 min-[1200px]:border-r border-neutral-200 flex flex-col shrink-0">
             <div className="p-6 border-b border-neutral-200">
               <button
                 type="button"
@@ -531,7 +531,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                 Current Selection: {settingsText}
               </p>
             </div>
-            <ScrollArea className="flex-1">
+            <div className="flex-1 min-[1200px]:overflow-auto">
               <div className="p-6 space-y-6">
                 {selectedSettings.includes("outpatient") && selectedSettings.length === 1 ? (
                   <>
@@ -817,10 +817,10 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   </>
                 )}
               </div>
-            </ScrollArea>
+            </div>
           </aside>
 
-          <main className="flex-1 flex flex-col overflow-hidden bg-white/50">
+          <main className="flex-1 flex flex-col min-[1200px]:overflow-hidden bg-white/50">
             <header className="p-6 border-b border-neutral-200 bg-white flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold text-black">Results Summary</h2>
               <Button variant="outline" size="sm" className="gap-2" data-testid="button-download-report">
