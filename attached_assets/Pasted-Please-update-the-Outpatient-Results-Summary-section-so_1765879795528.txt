@@ -1,0 +1,46 @@
+Please update the Outpatient Results Summary section so that each strategic driver displays ONLY the short angle-based 1–2 sentence description shown below. Do NOT use the long-form educational descriptions here. These short descriptions should appear directly in the Results Summary table/cards beneath each lever name, followed by the existing “Read more…” link.
+
+Do not modify any math, logic, modal content, or lever names. This update is for the Results Summary inline descriptions ONLY.
+
+────────────────────────────────────────
+OUTPATIENT — RESULTS SUMMARY DESCRIPTIONS (USE EXACTLY AS WRITTEN)
+────────────────────────────────────────
+
+Patient Access:
+"Documentation steals minutes from every visit, and those minutes determine how many patients a clinician can realistically see. Returning that time improves access without increasing staffing."
+
+Overtime & Locum Cost Avoidance:
+"Much of overtime and locum spend comes from documentation spilling past scheduled hours. Completing more documentation inside the visit reduces that spillover."
+
+Clinician Retention:
+"Burnout grows when documentation bleeds into every corner of the day. Reducing that burden helps clinicians sustain the work and stay longer."
+
+HCC & Chronic Condition Capture:
+"Risk models break when chronic conditions aren’t consistently documented. Clearer narratives help clinicians carry forward the truth about patient complexity."
+
+Level of Service Alignment:
+"Visits are often undercoded because the documentation doesn’t show the thinking behind the care. Better reasoning in the note aligns coding with reality."
+
+Medical Necessity–Driven Denials:
+"Unrecoverable denials occur when the note doesn’t clearly justify why care was needed. Stronger narratives reduce these losses at the source."
+
+────────────────────────────────────────
+IMPLEMENTATION REQUIREMENTS
+────────────────────────────────────────
+
+1. Replace ONLY the descriptions shown inline in the Results Summary table/cards.
+2. Keep each description to 1–2 sentences exactly as provided.
+3. After the short description, retain the existing “Read more…” link for the modal.
+4. Do NOT alter:
+   • the long-form descriptions in the modals
+   • lever names
+   • lever enable/disable logic
+   • waterfall logic
+   • enterprise expansion logic
+   • KPI labels
+5. Apply these changes ONLY to the Outpatient Results Summary. ED and Nursing updates will come later.
+
+────────────────────────────────────────
+SCOPE
+────────────────────────────────────────
+This update is purely textual and should not change structure, layout, or functionality of the Results Summary page.
