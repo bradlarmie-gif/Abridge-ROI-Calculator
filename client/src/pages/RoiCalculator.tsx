@@ -236,10 +236,12 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
             const key = `${settingId}:${leverConfig.id}`;
             const isEnabled = leverStates.get(key) ?? false;
             let overriddenValue = matchingLever.value;
-            if (leverConfig.id === "patientAccess") {
-              overriddenValue = patientAccessCalculations.incrementalRevenue;
-            } else if (leverConfig.id === "overtime") {
-              overriddenValue = overtimeLocumCalculations.annualSavings;
+            if (isEnabled) {
+              if (leverConfig.id === "patientAccess") {
+                overriddenValue = patientAccessCalculations.incrementalRevenue;
+              } else if (leverConfig.id === "overtime") {
+                overriddenValue = overtimeLocumCalculations.annualSavings;
+              }
             }
             leverList.push({
               ...matchingLever,
@@ -256,17 +258,20 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
             const matchingLever = results.levers.find((rl) => rl.id === l.leverId);
             if (matchingLever) {
               const key = `${settingId}:${l.leverId}`;
+              const isEnabled = leverStates.get(key) ?? l.active;
               let overriddenValue = matchingLever.value;
-              if (l.leverId === "patientAccess" && settingId === "outpatient") {
-                overriddenValue = patientAccessCalculations.incrementalRevenue;
-              } else if (l.leverId === "overtime" && settingId === "outpatient") {
-                overriddenValue = overtimeLocumCalculations.annualSavings;
+              if (isEnabled) {
+                if (l.leverId === "patientAccess" && settingId === "outpatient") {
+                  overriddenValue = patientAccessCalculations.incrementalRevenue;
+                } else if (l.leverId === "overtime" && settingId === "outpatient") {
+                  overriddenValue = overtimeLocumCalculations.annualSavings;
+                }
               }
               leverList.push({
                 ...matchingLever,
                 value: overriddenValue,
                 settingId,
-                enabled: leverStates.get(key) ?? l.active,
+                enabled: isEnabled,
               });
             }
           });
