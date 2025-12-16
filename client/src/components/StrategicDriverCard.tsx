@@ -1,10 +1,7 @@
-import { ChevronRight } from "lucide-react";
-
 interface StrategicDriverCardProps {
   title: string;
   active: boolean;
   onClick: () => void;
-  onShowWork?: () => void;
   testId?: string;
 }
 
@@ -12,7 +9,6 @@ export function StrategicDriverCard({
   title,
   active,
   onClick,
-  onShowWork,
   testId,
 }: StrategicDriverCardProps) {
   return (
@@ -30,8 +26,8 @@ export function StrategicDriverCard({
         flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer
         transition-all duration-200
         ${active
-          ? "bg-white border-2 border-black shadow-sm"
-          : "bg-white border border-neutral-200 opacity-40"
+          ? "bg-white border-2 border-black shadow-sm opacity-100"
+          : "bg-white border border-neutral-200 opacity-40 shadow-none"
         }
       `}
       data-testid={testId}
@@ -44,19 +40,18 @@ export function StrategicDriverCard({
       >
         {title}
       </span>
-      {active && onShowWork && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onShowWork();
-          }}
-          className="text-neutral-400 hover:text-black transition-colors"
-          data-testid={`${testId}-show-work`}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      )}
+      <span
+        className={`
+          text-xs px-2 py-0.5 rounded-full
+          ${active
+            ? "bg-neutral-200 text-black"
+            : "bg-neutral-100 text-neutral-500"
+          }
+        `}
+        data-testid={`${testId}-status`}
+      >
+        {active ? "Enabled" : "Disabled"}
+      </span>
     </div>
   );
 }

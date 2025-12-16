@@ -285,7 +285,6 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                               title={lever.label}
                               active={isActive}
                               onClick={() => handleLeverToggle("outpatient", lever.id as LeverId)}
-                              onShowWork={() => {}}
                               testId={`driver-card-${lever.id}`}
                             />
                           );

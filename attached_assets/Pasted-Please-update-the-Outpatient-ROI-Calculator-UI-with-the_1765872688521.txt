@@ -1,0 +1,49 @@
+Please update the Outpatient ROI Calculator UI with the following refinements:
+
+────────────────────────────────────────────────────────
+1) Update the utilization slider to use black styling
+────────────────────────────────────────────────────────
+• Replace the current blue slider styling with a black/neutral scheme that matches the rest of the design language.
+• Requirements:
+   - Slider thumb: black (`bg-black`)
+   - Active track: black or very dark neutral (e.g., `bg-neutral-900`)
+   - Inactive track: light neutral (e.g., `bg-neutral-300`)
+• No blue should appear anywhere on the slider.
+
+────────────────────────────────────────────────────────
+2) Strategic Driver cards must explicitly show “Enabled” or “Disabled”
+────────────────────────────────────────────────────────
+For each strategic driver card in the left panel:
+
+A) Active state ("Enabled"):
+   - Full opacity (`opacity-100`)
+   - Border: `border-black`
+   - Title text: black, full contrast
+   - Label pill on the right side reading: "Enabled"
+       • Style: small pill (`text-xs px-2 py-0.5 rounded-full`)
+       • Background: very light gray (`bg-neutral-200`)
+       • Text: black
+   - Card background: white
+   - Maintain the existing subtle shadow if present.
+
+B) Inactive state ("Disabled"):
+   - Reduced opacity (`opacity-40`)
+   - Border: `border-neutral-200`
+   - Title text: muted neutral (`text-neutral-500`)
+   - Label pill on the right side reading: "Disabled"
+       • Style: same size pill
+       • Background: `bg-neutral-100`
+       • Text: `text-neutral-500`
+   - No shadow (`shadow-none`)
+   - Card should still be clickable to enable the lever.
+
+C) Behavior:
+   - Clicking anywhere on the card toggles the lever's active state.
+   - The pill text must update immediately between “Enabled” and “Disabled”.
+   - The card’s active/inactive visual state must trigger recalc of ROI and update waterfall + KPIs.
+
+────────────────────────────────────────────────────────
+3) Do not modify any math or structural layout in this step
+────────────────────────────────────────────────────────
+• Only update slider color + lever card states (visual + toggling).
+• Leave all other content, summaries, waterfall, and Show Your Work functionality untouched for now.
