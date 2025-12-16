@@ -231,87 +231,103 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
               <div className="p-6 space-y-6">
                 {selectedSettings.includes("outpatient") && selectedSettings.length === 1 ? (
                   <>
-                    <InputSection title="Scenario Inputs" icon={<Settings className="h-5 w-5" />}>
-                      <InputField label="Abridge Utilization (%)">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-3">
-                            <Slider
-                              value={[inputs.abridgeUtilizationPct]}
-                              onValueChange={([v]) =>
-                                handleInputChange("abridgeUtilizationPct", v)
-                              }
-                              max={100}
-                              step={1}
-                              className="flex-1"
-                              data-testid="slider-utilization"
-                            />
-                            <span className="text-sm font-mono w-12">
-                              {inputs.abridgeUtilizationPct}%
-                            </span>
+                    <div className="space-y-1 mb-6">
+                      <h2 className="text-lg font-semibold text-black">Scenario Inputs</h2>
+                      <p className="text-xs text-neutral-500">Define who's in scope and the economics for this scenario.</p>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <h3 className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">Current Scope</h3>
+                        <InputField label="Providers in Scope" helperText="Clinicians included in this scenario.">
+                          <Input
+                            type="number"
+                            value={inputs.numberOfProviders}
+                            onChange={(e) =>
+                              handleInputChange("numberOfProviders", Number(e.target.value))
+                            }
+                            data-testid="input-num-providers"
+                          />
+                        </InputField>
+                        <InputField label="Annual Outpatient Encounters (in scope)" helperText="Annual visits covered by Abridge for this group.">
+                          <Input
+                            type="number"
+                            value={inputs.annualOutpatientEncounters}
+                            onChange={(e) =>
+                              handleInputChange("annualOutpatientEncounters", Number(e.target.value))
+                            }
+                            data-testid="input-encounters"
+                          />
+                        </InputField>
+                        <InputField label="Abridge Utilization (%)" helperText="Portion of eligible visits where Abridge is actually used.">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <Slider
+                                value={[inputs.abridgeUtilizationPct]}
+                                onValueChange={([v]) =>
+                                  handleInputChange("abridgeUtilizationPct", v)
+                                }
+                                max={100}
+                                step={1}
+                                className="flex-1"
+                                data-testid="slider-utilization"
+                              />
+                              <span className="text-sm font-mono w-12">
+                                {inputs.abridgeUtilizationPct}%
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </InputField>
-                      <InputField label="Annual Outpatient Encounters (in scope)">
-                        <Input
-                          type="number"
-                          value={inputs.annualOutpatientEncounters}
-                          onChange={(e) =>
-                            handleInputChange("annualOutpatientEncounters", Number(e.target.value))
-                          }
-                          data-testid="input-encounters"
-                        />
-                      </InputField>
-                      <InputField label="Annual Outpatient Encounters (enterprise)">
-                        <Input
-                          type="number"
-                          value={inputs.enterpriseAnnualEncounters}
-                          onChange={(e) =>
-                            handleInputChange("enterpriseAnnualEncounters", Number(e.target.value))
-                          }
-                          data-testid="input-enterprise-encounters"
-                        />
-                      </InputField>
-                      <InputField label="Providers in Scope">
-                        <Input
-                          type="number"
-                          value={inputs.numberOfProviders}
-                          onChange={(e) =>
-                            handleInputChange("numberOfProviders", Number(e.target.value))
-                          }
-                          data-testid="input-num-providers"
-                        />
-                      </InputField>
-                      <InputField label="Enterprise Provider Count">
-                        <Input
-                          type="number"
-                          value={inputs.enterpriseProviderCount}
-                          onChange={(e) =>
-                            handleInputChange("enterpriseProviderCount", Number(e.target.value))
-                          }
-                          data-testid="input-enterprise-providers"
-                        />
-                      </InputField>
-                      <InputField label="Average Revenue per Encounter ($)">
-                        <Input
-                          type="number"
-                          value={inputs.avgNetRevenuePerEncounter}
-                          onChange={(e) =>
-                            handleInputChange("avgNetRevenuePerEncounter", Number(e.target.value))
-                          }
-                          data-testid="input-avg-revenue"
-                        />
-                      </InputField>
-                      <InputField label="Cost per provider per month ($)">
-                        <Input
-                          type="number"
-                          value={inputs.monthlyCostPerProvider}
-                          onChange={(e) =>
-                            handleInputChange("monthlyCostPerProvider", Number(e.target.value))
-                          }
-                          data-testid="input-cost-per-provider"
-                        />
-                      </InputField>
-                    </InputSection>
+                        </InputField>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h3 className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">Enterprise Footprint</h3>
+                        <InputField label="Enterprise Provider Count" helperText="Total clinicians across your enterprise.">
+                          <Input
+                            type="number"
+                            value={inputs.enterpriseProviderCount}
+                            onChange={(e) =>
+                              handleInputChange("enterpriseProviderCount", Number(e.target.value))
+                            }
+                            data-testid="input-enterprise-providers"
+                          />
+                        </InputField>
+                        <InputField label="Annual Outpatient Encounters (enterprise)" helperText="Total annual outpatient visits across the enterprise.">
+                          <Input
+                            type="number"
+                            value={inputs.enterpriseAnnualEncounters}
+                            onChange={(e) =>
+                              handleInputChange("enterpriseAnnualEncounters", Number(e.target.value))
+                            }
+                            data-testid="input-enterprise-encounters"
+                          />
+                        </InputField>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h3 className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">Economics</h3>
+                        <InputField label="Average Revenue per Encounter ($)" helperText="Typical net revenue collected per outpatient visit.">
+                          <Input
+                            type="number"
+                            value={inputs.avgNetRevenuePerEncounter}
+                            onChange={(e) =>
+                              handleInputChange("avgNetRevenuePerEncounter", Number(e.target.value))
+                            }
+                            data-testid="input-avg-revenue"
+                          />
+                        </InputField>
+                        <InputField label="Cost per Provider per Month ($)" helperText="Contracted Abridge subscription per provider, per month.">
+                          <Input
+                            type="number"
+                            value={inputs.monthlyCostPerProvider}
+                            onChange={(e) =>
+                              handleInputChange("monthlyCostPerProvider", Number(e.target.value))
+                            }
+                            data-testid="input-cost-per-provider"
+                          />
+                        </InputField>
+                      </div>
+                    </div>
 
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">

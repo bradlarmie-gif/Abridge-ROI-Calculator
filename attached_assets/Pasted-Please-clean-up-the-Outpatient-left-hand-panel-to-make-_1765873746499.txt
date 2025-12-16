@@ -1,0 +1,76 @@
+Please clean up the Outpatient left-hand panel to make the Scenario Inputs clearer and more structured. This is a UX and copy pass only, not a math change.
+
+────────────────────────────────────────────────────────
+1) Rename the left panel section to “Scenario Inputs”
+────────────────────────────────────────────────────────
+• At the top of the left column, change the heading to:
+   Title: “Scenario Inputs”
+   Subtitle (small, muted text): “Define who’s in scope and the economics for this scenario.”
+
+────────────────────────────────────────────────────────
+2) Group the inputs into three labeled sections
+────────────────────────────────────────────────────────
+
+A) Group 1 – Current Scope
+   • Add a small subheader above the first group:
+       “Current Scope”
+   • Under this subheader, include these inputs in this order:
+
+      1. Providers in Scope
+         - Label: “Providers in Scope”
+         - Helper text (small, muted): “Clinicians included in this scenario.”
+
+      2. Annual Outpatient Encounters (in scope)
+         - Label: “Annual Outpatient Encounters (in scope)”
+         - Helper text: “Annual visits covered by Abridge for this group.”
+
+      3. Abridge Utilization (%)
+         - Move the utilization slider into this group (if it is currently elsewhere).
+         - Label: “Abridge Utilization (%)”
+         - Helper text: “Portion of eligible visits where Abridge is actually used.”
+
+B) Group 2 – Enterprise Footprint
+   • Add a subheader:
+       “Enterprise Footprint”
+   • Under it, show:
+
+      4. Enterprise Provider Count
+         - Label: “Enterprise Provider Count”
+         - Helper text: “Total clinicians across your enterprise.”
+
+      5. Annual Outpatient Encounters (enterprise)
+         - Label: “Annual Outpatient Encounters (enterprise)”
+         - Helper text: “Total annual outpatient visits across the enterprise.”
+
+C) Group 3 – Economics
+   • Add a subheader:
+       “Economics”
+   • Under it, show:
+
+      6. Average Revenue per Encounter ($)
+         - Label: “Average Revenue per Encounter ($)”
+         - Helper text: “Typical net revenue collected per outpatient visit.”
+
+      7. Cost per provider per month ($)
+         - Label: “Cost per Provider per Month ($)”
+         - Helper text: “Contracted Abridge subscription per provider, per month.”
+
+• Maintain all existing bindings between these fields and the ROI math. This change is only layout + copy.
+
+────────────────────────────────────────────────────────
+3) Text clean-up for lever naming
+────────────────────────────────────────────────────────
+• Wherever the lever appears as “Clinical Time Recovered” (e.g., in the Annual Impact by Lever table or waterfall labels), rename it to:
+   “Clinician Time Recovered”
+
+• Make sure this name is consistent across:
+   - Left panel lever cards
+   - Waterfall labels (if text appears)
+   - Impact-by-lever table
+   - Any related dropdowns or settings labels
+
+────────────────────────────────────────────────────────
+4) Do not change any formulas or calculations in this step
+────────────────────────────────────────────────────────
+• This update is only about copy, grouping, and visual clarity on the left side.
+• All current ROI outputs and math should remain exactly as they are.

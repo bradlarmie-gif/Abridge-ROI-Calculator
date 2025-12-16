@@ -13,7 +13,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
   outpatient: [
     {
       id: "patientAccess",
-      label: "Clinical Time Recovered",
+      label: "Clinician Time Recovered",
       category: "time",
       description: "Most outpatient access problems come from time lost to documentation, not lack of demand. Recovering that time stabilizes schedules, shortens third-next-available, and keeps referrals from backing up.",
     },

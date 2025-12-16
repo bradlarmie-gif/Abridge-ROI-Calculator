@@ -148,7 +148,7 @@ export const leverDescriptions: Record<LeverId, string> = {
 };
 
 export const leverLabels: Record<LeverId, string> = {
-  patientAccess: "Clinical Time Recovered",
+  patientAccess: "Clinician Time Recovered",
   overtime: "Overtime Reduction",
   workforce: "Clinician Retention",
   wrvu: "Visit Complexity Documentation",
