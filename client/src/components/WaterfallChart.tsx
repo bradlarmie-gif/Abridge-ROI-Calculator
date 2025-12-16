@@ -119,10 +119,10 @@ export function WaterfallChart({ levers, investmentCost, netValue }: WaterfallCh
   const yAxisMin = Math.floor(minVal * 1.1 / 100000) * 100000 || -100000;
 
   return (
-    <Card className="bg-white">
+    <Card className="bg-white border-neutral-200">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold text-neutral-900">Impact Breakdown for Current Scope</CardTitle>
-        <p className="text-xs text-neutral-500">Contribution of selected drivers</p>
+        <p className="text-sm text-neutral-500">Contribution of selected strategic drivers</p>
         <div className="flex flex-wrap gap-4 mt-3">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: INVESTMENT_COLOR }} />

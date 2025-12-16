@@ -18,7 +18,7 @@ interface EnterpriseExpansionChartProps {
   enterpriseEncounterCount: number;
 }
 
-const CURRENT_COLOR = "#F03319";
+const CURRENT_COLOR = "#9CA3AF";
 const ENTERPRISE_COLOR = "#000000";
 
 const SHORT_LABELS: Record<string, string> = {
@@ -120,11 +120,23 @@ export function EnterpriseExpansionChart({
   const maxVal = Math.max(...allValues);
   const yAxisMax = Math.ceil(maxVal * 1.1 / 100000) * 100000 || 100000;
 
+  const totalEnterprise = totalAnnualBenefit * scaleFactor;
+  const multiplier = scaleFactor.toFixed(1);
+
   return (
-    <Card className="bg-white">
+    <Card className="bg-white border-neutral-200">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold text-neutral-900">Enterprise Expansion View</CardTitle>
-        <p className="text-xs text-neutral-500">Driver-level comparison (current vs enterprise)</p>
+        <p className="text-sm text-neutral-500">Driver-level comparison (current vs. enterprise)</p>
+        <div className="mt-3 p-3 bg-neutral-50 rounded-md">
+          <p className="text-sm font-medium text-neutral-700">
+            Current impact: <span className="font-mono">{formatCurrency(totalAnnualBenefit)}</span>
+            <span className="mx-2 text-neutral-400">|</span>
+            Enterprise potential: <span className="font-mono">{formatCurrency(totalEnterprise)}</span>
+            <span className="mx-2 text-neutral-400">|</span>
+            <span className="text-neutral-500">({multiplier}x difference)</span>
+          </p>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-4 mb-4">

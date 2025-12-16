@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils";
 interface KpiCardProps {
   label: string;
   value: string;
+  subtitle?: string;
   icon?: ReactNode;
   variant?: "default" | "positive" | "negative" | "neutral";
 }
 
-export function KpiCard({ label, value, icon, variant = "default" }: KpiCardProps) {
+export function KpiCard({ label, value, subtitle, icon, variant = "default" }: KpiCardProps) {
   const borderColors = {
     default: "border-l-primary",
     positive: "border-l-green-500 dark:border-l-green-400",
@@ -18,10 +19,10 @@ export function KpiCard({ label, value, icon, variant = "default" }: KpiCardProp
   };
 
   return (
-    <Card className={cn("border-l-4 relative overflow-visible", borderColors[variant])}>
+    <Card className={cn("border-l-4 relative overflow-visible border-neutral-200", borderColors[variant])}>
       <CardContent className="p-4">
         {icon && (
-          <div className="absolute top-3 right-3 opacity-20">{icon}</div>
+          <div className="absolute top-3 right-3 opacity-15">{icon}</div>
         )}
         <div className="space-y-1">
           <p 
@@ -33,6 +34,9 @@ export function KpiCard({ label, value, icon, variant = "default" }: KpiCardProp
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {label}
           </p>
+          {subtitle && (
+            <p className="text-xs text-neutral-500 mt-1">{subtitle}</p>
+          )}
         </div>
       </CardContent>
     </Card>

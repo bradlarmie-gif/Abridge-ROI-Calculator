@@ -47,6 +47,7 @@ import {
   Calculator,
   Settings,
   Target,
+  FileText,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -537,6 +538,24 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                       <p className="text-xs text-neutral-500">Define who's in scope and the economics for this scenario.</p>
                     </div>
 
+                    <div className="bg-neutral-50 rounded-lg p-4 mb-6">
+                      <h3 className="text-xs font-semibold text-[#F03319] uppercase tracking-wide mb-3">Scenario Summary</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-neutral-600">Providers in scope</span>
+                          <span className="font-mono font-medium">{formatNumber(inputs.numberOfProviders)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-neutral-600">Annual encounters (in scope)</span>
+                          <span className="font-mono font-medium">{formatNumber(Math.round(inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100)))}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-neutral-600">Utilization</span>
+                          <span className="font-mono font-medium">{inputs.abridgeUtilizationPct}%</span>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="space-y-6">
                       <div className="space-y-3">
                         <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">Current Scope</h3>
@@ -800,51 +819,62 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
           </aside>
 
           <main className="flex-1 flex flex-col overflow-hidden bg-white/50">
-            <header className="p-6 border-b border-neutral-200 bg-white">
+            <header className="p-6 border-b border-neutral-200 bg-white flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold text-black">Results Summary</h2>
+              <Button variant="outline" size="sm" className="gap-2" data-testid="button-download-report">
+                <FileText className="h-4 w-4" />
+                Download Report (PDF)
+              </Button>
             </header>
             <ScrollArea className="flex-1">
-              <div className="p-6 space-y-6">
+              <div className="p-6 space-y-8">
                 <KpiGrid>
                   <KpiCard
                     label="Return (x)"
                     value={`${adjustedRoiMultiple.toFixed(2)}x`}
+                    subtitle="Value per $1 invested"
                     icon={<TrendingUp className="h-8 w-8" />}
                     variant={adjustedRoiMultiple >= 1 ? "positive" : "negative"}
                   />
                   <KpiCard
                     label="Annual Impact"
                     value={formatCurrency(totalBenefitFromSelectedLevers)}
+                    subtitle="Total benefit from selected drivers"
                     icon={<DollarSign className="h-8 w-8" />}
                     variant="positive"
                   />
                   <KpiCard
                     label="Annual Program Cost"
                     value={formatCurrency(annualAbridgeCost)}
+                    subtitle="Abridge investment (Year 1)"
                     icon={<DollarSign className="h-8 w-8" />}
                     variant="negative"
                   />
                   <KpiCard
                     label="Net Gain"
                     value={formatCurrency(adjustedNetValue)}
+                    subtitle="Impact minus cost"
                     icon={<TrendingUp className="h-8 w-8" />}
                     variant={adjustedNetValue >= 0 ? "positive" : "negative"}
                   />
                   <KpiCard
                     label="Clinician Hours Recovered"
                     value={formatNumber(adjustedClinicianHoursRecovered)}
+                    subtitle="Annual usable time returned"
                     icon={<Clock className="h-8 w-8" />}
                     variant="neutral"
                   />
                   <KpiCard
                     label="Projected wRVU/Visit"
                     value={results.postWrvuPerEncounter.toFixed(2)}
+                    subtitle="After documentation improvement"
                     icon={<Users className="h-8 w-8" />}
                     variant="neutral"
                   />
                   <KpiCard
                     label="Adjusted Denial Rate"
                     value={formatPercent(results.newEffectiveDenialRate)}
+                    subtitle="After documentation improvement"
                     icon={<Percent className="h-8 w-8" />}
                     variant="positive"
                   />
@@ -863,9 +893,9 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   enterpriseEncounterCount={inputs.enterpriseAnnualEncounters * (inputs.abridgeUtilizationPct / 100)}
                 />
 
-                <Card className="w-full overflow-hidden">
+                <Card className="w-full overflow-hidden border-neutral-200">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-semibold">Understanding Your Drivers</CardTitle>
+                    <CardTitle className="text-lg font-semibold text-neutral-900">Understanding Your Drivers</CardTitle>
                     <p className="text-sm text-neutral-500">Interpretation of how each selected driver influences your current scope.</p>
                   </CardHeader>
                   <CardContent className="p-0">

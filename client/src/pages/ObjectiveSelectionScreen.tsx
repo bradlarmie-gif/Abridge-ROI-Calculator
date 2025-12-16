@@ -202,12 +202,15 @@ export default function ObjectiveSelectionScreen({
       <div className="relative z-10 flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto pt-16 pb-8 px-8">
           <div className="space-y-10">
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-3">
               <h1 className="text-3xl font-semibold text-black">
                 The ROI Calculator by <span style={{ color: '#F03319' }}>Abridge</span>
               </h1>
-              <p className="text-base text-neutral-600">
-                Select care setting(s) to begin
+              <h2 className="text-xl font-semibold text-neutral-800">
+                Select Care Setting(s) Below
+              </h2>
+              <p className="text-sm text-neutral-500">
+                Your ROI experience adapts instantly based on your selections.
               </p>
             </div>
 
@@ -231,13 +234,16 @@ export default function ObjectiveSelectionScreen({
 
             {selectedSettings.length > 0 && (
               <div className="space-y-6">
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <p className="text-xs text-neutral-500">
                     Current Selection: {currentSelectionText}
                   </p>
                   <h2 className="text-xl font-semibold text-black">
                     Select Your Strategic Priorities
                   </h2>
+                  <p className="text-sm text-neutral-600">
+                    Build your business case. One priority at a time.
+                  </p>
                 </div>
                 
                 <div className="space-y-12">

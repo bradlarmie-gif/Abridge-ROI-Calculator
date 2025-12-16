@@ -1,0 +1,197 @@
+Please apply the following Outpatient Final Polish updates.  
+These changes are strictly visual, structural, and narrative.  
+Do NOT modify any business logic, calculations, ROI math, or lever engines.
+
+────────────────────────────────────────
+1. GLOBAL LOOK & FEEL – Abridge Aesthetic Pass
+────────────────────────────────────────
+
+• Increase vertical spacing between major sections (KPI row → waterfall → expansion → results summary) so each feels like a chapter.
+• Ensure whitespace is generous and intentional. Avoid dense blocky layouts.
+• Use a single consistent font size scale across the calculator:
+   - Titles: text-2xl font-semibold
+   - Section headers: text-lg font-semibold
+   - Subheaders: text-sm text-neutral-500
+   - Body text: text-sm or base text-neutral-700
+• Lighten all borders to neutral-200; reduce heavy lines or dividers.
+• Keep the interface in clean black/white/neutral tones with minimal use of Abridge Red (#F03319) only for section labels or small accents.
+
+────────────────────────────────────────
+2. IMPROVED OUTPATIENT SETTINGS LAYOUT (Strategic Priorities page)
+────────────────────────────────────────
+
+• Replace the CTA button text from:
+      “Enter the ROI Calculator”
+   to:
+      **“Explore the ROI Calculator”**
+
+• Add a hero line at the top:
+      **“Select Care Setting(s) Below”**
+   And a sub-line:
+      “Your ROI experience adapts instantly based on your selections.”
+
+• Ensure setting cards have:
+   - Clean spacing
+   - Centered labels
+   - Subtle shadows (shadow-sm)
+   - Muted grey for inactive states, black border for selected
+
+────────────────────────────────────────
+3. SCENARIO INPUTS PANEL – POLISH & STRUCTURE
+────────────────────────────────────────
+
+At the top of the left panel:
+
+• Add a small summary block:
+   **Scenario Summary**
+   - Providers in scope
+   - Annual encounters (in scope)
+   - Utilization (%)
+   (This is a read-only mini-row.)
+
+Then refine section headers:
+
+• “Current Scope”
+• “Economics”
+• “Enterprise Footprint”
+
+All section headers should:
+   - Use Abridge Red (#F03319)
+   - font-semibold
+   - padding-top: 16px; padding-bottom: 4px
+
+Ensure all inputs:
+   - Use width: 100%
+   - Stack label above input on mobile
+   - Have consistent helper text in muted neutral
+
+────────────────────────────────────────
+4. KPI ROW – READABILITY & MEANING
+────────────────────────────────────────
+
+Update all KPI labels to:
+
+• Return (x)
+• Annual Impact
+• Annual Program Cost
+• Net Gain
+• Clinician Hours Recovered
+• Projected wRVU/Visit
+• Adjusted Denial Rate
+
+Add micro-labels under each KPI value (muted text-xs neutral-500), such as:
+
+• Return (x)
+   “Value per $1 invested”
+
+• Clinician Hours Recovered
+   “Annual usable time returned”
+
+• Adjusted Denial Rate
+   “After documentation improvement”
+
+────────────────────────────────────────
+5. WATERFALL CHART POLISH
+────────────────────────────────────────
+
+• Title: **“Impact Breakdown for Current Scope”**
+• Subtitle (muted): **“Contribution of selected strategic drivers”**
+
+• Replace x-axis labels with short versions:
+   - Cost
+   - Access
+   - Overtime/Locum
+   - Retention
+   - HCC
+   - LOS
+   - Denials
+   - Net
+
+• Full names appear **only in tooltips**.
+
+• Remove rotated text. Keep labels horizontal.
+
+• Add left alignment for label group title:
+     “Selected Drivers”
+
+• Keep green for benefit bars, blue for Net, red for Cost—but use muted tones and thin (1px) outlines.
+
+────────────────────────────────────────
+6. ENTERPRISE EXPANSION VIEW POLISH
+────────────────────────────────────────
+
+• Title:
+     **“Enterprise Expansion View”**
+
+• Subtitle (muted):
+     “Driver-level comparison (current vs. enterprise)”
+
+• Use:
+   - Grey bars for Current Scope (#9CA3AF)
+   - Black bars for Enterprise Projection (#000000)
+
+• Add a summary line above the chart:
+     **“Current impact: $X  |  Enterprise potential: $Y  (≈ Z× difference)”**
+   Replace X, Y, Z with computed values.
+
+• Use short x-axis labels:
+   Access | Overtime/Locum | Retention | HCC | LOS | Denials | Total Impact
+
+────────────────────────────────────────
+7. "UNDERSTANDING YOUR DRIVERS" RESULTS POLISH
+────────────────────────────────────────
+
+• Add header:
+     **Understanding Your Drivers**
+   Subtitle (muted):
+     “Interpretation of how each selected driver influences your current scope.”
+
+• Show ONLY the 1–2 sentence summary in the Results table.  
+  Then show the “Read more…” link.
+
+• Ensure spacing between rows is even and not compressed.
+
+────────────────────────────────────────
+8. SHOW WORK DRAWERS – UNIFICATION PASS
+────────────────────────────────────────
+
+For ALL existing drawers (Patient Access, Overtime/Locum, Clinician Retention, LOS Alignment, Medical Necessity Denials, HCC):
+
+• Ensure consistent:
+   - Drawer width
+   - Padding
+   - Header styling
+   - Section titles (ASSUMPTIONS, CALCULATED OUTPUTS, HOW THIS IS CALCULATED)
+   - Helper text styles
+   - Rounded corners
+   - Shadow (shadow-xl)
+
+• Add a small muted footer:
+     “Changes here update all ROI outputs automatically.”
+
+• Ensure drawers go full-width and full-height on mobile (<768px).
+
+────────────────────────────────────────
+9. MOBILE & TABLET RESPONSIVENESS PASS
+────────────────────────────────────────
+
+• Collapse layout into single column below 1024px.
+• Show Work drawer becomes full-screen slide-over on mobile.
+• Tables become horizontally scrollable on small screens.
+• Charts shrink proportionally inside a responsive container.
+
+────────────────────────────────────────
+10. EXECUTIVE-FRIENDLY REPORT VIEW (Begin scaffolding)
+────────────────────────────────────────
+
+• Add a “Download Report (PDF)” button in the Results Summary header.
+• This step should only scaffold a separate print-friendly Report view.
+• Actual report content handled in subsequent instructions.
+
+────────────────────────────────────────
+11. SCOPE OF THIS UPDATE
+────────────────────────────────────────
+
+• DO NOT modify ROI math, lever calculations, drawer logic, or data pipelines.
+• DO NOT add new drivers, categories, or formulas.
+• This update is purely UI polish, layout, typography, spacing, color, charts, and narrative framing.
