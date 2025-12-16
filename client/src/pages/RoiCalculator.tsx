@@ -804,7 +804,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
               <h2 className="text-xl font-semibold text-black">Results Summary</h2>
             </header>
             <ScrollArea className="flex-1">
-              <div className="p-6 space-y-6 max-w-7xl">
+              <div className="p-6 space-y-6">
                 <KpiGrid>
                   <KpiCard
                     label="Return (x)"
@@ -863,14 +863,14 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   enterpriseEncounterCount={inputs.enterpriseAnnualEncounters * (inputs.abridgeUtilizationPct / 100)}
                 />
 
-                <Card>
+                <Card className="w-full overflow-hidden">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-semibold">Understanding Your Drivers</CardTitle>
                     <p className="text-sm text-neutral-500">Interpretation of how each selected driver influences your current scope.</p>
                   </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto -mx-6 px-6">
-                    <Table className="min-w-[800px]">
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[600px]">
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-16 text-center">Active</TableHead>
@@ -1003,7 +1003,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           <TableCell></TableCell>
                         </TableRow>
                       </TableBody>
-                    </Table>
+                      </Table>
                     </div>
                   </CardContent>
                 </Card>

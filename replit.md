@@ -43,7 +43,21 @@ Preferred communication style: Simple, everyday language.
 - Material Design principles adapted for enterprise data applications
 - Typography: Inter for UI text, JetBrains Mono for numerical displays
 - Color scheme: Black/neutral grays for accents (no blue), warm off-white backgrounds with tan decorative patterns
-- Desktop-first responsive design
+
+### Responsive Design
+- **Breakpoints**: Uses Tailwind's `md` (768px) and `lg` (1024px) breakpoints
+- **Main Layout**: Two-column on desktop (≥1024px), single-column stacked on mobile/tablet
+  - Sidebar: `w-full lg:w-96` (full width on mobile, 384px on desktop)
+  - Results panel: `flex-1` fills remaining space
+- **Show Work Drawers**: `w-full md:w-[420px]` (full-width on mobile, 420px on tablet+)
+  - Rounded corners only on desktop via `md:rounded-l-xl`
+- **Understanding Your Drivers Table**: 
+  - Card with `overflow-hidden` to contain content
+  - Inner div with `overflow-x-auto` for horizontal scroll
+  - Table has `min-w-[600px]` to ensure proper column widths
+  - Description column hidden on mobile via `hidden md:table-cell`
+- **KPI Grid**: `grid-cols-2 lg:grid-cols-4` (2 columns on mobile, 4 on desktop)
+- **Charts**: Use Recharts `ResponsiveContainer` with fixed height `h-80` (320px)
 
 ## External Dependencies
 
