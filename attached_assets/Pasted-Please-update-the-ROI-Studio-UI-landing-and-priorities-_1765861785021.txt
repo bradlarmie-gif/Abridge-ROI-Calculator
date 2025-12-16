@@ -1,0 +1,46 @@
+Please update the ROI Studio UI landing and priorities screens with the following changes.
+
+1) Overall layout and background:
+   - Change the main page background to solid white instead of a big white card on a tan background.
+   - Implement a subtle "step-and-repeat" style backdrop using the Abridge tan broken-logo shapes:
+     - Create a repeating pattern of light tan shapes (similar to the provided asset) across the whole viewport, like a photo backdrop.
+     - Use a very low opacity tan color, e.g. around `#EDE0D0` at 10–15% opacity, so it is visible but never interferes with readability.
+     - Place this pattern behind all content (e.g., via absolutely positioned elements or a background image on the body) while keeping the content area itself on a white background.
+   - Adjust the main content container so it no longer feels squished in the middle:
+     - Use a max width around 1100–1200px and center it (`max-w-5xl` or `max-w-6xl mx-auto`).
+     - Use normal padding (e.g., `px-8 py-12`) instead of a huge rounded white card with massive margins.
+     - The container can still have slightly rounded corners and a light shadow, but it should feel like a wide, comfortable layout rather than a tight pill in the center.
+
+2) Typography:
+   - Switch to a modern sans-serif font such as Inter:
+     - Import Inter via Google Fonts (or configure Tailwind's `font-sans` to use Inter as the primary font).
+     - Apply `font-sans` as the default font for the app.
+   - Ensure the main title “Abridge ROI Studio” uses a bold weight and looks cleaner with the new font.
+
+3) Care setting cards (Outpatient, Emergency Department, Nursing, Inpatient):
+   - Keep the current horizontal card layout and icons, but change the subtitles (second line) as follows:
+     - Outpatient: subtitle should be exactly “Clinical Note”.
+     - Emergency Department: subtitle should be exactly “Clinical Note”.
+     - Nursing: subtitle should be exactly “Flowsheet Documentation”.
+     - Inpatient: subtitle should remain “Coming soon”.
+   - Remove the old phrases like “Outpatient practice scenarios”, “Emergency department scenarios”, and “Nursing workflows”.
+   - Keep the existing hover and selected styling (black border on hover/selected, subtle scale and shadow), and continue to show the Inpatient card in a disabled/coming soon state.
+
+4) Priorities screen copy:
+   - On the screen where the user selects levers/priorities, change the main heading text from anything like “Select your strategic priorities for [setting]” to:
+     - “Select which strategic initiatives you would like Abridge to assist you with.”
+   - Show the current setting name separately in smaller text, such as “Current setting: Outpatient”, but do not include the setting name in the main heading sentence.
+   - Ensure this heading text is used consistently for Outpatient, Emergency Department, and Nursing.
+
+5) Checkbox defaults for priorities:
+   - Update the initial state so that all priority checkboxes are UNCHECKED by default when the user first arrives on the priorities screen.
+   - The user should actively select which initiatives they want to include in the scenario.
+   - Continue to keep using the black checkbox styling and existing selection logic; only the default values should change to `false`.
+
+6) Primary button text and styling:
+   - On the care setting selection screen, change the button label from “Continue to ROI Studio” to “Enter ROI Studio”.
+   - Use black as the primary button color instead of blue:
+     - Apply classes such as `bg-black hover:bg-neutral-900 text-white` (and remove any blue-specific classes).
+   - Make sure any similar primary action buttons in this flow (where appropriate) also use the black style for consistency.
+
+Please implement these changes without modifying the ROI calculations or underlying math. Only adjust layout, background, typography, copy, and default checkbox/button behavior as described above.

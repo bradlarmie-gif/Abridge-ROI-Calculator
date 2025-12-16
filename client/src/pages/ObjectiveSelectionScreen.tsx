@@ -38,9 +38,9 @@ const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
 };
 
 const SETTING_SUBTITLES: Record<AllSettingType, string> = {
-  outpatient: "Outpatient practice scenarios",
-  ed: "Emergency department scenarios",
-  nursing: "Nursing workflows",
+  outpatient: "Clinical Note",
+  ed: "Clinical Note",
+  nursing: "Flowsheet Documentation",
   inpatient: "Coming soon",
 };
 
@@ -62,8 +62,7 @@ export default function ObjectiveSelectionScreen({
       return;
     }
     setSelectedSetting(setting);
-    const allLeverIds = SETTING_CONFIG[setting].map((l) => l.id);
-    setSelectedLevers(new Set(allLeverIds));
+    setSelectedLevers(new Set());
   };
 
   const handleLeverToggle = (leverId: string) => {
@@ -133,15 +132,15 @@ export default function ObjectiveSelectionScreen({
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F5EF] relative">
+    <div className="min-h-screen bg-white relative">
       <BackgroundPattern />
       
-      <div className="relative z-10 flex items-center justify-center p-8 min-h-screen">
-        <div className="w-full max-w-5xl bg-white rounded-2xl shadow-sm p-8 space-y-10">
+      <div className="relative z-10 px-8 py-12 min-h-screen">
+        <div className="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-sm p-8 space-y-10">
           <div className="text-center space-y-3">
-            <h1 className="text-3xl font-bold text-black">Abridge ROI Studio</h1>
+            <h1 className="text-3xl font-bold text-black font-sans">Abridge ROI Studio</h1>
             <p className="text-muted-foreground">
-              Select your care setting and customize which strategic priorities to include
+              Select your care setting and customize which strategic initiatives to include
             </p>
           </div>
 
@@ -165,10 +164,15 @@ export default function ObjectiveSelectionScreen({
           {selectedSetting && leversByCategory && (
             <Card className="border-neutral-200">
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-black">
-                  <Settings2 className="h-5 w-5" />
-                  Select Your Strategic Priorities for {CARE_SETTING_LABELS[selectedSetting]}
-                </CardTitle>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">
+                    Current setting: {CARE_SETTING_LABELS[selectedSetting]}
+                  </p>
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2 text-black">
+                    <Settings2 className="h-5 w-5" />
+                    Select which strategic initiatives you would like Abridge to assist you with.
+                  </CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div 
@@ -189,9 +193,10 @@ export default function ObjectiveSelectionScreen({
               size="lg"
               disabled={!selectedSetting || selectedLevers.size === 0}
               onClick={handleContinue}
+              className="bg-black hover:bg-neutral-900 text-white"
               data-testid="button-continue"
             >
-              Continue to ROI Studio
+              Enter ROI Studio
               <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
