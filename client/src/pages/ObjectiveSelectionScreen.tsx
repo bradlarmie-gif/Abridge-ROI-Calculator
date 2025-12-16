@@ -227,7 +227,7 @@ export default function ObjectiveSelectionScreen({
                   Current Selection: {currentSelectionText}
                 </p>
                 <h2 className="text-xl font-semibold text-black">
-                  Select your strategic priorities
+                  Select Your Strategic Priorities
                 </h2>
               </div>
               
@@ -250,20 +250,22 @@ export default function ObjectiveSelectionScreen({
             )}
             <button
               type="button"
-              disabled={isButtonDisabled}
+              disabled={selectedSettings.length === 0}
               onClick={handleContinue}
               className={`
                 inline-flex items-center justify-center gap-2 px-8 py-3 
                 rounded-xl border font-semibold text-base
                 transition-all duration-200
-                ${isButtonDisabled 
-                  ? 'opacity-50 cursor-not-allowed bg-white border-neutral-300 text-neutral-400' 
-                  : 'bg-white border-black text-black hover:bg-black hover:text-white cursor-pointer'
+                ${selectedSettings.length === 0
+                  ? 'opacity-50 cursor-not-allowed bg-white border-neutral-300 text-neutral-400'
+                  : selectedLevers.size === 0
+                    ? 'opacity-70 bg-white border-black text-black cursor-pointer hover:bg-black hover:text-white'
+                    : 'bg-black border-black text-white cursor-pointer hover:opacity-90'
                 }
               `}
               data-testid="button-continue"
             >
-              Enter the ROI Studio
+              Enter The Workbook
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>

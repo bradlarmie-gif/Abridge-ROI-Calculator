@@ -31,21 +31,21 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
     {
       id: "riskAdjustment",
-      label: "Condition Documentation Completeness",
+      label: "HCC & Chronic Condition Capture",
       category: "documentation",
-      description: "Care teams often know patients' chronic conditions, but documentation doesn't always carry those details forward. Capturing the full clinical picture leads to more accurate risk modeling and resource planning.",
+      description: "Chronic conditions often exist in the record but aren't consistently documented in each encounter. Better note completeness surfaces both previously known conditions and newly identified ones, supporting more accurate risk scoring and care planning.",
     },
     {
       id: "wrvu",
-      label: "Visit Complexity Documentation",
+      label: "Level of Service Alignment",
       category: "documentation",
-      description: "Visit complexity is frequently understated because documentation leaves parts of the clinical story unsaid. Better narrative detail allows coding to reflect the work actually performed.",
+      description: "Many encounters are billed below their actual complexity because essential clinical reasoning isn't fully documented. Richer narrative detail helps coding teams assign the level that reflects the work actually performed.",
     },
     {
       id: "denials",
-      label: "Documentation-Related Denials",
+      label: "Documentation-Driven Denials",
       category: "documentation",
-      description: "Many denials originate from thin documentation rather than clinical disagreement. Strengthening the narrative closes those gaps and reduces avoidable reimbursement friction.",
+      description: "A substantial share of denials originate not from coding errors but from documentation that doesn't clearly support medical necessity. Strengthening the clinical story reduces these preventable denials and lowers the burden of rework and appeals.",
     },
   ],
   ed: [

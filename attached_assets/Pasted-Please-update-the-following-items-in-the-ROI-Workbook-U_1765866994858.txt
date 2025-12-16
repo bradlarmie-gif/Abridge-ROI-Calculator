@@ -1,0 +1,63 @@
+Please update the following items in the ROI Workbook UI and copy:
+
+────────────────────────────────────────────────────────
+1. Update the primary action button behavior
+────────────────────────────────────────────────────────
+• Change the button label text to:
+   "Enter The Workbook"
+• Default (no priorities selected):
+   - White background
+   - Black border
+   - Black text
+   - Slightly reduced opacity to indicate inactive state
+• When the user selects at least ONE strategic priority:
+   - Immediately switch the button to ACTIVE styling:
+       bg-black
+       text-white
+       border-black
+       opacity-100
+   - Do NOT require hover to turn black.
+   - The button should look active as soon as at least one lever is selected.
+
+────────────────────────────────────────────────────────
+2. Update the main heading on the priorities screen
+────────────────────────────────────────────────────────
+Replace existing heading with:
+   "Select Your Strategic Priorities"
+Use title case exactly as written.
+
+────────────────────────────────────────────────────────
+3. Update OUTPATIENT documentation lever names and descriptions
+────────────────────────────────────────────────────────
+Replace the previous lever labels and descriptions with the following:
+
+ID: riskAdjustment
+label: "HCC & Chronic Condition Capture"
+category: "documentation"
+description: "Chronic conditions often exist in the record but aren’t consistently documented in each encounter. Better note completeness surfaces both previously known conditions and newly identified ones, supporting more accurate risk scoring and care planning."
+
+ID: wrvuAlignment
+label: "Level of Service Alignment"
+category: "documentation"
+description: "Many encounters are billed below their actual complexity because essential clinical reasoning isn’t fully documented. Richer narrative detail helps coding teams assign the level that reflects the work actually performed."
+
+ID: denialReduction
+label: "Documentation-Driven Denials"
+category: "documentation"
+description: "A substantial share of denials originate not from coding errors but from documentation that doesn't clearly support medical necessity. Strengthening the clinical story reduces these preventable denials and lowers the burden of rework and appeals."
+
+────────────────────────────────────────────────────────
+4. Ensure lever card titles use the updated title case style
+────────────────────────────────────────────────────────
+• Example:
+   "Clinical Time Recovered"
+   "Overtime Reduction"
+   "Clinician Retention"
+   "HCC & Chronic Condition Capture"
+   "Level of Service Alignment"
+   "Documentation-Driven Denials"
+
+────────────────────────────────────────────────────────
+5. Do not modify any math or logic. 
+Only update lever names, descriptions, heading copy, and button behavior as described.
+────────────────────────────────────────────────────────
