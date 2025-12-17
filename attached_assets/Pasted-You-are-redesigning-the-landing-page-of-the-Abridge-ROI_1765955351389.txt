@@ -1,0 +1,229 @@
+You are redesigning the landing page of the Abridge ROI Calculator. 
+Keep all existing logic and state. 
+Do NOT change routes, calculations, or copy.  
+Only rebuild the layout, structure, and styling to achieve a premium, enterprise-grade design.
+
+This needs to feel like the front door to a financial modeling tool, not a step form. 
+Follow every instruction below precisely.
+
+====================================================
+1. OVERALL VISUAL SYSTEM — ELEVATED APP SURFACE
+====================================================
+
+Transform the page into a structured, professional application surface:
+
+- Set page background to a soft neutral (off-white or #F7F7F7 equivalent).
+- Place all content inside a SINGLE, centered, white container panel:
+  - max-width: ~1120px
+  - padding: 32px top/bottom, 32px sides
+  - border-radius: 20–24px
+  - subtle shadow: shadow-md or custom equivalent
+- This panel should look like the main “app window.”
+
+This drastically separates the UI from the background and makes it feel like a real product.
+
+====================================================
+2. HERO + STEPPER — FULL HEADER BAR REBUILD
+====================================================
+
+Replace the current top section with a *proper header bar* that integrates the title and stepper visually.
+
+Inside the white panel, build a header section that includes:
+
+-------------------------
+TITLE BLOCK (LEFT SIDE)
+-------------------------
+- Left-aligned block.
+- "The ROI Calculator":
+  - text-4xl or large equivalent
+  - font-semibold
+  - tight line-height
+- "by Abridge":
+  - text-sm
+  - Abridge red (#E24C36 or whatever brand color exists)
+  - medium weight
+  - margin-top: 4px
+- Tagline:
+  - same copy as current
+  - muted gray
+  - max-width: 500–560px
+  - margin-top: 10px
+
+-------------------------
+STEPPER (RIGHT SIDE)
+-------------------------
+Place the stepper to the RIGHT OF THE TITLE (not below it).  
+Use a horizontal layout that aligns vertically with the title block.
+
+- Display: flex row
+- gap between steps: 24–32px
+- Each step:
+  - circle size: 30–34px
+  - current step: filled Abridge red, white number
+  - completed steps: white circle, gray border, gray checkmark or number
+  - future steps: light-gray filled circle, gray number
+- Under each circle, place the label in small caps (e.g., text-xs uppercase):
+
+  EXAMPLE:
+  [ 1 ]  
+  CARE SETTING
+
+  [ 2 ]  
+  ROI PRIORITIES
+
+  [ 3 ]  
+  CALCULATOR
+
+This makes the stepper feel *structural*, not decorative.
+
+-------------------------
+HEADER DIVIDER
+-------------------------
+Add a clean divider line under the header section:
+- 1px, light gray (#E5E5E5)
+- margin-top: 24px
+- margin-bottom: 32px
+
+====================================================
+3. STEP 1 — CARE SETTINGS (MORE PREMIUM PILL DESIGN)
+====================================================
+
+Do NOT use card layout.  
+Use a modern “segmented-control” pill bar.
+
+-------------------------
+SECTION HEADING
+-------------------------
+- Title: Step 1 - Choose your care setting
+  - font-semibold, text-xl
+- Subtext:
+  - muted gray
+  - margin-bottom: 16px
+
+-------------------------
+PILL SELECTOR BAR
+-------------------------
+A single row of pill buttons (wrap on mobile):
+
+Each pill:
+- display: inline-flex
+- align-items: center
+- gap: 8px
+- padding: 10px 18px
+- border: 1px solid #D9D9D9
+- border-radius: 9999px (full)
+- background: white
+- cursor: pointer
+- transition: all 0.15s ease
+
+Selected pill:
+- border-color: Abridge red
+- background: #FFF5F3 (very light red-neutral*)
+- text color: slightly darker
+- icon color: Abridge red (optional)
+
+Disabled pill (Inpatient):
+- opacity: 0.55
+- border: 1px solid #E5E5E5
+- “Coming Soon” pill inside is muted gray
+- pointer-events: none
+
+Below pill row:
+- Small helper text in muted gray, margin-top 6px.
+
+-------------------------
+TOGGLE LOGIC
+-------------------------
+If a selected pill is clicked again:  
+→ unselect it → set selectedSetting to null.  
+When selectedSetting = null:
+- Dim Step 2 (opacity ~0.4)
+- Disable Step 2 interactions
+- Reset selected ROI levers
+- Disable Continue button
+
+====================================================
+4. STEP 2 — ROI PRIORITIES (POLISHED CARDS)
+====================================================
+
+Make the ROI priorities feel like modular “levers” in a modeling environment, not text blocks.
+
+-------------------------
+SECTION STRUCTURE
+-------------------------
+- Step 2 title: same hierarchy as Step 1 title
+- Subtext: margin-bottom: 16px
+
+-------------------------
+GROUP LABELS
+-------------------------
+Fix cramped labels:
+- uppercase
+- text-xs with tracking-wide
+- muted gray
+- margin-top: 24px
+- margin-bottom: 12px
+
+-------------------------
+PRIORITY CARDS (ELEVATED DESIGN)
+-------------------------
+Card rules:
+- border: 1px solid #E5E5E5
+- background: white
+- border-radius: 14–16px
+- padding: 16–20px
+- margin-bottom: 12px
+- transition: all 0.15s ease
+
+Selected card:
+- remove full red border (too heavy)
+- instead add a LEFT ACCENT BAR:
+  - 4px solid Abridge red
+  - rest of card border stays light gray
+- subtle tinted background: #FFF7F5 (mild neutral)
+- checkbox uses Abridge red
+- Make the card feel “activated,” but clean.
+
+Inside card:
+- top row: checkbox + title  
+   (flex row, items-center, gap-2)
+- description: muted gray, margin-top 6px
+- “This lever drives”: bold label + muted body text, margin-top 4px
+
+====================================================
+5. CTA FOOTER — POLISHED, PRODUCT-LIKE
+====================================================
+
+Keep the sticky footer, but make it feel like a real application footer:
+
+- full-width bar at bottom
+- background: white
+- top border: 1px solid #E5E5E5
+- padding: 12–16px
+- inside: centered content container matching main panel width
+
+Footer layout:
+- Left: “X levers selected” (small, muted)
+- Right: primary button:
+   - “Continue to Calculator”
+   - black or deep-charcoal background
+   - white text
+   - rounded-full
+   - padding: 10px 22px
+
+Disabled state:
+- opacity ~0.45
+- pointer-events: none
+
+====================================================
+6. RESPONSIVE BEHAVIOR
+====================================================
+- On smaller breakpoints, stack the header: 
+  title block first, stepper centered below
+- Care setting pills wrap elegantly
+- Priority cards remain full width and properly spaced
+
+====================================================
+
+Implement all visual layout, hierarchy, and spacing per the above spec so the landing page feels like a premium enterprise ROI tool rather than a styled wizard. 
+Do not modify content or business logic.
