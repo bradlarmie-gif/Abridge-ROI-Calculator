@@ -316,20 +316,17 @@ export default function ObjectiveSelectionScreen({
           
           <div className="bg-white rounded-[20px] shadow-md p-6 md:p-8">
             
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 lg:gap-10">
-              <div className="flex-1 max-w-xl">
+            <div className="flex flex-col gap-5 md:gap-6">
+              <div>
                 <h1 className="text-3xl md:text-4xl font-semibold text-neutral-900 leading-tight">
                   The ROI Calculator
                 </h1>
                 <p className="text-sm font-medium mt-1" style={{ color: '#F03319' }}>
                   by Abridge
                 </p>
-                <p className="text-sm text-neutral-500 mt-2.5 leading-relaxed max-w-[540px]">
-                  Build a focused, defensible ROI model across any care setting in three simple steps.
-                </p>
               </div>
               
-              <div className="lg:flex-shrink-0 flex justify-center lg:justify-end">
+              <div>
                 <Stepper selectedSetting={selectedSetting} hasSelectedLevers={selectedLeverIds.size > 0} />
               </div>
             </div>
