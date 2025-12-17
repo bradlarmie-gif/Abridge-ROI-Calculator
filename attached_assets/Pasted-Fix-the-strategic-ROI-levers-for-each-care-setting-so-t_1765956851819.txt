@@ -1,0 +1,107 @@
+Fix the strategic ROI levers for each care setting so they match the exact sets and copy below. 
+Important: 
+- Do not change routing or overall behavior. 
+- Step 2 should show ONLY the levers defined for the currently selected setting.
+- Each lever must render with:
+  - Title
+  - Two-sentence description
+  - A final line beginning with "This lever drives:" in bold.
+
+Update the configuration or data structure that defines the priorities for each care setting (e.g., prioritiesBySetting) so it looks conceptually like:
+
+outpatient: [ ...6 levers... ]
+emergencyDepartment: [ ...5 levers... ]
+nursing: [ ...4 levers... ]
+
+Use stable ids (e.g., "patientAccess", "overtimeLocumSavings", etc.), but the user-facing text must match exactly what is below.
+
+--------------------------------
+OUTPATIENT (6 LEVERS)
+--------------------------------
+1) Title: "Patient Access"
+   Description: 
+   "Small documentation delays accumulate and limit how many patients a clinician can reasonably see. Reducing that friction restores time to the day, improving access without increasing staffing."
+   Drives: "visits per provider per day, downstream revenue."
+
+2) Title: "Overtime & Locum Cost Savings"
+   Description:
+   "After-hours charting often drives avoidable overtime and reliance on locums. Capturing documentation in real time during the visit reduces after-hours work and premium labor needs."
+   Drives: "overtime spend, locum hours."
+
+3) Title: "Clinician Retention"
+   Description:
+   "Administrative overload is a major driver of burnout and turnover. Lightening documentation with ambient support improves clinician sustainability and helps teams stay intact."
+   Drives: "avoided replacement cost, team stability."
+
+4) Title: "Level of Service Realignment"
+   Description:
+   "Visits are frequently coded below their true complexity because key reasoning isn’t fully documented. Ambient-generated narratives preserve clinical nuance so coding can realign with the work actually performed."
+   Drives: "wRVUs, per-visit reimbursement."
+
+5) Title: "HCC & Chronic Condition Capture"
+   Description:
+   "Incomplete documentation often understates patient complexity and risk. Ambient consistently surfaces chronic conditions discussed in the visit, supporting accurate risk adjustment and care planning."
+   Drives: "RAF accuracy, risk-adjusted reimbursement."
+
+6) Title: "Denial Reduction"
+   Description:
+   "Many outpatient denials stem from insufficient documentation supporting medical necessity or services performed. Ambient creates clearer encounter stories that reduce preventable denials and rework."
+   Drives: "fewer denied claims, higher net collections."
+
+--------------------------------
+EMERGENCY DEPARTMENT (5 LEVERS)
+--------------------------------
+1) Title: "Throughput & Patient Leakage Improvement"
+   Description:
+   "Documentation done after the fact slows clinicians down and extends door-to-doc and disposition times. Ambient captures the story as care happens, improving flow and reducing patients who leave before being seen or complete their care elsewhere."
+   Drives: "throughput, LWBS reduction, recovered visits/admissions."
+
+2) Title: "Staffing Efficiency & Locum Avoidance"
+   Description:
+   "EDs often plug staffing gaps with overtime or locums when documentation demands eat into clinician capacity. Ambient reduces after-shift charting so more clinical time happens inside scheduled hours with the core team."
+   Drives: "overtime spend, locum reliance."
+
+3) Title: "Clinician Retention"
+   Description:
+   "ED work is intense, and extra documentation load accelerates burnout and churn. Offloading much of the narrative work to ambient support makes shifts more sustainable and helps retain experienced emergency clinicians."
+   Drives: "avoided turnover cost, schedule stability."
+
+4) Title: "Level of Service Realignment"
+   Description:
+   "High-acuity ED encounters are often under-documented, pushing E/M levels down. Ambient preserves critical thinking and clinical risk assessment in real time, supporting accurate E/M selection for the acuity actually managed."
+   Drives: "ED professional revenue, acuity-aligned coding."
+
+5) Title: "Documentation Compliance"
+   Description:
+   "ED quality programs, sepsis bundles, and payer audits all depend on precise documentation of symptoms, timing, interventions, and reassessments. Ambient ensures these elements are consistently captured, strengthening compliance, quality reporting, and denial defense."
+   Drives: "quality measure performance, audit readiness, preventable denial reduction."
+
+--------------------------------
+NURSING (4 LEVERS)
+--------------------------------
+1) Title: "Documentation Time Reduction"
+   Description:
+   "Nurses spend large portions of each shift documenting, often finishing notes after the shift ends. Ambient captures bedside conversations and assessments automatically, reducing manual charting and overtime."
+   Drives: "staffing efficiency, reduced overtime."
+
+2) Title: "Communication Efficiency"
+   Description:
+   "Nurses frequently repeat information in handoffs, calls, or manual notes to physicians and other team members. Ambient generates clear summaries that can be shared across the team, speeding handoffs and reducing re-documentation."
+   Drives: "faster handoffs, more efficient team workflows."
+
+3) Title: "Risk & Safety Event Reduction"
+   Description:
+   "Incomplete or delayed documentation can obscure clinical changes and contribute to preventable safety events like falls, pressure injuries, or missed deterioration. Ambient supports timely, detailed documentation that makes risk more visible."
+   Drives: "reduced safety events, improved patient outcomes."
+
+4) Title: "Diagnosis Severity (CC/MCC Support)"
+   Description:
+   "Nursing assessments and flowsheets often carry the details that support CC/MCC capture and true severity of illness. Ambient helps ensure these findings are consistently documented, strengthening case-mix accuracy and DRG assignment."
+   Drives: "CC/MCC capture, DRG integrity, accurate severity representation."
+
+--------------------------------
+IMPLEMENTATION NOTES
+--------------------------------
+- Replace any existing priority definitions with these sets so each care setting only shows its respective levers.
+- Ensure the rendering logic in Step 2 reads from this configuration based on the selected care setting key.
+- Preserve the existing multi-select behavior and visual card style; only text and which levers belong to which setting should change.
