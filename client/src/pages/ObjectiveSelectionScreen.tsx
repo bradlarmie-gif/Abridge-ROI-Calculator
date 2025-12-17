@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import {
   CARE_SETTING_LABELS,
-  SETTING_CONFIG,
   getLeversByCategory,
   type CareSettingType,
   type AllSettingType,
@@ -59,25 +58,25 @@ function StepIndicator({
   isCompleted: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <div 
         className={`
-          w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
+          w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium
           transition-all duration-200
           ${isCompleted 
             ? 'bg-[#F03319] text-white' 
             : isActive 
               ? 'bg-[#F03319] text-white' 
-              : 'bg-neutral-200 text-neutral-500'
+              : 'bg-neutral-200 text-neutral-400'
           }
         `}
       >
-        {isCompleted ? <Check className="w-4 h-4" /> : stepNumber}
+        {isCompleted ? <Check className="w-3.5 h-3.5" /> : stepNumber}
       </div>
       <span 
         className={`
-          text-xs font-medium transition-colors duration-200 whitespace-nowrap
-          ${isActive || isCompleted ? 'text-neutral-700' : 'text-neutral-400'}
+          text-sm transition-colors duration-200
+          ${isActive || isCompleted ? 'text-neutral-700 font-medium' : 'text-neutral-400'}
         `}
       >
         {label}
@@ -97,21 +96,21 @@ function Stepper({
   const step2Complete = hasSelectedLevers;
   
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-center gap-2">
       <StepIndicator 
         stepNumber={1} 
         label="Care Setting" 
         isActive={!step1Complete}
         isCompleted={step1Complete}
       />
-      <div className="w-10 h-px bg-neutral-300 mt-4" />
+      <div className="w-8 h-px bg-neutral-300 mx-1" />
       <StepIndicator 
         stepNumber={2} 
         label="ROI Priorities" 
         isActive={step1Complete && !step2Complete}
         isCompleted={step2Complete}
       />
-      <div className="w-10 h-px bg-neutral-300 mt-4" />
+      <div className="w-8 h-px bg-neutral-300 mx-1" />
       <StepIndicator 
         stepNumber={3} 
         label="Calculator" 
@@ -141,22 +140,22 @@ function CareSettingPill({
       onClick={onClick}
       disabled={disabled}
       className={`
-        inline-flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-200
+        inline-flex items-center gap-2 px-5 py-2.5 rounded-full border transition-all duration-200
         ${disabled
-          ? 'opacity-50 cursor-not-allowed border-neutral-200 bg-white'
+          ? 'opacity-65 cursor-default border-neutral-200 bg-white'
           : selected
-            ? 'border-[#F03319] bg-[#FEF7F6]'
+            ? 'border-[#F03319] bg-[#FEFAF9]'
             : 'border-neutral-300 bg-white hover:border-neutral-400 cursor-pointer'
         }
       `}
       data-testid={`pill-setting-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      <Icon className="w-4 h-4 text-neutral-700" />
-      <span className={`text-sm font-medium ${selected ? 'text-neutral-900' : 'text-neutral-700'}`}>
+      <Icon className={`w-4 h-4 ${disabled ? 'text-neutral-400' : 'text-neutral-700'}`} />
+      <span className={`text-sm ${selected ? 'font-medium text-neutral-900' : disabled ? 'text-neutral-500' : 'text-neutral-700'}`}>
         {label}
       </span>
       {disabled && (
-        <span className="text-xs px-1.5 py-0.5 rounded-full bg-neutral-100 text-neutral-500 ml-1">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500">
           Coming Soon
         </span>
       )}
@@ -189,7 +188,7 @@ function PriorityCard({
         focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[rgba(240,51,25,0.5)]
         border border-neutral-200 hover:border-neutral-300
         overflow-hidden
-        ${isSelected ? 'bg-neutral-50' : 'bg-white'}
+        ${isSelected ? 'bg-[#FEFCFB]' : 'bg-white'}
       `}
       data-testid={`priority-card-${lever.id}`}
     >
@@ -199,8 +198,8 @@ function PriorityCard({
           style={{ backgroundColor: '#F03319' }}
         />
       )}
-      <div className={`py-3 px-4 ${isSelected ? 'pl-5' : ''}`}>
-        <div className="flex items-center gap-2 mb-1">
+      <div className={`py-3.5 px-4 ${isSelected ? 'pl-5' : ''}`}>
+        <div className="flex items-center gap-2">
           <Checkbox
             checked={isSelected}
             onCheckedChange={onToggle}
@@ -211,7 +210,7 @@ function PriorityCard({
             {lever.label}
           </h4>
         </div>
-        <p className="text-sm text-neutral-500 mt-1 leading-relaxed pl-6">
+        <p className="text-sm text-neutral-500 mt-1.5 leading-relaxed pl-6">
           {lever.description}
         </p>
         <p className="text-sm mt-1 pl-6">
@@ -246,8 +245,13 @@ export default function ObjectiveSelectionScreen({
     if (setting === "inpatient") {
       return;
     }
-    setSelectedSetting(setting);
-    setSelectedLeverIds(new Set());
+    if (selectedSetting === setting) {
+      setSelectedSetting(null);
+      setSelectedLeverIds(new Set());
+    } else {
+      setSelectedSetting(setting);
+      setSelectedLeverIds(new Set());
+    }
   };
 
   const handleLeverToggle = (leverId: string) => {
@@ -278,14 +282,14 @@ export default function ObjectiveSelectionScreen({
 
   const canContinue = selectedSetting !== null && selectedLeverIds.size > 0;
 
-  const renderCategorySection = (category: LeverCategory, levers: LeverConfig[]) => {
+  const renderCategorySection = (category: LeverCategory, levers: LeverConfig[], isFirst: boolean) => {
     if (levers.length === 0) return null;
     const CategoryIcon = CATEGORY_ICONS[category];
     const categoryLabel = category === 'time' ? 'CAPACITY & LABOR' : 'REVENUE & RISK';
 
     return (
       <div key={category}>
-        <div className="flex items-center gap-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2 mt-5 first:mt-0">
+        <div className={`flex items-center gap-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2.5 ${isFirst ? '' : 'mt-6'}`}>
           <CategoryIcon className="h-3.5 w-3.5" />
           {categoryLabel}
         </div>
@@ -307,32 +311,32 @@ export default function ObjectiveSelectionScreen({
     <div className="min-h-screen flex flex-col relative font-sans" style={{ backgroundColor: '#F5F5F5' }}>
       <BackgroundShape />
       
-      <div className="relative z-10 flex-1 overflow-y-auto pb-24">
-        <div className="max-w-[1100px] mx-auto my-8 md:my-10 px-4 md:px-6">
-          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
-            
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 lg:gap-8">
-              <div className="flex-1 max-w-xl">
-                <h1 className="text-2xl md:text-3xl font-semibold text-neutral-900 leading-tight">
-                  The ROI Calculator
-                </h1>
-                <p className="text-sm font-medium mt-1" style={{ color: '#F03319' }}>
-                  by Abridge
-                </p>
-                <p className="text-sm text-neutral-500 mt-2 leading-relaxed max-w-lg">
-                  Build a focused, defensible ROI model across any care setting in three simple steps.
-                </p>
-              </div>
-              
-              <div className="lg:flex-shrink-0">
-                <Stepper selectedSetting={selectedSetting} hasSelectedLevers={selectedLeverIds.size > 0} />
-              </div>
+      <div className="relative z-10 flex-1 overflow-y-auto pb-20">
+        <div className="max-w-[1100px] mx-auto px-4 md:px-6 pt-6 md:pt-8">
+          
+          <div className="bg-white rounded-2xl shadow-sm px-6 md:px-7 pt-6 pb-5 mb-5">
+            <div className="max-w-xl">
+              <h1 className="text-2xl md:text-3xl font-semibold text-neutral-900 leading-tight">
+                The ROI Calculator
+              </h1>
+              <p className="text-sm font-medium mt-1" style={{ color: '#F03319' }}>
+                by Abridge
+              </p>
+              <p className="text-sm text-neutral-500 mt-2.5 leading-relaxed max-w-lg">
+                Build a focused, defensible ROI model across any care setting in three simple steps.
+              </p>
             </div>
+            
+            <div className="mt-4 overflow-x-auto">
+              <Stepper selectedSetting={selectedSetting} hasSelectedLevers={selectedLeverIds.size > 0} />
+            </div>
+            
+            <div className="border-t border-neutral-100 mt-5" />
+          </div>
 
-            <div className="border-b border-neutral-100 my-6" />
-
-            <div className="mb-6">
-              <h2 className="text-base md:text-lg font-semibold text-neutral-900 mb-1">
+          <div className="bg-white rounded-2xl shadow-sm px-6 md:px-7 py-6">
+            <div className="mb-7">
+              <h2 className="text-lg font-semibold text-neutral-900 mb-1">
                 Step 1 - Choose your care setting
               </h2>
               <p className="text-sm text-neutral-500 mb-4">
@@ -356,7 +360,7 @@ export default function ObjectiveSelectionScreen({
               </div>
 
               {!selectedSetting && (
-                <p className="text-xs text-neutral-400 mt-3">
+                <p className="text-xs text-neutral-400 mt-2">
                   You'll choose your ROI priorities next.
                 </p>
               )}
@@ -368,7 +372,7 @@ export default function ObjectiveSelectionScreen({
                 ${selectedSetting ? 'opacity-100' : 'opacity-40 pointer-events-none'}
               `}
             >
-              <h2 className="text-base md:text-lg font-semibold text-neutral-900 mb-1 mt-6">
+              <h2 className="text-lg font-semibold text-neutral-900 mb-1">
                 Step 2 - Choose your ROI priorities
               </h2>
               <p className="text-sm text-neutral-500 mb-4">
@@ -376,15 +380,15 @@ export default function ObjectiveSelectionScreen({
               </p>
 
               {!selectedSetting && (
-                <p className="text-sm text-neutral-400 py-4">
+                <p className="text-sm text-neutral-400 py-2">
                   Choose a setting above to see relevant priorities.
                 </p>
               )}
 
               {selectedSetting && leversByCategory && (
                 <div>
-                  {renderCategorySection("time", leversByCategory.time)}
-                  {renderCategorySection("documentation", leversByCategory.documentation)}
+                  {renderCategorySection("time", leversByCategory.time, true)}
+                  {renderCategorySection("documentation", leversByCategory.documentation, false)}
                 </div>
               )}
             </div>
@@ -392,7 +396,7 @@ export default function ObjectiveSelectionScreen({
         </div>
       </div>
       
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-neutral-200 shadow-sm">
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-neutral-200">
         <div className="max-w-[1100px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-4">
           <p className="text-sm text-neutral-500">
             {selectedLeverIds.size > 0 
@@ -410,12 +414,12 @@ export default function ObjectiveSelectionScreen({
               transition-all duration-200
               ${canContinue
                 ? 'bg-neutral-900 text-white cursor-pointer hover:bg-neutral-800'
-                : 'opacity-40 bg-neutral-400 text-white cursor-not-allowed'
+                : 'opacity-40 bg-neutral-400 text-white cursor-default pointer-events-none'
               }
             `}
             data-testid="button-continue"
           >
-            Continue to calculator
+            Continue to Calculator
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>

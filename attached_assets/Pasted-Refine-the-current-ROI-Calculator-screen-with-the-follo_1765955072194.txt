@@ -1,0 +1,148 @@
+Refine the current ROI Calculator screen with the following behavior and visual polish changes. Do not change routes or business logic; just adjust UI behavior and styling.
+
+--------------------
+A. CARE SETTING BEHAVIOR
+--------------------
+1) Make care setting selection toggle-able:
+   - If the user clicks a care setting that is NOT the currently selected one, set that as `selectedSetting` (current behavior).
+   - If the user clicks the care setting that is already selected, treat it as a toggle OFF:
+     - Set `selectedSetting` back to null.
+     - When `selectedSetting` is null:
+       - Disable Step 2 (ROI priorities) visually (reduced opacity and pointer-events: none for the cards).
+       - Reset the "X levers selected" count to 0 and disable the primary CTA.
+
+2) Inpatient visual state:
+   - Keep Inpatient disabled, but make it less washed out:
+     - Increase opacity so it’s ~60–70% of normal text, not extremely faint.
+     - Ensure the label "Inpatient" is clearly readable.
+     - Keep the “Coming Soon” pill immediately to the right of the label in muted gray.
+     - No hover or click behavior for Inpatient.
+
+--------------------
+B. HEADER + STEPPER MAKEOVER
+--------------------
+The top block (title + tagline + steps) currently feels flat. Make it feel like a deliberate product header.
+
+1) Wrap the title + “by Abridge” + tagline + stepper in a white panel at the top of the page:
+   - Background of the page: light neutral (off-white), e.g., #F5F5F5 or equivalent.
+   - Header panel:
+     - Centered within the page.
+     - max-width around 1100px.
+     - padding: 24–28px top/bottom, 24px left/right.
+     - border-radius: large (rounded-2xl).
+     - subtle shadow (shadow-sm).
+   - Below this header panel, leave 16–20px of vertical space before Step 1 begins.
+
+2) Title block inside the header panel:
+   - Left-align all text.
+   - "The ROI Calculator":
+     - Large font (text-3xl or similar), font-semibold, tight line-height.
+   - "by Abridge":
+     - Small font (text-sm), brand red color, margin-top 2–4px.
+   - Tagline:
+     - Existing text: "Build a focused, defensible ROI model across any care setting in three simple steps."
+     - Max width ~520–560px.
+     - Muted gray.
+     - margin-top: 8–10px.
+
+3) Stepper inside the header panel:
+   - Place the stepper directly under the title block, left-aligned but visually prominent.
+   - Reduce vertical gap between tagline and stepper to around 16px so the steps feel connected to the heading.
+   - Stepper style:
+     - Horizontal flex with 3 equal steps.
+     - Each step: small circle + label underneath (or circle + label to the right), but all visually cohesive.
+     - Circle size slightly smaller than now (not oversized), e.g., 28–32px diameter.
+     - Current step:
+       - Filled with Abridge red.
+       - White number, medium weight.
+       - Label: darker text, font-medium.
+     - Future steps:
+       - Light-grey circle with grey number.
+       - Label in lighter grey.
+     - Thin connecting line between steps in light grey.
+   - This stepper should read as a primary structural element, not an afterthought.
+
+4) Add a very subtle divider at the bottom of the header panel (inside the panel):
+   - a 1px top border in very light grey above the bottom padding OR a faint horizontal rule.
+   - This visually separates the “header” portion from the body content without feeling heavy.
+
+--------------------
+C. STEP 1 – CARE SETTINGS (PILLS) POLISH
+--------------------
+You already converted the settings to pill-style buttons. Refine spacing and visual weight:
+
+1) Keep the pills in a single row on desktop:
+   - Use flex with gap-3 or gap-4.
+   - Allow wrapping on smaller screens only.
+
+2) Pill styling refinements:
+   - Padding: 8–10px vertical, 16–20px horizontal.
+   - Border-radius: rounded-full.
+   - Default border: 1px solid light gray.
+   - Icon + label horizontally aligned with gap-2.
+   - Selected pill:
+     - Border-color: Abridge red.
+     - Background: very light neutral (not saturated red).
+     - Label text slightly darker / medium weight.
+
+3) Section header spacing:
+   - "Step 1 - Choose your care setting":
+     - Font size ~18px, font-semibold, margin-bottom: 4–6px.
+   - Subtext under Step 1:
+     - margin-bottom: 16px.
+   - Helper text ("You'll choose your ROI priority next."):
+     - small font size, muted gray, margin-top: 8px.
+
+--------------------
+D. STEP 2 – ROI PRIORITIES SPACING & GROUP LABELS
+--------------------
+1) Ensure "Step 2 - Choose your ROI priorities" is visually aligned with Step 1:
+   - Same font size and weight as Step 1 title.
+   - Margin-top from the bottom of Step 1: 24–28px.
+   - Subtext under Step 2: margin-bottom 12–16px.
+
+2) Fix "Capacity & Labor" and "Revenue & Risk" labels so they are not squished:
+   - Apply:
+     - text-xs or small font, uppercase, tracking-wide.
+     - color: muted gray.
+     - margin-top: 20–24px.
+     - margin-bottom: 8–10px.
+   - Ensure there is clear vertical spacing above and below these group labels so they feel like section dividers, not glued to the cards.
+
+3) Priority card styling (keep current left accent but polish):
+   - Maintain full-width cards with rounded corners and light-gray border.
+   - Selected card:
+     - Left border or left accent bar in Abridge red (3–4px).
+     - Optional very subtle background tint (very light neutral), but keep text fully legible.
+   - Ensure vertical spacing between cards: 10–12px.
+
+--------------------
+E. CTA & TEXT DETAILS
+--------------------
+1) Update the CTA button label to use title case:
+   - "Continue to Calculator" (both C’s capitalized).
+
+2) Footer text alignment:
+   - Keep the sticky footer.
+   - Left side: "No levers selected" / "X levers selected" in small muted text.
+   - Right side: primary button.
+   - Add a top border to the footer (1px light gray) so it feels like a proper bar, not floating.
+
+3) Disabled state:
+   - Button is disabled when:
+     - no `selectedSetting`, OR
+     - `selectedSetting` exists but no priorities selected.
+   - In disabled state:
+     - lower opacity.
+     - cursor: default, pointer-events: none.
+
+--------------------
+F. RESPONSIVENESS
+--------------------
+- On small screens:
+  - Header panel still full-width with reduced padding.
+  - Stepper centers below title block.
+  - Care setting pills wrap to multiple lines but retain comfortable padding.
+  - Priority cards remain full-width with consistent spacing.
+
+Please implement these behavior and styling changes in the existing JSX/TSX and styling utilities so the screen looks and feels like a modern, high-quality ROI application.
