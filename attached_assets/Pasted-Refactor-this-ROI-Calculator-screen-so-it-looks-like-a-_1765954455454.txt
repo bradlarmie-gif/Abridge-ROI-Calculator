@@ -1,0 +1,163 @@
+Refactor this ROI Calculator screen so it looks like a polished product, not a flat template. Keep all existing logic and text, but change the layout and styling as follows.
+
+--------------------
+1. PAGE BACKGROUND & MAIN PANEL
+--------------------
+- Set the page background to a light neutral (e.g., #F5F5F5 or the existing off-white).
+- Wrap all main content (title, stepper, steps) inside a single centered white panel:
+  - max-width: around 1100px
+  - margin: 32–40px auto top/bottom
+  - padding: 24–32px all sides
+  - border-radius: large (e.g., rounded-2xl)
+  - subtle shadow (e.g., shadow-sm)
+- This panel should feel like the “app” sitting on the page.
+
+--------------------
+2. HEADER ROW: TITLE + STEPPER IN ONE BAR
+--------------------
+Inside the white panel, create a header row with two zones: left (title) and right (stepper).
+
+Left side:
+- Keep the existing text:
+  - Line 1: "The ROI Calculator"
+  - Line 2: "by Abridge"
+  - Line 3: "Build a focused, defensible ROI model across any care setting in three simple steps."
+- But change the layout:
+  - Align left (not centered).
+  - Title: larger (e.g., text-2xl or text-3xl), font-semibold, tight line height.
+  - "by Abridge": small, in the brand red, margin-top: 2–4px.
+  - Subheadline: body-size, muted gray, max-width ~480–560px, margin-top: 8–10px.
+- Overall header left block should be visually compact, not tall.
+
+Right side:
+- Place the 3-step stepper horizontally aligned, centered vertically relative to the header.
+- Stepper style:
+  - Use flex with equal spacing between the 3 steps.
+  - For each step:
+    - A circular number indicator plus label underneath or to the right.
+    - Current step: filled red circle with white number, label in darker text and medium weight.
+    - Past steps: outlined or light-gray filled circle with checkmark or number, label in medium gray.
+    - Future steps: light-gray circle, label in lighter gray.
+  - Use a subtle connecting line between steps (thin, light gray) so it reads as a single control.
+- Keep this stepper visually strong so the eye immediately understands “this is a 3-step wizard.”
+
+Below the header row, add a very light horizontal divider (e.g., border-b border-gray-100) with margin-top around 16px and margin-bottom around 24px, to separate header from the body.
+
+On smaller screens:
+- Stack header vertically: title block above, stepper centered below with sensible spacing.
+
+--------------------
+3. STEP 1 – CARE SETTINGS AS A HORIZONTAL SEGMENTED CONTROL
+--------------------
+Replace the large 2x2 cards with a more compact horizontal set of pill-style options.
+
+Section header:
+- Keep:
+  - "Step 1 - Choose your care setting" (left aligned, font-semibold, ~18px).
+  - Subtext under it unchanged, muted gray, margin-bottom ~16px.
+
+Care setting selector:
+- Layout:
+  - A single row of 4 options inside a flex container with horizontal gap (gap-3 or gap-4).
+  - On narrow screens, the pills can wrap to multiple lines, but on desktop they should appear in one line if space allows.
+- Each option (Outpatient, Emergency Department, Nursing, Inpatient):
+  - Use a pill / segmented-control style rather than large cards:
+    - display: inline-flex
+    - align-items: center
+    - padding: 8–10px vertical, 14–18px horizontal
+    - border-radius: full or large (rounded-full)
+    - border: 1px solid light-gray by default
+    - background: white by default
+    - small icon on the left (reuse current icon) and label text on the right with a small gap (e.g., gap-2).
+  - Selected state:
+    - Background: a very light tint of the Abridge red or soft neutral.
+    - Border-color: Abridge red.
+    - Text color: slightly stronger (darker).
+  - Hover state for enabled options: subtle border darkening and cursor-pointer.
+- Disabled “Inpatient (Coming Soon)”:
+  - Same pill layout but:
+    - Reduced opacity.
+    - No hover/active states.
+    - “Coming Soon” shown inside the pill as a small gray badge/pill to the right of the label.
+
+Below the segmented control, keep the helper text:
+- "You'll choose your ROI priority next."
+- Small font, muted gray, margin-top 8px.
+
+--------------------
+4. STEP 2 – ROI PRIORITIES, MORE PRODUCT-LIKE CARDS
+--------------------
+Step 2 should feel like a second module, but visually connected.
+
+Section header:
+- Title: "Step 2 - Choose your ROI priorities" (same style as Step 1 title).
+- Subtext: keep the current wording about selecting all ROI levers; place it directly under the title with margin-bottom ~12–16px.
+- Margin-top from Step 1: around 24–28px.
+
+Priority groups:
+- Keep group labels "CAPACITY & LABOR" and "REVENUE & RISK".
+- Style them as compact section labels:
+  - small all-caps, tracking-wide, muted gray, margin-top ~20px, margin-bottom ~8px.
+
+Priority cards (multi-select):
+- Each card:
+  - Full width of the panel’s content area.
+  - Border-radius: rounded-xl.
+  - Border: 1px solid light-gray by default.
+  - Background: white.
+  - Padding: 12–16px vertical, 14–18px horizontal.
+  - Margin-bottom between cards: 10–12px.
+- Internal layout:
+  - Top row: checkbox + title in a row:
+    - flex, items-center, gap-2.
+    - checkbox on left, title text on right.
+    - title font-weight: medium.
+  - Description text:
+    - Two-sentence description under the top row.
+    - font-size: body, muted gray.
+    - margin-top: 4–6px.
+  - "This lever drives" line:
+    - On its own line under the description.
+    - Start with bold label "This lever drives:" followed by regular text.
+    - margin-top: 4px.
+- Selected state (IMPORTANT):
+  - Instead of a full red border, use:
+    - a 3–4px wide vertical accent bar on the very left side of the card in the Abridge red, OR set the left border-color to red and leave other borders light gray.
+    - slightly tinted background (very light neutral, not pink) is OK, but keep it subtle.
+  - Checkbox uses the Abridge red when checked.
+- This should make multiple selected cards look clean and consistent, not like a wall of red.
+
+If no care setting is selected:
+- Dim the Step 2 body by reducing opacity or show a short message like “Choose a care setting above to see priorities.”
+- Once a setting is selected, render the relevant priorities normally.
+
+--------------------
+5. STICKY FOOTER CTA (TIDY, NOT FLOATING)
+--------------------
+Keep the “X levers selected” and “Continue to calculator” behavior, but wrap it in a proper footer bar.
+
+- The footer bar should be fixed to the bottom of the viewport, full-width.
+- Background: white.
+- Top border: 1px solid very light gray or a subtle shadow.
+- Inside, use the same max-width container as the main panel (1100px), centered with padding-left/right ~24px.
+- Layout inside footer:
+  - Left: text like "No levers selected" or "3 levers selected" in muted gray, small font.
+  - Right: primary button "Continue to calculator →".
+- Button style:
+  - Dark background (black or near-black), white text.
+  - Padding ~10–12px vertical, 20–24px horizontal.
+  - Border-radius: full or large (rounded-full).
+  - Disabled state: reduced opacity and disabled pointer events when there is no selected care setting or no selected priorities.
+- Add enough bottom padding to the main content so scrolling doesn’t hide the last card behind the footer.
+
+--------------------
+6. RESPONSIVENESS
+--------------------
+- On tablet/mobile:
+  - The main panel still spans nearly full width with small side padding.
+  - Header row stacks: title block first, then stepper below.
+  - Care setting pills wrap to multiple lines, remaining readable.
+  - Priority cards remain full width and stack naturally.
+- Keep the hierarchy: panel > header (title + steps) > Step 1 > Step 2 > footer.
+
+Do not change any copy or underlying selection logic. Only update JSX structure and styling (Tailwind or CSS) to match this layout and hierarchy.

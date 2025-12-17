@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { CareSettingCard } from "@/components/CareSettingCard";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import {
   CARE_SETTING_LABELS,
@@ -60,10 +59,10 @@ function StepIndicator({
   isCompleted: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col items-center gap-1.5">
       <div 
         className={`
-          w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium
+          w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
           transition-all duration-200
           ${isCompleted 
             ? 'bg-[#F03319] text-white' 
@@ -77,8 +76,8 @@ function StepIndicator({
       </div>
       <span 
         className={`
-          text-sm font-medium transition-colors duration-200
-          ${isActive || isCompleted ? 'text-neutral-900' : 'text-neutral-400'}
+          text-xs font-medium transition-colors duration-200 whitespace-nowrap
+          ${isActive || isCompleted ? 'text-neutral-700' : 'text-neutral-400'}
         `}
       >
         {label}
@@ -98,21 +97,21 @@ function Stepper({
   const step2Complete = hasSelectedLevers;
   
   return (
-    <div className="flex items-center justify-center gap-6">
+    <div className="flex items-start gap-3">
       <StepIndicator 
         stepNumber={1} 
         label="Care Setting" 
         isActive={!step1Complete}
         isCompleted={step1Complete}
       />
-      <div className="w-12 h-px bg-neutral-300" />
+      <div className="w-10 h-px bg-neutral-300 mt-4" />
       <StepIndicator 
         stepNumber={2} 
         label="ROI Priorities" 
         isActive={step1Complete && !step2Complete}
         isCompleted={step2Complete}
       />
-      <div className="w-12 h-px bg-neutral-300" />
+      <div className="w-10 h-px bg-neutral-300 mt-4" />
       <StepIndicator 
         stepNumber={3} 
         label="Calculator" 
@@ -120,6 +119,48 @@ function Stepper({
         isCompleted={false}
       />
     </div>
+  );
+}
+
+function CareSettingPill({
+  icon: Icon,
+  label,
+  selected,
+  disabled,
+  onClick,
+}: {
+  icon: typeof Stethoscope;
+  label: string;
+  selected: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`
+        inline-flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-200
+        ${disabled
+          ? 'opacity-50 cursor-not-allowed border-neutral-200 bg-white'
+          : selected
+            ? 'border-[#F03319] bg-[#FEF7F6]'
+            : 'border-neutral-300 bg-white hover:border-neutral-400 cursor-pointer'
+        }
+      `}
+      data-testid={`pill-setting-${label.toLowerCase().replace(/\s+/g, "-")}`}
+    >
+      <Icon className="w-4 h-4 text-neutral-700" />
+      <span className={`text-sm font-medium ${selected ? 'text-neutral-900' : 'text-neutral-700'}`}>
+        {label}
+      </span>
+      {disabled && (
+        <span className="text-xs px-1.5 py-0.5 rounded-full bg-neutral-100 text-neutral-500 ml-1">
+          Coming Soon
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -144,10 +185,11 @@ function PriorityCard({
         }
       }}
       className={`
-        relative w-full rounded-xl bg-white transition-all duration-200 text-left cursor-pointer
+        relative w-full rounded-xl transition-all duration-200 text-left cursor-pointer
         focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[rgba(240,51,25,0.5)]
-        border border-neutral-200 hover:border-neutral-300 hover:shadow-sm
+        border border-neutral-200 hover:border-neutral-300
         overflow-hidden
+        ${isSelected ? 'bg-neutral-50' : 'bg-white'}
       `}
       data-testid={`priority-card-${lever.id}`}
     >
@@ -157,7 +199,7 @@ function PriorityCard({
           style={{ backgroundColor: '#F03319' }}
         />
       )}
-      <div className={`py-4 px-5 ${isSelected ? 'pl-6' : ''}`}>
+      <div className={`py-3 px-4 ${isSelected ? 'pl-5' : ''}`}>
         <div className="flex items-center gap-2 mb-1">
           <Checkbox
             checked={isSelected}
@@ -165,16 +207,16 @@ function PriorityCard({
             className="flex-shrink-0"
             data-testid={`checkbox-${lever.id}`}
           />
-          <h4 className="font-medium text-neutral-900 text-base">
+          <h4 className="font-medium text-neutral-900 text-sm">
             {lever.label}
           </h4>
         </div>
-        <p className="text-sm text-neutral-600 mt-1.5 leading-relaxed pl-6">
+        <p className="text-sm text-neutral-500 mt-1 leading-relaxed pl-6">
           {lever.description}
         </p>
         <p className="text-sm mt-1 pl-6">
-          <span className="font-semibold text-neutral-800">This lever drives:</span>{' '}
-          <span className="text-neutral-600">{lever.driverSummary}</span>
+          <span className="font-semibold text-neutral-700">This lever drives:</span>{' '}
+          <span className="text-neutral-500">{lever.driverSummary}</span>
         </p>
       </div>
     </div>
@@ -243,7 +285,7 @@ export default function ObjectiveSelectionScreen({
 
     return (
       <div key={category}>
-        <div className="flex items-center gap-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-3">
+        <div className="flex items-center gap-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2 mt-5 first:mt-0">
           <CategoryIcon className="h-3.5 w-3.5" />
           {categoryLabel}
         </div>
@@ -262,93 +304,96 @@ export default function ObjectiveSelectionScreen({
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
+    <div className="min-h-screen flex flex-col relative font-sans" style={{ backgroundColor: '#F5F5F5' }}>
       <BackgroundShape />
       
       <div className="relative z-10 flex-1 overflow-y-auto pb-24">
-        <div className="max-w-[1000px] mx-auto pt-10 md:pt-12 pb-8 px-6 md:px-8">
-          
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-[32px] font-semibold text-neutral-900 mb-1.5">
-              The ROI Calculator
-            </h1>
-            <p className="text-sm font-medium mb-4" style={{ color: '#F03319' }}>
-              by Abridge
-            </p>
-            <p className="text-base text-neutral-500 max-w-xl mx-auto leading-relaxed">
-              Build a focused, defensible ROI model across any care setting in three simple steps.
-            </p>
-          </div>
-
-          <div className="mb-8">
-            <Stepper selectedSetting={selectedSetting} hasSelectedLevers={selectedLeverIds.size > 0} />
-          </div>
-
-          <div className="mb-8 md:mb-10">
-            <h2 className="text-lg md:text-xl font-semibold text-neutral-900 mb-1">
-              Step 1 - Choose your care setting
-            </h2>
-            <p className="text-sm text-neutral-500 mb-6">
-              Pick where you want to measure impact first. You can always come back and run another setting.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-              {ALL_SETTINGS.map((setting) => {
-                const isInpatient = setting === "inpatient";
-                return (
-                  <CareSettingCard
-                    key={setting}
-                    icon={SETTING_ICONS[setting]}
-                    title={CARE_SETTING_LABELS[setting]}
-                    selected={selectedSetting === setting}
-                    disabled={isInpatient}
-                    onClick={() => handleSettingSelect(setting)}
-                  />
-                );
-              })}
+        <div className="max-w-[1100px] mx-auto my-8 md:my-10 px-4 md:px-6">
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+            
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 lg:gap-8">
+              <div className="flex-1 max-w-xl">
+                <h1 className="text-2xl md:text-3xl font-semibold text-neutral-900 leading-tight">
+                  The ROI Calculator
+                </h1>
+                <p className="text-sm font-medium mt-1" style={{ color: '#F03319' }}>
+                  by Abridge
+                </p>
+                <p className="text-sm text-neutral-500 mt-2 leading-relaxed max-w-lg">
+                  Build a focused, defensible ROI model across any care setting in three simple steps.
+                </p>
+              </div>
+              
+              <div className="lg:flex-shrink-0">
+                <Stepper selectedSetting={selectedSetting} hasSelectedLevers={selectedLeverIds.size > 0} />
+              </div>
             </div>
 
-            {!selectedSetting && (
-              <p className="text-xs text-neutral-400 mt-2">
-                You'll choose your ROI priorities next.
+            <div className="border-b border-neutral-100 my-6" />
+
+            <div className="mb-6">
+              <h2 className="text-base md:text-lg font-semibold text-neutral-900 mb-1">
+                Step 1 - Choose your care setting
+              </h2>
+              <p className="text-sm text-neutral-500 mb-4">
+                Pick where you want to measure impact first. You can always come back and run another setting.
               </p>
-            )}
-          </div>
 
-          <div 
-            className={`
-              transition-opacity duration-300
-              ${selectedSetting ? 'opacity-100' : 'opacity-40 pointer-events-none'}
-            `}
-          >
-            <h2 className="text-lg md:text-xl font-semibold text-neutral-900 mb-1">
-              Step 2 - Choose your ROI priorities
-            </h2>
-            <p className="text-sm text-neutral-500 mb-6">
-              Select all ROI levers you want included in this model. You can choose more than one — most organizations activate multiple levers at once.
-            </p>
-
-            {!selectedSetting && (
-              <p className="text-sm text-neutral-400 py-4">
-                Choose a setting above to see relevant priorities.
-              </p>
-            )}
-
-            {selectedSetting && leversByCategory && (
-              <div className="space-y-8">
-                {renderCategorySection("time", leversByCategory.time)}
-                {renderCategorySection("documentation", leversByCategory.documentation)}
+              <div className="flex flex-wrap gap-3">
+                {ALL_SETTINGS.map((setting) => {
+                  const isInpatient = setting === "inpatient";
+                  return (
+                    <CareSettingPill
+                      key={setting}
+                      icon={SETTING_ICONS[setting]}
+                      label={CARE_SETTING_LABELS[setting]}
+                      selected={selectedSetting === setting}
+                      disabled={isInpatient}
+                      onClick={() => handleSettingSelect(setting)}
+                    />
+                  );
+                })}
               </div>
-            )}
+
+              {!selectedSetting && (
+                <p className="text-xs text-neutral-400 mt-3">
+                  You'll choose your ROI priorities next.
+                </p>
+              )}
+            </div>
+
+            <div 
+              className={`
+                transition-opacity duration-300
+                ${selectedSetting ? 'opacity-100' : 'opacity-40 pointer-events-none'}
+              `}
+            >
+              <h2 className="text-base md:text-lg font-semibold text-neutral-900 mb-1 mt-6">
+                Step 2 - Choose your ROI priorities
+              </h2>
+              <p className="text-sm text-neutral-500 mb-4">
+                Select all ROI levers you want included in this model. You can choose more than one — most organizations activate multiple levers at once.
+              </p>
+
+              {!selectedSetting && (
+                <p className="text-sm text-neutral-400 py-4">
+                  Choose a setting above to see relevant priorities.
+                </p>
+              )}
+
+              {selectedSetting && leversByCategory && (
+                <div>
+                  {renderCategorySection("time", leversByCategory.time)}
+                  {renderCategorySection("documentation", leversByCategory.documentation)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
       
-      <div 
-        className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-neutral-200"
-        style={{ backgroundColor: '#FAFAF8' }}
-      >
-        <div className="max-w-[1000px] mx-auto px-6 md:px-8 py-3 md:py-4 flex items-center justify-between gap-4">
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-neutral-200 shadow-sm">
+        <div className="max-w-[1100px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-4">
           <p className="text-sm text-neutral-500">
             {selectedLeverIds.size > 0 
               ? `${selectedLeverIds.size} lever${selectedLeverIds.size > 1 ? 's' : ''} selected`
@@ -361,17 +406,17 @@ export default function ObjectiveSelectionScreen({
             onClick={handleContinue}
             className={`
               inline-flex items-center justify-center gap-2 px-5 md:px-6 py-2.5 
-              rounded-full font-medium text-sm md:text-base
+              rounded-full font-medium text-sm
               transition-all duration-200
               ${canContinue
                 ? 'bg-neutral-900 text-white cursor-pointer hover:bg-neutral-800'
-                : 'opacity-40 bg-neutral-300 text-neutral-500 cursor-not-allowed'
+                : 'opacity-40 bg-neutral-400 text-white cursor-not-allowed'
               }
             `}
             data-testid="button-continue"
           >
             Continue to calculator
-            <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
