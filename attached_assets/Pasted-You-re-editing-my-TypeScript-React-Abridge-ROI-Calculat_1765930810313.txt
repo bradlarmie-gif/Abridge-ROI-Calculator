@@ -1,0 +1,198 @@
+You’re editing my TypeScript/React “Abridge ROI Calculator” app. I need two things fixed on the Outpatient calculator page:
+
+Abridge Utilization (%) must actually drive the math
+
+Both charts need to be wired to those utilization-aware values and cleaned up visually (no black bars, clearer labels)
+
+Treat this as a taste- and logic-level refactor, not a full redesign.
+
+=== UTILIZATION LOGIC ===
+
+Goal: the “Abridge Utilization (%)” slider should scale all encounter-based benefits. Right now it barely affects the numbers.
+
+Implement a shared derived value in the scenario layer (use the existing scenario state structure; adapt field names if mine don’t match exactly):
+
+utilizationMultiplier = abridgeUtilizationPercent / 100
+
+encountersCoveredByAbridge = annualEncountersInScope * utilizationMultiplier
+
+Then update each lever’s calculation so every time we multiply by encounter volume, we use encountersCoveredByAbridge, not the raw annual encounter count.
+
+Concretely:
+
+• Patient Access (aka Clinician Time Recovered / Access lever)
+
+Use this structure in the Patient Access calculation module/hook:
+
+clinicians = providersInScope
+
+minutesSavedPerEncounter (slider, 1–6)
+
+visitLengthMinutes (15/20/30/60)
+
+reinvestPercent (0–50%, as a decimal)
+
+netRevenuePerEncounter ($)
+
+Pseudo-logic (convert to real TS):
+
+totalMinutesSaved = encountersCoveredByAbridge * minutesSavedPerEncounter
+
+totalHoursSaved = totalMinutesSaved / 60
+
+reinvestedHours = totalHoursSaved * reinvestPercent
+
+additionalVisits = reinvestedHours / (visitLengthMinutes / 60)
+
+patientAccessImpact = additionalVisits * netRevenuePerEncounter
+
+Bind patientAccessImpact as that lever’s annualValue and ensure it updates:
+
+Total Annual Impact
+
+Net Gain
+
+Return (x)
+
+Clinician Hours Recovered
+
+“Access” bar in both charts
+
+• Overtime & Locum Cost Avoidance
+
+Same pattern: hours only come from Abridge-covered encounters.
+
+Inputs:
+
+minutesSavedPerEncounter (for overtime model)
+
+premiumLaborReductionPercent (share of reclaimed hours that actually reduce premium labor)
+
+blendedPremiumRate (blended $/hr for overtime + locum)
+
+Logic:
+
+totalMinutesSaved = encountersCoveredByAbridge * minutesSavedPerEncounter
+
+totalHoursSaved = totalMinutesSaved / 60
+
+overtimeHoursReduced = totalHoursSaved * premiumLaborReductionPercent
+
+overtimeLocumSavings = overtimeHoursReduced * blendedPremiumRate
+
+Bind overtimeLocumSavings to this lever’s annualValue and to the “Overtime/Locum” bar in both charts.
+
+• HCC & Chronic Condition Capture, Level of Service Alignment, Medical Necessity–Driven Denials
+
+For each of these three documentation levers:
+
+Base their revenue pools on encountersCoveredByAbridge instead of all encounters.
+
+Then apply the existing improvement percentages on that pool.
+
+Examples of the pattern (adapt to existing variables):
+
+HCC: baseRiskRevenue = encountersCoveredByAbridge * avgConditionsPerPatient * rafValuePerCondition * anyMemberMultiplier; then apply % missed, % recaptured, haircut, etc.
+
+Level of Service: emRevenuePool = encountersCoveredByAbridge * netRevenuePerEncounter; then apply wRVU/level shift % to get incremental revenue.
+
+Denials: denialRevenuePool = encountersCoveredByAbridge * netRevenuePerEncounter * baselineDenialRate * unrecoverableShare; then apply % of doc-related denials prevented to get recovered revenue.
+
+Important: all lever calculation hooks/selectors must depend on abridgeUtilizationPercent, so moving the slider automatically recomputes lever annualValues, top KPIs, and chart data without a manual “recalculate” step.
+
+Make sure the slider is wired to central scenario state, e.g.:
+
+<input
+type="range"
+…
+value={scenario.abridgeUtilizationPercent}
+onChange={(e) =>
+updateScenario({ abridgeUtilizationPercent: Number(e.target.value) })
+}
+/>
+
+=== CHART WIRING + VISUALS ===
+
+We have two charts: “Impact Breakdown for Current Scope” and “Enterprise Expansion View”.
+
+Impact Breakdown for Current Scope
+
+This should show one waterfall-style row of bars:
+
+X categories (strings on x-axis): "Cost", "Access", "Overtime/Locum", "HCC", "Net"
+
+Data:
+
+Cost = annual program cost (negative value so it renders below zero)
+
+Access = Patient Access lever annualValue
+
+Overtime/Locum = Overtime lever annualValue
+
+HCC = HCC & Chronic Condition Capture lever annualValue
+
+Net = Net Gain (total impact – cost)
+
+Visual rules:
+
+Investment bar = RED (Abridge red family)
+
+All benefit bars (Access, Overtime/Locum, HCC) = GREEN
+
+Net bar = BLUE
+
+Y-axis in dollars with compact labels ($50K, $400K, $1.2M, etc.)
+
+Increase label font size on x-axis and abbreviate labels to keep them readable.
+
+Light grey gridlines, no harsh borders, and no black bars anywhere.
+
+Hook the chart’s data directly off the same state used for the KPI cards so when utilization or any lever assumption changes, the bars update.
+
+Enterprise Expansion View
+
+This chart compares current in-scope vs full enterprise rollout for each selected lever plus the total.
+
+X categories: "Access", "Overtime/Locum", "HCC", "Net Total"
+
+Series 1 = Current scope totals (the same lever annualValues that feed the first chart)
+
+Series 2 = Enterprise projection values, computed by scaling to enterprise size:
+
+Use existing fields like enterpriseProviderCount and enterpriseEncounters
+
+Reuse the same formulas but swap:
+
+encountersCoveredByAbridge → enterpriseEncounters * enterpriseUtilizationMultiplier (or same utilization if that’s how the model is set up)
+
+Visual rules:
+
+Current scope bars = LIGHT GREY
+
+Enterprise projection bars = GREEN (same family as benefit bars, not black)
+
+Keep existing title/subtitle copy, just ensure axis labels are readable and not truncated.
+
+=== KPI CARDS ===
+
+Verify that these KPIs at the top all use the new utilization-aware numbers:
+
+Return (x)
+
+Annual Impact
+
+Annual Program Cost
+
+Net Gain
+
+Clinician Hours Recovered (this should equal total hours saved from all time-based levers after utilization)
+
+Abridge Utilization (just the slider value)
+
+Projected wRVU/visit
+
+Adjusted Denial Rate
+
+When utilization goes to 0%, all benefits should collapse toward 0, Net Gain should fall to roughly –program cost, and both charts should show only the Cost bar (plus a near-zero Net bar). When utilization goes to 100%, everything should scale up consistently.
+
+Keep the overall layout and styling; just fix the math wiring and chart configuration per above, and keep the tone and aesthetic clean and trustworthy, not flashy.

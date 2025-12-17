@@ -177,17 +177,20 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     }));
   }, [inputs.numberOfProviders, inputs.annualOutpatientEncounters, inputs.avgNetRevenuePerEncounter]);
   
+  const encountersCoveredByAbridge = useMemo(() => {
+    return inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100);
+  }, [inputs.annualOutpatientEncounters, inputs.abridgeUtilizationPct]);
+  
   const patientAccessCalculations: PatientAccessCalculations = useMemo(() => {
-    const { minutesSavedPerEncounter, cliniciansInScope, encountersPerClinician, visitMinutes, reinvestRate, netRevenuePerEncounter } = patientAccessInputs;
-    const totalEncounters = cliniciansInScope * encountersPerClinician;
-    const hoursSavedPerEncounter = minutesSavedPerEncounter / 60;
-    const totalHoursSaved = totalEncounters * hoursSavedPerEncounter;
+    const { minutesSavedPerEncounter, visitMinutes, reinvestRate, netRevenuePerEncounter } = patientAccessInputs;
+    const totalMinutesSaved = encountersCoveredByAbridge * minutesSavedPerEncounter;
+    const totalHoursSaved = totalMinutesSaved / 60;
     const reinvestedHours = totalHoursSaved * reinvestRate;
     const visitsPerHour = 60 / visitMinutes;
     const additionalVisits = reinvestedHours * visitsPerHour;
     const incrementalRevenue = additionalVisits * netRevenuePerEncounter;
     return { totalHoursSaved, reinvestedHours, additionalVisits, incrementalRevenue };
-  }, [patientAccessInputs]);
+  }, [patientAccessInputs, encountersCoveredByAbridge]);
   
   const handlePatientAccessInputChange = (field: keyof PatientAccessInputs, value: number) => {
     setPatientAccessInputs(prev => ({ ...prev, [field]: value }));
@@ -277,11 +280,15 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const isOutpatientSelected = selectedSettings.includes("outpatient");
   
   const adjustedClinicianHoursRecovered = useMemo(() => {
-    if (patientAccessEnabled && isOutpatientSelected) {
-      return patientAccessCalculations.totalHoursSaved;
+    if (isOutpatientSelected && patientAccessEnabled) {
+      const minutesSaved = encountersCoveredByAbridge * patientAccessInputs.minutesSavedPerEncounter;
+      return minutesSaved / 60;
+    }
+    if (isOutpatientSelected) {
+      return 0;
     }
     return results.totalProviderHoursReclaimed;
-  }, [patientAccessCalculations.totalHoursSaved, results.totalProviderHoursReclaimed, patientAccessEnabled, isOutpatientSelected]);
+  }, [encountersCoveredByAbridge, patientAccessInputs.minutesSavedPerEncounter, results.totalProviderHoursReclaimed, isOutpatientSelected, patientAccessEnabled]);
   
   const overtimeLocumCalculations: OvertimeLocumCalculations = useMemo(() => {
     const reclaimedHours = adjustedClinicianHoursRecovered;
@@ -305,13 +312,13 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   }, [clinicianRetentionInputs]);
   
   const levelOfServiceCalculations: LevelOfServiceCalculations = useMemo(() => {
-    const { annualEncounters, baselineUnderCodedRate, pctUnderCodedCorrected, incrementalWrvuPerVisit, wrvuConversionFactor } = levelOfServiceInputs;
-    const totalUnderCodedVisits = annualEncounters * (baselineUnderCodedRate / 100);
+    const { baselineUnderCodedRate, pctUnderCodedCorrected, incrementalWrvuPerVisit, wrvuConversionFactor } = levelOfServiceInputs;
+    const totalUnderCodedVisits = encountersCoveredByAbridge * (baselineUnderCodedRate / 100);
     const correctedVisits = totalUnderCodedVisits * (pctUnderCodedCorrected / 100);
     const addedWrvus = correctedVisits * incrementalWrvuPerVisit;
     const incrementalRevenue = addedWrvus * wrvuConversionFactor;
     return { totalUnderCodedVisits, correctedVisits, addedWrvus, incrementalRevenue };
-  }, [levelOfServiceInputs]);
+  }, [levelOfServiceInputs, encountersCoveredByAbridge]);
   
   const medicalNecessityDenialsCalculations: MedicalNecessityDenialsCalculations = useMemo(() => {
     const { netCollectibleRevenue, baselineDenialRate, pctRecoveredWithRework, pctUnrecoverableDueToDocumentation, pctReductionWithAbridge, realizationFactor } = medicalNecessityDenialsInputs;
