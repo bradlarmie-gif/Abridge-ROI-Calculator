@@ -21,6 +21,7 @@ import {
   Clock,
   FileText,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export interface SelectedLever {
   settingId: CareSettingType;
@@ -47,24 +48,6 @@ const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
 };
 
 const ALL_SETTINGS: AllSettingType[] = ["outpatient", "ed", "nursing", "inpatient"];
-
-const LEVER_DRIVER_SUMMARIES: Record<string, string> = {
-  patientAccess: "visits per provider per day and downstream revenue.",
-  overtime: "overtime spend and locum hours.",
-  workforce: "avoided replacement and recruiting costs.",
-  hcc: "risk-adjusted revenue and panel funding.",
-  wrvu: "wRVUs and per-visit reimbursement.",
-  denials: "fewer write-offs and rework on denied claims.",
-  edPatientAccess: "ED throughput and patients who leave without being seen.",
-  edProviderRetention: "ED clinician turnover and staffing stability.",
-  edScribeSavings: "scribe utilization and cost efficiency.",
-  edDocumentationQuality: "coding accuracy and care transition quality.",
-  edDenialSavings: "ED denial rates and revenue recovery.",
-  rnLaborEfficiency: "nursing overtime and shift end times.",
-  rnRetention: "nursing turnover and staff sustainability.",
-  rnSafetyEvents: "patient safety documentation and early warning capture.",
-  rnDrgSeverity: "severity documentation and case mix accuracy.",
-};
 
 function StepIndicator({ 
   stepNumber, 
@@ -107,13 +90,13 @@ function StepIndicator({
 
 function Stepper({ 
   selectedSetting, 
-  selectedLeverId 
+  hasSelectedLevers 
 }: { 
   selectedSetting: CareSettingType | null; 
-  selectedLeverId: string | null;
+  hasSelectedLevers: boolean;
 }) {
   const step1Complete = selectedSetting !== null;
-  const step2Complete = selectedLeverId !== null;
+  const step2Complete = hasSelectedLevers;
   
   return (
     <div className="flex items-center justify-center gap-8 py-4">
@@ -126,7 +109,7 @@ function Stepper({
       <div className="w-8 h-px bg-neutral-300" />
       <StepIndicator 
         stepNumber={2} 
-        label="ROI Priority" 
+        label="ROI Priorities" 
         isActive={step1Complete && !step2Complete}
         isCompleted={step2Complete}
       />
@@ -144,23 +127,21 @@ function Stepper({
 function PriorityCard({
   lever,
   isSelected,
-  onSelect,
+  onToggle,
 }: {
   lever: LeverConfig;
   isSelected: boolean;
-  onSelect: () => void;
+  onToggle: () => void;
 }) {
-  const driverSummary = LEVER_DRIVER_SUMMARIES[lever.id] || "business outcomes and efficiency.";
-  
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={onSelect}
+      onClick={onToggle}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onSelect();
+          onToggle();
         }
       }}
       className={`
@@ -175,18 +156,12 @@ function PriorityCard({
       data-testid={`priority-card-${lever.id}`}
     >
       <div className="flex items-start gap-3">
-        <div 
-          className={`
-            w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5
-            flex items-center justify-center transition-all duration-200
-            ${isSelected 
-              ? 'border-[#F03319] bg-[#F03319]' 
-              : 'border-neutral-300 bg-white'
-            }
-          `}
-        >
-          {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
-        </div>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={onToggle}
+          className="mt-0.5 flex-shrink-0"
+          data-testid={`checkbox-${lever.id}`}
+        />
         <div className="flex-1">
           <h4 className="font-semibold text-black text-base">
             {lever.label}
@@ -196,7 +171,7 @@ function PriorityCard({
           </p>
           <p className="text-sm mt-2">
             <span className="font-semibold text-neutral-800">This lever drives:</span>{' '}
-            <span className="text-neutral-600">{driverSummary}</span>
+            <span className="text-neutral-600">{lever.driverSummary}</span>
           </p>
         </div>
       </div>
@@ -212,11 +187,10 @@ export default function ObjectiveSelectionScreen({
   const [selectedSetting, setSelectedSetting] = useState<CareSettingType | null>(
     initialSelectedSettings.length > 0 ? initialSelectedSettings[0] : null
   );
-  const [selectedLeverId, setSelectedLeverId] = useState<string | null>(() => {
-    if (initialSelectedLevers.length > 0) {
-      return initialSelectedLevers[0].leverId;
-    }
-    return null;
+  const [selectedLeverIds, setSelectedLeverIds] = useState<Set<string>>(() => {
+    const ids = new Set<string>();
+    initialSelectedLevers.forEach(lever => ids.add(lever.leverId));
+    return ids;
   });
 
   const leversByCategory = useMemo(() => {
@@ -229,28 +203,36 @@ export default function ObjectiveSelectionScreen({
       return;
     }
     setSelectedSetting(setting);
-    setSelectedLeverId(null);
+    setSelectedLeverIds(new Set());
   };
 
-  const handleLeverSelect = (leverId: string) => {
-    setSelectedLeverId(leverId);
+  const handleLeverToggle = (leverId: string) => {
+    setSelectedLeverIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(leverId)) {
+        newSet.delete(leverId);
+      } else {
+        newSet.add(leverId);
+      }
+      return newSet;
+    });
   };
 
   const handleContinue = () => {
-    if (!selectedSetting || !selectedLeverId) {
+    if (!selectedSetting || selectedLeverIds.size === 0) {
       return;
     }
     
-    const lever: SelectedLever = {
+    const levers: SelectedLever[] = Array.from(selectedLeverIds).map(leverId => ({
       settingId: selectedSetting,
-      leverId: selectedLeverId,
+      leverId,
       active: true,
-    };
+    }));
     
-    onComplete([selectedSetting], [lever]);
+    onComplete([selectedSetting], levers);
   };
 
-  const canContinue = selectedSetting !== null && selectedLeverId !== null;
+  const canContinue = selectedSetting !== null && selectedLeverIds.size > 0;
 
   const renderCategorySection = (category: LeverCategory, levers: LeverConfig[]) => {
     if (levers.length === 0) return null;
@@ -268,8 +250,8 @@ export default function ObjectiveSelectionScreen({
             <PriorityCard
               key={lever.id}
               lever={lever}
-              isSelected={selectedLeverId === lever.id}
-              onSelect={() => handleLeverSelect(lever.id)}
+              isSelected={selectedLeverIds.has(lever.id)}
+              onToggle={() => handleLeverToggle(lever.id)}
             />
           ))}
         </div>
@@ -286,19 +268,19 @@ export default function ObjectiveSelectionScreen({
           <div className="space-y-8">
             <div className="text-center space-y-2">
               <div className="leading-tight">
-                <h1 className="text-3xl font-semibold" style={{ color: '#111111' }}>
+                <h1 className="text-4xl font-bold" style={{ color: '#111111' }}>
                   The ROI Calculator
                 </h1>
-                <p className="text-lg font-semibold" style={{ color: '#F03319' }}>
+                <p className="text-lg font-semibold mt-1" style={{ color: '#F03319' }}>
                   by Abridge
                 </p>
               </div>
-              <p className="text-sm text-neutral-600 pt-2">
-                Build a focused ROI story in three simple steps.
+              <p className="text-base text-neutral-600 pt-3 max-w-xl mx-auto">
+                Build a focused, defensible ROI model across any care setting in three simple steps.
               </p>
             </div>
 
-            <Stepper selectedSetting={selectedSetting} selectedLeverId={selectedLeverId} />
+            <Stepper selectedSetting={selectedSetting} hasSelectedLevers={selectedLeverIds.size > 0} />
 
             <div className="space-y-4">
               <div>
@@ -341,10 +323,10 @@ export default function ObjectiveSelectionScreen({
             >
               <div>
                 <h2 className="text-lg font-semibold text-black">
-                  Step 2 - Choose your ROI priority
+                  Step 2 - Choose your ROI priorities
                 </h2>
                 <p className="text-sm text-neutral-600 mt-1">
-                  For the clearest story, model one priority at a time. You can rerun the calculator for additional priorities.
+                  Select all ROI levers you want included in this model. You can choose more than one — most organizations activate multiple levers at once.
                 </p>
               </div>
 
@@ -368,7 +350,7 @@ export default function ObjectiveSelectionScreen({
       <div className="fixed bottom-6 right-6 z-20 flex flex-col items-end gap-1.5">
         {canContinue && (
           <p className="text-sm text-neutral-500">
-            Ready when you are.
+            {selectedLeverIds.size} lever{selectedLeverIds.size > 1 ? 's' : ''} selected
           </p>
         )}
         <button
