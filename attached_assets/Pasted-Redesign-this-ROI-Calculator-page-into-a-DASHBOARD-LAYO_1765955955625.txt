@@ -1,0 +1,185 @@
+Redesign this ROI Calculator page into a DASHBOARD LAYOUT instead of a centered card. 
+Do NOT change any functional logic. Only change layout, structure, and styling.
+
+====================================================
+GOAL: MAKE THIS LOOK LIKE A REAL ROI TOOL, NOT A WEB FORM
+====================================================
+
+Implement a professional, calculator-like dashboard UI with:
+
+- A FULL-WIDTH application header bar
+- A TWO-COLUMN layout beneath it
+- Clear sectional hierarchy
+- Strong visual scaffolding
+- No giant empty space anywhere
+
+This must feel like a financial modeling tool, not a floating card.
+
+====================================================
+1. REMOVE THE CURRENT CENTERED WHITE PANEL ENTIRELY
+====================================================
+The page should NOT use a big rounded card as its main container.
+Instead:
+
+- Page background: light neutral (#F7F7F7 or similar)
+- Main content sits in a full-width container with max-width ~1300px centered horizontally
+- No outer card, no floating white box
+
+====================================================
+2. CREATE A FULL-WIDTH APPLICATION HEADER
+====================================================
+Replace the entire top block with a horizontal header bar:
+
+HEADER BAR:
+- Full width, white background
+- Height: ~72–84px
+- Padding: 0 32px
+- Display: flex; justify-between; align-center
+- Border-bottom: 1px solid #E5E5E5
+- No rounded corners
+
+LEFT SIDE OF HEADER:
+- Title: "The ROI Calculator"
+  - font-size: text-3xl to text-4xl
+  - font-semibold
+  - tight line-height
+- "by Abridge"
+  - text-sm, Abridge red
+  - margin-top: 2–4px
+
+RIGHT SIDE OF HEADER:
+- Stepper placed horizontally
+- Style the stepper like a real product nav:
+  - three horizontally aligned steps
+  - each step has:
+    - a circle badge (28–32px)
+      - current step = filled Abridge red with white number
+      - future steps = light gray circle with gray number
+    - label under or beside circle in uppercase, text-xs or small
+  - thin connector line between steps
+- Stepper should feel like a top-level navigation, not a wizard ornament
+
+====================================================
+3. BELOW HEADER: TWO-COLUMN DASHBOARD LAYOUT
+====================================================
+
+Use a responsive two-column grid:
+
+LEFT COLUMN:
+- Width: 65–70%
+- Contains:
+  - Step 1 (Care Setting)
+  - Step 2 (ROI Priorities)
+- Scrolls vertically as needed
+
+RIGHT COLUMN:
+- Width: 30–35%
+- This is a MODEL SUMMARY PANEL
+- This should be a white card with:
+  - border-radius: 12–16px
+  - border: 1px solid #E5E5E5
+  - padding: 20–24px
+  - sticky or fixed positioning (stick to top of viewport as user scrolls)
+- Temporary content for now:
+  - When nothing selected: “Your model summary will appear here.”
+  - After selection: list chosen care setting and ROI priorities
+  - Keep this simple — just a placeholder visual structure
+- This RIGHT PANEL gives the page *weight* and removes empty white space
+
+====================================================
+4. STEP 1 — CARE SETTINGS IN A HORIZONTAL SEGMENTED CONTROL
+====================================================
+
+Inside LEFT COLUMN:
+
+SECTION HEADER:
+- “Step 1 – Choose your care setting”
+  - font-semibold, text-xl
+- Subtext unchanged
+
+PILL SELECTOR BAR:
+- Horizontal row of pill buttons
+- Pills wrap on mobile
+- Styling:
+  - inline-flex row
+  - gap: 12–16px
+  - padding: 10px 18px
+  - border: 1px solid #D9D9D9
+  - border-radius: 9999px
+  - white background
+  - icon + text horizontally aligned
+- Selected pill:
+  - border-color: Abridge red
+  - background: #FFF4F2
+- Disabled pill (Inpatient):
+  - opacity ~65%
+  - no hover, no click
+
+TOGGLE BEHAVIOR:
+- Clicking selected pill again -> unselect -> clears Step 2 and disables CTA
+
+====================================================
+5. STEP 2 — PRIORITY CARDS WITH PROPER DASHBOARD SPACING
+====================================================
+
+Place directly under Step 1 inside LEFT COLUMN.
+
+Spacing:
+- Margin-top: 32px
+- Section title same hierarchy as Step 1
+- Subtext margin-bottom: 12–16px
+
+Group labels:
+- “CAPACITY & LABOR”, “REVENUE & RISK”
+- uppercase, text-xs, tracking-wide
+- muted gray
+- margin-top: 24px
+- margin-bottom: 12px
+
+Priority cards:
+- full-width white cards
+- border: 1px solid #E2E2E2
+- border-radius: 14–16px
+- padding: 16–20px
+- margin-bottom: 12px
+
+Selected state:
+- Do NOT use full red border
+- Use a LEFT ACCENT STRIP:
+  - 4px solid Abridge red on the left only
+- Slight neutral-tinted background (#FFF7F5)
+- Checkbox styled in Abridge red
+
+====================================================
+6. STICKY FOOTER CTA (CLEAN, PRODUCT-LIKE)
+====================================================
+
+- Full-width white footer bar
+- Top border: 1px solid #E5E5E5
+- Padding: 12–16px
+- Content centered at same max-width as dashboard (1300px)
+- Inside footer:
+  - Left: “X levers selected” in muted gray
+  - Right: primary action button
+    - Text: “Continue to Calculator”
+    - Black/dark background, white text
+    - Rounded-full
+    - Padding: 10px 22px
+- Disabled state:
+  - pointer-events: none
+  - opacity ~45%
+
+====================================================
+7. RESPONSIVE RULES
+====================================================
+- On smaller screens:
+  - Header stays full width
+  - Two columns collapse into single-column:
+    - LEFT COLUMN first
+    - summary panel moves below priorities
+  - Pills wrap
+  - Cards remain full width
+
+====================================================
+
+Implement this EXACT layout so the page feels like a serious ROI modeling dashboard, not a centered card or onboarding wizard.
