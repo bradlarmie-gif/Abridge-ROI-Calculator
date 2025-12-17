@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useState, useMemo } from "react";
 import { CareSettingCard } from "@/components/CareSettingCard";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import {
   CARE_SETTING_LABELS,
   CATEGORY_LABELS,
+  SETTING_CONFIG,
   getLeversByCategory,
   type CareSettingType,
   type AllSettingType,
@@ -17,6 +17,7 @@ import {
   HeartPulse,
   Building2,
   ChevronRight,
+  Check,
   Clock,
   FileText,
 } from "lucide-react";
@@ -47,166 +48,243 @@ const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
 
 const ALL_SETTINGS: AllSettingType[] = ["outpatient", "ed", "nursing", "inpatient"];
 
+const LEVER_DRIVER_SUMMARIES: Record<string, string> = {
+  patientAccess: "visits per provider per day and downstream revenue.",
+  overtime: "overtime spend and locum hours.",
+  workforce: "avoided replacement and recruiting costs.",
+  hcc: "risk-adjusted revenue and panel funding.",
+  wrvu: "wRVUs and per-visit reimbursement.",
+  denials: "fewer write-offs and rework on denied claims.",
+  edPatientAccess: "ED throughput and patients who leave without being seen.",
+  edProviderRetention: "ED clinician turnover and staffing stability.",
+  edScribeSavings: "scribe utilization and cost efficiency.",
+  edDocumentationQuality: "coding accuracy and care transition quality.",
+  edDenialSavings: "ED denial rates and revenue recovery.",
+  rnLaborEfficiency: "nursing overtime and shift end times.",
+  rnRetention: "nursing turnover and staff sustainability.",
+  rnSafetyEvents: "patient safety documentation and early warning capture.",
+  rnDrgSeverity: "severity documentation and case mix accuracy.",
+};
+
+function StepIndicator({ 
+  stepNumber, 
+  label, 
+  isActive, 
+  isCompleted 
+}: { 
+  stepNumber: number; 
+  label: string; 
+  isActive: boolean;
+  isCompleted: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <div 
+        className={`
+          w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium
+          transition-all duration-200
+          ${isCompleted 
+            ? 'bg-[#F03319] text-white' 
+            : isActive 
+              ? 'bg-[#F03319] text-white' 
+              : 'bg-neutral-200 text-neutral-500'
+          }
+        `}
+      >
+        {isCompleted ? <Check className="w-4 h-4" /> : stepNumber}
+      </div>
+      <span 
+        className={`
+          text-sm font-medium transition-colors duration-200
+          ${isActive || isCompleted ? 'text-neutral-900' : 'text-neutral-400'}
+        `}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function Stepper({ 
+  selectedSetting, 
+  selectedLeverId 
+}: { 
+  selectedSetting: CareSettingType | null; 
+  selectedLeverId: string | null;
+}) {
+  const step1Complete = selectedSetting !== null;
+  const step2Complete = selectedLeverId !== null;
+  
+  return (
+    <div className="flex items-center justify-center gap-8 py-4">
+      <StepIndicator 
+        stepNumber={1} 
+        label="Care Setting" 
+        isActive={!step1Complete}
+        isCompleted={step1Complete}
+      />
+      <div className="w-8 h-px bg-neutral-300" />
+      <StepIndicator 
+        stepNumber={2} 
+        label="ROI Priority" 
+        isActive={step1Complete && !step2Complete}
+        isCompleted={step2Complete}
+      />
+      <div className="w-8 h-px bg-neutral-300" />
+      <StepIndicator 
+        stepNumber={3} 
+        label="Calculator" 
+        isActive={step1Complete && step2Complete}
+        isCompleted={false}
+      />
+    </div>
+  );
+}
+
+function PriorityCard({
+  lever,
+  isSelected,
+  onSelect,
+}: {
+  lever: LeverConfig;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const driverSummary = LEVER_DRIVER_SUMMARIES[lever.id] || "business outcomes and efficiency.";
+  
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`
+        w-full p-5 rounded-xl bg-white transition-all duration-200 text-left cursor-pointer
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[rgba(240,51,25,0.5)]
+        ${isSelected 
+          ? "border-2 shadow-md" 
+          : "border border-neutral-200 shadow-sm hover:shadow-md hover:border-neutral-300"
+        }
+      `}
+      style={{ borderColor: isSelected ? '#F03319' : undefined }}
+      data-testid={`priority-card-${lever.id}`}
+    >
+      <div className="flex items-start gap-3">
+        <div 
+          className={`
+            w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5
+            flex items-center justify-center transition-all duration-200
+            ${isSelected 
+              ? 'border-[#F03319] bg-[#F03319]' 
+              : 'border-neutral-300 bg-white'
+            }
+          `}
+        >
+          {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+        </div>
+        <div className="flex-1">
+          <h4 className="font-semibold text-black text-base">
+            {lever.label}
+          </h4>
+          <p className="text-sm text-neutral-600 mt-2 leading-relaxed">
+            {lever.description}
+          </p>
+          <p className="text-sm mt-2">
+            <span className="font-semibold text-neutral-800">This lever drives:</span>{' '}
+            <span className="text-neutral-600">{driverSummary}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ObjectiveSelectionScreen({
   onComplete,
   initialSelectedSettings = [],
   initialSelectedLevers = [],
 }: ObjectiveSelectionScreenProps) {
-  const [selectedSettings, setSelectedSettings] = useState<CareSettingType[]>(initialSelectedSettings);
-  const [selectedLevers, setSelectedLevers] = useState<Set<string>>(() => {
-    return new Set(initialSelectedLevers.map(l => `${l.settingId}:${l.leverId}`));
+  const [selectedSetting, setSelectedSetting] = useState<CareSettingType | null>(
+    initialSelectedSettings.length > 0 ? initialSelectedSettings[0] : null
+  );
+  const [selectedLeverId, setSelectedLeverId] = useState<string | null>(() => {
+    if (initialSelectedLevers.length > 0) {
+      return initialSelectedLevers[0].leverId;
+    }
+    return null;
   });
-  const [showValidationError, setShowValidationError] = useState(false);
 
-  const handleSettingToggle = (setting: AllSettingType) => {
+  const leversByCategory = useMemo(() => {
+    if (!selectedSetting) return null;
+    return getLeversByCategory(selectedSetting);
+  }, [selectedSetting]);
+
+  const handleSettingSelect = (setting: AllSettingType) => {
     if (setting === "inpatient") {
       return;
     }
-    setSelectedSettings((prev) => {
-      if (prev.includes(setting)) {
-        return prev.filter((s) => s !== setting);
-      } else {
-        return [...prev, setting];
-      }
-    });
-    setShowValidationError(false);
+    setSelectedSetting(setting);
+    setSelectedLeverId(null);
   };
 
-  const handleLeverToggle = (settingId: CareSettingType, leverId: string) => {
-    const key = `${settingId}:${leverId}`;
-    setSelectedLevers((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  };
-
-  const isLeverSelected = (settingId: CareSettingType, leverId: string) => {
-    return selectedLevers.has(`${settingId}:${leverId}`);
+  const handleLeverSelect = (leverId: string) => {
+    setSelectedLeverId(leverId);
   };
 
   const handleContinue = () => {
-    if (selectedSettings.length === 0) {
-      setShowValidationError(true);
-      return;
-    }
-    if (selectedLevers.size === 0) {
+    if (!selectedSetting || !selectedLeverId) {
       return;
     }
     
-    const levers: SelectedLever[] = [];
-    selectedLevers.forEach((key) => {
-      const [settingId, leverId] = key.split(":");
-      levers.push({
-        settingId: settingId as CareSettingType,
-        leverId,
-        active: true,
-      });
-    });
+    const lever: SelectedLever = {
+      settingId: selectedSetting,
+      leverId: selectedLeverId,
+      active: true,
+    };
     
-    onComplete(selectedSettings, levers);
+    onComplete([selectedSetting], [lever]);
   };
 
-  const renderLeverItem = (settingId: CareSettingType, lever: LeverConfig) => {
-    const isSelected = isLeverSelected(settingId, lever.id);
-    return (
-      <div
-        key={`${settingId}-${lever.id}`}
-        role="button"
-        tabIndex={0}
-        onClick={() => handleLeverToggle(settingId, lever.id)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleLeverToggle(settingId, lever.id);
-          }
-        }}
-        className={`w-full flex items-start space-x-4 p-4 rounded-xl bg-white transition-all duration-200 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[rgba(240,51,25,0.5)] ${
-          isSelected 
-            ? "border-2 shadow-md" 
-            : "border border-neutral-200 shadow-sm hover:shadow-md"
-        }`}
-        style={{ borderColor: isSelected ? '#F03319' : undefined }}
-        data-testid={`lever-option-${settingId}-${lever.id}`}
-      >
-        <Checkbox
-          id={`${settingId}-${lever.id}`}
-          checked={isSelected}
-          onCheckedChange={() => handleLeverToggle(settingId, lever.id)}
-          className="mt-1 pointer-events-none"
-          tabIndex={-1}
-          data-testid={`checkbox-lever-${settingId}-${lever.id}`}
-        />
-        <div className="flex-1">
-          <span className="font-semibold text-black">
-            {lever.label}
-          </span>
-          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-            {lever.description}
-          </p>
-        </div>
-      </div>
-    );
-  };
+  const canContinue = selectedSetting !== null && selectedLeverId !== null;
 
-  const renderCategorySection = (settingId: CareSettingType, category: LeverCategory, levers: LeverConfig[]) => {
+  const renderCategorySection = (category: LeverCategory, levers: LeverConfig[]) => {
     if (levers.length === 0) return null;
     const CategoryIcon = CATEGORY_ICONS[category];
+    const categoryLabel = category === 'time' ? 'Capacity & Labor' : 'Revenue & Risk';
 
     return (
-      <div key={`${settingId}-${category}`} className="space-y-3">
-        <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+      <div key={category} className="space-y-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-neutral-500 uppercase tracking-wide">
           <CategoryIcon className="h-4 w-4" />
-          {CATEGORY_LABELS[category]}
+          {categoryLabel}
         </div>
         <div className="space-y-3">
-          {levers.map((lever) => renderLeverItem(settingId, lever))}
+          {levers.map((lever) => (
+            <PriorityCard
+              key={lever.id}
+              lever={lever}
+              isSelected={selectedLeverId === lever.id}
+              onSelect={() => handleLeverSelect(lever.id)}
+            />
+          ))}
         </div>
       </div>
     );
-  };
-
-  const renderSettingSection = (settingId: CareSettingType) => {
-    const leversByCategory = getLeversByCategory(settingId);
-    
-    return (
-      <div key={settingId} className="space-y-6">
-        <h3 className="text-lg font-medium text-neutral-700">
-          {CARE_SETTING_LABELS[settingId]}
-        </h3>
-        <div className="space-y-8">
-          {renderCategorySection(settingId, "time", leversByCategory.time)}
-          {renderCategorySection(settingId, "documentation", leversByCategory.documentation)}
-        </div>
-      </div>
-    );
-  };
-
-  const hasSelectedPriorities = selectedLevers.size > 0;
-  const currentSelectionText = selectedSettings.length > 0
-    ? selectedSettings.map((s) => CARE_SETTING_LABELS[s]).join(", ")
-    : "None";
-
-  const handleButtonClick = () => {
-    if (!hasSelectedPriorities) {
-      setShowValidationError(true);
-      return;
-    }
-    handleContinue();
   };
 
   return (
     <div className="min-h-screen flex flex-col relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
       <BackgroundShape />
       
-      <div className="relative z-10 flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto pt-12 pb-6 px-8">
-          <div className="space-y-4">
-            <div className="text-center">
+      <div className="relative z-10 flex-1 overflow-y-auto pb-24">
+        <div className="max-w-4xl mx-auto pt-10 pb-6 px-6">
+          <div className="space-y-8">
+            <div className="text-center space-y-2">
               <div className="leading-tight">
                 <h1 className="text-3xl font-semibold" style={{ color: '#111111' }}>
                   The ROI Calculator
@@ -215,13 +293,24 @@ export default function ObjectiveSelectionScreen({
                   by Abridge
                 </p>
               </div>
-              <p className="text-sm text-neutral-600 pt-4">
-                Select the care setting(s) you want to explore.
+              <p className="text-sm text-neutral-600 pt-2">
+                Build a focused ROI story in three simple steps.
               </p>
             </div>
 
-            <div className="max-w-3xl mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+            <Stepper selectedSetting={selectedSetting} selectedLeverId={selectedLeverId} />
+
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold text-black">
+                  Step 1 - Choose your care setting
+                </h2>
+                <p className="text-sm text-neutral-600 mt-1">
+                  Pick where you want to measure impact first. You can always come back and run another setting.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
                 {ALL_SETTINGS.map((setting) => {
                   const isInpatient = setting === "inpatient";
                   return (
@@ -229,67 +318,75 @@ export default function ObjectiveSelectionScreen({
                       key={setting}
                       icon={SETTING_ICONS[setting]}
                       title={CARE_SETTING_LABELS[setting]}
-                      selected={selectedSettings.includes(setting as CareSettingType)}
+                      selected={selectedSetting === setting}
                       disabled={isInpatient}
-                      onClick={() => handleSettingToggle(setting)}
+                      onClick={() => handleSettingSelect(setting)}
                     />
                   );
                 })}
               </div>
+
+              {!selectedSetting && (
+                <p className="text-xs text-neutral-500 italic">
+                  You'll choose your ROI priority next.
+                </p>
+              )}
             </div>
 
-            {selectedSettings.length > 0 && (
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <p className="text-xs text-neutral-500">
-                    Current Selection: {currentSelectionText}
-                  </p>
-                  <h2 className="text-xl font-semibold text-black">
-                    Select Your Strategic Priorities
-                  </h2>
-                  <p className="text-sm text-neutral-600">
-                    Build your business case. One priority at a time.
-                  </p>
-                </div>
-                
-                <div className="space-y-12">
-                  {selectedSettings.map((settingId) => renderSettingSection(settingId))}
-                </div>
+            <div 
+              className={`
+                space-y-5 transition-opacity duration-300
+                ${selectedSetting ? 'opacity-100' : 'opacity-40 pointer-events-none'}
+              `}
+            >
+              <div>
+                <h2 className="text-lg font-semibold text-black">
+                  Step 2 - Choose your ROI priority
+                </h2>
+                <p className="text-sm text-neutral-600 mt-1">
+                  For the clearest story, model one priority at a time. You can rerun the calculator for additional priorities.
+                </p>
               </div>
-            )}
+
+              {!selectedSetting && (
+                <p className="text-sm text-neutral-500 py-4">
+                  Choose a setting above to see relevant priorities.
+                </p>
+              )}
+
+              {selectedSetting && leversByCategory && (
+                <div className="space-y-6">
+                  {renderCategorySection("time", leversByCategory.time)}
+                  {renderCategorySection("documentation", leversByCategory.documentation)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
       
-      <div 
-        className="fixed bottom-6 right-6 z-20 flex flex-col items-end gap-1.5"
-      >
-        {selectedSettings.length > 0 && hasSelectedPriorities && (
+      <div className="fixed bottom-6 right-6 z-20 flex flex-col items-end gap-1.5">
+        {canContinue && (
           <p className="text-sm text-neutral-500">
             Ready when you are.
           </p>
         )}
-        {showValidationError && !hasSelectedPriorities && (
-          <p className="text-sm text-red-600" data-testid="error-no-priority">
-            Select at least one strategic priority to continue.
-          </p>
-        )}
         <button
           type="button"
-          disabled={!hasSelectedPriorities}
-          onClick={handleButtonClick}
+          disabled={!canContinue}
+          onClick={handleContinue}
           className={`
             inline-flex items-center justify-center gap-2 px-6 py-2.5 
             rounded-lg border font-medium text-base
             transition-all duration-200
-            ${hasSelectedPriorities
+            ${canContinue
               ? 'bg-black border-black text-[#FAFAF8] cursor-pointer hover:bg-neutral-800'
-              : 'opacity-60 bg-white border-black text-black cursor-pointer'
+              : 'opacity-50 bg-white border-neutral-300 text-neutral-400 cursor-not-allowed'
             }
           `}
           data-testid="button-continue"
         >
-          Explore the Calculator
+          Continue to calculator
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>

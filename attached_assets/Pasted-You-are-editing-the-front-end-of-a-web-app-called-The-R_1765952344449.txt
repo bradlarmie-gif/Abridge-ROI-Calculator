@@ -1,0 +1,162 @@
+You are editing the front-end of a web app called **“The ROI Calculator by Abridge.”** 
+
+Goal: Redesign the initial experience so it works like a **simple wizard**:
+
+STEP 1 – Choose care setting  
+STEP 2 – Choose ROI priority  
+STEP 3 – Go to the calculator screen (already exists or can be a separate route / component).
+
+The users are Abridge employees and health-system leaders who want a clean, defensible ROI story. Optimize for **clarity and focus**, not showing everything at once.
+
+### Overall behavior
+
+1. Show a stepper under the main title:
+   - “1. Care Setting” (current step)
+   - “2. ROI Priority”
+   - “3. Calculator”
+   The current step should be visually highlighted; later steps dimmed.
+
+2. On this page, we handle **Steps 1 and 2**:
+   - Step 1 area: large cards for care settings.
+   - Step 2 area: ROI priorities list that becomes active after a setting is chosen.
+
+3. The primary CTA at the bottom right should be:
+   - Label: **“Continue to calculator →”**
+   - Disabled until BOTH a care setting and a priority are chosen.
+   - On click, navigate to the calculator view (or call an existing handler) and pass the selected setting + priority in props or navigation state.
+
+---
+
+### STEP 1 – Care Setting UI
+
+Replace the current “Select the care setting(s) you want to explore” behavior with a **single-select card group** by default.
+
+State:
+- `selectedSetting: 'outpatient' | 'ed' | 'nursing' | 'inpatient' | null`
+
+Layout:
+
+- Big heading:  
+  `The ROI Calculator`  
+  Subheading:  
+  `Build a focused ROI story in three simple steps.`
+
+- Section heading under the stepper:  
+  `Step 1 – Choose your care setting`  
+  Subtext:  
+  `Pick where you want to measure impact first. You can always come back and run another setting.`
+
+- Cards arranged in a responsive 2×2 grid. Each card is clickable and behaves like a radio button (only one can be selected at a time):
+
+  - **Outpatient**  
+    Icon: stethoscope (use existing icon).  
+
+  - **Emergency Department**  
+
+  - **Nursing**  
+
+  - **Inpatient**  
+    Disabled for now with a “Coming Soon” pill inside the card. The card should not be selectable.
+
+- Visual rules:
+  - Selected card has a clear border highlight (e.g., red border matching Abridge brand).
+  - Hover state for enabled cards.
+  - Disabled “Inpatient” card has lower opacity and no hover highlight.
+
+Optional but nice: under the card grid, small helper text:
+> “You’ll choose your ROI priority next.”
+
+---
+
+### STEP 2 – ROI Priority UI
+
+After a `selectedSetting` is chosen, show the priorities section directly below the care-setting cards. Until a setting is selected, this section can be dimmed or show a message like “Choose a setting to see relevant priorities.”
+
+Priorities are **single-select** by default (radio-style), not checkboxes. This forces one clear business case at a time.
+
+State:
+- `selectedPriority: null | 'patientAccess' | 'overtimeLocum' | 'clinicianRetention' | 'hccCapture' | 'losAlignment' | 'medicalNecessityDenials'`
+
+Section copy:
+
+- Heading (contextualized to the chosen setting):  
+  `Step 2 – Choose your ROI priority`  
+
+- Subtext:  
+  `For the clearest story, model one priority at a time. You can rerun the calculator for additional priorities.`
+
+Group priorities into two labeled groups:
+
+1. **Capacity & Labor**
+   - **Patient Access**  
+     Description:  
+     `Small documentation delays accumulate and limit how many patients a clinician can reasonably see. Reducing that friction restores time to the day, improving access without increasing staffing.`  
+     Add a bold summary line at the end:  
+     `This lever drives: visits per provider per day and downstream revenue.`
+
+   - **Overtime & Locum Cost Avoidance**  
+     Description:  
+     `After-hours charting often drives avoidable overtime and reliance on locums. Completing more documentation during the visit reduces premium labor needs.`  
+     Bold summary line:  
+     `This lever drives: overtime spend and locum hours.`
+
+   - **Clinician Retention**  
+     Description:  
+     `Administrative overload is a major driver of burnout and turnover. Lightening documentation improves clinician sustainability and helps teams stay intact.`  
+     Bold summary line:  
+     `This lever drives: avoided replacement and recruiting costs.`
+
+2. **Revenue & Risk**
+   - **HCC & Chronic Condition Capture**  
+     Description:  
+     `Incomplete documentation often understates patient complexity. Capturing conditions more consistently supports accurate risk adjustment and care planning.`  
+     Bold summary line:  
+     `This lever drives: risk-adjusted revenue and panel funding.`
+
+   - **Level of Service Alignment**  
+     Description:  
+     `Visits are frequently coded below their true complexity because key reasoning isn't fully documented. Clearer narratives help coding align with the work actually performed.`  
+     Bold summary line:  
+     `This lever drives: wRVUs and per-visit reimbursement.`
+
+   - **Medical Necessity–Driven Denials**  
+     Description:  
+     `Many denials occur because documentation doesn't reflect medical necessity clearly enough to stand on its own. Stronger encounter narratives reduce preventable denials and rework.`  
+     Bold summary line:  
+     `This lever drives: fewer write-offs and rework on denied claims.`
+
+Interaction:
+
+- Each priority is a full-width card with:
+  - Title
+  - Description paragraph
+  - Bold “This lever drives: …” line
+- Only one card can be active at a time (radio behavior with selected style).
+- Cards can reuse the same selected styling as settings (highlighted border).
+
+---
+
+### CTA and State Wiring
+
+- Bottom-right persistent button:
+  - Text: `Continue to calculator →`
+  - Disabled if `selectedSetting === null` OR `selectedPriority === null`.
+  - Enabled otherwise.
+
+- On click:
+  - Call a function like `goToCalculator({ setting: selectedSetting, priority: selectedPriority })`.
+  - If a calculator view / route already exists, adapt the navigation logic to pass these as props or via router state.
+  - If not, at minimum create a stub `Calculator` component that:
+    - Displays the chosen setting and priority
+    - Shows placeholder text: “Next: ask the user for a few inputs to estimate impact for [setting] / [priority].”
+
+---
+
+### Implementation details
+
+- Keep using the existing design system / CSS / Tailwind classes where possible.
+- Do not remove any existing business logic; only refactor the layout and selection flow to match this wizard-style UX.
+- Clean up any now-unused code related to multi-select of settings or priorities.
+- Ensure that the layout is responsive and looks good on laptop and tablet sizes (the main use case).
+
+Please implement this refactor in this file (and any directly related components), then show me the updated code.
