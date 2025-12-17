@@ -1,0 +1,242 @@
+You are refactoring this page of the Abridge ROI Calculator. 
+
+Goal: make this screen feel like a polished, enterprise ROI product. Fix the visual hierarchy, spacing, and layout — without changing any core logic or routes.
+
+Keep all existing copy and state shape (care settings, priorities, etc.), but rebuild the layout and styling to match the spec below.
+
+--------------------
+GLOBAL LAYOUT
+--------------------
+- Use a centered content column with a max width around 960–1040px.
+- Wrap everything inside a main container with generous but not excessive padding:
+  - Top padding: 40–48px
+  - Side padding: 24–32px
+  - Bottom padding: leave room for a sticky footer CTA.
+- Align the main content column to center horizontally (margin: 0 auto), but keep most text left-aligned inside that column.
+
+--------------------
+TITLE / HERO BLOCK
+--------------------
+Top of the page should be a tight, intentional hero block:
+
+1) Main title:
+   - Text: "The ROI Calculator"
+   - Centered.
+   - Large font size (e.g., text-3xl or ~28–32px).
+   - Heavy weight (e.g., font-semibold or bold).
+   - Minimal bottom margin (around 6–8px).
+
+2) Brand line:
+   - Text: "by Abridge"
+   - Centered.
+   - Use the existing Abridge accent red color.
+   - Smaller than the title (e.g., text-sm or ~14px).
+   - Medium weight.
+   - Margin-bottom below this: around 16px.
+
+3) Subheadline:
+   - Text: "Build a focused, defensible ROI model across any care setting in three simple steps."
+   - Centered.
+   - Neutral gray color (same family as existing body text).
+   - Regular font weight.
+   - Max width around 640px and centered, so it doesn’t run too wide.
+   - Margin-bottom after subheadline: around 32–40px before the stepper.
+
+This block should feel tight and composed, not spread out. Avoid large empty gaps above or below.
+
+--------------------
+STEPPER
+--------------------
+Immediately under the hero, place a horizontal stepper that clearly shows 3 steps: Care Setting, ROI Priority, Calculator.
+
+Layout:
+- Centered horizontally within the main column.
+- Use flexbox to horizontally layout three step items with even spacing.
+- Between steps, use a subtle horizontal line (e.g., a thin gray divider).
+
+Each step item:
+- Contains a circular number indicator plus a label:
+  - Example: [1] Care Setting, [2] ROI Priority, [3] Calculator.
+- For the current step:
+  - Filled circle in the Abridge accent red.
+  - White number inside.
+  - Label in darker text with medium weight.
+- For future steps:
+  - Circle is outlined or filled with light gray.
+  - Number and label in muted gray.
+- Keep the stepper height compact; don’t introduce large vertical padding between stepper and Step 1 section.
+
+--------------------
+STEP 1 SECTION (CARE SETTING)
+--------------------
+Section should feel like a clean module, not floating text.
+
+Section container:
+- Top margin from stepper: around 32px.
+- Left-aligned text inside, but bounded by the main column width.
+
+Header:
+- Title: "Step 1 - Choose your care setting"
+  - Font size around 18–20px, semibold.
+  - Margin-bottom: 4–6px.
+- Subtext:
+  - Text: "Pick where you want to measure impact first. You can always come back and run another setting."
+  - Regular body font, muted gray.
+  - Margin-bottom: 24px.
+
+Care setting cards:
+- Layout: a responsive 2x2 grid within this section:
+  - Two cards per row on desktop.
+  - Stack vertically on narrow screens.
+- Each card is a button/interactive card with:
+  - Slightly rounded corners (e.g., rounded-xl).
+  - Border: light neutral gray by default.
+  - Background: white.
+  - Padding: around 16–20px vertically and horizontally.
+  - Display: flex row, align-items center, gap 16px between icon and text (no stacked icon above text).
+- Icon:
+  - Keep existing icons.
+  - Place on left, inside a soft rounded square background (the existing beige tone).
+- Text:
+  - The care setting label (e.g., "Outpatient") on the right of the icon.
+  - Font-weight medium, black/dark gray.
+- Selected state:
+  - Border color: Abridge red.
+  - Slight shadow or subtle elevation (e.g., shadow-sm).
+  - Background still white to keep it clean.
+- Disabled card for "Inpatient":
+  - Maintain card style but:
+    - Reduce opacity slightly.
+    - No hover / click.
+    - Show "Coming Soon" pill inside the card text area in a muted gray pill.
+
+Under the card grid:
+- Small helper text:
+  - Text: "You'll choose your ROI priority next."
+  - Use smaller font and lighter gray.
+  - Margin-top: around 8px.
+
+--------------------
+STEP 2 SECTION (ROI PRIORITIES)
+--------------------
+This section should sit directly under Step 1, but visually offset so it feels like a second module.
+
+Behavior:
+- Show the Step 2 block always, but if no setting is selected yet, dim the content and show an instructional message (like you already do).
+- Once a setting is selected, render that setting’s relevant priorities.
+
+Section header:
+- Title: "Step 2 - Choose your ROI priorities"
+  - Font size: similar to Step 1 header (18–20px, semibold).
+  - Margin-top from the bottom of Step 1: about 32–40px.
+  - Margin-bottom: 4–6px.
+- Subtext:
+  - Text: "Select all ROI levers you want included in this model. You can choose more than one — most organizations activate multiple levers at once."
+  - Regular body font, muted gray.
+  - Margin-bottom: 24px.
+
+Priority groups:
+- Group labels:
+  - "CAPACITY & LABOR"
+  - "REVENUE & RISK"
+- Style them as small, all-caps labels:
+  - Font size ~11–12px, tracking-wide.
+  - Color: lighter gray.
+  - Use a small icon (like the clock or document icon) only if already present; keep it subtle.
+  - Margin-top above each group: ~24px.
+  - Margin-bottom below group label: ~12px.
+
+--------------------
+PRIORITY CARDS (MULTI-SELECT)
+--------------------
+Key change: 
+- These are multi-select checkboxes, but visually cleaner and less heavy than the current red-bordered boxes.
+
+Layout for each priority card:
+- Full-width within the main column.
+- Slightly rounded corners (rounded-xl).
+- Thin light-gray border by default.
+- Background: white.
+- Padding: 14–18px vertical, 16–20px horizontal.
+- Display: a vertical stack:
+  - First row: checkbox + title in a row.
+  - Below that: description text.
+  - Below that: "This lever drives..." line.
+
+Inside the card:
+1) Top row:
+   - Left: checkbox (native or styled).
+   - Right: title text.
+   - Arrange them horizontally using flexbox with small gap (e.g., gap-2).
+   - Title font: medium weight, black/dark gray.
+   - Vertically center checkbox and title.
+
+2) Description:
+   - Two-sentence description you already have.
+   - Regular font, neutral gray.
+   - Margin-top: around 4–6px.
+
+3) “This lever drives” line:
+   - On its own line.
+   - Text starts with bold label: "This lever drives:"
+   - Rest of the text regular.
+   - Margin-top: around 4px.
+
+Selected state (very important):
+- Do NOT use a full heavy red border for the entire card.
+- Instead:
+  - Use a subtle left accent bar:
+    - Example: a 3–4px wide vertical bar on the far left in Abridge red.
+  - Keep the main border light gray or slightly darker, but not red.
+  - Optionally slightly adjust background to a very light neutral (not red/pink).
+- Checkbox is checked in Abridge red.
+- This way, when multiple cards are selected, the UI shows a clean column with subtle red accents, not a wall of red boxes.
+
+Spacing between cards:
+- Vertical gap between cards: around 12–16px.
+- Slightly larger gap between groups (Capacity & Labor vs Revenue & Risk).
+
+--------------------
+BOTTOM CTA / FOOTER
+--------------------
+Instead of a floating CTA that feels unanchored, use a sticky footer-style bar at the bottom of the viewport.
+
+Behavior:
+- Footer is fixed to bottom, full-width.
+- Inside, align content with the same max-width container as the main content (960–1040px, centered).
+- Add a subtle top border (thin light-gray line) or gentle shadow to separate it from the content.
+
+Content:
+- Left side (or left-aligned):
+  - A small line of text like: "X levers selected" (you are already tracking the count; reuse that).
+  - Use muted gray.
+
+- Right side:
+  - Primary button: "Continue to calculator →"
+  - Button style:
+    - Black or very dark background.
+    - White text.
+    - Rounded-full or large rounded corners.
+    - Horizontal padding 20–24px; vertical padding 10–12px.
+  - Button is disabled if no care setting or no priorities selected:
+    - Reduce opacity and disable pointer events for the disabled state.
+
+Spacing within footer:
+- Vertical padding: 12–16px.
+- Layout: flex justify-between align-center.
+
+--------------------
+RESPONSIVENESS
+--------------------
+- On narrow screens, stack the care setting cards vertically rather than 2x2.
+- Ensure the sticky footer works on mobile without overlapping content; allow enough bottom padding on the main content to avoid being hidden behind the footer.
+- Typography can scale down slightly on smaller breakpoints, but preserve hierarchy: title > section headers > body text.
+
+--------------------
+LOGIC / DATA
+--------------------
+- Do not change any underlying selection logic, enums, or routing.
+- Keep all existing copy we’ve already aligned on for care settings and priority descriptions.
+- Just adjust layout, spacing, typography, and visual states to match this spec.
+
+Please refactor the current JSX/TSX and styling (CSS/Tailwind) on this page to implement this layout and hierarchy exactly.
