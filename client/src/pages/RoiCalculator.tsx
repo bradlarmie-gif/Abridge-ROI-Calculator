@@ -11,16 +11,56 @@ import { EnterpriseExpansionChart } from "@/components/EnterpriseExpansionChart"
 import { LeverAccordion } from "@/components/LeverAccordion";
 import { CommentaryBox } from "@/components/CommentaryBox";
 import { StrategicDriverCard } from "@/components/StrategicDriverCard";
-import { PatientAccessDrawer, type PatientAccessInputs, type PatientAccessCalculations } from "@/components/PatientAccessDrawer";
-import { OvertimeLocumDrawer, type OvertimeLocumInputs, type OvertimeLocumCalculations } from "@/components/OvertimeLocumDrawer";
-import { ClinicianRetentionDrawer, type ClinicianRetentionInputs, type ClinicianRetentionCalculations } from "@/components/ClinicianRetentionDrawer";
-import { LevelOfServiceDrawer, type LevelOfServiceInputs, type LevelOfServiceCalculations } from "@/components/LevelOfServiceDrawer";
-import { MedicalNecessityDenialsDrawer, type MedicalNecessityDenialsInputs, type MedicalNecessityDenialsCalculations } from "@/components/MedicalNecessityDenialsDrawer";
-import { HccConditionCaptureDrawer, type HccConditionCaptureInputs, type HccConditionCaptureCalculations } from "@/components/HccConditionCaptureDrawer";
+import {
+  PatientAccessDrawer,
+  type PatientAccessInputs,
+  type PatientAccessCalculations,
+} from "@/components/PatientAccessDrawer";
+import {
+  OvertimeLocumDrawer,
+  type OvertimeLocumInputs,
+  type OvertimeLocumCalculations,
+} from "@/components/OvertimeLocumDrawer";
+import {
+  ClinicianRetentionDrawer,
+  type ClinicianRetentionInputs,
+  type ClinicianRetentionCalculations,
+} from "@/components/ClinicianRetentionDrawer";
+import {
+  LevelOfServiceDrawer,
+  type LevelOfServiceInputs,
+  type LevelOfServiceCalculations,
+} from "@/components/LevelOfServiceDrawer";
+import {
+  MedicalNecessityDenialsDrawer,
+  type MedicalNecessityDenialsInputs,
+  type MedicalNecessityDenialsCalculations,
+} from "@/components/MedicalNecessityDenialsDrawer";
+import {
+  HccConditionCaptureDrawer,
+  type HccConditionCaptureInputs,
+  type HccConditionCaptureCalculations,
+} from "@/components/HccConditionCaptureDrawer";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
-import { defaultInputs, type RoiInputs, type LeverId, type Lever, leverLabels, leverDescriptions } from "@/lib/roi-types";
-import { calculateRoi, formatCurrency, formatNumber, formatPercent } from "@/lib/roi-calculator";
-import { CARE_SETTING_LABELS, SETTING_CONFIG, type CareSettingType } from "@/lib/SETTING_CONFIG";
+import {
+  defaultInputs,
+  type RoiInputs,
+  type LeverId,
+  type Lever,
+  leverLabels,
+  leverDescriptions,
+} from "@/lib/roi-types";
+import {
+  calculateRoi,
+  formatCurrency,
+  formatNumber,
+  formatPercent,
+} from "@/lib/roi-calculator";
+import {
+  CARE_SETTING_LABELS,
+  SETTING_CONFIG,
+  type CareSettingType,
+} from "@/lib/SETTING_CONFIG";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -45,7 +85,6 @@ import {
   Clock,
   Percent,
   Calculator,
-  Settings,
   Target,
   FileText,
   ArrowLeft,
@@ -62,12 +101,17 @@ interface LeverWithSetting extends Lever {
 }
 
 const leverTableDescriptions: Record<string, string> = {
-  patientAccess: "Documentation steals minutes from every visit, and those minutes determine how many patients a clinician can realistically see. Returning that time improves access without increasing staffing.",
-  overtime: "Much of overtime and locum spend comes from documentation spilling past scheduled hours. Completing more documentation inside the visit reduces that spillover.",
-  workforce: "Burnout grows when documentation bleeds into every corner of the day. Reducing that burden helps clinicians sustain the work and stay longer.",
-  riskAdjustment: "Risk models break when chronic conditions aren't consistently documented. Clearer narratives help clinicians carry forward the truth about patient complexity.",
+  patientAccess:
+    "Documentation steals minutes from every visit, and those minutes determine how many patients a clinician can realistically see. Returning that time improves access without increasing staffing.",
+  overtime:
+    "Much of overtime and locum spend comes from documentation spilling past scheduled hours. Completing more documentation inside the visit reduces that spillover.",
+  workforce:
+    "Burnout grows when documentation bleeds into every corner of the day. Reducing that burden helps clinicians sustain the work and stay longer.",
+  riskAdjustment:
+    "Risk models break when chronic conditions aren't consistently documented. Clearer narratives help clinicians carry forward the truth about patient complexity.",
   wrvu: "Visits are often undercoded because the documentation doesn't show the thinking behind the care. Better reasoning in the note aligns coding with reality.",
-  denials: "Unrecoverable denials occur when the note doesn't clearly justify why care was needed. Stronger narratives reduce these losses at the source.",
+  denials:
+    "Unrecoverable denials occur when the note doesn't clearly justify why care was needed. Stronger narratives reduce these losses at the source.",
 };
 
 const leverEducationalContent: Record<string, string> = {
@@ -123,7 +167,11 @@ function getFirstSentence(text: string): string {
   return match ? match[0] : text;
 }
 
-export default function RoiCalculator({ selectedSettings, selectedLevers, onBack }: RoiCalculatorProps) {
+export default function RoiCalculator({
+  selectedSettings,
+  selectedLevers,
+  onBack,
+}: RoiCalculatorProps) {
   const [leverStates, setLeverStates] = useState<Map<string, boolean>>(() => {
     const map = new Map<string, boolean>();
     selectedLevers.forEach((l) => {
@@ -131,231 +179,362 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
     });
     return map;
   });
-  
+
   const [inputs, setInputs] = useState<RoiInputs>(() => {
     const initial: RoiInputs = JSON.parse(JSON.stringify(defaultInputs));
-    const allLeverIds: LeverId[] = ["patientAccess", "overtime", "workforce", "wrvu", "denials", "hcc"];
+    const allLeverIds: LeverId[] = [
+      "patientAccess",
+      "overtime",
+      "workforce",
+      "wrvu",
+      "denials",
+      "hcc",
+    ];
     allLeverIds.forEach((id) => {
       initial.levers[id] = selectedLevers.some(
-        (l) => l.leverId === id && l.active
+        (l) => l.leverId === id && l.active,
       );
     });
     return initial;
   });
   const [commentary, setCommentary] = useState("");
-  const [selectedLeverForModal, setSelectedLeverForModal] = useState<LeverWithSetting | null>(null);
+  const [selectedLeverForModal, setSelectedLeverForModal] =
+    useState<LeverWithSetting | null>(null);
   const [patientAccessDrawerOpen, setPatientAccessDrawerOpen] = useState(false);
   const [overtimeLocumDrawerOpen, setOvertimeLocumDrawerOpen] = useState(false);
-  const [clinicianRetentionDrawerOpen, setClinicianRetentionDrawerOpen] = useState(false);
-  const [levelOfServiceDrawerOpen, setLevelOfServiceDrawerOpen] = useState(false);
-  const [medicalNecessityDenialsDrawerOpen, setMedicalNecessityDenialsDrawerOpen] = useState(false);
-  const [hccConditionCaptureDrawerOpen, setHccConditionCaptureDrawerOpen] = useState(false);
-  
-  const [patientAccessInputs, setPatientAccessInputs] = useState<PatientAccessInputs>(() => {
-    const clinicians = inputs.numberOfProviders;
-    const encountersPerClinician = clinicians > 0 
-      ? Math.round(inputs.annualOutpatientEncounters / clinicians) 
-      : 0;
-    return {
-      minutesSavedPerEncounter: 4,
-      cliniciansInScope: clinicians,
-      encountersPerClinician,
-      visitMinutes: 30,
-      reinvestRate: 0.10,
-      netRevenuePerEncounter: inputs.avgNetRevenuePerEncounter,
-    };
-  });
-  
+  const [clinicianRetentionDrawerOpen, setClinicianRetentionDrawerOpen] =
+    useState(false);
+  const [levelOfServiceDrawerOpen, setLevelOfServiceDrawerOpen] =
+    useState(false);
+  const [
+    medicalNecessityDenialsDrawerOpen,
+    setMedicalNecessityDenialsDrawerOpen,
+  ] = useState(false);
+  const [hccConditionCaptureDrawerOpen, setHccConditionCaptureDrawerOpen] =
+    useState(false);
+
+  const [patientAccessInputs, setPatientAccessInputs] =
+    useState<PatientAccessInputs>(() => {
+      const clinicians = inputs.numberOfProviders;
+      const encountersPerClinician =
+        clinicians > 0
+          ? Math.round(inputs.annualOutpatientEncounters / clinicians)
+          : 0;
+      return {
+        minutesSavedPerEncounter: inputs.minutesSavedPerEncounter,
+        cliniciansInScope: clinicians,
+        encountersPerClinician,
+        visitMinutes: 30,
+        reinvestRate: 0.1,
+        netRevenuePerEncounter: inputs.avgNetRevenuePerEncounter,
+      };
+    });
+
   useEffect(() => {
-    setPatientAccessInputs(prev => ({
+    setPatientAccessInputs((prev) => ({
       ...prev,
       cliniciansInScope: inputs.numberOfProviders,
-      encountersPerClinician: inputs.numberOfProviders > 0 
-        ? Math.round(inputs.annualOutpatientEncounters / inputs.numberOfProviders) 
-        : 0,
+      encountersPerClinician:
+        inputs.numberOfProviders > 0
+          ? Math.round(
+              inputs.annualOutpatientEncounters / inputs.numberOfProviders,
+            )
+          : 0,
       netRevenuePerEncounter: inputs.avgNetRevenuePerEncounter,
     }));
-  }, [inputs.numberOfProviders, inputs.annualOutpatientEncounters, inputs.avgNetRevenuePerEncounter]);
-  
+  }, [
+    inputs.numberOfProviders,
+    inputs.annualOutpatientEncounters,
+    inputs.avgNetRevenuePerEncounter,
+  ]);
+
   const encountersCoveredByAbridge = useMemo(() => {
-    return inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100);
+    return (
+      inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100)
+    );
   }, [inputs.annualOutpatientEncounters, inputs.abridgeUtilizationPct]);
-  
+
   const patientAccessCalculations: PatientAccessCalculations = useMemo(() => {
-    const { minutesSavedPerEncounter, visitMinutes, reinvestRate, netRevenuePerEncounter } = patientAccessInputs;
-    const totalMinutesSaved = encountersCoveredByAbridge * minutesSavedPerEncounter;
+    const {
+      minutesSavedPerEncounter,
+      visitMinutes,
+      reinvestRate,
+      netRevenuePerEncounter,
+    } = patientAccessInputs;
+    const totalMinutesSaved =
+      encountersCoveredByAbridge * minutesSavedPerEncounter;
     const totalHoursSaved = totalMinutesSaved / 60;
     const reinvestedHours = totalHoursSaved * reinvestRate;
     const visitsPerHour = 60 / visitMinutes;
     const additionalVisits = reinvestedHours * visitsPerHour;
     const incrementalRevenue = additionalVisits * netRevenuePerEncounter;
-    return { totalHoursSaved, reinvestedHours, additionalVisits, incrementalRevenue };
+    return {
+      totalHoursSaved,
+      reinvestedHours,
+      additionalVisits,
+      incrementalRevenue,
+    };
   }, [patientAccessInputs, encountersCoveredByAbridge]);
-  
-  const handlePatientAccessInputChange = (field: keyof PatientAccessInputs, value: number) => {
-    setPatientAccessInputs(prev => ({ ...prev, [field]: value }));
+
+  const handlePatientAccessInputChange = (
+    field: keyof PatientAccessInputs,
+    value: number,
+  ) => {
+    setPatientAccessInputs((prev) => ({ ...prev, [field]: value }));
   };
-  
-  const [overtimeLocumInputs, setOvertimeLocumInputs] = useState<OvertimeLocumInputs>({
-    pctHoursPreviouslyPremium: 0.20,
-    pctPremiumRealized: 0.75,
-    overtimeRate: 150,
-    locumRate: 250,
-    locumShare: 0.50,
-  });
-  
-  const handleOvertimeLocumInputChange = (field: keyof OvertimeLocumInputs, value: number) => {
-    setOvertimeLocumInputs(prev => ({ ...prev, [field]: value }));
+
+  const [overtimeLocumInputs, setOvertimeLocumInputs] =
+    useState<OvertimeLocumInputs>({
+      pctHoursPreviouslyPremium: 0.2,
+      pctPremiumRealized: 0.75,
+      overtimeRate: 150,
+      locumRate: 250,
+      locumShare: 0.5,
+    });
+
+  const handleOvertimeLocumInputChange = (
+    field: keyof OvertimeLocumInputs,
+    value: number,
+  ) => {
+    setOvertimeLocumInputs((prev) => ({ ...prev, [field]: value }));
   };
-  
-  const [clinicianRetentionInputs, setClinicianRetentionInputs] = useState<ClinicianRetentionInputs>(() => ({
-    cliniciansInScope: inputs.numberOfProviders,
-    attritionRate: 0.08,
-    burnoutShare: 0.40,
-    reductionWithAbridge: 0.50,
-    realizationFactor: 0.75,
-    costPerDeparture: 500000,
-  }));
-  
+
+  const [clinicianRetentionInputs, setClinicianRetentionInputs] =
+    useState<ClinicianRetentionInputs>(() => ({
+      cliniciansInScope: inputs.numberOfProviders,
+      attritionRate: 0.08,
+      burnoutShare: 0.4,
+      reductionWithAbridge: 0.5,
+      realizationFactor: 0.75,
+      costPerDeparture: 500000,
+    }));
+
   useEffect(() => {
-    setClinicianRetentionInputs(prev => ({
+    setClinicianRetentionInputs((prev) => ({
       ...prev,
       cliniciansInScope: inputs.numberOfProviders,
     }));
   }, [inputs.numberOfProviders]);
-  
-  const handleClinicianRetentionInputChange = (field: keyof ClinicianRetentionInputs, value: number) => {
-    setClinicianRetentionInputs(prev => ({ ...prev, [field]: value }));
+
+  const handleClinicianRetentionInputChange = (
+    field: keyof ClinicianRetentionInputs,
+    value: number,
+  ) => {
+    setClinicianRetentionInputs((prev) => ({ ...prev, [field]: value }));
   };
-  
-  const [levelOfServiceInputs, setLevelOfServiceInputs] = useState<LevelOfServiceInputs>(() => ({
-    annualEncounters: inputs.annualOutpatientEncounters,
-    baselineUnderCodedRate: 15,
-    pctUnderCodedCorrected: 50,
-    incrementalWrvuPerVisit: 0.3,
-    wrvuConversionFactor: 34,
-  }));
-  
+
+  const [levelOfServiceInputs, setLevelOfServiceInputs] =
+    useState<LevelOfServiceInputs>(() => ({
+      annualEncounters: inputs.annualOutpatientEncounters,
+      baselineUnderCodedRate: 15,
+      pctUnderCodedCorrected: 50,
+      incrementalWrvuPerVisit: 0.3,
+      wrvuConversionFactor: 34,
+    }));
+
   useEffect(() => {
-    setLevelOfServiceInputs(prev => ({
+    setLevelOfServiceInputs((prev) => ({
       ...prev,
       annualEncounters: inputs.annualOutpatientEncounters,
     }));
   }, [inputs.annualOutpatientEncounters]);
-  
-  const handleLevelOfServiceInputChange = (field: keyof LevelOfServiceInputs, value: number) => {
-    setLevelOfServiceInputs(prev => ({ ...prev, [field]: value }));
+
+  const handleLevelOfServiceInputChange = (
+    field: keyof LevelOfServiceInputs,
+    value: number,
+  ) => {
+    setLevelOfServiceInputs((prev) => ({ ...prev, [field]: value }));
   };
-  
-  const [medicalNecessityDenialsInputs, setMedicalNecessityDenialsInputs] = useState<MedicalNecessityDenialsInputs>(() => ({
-    netCollectibleRevenue: 14000000,
-    baselineDenialRate: 5,
-    pctRecoveredWithRework: 60,
-    pctUnrecoverableDueToDocumentation: 30,
-    pctReductionWithAbridge: 50,
-    realizationFactor: 75,
-  }));
-  
-  const handleMedicalNecessityDenialsInputChange = (field: keyof MedicalNecessityDenialsInputs, value: number) => {
-    setMedicalNecessityDenialsInputs(prev => ({ ...prev, [field]: value }));
+
+  const [medicalNecessityDenialsInputs, setMedicalNecessityDenialsInputs] =
+    useState<MedicalNecessityDenialsInputs>(() => ({
+      netCollectibleRevenue: 14000000,
+      baselineDenialRate: 5,
+      pctRecoveredWithRework: 60,
+      pctUnrecoverableDueToDocumentation: 30,
+      pctReductionWithAbridge: 50,
+      realizationFactor: 75,
+    }));
+
+  const handleMedicalNecessityDenialsInputChange = (
+    field: keyof MedicalNecessityDenialsInputs,
+    value: number,
+  ) => {
+    setMedicalNecessityDenialsInputs((prev) => ({ ...prev, [field]: value }));
   };
-  
-  const [hccConditionCaptureInputs, setHccConditionCaptureInputs] = useState<HccConditionCaptureInputs>(() => ({
-    riskBasedPatients: 7000,
-    avgConditionsPerPatient: 1.5,
-    pctConditionsNotDocumented: 33,
-    pctMissedConditionsCaptured: 60,
-    pctNewlyIdentifiedConditions: 5,
-    realizationFactor: 70,
-    revenuePerCondition: 135,
-  }));
-  
-  const handleHccConditionCaptureInputChange = (field: keyof HccConditionCaptureInputs, value: number) => {
-    setHccConditionCaptureInputs(prev => ({ ...prev, [field]: value }));
+
+  const [hccConditionCaptureInputs, setHccConditionCaptureInputs] =
+    useState<HccConditionCaptureInputs>(() => ({
+      riskBasedPatients: 7000,
+      avgConditionsPerPatient: 1.5,
+      pctConditionsNotDocumented: 33,
+      pctMissedConditionsCaptured: 60,
+      pctNewlyIdentifiedConditions: 5,
+      realizationFactor: 70,
+      revenuePerCondition: 135,
+    }));
+
+  const handleHccConditionCaptureInputChange = (
+    field: keyof HccConditionCaptureInputs,
+    value: number,
+  ) => {
+    setHccConditionCaptureInputs((prev) => ({ ...prev, [field]: value }));
   };
 
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
-  
-  const patientAccessEnabled = leverStates.get("outpatient:patientAccess") ?? false;
-  const isOutpatientSelected = selectedSettings.includes("outpatient");
-  
-  const adjustedClinicianHoursRecovered = useMemo(() => {
-    if (isOutpatientSelected && patientAccessEnabled) {
-      const minutesSaved = encountersCoveredByAbridge * patientAccessInputs.minutesSavedPerEncounter;
-      return minutesSaved / 60;
-    }
-    if (isOutpatientSelected) {
-      return 0;
-    }
-    return results.totalProviderHoursReclaimed;
-  }, [encountersCoveredByAbridge, patientAccessInputs.minutesSavedPerEncounter, results.totalProviderHoursReclaimed, isOutpatientSelected, patientAccessEnabled]);
-  
+
+  const totalClinicianHoursRecovered = useMemo(() => {
+    const minutesSaved =
+      encountersCoveredByAbridge * inputs.minutesSavedPerEncounter;
+    return minutesSaved / 60;
+  }, [encountersCoveredByAbridge, inputs.minutesSavedPerEncounter]);
+
   const overtimeLocumCalculations: OvertimeLocumCalculations = useMemo(() => {
-    const reclaimedHours = adjustedClinicianHoursRecovered;
-    const premiumHoursExposed = reclaimedHours * overtimeLocumInputs.pctHoursPreviouslyPremium;
-    const premiumHoursReduced = premiumHoursExposed * overtimeLocumInputs.pctPremiumRealized;
+    const reclaimedHours = totalClinicianHoursRecovered;
+    const premiumHoursExposed =
+      reclaimedHours * overtimeLocumInputs.pctHoursPreviouslyPremium;
+    const premiumHoursReduced =
+      premiumHoursExposed * overtimeLocumInputs.pctPremiumRealized;
     const overtimeShare = 1 - overtimeLocumInputs.locumShare;
-    const blendedRate = (overtimeLocumInputs.locumShare * overtimeLocumInputs.locumRate) + 
-                        (overtimeShare * overtimeLocumInputs.overtimeRate);
+    const blendedRate =
+      overtimeLocumInputs.locumShare * overtimeLocumInputs.locumRate +
+      overtimeShare * overtimeLocumInputs.overtimeRate;
     const annualSavings = premiumHoursReduced * blendedRate;
-    return { reclaimedHours, premiumHoursExposed, premiumHoursReduced, blendedRate, annualSavings };
-  }, [adjustedClinicianHoursRecovered, overtimeLocumInputs]);
-  
-  const clinicianRetentionCalculations: ClinicianRetentionCalculations = useMemo(() => {
-    const { cliniciansInScope, attritionRate, burnoutShare, reductionWithAbridge, realizationFactor, costPerDeparture } = clinicianRetentionInputs;
-    const totalExits = cliniciansInScope * attritionRate;
-    const burnoutExits = totalExits * burnoutShare;
-    const modeledExitsAvoided = burnoutExits * reductionWithAbridge;
-    const realizedExitsAvoided = modeledExitsAvoided * realizationFactor;
-    const annualSavings = realizedExitsAvoided * costPerDeparture;
-    return { totalExits, burnoutExits, modeledExitsAvoided, realizedExitsAvoided, annualSavings };
-  }, [clinicianRetentionInputs]);
-  
+    return {
+      reclaimedHours,
+      premiumHoursExposed,
+      premiumHoursReduced,
+      blendedRate,
+      annualSavings,
+    };
+  }, [totalClinicianHoursRecovered, overtimeLocumInputs]);
+
+  const clinicianRetentionCalculations: ClinicianRetentionCalculations =
+    useMemo(() => {
+      const {
+        cliniciansInScope,
+        attritionRate,
+        burnoutShare,
+        reductionWithAbridge,
+        realizationFactor,
+        costPerDeparture,
+      } = clinicianRetentionInputs;
+      const totalExits = cliniciansInScope * attritionRate;
+      const burnoutExits = totalExits * burnoutShare;
+      const modeledExitsAvoided = burnoutExits * reductionWithAbridge;
+      const realizedExitsAvoided = modeledExitsAvoided * realizationFactor;
+      const annualSavings = realizedExitsAvoided * costPerDeparture;
+      return {
+        totalExits,
+        burnoutExits,
+        modeledExitsAvoided,
+        realizedExitsAvoided,
+        annualSavings,
+      };
+    }, [clinicianRetentionInputs]);
+
   const levelOfServiceCalculations: LevelOfServiceCalculations = useMemo(() => {
-    const { baselineUnderCodedRate, pctUnderCodedCorrected, incrementalWrvuPerVisit, wrvuConversionFactor } = levelOfServiceInputs;
-    const totalUnderCodedVisits = encountersCoveredByAbridge * (baselineUnderCodedRate / 100);
-    const correctedVisits = totalUnderCodedVisits * (pctUnderCodedCorrected / 100);
+    const {
+      baselineUnderCodedRate,
+      pctUnderCodedCorrected,
+      incrementalWrvuPerVisit,
+      wrvuConversionFactor,
+    } = levelOfServiceInputs;
+    const totalUnderCodedVisits =
+      encountersCoveredByAbridge * (baselineUnderCodedRate / 100);
+    const correctedVisits =
+      totalUnderCodedVisits * (pctUnderCodedCorrected / 100);
     const addedWrvus = correctedVisits * incrementalWrvuPerVisit;
     const incrementalRevenue = addedWrvus * wrvuConversionFactor;
-    return { totalUnderCodedVisits, correctedVisits, addedWrvus, incrementalRevenue };
+    return {
+      totalUnderCodedVisits,
+      correctedVisits,
+      addedWrvus,
+      incrementalRevenue,
+    };
   }, [levelOfServiceInputs, encountersCoveredByAbridge]);
-  
-  const medicalNecessityDenialsCalculations: MedicalNecessityDenialsCalculations = useMemo(() => {
-    const { netCollectibleRevenue, baselineDenialRate, pctRecoveredWithRework, pctUnrecoverableDueToDocumentation, pctReductionWithAbridge, realizationFactor } = medicalNecessityDenialsInputs;
-    const baselineDeniedRevenue = netCollectibleRevenue * (baselineDenialRate / 100);
-    const unrecoveredAfterRework = baselineDeniedRevenue * (1 - pctRecoveredWithRework / 100);
-    const documentationDrivenUnrecoverable = unrecoveredAfterRework * (pctUnrecoverableDueToDocumentation / 100);
-    const modeledRecovered = documentationDrivenUnrecoverable * (pctReductionWithAbridge / 100);
-    const realizedRecovered = modeledRecovered * (realizationFactor / 100);
-    return { baselineDeniedRevenue, unrecoveredAfterRework, documentationDrivenUnrecoverable, modeledRecovered, realizedRecovered };
-  }, [medicalNecessityDenialsInputs]);
-  
-  const hccConditionCaptureCalculations: HccConditionCaptureCalculations = useMemo(() => {
-    const { riskBasedPatients, avgConditionsPerPatient, pctConditionsNotDocumented, pctMissedConditionsCaptured, pctNewlyIdentifiedConditions, realizationFactor, revenuePerCondition } = hccConditionCaptureInputs;
-    const totalConditions = riskBasedPatients * avgConditionsPerPatient;
-    const missedConditions = totalConditions * (pctConditionsNotDocumented / 100);
-    const capturedMissedConditions = missedConditions * (pctMissedConditionsCaptured / 100);
-    const newlyIdentifiedConditions = totalConditions * (pctNewlyIdentifiedConditions / 100);
-    const modeledCaptured = capturedMissedConditions + newlyIdentifiedConditions;
-    const realizedCaptured = modeledCaptured * (realizationFactor / 100);
-    const annualImpact = realizedCaptured * revenuePerCondition;
-    return { totalConditions, missedConditions, capturedMissedConditions, newlyIdentifiedConditions, modeledCaptured, realizedCaptured, annualImpact };
-  }, [hccConditionCaptureInputs]);
+
+  const medicalNecessityDenialsCalculations: MedicalNecessityDenialsCalculations =
+    useMemo(() => {
+      const {
+        netCollectibleRevenue,
+        baselineDenialRate,
+        pctRecoveredWithRework,
+        pctUnrecoverableDueToDocumentation,
+        pctReductionWithAbridge,
+        realizationFactor,
+      } = medicalNecessityDenialsInputs;
+      const baselineDeniedRevenue =
+        netCollectibleRevenue * (baselineDenialRate / 100);
+      const unrecoveredAfterRework =
+        baselineDeniedRevenue * (1 - pctRecoveredWithRework / 100);
+      const documentationDrivenUnrecoverable =
+        unrecoveredAfterRework * (pctUnrecoverableDueToDocumentation / 100);
+      const modeledRecovered =
+        documentationDrivenUnrecoverable * (pctReductionWithAbridge / 100);
+      const realizedRecovered = modeledRecovered * (realizationFactor / 100);
+      return {
+        baselineDeniedRevenue,
+        unrecoveredAfterRework,
+        documentationDrivenUnrecoverable,
+        modeledRecovered,
+        realizedRecovered,
+      };
+    }, [medicalNecessityDenialsInputs]);
+
+  const hccConditionCaptureCalculations: HccConditionCaptureCalculations =
+    useMemo(() => {
+      const {
+        riskBasedPatients,
+        avgConditionsPerPatient,
+        pctConditionsNotDocumented,
+        pctMissedConditionsCaptured,
+        pctNewlyIdentifiedConditions,
+        realizationFactor,
+        revenuePerCondition,
+      } = hccConditionCaptureInputs;
+      const totalConditions = riskBasedPatients * avgConditionsPerPatient;
+      const missedConditions =
+        totalConditions * (pctConditionsNotDocumented / 100);
+      const capturedMissedConditions =
+        missedConditions * (pctMissedConditionsCaptured / 100);
+      const newlyIdentifiedConditions =
+        totalConditions * (pctNewlyIdentifiedConditions / 100);
+      const modeledCaptured =
+        capturedMissedConditions + newlyIdentifiedConditions;
+      const realizedCaptured = modeledCaptured * (realizationFactor / 100);
+      const annualImpact = realizedCaptured * revenuePerCondition;
+      return {
+        totalConditions,
+        missedConditions,
+        capturedMissedConditions,
+        newlyIdentifiedConditions,
+        modeledCaptured,
+        realizedCaptured,
+        annualImpact,
+      };
+    }, [hccConditionCaptureInputs]);
 
   const annualAbridgeCost = useMemo(
     () =>
       inputs.numberOfProviders * inputs.monthlyCostPerProvider * 12 +
       inputs.implementationCostYear1,
-    [inputs.numberOfProviders, inputs.monthlyCostPerProvider, inputs.implementationCostYear1]
+    [
+      inputs.numberOfProviders,
+      inputs.monthlyCostPerProvider,
+      inputs.implementationCostYear1,
+    ],
   );
 
   const leversWithSettings: LeverWithSetting[] = useMemo(() => {
     const leverList: LeverWithSetting[] = [];
-    
+
     selectedSettings.forEach((settingId) => {
       if (settingId === "outpatient" && selectedSettings.length === 1) {
         SETTING_CONFIG.outpatient.forEach((leverConfig) => {
-          const matchingLever = results.levers.find((rl) => rl.id === leverConfig.id);
+          const matchingLever = results.levers.find(
+            (rl) => rl.id === leverConfig.id,
+          );
           if (matchingLever) {
             const key = `${settingId}:${leverConfig.id}`;
             const isEnabled = leverStates.get(key) ?? false;
@@ -370,7 +549,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
               } else if (leverConfig.id === "wrvu") {
                 overriddenValue = levelOfServiceCalculations.incrementalRevenue;
               } else if (leverConfig.id === "denials") {
-                overriddenValue = medicalNecessityDenialsCalculations.realizedRecovered;
+                overriddenValue =
+                  medicalNecessityDenialsCalculations.realizedRecovered;
               } else if (leverConfig.id === "hcc") {
                 overriddenValue = hccConditionCaptureCalculations.annualImpact;
               }
@@ -387,24 +567,43 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
         selectedLevers
           .filter((l) => l.settingId === settingId)
           .forEach((l) => {
-            const matchingLever = results.levers.find((rl) => rl.id === l.leverId);
+            const matchingLever = results.levers.find(
+              (rl) => rl.id === l.leverId,
+            );
             if (matchingLever) {
               const key = `${settingId}:${l.leverId}`;
               const isEnabled = leverStates.get(key) ?? l.active;
               let overriddenValue = matchingLever.value;
               if (isEnabled) {
-                if (l.leverId === "patientAccess" && settingId === "outpatient") {
-                  overriddenValue = patientAccessCalculations.incrementalRevenue;
-                } else if (l.leverId === "overtime" && settingId === "outpatient") {
+                if (
+                  l.leverId === "patientAccess" &&
+                  settingId === "outpatient"
+                ) {
+                  overriddenValue =
+                    patientAccessCalculations.incrementalRevenue;
+                } else if (
+                  l.leverId === "overtime" &&
+                  settingId === "outpatient"
+                ) {
                   overriddenValue = overtimeLocumCalculations.annualSavings;
-                } else if (l.leverId === "workforce" && settingId === "outpatient") {
-                  overriddenValue = clinicianRetentionCalculations.annualSavings;
+                } else if (
+                  l.leverId === "workforce" &&
+                  settingId === "outpatient"
+                ) {
+                  overriddenValue =
+                    clinicianRetentionCalculations.annualSavings;
                 } else if (l.leverId === "wrvu" && settingId === "outpatient") {
-                  overriddenValue = levelOfServiceCalculations.incrementalRevenue;
-                } else if (l.leverId === "denials" && settingId === "outpatient") {
-                  overriddenValue = medicalNecessityDenialsCalculations.realizedRecovered;
+                  overriddenValue =
+                    levelOfServiceCalculations.incrementalRevenue;
+                } else if (
+                  l.leverId === "denials" &&
+                  settingId === "outpatient"
+                ) {
+                  overriddenValue =
+                    medicalNecessityDenialsCalculations.realizedRecovered;
                 } else if (l.leverId === "hcc" && settingId === "outpatient") {
-                  overriddenValue = hccConditionCaptureCalculations.annualImpact;
+                  overriddenValue =
+                    hccConditionCaptureCalculations.annualImpact;
                 }
               }
               leverList.push({
@@ -417,10 +616,21 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
           });
       }
     });
-    
+
     return leverList;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSettings, selectedLevers, results.levers, JSON.stringify(Array.from(leverStates.entries())), patientAccessCalculations.incrementalRevenue, overtimeLocumCalculations.annualSavings, clinicianRetentionCalculations.annualSavings, levelOfServiceCalculations.incrementalRevenue, medicalNecessityDenialsCalculations.realizedRecovered, hccConditionCaptureCalculations.annualImpact]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    selectedSettings,
+    selectedLevers,
+    results.levers,
+    JSON.stringify(Array.from(leverStates.entries())),
+    patientAccessCalculations.incrementalRevenue,
+    overtimeLocumCalculations.annualSavings,
+    clinicianRetentionCalculations.annualSavings,
+    levelOfServiceCalculations.incrementalRevenue,
+    medicalNecessityDenialsCalculations.realizedRecovered,
+    hccConditionCaptureCalculations.annualImpact,
+  ]);
 
   const totalBenefitFromSelectedLevers = useMemo(() => {
     return leversWithSettings
@@ -429,7 +639,9 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   }, [leversWithSettings]);
 
   const adjustedRoiMultiple = useMemo(() => {
-    return annualAbridgeCost > 0 ? totalBenefitFromSelectedLevers / annualAbridgeCost : 0;
+    return annualAbridgeCost > 0
+      ? totalBenefitFromSelectedLevers / annualAbridgeCost
+      : 0;
   }, [totalBenefitFromSelectedLevers, annualAbridgeCost]);
 
   const adjustedNetValue = useMemo(() => {
@@ -455,18 +667,19 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
   const handleLeverToggle = (settingId: CareSettingType, leverId: LeverId) => {
     const key = `${settingId}:${leverId}`;
     const newState = !leverStates.get(key);
-    
+
     setLeverStates((prev) => {
       const next = new Map(prev);
       next.set(key, newState);
       return next;
     });
-    
+
     setInputs((prev) => {
       const newInputs = JSON.parse(JSON.stringify(prev)) as RoiInputs;
-      const anyLeverActiveForId = Array.from(leverStates.entries()).some(
-        ([k, v]) => k.endsWith(`:${leverId}`) && k !== key && v
-      ) || newState;
+      const anyLeverActiveForId =
+        Array.from(leverStates.entries()).some(
+          ([k, v]) => k.endsWith(`:${leverId}`) && k !== key && v,
+        ) || newState;
       newInputs.levers[leverId] = anyLeverActiveForId;
       return newInputs;
     });
@@ -474,7 +687,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
 
   const waterfallLevers: Lever[] = useMemo(() => {
     const leverMap = new Map<LeverId, Lever>();
-    
+
     leversWithSettings.forEach((l) => {
       const existing = leverMap.get(l.id);
       if (existing) {
@@ -496,27 +709,30 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
         });
       }
     });
-    
+
     return Array.from(leverMap.values()).filter((l) => l.enabled);
   }, [leversWithSettings]);
 
-  const settingsText = selectedSettings.map((s) => CARE_SETTING_LABELS[s]).join(", ");
+  const settingsText = selectedSettings
+    .map((s) => CARE_SETTING_LABELS[s])
+    .join(", ");
 
   return (
-    <div className="min-h-screen relative font-sans" style={{ backgroundColor: '#FAFAF8' }}>
+    <div
+      className="min-h-screen relative font-sans"
+      style={{ backgroundColor: "#FAFAF8" }}
+    >
       <div className="relative z-10 flex flex-col min-h-screen min-[1200px]:h-screen">
         <div className="bg-white border-b border-neutral-200 px-6 py-3">
           <div className="flex items-center gap-3">
-            <span 
+            <span
               className="text-xl font-semibold tracking-wide"
-              style={{ color: '#F03319' }}
+              style={{ color: "#F03319" }}
             >
               ABRIDGE
             </span>
             <span className="text-neutral-300">|</span>
-            <span className="text-sm text-neutral-600">
-              {settingsText}
-            </span>
+            <span className="text-sm text-neutral-600">{settingsText}</span>
           </div>
         </div>
 
@@ -527,7 +743,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                 type="button"
                 onClick={onBack}
                 className="flex items-center gap-1 mb-3 text-sm font-semibold transition-opacity hover:opacity-80"
-                style={{ color: '#F03319' }}
+                style={{ color: "#F03319" }}
                 data-testid="button-back-to-settings"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -540,55 +756,92 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
             </div>
             <div className="flex-1 min-[1200px]:overflow-auto">
               <div className="p-6 space-y-6">
-                {selectedSettings.includes("outpatient") && selectedSettings.length === 1 ? (
+                {selectedSettings.includes("outpatient") &&
+                selectedSettings.length === 1 ? (
                   <>
                     <div className="space-y-1 mb-6">
-                      <h2 className="text-lg font-semibold text-black">Scenario Inputs</h2>
-                      <p className="text-xs text-neutral-500">Define who's in scope and the economics for this scenario.</p>
+                      <h2 className="text-lg font-semibold text-black">
+                        Scenario Inputs
+                      </h2>
+                      <p className="text-xs text-neutral-500">
+                        Define who's in scope and the economics for this
+                        scenario.
+                      </p>
                     </div>
 
                     <div className="bg-neutral-50 rounded-lg p-4 mb-6">
-                      <h3 className="text-xs font-semibold text-[#F03319] uppercase tracking-wide mb-3">Scenario Summary</h3>
+                      <h3 className="text-xs font-semibold text-[#F03319] uppercase tracking-wide mb-3">
+                        Scenario Summary
+                      </h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-neutral-600">Providers in scope</span>
-                          <span className="font-mono font-medium">{formatNumber(inputs.numberOfProviders)}</span>
+                          <span className="text-neutral-600">
+                            Providers in scope
+                          </span>
+                          <span className="font-mono font-medium">
+                            {formatNumber(inputs.numberOfProviders)}
+                          </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-neutral-600">Annual encounters (in scope)</span>
-                          <span className="font-mono font-medium">{formatNumber(Math.round(inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100)))}</span>
+                          <span className="text-neutral-600">
+                            Annual encounters (in scope)
+                          </span>
+                          <span className="font-mono font-medium">
+                            {formatNumber(
+                              Math.round(encountersCoveredByAbridge),
+                            )}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-neutral-600">Utilization</span>
-                          <span className="font-mono font-medium">{inputs.abridgeUtilizationPct}%</span>
+                          <span className="font-mono font-medium">
+                            {inputs.abridgeUtilizationPct}%
+                          </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-6">
                       <div className="space-y-3">
-                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">Current Scope</h3>
-                        <InputField label="Providers in Scope" helperText="Clinicians included in this scenario.">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                          Current Scope
+                        </h3>
+                        <InputField
+                          label="Providers in Scope"
+                          helperText="Clinicians included in this scenario."
+                        >
                           <Input
                             type="number"
                             value={inputs.numberOfProviders}
                             onChange={(e) =>
-                              handleInputChange("numberOfProviders", Number(e.target.value))
+                              handleInputChange(
+                                "numberOfProviders",
+                                Number(e.target.value),
+                              )
                             }
                             data-testid="input-num-providers"
                           />
                         </InputField>
-                        <InputField label="Annual Outpatient Encounters (in scope)" helperText="Annual visits covered by Abridge for this group.">
+                        <InputField
+                          label="Annual Outpatient Encounters (in scope)"
+                          helperText="Annual visits covered by Abridge for this group."
+                        >
                           <Input
                             type="number"
                             value={inputs.annualOutpatientEncounters}
                             onChange={(e) =>
-                              handleInputChange("annualOutpatientEncounters", Number(e.target.value))
+                              handleInputChange(
+                                "annualOutpatientEncounters",
+                                Number(e.target.value),
+                              )
                             }
                             data-testid="input-encounters"
                           />
                         </InputField>
-                        <InputField label="Abridge Utilization (%)" helperText="Portion of eligible visits where Abridge is actually used.">
+                        <InputField
+                          label="Abridge Utilization (%)"
+                          helperText="Portion of eligible visits where Abridge is actually used."
+                        >
                           <div className="space-y-2">
                             <div className="flex items-center gap-3">
                               <Slider
@@ -607,26 +860,56 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                             </div>
                           </div>
                         </InputField>
+                        <InputField
+                          label="Minutes Saved per Encounter"
+                          helperText="Time returned per encounter where Abridge is used."
+                        >
+                          <Input
+                            type="number"
+                            value={inputs.minutesSavedPerEncounter}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "minutesSavedPerEncounter",
+                                Number(e.target.value),
+                              )
+                            }
+                            data-testid="input-minutes-saved"
+                          />
+                        </InputField>
                       </div>
 
                       <div className="space-y-3">
-                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">Enterprise Footprint</h3>
-                        <InputField label="Enterprise Provider Count" helperText="Total clinicians across your enterprise.">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                          Enterprise Footprint
+                        </h3>
+                        <InputField
+                          label="Enterprise Provider Count"
+                          helperText="Total clinicians across your enterprise."
+                        >
                           <Input
                             type="number"
                             value={inputs.enterpriseProviderCount}
                             onChange={(e) =>
-                              handleInputChange("enterpriseProviderCount", Number(e.target.value))
+                              handleInputChange(
+                                "enterpriseProviderCount",
+                                Number(e.target.value),
+                              )
                             }
                             data-testid="input-enterprise-providers"
                           />
                         </InputField>
-                        <InputField label="Annual Outpatient Encounters (enterprise)" helperText="Total annual outpatient visits across the enterprise.">
+                        <InputField
+                          label="Annual Outpatient Encounters (enterprise)"
+                          helperText="Total annual outpatient visits across the enterprise."
+                        >
                           <Input
                             type="number"
                             value={inputs.enterpriseAnnualEncounters}
                             onChange={(e) =>
-                              handleInputChange("enterpriseAnnualEncounters", Number(e.target.value))
+                              handleInputChange(
+                                "enterpriseAnnualEncounters",
+                                Number(e.target.value),
+                              )
                             }
                             data-testid="input-enterprise-encounters"
                           />
@@ -634,23 +917,37 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                       </div>
 
                       <div className="space-y-3">
-                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">Economics</h3>
-                        <InputField label="Average Revenue per Encounter ($)" helperText="Typical net revenue collected per outpatient visit.">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                          Economics
+                        </h3>
+                        <InputField
+                          label="Average Revenue per Encounter ($)"
+                          helperText="Typical net revenue collected per outpatient visit."
+                        >
                           <Input
                             type="number"
                             value={inputs.avgNetRevenuePerEncounter}
                             onChange={(e) =>
-                              handleInputChange("avgNetRevenuePerEncounter", Number(e.target.value))
+                              handleInputChange(
+                                "avgNetRevenuePerEncounter",
+                                Number(e.target.value),
+                              )
                             }
                             data-testid="input-avg-revenue"
                           />
                         </InputField>
-                        <InputField label="Cost per Provider per Month ($)" helperText="Contracted Abridge subscription per provider, per month.">
+                        <InputField
+                          label="Cost per Provider per Month ($)"
+                          helperText="Contracted Abridge subscription per provider, per month."
+                        >
                           <Input
                             type="number"
                             value={inputs.monthlyCostPerProvider}
                             onChange={(e) =>
-                              handleInputChange("monthlyCostPerProvider", Number(e.target.value))
+                              handleInputChange(
+                                "monthlyCostPerProvider",
+                                Number(e.target.value),
+                              )
                             }
                             data-testid="input-cost-per-provider"
                           />
@@ -674,7 +971,12 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                               key={lever.id}
                               title={lever.label}
                               active={isActive}
-                              onClick={() => handleLeverToggle("outpatient", lever.id as LeverId)}
+                              onClick={() =>
+                                handleLeverToggle(
+                                  "outpatient",
+                                  lever.id as LeverId,
+                                )
+                              }
                               testId={`driver-card-${lever.id}`}
                             />
                           );
@@ -684,13 +986,19 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   </>
                 ) : (
                   <>
-                    <InputSection title="Commercial Terms" icon={<DollarSign className="h-5 w-5" />}>
+                    <InputSection
+                      title="Commercial Terms"
+                      icon={<DollarSign className="h-5 w-5" />}
+                    >
                       <InputField label="Contract Length (years)">
                         <Input
                           type="number"
                           value={inputs.contractLengthYears}
                           onChange={(e) =>
-                            handleInputChange("contractLengthYears", Number(e.target.value))
+                            handleInputChange(
+                              "contractLengthYears",
+                              Number(e.target.value),
+                            )
                           }
                           data-testid="input-contract-length"
                         />
@@ -700,7 +1008,10 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           type="number"
                           value={inputs.numberOfProviders}
                           onChange={(e) =>
-                            handleInputChange("numberOfProviders", Number(e.target.value))
+                            handleInputChange(
+                              "numberOfProviders",
+                              Number(e.target.value),
+                            )
                           }
                           data-testid="input-num-providers"
                         />
@@ -710,7 +1021,10 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           type="number"
                           value={inputs.monthlyCostPerProvider}
                           onChange={(e) =>
-                            handleInputChange("monthlyCostPerProvider", Number(e.target.value))
+                            handleInputChange(
+                              "monthlyCostPerProvider",
+                              Number(e.target.value),
+                            )
                           }
                           data-testid="input-monthly-cost"
                         />
@@ -720,7 +1034,10 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           type="number"
                           value={inputs.implementationCostYear1}
                           onChange={(e) =>
-                            handleInputChange("implementationCostYear1", Number(e.target.value))
+                            handleInputChange(
+                              "implementationCostYear1",
+                              Number(e.target.value),
+                            )
                           }
                           data-testid="input-impl-cost"
                         />
@@ -728,7 +1045,10 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                       <InputField label="Annual Abridge Cost (Year 1)" readOnly>
                         <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2">
                           <Calculator className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-semibold font-mono" data-testid="text-annual-cost">
+                          <span
+                            className="font-semibold font-mono"
+                            data-testid="text-annual-cost"
+                          >
                             {formatCurrency(annualAbridgeCost)}
                           </span>
                         </div>
@@ -744,7 +1064,10 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           type="number"
                           value={inputs.annualOutpatientEncounters}
                           onChange={(e) =>
-                            handleInputChange("annualOutpatientEncounters", Number(e.target.value))
+                            handleInputChange(
+                              "annualOutpatientEncounters",
+                              Number(e.target.value),
+                            )
                           }
                           data-testid="input-encounters"
                         />
@@ -768,12 +1091,28 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           </div>
                         </div>
                       </InputField>
+                      <InputField label="Minutes Saved per Encounter">
+                        <Input
+                          type="number"
+                          value={inputs.minutesSavedPerEncounter}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "minutesSavedPerEncounter",
+                              Number(e.target.value),
+                            )
+                          }
+                          data-testid="input-minutes-saved"
+                        />
+                      </InputField>
                       <InputField label="Avg Net Revenue per Encounter ($)">
                         <Input
                           type="number"
                           value={inputs.avgNetRevenuePerEncounter}
                           onChange={(e) =>
-                            handleInputChange("avgNetRevenuePerEncounter", Number(e.target.value))
+                            handleInputChange(
+                              "avgNetRevenuePerEncounter",
+                              Number(e.target.value),
+                            )
                           }
                           data-testid="input-avg-revenue"
                         />
@@ -784,7 +1123,10 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           step="0.01"
                           value={inputs.baselineWrvuPerEncounter}
                           onChange={(e) =>
-                            handleInputChange("baselineWrvuPerEncounter", Number(e.target.value))
+                            handleInputChange(
+                              "baselineWrvuPerEncounter",
+                              Number(e.target.value),
+                            )
                           }
                           data-testid="input-baseline-wrvu"
                         />
@@ -796,31 +1138,18 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                           onChange={(e) =>
                             handleInputChange(
                               "totalMedicareAdvantagePatients",
-                              Number(e.target.value)
+                              Number(e.target.value),
                             )
                           }
                           data-testid="input-ma-patients"
                         />
                       </InputField>
-                      <InputField
-                        label="Total Provider Hours Reclaimed"
-                        helperText="Annual hours saved across all providers"
-                      >
-                        <Input
-                          type="number"
-                          value={inputs.totalProviderHoursReclaimed}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "totalProviderHoursReclaimed",
-                              Number(e.target.value)
-                            )
-                          }
-                          data-testid="input-hours-reclaimed"
-                        />
-                      </InputField>
                     </InputSection>
 
-                    <LeverAccordion inputs={inputs} onInputChange={handleInputChange} />
+                    <LeverAccordion
+                      inputs={inputs}
+                      onInputChange={handleInputChange}
+                    />
                   </>
                 )}
               </div>
@@ -829,8 +1158,15 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
 
           <main className="flex-1 flex flex-col min-[1200px]:overflow-hidden bg-white/50">
             <header className="p-6 border-b border-neutral-200 bg-white flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="text-xl font-semibold text-black">Results Summary</h2>
-              <Button variant="outline" size="sm" className="gap-2" data-testid="button-download-report">
+              <h2 className="text-xl font-semibold text-black">
+                Results Summary
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                data-testid="button-download-report"
+              >
                 <FileText className="h-4 w-4" />
                 Download Report (PDF)
               </Button>
@@ -868,7 +1204,7 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                   />
                   <KpiCard
                     label="Clinician Hours Recovered"
-                    value={formatNumber(adjustedClinicianHoursRecovered)}
+                    value={formatNumber(totalClinicianHoursRecovered)}
                     subtitle="Annual usable time returned"
                     icon={<Clock className="h-8 w-8" />}
                     variant="neutral"
@@ -905,154 +1241,207 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
                 <EnterpriseExpansionChart
                   levers={waterfallLevers}
                   totalAnnualBenefit={totalBenefitFromSelectedLevers}
-                  scopeEncounterCount={inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100)}
-                  enterpriseEncounterCount={inputs.enterpriseAnnualEncounters * (inputs.abridgeUtilizationPct / 100)}
+                  scopeEncounterCount={encountersCoveredByAbridge}
+                  enterpriseEncounterCount={
+                    inputs.enterpriseAnnualEncounters *
+                    (inputs.abridgeUtilizationPct / 100)
+                  }
                 />
 
                 <Card className="w-full overflow-hidden border-neutral-200">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-semibold text-neutral-900">Understanding Your Drivers</CardTitle>
-                    <p className="text-sm text-neutral-500">Interpretation of how each selected driver influences your current scope.</p>
+                    <CardTitle className="text-lg font-semibold text-neutral-900">
+                      Understanding Your Drivers
+                    </CardTitle>
+                    <p className="text-sm text-neutral-500">
+                      Interpretation of how each selected driver influences your
+                      current scope.
+                    </p>
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="overflow-x-auto">
                       <Table className="min-w-[600px]">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-16 text-center">Active</TableHead>
-                          <TableHead>Lever</TableHead>
-                          <TableHead>Setting</TableHead>
-                          <TableHead className="text-right">Annual Value</TableHead>
-                          <TableHead className="hidden md:table-cell">Description</TableHead>
-                          <TableHead className="w-24"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {leversWithSettings.map((lever) => {
-                          const key = `${lever.settingId}:${lever.id}`;
-                          return (
-                            <TableRow 
-                              key={key} 
-                              className={!lever.enabled ? "opacity-50" : ""}
-                              data-testid={`lever-row-${key}`}
-                            >
-                              <TableCell className="text-center">
-                                <Checkbox
-                                  checked={lever.enabled}
-                                  onCheckedChange={() => handleLeverToggle(lever.settingId, lever.id)}
-                                  data-testid={`checkbox-${key}`}
-                                />
-                              </TableCell>
-                              <TableCell className="font-medium">{lever.label}</TableCell>
-                              <TableCell>
-                                <Badge variant="secondary" className="text-xs">
-                                  {CARE_SETTING_LABELS[lever.settingId]}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right font-mono">
-                                {lever.enabled ? formatCurrency(lever.value) : "—"}
-                              </TableCell>
-                              <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-md">
-                                <span>{leverTableDescriptions[lever.id] || lever.description}</span>
-                                {leverEducationalContent[lever.id] && (
-                                  <>
-                                    {" "}
-                                    <button
-                                      onClick={() => setSelectedLeverForModal(lever)}
-                                      className="text-neutral-500 text-sm hover:underline cursor-pointer"
-                                      data-testid={`read-more-${key}`}
-                                    >
-                                      Read more…
-                                    </button>
-                                  </>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {lever.id === "patientAccess" && lever.settingId === "outpatient" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setPatientAccessDrawerOpen(true)}
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-16 text-center">
+                              Active
+                            </TableHead>
+                            <TableHead>Lever</TableHead>
+                            <TableHead>Setting</TableHead>
+                            <TableHead className="text-right">
+                              Annual Value
+                            </TableHead>
+                            <TableHead className="hidden md:table-cell">
+                              Description
+                            </TableHead>
+                            <TableHead className="w-24"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {leversWithSettings.map((lever) => {
+                            const key = `${lever.settingId}:${lever.id}`;
+                            return (
+                              <TableRow
+                                key={key}
+                                className={!lever.enabled ? "opacity-50" : ""}
+                                data-testid={`lever-row-${key}`}
+                              >
+                                <TableCell className="text-center">
+                                  <Checkbox
+                                    checked={lever.enabled}
+                                    onCheckedChange={() =>
+                                      handleLeverToggle(
+                                        lever.settingId,
+                                        lever.id,
+                                      )
+                                    }
+                                    data-testid={`checkbox-${key}`}
+                                  />
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                  {lever.label}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant="secondary"
                                     className="text-xs"
-                                    data-testid="button-show-work-patient-access"
                                   >
-                                    Show Work
-                                  </Button>
-                                )}
-                                {lever.id === "overtime" && lever.settingId === "outpatient" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setOvertimeLocumDrawerOpen(true)}
-                                    className="text-xs"
-                                    data-testid="button-show-work-overtime"
-                                  >
-                                    Show Work
-                                  </Button>
-                                )}
-                                {lever.id === "workforce" && lever.settingId === "outpatient" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setClinicianRetentionDrawerOpen(true)}
-                                    className="text-xs"
-                                    data-testid="button-show-work-retention"
-                                  >
-                                    Show Work
-                                  </Button>
-                                )}
-                                {lever.id === "wrvu" && lever.settingId === "outpatient" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setLevelOfServiceDrawerOpen(true)}
-                                    className="text-xs"
-                                    data-testid="button-show-work-los"
-                                  >
-                                    Show Work
-                                  </Button>
-                                )}
-                                {lever.id === "denials" && lever.settingId === "outpatient" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setMedicalNecessityDenialsDrawerOpen(true)}
-                                    className="text-xs"
-                                    data-testid="button-show-work-denials"
-                                  >
-                                    Show Work
-                                  </Button>
-                                )}
-                                {lever.id === "hcc" && lever.settingId === "outpatient" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setHccConditionCaptureDrawerOpen(true)}
-                                    className="text-xs"
-                                    data-testid="button-show-work-hcc"
-                                  >
-                                    Show Work
-                                  </Button>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                        <TableRow 
-                          className="border-t border-neutral-300"
-                          style={{ backgroundColor: '#F8F8F7' }}
-                          data-testid="lever-row-total"
-                        >
-                          <TableCell></TableCell>
-                          <TableCell className="font-bold text-neutral-900">Total Annual Benefit</TableCell>
-                          <TableCell></TableCell>
-                          <TableCell className="text-right font-mono font-bold text-neutral-900">
-                            {formatCurrency(totalBenefitFromSelectedLevers)}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell"></TableCell>
-                          <TableCell></TableCell>
-                        </TableRow>
-                      </TableBody>
+                                    {CARE_SETTING_LABELS[lever.settingId]}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right font-mono">
+                                  {lever.enabled
+                                    ? formatCurrency(lever.value)
+                                    : "—"}
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-md">
+                                  <span>
+                                    {leverTableDescriptions[lever.id] ||
+                                      lever.description}
+                                  </span>
+                                  {leverEducationalContent[lever.id] && (
+                                    <>
+                                      {" "}
+                                      <button
+                                        onClick={() =>
+                                          setSelectedLeverForModal(lever)
+                                        }
+                                        className="text-neutral-500 text-sm hover:underline cursor-pointer"
+                                        data-testid={`read-more-${key}`}
+                                      >
+                                        Read more…
+                                      </button>
+                                    </>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {lever.id === "patientAccess" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setPatientAccessDrawerOpen(true)
+                                        }
+                                        className="text-xs"
+                                        data-testid="button-show-work-patient-access"
+                                      >
+                                        Show Work
+                                      </Button>
+                                    )}
+                                  {lever.id === "overtime" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setOvertimeLocumDrawerOpen(true)
+                                        }
+                                        className="text-xs"
+                                        data-testid="button-show-work-overtime"
+                                      >
+                                        Show Work
+                                      </Button>
+                                    )}
+                                  {lever.id === "workforce" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setClinicianRetentionDrawerOpen(true)
+                                        }
+                                        className="text-xs"
+                                        data-testid="button-show-work-retention"
+                                      >
+                                        Show Work
+                                      </Button>
+                                    )}
+                                  {lever.id === "wrvu" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setLevelOfServiceDrawerOpen(true)
+                                        }
+                                        className="text-xs"
+                                        data-testid="button-show-work-los"
+                                      >
+                                        Show Work
+                                      </Button>
+                                    )}
+                                  {lever.id === "denials" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setMedicalNecessityDenialsDrawerOpen(
+                                            true,
+                                          )
+                                        }
+                                        className="text-xs"
+                                        data-testid="button-show-work-denials"
+                                      >
+                                        Show Work
+                                      </Button>
+                                    )}
+                                  {lever.id === "hcc" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setHccConditionCaptureDrawerOpen(true)
+                                        }
+                                        className="text-xs"
+                                        data-testid="button-show-work-hcc"
+                                      >
+                                        Show Work
+                                      </Button>
+                                    )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                          <TableRow
+                            className="border-t border-neutral-300"
+                            style={{ backgroundColor: "#F8F8F7" }}
+                            data-testid="lever-row-total"
+                          >
+                            <TableCell></TableCell>
+                            <TableCell className="font-bold text-neutral-900">
+                              Total Annual Benefit
+                            </TableCell>
+                            <TableCell></TableCell>
+                            <TableCell className="text-right font-mono font-bold text-neutral-900">
+                              {formatCurrency(totalBenefitFromSelectedLevers)}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell"></TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        </TableBody>
                       </Table>
                     </div>
                   </CardContent>
@@ -1065,7 +1454,10 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
         </div>
       </div>
 
-      <Dialog open={!!selectedLeverForModal} onOpenChange={(open) => !open && setSelectedLeverForModal(null)}>
+      <Dialog
+        open={!!selectedLeverForModal}
+        onOpenChange={(open) => !open && setSelectedLeverForModal(null)}
+      >
         <DialogContent className="max-w-[600px] w-full rounded-xl shadow-xl p-6 sm:p-8 max-h-[85vh] overflow-y-auto bg-white [&>button]:top-6 [&>button]:right-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-black">
@@ -1073,7 +1465,8 @@ export default function RoiCalculator({ selectedSettings, selectedLevers, onBack
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 text-sm text-neutral-700 leading-relaxed whitespace-pre-line">
-            {selectedLeverForModal && leverEducationalContent[selectedLeverForModal.id]}
+            {selectedLeverForModal &&
+              leverEducationalContent[selectedLeverForModal.id]}
           </div>
         </DialogContent>
       </Dialog>

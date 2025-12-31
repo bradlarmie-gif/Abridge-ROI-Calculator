@@ -1,23 +1,45 @@
-import { type RoiInputs, type RoiResults, type Lever, leverDescriptions, leverLabels } from "./roi-types";
+import {
+  type RoiInputs,
+  type RoiResults,
+  type Lever,
+  leverDescriptions,
+  leverLabels,
+} from "./roi-types";
 
 export function calculateRoi(inputs: RoiInputs): RoiResults {
-  const encountersWithAbridge = 
+  // Encounters covered by Abridge (utilization must move the model)
+  const encountersWithAbridge =
     inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100);
-  
-  const annualAbridgeCost = 
-    inputs.numberOfProviders * inputs.monthlyCostPerProvider * 12 + 
+
+  // Core time engine: minutes saved per encounter -> total hours recovered
+  const totalProviderHoursReclaimed =
+    (encountersWithAbridge * inputs.minutesSavedPerEncounter) / 60;
+
+  // Program cost (Year 1)
+  const annualAbridgeCost =
+    inputs.numberOfProviders * inputs.monthlyCostPerProvider * 12 +
     inputs.implementationCostYear1;
 
-  const patientAccessValue = calculatePatientAccess(inputs);
-  const overtimeSavings = calculateOvertime(inputs);
+  // Lever values
+  const patientAccessValue = calculatePatientAccess(
+    inputs,
+    totalProviderHoursReclaimed,
+  );
+  const overtimeSavings = calculateOvertime(
+    inputs,
+    totalProviderHoursReclaimed,
+  );
   const workforceSavings = calculateWorkforce(inputs);
   const wrvuRevenue = calculateWrvu(inputs, encountersWithAbridge);
   const denialResults = calculateDenials(inputs);
   const riskAdjRevenue = calculateRiskAdjustment(inputs);
 
-  const postWrvuPerEncounter = 
-    inputs.baselineWrvuPerEncounter * (1 + inputs.wrvu.pctIncreaseWrvuPerEncounter / 100);
+  // KPI: projected wRVU/visit
+  const postWrvuPerEncounter =
+    inputs.baselineWrvuPerEncounter *
+    (1 + inputs.wrvu.pctIncreaseWrvuPerEncounter / 100);
 
+  // Levers list (used by dashboard waterfall/table)
   const levers: Lever[] = [
     {
       id: "patientAccess",
@@ -73,7 +95,8 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
     .filter((l) => l.enabled)
     .reduce((sum, l) => sum + l.value, 0);
 
-  const roiMultiple = annualAbridgeCost > 0 ? totalAnnualBenefit / annualAbridgeCost : 0;
+  const roiMultiple =
+    annualAbridgeCost > 0 ? totalAnnualBenefit / annualAbridgeCost : 0;
   const netValueCreated = totalAnnualBenefit - annualAbridgeCost;
 
   return {
@@ -81,105 +104,123 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
     roiMultiple,
     totalAnnualBenefit,
     netValueCreated,
-    totalProviderHoursReclaimed: inputs.totalProviderHoursReclaimed,
+    totalProviderHoursReclaimed,
     postWrvuPerEncounter,
     newEffectiveDenialRate: denialResults.newEffectiveDenialRate,
     levers,
   };
 }
 
-function calculatePatientAccess(inputs: RoiInputs): number {
-  const { pctTimeToNewVisits, avgVisitDurationMinutes, avgNetRevenuePerVisit } = 
+function calculatePatientAccess(
+  inputs: RoiInputs,
+  hoursReclaimed: number,
+): number {
+  const { pctTimeToNewVisits, avgVisitDurationMinutes, avgNetRevenuePerVisit } =
     inputs.patientAccess;
-  
+
   const visitDurationHours = avgVisitDurationMinutes / 60;
-  const reinvestedHours = inputs.totalProviderHoursReclaimed * (pctTimeToNewVisits / 100);
-  const addedVisits = reinvestedHours / visitDurationHours;
-  
+
+  // Only a portion of recovered time becomes incremental visits
+  const reinvestedHours = hoursReclaimed * (pctTimeToNewVisits / 100);
+  const addedVisits =
+    visitDurationHours > 0 ? reinvestedHours / visitDurationHours : 0;
+
   return addedVisits * avgNetRevenuePerVisit;
 }
 
-function calculateOvertime(inputs: RoiInputs): number {
+function calculateOvertime(inputs: RoiInputs, hoursReclaimed: number): number {
   const { pctOvertimeReduced, blendedOvertimeRate } = inputs.overtime;
-  
-  const overtimeHoursReduced = 
-    inputs.totalProviderHoursReclaimed * (pctOvertimeReduced / 100);
-  
+
+  const overtimeHoursReduced = hoursReclaimed * (pctOvertimeReduced / 100);
   return overtimeHoursReduced * blendedOvertimeRate;
 }
 
 function calculateWorkforce(inputs: RoiInputs): number {
-  const { 
-    providerCount, 
-    baselineAttritionRate, 
-    pctAttritionLinkedToBurnout, 
-    pctBurnoutExitsAvoided, 
-    costPerDeparture 
+  const {
+    providerCount,
+    baselineAttritionRate,
+    pctAttritionLinkedToBurnout,
+    pctBurnoutExitsAvoided,
+    costPerDeparture,
   } = inputs.workforce;
-  
+
   const baselineDepartures = providerCount * (baselineAttritionRate / 100);
-  const burnoutDepartures = baselineDepartures * (pctAttritionLinkedToBurnout / 100);
+  const burnoutDepartures =
+    baselineDepartures * (pctAttritionLinkedToBurnout / 100);
   const departuresAvoided = burnoutDepartures * (pctBurnoutExitsAvoided / 100);
-  
+
   return departuresAvoided * costPerDeparture;
 }
 
-function calculateWrvu(inputs: RoiInputs, encountersWithAbridge: number): number {
+function calculateWrvu(
+  inputs: RoiInputs,
+  encountersWithAbridge: number,
+): number {
   const { wrvuConversionFactor, pctIncreaseWrvuPerEncounter } = inputs.wrvu;
-  
-  const postWrvuPerEncounter = 
+
+  const postWrvuPerEncounter =
     inputs.baselineWrvuPerEncounter * (1 + pctIncreaseWrvuPerEncounter / 100);
-  const incrementalWrvuPerEncounter = postWrvuPerEncounter - inputs.baselineWrvuPerEncounter;
-  const totalIncrementalWrvus = incrementalWrvuPerEncounter * encountersWithAbridge;
-  
+
+  const incrementalWrvuPerEncounter =
+    postWrvuPerEncounter - inputs.baselineWrvuPerEncounter;
+  const totalIncrementalWrvus =
+    incrementalWrvuPerEncounter * encountersWithAbridge;
+
   return totalIncrementalWrvus * wrvuConversionFactor;
 }
 
-function calculateDenials(inputs: RoiInputs): { 
-  revenueRecovered: number; 
-  newEffectiveDenialRate: number 
+function calculateDenials(inputs: RoiInputs): {
+  revenueRecovered: number;
+  newEffectiveDenialRate: number;
 } {
-  const { 
-    netCollectibleRevenue, 
-    baselineDenialRate, 
-    pctDenialsFromDocumentation, 
-    pctDocDenialsRecovered 
+  const {
+    netCollectibleRevenue,
+    baselineDenialRate,
+    pctDenialsFromDocumentation,
+    pctDocDenialsRecovered,
   } = inputs.denials;
-  
-  const baselineDeniedRevenue = netCollectibleRevenue * (baselineDenialRate / 100);
-  const documentationDeniedRevenue = 
+
+  const baselineDeniedRevenue =
+    netCollectibleRevenue * (baselineDenialRate / 100);
+  const documentationDeniedRevenue =
     baselineDeniedRevenue * (pctDenialsFromDocumentation / 100);
-  const denialRevenueRecovered = 
+  const denialRevenueRecovered =
     documentationDeniedRevenue * (pctDocDenialsRecovered / 100);
-  
-  const newEffectiveDenialRate = 
-    ((baselineDeniedRevenue - denialRevenueRecovered) / netCollectibleRevenue) * 100;
+
+  const newEffectiveDenialRate =
+    netCollectibleRevenue > 0
+      ? ((baselineDeniedRevenue - denialRevenueRecovered) /
+          netCollectibleRevenue) *
+        100
+      : 0;
 
   return { revenueRecovered: denialRevenueRecovered, newEffectiveDenialRate };
 }
 
 function calculateRiskAdjustment(inputs: RoiInputs): number {
-  const { 
-    impactedMaPatients, 
-    avgConditionsPerMember, 
-    pctConditionsMissed, 
-    pctMissedConditionsRecaptured, 
-    pctNewConditionsIdentified, 
-    rafGainPerCondition, 
-    rafRealizationHaircut, 
-    pmpmBenchmark 
+  const {
+    impactedMaPatients,
+    avgConditionsPerMember,
+    pctConditionsMissed,
+    pctMissedConditionsRecaptured,
+    pctNewConditionsIdentified,
+    rafGainPerCondition,
+    rafRealizationHaircut,
+    pmpmBenchmark,
   } = inputs.hcc;
-  
+
   const totalConditions = impactedMaPatients * avgConditionsPerMember;
   const missedConditions = totalConditions * (pctConditionsMissed / 100);
-  const recapturedConditions = missedConditions * (pctMissedConditionsRecaptured / 100);
+  const recapturedConditions =
+    missedConditions * (pctMissedConditionsRecaptured / 100);
   const newConditions = totalConditions * (pctNewConditionsIdentified / 100);
   const totalImprovedConditions = recapturedConditions + newConditions;
-  
+
   const rawRafPointsGained = totalImprovedConditions * rafGainPerCondition;
-  const rawRafChange = rawRafPointsGained / impactedMaPatients;
+  const rawRafChange =
+    impactedMaPatients > 0 ? rawRafPointsGained / impactedMaPatients : 0;
   const adjustedRafChange = rawRafChange * (1 - rafRealizationHaircut / 100);
-  
+
   return impactedMaPatients * adjustedRafChange * pmpmBenchmark * 12;
 }
 

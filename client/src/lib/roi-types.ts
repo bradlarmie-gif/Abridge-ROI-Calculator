@@ -1,9 +1,9 @@
-export type LeverId = 
-  | "patientAccess" 
-  | "overtime" 
-  | "workforce" 
-  | "wrvu" 
-  | "denials" 
+export type LeverId =
+  | "patientAccess"
+  | "overtime"
+  | "workforce"
+  | "wrvu"
+  | "denials"
   | "hcc";
 
 export type LeverCategory = "time" | "documentation";
@@ -26,10 +26,10 @@ export interface RoiInputs {
   annualOutpatientEncounters: number;
   enterpriseAnnualEncounters: number;
   abridgeUtilizationPct: number;
+  minutesSavedPerEncounter: number;
   avgNetRevenuePerEncounter: number;
   baselineWrvuPerEncounter: number;
   totalMedicareAdvantagePatients: number;
-  totalProviderHoursReclaimed: number;
   levers: Record<LeverId, boolean>;
   patientAccess: {
     pctTimeToNewVisits: number;
@@ -90,10 +90,10 @@ export const defaultInputs: RoiInputs = {
   annualOutpatientEncounters: 100000,
   enterpriseAnnualEncounters: 500000,
   abridgeUtilizationPct: 70,
+  minutesSavedPerEncounter: 4,
   avgNetRevenuePerEncounter: 200,
   baselineWrvuPerEncounter: 2.1,
   totalMedicareAdvantagePatients: 10000,
-  totalProviderHoursReclaimed: 6400,
   levers: {
     patientAccess: true,
     overtime: true,
@@ -142,11 +142,15 @@ export const defaultInputs: RoiInputs = {
 };
 
 export const leverDescriptions: Record<LeverId, string> = {
-  patientAccess: "Most outpatient access problems come from time lost to documentation, not lack of demand. Recovering that time stabilizes schedules, shortens third-next-available, and keeps referrals from backing up.",
-  overtime: "Overtime commonly reflects workflow spillover rather than true staffing gaps. When documentation fits inside the workday, premium labor drops naturally and predictably.",
-  workforce: "Burnout is driven less by clinical load and more by the administrative drag wrapped around it. Reducing that drag keeps clinicians in the organization and preserves experience.",
+  patientAccess:
+    "Most outpatient access problems come from time lost to documentation, not lack of demand. Recovering that time stabilizes schedules, shortens third-next-available, and keeps referrals from backing up.",
+  overtime:
+    "Overtime commonly reflects workflow spillover rather than true staffing gaps. When documentation fits inside the workday, premium labor drops naturally and predictably.",
+  workforce:
+    "Burnout is driven less by clinical load and more by the administrative drag wrapped around it. Reducing that drag keeps clinicians in the organization and preserves experience.",
   wrvu: "Visit complexity is frequently understated because documentation leaves parts of the clinical story unsaid. Better narrative detail allows coding to reflect the work actually performed.",
-  denials: "Many denials originate from thin documentation rather than clinical disagreement. Strengthening the narrative closes those gaps and reduces avoidable reimbursement friction.",
+  denials:
+    "Many denials originate from thin documentation rather than clinical disagreement. Strengthening the narrative closes those gaps and reduces avoidable reimbursement friction.",
   hcc: "Care teams often know patients' chronic conditions, but documentation doesn't always carry those details forward. Capturing the full clinical picture leads to more accurate risk modeling and resource planning.",
 };
 
