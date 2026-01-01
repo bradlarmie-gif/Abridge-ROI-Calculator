@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import {
   CARE_SETTING_LABELS,
@@ -370,21 +370,53 @@ export default function ObjectiveSelectionScreen({
   const [modelSetupStep, setModelSetupStep] = useState<1 | 2 | 3>(1);
 
   // Baseline step state - using number | "" to allow empty field while typing
-  const [cliniciansInScope, setCliniciansInScope] = useState<number | "">(25);
-  const [annualEncountersInScope, setAnnualEncountersInScope] = useState<number | "">(45000);
-  const [enterpriseProviders, setEnterpriseProviders] = useState<number | "">("");
-  const [enterpriseEncounters, setEnterpriseEncounters] = useState<number | "">("");
+  const [cliniciansInScope, setCliniciansInScope] = useState<number | "">("");
+  const [annualEncountersInScope, setAnnualEncountersInScope] = useState<
+    number | ""
+  >("");
+  const [enterpriseProviders, setEnterpriseProviders] = useState<number | "">(
+    "",
+  );
+  const [enterpriseEncounters, setEnterpriseEncounters] = useState<number | "">(
+    "",
+  );
   const [isEnterpriseExpanded, setIsEnterpriseExpanded] = useState(false);
 
   // Adoption step state
-  const [utilizationPercent, setUtilizationPercent] = useState(60);
-  const [minutesSaved, setMinutesSaved] = useState(4);
+  const [utilizationPercent, setUtilizationPercent] = useState<number | null>(
+    null,
+  );
+  const [minutesSaved, setMinutesSaved] = useState<number | null>(null);
   const [customMinutes, setCustomMinutes] = useState<number | null>(null);
+  const [showCustomMinutesInput, setShowCustomMinutesInput] = useState(false);
+  const customMinutesInputRef = useRef<HTMLInputElement>(null);
 
   // Pricing step state
-  const [pricingModel, setPricingModel] = useState<"per-clinician" | "enterprise">("per-clinician");
-  const [perClinicianCost, setPerClinicianCost] = useState(250);
-  const [enterpriseAnnualCost, setEnterpriseAnnualCost] = useState(() => 25 * 250 * 12);
+  const [pricingModel, setPricingModel] = useState<
+    "per-clinician" | "enterprise" | null
+  >(null);
+  const [perClinicianCost, setPerClinicianCost] = useState<number | null>(null);
+  const [enterpriseAnnualCost, setEnterpriseAnnualCost] = useState<
+    number | null
+  >(null);
+  const [contractYears, setContractYears] = useState<number | null>(null);
+  const [showCustomYears, setShowCustomYears] = useState(false);
+  const [implementationEnabled, setImplementationEnabled] = useState(false);
+  const [implementationFee, setImplementationFee] = useState<number | null>(
+    null,
+  );
+
+  // Auto-focus the custom minutes input when it becomes visible
+  useEffect(() => {
+    if (showCustomMinutesInput) {
+      customMinutesInputRef.current?.focus();
+    }
+  }, [showCustomMinutesInput]);
+
+  // Scroll to top when page or step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage, modelSetupStep]);
 
   // ============================================
   // Derived values (must come after state declarations)
@@ -392,9 +424,12 @@ export default function ObjectiveSelectionScreen({
 
   // Estimated encounters from enterprise (informational only, not used in calculations)
   const estimatedEncountersFromEnterprise = useMemo(() => {
-    const providers = typeof cliniciansInScope === "number" ? cliniciansInScope : 0;
-    const entProviders = typeof enterpriseProviders === "number" ? enterpriseProviders : 0;
-    const entEncounters = typeof enterpriseEncounters === "number" ? enterpriseEncounters : 0;
+    const providers =
+      typeof cliniciansInScope === "number" ? cliniciansInScope : 0;
+    const entProviders =
+      typeof enterpriseProviders === "number" ? enterpriseProviders : 0;
+    const entEncounters =
+      typeof enterpriseEncounters === "number" ? enterpriseEncounters : 0;
 
     if (providers > 0 && entProviders > 0 && entEncounters > 0) {
       return Math.round((providers / entProviders) * entEncounters);
@@ -403,22 +438,52 @@ export default function ObjectiveSelectionScreen({
   }, [cliniciansInScope, enterpriseProviders, enterpriseEncounters]);
 
   // Canonical values for calculations (parse empty string as 0 for validation)
-  const effectiveClinicians = typeof cliniciansInScope === "number" ? cliniciansInScope : 0;
-  const effectiveEncounters = typeof annualEncountersInScope === "number" ? annualEncountersInScope : 0;
-
-  // Calculated enterprise cost suggestion
-  const calculatedEnterpriseCost = useMemo(() => {
-    return effectiveClinicians * perClinicianCost * 12;
-  }, [effectiveClinicians, perClinicianCost]);
+  const effectiveClinicians =
+    typeof cliniciansInScope === "number" ? cliniciansInScope : 0;
+  const effectiveEncounters =
+    typeof annualEncountersInScope === "number" ? annualEncountersInScope : 0;
 
   // Effective minutes saved (custom or preset)
   const effectiveMinutesSaved = customMinutes ?? minutesSaved;
 
-  // Annual cost based on pricing model
-  const annualCost =
-    pricingModel === "per-clinician"
-      ? effectiveClinicians * perClinicianCost * 12
-      : enterpriseAnnualCost;
+  // Annual subscription cost
+  const annualSubscriptionCost = useMemo(() => {
+    if (pricingModel === "per-clinician") {
+      if (effectiveClinicians > 0 && perClinicianCost !== null) {
+        return effectiveClinicians * perClinicianCost * 12;
+      }
+    } else if (pricingModel === "enterprise") {
+      if (enterpriseAnnualCost !== null) {
+        return enterpriseAnnualCost;
+      }
+    }
+    return null;
+  }, [
+    pricingModel,
+    effectiveClinicians,
+    perClinicianCost,
+    enterpriseAnnualCost,
+  ]);
+
+  // Implementation cost
+  const implementationCost = useMemo(() => {
+    if (implementationEnabled && implementationFee !== null) {
+      return implementationFee;
+    }
+    return null;
+  }, [implementationEnabled, implementationFee]);
+
+  // Year 1 total cost (only if implementation is enabled)
+  const year1TotalCost = useMemo(() => {
+    if (
+      implementationEnabled &&
+      annualSubscriptionCost !== null &&
+      implementationFee !== null
+    ) {
+      return annualSubscriptionCost + implementationFee;
+    }
+    return null;
+  }, [implementationEnabled, annualSubscriptionCost, implementationFee]);
 
   // Levers by category for Page 2
   const leversByCategory = useMemo(() => {
@@ -497,12 +562,17 @@ export default function ObjectiveSelectionScreen({
   // Validation flags
   // ============================================
   const canContinuePage1 = selectedSetting !== null;
-  const canContinuePage2 = selectedSetting !== null && selectedLeverIds.size > 0;
+  const canContinuePage2 =
+    selectedSetting !== null && selectedLeverIds.size > 0;
   const canContinuePage3 =
     effectiveClinicians > 0 &&
     effectiveEncounters > 0 &&
-    utilizationPercent > 0 &&
-    (minutesSaved > 0 || (customMinutes !== null && customMinutes > 0));
+    utilizationPercent !== null &&
+    effectiveMinutesSaved !== null &&
+    pricingModel !== null &&
+    annualSubscriptionCost !== null &&
+    (!implementationEnabled ||
+      (implementationFee !== null && implementationFee > 0));
 
   // ============================================
   // Render helpers
@@ -757,7 +827,7 @@ export default function ObjectiveSelectionScreen({
 
                 <div className="mb-10">
                   <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
-                    Baseline assumptions
+                    Baseline Assumptions
                   </h2>
                   <p className="text-lg text-neutral-600 leading-relaxed">
                     These inputs shape your ROI model.
@@ -799,14 +869,17 @@ export default function ObjectiveSelectionScreen({
                       {/* Providers in scope - Required */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Providers in scope <span className="text-[#F03319]">*</span>
+                          Providers in scope{" "}
+                          <span className="text-[#F03319]">*</span>
                         </label>
                         <input
                           type="number"
                           value={cliniciansInScope}
                           onChange={(e) => {
                             const val = e.target.value;
-                            setCliniciansInScope(val === "" ? "" : Math.max(0, parseInt(val) || 0));
+                            setCliniciansInScope(
+                              val === "" ? "" : Math.max(0, parseInt(val) || 0),
+                            );
                           }}
                           className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
                           data-testid="input-clinicians"
@@ -819,14 +892,17 @@ export default function ObjectiveSelectionScreen({
                       {/* Annual outpatient encounters (in scope) - Required */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Annual outpatient encounters (in scope) <span className="text-[#F03319]">*</span>
+                          Annual outpatient encounters (in scope){" "}
+                          <span className="text-[#F03319]">*</span>
                         </label>
                         <input
                           type="number"
                           value={annualEncountersInScope}
                           onChange={(e) => {
                             const val = e.target.value;
-                            setAnnualEncountersInScope(val === "" ? "" : Math.max(0, parseInt(val) || 0));
+                            setAnnualEncountersInScope(
+                              val === "" ? "" : Math.max(0, parseInt(val) || 0),
+                            );
                           }}
                           className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
                           data-testid="input-encounters"
@@ -840,13 +916,15 @@ export default function ObjectiveSelectionScreen({
                       <div className="border-t border-neutral-100 pt-6">
                         <button
                           type="button"
-                          onClick={() => setIsEnterpriseExpanded(!isEnterpriseExpanded)}
+                          onClick={() =>
+                            setIsEnterpriseExpanded(!isEnterpriseExpanded)
+                          }
                           className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
                         >
                           <ChevronRight
                             className={`h-4 w-4 transition-transform ${isEnterpriseExpanded ? "rotate-90" : ""}`}
                           />
-                          Optional — enterprise context
+                          Optional — Enterprise Context
                         </button>
 
                         {isEnterpriseExpanded && (
@@ -854,14 +932,18 @@ export default function ObjectiveSelectionScreen({
                             {/* Enterprise providers */}
                             <div>
                               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                Enterprise providers
+                                Enterprise Providers
                               </label>
                               <input
                                 type="number"
                                 value={enterpriseProviders}
                                 onChange={(e) => {
                                   const val = e.target.value;
-                                  setEnterpriseProviders(val === "" ? "" : Math.max(0, parseInt(val) || 0));
+                                  setEnterpriseProviders(
+                                    val === ""
+                                      ? ""
+                                      : Math.max(0, parseInt(val) || 0),
+                                  );
                                 }}
                                 placeholder="Total providers in organization"
                                 className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
@@ -879,7 +961,11 @@ export default function ObjectiveSelectionScreen({
                                 value={enterpriseEncounters}
                                 onChange={(e) => {
                                   const val = e.target.value;
-                                  setEnterpriseEncounters(val === "" ? "" : Math.max(0, parseInt(val) || 0));
+                                  setEnterpriseEncounters(
+                                    val === ""
+                                      ? ""
+                                      : Math.max(0, parseInt(val) || 0),
+                                  );
                                 }}
                                 placeholder="Total annual encounters"
                                 className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
@@ -906,7 +992,9 @@ export default function ObjectiveSelectionScreen({
                     <div className="mt-8 flex justify-end">
                       <button
                         onClick={() => setModelSetupStep(2)}
-                        disabled={effectiveClinicians === 0 || effectiveEncounters === 0}
+                        disabled={
+                          effectiveClinicians === 0 || effectiveEncounters === 0
+                        }
                         className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
                           effectiveClinicians > 0 && effectiveEncounters > 0
                             ? "bg-neutral-900 text-white hover:bg-neutral-800"
@@ -924,49 +1012,74 @@ export default function ObjectiveSelectionScreen({
                 {/* Step 2: Adoption */}
                 {modelSetupStep === 2 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
-                    <h3 className="text-xl font-semibold text-neutral-900 mb-6">
-                      Adoption
-                    </h3>
+                    <p className="text-sm text-neutral-600 mb-6">
+                      Adoption determines how many eligible encounters use
+                      Abridge.
+                    </p>
                     <div className="space-y-8">
+                      {/* Utilization Rate */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-3">
                           Utilization rate:{" "}
-                          <span className="text-[#F03319] font-semibold">
-                            {utilizationPercent}%
+                          <span className="text-base text-[#F03319] font-semibold">
+                            {utilizationPercent !== null
+                              ? `${utilizationPercent}%`
+                              : "—"}
                           </span>
                         </label>
                         <input
                           type="range"
                           min="10"
                           max="100"
-                          value={utilizationPercent}
+                          value={utilizationPercent ?? 50}
                           onChange={(e) =>
                             setUtilizationPercent(parseInt(e.target.value))
                           }
                           className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-[#F03319]"
                           data-testid="slider-utilization"
                         />
-                        <div className="flex gap-2 mt-3">
-                          {[40, 60, 80].map((val) => (
-                            <button
-                              key={val}
-                              onClick={() => setUtilizationPercent(val)}
-                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                utilizationPercent === val
-                                  ? "bg-[#F03319] text-white"
-                                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                              }`}
-                              data-testid={`chip-util-${val}`}
-                            >
-                              {val}%
-                            </button>
-                          ))}
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          <button
+                            onClick={() => setUtilizationPercent(50)}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                              utilizationPercent === 50
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-util-conservative"
+                          >
+                            Early (50%)
+                          </button>
+                          <button
+                            onClick={() => setUtilizationPercent(65)}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                              utilizationPercent === 65
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-util-expected"
+                          >
+                            Expected (65%)
+                          </button>
+                          <button
+                            onClick={() => setUtilizationPercent(80)}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                              utilizationPercent === 80
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-util-high"
+                          >
+                            High (80%)
+                          </button>
                         </div>
                         <p className="text-xs text-neutral-500 mt-2">
                           Percentage of eligible encounters where Abridge is
                           used
                         </p>
                       </div>
+
+                      {/* Minutes Saved */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-3">
                           Minutes saved per encounter
@@ -978,6 +1091,7 @@ export default function ObjectiveSelectionScreen({
                               onClick={() => {
                                 setMinutesSaved(val);
                                 setCustomMinutes(null);
+                                setShowCustomMinutesInput(false);
                               }}
                               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                 minutesSaved === val && customMinutes === null
@@ -989,37 +1103,59 @@ export default function ObjectiveSelectionScreen({
                               {val} min
                             </button>
                           ))}
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              placeholder="Custom"
-                              value={customMinutes ?? ""}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value);
-                                if (!isNaN(val) && val > 0) {
-                                  setCustomMinutes(val);
-                                  setMinutesSaved(val);
-                                } else if (e.target.value === "") {
-                                  setCustomMinutes(null);
-                                }
-                              }}
-                              className="w-24 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319]"
-                              data-testid="input-custom-minutes"
-                            />
-                            <span className="text-sm text-neutral-500">
-                              min
-                            </span>
-                          </div>
+                          {!showCustomMinutesInput ? (
+                            <button
+                              onClick={() => setShowCustomMinutesInput(true)}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                customMinutes !== null
+                                  ? "bg-[#F03319] text-white"
+                                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                              }`}
+                              data-testid="chip-minutes-custom"
+                            >
+                              {customMinutes !== null
+                                ? `${customMinutes} min`
+                                : "Custom…"}
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <input
+                                ref={customMinutesInputRef}
+                                type="number"
+                                placeholder="Custom"
+                                value={customMinutes ?? ""}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value);
+                                  if (!isNaN(val) && val > 0) {
+                                    setCustomMinutes(val);
+                                    setMinutesSaved(val);
+                                  } else if (e.target.value === "") {
+                                    setCustomMinutes(null);
+                                  }
+                                }}
+                                onBlur={() => {
+                                  if (customMinutes === null) {
+                                    setShowCustomMinutesInput(false);
+                                  }
+                                }}
+                                className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319]"
+                                data-testid="input-custom-minutes"
+                              />
+                              <span className="text-sm text-neutral-500">
+                                min
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <p className="text-xs text-neutral-500 mt-2">
                           Average documentation time saved per encounter
                         </p>
                       </div>
                     </div>
-                    <div className="mt-8 flex justify-between">
+                    <div className="mt-8 flex flex-col sm:flex-row sm:justify-between gap-3">
                       <button
                         onClick={() => setModelSetupStep(1)}
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-neutral-700 hover:bg-neutral-100 transition-all"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-neutral-700 hover:bg-neutral-100 transition-all"
                         data-testid="button-step2-back"
                       >
                         <ArrowLeft className="h-4 w-4" />
@@ -1027,7 +1163,7 @@ export default function ObjectiveSelectionScreen({
                       </button>
                       <button
                         onClick={() => setModelSetupStep(3)}
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-neutral-900 text-white hover:bg-neutral-800 transition-all"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-neutral-900 text-white hover:bg-neutral-800 transition-all"
                         data-testid="button-step2-next"
                       >
                         Next: Pricing
@@ -1043,11 +1179,18 @@ export default function ObjectiveSelectionScreen({
                     <h3 className="text-xl font-semibold text-neutral-900 mb-6">
                       Pricing
                     </h3>
+
                     <div className="space-y-6">
+                      {/* Pricing Model Section */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-3">
                           Pricing model
                         </label>
+                        {pricingModel === null && (
+                          <p className="text-sm text-neutral-600 mb-3">
+                            Choose how you price Abridge to calculate cost.
+                          </p>
+                        )}
                         <div className="space-y-3">
                           <label className="flex items-center gap-3 p-4 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 transition-all">
                             <input
@@ -1072,10 +1215,7 @@ export default function ObjectiveSelectionScreen({
                               type="radio"
                               name="pricing"
                               checked={pricingModel === "enterprise"}
-                              onChange={() => {
-                                setPricingModel("enterprise");
-                                setEnterpriseAnnualCost(calculatedEnterpriseCost);
-                              }}
+                              onChange={() => setPricingModel("enterprise")}
                               className="w-4 h-4 text-[#F03319] focus:ring-[#F03319]"
                               data-testid="radio-enterprise"
                             />
@@ -1091,6 +1231,87 @@ export default function ObjectiveSelectionScreen({
                         </div>
                       </div>
 
+                      {/* Contract Term Section */}
+                      {pricingModel !== null && (
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-3">
+                            Contract term
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => {
+                                setContractYears(2);
+                                setShowCustomYears(false);
+                              }}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                contractYears === 2 && !showCustomYears
+                                  ? "bg-[#F03319] text-white"
+                                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                              }`}
+                              data-testid="chip-years-2"
+                            >
+                              2 yrs
+                            </button>
+                            <button
+                              onClick={() => {
+                                setContractYears(3);
+                                setShowCustomYears(false);
+                              }}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                contractYears === 3 && !showCustomYears
+                                  ? "bg-[#F03319] text-white"
+                                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                              }`}
+                              data-testid="chip-years-3"
+                            >
+                              3 yrs
+                            </button>
+                            {!showCustomYears ? (
+                              <button
+                                onClick={() => setShowCustomYears(true)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                  showCustomYears &&
+                                  contractYears !== 2 &&
+                                  contractYears !== 3
+                                    ? "bg-[#F03319] text-white"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                                data-testid="chip-years-custom"
+                              >
+                                Custom
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  placeholder="Years"
+                                  value={contractYears ?? ""}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    if (!isNaN(val) && val > 0) {
+                                      setContractYears(val);
+                                    } else if (e.target.value === "") {
+                                      setContractYears(null);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (contractYears === null) {
+                                      setShowCustomYears(false);
+                                    }
+                                  }}
+                                  className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319]"
+                                  data-testid="input-custom-years"
+                                />
+                                <span className="text-sm text-neutral-500">
+                                  yrs
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Cost Inputs */}
                       {pricingModel === "per-clinician" && (
                         <div>
                           <label className="block text-sm font-medium text-neutral-700 mb-2">
@@ -1102,25 +1323,32 @@ export default function ObjectiveSelectionScreen({
                             </span>
                             <input
                               type="number"
-                              value={perClinicianCost}
-                              onChange={(e) =>
+                              value={perClinicianCost ?? ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
                                 setPerClinicianCost(
-                                  Math.max(0, parseInt(e.target.value) || 0),
-                                )
-                              }
+                                  val === ""
+                                    ? null
+                                    : Math.max(0, parseInt(val) || 0),
+                                );
+                              }}
+                              placeholder="Enter amount"
                               className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
                               data-testid="input-per-clinician-cost"
                             />
                           </div>
-                          <p className="text-sm text-neutral-600 mt-3 p-3 bg-neutral-50 rounded-lg">
-                            Annual cost:{" "}
-                            <span className="font-semibold">
-                              ${(effectiveClinicians * perClinicianCost * 12).toLocaleString()}
-                            </span>
-                            <span className="text-xs text-neutral-500 ml-1">
-                              ({effectiveClinicians} × ${perClinicianCost} × 12)
-                            </span>
-                          </p>
+                          {annualSubscriptionCost !== null && (
+                            <p className="text-sm text-neutral-600 mt-3 p-3 bg-neutral-50 rounded-lg">
+                              Annual cost:{" "}
+                              <span className="font-semibold">
+                                ${annualSubscriptionCost.toLocaleString()}
+                              </span>
+                              <span className="text-xs text-neutral-500 ml-1">
+                                ({effectiveClinicians} × ${perClinicianCost} ×
+                                12)
+                              </span>
+                            </p>
+                          )}
                         </div>
                       )}
 
@@ -1135,20 +1363,70 @@ export default function ObjectiveSelectionScreen({
                             </span>
                             <input
                               type="number"
-                              value={enterpriseAnnualCost}
-                              onChange={(e) =>
+                              value={enterpriseAnnualCost ?? ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
                                 setEnterpriseAnnualCost(
-                                  Math.max(0, parseInt(e.target.value) || 0),
-                                )
-                              }
+                                  val === ""
+                                    ? null
+                                    : Math.max(0, parseInt(val) || 0),
+                                );
+                              }}
+                              placeholder="Enter annual amount"
                               className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
                               data-testid="input-enterprise-cost"
                             />
                           </div>
-                          <p className="text-xs text-neutral-500 mt-1.5">
-                            Suggested: ${calculatedEnterpriseCost.toLocaleString()} based on{" "}
-                            {effectiveClinicians} clinicians
-                          </p>
+                        </div>
+                      )}
+
+                      {/* Implementation Fee Section */}
+                      {pricingModel !== null && (
+                        <div className="border-t border-neutral-100 pt-6">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={implementationEnabled}
+                              onChange={(e) =>
+                                setImplementationEnabled(e.target.checked)
+                              }
+                              className="w-4 h-4 text-[#F03319] focus:ring-[#F03319] rounded"
+                              data-testid="checkbox-implementation"
+                            />
+                            <div>
+                              <span className="text-sm font-medium text-neutral-700">
+                                Add implementation fee (one-time)
+                              </span>
+                            </div>
+                          </label>
+
+                          {implementationEnabled && (
+                            <div className="mt-4 ml-7">
+                              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                                Implementation fee
+                              </label>
+                              <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">
+                                  $
+                                </span>
+                                <input
+                                  type="number"
+                                  value={implementationFee ?? ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setImplementationFee(
+                                      val === ""
+                                        ? null
+                                        : Math.max(0, parseInt(val) || 0),
+                                    );
+                                  }}
+                                  placeholder="Enter one-time fee"
+                                  className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
+                                  data-testid="input-implementation-fee"
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1172,7 +1450,7 @@ export default function ObjectiveSelectionScreen({
                         }`}
                         data-testid="button-see-results"
                       >
-                        See Results
+                        View ROI Model
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
@@ -1197,28 +1475,59 @@ export default function ObjectiveSelectionScreen({
                       <div className="flex justify-between">
                         <span className="text-neutral-600">Encounters</span>
                         <span className="font-medium text-neutral-900">
-                          {effectiveEncounters > 0 ? effectiveEncounters.toLocaleString() : "—"}
+                          {effectiveEncounters > 0
+                            ? effectiveEncounters.toLocaleString()
+                            : "—"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">Utilization</span>
                         <span className="font-medium text-neutral-900">
-                          {modelSetupStep >= 2 ? `${utilizationPercent}%` : "—"}
+                          {utilizationPercent !== null
+                            ? `${utilizationPercent}%`
+                            : "—"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">Minutes saved</span>
                         <span className="font-medium text-neutral-900">
-                          {modelSetupStep >= 2 ? `${effectiveMinutesSaved} min` : "—"}
+                          {effectiveMinutesSaved !== null
+                            ? `${effectiveMinutesSaved} min`
+                            : "—"}
                         </span>
                       </div>
-                      <div className="border-t border-neutral-100 pt-3 mt-3">
+                      <div className="border-t border-neutral-200 pt-3 mt-3">
+                        {implementationEnabled &&
+                          implementationFee !== null && (
+                            <div className="flex justify-between mb-2">
+                              <span className="text-neutral-600">
+                                Implementation fee
+                              </span>
+                              <span className="font-medium text-neutral-900">
+                                ${implementationFee.toLocaleString()}
+                              </span>
+                            </div>
+                          )}
                         <div className="flex justify-between">
-                          <span className="text-neutral-600">Annual cost</span>
+                          <span className="text-neutral-600">
+                            Annual subscription
+                          </span>
                           <span className="font-semibold text-neutral-900">
-                            {modelSetupStep >= 3 ? `$${annualCost.toLocaleString()}` : "—"}
+                            {annualSubscriptionCost !== null
+                              ? `$${annualSubscriptionCost.toLocaleString()}`
+                              : "—"}
                           </span>
                         </div>
+                        {year1TotalCost !== null && (
+                          <div className="flex justify-between mt-2 pt-2 border-t border-neutral-200">
+                            <span className="text-neutral-600">
+                              Year 1 total cost
+                            </span>
+                            <span className="font-bold text-neutral-900">
+                              ${year1TotalCost.toLocaleString()}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1242,28 +1551,58 @@ export default function ObjectiveSelectionScreen({
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Encounters</span>
                     <span className="font-medium text-neutral-900">
-                      {effectiveEncounters > 0 ? effectiveEncounters.toLocaleString() : "—"}
+                      {effectiveEncounters > 0
+                        ? effectiveEncounters.toLocaleString()
+                        : "—"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Utilization</span>
                     <span className="font-medium text-neutral-900">
-                      {modelSetupStep >= 2 ? `${utilizationPercent}%` : "—"}
+                      {utilizationPercent !== null
+                        ? `${utilizationPercent}%`
+                        : "—"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Minutes saved</span>
                     <span className="font-medium text-neutral-900">
-                      {modelSetupStep >= 2 ? `${effectiveMinutesSaved} min` : "—"}
+                      {effectiveMinutesSaved !== null
+                        ? `${effectiveMinutesSaved} min`
+                        : "—"}
                     </span>
                   </div>
-                  <div className="border-t border-neutral-100 pt-3 mt-3">
+                  <div className="border-t border-neutral-200 pt-3 mt-3">
+                    {implementationEnabled && implementationFee !== null && (
+                      <div className="flex justify-between mb-2">
+                        <span className="text-neutral-600">
+                          Implementation fee
+                        </span>
+                        <span className="font-medium text-neutral-900">
+                          ${implementationFee.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
-                      <span className="text-neutral-600">Annual cost</span>
+                      <span className="text-neutral-600">
+                        Annual subscription
+                      </span>
                       <span className="font-semibold text-neutral-900">
-                        {modelSetupStep >= 3 ? `$${annualCost.toLocaleString()}` : "—"}
+                        {annualSubscriptionCost !== null
+                          ? `$${annualSubscriptionCost.toLocaleString()}`
+                          : "—"}
                       </span>
                     </div>
+                    {year1TotalCost !== null && (
+                      <div className="flex justify-between mt-2 pt-2 border-t border-neutral-200">
+                        <span className="text-neutral-600">
+                          Year 1 total cost
+                        </span>
+                        <span className="font-bold text-neutral-900">
+                          ${year1TotalCost.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1309,7 +1648,7 @@ export default function ObjectiveSelectionScreen({
               }`}
               data-testid="button-see-results-mobile"
             >
-              See Results
+              View ROI Model
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
