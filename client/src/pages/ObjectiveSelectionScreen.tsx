@@ -9,6 +9,7 @@ import {
   type LeverConfig,
   type LeverCategory,
 } from "@/lib/SETTING_CONFIG";
+import { formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
 import {
   Stethoscope,
   Siren,
@@ -913,19 +914,23 @@ export default function ObjectiveSelectionScreen({
                           <span className="text-[#F03319]">*</span>
                         </label>
                         <input
-                          type="number"
-                          value={cliniciansInScope}
+                          type="text"
+                          inputMode="numeric"
+                          value={cliniciansInScope === "" ? "" : formatNumber(cliniciansInScope)}
                           onChange={(e) => {
                             const val = e.target.value;
-                            setCliniciansInScope(
-                              val === "" ? "" : Math.max(0, parseInt(val) || 0),
-                            );
+                            if (val === "") {
+                              setCliniciansInScope("");
+                            } else {
+                              setCliniciansInScope(Math.max(0, parseFormattedNumber(val)));
+                            }
                           }}
-                          className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
+                          className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
                           data-testid="input-clinicians"
+                          placeholder="e.g. 50"
                         />
                         <p className="text-xs text-neutral-500 mt-1.5">
-                          Number of providers who will use Abridge
+                          Number of providers who will use Abridge. This is the foundation of your ROI model.
                         </p>
                       </div>
 
@@ -936,19 +941,23 @@ export default function ObjectiveSelectionScreen({
                           <span className="text-[#F03319]">*</span>
                         </label>
                         <input
-                          type="number"
-                          value={annualEncountersInScope}
+                          type="text"
+                          inputMode="numeric"
+                          value={annualEncountersInScope === "" ? "" : formatNumber(annualEncountersInScope)}
                           onChange={(e) => {
                             const val = e.target.value;
-                            setAnnualEncountersInScope(
-                              val === "" ? "" : Math.max(0, parseInt(val) || 0),
-                            );
+                            if (val === "") {
+                              setAnnualEncountersInScope("");
+                            } else {
+                              setAnnualEncountersInScope(Math.max(0, parseFormattedNumber(val)));
+                            }
                           }}
-                          className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
+                          className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
                           data-testid="input-encounters"
+                          placeholder="e.g. 100,000"
                         />
                         <p className="text-xs text-neutral-500 mt-1.5">
-                          Total annual encounters for providers in scope
+                          Total annual patient encounters for the providers in scope. This drives encounter-based ROI calculations.
                         </p>
                       </div>
                     </div>
@@ -1123,12 +1132,13 @@ export default function ObjectiveSelectionScreen({
                             <div className="flex items-center gap-2">
                               <input
                                 ref={customMinutesInputRef}
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="Custom"
                                 value={customMinutes ?? ""}
                                 onChange={(e) => {
-                                  const val = parseInt(e.target.value);
-                                  if (!isNaN(val) && val > 0) {
+                                  const val = parseFormattedNumber(e.target.value);
+                                  if (val > 0) {
                                     setCustomMinutes(val);
                                     setMinutesSaved(val);
                                   } else if (e.target.value === "") {
@@ -1140,7 +1150,7 @@ export default function ObjectiveSelectionScreen({
                                     setShowCustomMinutesInput(false);
                                   }
                                 }}
-                                className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319]"
+                                className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] font-mono"
                                 data-testid="input-custom-minutes"
                               />
                               <span className="text-sm text-neutral-500">
@@ -1277,12 +1287,13 @@ export default function ObjectiveSelectionScreen({
                             ) : (
                               <div className="flex items-center gap-2">
                                 <input
-                                  type="number"
+                                  type="text"
+                                  inputMode="numeric"
                                   placeholder="Years"
                                   value={contractYears ?? ""}
                                   onChange={(e) => {
-                                    const val = parseInt(e.target.value);
-                                    if (!isNaN(val) && val > 0) {
+                                    const val = parseFormattedNumber(e.target.value);
+                                    if (val > 0) {
                                       setContractYears(val);
                                     } else if (e.target.value === "") {
                                       setContractYears(null);
@@ -1293,7 +1304,7 @@ export default function ObjectiveSelectionScreen({
                                       setShowCustomYears(false);
                                     }
                                   }}
-                                  className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319]"
+                                  className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] font-mono"
                                   data-testid="input-custom-years"
                                 />
                                 <span className="text-sm text-neutral-500">
@@ -1316,21 +1327,25 @@ export default function ObjectiveSelectionScreen({
                               $
                             </span>
                             <input
-                              type="number"
-                              value={perClinicianCost ?? ""}
+                              type="text"
+                              inputMode="numeric"
+                              value={perClinicianCost !== null ? formatNumber(perClinicianCost) : ""}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setPerClinicianCost(
                                   val === ""
                                     ? null
-                                    : Math.max(0, parseInt(val) || 0),
+                                    : Math.max(0, parseFormattedNumber(val)),
                                 );
                               }}
                               placeholder="Enter amount"
-                              className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
+                              className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
                               data-testid="input-per-clinician-cost"
                             />
                           </div>
+                          <p className="text-xs text-neutral-500 mt-1.5">
+                            Monthly subscription cost per licensed provider.
+                          </p>
                           {annualSubscriptionCost !== null && (
                             <p className="text-sm text-neutral-600 mt-3 p-3 bg-neutral-50 rounded-lg">
                               Annual cost:{" "}
@@ -1356,21 +1371,25 @@ export default function ObjectiveSelectionScreen({
                               $
                             </span>
                             <input
-                              type="number"
-                              value={enterpriseAnnualCost ?? ""}
+                              type="text"
+                              inputMode="numeric"
+                              value={enterpriseAnnualCost !== null ? formatNumber(enterpriseAnnualCost) : ""}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setEnterpriseAnnualCost(
                                   val === ""
                                     ? null
-                                    : Math.max(0, parseInt(val) || 0),
+                                    : Math.max(0, parseFormattedNumber(val)),
                                 );
                               }}
                               placeholder="Enter annual amount"
-                              className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
+                              className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
                               data-testid="input-enterprise-cost"
                             />
                           </div>
+                          <p className="text-xs text-neutral-500 mt-1.5">
+                            Total annual subscription for enterprise-wide deployment.
+                          </p>
                         </div>
                       )}
 
@@ -1404,21 +1423,25 @@ export default function ObjectiveSelectionScreen({
                                   $
                                 </span>
                                 <input
-                                  type="number"
-                                  value={implementationFee ?? ""}
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={implementationFee !== null ? formatNumber(implementationFee) : ""}
                                   onChange={(e) => {
                                     const val = e.target.value;
                                     setImplementationFee(
                                       val === ""
                                         ? null
-                                        : Math.max(0, parseInt(val) || 0),
+                                        : Math.max(0, parseFormattedNumber(val)),
                                     );
                                   }}
                                   placeholder="Enter one-time fee"
-                                  className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
+                                  className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
                                   data-testid="input-implementation-fee"
                                 />
                               </div>
+                              <p className="text-xs text-neutral-500 mt-1.5">
+                                One-time setup and integration cost.
+                              </p>
                             </div>
                           )}
                         </div>
