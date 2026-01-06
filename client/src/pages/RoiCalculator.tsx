@@ -1919,6 +1919,101 @@ export default function RoiCalculator({
                     </details>
                   </CardContent>
                 </Card>
+
+                {/* (6) Scale - Enterprise Expansion Chart */}
+                <div className="space-y-8">
+                  <EnterpriseExpansionChart
+                    levers={waterfallLevers}
+                    totalAnnualBenefit={totalBenefitFromSelectedLevers}
+                    scopeEncounterCount={encountersCoveredByAbridge}
+                    enterpriseEncounterCount={
+                      inputs.enterpriseAnnualEncounters *
+                      (inputs.abridgeUtilizationPct / 100)
+                    }
+                    providersInScope={inputs.numberOfProviders}
+                    enterpriseProviders={inputs.enterpriseProviderCount}
+                    utilizationPct={inputs.abridgeUtilizationPct}
+                  />
+                </div>
+
+                {/* (7) Notes for internal review (PDF carry-forward) */}
+                <Card className="border-neutral-200 bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <CardTitle className="text-base font-semibold text-neutral-900">
+                          Notes for internal review
+                        </CardTitle>
+                        <p className="text-sm text-neutral-500 mt-1">
+                          Optional. These notes are included in the exported PDF
+                          to help others understand scope, assumptions, and next
+                          steps.
+                        </p>
+                      </div>
+
+                      <Badge variant="secondary" className="text-xs shrink-0">
+                        Optional
+                      </Badge>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="pt-0 space-y-4">
+                    {/* Quick add chips */}
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        "Confirm scope & utilization assumptions",
+                        "Validate driver inputs with Finance",
+                        "Review with Ops leadership",
+                        "Align on rollout timeline",
+                        "Decide pilot → enterprise criteria",
+                      ].map((text) => (
+                        <button
+                          key={text}
+                          type="button"
+                          onClick={() =>
+                            setCommentary((prev) => {
+                              const next = prev?.trim?.()
+                                ? `${prev.trim()}\n• ${text}`
+                                : `• ${text}`;
+                              return next;
+                            })
+                          }
+                          className="text-xs px-2.5 py-1 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100 transition-colors"
+                          data-testid={`button-add-note-${text.slice(0, 10).replace(/\s+/g, '-').toLowerCase()}`}
+                        >
+                          + {text}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Notes textarea */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-neutral-700">
+                        Context / assumptions (included in PDF)
+                      </label>
+                      <textarea
+                        value={commentary}
+                        onChange={(e) => setCommentary(e.target.value)}
+                        placeholder="Example: This model assumes 70% utilization and the same enabled drivers at enterprise scale. Finance to confirm cost baseline and net revenue per encounter."
+                        className="w-full min-h-[120px] resize-y rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200"
+                        data-testid="textarea-notes"
+                      />
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs text-neutral-500">
+                          Tip: write for someone who wasn't in the room.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setCommentary("")}
+                          className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4"
+                          data-testid="button-clear-notes"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </ScrollArea>
           </main>
