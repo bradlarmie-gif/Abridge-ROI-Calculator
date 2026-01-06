@@ -84,11 +84,11 @@ export interface RoiResults {
 export const defaultInputs: RoiInputs = {
   contractLengthYears: 3,
   numberOfProviders: 100,
-  enterpriseProviderCount: 500,
+  enterpriseProviderCount: 0,
   monthlyCostPerProvider: 225,
   implementationCostYear1: 0,
   annualOutpatientEncounters: 100000,
-  enterpriseAnnualEncounters: 500000,
+  enterpriseAnnualEncounters: 0,
   abridgeUtilizationPct: 70,
   minutesSavedPerEncounter: 4,
   avgNetRevenuePerEncounter: 200,
