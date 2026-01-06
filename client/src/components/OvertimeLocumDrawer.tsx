@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface OvertimeLocumInputs {
@@ -177,10 +177,10 @@ export function OvertimeLocumDrawer({
                 </Label>
                 <Input
                   id="overtime-rate"
-                  type="number"
-                  min={0}
-                  value={inputs.overtimeRate}
-                  onChange={(e) => onChange("overtimeRate", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.overtimeRate)}
+                  onChange={(e) => onChange("overtimeRate", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-overtime-rate"
                 />
@@ -195,10 +195,10 @@ export function OvertimeLocumDrawer({
                 </Label>
                 <Input
                   id="locum-rate"
-                  type="number"
-                  min={0}
-                  value={inputs.locumRate}
-                  onChange={(e) => onChange("locumRate", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.locumRate)}
+                  onChange={(e) => onChange("locumRate", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-locum-rate"
                 />

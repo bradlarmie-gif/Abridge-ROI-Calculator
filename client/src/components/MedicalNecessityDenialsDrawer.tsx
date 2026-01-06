@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface MedicalNecessityDenialsInputs {
@@ -110,10 +110,10 @@ export function MedicalNecessityDenialsDrawer({
                 </Label>
                 <Input
                   id="net-collectible-revenue"
-                  type="number"
-                  min={0}
-                  value={inputs.netCollectibleRevenue}
-                  onChange={(e) => onChange("netCollectibleRevenue", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.netCollectibleRevenue)}
+                  onChange={(e) => onChange("netCollectibleRevenue", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-net-collectible-revenue"
                 />

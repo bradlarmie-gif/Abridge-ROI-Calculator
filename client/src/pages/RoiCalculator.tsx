@@ -55,6 +55,7 @@ import {
   formatCurrency,
   formatNumber,
   formatPercent,
+  parseFormattedNumber,
 } from "@/lib/roi-calculator";
 import {
   CARE_SETTING_LABELS,
@@ -1001,12 +1002,13 @@ export default function RoiCalculator({
                           helperText="Clinicians included in this scenario."
                         >
                           <Input
-                            type="number"
-                            value={inputs.numberOfProviders}
+                            type="text"
+                            inputMode="numeric"
+                            value={formatNumber(inputs.numberOfProviders)}
                             onChange={(e) =>
                               handleInputChange(
                                 "numberOfProviders",
-                                Number(e.target.value),
+                                parseFormattedNumber(e.target.value),
                               )
                             }
                             data-testid="input-num-providers"
@@ -1018,12 +1020,13 @@ export default function RoiCalculator({
                           helperText="Annual visits covered by Abridge for this group."
                         >
                           <Input
-                            type="number"
-                            value={inputs.annualOutpatientEncounters}
+                            type="text"
+                            inputMode="numeric"
+                            value={formatNumber(inputs.annualOutpatientEncounters)}
                             onChange={(e) =>
                               handleInputChange(
                                 "annualOutpatientEncounters",
-                                Number(e.target.value),
+                                parseFormattedNumber(e.target.value),
                               )
                             }
                             data-testid="input-encounters"
@@ -1037,12 +1040,13 @@ export default function RoiCalculator({
                           helperText="Total clinicians across your enterprise."
                         >
                           <Input
-                            type="number"
-                            value={inputs.enterpriseProviderCount}
+                            type="text"
+                            inputMode="numeric"
+                            value={formatNumber(inputs.enterpriseProviderCount)}
                             onChange={(e) =>
                               handleInputChange(
                                 "enterpriseProviderCount",
-                                Number(e.target.value),
+                                parseFormattedNumber(e.target.value),
                               )
                             }
                             data-testid="input-enterprise-providers"
@@ -1054,12 +1058,13 @@ export default function RoiCalculator({
                           helperText="Total annual outpatient visits across the enterprise."
                         >
                           <Input
-                            type="number"
-                            value={inputs.enterpriseAnnualEncounters}
+                            type="text"
+                            inputMode="numeric"
+                            value={formatNumber(inputs.enterpriseAnnualEncounters)}
                             onChange={(e) =>
                               handleInputChange(
                                 "enterpriseAnnualEncounters",
-                                Number(e.target.value),
+                                parseFormattedNumber(e.target.value),
                               )
                             }
                             data-testid="input-enterprise-encounters"
@@ -1115,12 +1120,13 @@ export default function RoiCalculator({
                           helperText="Time returned per encounter where Abridge is used."
                         >
                           <Input
-                            type="number"
-                            value={inputs.minutesSavedPerEncounter}
+                            type="text"
+                            inputMode="numeric"
+                            value={formatNumber(inputs.minutesSavedPerEncounter)}
                             onChange={(e) =>
                               handleInputChange(
                                 "minutesSavedPerEncounter",
-                                Number(e.target.value),
+                                parseFormattedNumber(e.target.value),
                               )
                             }
                             data-testid="input-minutes-saved"
@@ -1153,12 +1159,13 @@ export default function RoiCalculator({
                           helperText="Typical net revenue collected per outpatient visit."
                         >
                           <Input
-                            type="number"
-                            value={inputs.avgNetRevenuePerEncounter}
+                            type="text"
+                            inputMode="numeric"
+                            value={formatNumber(inputs.avgNetRevenuePerEncounter)}
                             onChange={(e) =>
                               handleInputChange(
                                 "avgNetRevenuePerEncounter",
-                                Number(e.target.value),
+                                parseFormattedNumber(e.target.value),
                               )
                             }
                             data-testid="input-avg-revenue"
@@ -1170,12 +1177,13 @@ export default function RoiCalculator({
                           helperText="Contracted Abridge subscription per provider, per month."
                         >
                           <Input
-                            type="number"
-                            value={inputs.monthlyCostPerProvider}
+                            type="text"
+                            inputMode="numeric"
+                            value={formatNumber(inputs.monthlyCostPerProvider)}
                             onChange={(e) =>
                               handleInputChange(
                                 "monthlyCostPerProvider",
-                                Number(e.target.value),
+                                parseFormattedNumber(e.target.value),
                               )
                             }
                             data-testid="input-cost-per-provider"
@@ -1242,12 +1250,13 @@ export default function RoiCalculator({
                         helperText="Cost per provider per month"
                       >
                         <Input
-                          type="number"
-                          value={inputs.monthlyCostPerProvider}
+                          type="text"
+                          inputMode="numeric"
+                          value={formatNumber(inputs.monthlyCostPerProvider)}
                           onChange={(e) =>
                             handleInputChange(
                               "monthlyCostPerProvider",
-                              Number(e.target.value),
+                              parseFormattedNumber(e.target.value),
                             )
                           }
                         />
@@ -1263,12 +1272,13 @@ export default function RoiCalculator({
                         helperText="Total providers in scope"
                       >
                         <Input
-                          type="number"
-                          value={inputs.numberOfProviders}
+                          type="text"
+                          inputMode="numeric"
+                          value={formatNumber(inputs.numberOfProviders)}
                           onChange={(e) =>
                             handleInputChange(
                               "numberOfProviders",
-                              Number(e.target.value),
+                              parseFormattedNumber(e.target.value),
                             )
                           }
                         />
@@ -1279,12 +1289,13 @@ export default function RoiCalculator({
                         helperText="Total annual encounters"
                       >
                         <Input
-                          type="number"
-                          value={inputs.annualOutpatientEncounters}
+                          type="text"
+                          inputMode="numeric"
+                          value={formatNumber(inputs.annualOutpatientEncounters)}
                           onChange={(e) =>
                             handleInputChange(
                               "annualOutpatientEncounters",
-                              Number(e.target.value),
+                              parseFormattedNumber(e.target.value),
                             )
                           }
                         />

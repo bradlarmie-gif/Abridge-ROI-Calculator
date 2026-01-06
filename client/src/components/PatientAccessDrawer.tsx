@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface PatientAccessInputs {
@@ -133,10 +133,10 @@ export function PatientAccessDrawer({
               </Label>
               <Input
                 id="clinicians-scope"
-                type="number"
-                min={1}
-                value={inputs.cliniciansInScope}
-                onChange={(e) => onChange("cliniciansInScope", Number(e.target.value) || 0)}
+                type="text"
+                inputMode="numeric"
+                value={formatNumber(inputs.cliniciansInScope)}
+                onChange={(e) => onChange("cliniciansInScope", parseFormattedNumber(e.target.value))}
                 className="font-mono"
                 data-testid="input-clinicians-scope"
               />
@@ -148,10 +148,10 @@ export function PatientAccessDrawer({
               </Label>
               <Input
                 id="encounters-per-clinician"
-                type="number"
-                min={0}
-                value={inputs.encountersPerClinician}
-                onChange={(e) => onChange("encountersPerClinician", Number(e.target.value) || 0)}
+                type="text"
+                inputMode="numeric"
+                value={formatNumber(inputs.encountersPerClinician)}
+                onChange={(e) => onChange("encountersPerClinician", parseFormattedNumber(e.target.value))}
                 className="font-mono"
                 data-testid="input-encounters-per-clinician"
               />
@@ -203,10 +203,10 @@ export function PatientAccessDrawer({
               </Label>
               <Input
                 id="net-revenue"
-                type="number"
-                min={0}
-                value={inputs.netRevenuePerEncounter}
-                onChange={(e) => onChange("netRevenuePerEncounter", Number(e.target.value) || 0)}
+                type="text"
+                inputMode="numeric"
+                value={formatNumber(inputs.netRevenuePerEncounter)}
+                onChange={(e) => onChange("netRevenuePerEncounter", parseFormattedNumber(e.target.value))}
                 className="font-mono"
                 data-testid="input-net-revenue"
               />

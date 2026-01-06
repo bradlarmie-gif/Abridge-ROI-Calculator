@@ -243,3 +243,9 @@ export function formatNumber(value: number, decimals: number = 0): string {
 export function formatPercent(value: number, decimals: number = 1): string {
   return `${value.toFixed(decimals)}%`;
 }
+
+export function parseFormattedNumber(value: string): number {
+  const cleaned = value.replace(/,/g, "").replace(/[^\d.-]/g, "");
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}

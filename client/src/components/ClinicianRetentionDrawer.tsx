@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface ClinicianRetentionInputs {
@@ -110,10 +110,10 @@ export function ClinicianRetentionDrawer({
                 </Label>
                 <Input
                   id="clinicians-scope-retention"
-                  type="number"
-                  min={1}
-                  value={inputs.cliniciansInScope}
-                  onChange={(e) => onChange("cliniciansInScope", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.cliniciansInScope)}
+                  onChange={(e) => onChange("cliniciansInScope", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-clinicians-retention"
                 />
@@ -236,10 +236,10 @@ export function ClinicianRetentionDrawer({
                 </Label>
                 <Input
                   id="cost-per-departure"
-                  type="number"
-                  min={0}
-                  value={inputs.costPerDeparture}
-                  onChange={(e) => onChange("costPerDeparture", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.costPerDeparture)}
+                  onChange={(e) => onChange("costPerDeparture", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-cost-per-departure"
                 />

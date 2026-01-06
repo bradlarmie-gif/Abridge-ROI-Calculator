@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface LevelOfServiceInputs {
@@ -106,10 +106,10 @@ export function LevelOfServiceDrawer({
                 </Label>
                 <Input
                   id="annual-encounters-los"
-                  type="number"
-                  min={0}
-                  value={inputs.annualEncounters}
-                  onChange={(e) => onChange("annualEncounters", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.annualEncounters)}
+                  onChange={(e) => onChange("annualEncounters", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-encounters-los"
                 />
@@ -178,11 +178,10 @@ export function LevelOfServiceDrawer({
                 </Label>
                 <Input
                   id="incremental-wrvu"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={inputs.incrementalWrvuPerVisit}
-                  onChange={(e) => onChange("incrementalWrvuPerVisit", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.incrementalWrvuPerVisit, 2)}
+                  onChange={(e) => onChange("incrementalWrvuPerVisit", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-incremental-wrvu"
                 />
@@ -205,11 +204,10 @@ export function LevelOfServiceDrawer({
                 </Label>
                 <Input
                   id="wrvu-conversion"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={inputs.wrvuConversionFactor}
-                  onChange={(e) => onChange("wrvuConversionFactor", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.wrvuConversionFactor, 2)}
+                  onChange={(e) => onChange("wrvuConversionFactor", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-wrvu-conversion"
                 />

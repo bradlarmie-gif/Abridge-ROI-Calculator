@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface HccConditionCaptureInputs {
@@ -113,10 +113,10 @@ export function HccConditionCaptureDrawer({
                 </Label>
                 <Input
                   id="risk-based-patients"
-                  type="number"
-                  min={0}
-                  value={inputs.riskBasedPatients}
-                  onChange={(e) => onChange("riskBasedPatients", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.riskBasedPatients)}
+                  onChange={(e) => onChange("riskBasedPatients", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-risk-based-patients"
                 />
@@ -131,11 +131,10 @@ export function HccConditionCaptureDrawer({
                 </Label>
                 <Input
                   id="avg-conditions"
-                  type="number"
-                  min={0}
-                  step={0.1}
-                  value={inputs.avgConditionsPerPatient}
-                  onChange={(e) => onChange("avgConditionsPerPatient", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.avgConditionsPerPatient, 1)}
+                  onChange={(e) => onChange("avgConditionsPerPatient", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-avg-conditions"
                 />
@@ -258,10 +257,10 @@ export function HccConditionCaptureDrawer({
                 </Label>
                 <Input
                   id="revenue-per-condition"
-                  type="number"
-                  min={0}
-                  value={inputs.revenuePerCondition}
-                  onChange={(e) => onChange("revenuePerCondition", Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(inputs.revenuePerCondition)}
+                  onChange={(e) => onChange("revenuePerCondition", parseFormattedNumber(e.target.value))}
                   className="font-mono"
                   data-testid="input-revenue-per-condition"
                 />
