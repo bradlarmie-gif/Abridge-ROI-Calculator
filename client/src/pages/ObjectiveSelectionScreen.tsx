@@ -28,10 +28,13 @@ export interface SelectedLever {
   active: boolean;
 }
 
+import { type RoiInputs } from "@/lib/roi-types";
+
 interface ObjectiveSelectionScreenProps {
   onComplete: (
     selectedSettings: CareSettingType[],
     selectedLevers: SelectedLever[],
+    seedInputs?: Partial<RoiInputs>,
   ) => void;
   initialSelectedSettings?: CareSettingType[];
   initialSelectedLevers?: SelectedLever[];
@@ -276,7 +279,7 @@ function ModelSummaryPanel({
     <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
       <div className="p-6">
         <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-5">
-          Model Summary
+          Your Selections
         </h3>
 
         {!selectedSetting ? (
@@ -374,13 +377,6 @@ export default function ObjectiveSelectionScreen({
   const [annualEncountersInScope, setAnnualEncountersInScope] = useState<
     number | ""
   >("");
-  const [enterpriseProviders, setEnterpriseProviders] = useState<number | "">(
-    "",
-  );
-  const [enterpriseEncounters, setEnterpriseEncounters] = useState<number | "">(
-    "",
-  );
-  const [isEnterpriseExpanded, setIsEnterpriseExpanded] = useState(false);
 
   // Adoption step state
   const [utilizationPercent, setUtilizationPercent] = useState<number | null>(
@@ -422,21 +418,6 @@ export default function ObjectiveSelectionScreen({
   // Derived values (must come after state declarations)
   // ============================================
 
-  // Estimated encounters from enterprise (informational only, not used in calculations)
-  const estimatedEncountersFromEnterprise = useMemo(() => {
-    const providers =
-      typeof cliniciansInScope === "number" ? cliniciansInScope : 0;
-    const entProviders =
-      typeof enterpriseProviders === "number" ? enterpriseProviders : 0;
-    const entEncounters =
-      typeof enterpriseEncounters === "number" ? enterpriseEncounters : 0;
-
-    if (providers > 0 && entProviders > 0 && entEncounters > 0) {
-      return Math.round((providers / entProviders) * entEncounters);
-    }
-    return null;
-  }, [cliniciansInScope, enterpriseProviders, enterpriseEncounters]);
-
   // Canonical values for calculations (parse empty string as 0 for validation)
   const effectiveClinicians =
     typeof cliniciansInScope === "number" ? cliniciansInScope : 0;
@@ -445,6 +426,35 @@ export default function ObjectiveSelectionScreen({
 
   // Effective minutes saved (custom or preset)
   const effectiveMinutesSaved = customMinutes ?? minutesSaved;
+
+  // Eligible encounters (utilization × encounters)
+  const eligibleEncounters = useMemo(() => {
+    if (utilizationPercent !== null && effectiveEncounters > 0) {
+      return Math.round((utilizationPercent / 100) * effectiveEncounters);
+    }
+    return null;
+  }, [utilizationPercent, effectiveEncounters]);
+
+  // Total minutes saved and total hours saved
+  const totalMinutesSaved = useMemo(() => {
+    if (
+      effectiveMinutesSaved !== null &&
+      utilizationPercent !== null &&
+      effectiveEncounters > 0
+    ) {
+      return (
+        effectiveMinutesSaved * (utilizationPercent / 100) * effectiveEncounters
+      );
+    }
+    return null;
+  }, [effectiveMinutesSaved, utilizationPercent, effectiveEncounters]);
+
+  const totalHoursSaved = useMemo(() => {
+    if (totalMinutesSaved !== null) {
+      return totalMinutesSaved / 60;
+    }
+    return null;
+  }, [totalMinutesSaved]);
 
   // Annual subscription cost
   const annualSubscriptionCost = useMemo(() => {
@@ -555,7 +565,30 @@ export default function ObjectiveSelectionScreen({
       }),
     );
 
-    onComplete([selectedSetting], levers);
+    // Build the seedInputs object with all collected data
+    const seedInputs: Partial<RoiInputs> = {
+      numberOfProviders: effectiveClinicians,
+      annualOutpatientEncounters: effectiveEncounters,
+      abridgeUtilizationPct: utilizationPercent ?? 70,
+      minutesSavedPerEncounter: effectiveMinutesSaved ?? 4,
+      monthlyCostPerProvider:
+        pricingModel === "per-clinician" ? (perClinicianCost ?? 0) : 0,
+      implementationCostYear1: implementationEnabled
+        ? (implementationFee ?? 0)
+        : 0,
+    };
+
+    // If enterprise pricing, convert to monthly per-provider equivalent
+    if (
+      pricingModel === "enterprise" &&
+      enterpriseAnnualCost !== null &&
+      effectiveClinicians > 0
+    ) {
+      seedInputs.monthlyCostPerProvider =
+        enterpriseAnnualCost / (effectiveClinicians * 12);
+    }
+
+    onComplete([selectedSetting], levers, seedInputs);
   };
 
   // ============================================
@@ -616,14 +649,15 @@ export default function ObjectiveSelectionScreen({
       <BackgroundShape />
 
       {/* Header */}
-      <header className="relative z-20 bg-white/90 backdrop-blur-sm border-b border-neutral-200/50">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight relative inline-block">
+      <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
+        <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-lg md:text-xl font-semibold text-neutral-900 tracking-tight">
               ROI Calculator
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F03319]" />
-            </h1>
-            <p className="text-xs text-neutral-500 mt-1">by Abridge</p>
+            </span>
+            <span className="text-sm text-neutral-500 leading-tight">
+              by <span className="font-semibold text-neutral-900">Abridge</span>
+            </span>
           </div>
 
           {currentPage !== "orientation" && (
@@ -648,20 +682,27 @@ export default function ObjectiveSelectionScreen({
         {currentPage === "orientation" && (
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28">
             <div className="w-full max-w-3xl text-center">
-              <div className="w-full bg-neutral-50/95 backdrop-blur-md border border-neutral-200/70 rounded-3xl px-10 py-12 md:px-16 md:py-14 shadow-[0_24px_64px_-40px_rgba(0,0,0,0.3)] ring-1 ring-black/5">
-                <div className="mx-auto mb-5 h-0.5 w-32 rounded-full bg-[#F03319] opacity-80" />
-                <h2 className="text-3xl md:text-4xl lg:text-[52px] font-medium text-neutral-900 leading-[1.08] tracking-tight">
-                  Let&apos;s walk through how Abridge creates value in your care
-                  setting.
+              <div className="w-full bg-white border border-neutral-200/70 rounded-3xl px-10 py-12 md:px-16 md:py-14 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.25)] ring-1 ring-black/5">
+                <h2 className="text-3xl md:text-4xl lg:text-[44px] font-medium text-neutral-900 tracking-tight">
+                  <span className="block leading-[1.15]">
+                    Model the impact of
+                  </span>
+                  <span className="block mt-2 leading-[1.15]">
+                    ambient documentation
+                  </span>
                 </h2>
+                <p className="mt-5 text-base md:text-lg text-neutral-500 leading-relaxed">
+                  Understand where the value actually comes from.
+                </p>
+
                 <div className="mt-10 flex justify-center">
                   <button
                     type="button"
                     onClick={handleContinueToPage1}
-                    className="inline-flex items-center justify-center gap-3 px-16 py-5 rounded-2xl font-semibold text-base md:text-lg bg-neutral-900 text-white hover:bg-neutral-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="inline-flex items-center justify-center gap-3 px-16 py-5 rounded-2xl font-semibold text-base md:text-lg bg-[#F03319] text-white hover:bg-[#D92E17] transition-all duration-200 shadow-md hover:shadow-lg"
                     data-testid="button-start"
                   >
-                    Get started
+                    Build ROI Case
                     <ChevronRight className="h-5 w-5" />
                   </button>
                 </div>
@@ -690,23 +731,18 @@ export default function ObjectiveSelectionScreen({
                     <li className="flex items-start gap-3 text-base text-neutral-700">
                       <Check className="w-5 h-5 text-[#F03319] flex-shrink-0 mt-0.5" />
                       <span>
-                        Each setting has different documentation demands and
-                        workflow bottlenecks
+                        Workflows differ by setting—so ROI drivers differ too.
                       </span>
                     </li>
                     <li className="flex items-start gap-3 text-base text-neutral-700">
                       <Check className="w-5 h-5 text-[#F03319] flex-shrink-0 mt-0.5" />
                       <span>
-                        Operational efficiency and financial impact differ
-                        across environments
+                        This sets the assumptions used throughout the model.
                       </span>
                     </li>
                     <li className="flex items-start gap-3 text-base text-neutral-700">
                       <Check className="w-5 h-5 text-[#F03319] flex-shrink-0 mt-0.5" />
-                      <span>
-                        This choice anchors the assumptions used throughout the
-                        model
-                      </span>
+                      <span>You'll get a tailored output you can share.</span>
                     </li>
                   </ul>
                 </div>
@@ -762,22 +798,26 @@ export default function ObjectiveSelectionScreen({
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-10 md:py-14">
             <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
               <div>
-                <button
-                  onClick={handleBackToPage1}
-                  className="inline-flex items-center gap-2 mb-6 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
-                  data-testid="button-back-to-setting"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </button>
-                <div className="mb-8">
-                  <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-3">
-                    Strategic Priorities
-                  </h2>
-                  <p className="text-lg text-neutral-600 leading-relaxed">
-                    What outcomes matter most right now?
-                  </p>
+                <div className="mb-10">
+                  <button
+                    onClick={handleBackToPage1}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
+                    data-testid="button-back-to-setting"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                  </button>
+
+                  <div className="mt-4">
+                    <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight">
+                      Strategic Priorities
+                    </h2>
+                    <p className="mt-2 text-lg text-neutral-600 leading-relaxed">
+                      What outcomes matter most right now?
+                    </p>
+                  </div>
                 </div>
+
                 {leversByCategory && (
                   <div>
                     {renderCategorySection("time", leversByCategory.time, true)}
@@ -857,7 +897,7 @@ export default function ObjectiveSelectionScreen({
                       </span>
                       {step === 1 && "Baseline"}
                       {step === 2 && "Adoption"}
-                      {step === 3 && "Pricing"}
+                      {step === 3 && "Investment"}
                     </button>
                   ))}
                 </div>
@@ -869,7 +909,7 @@ export default function ObjectiveSelectionScreen({
                       {/* Providers in scope - Required */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Providers in scope{" "}
+                          Providers (in scope){" "}
                           <span className="text-[#F03319]">*</span>
                         </label>
                         <input
@@ -911,82 +951,6 @@ export default function ObjectiveSelectionScreen({
                           Total annual encounters for providers in scope
                         </p>
                       </div>
-
-                      {/* Optional enterprise context - Expandable */}
-                      <div className="border-t border-neutral-100 pt-6">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setIsEnterpriseExpanded(!isEnterpriseExpanded)
-                          }
-                          className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
-                        >
-                          <ChevronRight
-                            className={`h-4 w-4 transition-transform ${isEnterpriseExpanded ? "rotate-90" : ""}`}
-                          />
-                          Optional — Enterprise Context
-                        </button>
-
-                        {isEnterpriseExpanded && (
-                          <div className="mt-4 space-y-5 pl-6 border-l-2 border-neutral-100">
-                            {/* Enterprise providers */}
-                            <div>
-                              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                Enterprise Providers
-                              </label>
-                              <input
-                                type="number"
-                                value={enterpriseProviders}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setEnterpriseProviders(
-                                    val === ""
-                                      ? ""
-                                      : Math.max(0, parseInt(val) || 0),
-                                  );
-                                }}
-                                placeholder="Total providers in organization"
-                                className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
-                                data-testid="input-enterprise-providers"
-                              />
-                            </div>
-
-                            {/* Enterprise annual outpatient encounters */}
-                            <div>
-                              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                Enterprise annual outpatient encounters
-                              </label>
-                              <input
-                                type="number"
-                                value={enterpriseEncounters}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setEnterpriseEncounters(
-                                    val === ""
-                                      ? ""
-                                      : Math.max(0, parseInt(val) || 0),
-                                  );
-                                }}
-                                placeholder="Total annual encounters"
-                                className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all"
-                                data-testid="input-enterprise-encounters"
-                              />
-                            </div>
-
-                            {/* Estimated encounters - informational only */}
-                            {estimatedEncountersFromEnterprise !== null && (
-                              <div className="p-3 bg-neutral-50 rounded-lg">
-                                <p className="text-sm text-neutral-600">
-                                  Estimated encounters in scope:{" "}
-                                  <span className="font-semibold text-neutral-900">
-                                    {estimatedEncountersFromEnterprise.toLocaleString()}
-                                  </span>
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
                     </div>
 
                     <div className="mt-8 flex justify-end">
@@ -1013,8 +977,8 @@ export default function ObjectiveSelectionScreen({
                 {modelSetupStep === 2 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
                     <p className="text-sm text-neutral-600 mb-6">
-                      Adoption determines how many eligible encounters use
-                      Abridge.
+                      This determines how many encounters are affected by
+                      ambient documentation.
                     </p>
                     <div className="space-y-8">
                       {/* Utilization Rate */}
@@ -1048,7 +1012,12 @@ export default function ObjectiveSelectionScreen({
                             }`}
                             data-testid="chip-util-conservative"
                           >
-                            Early (50%)
+                            <div className="flex flex-col items-center">
+                              <span>Early (50%)</span>
+                              <span className="text-[10px] mt-0.5 opacity-70">
+                                Pilot / phased rollout
+                              </span>
+                            </div>
                           </button>
                           <button
                             onClick={() => setUtilizationPercent(65)}
@@ -1059,7 +1028,12 @@ export default function ObjectiveSelectionScreen({
                             }`}
                             data-testid="chip-util-expected"
                           >
-                            Expected (65%)
+                            <div className="flex flex-col items-center">
+                              <span>Expected (65%)</span>
+                              <span className="text-[10px] mt-0.5 opacity-70">
+                                Steady adoption with enablement
+                              </span>
+                            </div>
                           </button>
                           <button
                             onClick={() => setUtilizationPercent(80)}
@@ -1070,39 +1044,67 @@ export default function ObjectiveSelectionScreen({
                             }`}
                             data-testid="chip-util-high"
                           >
-                            High (80%)
+                            <div className="flex flex-col items-center">
+                              <span>High (80%)</span>
+                              <span className="text-[10px] mt-0.5 opacity-70">
+                                Mature deployment
+                              </span>
+                            </div>
                           </button>
                         </div>
-                        <p className="text-xs text-neutral-500 mt-2">
-                          Percentage of eligible encounters where Abridge is
-                          used
-                        </p>
                       </div>
 
                       {/* Minutes Saved */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-3">
-                          Minutes saved per encounter
+                          Documentation efficiency scenario
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {[2, 4, 6].map((val) => (
-                            <button
-                              key={val}
-                              onClick={() => {
-                                setMinutesSaved(val);
-                                setCustomMinutes(null);
-                                setShowCustomMinutesInput(false);
-                              }}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                minutesSaved === val && customMinutes === null
-                                  ? "bg-[#F03319] text-white"
-                                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                              }`}
-                              data-testid={`chip-minutes-${val}`}
-                            >
-                              {val} min
-                            </button>
-                          ))}
+                          <button
+                            onClick={() => {
+                              setMinutesSaved(2);
+                              setCustomMinutes(null);
+                              setShowCustomMinutesInput(false);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              minutesSaved === 2 && customMinutes === null
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-minutes-2"
+                          >
+                            Conservative (2 min)
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMinutesSaved(4);
+                              setCustomMinutes(null);
+                              setShowCustomMinutesInput(false);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              minutesSaved === 4 && customMinutes === null
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-minutes-4"
+                          >
+                            Expected (4 min)
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMinutesSaved(6);
+                              setCustomMinutes(null);
+                              setShowCustomMinutesInput(false);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              minutesSaved === 6 && customMinutes === null
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-minutes-6"
+                          >
+                            Optimistic (6 min)
+                          </button>
                           {!showCustomMinutesInput ? (
                             <button
                               onClick={() => setShowCustomMinutesInput(true)}
@@ -1114,8 +1116,8 @@ export default function ObjectiveSelectionScreen({
                               data-testid="chip-minutes-custom"
                             >
                               {customMinutes !== null
-                                ? `${customMinutes} min`
-                                : "Custom…"}
+                                ? `Custom (${customMinutes} min)`
+                                : "Custom"}
                             </button>
                           ) : (
                             <div className="flex items-center gap-2">
@@ -1148,7 +1150,8 @@ export default function ObjectiveSelectionScreen({
                           )}
                         </div>
                         <p className="text-xs text-neutral-500 mt-2">
-                          Average documentation time saved per encounter
+                          Based on observed documentation time deltas across
+                          deployments
                         </p>
                       </div>
                     </div>
@@ -1166,31 +1169,22 @@ export default function ObjectiveSelectionScreen({
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-neutral-900 text-white hover:bg-neutral-800 transition-all"
                         data-testid="button-step2-next"
                       >
-                        Next: Pricing
+                        Next: Investment
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                 )}
 
-                {/* Step 3: Pricing */}
+                {/* Step 3: Investment */}
                 {modelSetupStep === 3 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
-                    <h3 className="text-xl font-semibold text-neutral-900 mb-6">
-                      Pricing
-                    </h3>
-
+                    <p className="text-sm text-neutral-600 mb-6">
+                      How is this investment shaped?
+                    </p>
                     <div className="space-y-6">
-                      {/* Pricing Model Section */}
+                      {/* Investment Model Section */}
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-3">
-                          Pricing model
-                        </label>
-                        {pricingModel === null && (
-                          <p className="text-sm text-neutral-600 mb-3">
-                            Choose how you price Abridge to calculate cost.
-                          </p>
-                        )}
                         <div className="space-y-3">
                           <label className="flex items-center gap-3 p-4 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 transition-all">
                             <input
@@ -1460,7 +1454,7 @@ export default function ObjectiveSelectionScreen({
 
               {/* Summary sidebar for Page 3 - Desktop */}
               <div className="hidden lg:block">
-                <div className="sticky top-8">
+                <div className="sticky top-8 space-y-4">
                   <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
                     <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
                       Model Inputs
@@ -1489,6 +1483,16 @@ export default function ObjectiveSelectionScreen({
                         </span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-neutral-600">
+                          Eligible encounters
+                        </span>
+                        <span className="font-medium text-neutral-900">
+                          {eligibleEncounters !== null
+                            ? eligibleEncounters.toLocaleString()
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-neutral-600">Minutes saved</span>
                         <span className="font-medium text-neutral-900">
                           {effectiveMinutesSaved !== null
@@ -1510,7 +1514,7 @@ export default function ObjectiveSelectionScreen({
                           )}
                         <div className="flex justify-between">
                           <span className="text-neutral-600">
-                            Annual subscription
+                            Annual subscription cost
                           </span>
                           <span className="font-semibold text-neutral-900">
                             {annualSubscriptionCost !== null
@@ -1531,12 +1535,43 @@ export default function ObjectiveSelectionScreen({
                       </div>
                     </div>
                   </div>
+
+                  {/* Time Saved Box */}
+                  {totalMinutesSaved !== null && totalHoursSaved !== null && (
+                    <div className="bg-[#F03319] rounded-xl shadow-sm p-6">
+                      <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-4">
+                        Time Saved
+                      </h4>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-white/90">
+                            Total minutes saved
+                          </span>
+                          <span className="font-semibold text-white">
+                            {totalMinutesSaved.toLocaleString()} min
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/90">
+                            Total hours saved
+                          </span>
+                          <span className="font-semibold text-white">
+                            {totalHoursSaved.toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 1,
+                            })}{" "}
+                            hrs
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Summary Panel - Mobile for Page 3 */}
-            <div className="lg:hidden mt-8">
+            <div className="lg:hidden mt-8 space-y-4">
               <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
                 <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
                   Model Inputs
@@ -1565,6 +1600,16 @@ export default function ObjectiveSelectionScreen({
                     </span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-neutral-600">
+                      Eligible encounters
+                    </span>
+                    <span className="font-medium text-neutral-900">
+                      {eligibleEncounters !== null
+                        ? eligibleEncounters.toLocaleString()
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-neutral-600">Minutes saved</span>
                     <span className="font-medium text-neutral-900">
                       {effectiveMinutesSaved !== null
@@ -1585,7 +1630,7 @@ export default function ObjectiveSelectionScreen({
                     )}
                     <div className="flex justify-between">
                       <span className="text-neutral-600">
-                        Annual subscription
+                        Annual subscription cost
                       </span>
                       <span className="font-semibold text-neutral-900">
                         {annualSubscriptionCost !== null
@@ -1606,6 +1651,33 @@ export default function ObjectiveSelectionScreen({
                   </div>
                 </div>
               </div>
+
+              {/* Time Saved Box - Mobile */}
+              {totalMinutesSaved !== null && totalHoursSaved !== null && (
+                <div className="bg-[#F03319] rounded-xl shadow-sm p-6">
+                  <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-4">
+                    Time Saved
+                  </h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-white/90">Total minutes saved</span>
+                      <span className="font-semibold text-white">
+                        {totalMinutesSaved.toLocaleString()} min
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/90">Total hours saved</span>
+                      <span className="font-semibold text-white">
+                        {totalHoursSaved.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 1,
+                        })}{" "}
+                        hrs
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -60,7 +60,6 @@ import {
   CARE_SETTING_LABELS,
   SETTING_CONFIG,
   type CareSettingType,
-  getLeverConfigById,
 } from "@/lib/SETTING_CONFIG";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -75,8 +74,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -90,13 +87,11 @@ import {
   Target,
   FileText,
   ArrowLeft,
-  ChevronRight,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
   selectedSettings: CareSettingType[];
   selectedLevers: SelectedLever[];
-  seedInputs?: Partial<RoiInputs>;
   onBack: () => void;
 }
 
@@ -112,30 +107,18 @@ const CAPACITY_LABOR_LEVER_IDS: LeverId[] = [
 ];
 const REVENUE_RISK_LEVER_IDS: LeverId[] = ["wrvu", "denials", "hcc"];
 
-// Single source of truth for the "open drawer" action (prevents Franken-buttons)
-const OUTPATIENT_LEVER_ACTION: Record<
-  LeverId,
-  { label: string; onClick: () => void } | null
-> = {
-  patientAccess: null, // set inside component (needs state setters)
-  overtime: null,
-  workforce: null,
-  wrvu: null,
-  denials: null,
-  hcc: null,
-};
-
-const leverTableDescriptions: Record<LeverId, string> = {
+const leverTableDescriptions: Record<string, string> = {
   patientAccess:
-    "Returns visit-time documentation minutes back to patient capacity without adding staffing.",
+    "Documentation steals minutes from every visit, and those minutes determine how many patients a clinician can realistically see. Returning that time improves access without increasing staffing.",
   overtime:
-    "Reduces premium labor when documentation no longer spills past scheduled clinic hours.",
+    "Much of overtime and locum spend comes from documentation spilling past scheduled hours. Completing more documentation inside the visit reduces that spillover.",
   workforce:
-    "Lowers burnout-driven turnover by reducing after-hours charting and admin drag.",
-  wrvu: "Improves coding support by capturing clinical reasoning that's often missing from the note.",
+    "Burnout grows when documentation bleeds into every corner of the day. Reducing that burden helps clinicians sustain the work and stay longer.",
+  riskAdjustment:
+    "Risk models break when chronic conditions aren't consistently documented. Clearer narratives help clinicians carry forward the truth about patient complexity.",
+  wrvu: "Visits are often undercoded because the documentation doesn't show the thinking behind the care. Better reasoning in the note aligns coding with reality.",
   denials:
-    "Reduces documentation-driven denials by strengthening medical necessity and MDM clarity.",
-  hcc: "Improves risk capture by consistently documenting chronic conditions across encounters.",
+    "Unrecoverable denials occur when the note doesn't clearly justify why care was needed. Stronger narratives reduce these losses at the source.",
 };
 
 const leverEducationalContent: Record<string, string> = {
@@ -194,7 +177,6 @@ function getFirstSentence(text: string): string {
 export default function RoiCalculator({
   selectedSettings,
   selectedLevers,
-  seedInputs,
   onBack,
 }: RoiCalculatorProps) {
   const [leverStates, setLeverStates] = useState<Map<string, boolean>>(() => {
@@ -206,20 +188,7 @@ export default function RoiCalculator({
   });
 
   const [inputs, setInputs] = useState<RoiInputs>(() => {
-    // Start from defaults
     const initial: RoiInputs = JSON.parse(JSON.stringify(defaultInputs));
-
-    // Merge any seeded values (from Care Settings)
-    if (seedInputs) {
-      Object.assign(initial, seedInputs);
-
-      // If seedInputs contains nested objects, merge those too
-      if (seedInputs.levers) {
-        initial.levers = { ...initial.levers, ...seedInputs.levers };
-      }
-    }
-
-    // Preserve lever selection logic
     const allLeverIds: LeverId[] = [
       "patientAccess",
       "overtime",
@@ -228,19 +197,13 @@ export default function RoiCalculator({
       "denials",
       "hcc",
     ];
-
     allLeverIds.forEach((id) => {
-      // if seedInputs explicitly set a lever, keep it; otherwise derive from selectedLevers
-      const seeded = seedInputs?.levers?.[id];
-      initial.levers[id] =
-        typeof seeded === "boolean"
-          ? seeded
-          : selectedLevers.some((l) => l.leverId === id && l.active);
+      initial.levers[id] = selectedLevers.some(
+        (l) => l.leverId === id && l.active,
+      );
     });
-
     return initial;
   });
-
   const [commentary, setCommentary] = useState("");
   const [selectedLeverForModal, setSelectedLeverForModal] =
     useState<LeverWithSetting | null>(null);
@@ -256,43 +219,6 @@ export default function RoiCalculator({
   ] = useState(false);
   const [hccConditionCaptureDrawerOpen, setHccConditionCaptureDrawerOpen] =
     useState(false);
-
-  // Outpatient-only: one consistent action label + handler for each driver
-  const outpatientLeverAction: Record<
-    LeverId,
-    { label: string; onClick: () => void } | null
-  > = {
-    patientAccess: {
-      label: "Review inputs",
-      onClick: () => setPatientAccessDrawerOpen(true),
-    },
-    overtime: {
-      label: "Review inputs",
-      onClick: () => setOvertimeLocumDrawerOpen(true),
-    },
-    workforce: {
-      label: "Review inputs",
-      onClick: () => setClinicianRetentionDrawerOpen(true),
-    },
-    wrvu: {
-      label: "Review inputs",
-      onClick: () => setLevelOfServiceDrawerOpen(true),
-    },
-    denials: {
-      label: "Review inputs",
-      onClick: () => setMedicalNecessityDenialsDrawerOpen(true),
-    },
-    hcc: {
-      label: "Review inputs",
-      onClick: () => setHccConditionCaptureDrawerOpen(true),
-    },
-  };
-
-  // Helper to safely resolve the action for a lever row
-  function getLeverAction(settingId: CareSettingType, leverId: LeverId) {
-    if (settingId !== "outpatient") return null;
-    return outpatientLeverAction[leverId] ?? null;
-  }
 
   const [patientAccessInputs, setPatientAccessInputs] =
     useState<PatientAccessInputs>(() => {
@@ -847,7 +773,6 @@ export default function RoiCalculator({
 
         <div className="flex flex-col min-[1200px]:flex-row flex-1 min-[1200px]:overflow-hidden">
           <aside className="w-full min-[1200px]:w-96 bg-white border-b min-[1200px]:border-b-0 min-[1200px]:border-r border-neutral-200 flex flex-col shrink-0">
-            {/* Header */}
             <div className="p-6 border-b border-neutral-200">
               <button
                 type="button"
@@ -859,143 +784,63 @@ export default function RoiCalculator({
                 <ArrowLeft className="h-4 w-4" />
                 Back to Care Settings
               </button>
-
               <h1 className="text-2xl font-bold text-black">ROI Calculator</h1>
               <p className="text-xs text-neutral-500 mt-1">
                 Current Selection: {settingsText}
               </p>
             </div>
-
-            {/* Sticky "Stripe-style" mini receipt */}
-            <div className="p-6 border-b border-neutral-200 bg-white">
-              <div className="rounded-xl border border-neutral-200 bg-white p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                    Live preview
-                  </div>
-
-                  <Badge variant="secondary" className="text-xs shrink-0">
-                    {enabledDriverCount} enabled
-                  </Badge>
-                </div>
-
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-3 py-2">
-                    <div className="text-[11px] text-neutral-500">Net gain</div>
-                    <div className="font-mono font-semibold text-neutral-900">
-                      {formatCurrency(adjustedNetValue)}
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-3 py-2">
-                    <div className="text-[11px] text-neutral-500">
-                      Return (x)
-                    </div>
-                    <div className="font-mono font-semibold text-neutral-900">
-                      {adjustedRoiMultiple.toFixed(2)}x
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 text-xs text-neutral-500">
-                  Updates as you change inputs.
-                </div>
-
-                {/* Jump links */}
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="text-xs px-2.5 py-1 rounded-full border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                    onClick={() =>
-                      document.getElementById("section-scope")?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start",
-                      })
-                    }
-                  >
-                    Scope
-                  </button>
-                  <button
-                    type="button"
-                    className="text-xs px-2.5 py-1 rounded-full border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                    onClick={() =>
-                      document
-                        .getElementById("section-adoption")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        })
-                    }
-                  >
-                    Adoption
-                  </button>
-                  <button
-                    type="button"
-                    className="text-xs px-2.5 py-1 rounded-full border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                    onClick={() =>
-                      document
-                        .getElementById("section-economics")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        })
-                    }
-                  >
-                    Economics
-                  </button>
-                  <button
-                    type="button"
-                    className="text-xs px-2.5 py-1 rounded-full border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                    onClick={() =>
-                      document
-                        .getElementById("section-drivers")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        })
-                    }
-                  >
-                    Drivers
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Scrollable inputs */}
             <div className="flex-1 min-[1200px]:overflow-auto">
               <div className="p-6 space-y-6">
                 {selectedSettings.includes("outpatient") &&
                 selectedSettings.length === 1 ? (
                   <>
-                    <div className="space-y-1">
+                    <div className="space-y-1 mb-6">
                       <h2 className="text-lg font-semibold text-black">
-                        Scenario inputs
+                        Scenario Inputs
                       </h2>
                       <p className="text-xs text-neutral-500">
-                        Adjust assumptions on the left. Results update on the
-                        right.
+                        Define who's in scope and the economics for this
+                        scenario.
                       </p>
                     </div>
 
-                    {/* SCOPE */}
-                    <details
-                      id="section-scope"
-                      open
-                      className="group rounded-2xl border border-neutral-200 bg-white"
-                    >
-                      <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                        <div>
-                          <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
-                            Scope
-                          </div>
-                          <div className="text-sm font-semibold text-neutral-900">
-                            What volume is included?
-                          </div>
+                    <div className="bg-neutral-50 rounded-lg p-4 mb-6">
+                      <h3 className="text-xs font-semibold text-[#F03319] uppercase tracking-wide mb-3">
+                        Scenario Summary
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-neutral-600">
+                            Providers in scope
+                          </span>
+                          <span className="font-mono font-medium">
+                            {formatNumber(inputs.numberOfProviders)}
+                          </span>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                      </summary>
+                        <div className="flex justify-between">
+                          <span className="text-neutral-600">
+                            Ambient-used encounters (modeled)
+                          </span>
+                          <span className="font-mono font-medium">
+                            {formatNumber(
+                              Math.round(encountersCoveredByAbridge),
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-neutral-600">Utilization</span>
+                          <span className="font-mono font-medium">
+                            {inputs.abridgeUtilizationPct}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-                      <div className="px-4 pb-4 pt-1 space-y-4">
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                          Current Scope
+                        </h3>
                         <InputField
                           label="Providers in Scope"
                           helperText="Clinicians included in this scenario."
@@ -1012,7 +857,6 @@ export default function RoiCalculator({
                             data-testid="input-num-providers"
                           />
                         </InputField>
-
                         <InputField
                           label="Annual Outpatient Encounters (in scope)"
                           helperText="Annual visits covered by Abridge for this group."
@@ -1029,64 +873,6 @@ export default function RoiCalculator({
                             data-testid="input-encounters"
                           />
                         </InputField>
-
-                        <div className="pt-2 border-t border-neutral-200" />
-
-                        <InputField
-                          label="Enterprise Provider Count"
-                          helperText="Total clinicians across your enterprise."
-                        >
-                          <Input
-                            type="number"
-                            value={inputs.enterpriseProviderCount}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "enterpriseProviderCount",
-                                Number(e.target.value),
-                              )
-                            }
-                            data-testid="input-enterprise-providers"
-                          />
-                        </InputField>
-
-                        <InputField
-                          label="Annual Outpatient Encounters (enterprise)"
-                          helperText="Total annual outpatient visits across the enterprise."
-                        >
-                          <Input
-                            type="number"
-                            value={inputs.enterpriseAnnualEncounters}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "enterpriseAnnualEncounters",
-                                Number(e.target.value),
-                              )
-                            }
-                            data-testid="input-enterprise-encounters"
-                          />
-                        </InputField>
-                      </div>
-                    </details>
-
-                    {/* ADOPTION */}
-                    <details
-                      id="section-adoption"
-                      open
-                      className="group rounded-2xl border border-neutral-200 bg-white"
-                    >
-                      <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                        <div>
-                          <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
-                            Adoption
-                          </div>
-                          <div className="text-sm font-semibold text-neutral-900">
-                            How often is ambient used?
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                      </summary>
-
-                      <div className="px-4 pb-4 pt-1 space-y-4">
                         <InputField
                           label="Abridge Utilization (%)"
                           helperText="Portion of eligible visits where Abridge is actually used."
@@ -1109,7 +895,6 @@ export default function RoiCalculator({
                             </div>
                           </div>
                         </InputField>
-
                         <InputField
                           label="Minutes Saved per Encounter"
                           helperText="Time returned per encounter where Abridge is used."
@@ -1127,27 +912,49 @@ export default function RoiCalculator({
                           />
                         </InputField>
                       </div>
-                    </details>
 
-                    {/* ECONOMICS */}
-                    <details
-                      id="section-economics"
-                      open
-                      className="group rounded-2xl border border-neutral-200 bg-white"
-                    >
-                      <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                        <div>
-                          <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
-                            Economics
-                          </div>
-                          <div className="text-sm font-semibold text-neutral-900">
-                            Unit economics assumptions
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                      </summary>
+                      <div className="space-y-3">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                          Enterprise Footprint
+                        </h3>
+                        <InputField
+                          label="Enterprise Provider Count"
+                          helperText="Total clinicians across your enterprise."
+                        >
+                          <Input
+                            type="number"
+                            value={inputs.enterpriseProviderCount}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "enterpriseProviderCount",
+                                Number(e.target.value),
+                              )
+                            }
+                            data-testid="input-enterprise-providers"
+                          />
+                        </InputField>
+                        <InputField
+                          label="Annual Outpatient Encounters (enterprise)"
+                          helperText="Total annual outpatient visits across the enterprise."
+                        >
+                          <Input
+                            type="number"
+                            value={inputs.enterpriseAnnualEncounters}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "enterpriseAnnualEncounters",
+                                Number(e.target.value),
+                              )
+                            }
+                            data-testid="input-enterprise-encounters"
+                          />
+                        </InputField>
+                      </div>
 
-                      <div className="px-4 pb-4 pt-1 space-y-4">
+                      <div className="space-y-3">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                          Economics
+                        </h3>
                         <InputField
                           label="Average Revenue per Encounter ($)"
                           helperText="Typical net revenue collected per outpatient visit."
@@ -1164,7 +971,6 @@ export default function RoiCalculator({
                             data-testid="input-avg-revenue"
                           />
                         </InputField>
-
                         <InputField
                           label="Cost per Provider per Month ($)"
                           helperText="Contracted Abridge subscription per provider, per month."
@@ -1182,54 +988,36 @@ export default function RoiCalculator({
                           />
                         </InputField>
                       </div>
-                    </details>
+                    </div>
 
-                    {/* DRIVERS */}
-                    <details
-                      id="section-drivers"
-                      open
-                      className="group rounded-2xl border border-neutral-200 bg-white"
-                    >
-                      <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                        <div>
-                          <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
-                            Drivers
-                          </div>
-                          <div className="text-sm font-semibold text-neutral-900">
-                            What outcomes are included?
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                      </summary>
-
-                      <div className="px-4 pb-4 pt-1 space-y-3">
-                        <div className="text-xs text-neutral-500">
-                          Enable drivers to include them in totals.
-                        </div>
-
-                        <div className="space-y-2">
-                          {SETTING_CONFIG.outpatient.map((lever) => {
-                            const key = `outpatient:${lever.id}`;
-                            const isActive = leverStates.get(key) ?? false;
-
-                            return (
-                              <StrategicDriverCard
-                                key={lever.id}
-                                title={lever.label}
-                                active={isActive}
-                                onClick={() =>
-                                  handleLeverToggle(
-                                    "outpatient",
-                                    lever.id as LeverId,
-                                  )
-                                }
-                                testId={`driver-card-${lever.id}`}
-                              />
-                            );
-                          })}
-                        </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-5 w-5 text-neutral-600" />
+                        <h3 className="text-sm font-semibold text-neutral-800 uppercase tracking-wide">
+                          Strategic Drivers
+                        </h3>
                       </div>
-                    </details>
+                      <div className="space-y-2">
+                        {SETTING_CONFIG.outpatient.map((lever) => {
+                          const key = `outpatient:${lever.id}`;
+                          const isActive = leverStates.get(key) ?? false;
+                          return (
+                            <StrategicDriverCard
+                              key={lever.id}
+                              title={lever.label}
+                              active={isActive}
+                              onClick={() =>
+                                handleLeverToggle(
+                                  "outpatient",
+                                  lever.id as LeverId,
+                                )
+                              }
+                              testId={`driver-card-${lever.id}`}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
                   </>
                 ) : (
                   <>
@@ -1237,31 +1025,20 @@ export default function RoiCalculator({
                       title="Commercial Terms"
                       icon={<DollarSign className="h-5 w-5" />}
                     >
-                      <InputField
-                        label="Monthly Cost per Provider"
-                        helperText="Cost per provider per month"
-                      >
+                      <InputField label="Contract Length (years)">
                         <Input
                           type="number"
-                          value={inputs.monthlyCostPerProvider}
+                          value={inputs.contractLengthYears}
                           onChange={(e) =>
                             handleInputChange(
-                              "monthlyCostPerProvider",
+                              "contractLengthYears",
                               Number(e.target.value),
                             )
                           }
+                          data-testid="input-contract-length"
                         />
                       </InputField>
-                    </InputSection>
-
-                    <InputSection
-                      title="Baseline Volume & Economics"
-                      icon={<BarChart3 className="h-5 w-5" />}
-                    >
-                      <InputField
-                        label="Number of Providers"
-                        helperText="Total providers in scope"
-                      >
+                      <InputField label="Number of Providers">
                         <Input
                           type="number"
                           value={inputs.numberOfProviders}
@@ -1271,13 +1048,53 @@ export default function RoiCalculator({
                               Number(e.target.value),
                             )
                           }
+                          data-testid="input-num-providers"
                         />
                       </InputField>
+                      <InputField label="Monthly Cost per Provider ($)">
+                        <Input
+                          type="number"
+                          value={inputs.monthlyCostPerProvider}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "monthlyCostPerProvider",
+                              Number(e.target.value),
+                            )
+                          }
+                          data-testid="input-monthly-cost"
+                        />
+                      </InputField>
+                      <InputField label="Implementation Cost Year 1 ($)">
+                        <Input
+                          type="number"
+                          value={inputs.implementationCostYear1}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "implementationCostYear1",
+                              Number(e.target.value),
+                            )
+                          }
+                          data-testid="input-impl-cost"
+                        />
+                      </InputField>
+                      <InputField label="Annual Abridge Cost (Year 1)" readOnly>
+                        <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2">
+                          <Calculator className="h-4 w-4 text-muted-foreground" />
+                          <span
+                            className="font-semibold font-mono"
+                            data-testid="text-annual-cost"
+                          >
+                            {formatCurrency(annualAbridgeCost)}
+                          </span>
+                        </div>
+                      </InputField>
+                    </InputSection>
 
-                      <InputField
-                        label="Annual Outpatient Encounters"
-                        helperText="Total annual encounters"
-                      >
+                    <InputSection
+                      title="Baseline Volume & Economics"
+                      icon={<BarChart3 className="h-5 w-5" />}
+                    >
+                      <InputField label="Annual Outpatient Encounters">
                         <Input
                           type="number"
                           value={inputs.annualOutpatientEncounters}
@@ -1287,6 +1104,79 @@ export default function RoiCalculator({
                               Number(e.target.value),
                             )
                           }
+                          data-testid="input-encounters"
+                        />
+                      </InputField>
+                      <InputField label="Abridge Utilization (%)">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Slider
+                              value={[inputs.abridgeUtilizationPct]}
+                              onValueChange={([v]) =>
+                                handleInputChange("abridgeUtilizationPct", v)
+                              }
+                              max={100}
+                              step={1}
+                              className="flex-1"
+                              data-testid="slider-utilization"
+                            />
+                            <span className="text-sm font-mono w-12">
+                              {inputs.abridgeUtilizationPct}%
+                            </span>
+                          </div>
+                        </div>
+                      </InputField>
+                      <InputField label="Minutes Saved per Encounter">
+                        <Input
+                          type="number"
+                          value={inputs.minutesSavedPerEncounter}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "minutesSavedPerEncounter",
+                              Number(e.target.value),
+                            )
+                          }
+                          data-testid="input-minutes-saved"
+                        />
+                      </InputField>
+                      <InputField label="Avg Net Revenue per Encounter ($)">
+                        <Input
+                          type="number"
+                          value={inputs.avgNetRevenuePerEncounter}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "avgNetRevenuePerEncounter",
+                              Number(e.target.value),
+                            )
+                          }
+                          data-testid="input-avg-revenue"
+                        />
+                      </InputField>
+                      <InputField label="Baseline wRVU per Encounter">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={inputs.baselineWrvuPerEncounter}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "baselineWrvuPerEncounter",
+                              Number(e.target.value),
+                            )
+                          }
+                          data-testid="input-baseline-wrvu"
+                        />
+                      </InputField>
+                      <InputField label="Total MA Attributed Patients">
+                        <Input
+                          type="number"
+                          value={inputs.totalMedicareAdvantagePatients}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "totalMedicareAdvantagePatients",
+                              Number(e.target.value),
+                            )
+                          }
+                          data-testid="input-ma-patients"
                         />
                       </InputField>
                     </InputSection>
@@ -1318,115 +1208,123 @@ export default function RoiCalculator({
             </header>
             <ScrollArea className="flex-1">
               <div className="p-6 space-y-8">
-                {/* (1) Top strip: selections + model receipt (hierarchy) */}
-                <div className="space-y-4">
-                  {/* Compact "You chose" strip */}
-                  <div className="rounded-xl border border-neutral-200 bg-white px-4 py-3">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                          Your selections
+                {/* (1) "You chose" strip */}
+                <Card className="w-full border-neutral-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-semibold text-neutral-900">
+                      Your selections
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-neutral-600">Care setting</span>
+                      <span className="font-medium">{settingsText}</span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between items-start gap-3">
+                        <span className="text-neutral-600 flex-shrink-0">
+                          Capacity & labor
                         </span>
-                        <span className="text-neutral-300">•</span>
-                        <span className="text-sm font-medium text-neutral-900">
-                          {settingsText}
-                        </span>
+                        <div className="flex flex-wrap gap-1.5 justify-end">
+                          {enabledCapacityLaborLevers.length > 0 ? (
+                            enabledCapacityLaborLevers.map((l) => (
+                              <Badge
+                                key={`${l.settingId}:${l.id}`}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {l.label}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-neutral-400 italic">
+                              None selected
+                            </span>
+                          )}
+                        </div>
                       </div>
-
-                      <div className="flex flex-wrap gap-1.5 md:justify-end">
-                        {enabledDriverCount > 0 ? (
-                          <>
-                            {enabledCapacityLaborLevers.map((l) => (
+                      <div className="flex justify-between items-start gap-3">
+                        <span className="text-neutral-600 flex-shrink-0">
+                          Revenue & risk
+                        </span>
+                        <div className="flex flex-wrap gap-1.5 justify-end">
+                          {enabledRevenueRiskLevers.length > 0 ? (
+                            enabledRevenueRiskLevers.map((l) => (
                               <Badge
                                 key={`${l.settingId}:${l.id}`}
                                 variant="secondary"
-                                className="text-[11px] px-2 py-0.5"
+                                className="text-xs"
                               >
                                 {l.label}
                               </Badge>
-                            ))}
-                            {enabledRevenueRiskLevers.map((l) => (
-                              <Badge
-                                key={`${l.settingId}:${l.id}`}
-                                variant="secondary"
-                                className="text-[11px] px-2 py-0.5"
-                              >
-                                {l.label}
-                              </Badge>
-                            ))}
-                          </>
-                        ) : (
-                          <span className="text-xs text-neutral-400 italic">
-                            No drivers selected
-                          </span>
-                        )}
+                            ))
+                          ) : (
+                            <span className="text-neutral-400 italic">
+                              None selected
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
 
-                  {/* Scenario receipt (secondary weight) */}
-                  <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                {/* (2) Scenario receipt */}
+                <Card className="w-full border-neutral-200">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-base font-semibold text-neutral-900">
                       Scenario receipt
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-                      <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
-                        <div className="text-[11px] text-neutral-500">
-                          Providers
-                        </div>
-                        <div className="font-mono font-semibold text-neutral-900">
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Providers</span>
+                        <span className="font-mono font-medium">
                           {formatNumber(inputs.numberOfProviders)}
-                        </div>
+                        </span>
                       </div>
-
-                      <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
-                        <div className="text-[11px] text-neutral-500">
-                          Annual encounters
-                        </div>
-                        <div className="font-mono font-semibold text-neutral-900">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">
+                          Annual encounters (in scope)
+                        </span>
+                        <span className="font-mono font-medium">
                           {formatNumber(inputs.annualOutpatientEncounters)}
-                        </div>
+                        </span>
                       </div>
-
-                      <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
-                        <div className="text-[11px] text-neutral-500">
-                          Utilization
-                        </div>
-                        <div className="font-mono font-semibold text-neutral-900">
-                          {inputs.abridgeUtilizationPct}%
-                        </div>
-                      </div>
-
-                      <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
-                        <div className="text-[11px] text-neutral-500">
-                          Minutes saved
-                        </div>
-                        <div className="font-mono font-semibold text-neutral-900">
-                          {inputs.minutesSavedPerEncounter}
-                        </div>
-                      </div>
-
-                      <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
-                        <div className="text-[11px] text-neutral-500">
-                          Ambient-used encounters
-                        </div>
-                        <div className="font-mono font-semibold text-neutral-900">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">
+                          Ambient-used encounters (modeled)
+                        </span>
+                        <span className="font-mono font-medium">
                           {formatNumber(Math.round(encountersCoveredByAbridge))}
-                        </div>
+                        </span>
                       </div>
-
-                      <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
-                        <div className="text-[11px] text-neutral-500">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Utilization</span>
+                        <span className="font-mono font-medium">
+                          {inputs.abridgeUtilizationPct}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">
+                          Minutes saved / encounter
+                        </span>
+                        <span className="font-mono font-medium">
+                          {inputs.minutesSavedPerEncounter}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">
                           Drivers enabled
-                        </div>
-                        <div className="font-mono font-semibold text-neutral-900">
+                        </span>
+                        <span className="font-mono font-medium">
                           {enabledDriverCount}
-                        </div>
+                        </span>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
 
                 {/* (3) Executive KPI row */}
                 <div>
@@ -1464,40 +1362,6 @@ export default function RoiCalculator({
                   </KpiGrid>
                 </div>
 
-                {/* How this model works (orientation layer) */}
-                <Card className="border-neutral-200">
-                  <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <div className="text-sm font-semibold text-neutral-900">
-                          How this model works
-                        </div>
-                        <div className="text-sm text-neutral-500 mt-1 max-w-2xl">
-                          Totals reflect enabled drivers only. Each line item
-                          below shows its modeled contribution, based on the
-                          assumptions you entered.
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 shrink-0">
-                        <Badge variant="secondary" className="text-xs">
-                          {enabledDriverCount} drivers enabled
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-700">
-                      <span className="font-semibold text-neutral-900">
-                        Want to validate a number?
-                      </span>{" "}
-                      Use <span className="font-semibold">Review inputs</span>{" "}
-                      next to each driver below, or open{" "}
-                      <span className="font-semibold">Model details</span> to
-                      add or remove drivers.
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* (4) Two-column Outcomes */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card className="border-neutral-200">
@@ -1509,7 +1373,6 @@ export default function RoiCalculator({
                         Modeled annual value from operational priorities
                       </p>
                     </CardHeader>
-
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex justify-between text-sm font-semibold border-b border-neutral-200 pb-2">
@@ -1520,48 +1383,62 @@ export default function RoiCalculator({
                             {formatCurrency(capacityLaborBenefit)}
                           </span>
                         </div>
-
                         <div className="space-y-2 text-sm">
                           {enabledCapacityLaborLevers.length > 0 ? (
-                            enabledCapacityLaborLevers.map((lever) => {
-                              const openInputs = () => {
-                                if (lever.id === "patientAccess")
-                                  setPatientAccessDrawerOpen(true);
-                                if (lever.id === "overtime")
-                                  setOvertimeLocumDrawerOpen(true);
-                                if (lever.id === "workforce")
-                                  setClinicianRetentionDrawerOpen(true);
-                              };
-
-                              return (
-                                <div
-                                  key={`${lever.settingId}:${lever.id}`}
-                                  className="flex justify-between items-center"
-                                >
-                                  <span className="text-neutral-600">
-                                    {lever.label}
+                            enabledCapacityLaborLevers.map((lever) => (
+                              <div
+                                key={`${lever.settingId}:${lever.id}`}
+                                className="flex justify-between items-center"
+                              >
+                                <span className="text-neutral-600">
+                                  {lever.label}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-medium">
+                                    {formatCurrency(lever.value)}
                                   </span>
-
-                                  <div className="flex items-center gap-3">
-                                    <span className="font-mono font-medium">
-                                      {formatCurrency(lever.value)}
-                                    </span>
-
-                                    {/* One consistent CTA */}
-                                    {lever.settingId === "outpatient" && (
+                                  {lever.id === "patientAccess" &&
+                                    lever.settingId === "outpatient" && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={openInputs}
-                                        className="h-6 px-2 text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
+                                        onClick={() =>
+                                          setPatientAccessDrawerOpen(true)
+                                        }
+                                        className="text-xs h-6 px-2"
                                       >
-                                        Review inputs
+                                        Show work
                                       </Button>
                                     )}
-                                  </div>
+                                  {lever.id === "overtime" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setOvertimeLocumDrawerOpen(true)
+                                        }
+                                        className="text-xs h-6 px-2"
+                                      >
+                                        Show work
+                                      </Button>
+                                    )}
+                                  {lever.id === "workforce" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setClinicianRetentionDrawerOpen(true)
+                                        }
+                                        className="text-xs h-6 px-2"
+                                      >
+                                        Show work
+                                      </Button>
+                                    )}
                                 </div>
-                              );
-                            })
+                              </div>
+                            ))
                           ) : (
                             <div className="text-neutral-400 text-xs italic py-2">
                               No Capacity & Labor priorities selected
@@ -1582,7 +1459,6 @@ export default function RoiCalculator({
                         priorities
                       </p>
                     </CardHeader>
-
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex justify-between text-sm font-semibold border-b border-neutral-200 pb-2">
@@ -1593,48 +1469,64 @@ export default function RoiCalculator({
                             {formatCurrency(revenueRiskBenefit)}
                           </span>
                         </div>
-
                         <div className="space-y-2 text-sm">
                           {enabledRevenueRiskLevers.length > 0 ? (
-                            enabledRevenueRiskLevers.map((lever) => {
-                              const openInputs = () => {
-                                if (lever.id === "wrvu")
-                                  setLevelOfServiceDrawerOpen(true);
-                                if (lever.id === "denials")
-                                  setMedicalNecessityDenialsDrawerOpen(true);
-                                if (lever.id === "hcc")
-                                  setHccConditionCaptureDrawerOpen(true);
-                              };
-
-                              return (
-                                <div
-                                  key={`${lever.settingId}:${lever.id}`}
-                                  className="flex justify-between items-center"
-                                >
-                                  <span className="text-neutral-600">
-                                    {lever.label}
+                            enabledRevenueRiskLevers.map((lever) => (
+                              <div
+                                key={`${lever.settingId}:${lever.id}`}
+                                className="flex justify-between items-center"
+                              >
+                                <span className="text-neutral-600">
+                                  {lever.label}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-medium">
+                                    {formatCurrency(lever.value)}
                                   </span>
-
-                                  <div className="flex items-center gap-3">
-                                    <span className="font-mono font-medium">
-                                      {formatCurrency(lever.value)}
-                                    </span>
-
-                                    {/* One consistent CTA */}
-                                    {lever.settingId === "outpatient" && (
+                                  {lever.id === "wrvu" &&
+                                    lever.settingId === "outpatient" && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={openInputs}
-                                        className="h-6 px-2 text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
+                                        onClick={() =>
+                                          setLevelOfServiceDrawerOpen(true)
+                                        }
+                                        className="text-xs h-6 px-2"
                                       >
-                                        Review inputs
+                                        Show work
                                       </Button>
                                     )}
-                                  </div>
+                                  {lever.id === "denials" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setMedicalNecessityDenialsDrawerOpen(
+                                            true,
+                                          )
+                                        }
+                                        className="text-xs h-6 px-2"
+                                      >
+                                        Show work
+                                      </Button>
+                                    )}
+                                  {lever.id === "hcc" &&
+                                    lever.settingId === "outpatient" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          setHccConditionCaptureDrawerOpen(true)
+                                        }
+                                        className="text-xs h-6 px-2"
+                                      >
+                                        Show work
+                                      </Button>
+                                    )}
                                 </div>
-                              );
-                            })
+                              </div>
+                            ))
                           ) : (
                             <div className="text-neutral-400 text-xs italic py-2">
                               No Revenue & Risk priorities selected
@@ -1646,337 +1538,207 @@ export default function RoiCalculator({
                   </Card>
                 </div>
 
-                {/* (5) Model details (collapsed by default) */}
-                <Card className="w-full overflow-hidden border-neutral-200 bg-white">
+                {/* (5) Proof section - Understanding Your Drivers table */}
+                <Card className="w-full overflow-hidden border-neutral-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-semibold text-neutral-900">
+                      Understanding your drivers
+                    </CardTitle>
+                    <p className="text-sm text-neutral-500">
+                      Interpretation of how each selected driver influences your
+                      current scope.
+                    </p>
+                  </CardHeader>
                   <CardContent className="p-0">
-                    <details className="group">
-                      <summary className="list-none cursor-pointer select-none px-6 py-5 flex items-start justify-between gap-6 hover:bg-neutral-50 transition-colors">
-                        <div>
-                          <div className="text-base font-semibold text-neutral-900">
-                            Model details
-                          </div>
-                          <div className="text-sm text-neutral-500 mt-1">
-                            Review what's included in totals, and enable
-                            additional drivers.
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 shrink-0">
-                          <Badge variant="secondary" className="text-xs">
-                            {enabledDriverCount} included
-                          </Badge>
-
-                          <span className="text-xs text-neutral-500 group-open:hidden">
-                            Show
-                          </span>
-                          <span className="text-xs text-neutral-500 hidden group-open:inline">
-                            Hide
-                          </span>
-
-                          {/* Chevron (rotates) */}
-                          <svg
-                            className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                      </summary>
-
-                      <div className="border-t border-neutral-200">
-                        <div className="overflow-x-auto">
-                          <Table className="min-w-[900px]">
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead className="w-20 text-center text-xs uppercase tracking-wide text-neutral-500">
-                                  Include
-                                </TableHead>
-                                <TableHead className="text-xs uppercase tracking-wide text-neutral-500">
-                                  Driver
-                                </TableHead>
-                                <TableHead className="w-32 text-xs uppercase tracking-wide text-neutral-500">
-                                  Setting
-                                </TableHead>
-                                <TableHead className="w-40 text-right text-xs uppercase tracking-wide text-neutral-500">
-                                  Annual value
-                                </TableHead>
-                                <TableHead className="w-48 text-right text-xs uppercase tracking-wide text-neutral-500">
-                                  Actions
-                                </TableHead>
-                              </TableRow>
-                            </TableHeader>
-
-                            <TableBody>
-                              {(() => {
-                                const activeLevers = leversWithSettings.filter(
-                                  (l) => l.enabled,
-                                );
-                                const inactiveLevers =
-                                  leversWithSettings.filter((l) => !l.enabled);
-
-                                const renderActions = (
-                                  lever: LeverWithSetting,
-                                ) => {
-                                  const action = getLeverAction(
-                                    lever.settingId,
-                                    lever.id,
-                                  );
-
-                                  return (
-                                    <div className="flex justify-end items-center gap-3">
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[600px]">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-16 text-center">
+                              Active
+                            </TableHead>
+                            <TableHead>Lever</TableHead>
+                            <TableHead>Setting</TableHead>
+                            <TableHead className="text-right">
+                              Annual Value
+                            </TableHead>
+                            <TableHead className="hidden md:table-cell">
+                              Description
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {leversWithSettings.map((lever) => {
+                            const key = `${lever.settingId}:${lever.id}`;
+                            return (
+                              <TableRow
+                                key={key}
+                                className={!lever.enabled ? "opacity-50" : ""}
+                                data-testid={`lever-row-${key}`}
+                              >
+                                <TableCell className="text-center">
+                                  <Checkbox
+                                    checked={lever.enabled}
+                                    onCheckedChange={() =>
+                                      handleLeverToggle(
+                                        lever.settingId,
+                                        lever.id,
+                                      )
+                                    }
+                                    data-testid={`checkbox-${key}`}
+                                  />
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                  {lever.label}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {CARE_SETTING_LABELS[lever.settingId]}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right font-mono">
+                                  {lever.enabled
+                                    ? formatCurrency(lever.value)
+                                    : "—"}
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-md">
+                                  <span>
+                                    {leverTableDescriptions[lever.id] ||
+                                      lever.description}
+                                  </span>
+                                  {leverEducationalContent[lever.id] && (
+                                    <>
+                                      {" "}
                                       <button
-                                        type="button"
                                         onClick={() =>
                                           setSelectedLeverForModal(lever)
                                         }
-                                        className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4"
+                                        className="text-neutral-500 text-sm hover:underline cursor-pointer"
+                                        data-testid={`read-more-${key}`}
                                       >
-                                        Why
+                                        Read more…
                                       </button>
-
-                                      {action ? (
-                                        <button
-                                          type="button"
-                                          onClick={action.onClick}
-                                          className="text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
-                                        >
-                                          {action.label}
-                                        </button>
-                                      ) : (
-                                        <span className="text-xs text-neutral-300">
-                                          —
-                                        </span>
-                                      )}
-                                    </div>
-                                  );
-                                };
-
-                                return (
-                                  <>
-                                    {/* Section: Included */}
-                                    <TableRow className="bg-neutral-50">
-                                      <TableCell
-                                        colSpan={5}
-                                        className="px-6 py-3"
-                                      >
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                                            Included drivers
-                                          </span>
-                                          <span className="text-xs text-neutral-500">
-                                            {activeLevers.length}
-                                          </span>
-                                        </div>
-                                      </TableCell>
-                                    </TableRow>
-
-                                    {activeLevers.length > 0 ? (
-                                      activeLevers.map((lever) => {
-                                        const key = `${lever.settingId}:${lever.id}`;
-
-                                        return (
-                                          <TableRow
-                                            key={key}
-                                            className="hover:bg-neutral-50 transition-colors"
-                                            data-testid={`lever-row-${key}`}
-                                          >
-                                            <TableCell className="text-center">
-                                              <Checkbox
-                                                checked
-                                                onCheckedChange={() =>
-                                                  handleLeverToggle(
-                                                    lever.settingId,
-                                                    lever.id,
-                                                  )
-                                                }
-                                                data-testid={`checkbox-${key}`}
-                                              />
-                                            </TableCell>
-
-                                            <TableCell className="font-medium text-neutral-900">
-                                              {lever.label}
-                                            </TableCell>
-
-                                            <TableCell>
-                                              <Badge
-                                                variant="secondary"
-                                                className="text-xs"
-                                              >
-                                                {
-                                                  CARE_SETTING_LABELS[
-                                                    lever.settingId
-                                                  ]
-                                                }
-                                              </Badge>
-                                            </TableCell>
-
-                                            <TableCell className="text-right font-mono">
-                                              {formatCurrency(lever.value)}
-                                            </TableCell>
-
-                                            <TableCell className="text-right">
-                                              {renderActions(lever)}
-                                            </TableCell>
-                                          </TableRow>
-                                        );
-                                      })
-                                    ) : (
-                                      <TableRow>
-                                        <TableCell
-                                          colSpan={5}
-                                          className="px-6 py-6"
-                                        >
-                                          <div className="text-sm text-neutral-400 italic text-center">
-                                            No drivers currently included
-                                          </div>
-                                        </TableCell>
-                                      </TableRow>
-                                    )}
-
-                                    {/* Section: Available */}
-                                    {inactiveLevers.length > 0 && (
-                                      <>
-                                        <TableRow className="bg-neutral-50">
-                                          <TableCell
-                                            colSpan={5}
-                                            className="px-6 py-3"
-                                          >
-                                            <div className="flex items-center justify-between">
-                                              <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                                                Available drivers
-                                              </span>
-                                              <span className="text-xs text-neutral-500">
-                                                {inactiveLevers.length}
-                                              </span>
-                                            </div>
-                                          </TableCell>
-                                        </TableRow>
-
-                                        {inactiveLevers.map((lever) => {
-                                          const key = `${lever.settingId}:${lever.id}`;
-
-                                          return (
-                                            <TableRow
-                                              key={key}
-                                              className="hover:bg-neutral-50 transition-colors opacity-60"
-                                              data-testid={`lever-row-${key}`}
-                                            >
-                                              <TableCell className="text-center">
-                                                <Checkbox
-                                                  checked={false}
-                                                  onCheckedChange={() =>
-                                                    handleLeverToggle(
-                                                      lever.settingId,
-                                                      lever.id,
-                                                    )
-                                                  }
-                                                  data-testid={`checkbox-${key}`}
-                                                />
-                                              </TableCell>
-
-                                              <TableCell className="font-medium text-neutral-900">
-                                                {lever.label}
-                                              </TableCell>
-
-                                              <TableCell>
-                                                <Badge
-                                                  variant="secondary"
-                                                  className="text-xs"
-                                                >
-                                                  {
-                                                    CARE_SETTING_LABELS[
-                                                      lever.settingId
-                                                    ]
-                                                  }
-                                                </Badge>
-                                              </TableCell>
-
-                                              <TableCell className="text-right font-mono text-neutral-400">
-                                                {formatCurrency(lever.value)}
-                                              </TableCell>
-
-                                              <TableCell className="text-right">
-                                                {renderActions(lever)}
-                                              </TableCell>
-                                            </TableRow>
-                                          );
-                                        })}
-                                      </>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </div>
-                    </details>
+                                    </>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                          <TableRow
+                            className="border-t border-neutral-300"
+                            style={{ backgroundColor: "#F8F8F7" }}
+                            data-testid="lever-row-total"
+                          >
+                            <TableCell></TableCell>
+                            <TableCell className="font-bold text-neutral-900">
+                              Total Annual Benefit
+                            </TableCell>
+                            <TableCell></TableCell>
+                            <TableCell className="text-right font-mono font-bold text-neutral-900">
+                              {formatCurrency(totalBenefitFromSelectedLevers)}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell"></TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
                   </CardContent>
                 </Card>
+
+                {/* (6) Scale section */}
+                <div className="space-y-8">
+                  <WaterfallChart
+                    levers={waterfallLevers}
+                    investmentCost={annualAbridgeCost}
+                    netValue={adjustedNetValue}
+                  />
+
+                  <EnterpriseExpansionChart
+                    levers={waterfallLevers}
+                    totalAnnualBenefit={totalBenefitFromSelectedLevers}
+                    scopeEncounterCount={encountersCoveredByAbridge}
+                    enterpriseEncounterCount={
+                      inputs.enterpriseAnnualEncounters *
+                      (inputs.abridgeUtilizationPct / 100)
+                    }
+                  />
+                </div>
+
+                {/* (7) Commentary box last */}
+                <CommentaryBox value={commentary} onChange={setCommentary} />
               </div>
             </ScrollArea>
           </main>
-
-      {/* Lever Detail Modal */}
-      {selectedLeverForModal && (
-        <Dialog
-          open={!!selectedLeverForModal}
-          onOpenChange={() => setSelectedLeverForModal(null)}
-        >
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>{selectedLeverForModal.label}</DialogTitle>
-              <DialogDescription>
-                {getLeverConfigById(
-                  selectedLeverForModal.settingId,
-                  selectedLeverForModal.id,
-                )?.description || "No description available."}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="mt-4 space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">Care Setting</span>
-                <span className="font-medium">
-                  {CARE_SETTING_LABELS[selectedLeverForModal.settingId]}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">Annual Value</span>
-                <span className="font-mono font-medium">
-                  {formatCurrency(selectedLeverForModal.value)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">This lever drives</span>
-                <span className="text-right max-w-[200px]">
-                  {getLeverConfigById(
-                    selectedLeverForModal.settingId,
-                    selectedLeverForModal.id,
-                  )?.driverSummary || "—"}
-                </span>
-              </div>
-            </div>
-
-            <DialogFooter className="mt-6">
-              <Button
-                variant="outline"
-                onClick={() => setSelectedLeverForModal(null)}
-              >
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
         </div>
       </div>
+
+      <Dialog
+        open={!!selectedLeverForModal}
+        onOpenChange={(open) => !open && setSelectedLeverForModal(null)}
+      >
+        <DialogContent className="max-w-[600px] w-full rounded-xl shadow-xl p-6 sm:p-8 max-h-[85vh] overflow-y-auto bg-white [&>button]:top-6 [&>button]:right-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-black">
+              {selectedLeverForModal?.label}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 text-sm text-neutral-700 leading-relaxed whitespace-pre-line">
+            {selectedLeverForModal &&
+              leverEducationalContent[selectedLeverForModal.id]}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <PatientAccessDrawer
+        open={patientAccessDrawerOpen}
+        onClose={() => setPatientAccessDrawerOpen(false)}
+        inputs={patientAccessInputs}
+        onChange={handlePatientAccessInputChange}
+        calculations={patientAccessCalculations}
+      />
+
+      <OvertimeLocumDrawer
+        open={overtimeLocumDrawerOpen}
+        onClose={() => setOvertimeLocumDrawerOpen(false)}
+        inputs={overtimeLocumInputs}
+        onChange={handleOvertimeLocumInputChange}
+        calculations={overtimeLocumCalculations}
+      />
+
+      <ClinicianRetentionDrawer
+        open={clinicianRetentionDrawerOpen}
+        onClose={() => setClinicianRetentionDrawerOpen(false)}
+        inputs={clinicianRetentionInputs}
+        onChange={handleClinicianRetentionInputChange}
+        calculations={clinicianRetentionCalculations}
+      />
+
+      <LevelOfServiceDrawer
+        open={levelOfServiceDrawerOpen}
+        onClose={() => setLevelOfServiceDrawerOpen(false)}
+        inputs={levelOfServiceInputs}
+        onChange={handleLevelOfServiceInputChange}
+        calculations={levelOfServiceCalculations}
+      />
+
+      <MedicalNecessityDenialsDrawer
+        open={medicalNecessityDenialsDrawerOpen}
+        onClose={() => setMedicalNecessityDenialsDrawerOpen(false)}
+        inputs={medicalNecessityDenialsInputs}
+        onChange={handleMedicalNecessityDenialsInputChange}
+        calculations={medicalNecessityDenialsCalculations}
+      />
+
+      <HccConditionCaptureDrawer
+        open={hccConditionCaptureDrawerOpen}
+        onClose={() => setHccConditionCaptureDrawerOpen(false)}
+        inputs={hccConditionCaptureInputs}
+        onChange={handleHccConditionCaptureInputChange}
+        calculations={hccConditionCaptureCalculations}
+      />
     </div>
   );
 }
