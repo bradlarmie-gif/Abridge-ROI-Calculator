@@ -383,18 +383,18 @@ export default function ObjectiveSelectionScreen({
   const [utilizationPercent, setUtilizationPercent] = useState<number | null>(
     null,
   );
-  const [minutesSaved, setMinutesSaved] = useState<number | null>(null);
+  const [minutesSaved, setMinutesSaved] = useState<number | null>(4); // Default to Typical (4 min)
   const [customMinutes, setCustomMinutes] = useState<number | null>(null);
   const [showCustomMinutesInput, setShowCustomMinutesInput] = useState(false);
   const customMinutesInputRef = useRef<HTMLInputElement>(null);
 
   // Value Realization step state
-  const [timeRealizationRate, setTimeRealizationRate] = useState<number | null>(null);
+  const [timeRealizationRate, setTimeRealizationRate] = useState<number | null>(55); // Default to Typical (55%)
   
   // Documentation lever sensitivity states (only shown if lever is selected)
-  const [wrvuSensitivity, setWrvuSensitivity] = useState<number | null>(null); // 3%, 5%, 7% level of service
-  const [hccSensitivity, setHccSensitivity] = useState<number | null>(null); // 0.3%, 0.7%, 1.2% RAF lift
-  const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(null); // 2%, 5%, 8% denial reduction
+  const [wrvuSensitivity, setWrvuSensitivity] = useState<number | null>(5); // Default to Typical (5%)
+  const [hccSensitivity, setHccSensitivity] = useState<number | null>(0.7); // Default to Typical (0.7%)
+  const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(5); // Default to Typical (5%)
 
   // Pricing step state
   const [pricingModel, setPricingModel] = useState<
@@ -1091,10 +1091,10 @@ export default function ObjectiveSelectionScreen({
                 {modelSetupStep === 2 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-7">
                     <div className="text-sm font-semibold text-neutral-900">
-                      How does value get realized when Abridge is used?
+                      Value realization
                     </div>
                     <div className="mt-1 text-sm text-neutral-600">
-                      Choose assumptions you can defend. Start with typical defaults, then adjust if needed.
+                      Typical defaults are applied based on observed deployments. Adjust only if your environment differs.
                     </div>
 
                     {/* Two sections grid */}
@@ -1109,10 +1109,6 @@ export default function ObjectiveSelectionScreen({
                           <div className="text-sm font-semibold text-neutral-900">
                             Minutes returned per encounter
                           </div>
-                          <div className="mt-1 text-xs text-neutral-600">
-                            Observed defaults from deployments. Use Custom if you have internal data.
-                          </div>
-
                           <div className="mt-3 flex flex-wrap gap-2">
                             <button
                               type="button"
@@ -1204,13 +1200,13 @@ export default function ObjectiveSelectionScreen({
                               </div>
                             )}
                           </div>
+                          <div className="mt-2 text-xs text-neutral-500">
+                            Observed defaults from live deployments. Use Custom if you have internal time study data.
+                          </div>
 
                           <div className="mt-5 border-t border-neutral-200 pt-4">
                             <div className="text-sm font-semibold text-neutral-900">
                               Realization factor
-                            </div>
-                            <div className="mt-1 text-xs text-neutral-600">
-                              Portion of returned time that converts to usable capacity.
                             </div>
 
                             <div className="mt-3 flex flex-wrap gap-2">
@@ -1251,6 +1247,9 @@ export default function ObjectiveSelectionScreen({
                                 Upper bound (65%)
                               </button>
                             </div>
+                            <div className="mt-2 text-xs text-neutral-500">
+                              Portion of returned time that converts into usable capacity (varies by scheduling, staffing, and demand).
+                            </div>
                           </div>
                         </div>
                       </section>
@@ -1267,9 +1266,6 @@ export default function ObjectiveSelectionScreen({
                             <div>
                               <div className="text-sm font-semibold text-neutral-900">
                                 Level-of-service alignment
-                              </div>
-                              <div className="mt-1 text-xs text-neutral-600">
-                                Percent of visits billed at the level actually delivered.
                               </div>
 
                               <div className="mt-3 flex flex-wrap gap-2">
@@ -1309,6 +1305,9 @@ export default function ObjectiveSelectionScreen({
                                 >
                                   Upper bound (7%)
                                 </button>
+                              </div>
+                              <div className="mt-2 text-xs text-neutral-500">
+                                Derived from documentation review patterns: percent of visits billed at the level actually delivered.
                               </div>
                             </div>
                           )}
@@ -1764,8 +1763,11 @@ export default function ObjectiveSelectionScreen({
                       </div>
 
                       <div className="mt-3 divide-y divide-neutral-200">
-                        {/* Baseline info */}
+                        {/* Configuration section */}
                         <div className="py-2 space-y-2">
+                          <div className="text-xs font-semibold text-neutral-500">
+                            Configuration
+                          </div>
                           <div className="flex items-center justify-between gap-4">
                             <div className="text-sm text-neutral-600">Providers</div>
                             <div className="text-sm font-semibold text-neutral-900 tabular-nums">
@@ -1784,20 +1786,17 @@ export default function ObjectiveSelectionScreen({
                               {utilizationPercent !== null ? `${utilizationPercent}%` : "—"}
                             </div>
                           </div>
+                        </div>
+
+                        {/* System output section */}
+                        <div className="py-2 space-y-2">
+                          <div className="text-xs font-semibold text-neutral-500">
+                            System output
+                          </div>
                           <div className="flex items-center justify-between gap-4">
                             <div className="text-sm text-neutral-600">Eligible encounters</div>
                             <div className="text-sm font-semibold text-neutral-900 tabular-nums">
                               {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Time mechanics info */}
-                        <div className="py-2 space-y-2">
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Minutes returned / encounter</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {effectiveMinutesSaved !== null ? `${effectiveMinutesSaved} min` : "—"}
                             </div>
                           </div>
                           <div className="flex items-center justify-between gap-4">
@@ -1806,10 +1805,6 @@ export default function ObjectiveSelectionScreen({
                               {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
                             </div>
                           </div>
-                        </div>
-
-                        {/* Time saved results */}
-                        <div className="py-2 space-y-2">
                           <div className="flex items-center justify-between gap-4">
                             <div className="text-sm text-neutral-600">Hours returned (gross)</div>
                             <div className="text-sm font-semibold text-neutral-900 tabular-nums">
@@ -1828,10 +1823,10 @@ export default function ObjectiveSelectionScreen({
                           </div>
                         </div>
 
-                        {/* Documentation assumptions */}
+                        {/* Documentation assumptions section */}
                         {hasAnyDocumentationLever && (
                           <div className="py-2 space-y-2">
-                            <div className="text-xs font-semibold text-neutral-500 mt-1">
+                            <div className="text-xs font-semibold text-neutral-500">
                               Documentation assumptions
                             </div>
                             {hasWrvuSelected && wrvuSensitivity !== null && (

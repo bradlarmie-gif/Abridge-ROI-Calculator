@@ -1,0 +1,30 @@
+On the Value Realization page/component (the step with Time Mechanics + Documentation Mechanics + the Live Receipt on the right), make these changes ONLY:
+
+1) Change the header helper copy so it feels like defaults are applied (verification, not “choose”):
+Replace the subtitle under “Value realization” with:
+“Typical defaults are applied based on observed deployments. Adjust only if your environment differs.”
+
+2) Rename all scenario labels from “Expected” to “Typical” and “Optimistic” to “Upper bound” (keep Conservative as-is). This applies to:
+- Minutes returned per encounter buttons
+- Realization factor buttons
+- Level-of-service alignment buttons
+Do NOT change the underlying scenario keys/logic; only change displayed text.
+
+3) Set the default selected scenario for ALL three assumption groups to Typical on initial load.
+If the code uses keys like conservative/expected/optimistic, default them to “expected” (which now displays as Typical).
+
+4) Add “source anchor” microcopy under each assumption group (small gray text):
+- Under Minutes returned per encounter:
+  “Observed defaults from live deployments. Use Custom if you have internal time study data.”
+- Under Realization factor:
+  “Portion of returned time that converts into usable capacity (varies by scheduling, staffing, and demand).”
+- Under Level-of-service alignment:
+  “Derived from documentation review patterns: percent of visits billed at the level actually delivered.”
+
+5) In the right-side Live Receipt, group the rows into 3 sections with small headers (no layout overhaul, just grouping):
+- Section header “Configuration” above: Providers, Annual encounters, Utilization
+- Section header “System output” above: Eligible encounters, Encounters affected, Hours returned (gross), Hours usable (net)
+- Section header “Documentation assumptions” above: Level of service lift
+Keep the same values and formatting; just add the section headers and group the rows visually.
+
+6) Keep the rest of the layout identical (no new cards, no color changes, no spacing overhaul). Only implement the text changes, default selection change, and receipt grouping described above.
