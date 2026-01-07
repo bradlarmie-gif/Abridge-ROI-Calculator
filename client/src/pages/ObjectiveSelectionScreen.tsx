@@ -641,10 +641,10 @@ export default function ObjectiveSelectionScreen({
   const isStep1Complete =
     effectiveClinicians > 0 &&
     effectiveEncounters > 0 &&
-    utilizationPercent !== null &&
-    effectiveMinutesSaved !== null;
+    utilizationPercent !== null;
 
   const isStep2Complete =
+    effectiveMinutesSaved !== null &&
     timeRealizationRate !== null &&
     (!hasWrvuSelected || wrvuSensitivity !== null) &&
     (!hasHccSelected || hccSensitivity !== null) &&
