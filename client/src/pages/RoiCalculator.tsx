@@ -1329,6 +1329,40 @@ export default function RoiCalculator({
             </header>
             <ScrollArea className="flex-1">
               <div className="p-6 space-y-8">
+                {/* How this model works (orientation layer) */}
+                <Card className="border-neutral-200">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-semibold text-neutral-900">
+                          How this model works
+                        </div>
+                        <div className="text-sm text-neutral-500 mt-1 max-w-2xl">
+                          Totals reflect enabled drivers only. Each line item
+                          below shows its modeled contribution, based on the
+                          assumptions you entered.
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Badge variant="secondary" className="text-xs">
+                          {enabledDriverCount} drivers enabled
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-700">
+                      <span className="font-semibold text-neutral-900">
+                        Want to validate a number?
+                      </span>{" "}
+                      Use <span className="font-semibold">Review inputs</span>{" "}
+                      next to each driver below, or open{" "}
+                      <span className="font-semibold">Model details</span> to
+                      add or remove drivers.
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* (1) Top strip: selections + model receipt (hierarchy) */}
                 <div className="space-y-4">
                   {/* Compact "You chose" strip */}
@@ -1474,40 +1508,6 @@ export default function RoiCalculator({
                     />
                   </KpiGrid>
                 </div>
-
-                {/* How this model works (orientation layer) */}
-                <Card className="border-neutral-200">
-                  <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <div className="text-sm font-semibold text-neutral-900">
-                          How this model works
-                        </div>
-                        <div className="text-sm text-neutral-500 mt-1 max-w-2xl">
-                          Totals reflect enabled drivers only. Each line item
-                          below shows its modeled contribution, based on the
-                          assumptions you entered.
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 shrink-0">
-                        <Badge variant="secondary" className="text-xs">
-                          {enabledDriverCount} drivers enabled
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-700">
-                      <span className="font-semibold text-neutral-900">
-                        Want to validate a number?
-                      </span>{" "}
-                      Use <span className="font-semibold">Review inputs</span>{" "}
-                      next to each driver below, or open{" "}
-                      <span className="font-semibold">Model details</span> to
-                      add or remove drivers.
-                    </div>
-                  </CardContent>
-                </Card>
 
                 {/* (4) Two-column Outcomes */}
                 <div className="grid md:grid-cols-2 gap-6">
