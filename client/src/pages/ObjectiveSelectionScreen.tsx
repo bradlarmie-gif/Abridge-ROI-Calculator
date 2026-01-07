@@ -1550,7 +1550,7 @@ export default function ObjectiveSelectionScreen({
                               }}
                               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                 contractYears === 2 && !showCustomYears
-                                  ? "bg-[#F03319] text-white"
+                                  ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                   : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                               }`}
                               data-testid="chip-years-2"
@@ -1564,7 +1564,7 @@ export default function ObjectiveSelectionScreen({
                               }}
                               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                 contractYears === 3 && !showCustomYears
-                                  ? "bg-[#F03319] text-white"
+                                  ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                   : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                               }`}
                               data-testid="chip-years-3"
@@ -1578,7 +1578,7 @@ export default function ObjectiveSelectionScreen({
                                   showCustomYears &&
                                   contractYears !== 2 &&
                                   contractYears !== 3
-                                    ? "bg-[#F03319] text-white"
+                                    ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                     : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                                 }`}
                                 data-testid="chip-years-custom"
@@ -1763,7 +1763,7 @@ export default function ObjectiveSelectionScreen({
                         disabled={!canContinuePage3}
                         className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm transition-all ${
                           canContinuePage3
-                            ? "bg-[#F03319] text-white hover:bg-[#d62d16] shadow-md hover:shadow-lg"
+                            ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-md hover:shadow-lg"
                             : "bg-neutral-300 text-neutral-500 cursor-not-allowed"
                         }`}
                         data-testid="button-see-results"
@@ -2090,27 +2090,6 @@ export default function ObjectiveSelectionScreen({
         </div>
       )}
 
-      {/* Sticky Bottom Bar — Mobile Only, Page 3 Step 3 Only */}
-      {currentPage === "model-setup" && modelSetupStep === 3 && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-neutral-200/60 shadow-lg lg:hidden">
-          <div className="px-6 py-4">
-            <button
-              type="button"
-              disabled={!canContinuePage3}
-              onClick={handleFinalSubmit}
-              className={`w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
-                canContinuePage3
-                  ? "bg-[#F03319] text-white hover:bg-[#d62d16] shadow-md"
-                  : "opacity-40 bg-neutral-300 text-neutral-500 cursor-not-allowed"
-              }`}
-              data-testid="button-see-results-mobile"
-            >
-              View ROI Model
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
