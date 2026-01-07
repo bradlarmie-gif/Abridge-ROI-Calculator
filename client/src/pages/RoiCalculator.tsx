@@ -981,6 +981,7 @@ export default function RoiCalculator({
                     {/* SCOPE */}
                     <details
                       id="section-scope"
+                      open
                       className="group rounded-2xl border border-neutral-200 bg-white"
                     >
                       <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
@@ -1075,6 +1076,7 @@ export default function RoiCalculator({
                     {/* ADOPTION */}
                     <details
                       id="section-adoption"
+                      open
                       className="group rounded-2xl border border-neutral-200 bg-white"
                     >
                       <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
@@ -1136,6 +1138,7 @@ export default function RoiCalculator({
                     {/* ECONOMICS */}
                     <details
                       id="section-economics"
+                      open
                       className="group rounded-2xl border border-neutral-200 bg-white"
                     >
                       <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
@@ -1192,6 +1195,7 @@ export default function RoiCalculator({
                     {/* DRIVERS */}
                     <details
                       id="section-drivers"
+                      open
                       className="group rounded-2xl border border-neutral-200 bg-white"
                     >
                       <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
@@ -1371,16 +1375,13 @@ export default function RoiCalculator({
                     </div>
                   </div>
 
-                  {/* Scenario receipt (secondary weight) - collapsible */}
-                  <details className="group rounded-xl border border-neutral-200 bg-neutral-50">
-                    <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                        Scenario receipt
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                    </summary>
+                  {/* Scenario receipt (secondary weight) */}
+                  <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                      Scenario receipt
+                    </div>
 
-                    <div className="px-4 pb-4 pt-1 grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
                       <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
                         <div className="text-[11px] text-neutral-500">
                           Providers
@@ -1435,7 +1436,7 @@ export default function RoiCalculator({
                         </div>
                       </div>
                     </div>
-                  </details>
+                  </div>
                 </div>
 
                 {/* (3) Executive KPI row */}
@@ -1474,28 +1475,29 @@ export default function RoiCalculator({
                   </KpiGrid>
                 </div>
 
-                {/* How this model works (orientation layer) - collapsible */}
-                <details className="group rounded-2xl border border-neutral-200 bg-white">
-                  <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="text-sm font-semibold text-neutral-900">
-                        How this model works
+                {/* How this model works (orientation layer) */}
+                <Card className="border-neutral-200">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-semibold text-neutral-900">
+                          How this model works
+                        </div>
+                        <div className="text-sm text-neutral-500 mt-1 max-w-2xl">
+                          Totals reflect enabled drivers only. Each line item
+                          below shows its modeled contribution, based on the
+                          assumptions you entered.
+                        </div>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {enabledDriverCount} drivers enabled
-                      </Badge>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                  </summary>
 
-                  <div className="px-4 pb-4 pt-1 space-y-3">
-                    <div className="text-sm text-neutral-500">
-                      Totals reflect enabled drivers only. Each line item
-                      below shows its modeled contribution, based on the
-                      assumptions you entered.
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Badge variant="secondary" className="text-xs">
+                          {enabledDriverCount} drivers enabled
+                        </Badge>
+                      </div>
                     </div>
 
-                    <div className="rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-700">
+                    <div className="mt-3 rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-700">
                       <span className="font-semibold text-neutral-900">
                         Want to validate a number?
                       </span>{" "}
@@ -1504,26 +1506,22 @@ export default function RoiCalculator({
                       <span className="font-semibold">Model details</span> to
                       add or remove drivers.
                     </div>
-                  </div>
-                </details>
+                  </CardContent>
+                </Card>
 
                 {/* (4) Two-column Outcomes */}
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Capacity & labor outcomes - collapsible */}
-                  <details className="group rounded-2xl border border-neutral-200 bg-white">
-                    <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-semibold text-neutral-900">
-                          Capacity & labor outcomes
-                        </div>
-                        <div className="text-xs text-neutral-500 mt-0.5">
-                          {formatCurrency(capacityLaborBenefit)}
-                        </div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                    </summary>
+                  <Card className="border-neutral-200">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-base font-semibold text-neutral-900">
+                        Capacity & labor outcomes
+                      </CardTitle>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Modeled annual value from operational priorities
+                      </p>
+                    </CardHeader>
 
-                    <div className="px-4 pb-4 pt-1">
+                    <CardContent>
                       <div className="space-y-3">
                         <div className="flex justify-between text-sm font-semibold border-b border-neutral-200 pb-2">
                           <span className="text-neutral-700">
@@ -1582,24 +1580,21 @@ export default function RoiCalculator({
                           )}
                         </div>
                       </div>
-                    </div>
-                  </details>
+                    </CardContent>
+                  </Card>
 
-                  {/* Revenue & risk outcomes - collapsible */}
-                  <details className="group rounded-2xl border border-neutral-200 bg-white">
-                    <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-semibold text-neutral-900">
-                          Revenue & risk outcomes
-                        </div>
-                        <div className="text-xs text-neutral-500 mt-0.5">
-                          {formatCurrency(revenueRiskBenefit)}
-                        </div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                    </summary>
+                  <Card className="border-neutral-200">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-base font-semibold text-neutral-900">
+                        Revenue & risk outcomes
+                      </CardTitle>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Modeled annual value from documentation-driven
+                        priorities
+                      </p>
+                    </CardHeader>
 
-                    <div className="px-4 pb-4 pt-1">
+                    <CardContent>
                       <div className="space-y-3">
                         <div className="flex justify-between text-sm font-semibold border-b border-neutral-200 pb-2">
                           <span className="text-neutral-700">
@@ -1658,8 +1653,8 @@ export default function RoiCalculator({
                           )}
                         </div>
                       </div>
-                    </div>
-                  </details>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 {/* (5) Model details (collapsed by default) */}
@@ -1936,56 +1931,44 @@ export default function RoiCalculator({
                   </CardContent>
                 </Card>
 
-                {/* (6) Scale - Enterprise Expansion Chart - collapsible */}
-                <details className="group rounded-2xl border border-neutral-200 bg-white">
-                  <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-semibold text-neutral-900">
-                        Enterprise scale projection
-                      </div>
-                      <div className="text-xs text-neutral-500 mt-0.5">
-                        View projected value at full deployment
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                  </summary>
+                {/* (6) Scale - Enterprise Expansion Chart */}
+                <div className="space-y-8">
+                  <EnterpriseExpansionChart
+                    levers={waterfallLevers}
+                    totalAnnualBenefit={totalBenefitFromSelectedLevers}
+                    scopeEncounterCount={encountersCoveredByAbridge}
+                    enterpriseEncounterCount={
+                      inputs.enterpriseAnnualEncounters *
+                      (inputs.abridgeUtilizationPct / 100)
+                    }
+                    providersInScope={inputs.numberOfProviders}
+                    enterpriseProviders={inputs.enterpriseProviderCount}
+                    utilizationPct={inputs.abridgeUtilizationPct}
+                  />
+                </div>
 
-                  <div className="px-4 pb-4 pt-1">
-                    <EnterpriseExpansionChart
-                      levers={waterfallLevers}
-                      totalAnnualBenefit={totalBenefitFromSelectedLevers}
-                      scopeEncounterCount={encountersCoveredByAbridge}
-                      enterpriseEncounterCount={
-                        inputs.enterpriseAnnualEncounters *
-                        (inputs.abridgeUtilizationPct / 100)
-                      }
-                      providersInScope={inputs.numberOfProviders}
-                      enterpriseProviders={inputs.enterpriseProviderCount}
-                      utilizationPct={inputs.abridgeUtilizationPct}
-                    />
-                  </div>
-                </details>
-
-                {/* (7) Notes for internal review (PDF carry-forward) - collapsible */}
-                <details className="group rounded-2xl border border-neutral-200 bg-white">
-                  <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="text-sm font-semibold text-neutral-900">
-                        Notes for internal review
+                {/* (7) Notes for internal review (PDF carry-forward) */}
+                <Card className="border-neutral-200 bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <CardTitle className="text-base font-semibold text-neutral-900">
+                          Notes for internal review
+                        </CardTitle>
+                        <p className="text-sm text-neutral-500 mt-1">
+                          Optional. These notes are included in the exported PDF
+                          to help others understand scope, assumptions, and next
+                          steps.
+                        </p>
                       </div>
+
                       <Badge variant="secondary" className="text-xs shrink-0">
                         Optional
                       </Badge>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
-                  </summary>
+                  </CardHeader>
 
-                  <div className="px-4 pb-4 pt-1 space-y-4">
-                    <p className="text-sm text-neutral-500">
-                      These notes are included in the exported PDF to help others
-                      understand scope, assumptions, and next steps.
-                    </p>
-
+                  <CardContent className="pt-0 space-y-4">
                     {/* Quick add chips */}
                     <div className="flex flex-wrap gap-2">
                       {[
@@ -2040,8 +2023,8 @@ export default function RoiCalculator({
                         </button>
                       </div>
                     </div>
-                  </div>
-                </details>
+                  </CardContent>
+                </Card>
               </div>
             </ScrollArea>
           </main>
