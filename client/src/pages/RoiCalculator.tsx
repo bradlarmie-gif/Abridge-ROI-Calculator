@@ -1312,8 +1312,8 @@ export default function RoiCalculator({
             </div>
           </aside>
 
-          <main className="flex-1 flex flex-col min-[1200px]:overflow-hidden bg-white/50">
-            <header className="p-6 border-b border-neutral-200 bg-white flex items-center justify-between gap-4 flex-wrap">
+          <main className="flex-1 flex flex-col min-[1200px]:overflow-hidden bg-white/50 overflow-x-hidden">
+            <header className="p-4 md:p-6 border-b border-neutral-200 bg-white flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold text-black">
                 Results summary
               </h2>
@@ -1328,17 +1328,17 @@ export default function RoiCalculator({
               </Button>
             </header>
             <ScrollArea className="flex-1">
-              <div className="p-6 space-y-8">
+              <div className="p-4 md:p-6 space-y-6 md:space-y-8">
                 {/* (1) Top strip: selections + model receipt (hierarchy) */}
                 <div className="space-y-4">
                   {/* Compact "You chose" strip */}
-                  <div className="rounded-xl border border-neutral-200 bg-white px-4 py-3">
+                  <div className="rounded-xl border border-neutral-200 bg-white px-3 py-3 md:px-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
                           Your selections
                         </span>
-                        <span className="text-neutral-300">•</span>
+                        <span className="text-neutral-300 hidden sm:inline">•</span>
                         <span className="text-sm font-medium text-neutral-900">
                           {settingsText}
                         </span>
@@ -1376,12 +1376,12 @@ export default function RoiCalculator({
                   </div>
 
                   {/* Model configuration (what was modeled) */}
-                  <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+                  <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3 md:px-4 md:py-4">
                     <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
                       Model configuration
                     </div>
 
-                    <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="mt-3 md:mt-4 grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                       <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
                         <div className="text-[11px] text-neutral-500">
                           Providers
@@ -1507,7 +1507,7 @@ export default function RoiCalculator({
 
                 {/* (4) Financial KPI row - the money verdict */}
                 <div>
-                  <KpiGrid>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                     <KpiCard
                       label="Modeled annual benefit"
                       value={formatCurrency(totalBenefitFromSelectedLevers)}
@@ -1531,11 +1531,11 @@ export default function RoiCalculator({
                         adjustedRoiMultiple >= 1 ? "positive" : "negative"
                       }
                     />
-                  </KpiGrid>
+                  </div>
                 </div>
 
-                {/* (4) Two-column Outcomes */}
-                <div className="grid md:grid-cols-2 gap-6">
+                {/* (5) Two-column Outcomes */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <Card className="border-neutral-200">
                     <CardHeader className="pb-4">
                       <CardTitle className="text-base font-semibold text-neutral-900">
@@ -1572,13 +1572,13 @@ export default function RoiCalculator({
                               return (
                                 <div
                                   key={`${lever.settingId}:${lever.id}`}
-                                  className="flex justify-between items-center"
+                                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-3"
                                 >
                                   <span className="text-neutral-600">
                                     {lever.label}
                                   </span>
 
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-2 sm:gap-3">
                                     <span className="font-mono font-medium">
                                       {formatCurrency(lever.value)}
                                     </span>
@@ -1589,9 +1589,9 @@ export default function RoiCalculator({
                                         variant="outline"
                                         size="sm"
                                         onClick={openInputs}
-                                        className="h-6 px-2 text-xs font-medium"
+                                        className="h-6 px-2 text-xs font-medium shrink-0"
                                       >
-                                        Review inputs
+                                        Review
                                       </Button>
                                     )}
                                   </div>
@@ -1645,13 +1645,13 @@ export default function RoiCalculator({
                               return (
                                 <div
                                   key={`${lever.settingId}:${lever.id}`}
-                                  className="flex justify-between items-center"
+                                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-3"
                                 >
                                   <span className="text-neutral-600">
                                     {lever.label}
                                   </span>
 
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-2 sm:gap-3">
                                     <span className="font-mono font-medium">
                                       {formatCurrency(lever.value)}
                                     </span>
@@ -1662,9 +1662,9 @@ export default function RoiCalculator({
                                         variant="outline"
                                         size="sm"
                                         onClick={openInputs}
-                                        className="h-6 px-2 text-xs font-medium"
+                                        className="h-6 px-2 text-xs font-medium shrink-0"
                                       >
-                                        Review inputs
+                                        Review
                                       </Button>
                                     )}
                                   </div>
@@ -1686,18 +1686,18 @@ export default function RoiCalculator({
                 <Card className="w-full overflow-hidden border-neutral-200 bg-white">
                   <CardContent className="p-0">
                     <details className="group">
-                      <summary className="list-none cursor-pointer select-none px-6 py-5 flex items-start justify-between gap-6 hover:bg-neutral-50 transition-colors">
-                        <div>
-                          <div className="text-base font-semibold text-neutral-900">
+                      <summary className="list-none cursor-pointer select-none px-4 py-4 md:px-6 md:py-5 flex items-start justify-between gap-4 md:gap-6 hover:bg-neutral-50 transition-colors">
+                        <div className="min-w-0">
+                          <div className="text-sm md:text-base font-semibold text-neutral-900">
                             Model details
                           </div>
-                          <div className="text-sm text-neutral-500 mt-1">
+                          <div className="text-xs md:text-sm text-neutral-500 mt-1">
                             Review what's included in totals, and enable
                             additional drivers.
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-2 md:gap-3 shrink-0">
                           <Badge variant="secondary" className="text-xs">
                             {enabledDriverCount} included
                           </Badge>
@@ -1726,8 +1726,8 @@ export default function RoiCalculator({
                       </summary>
 
                       <div className="border-t border-neutral-200">
-                        <div className="overflow-x-auto">
-                          <Table className="min-w-[900px]">
+                        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                          <Table className="min-w-[700px] md:min-w-[900px]">
                             <TableHeader>
                               <TableRow>
                                 <TableHead className="w-20 text-center text-xs uppercase tracking-wide text-neutral-500">
