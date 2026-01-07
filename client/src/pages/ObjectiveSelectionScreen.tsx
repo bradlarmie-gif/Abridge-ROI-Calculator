@@ -934,12 +934,12 @@ export default function ObjectiveSelectionScreen({
                         onClick={() => setModelSetupStep(step)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                           isActive
-                            ? "bg-[#F03319] text-white"
-                            : "bg-neutral-100 text-neutral-500"
+                            ? "bg-[#FFF5F3] text-[#F03319] ring-1 ring-[#F03319]/20"
+                            : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
                         }`}
                       >
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                          isActive ? "bg-white/20" : isComplete ? "bg-neutral-300" : "bg-neutral-200"
+                          isActive ? "bg-[#F03319]/10 text-[#F03319]" : isComplete ? "bg-neutral-300" : "bg-neutral-200"
                         }`}>
                           {isComplete && !isActive ? (
                             <Check className="w-3 h-3 text-neutral-600" />
