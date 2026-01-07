@@ -1800,9 +1800,9 @@ export default function ObjectiveSelectionScreen({
                             </div>
                           </div>
                           <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Encounters affected</div>
+                            <div className="text-sm text-neutral-600">Minutes returned / encounter</div>
                             <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
+                              {effectiveMinutesSaved !== null ? `${effectiveMinutesSaved} min` : "—"}
                             </div>
                           </div>
                           <div className="flex items-center justify-between gap-4">
