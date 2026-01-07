@@ -389,16 +389,12 @@ export default function ObjectiveSelectionScreen({
   const customMinutesInputRef = useRef<HTMLInputElement>(null);
 
   // Value Realization step state
-  const [timeRealizationRate, setTimeRealizationRate] = useState<number | null>(
-    null,
-  );
-
+  const [timeRealizationRate, setTimeRealizationRate] = useState<number | null>(null);
+  
   // Documentation lever sensitivity states (only shown if lever is selected)
   const [wrvuSensitivity, setWrvuSensitivity] = useState<number | null>(null); // 3%, 5%, 7% level of service
   const [hccSensitivity, setHccSensitivity] = useState<number | null>(null); // 0.3%, 0.7%, 1.2% RAF lift
-  const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(
-    null,
-  ); // 2%, 5%, 8% denial reduction
+  const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(null); // 2%, 5%, 8% denial reduction
 
   // Pricing step state
   const [pricingModel, setPricingModel] = useState<
@@ -485,12 +481,10 @@ export default function ObjectiveSelectionScreen({
   }, [realizedMinutesSaved]);
 
   // Check which documentation levers are selected
-  const hasWrvuSelected =
-    selectedLeverIds.has("wrvu") || selectedLeverIds.has("edLevelOfService");
+  const hasWrvuSelected = selectedLeverIds.has("wrvu") || selectedLeverIds.has("edLevelOfService");
   const hasHccSelected = selectedLeverIds.has("hcc");
   const hasDenialsSelected = selectedLeverIds.has("denials");
-  const hasAnyDocumentationLever =
-    hasWrvuSelected || hasHccSelected || hasDenialsSelected;
+  const hasAnyDocumentationLever = hasWrvuSelected || hasHccSelected || hasDenialsSelected;
 
   // Annual subscription cost
   const annualSubscriptionCost = useMemo(() => {
@@ -738,7 +732,7 @@ export default function ObjectiveSelectionScreen({
                     className="inline-flex items-center justify-center gap-3 px-16 py-5 rounded-2xl font-semibold text-base md:text-lg bg-[#F03319] text-white hover:bg-[#D92E17] transition-all duration-200 shadow-md hover:shadow-lg"
                     data-testid="button-start"
                   >
-                    Build ROI Model
+                    Build ROI Case
                     <ChevronRight className="h-5 w-5" />
                   </button>
                 </div>
@@ -756,8 +750,8 @@ export default function ObjectiveSelectionScreen({
                   Select a care setting
                 </h2>
                 <p className="text-lg text-neutral-600 leading-relaxed mb-10">
-                  This sets baseline documentation patterns and default
-                  assumptions.
+                  Workflow patterns, documentation burden, and potential time
+                  savings vary by setting.
                 </p>
                 <div className="space-y-4 mb-8">
                   <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
@@ -790,7 +784,7 @@ export default function ObjectiveSelectionScreen({
                     Care setting
                   </h3>
                   <p className="text-sm text-neutral-500 mt-1.5">
-                    Choose one to set assumptions
+                    Select to continue
                   </p>
                 </div>
                 <div className="divide-y divide-neutral-100/80">
@@ -849,7 +843,7 @@ export default function ObjectiveSelectionScreen({
                       Strategic Priorities
                     </h2>
                     <p className="mt-2 text-lg text-neutral-600 leading-relaxed">
-                      Select the drivers you want to quantify.
+                      What outcomes matter most right now?
                     </p>
                   </div>
                 </div>
@@ -903,7 +897,7 @@ export default function ObjectiveSelectionScreen({
 
                 <div className="mb-10">
                   <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
-                    Baseline Assumptions
+                    Adoption
                   </h2>
                   <p className="text-lg text-neutral-600 leading-relaxed">
                     These inputs shape your ROI model.
@@ -951,19 +945,13 @@ export default function ObjectiveSelectionScreen({
                         <input
                           type="text"
                           inputMode="numeric"
-                          value={
-                            cliniciansInScope === ""
-                              ? ""
-                              : formatNumber(cliniciansInScope)
-                          }
+                          value={cliniciansInScope === "" ? "" : formatNumber(cliniciansInScope)}
                           onChange={(e) => {
                             const val = e.target.value;
                             if (val === "") {
                               setCliniciansInScope("");
                             } else {
-                              setCliniciansInScope(
-                                Math.max(0, parseFormattedNumber(val)),
-                              );
+                              setCliniciansInScope(Math.max(0, parseFormattedNumber(val)));
                             }
                           }}
                           className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
@@ -971,8 +959,7 @@ export default function ObjectiveSelectionScreen({
                           placeholder="e.g. 50"
                         />
                         <p className="text-xs text-neutral-500 mt-1.5">
-                          Number of providers who will use Abridge. This is the
-                          foundation of your ROI model.
+                          Number of providers who will use Abridge. This is the foundation of your ROI model.
                         </p>
                       </div>
 
@@ -985,19 +972,13 @@ export default function ObjectiveSelectionScreen({
                         <input
                           type="text"
                           inputMode="numeric"
-                          value={
-                            annualEncountersInScope === ""
-                              ? ""
-                              : formatNumber(annualEncountersInScope)
-                          }
+                          value={annualEncountersInScope === "" ? "" : formatNumber(annualEncountersInScope)}
                           onChange={(e) => {
                             const val = e.target.value;
                             if (val === "") {
                               setAnnualEncountersInScope("");
                             } else {
-                              setAnnualEncountersInScope(
-                                Math.max(0, parseFormattedNumber(val)),
-                              );
+                              setAnnualEncountersInScope(Math.max(0, parseFormattedNumber(val)));
                             }
                           }}
                           className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
@@ -1005,8 +986,7 @@ export default function ObjectiveSelectionScreen({
                           placeholder="e.g. 100,000"
                         />
                         <p className="text-xs text-neutral-500 mt-1.5">
-                          Total annual patient encounters for the providers in
-                          scope. This drives encounter-based ROI calculations.
+                          Total annual patient encounters for the providers in scope. This drives encounter-based ROI calculations.
                         </p>
                       </div>
 
@@ -1082,8 +1062,7 @@ export default function ObjectiveSelectionScreen({
                           </button>
                         </div>
                         <p className="text-xs text-neutral-500 mt-2">
-                          Percentage of encounters where Abridge is actively
-                          used for documentation.
+                          Percentage of encounters where Abridge is actively used for documentation.
                         </p>
                       </div>
                     </div>
@@ -1112,180 +1091,168 @@ export default function ObjectiveSelectionScreen({
                 {modelSetupStep === 2 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
                     <p className="text-sm text-neutral-600 mb-6">
-                      When Abridge is used, how does value actually get
-                      realized?
+                      When Abridge is used, how does value actually get realized?
                     </p>
-                    
-                    {/* Two-column layout for mechanics sections */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* A) Time Mechanics Section */}
-                      <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-6 space-y-6">
-                        <h4 className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
-                          Time Mechanics
-                        </h4>
-                        
-                        {/* Minutes Saved */}
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Minutes returned per encounter
-                          </label>
-                          <div className="flex flex-wrap gap-2">
+                    <div className="space-y-8">
+                      {/* Minutes Saved */}
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-3">
+                          Minutes saved per encounter
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => {
+                              setMinutesSaved(2);
+                              setCustomMinutes(null);
+                              setShowCustomMinutesInput(false);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              minutesSaved === 2 && customMinutes === null
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-minutes-2"
+                          >
+                            Conservative (2 min)
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMinutesSaved(4);
+                              setCustomMinutes(null);
+                              setShowCustomMinutesInput(false);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              minutesSaved === 4 && customMinutes === null
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-minutes-4"
+                          >
+                            Expected (4 min)
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMinutesSaved(6);
+                              setCustomMinutes(null);
+                              setShowCustomMinutesInput(false);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              minutesSaved === 6 && customMinutes === null
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-minutes-6"
+                          >
+                            Optimistic (6 min)
+                          </button>
+                          {!showCustomMinutesInput ? (
                             <button
-                              onClick={() => {
-                                setMinutesSaved(2);
-                                setCustomMinutes(null);
-                                setShowCustomMinutesInput(false);
-                              }}
+                              onClick={() => setShowCustomMinutesInput(true)}
                               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                minutesSaved === 2 && customMinutes === null
+                                customMinutes !== null
                                   ? "bg-[#F03319] text-white"
-                                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
+                                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                               }`}
-                              data-testid="chip-minutes-2"
+                              data-testid="chip-minutes-custom"
                             >
-                              Conservative (2 min)
+                              {customMinutes !== null
+                                ? `Custom (${customMinutes} min)`
+                                : "Custom"}
                             </button>
-                            <button
-                              onClick={() => {
-                                setMinutesSaved(4);
-                                setCustomMinutes(null);
-                                setShowCustomMinutesInput(false);
-                              }}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                minutesSaved === 4 && customMinutes === null
-                                  ? "bg-[#F03319] text-white"
-                                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                              }`}
-                              data-testid="chip-minutes-4"
-                            >
-                              Expected (4 min)
-                            </button>
-                            <button
-                              onClick={() => {
-                                setMinutesSaved(6);
-                                setCustomMinutes(null);
-                                setShowCustomMinutesInput(false);
-                              }}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                minutesSaved === 6 && customMinutes === null
-                                  ? "bg-[#F03319] text-white"
-                                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                              }`}
-                              data-testid="chip-minutes-6"
-                            >
-                              Optimistic (6 min)
-                            </button>
-                            {!showCustomMinutesInput ? (
-                              <button
-                                onClick={() => setShowCustomMinutesInput(true)}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                  customMinutes !== null
-                                    ? "bg-[#F03319] text-white"
-                                    : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                                }`}
-                                data-testid="chip-minutes-custom"
-                              >
-                                {customMinutes !== null
-                                  ? `Custom (${customMinutes} min)`
-                                  : "Custom"}
-                              </button>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <input
-                                  ref={customMinutesInputRef}
-                                  type="text"
-                                  inputMode="numeric"
-                                  placeholder="Custom"
-                                  value={customMinutes ?? ""}
-                                  onChange={(e) => {
-                                    const val = parseFormattedNumber(
-                                      e.target.value,
-                                    );
-                                    if (val > 0) {
-                                      setCustomMinutes(val);
-                                      setMinutesSaved(val);
-                                    } else if (e.target.value === "") {
-                                      setCustomMinutes(null);
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    if (customMinutes === null) {
-                                      setShowCustomMinutesInput(false);
-                                    }
-                                  }}
-                                  className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] font-mono bg-white"
-                                  data-testid="input-custom-minutes"
-                                />
-                                <span className="text-sm text-neutral-500">
-                                  min
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-xs text-neutral-500 mt-2">
-                            Observed defaults from deployments
-                          </p>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <input
+                                ref={customMinutesInputRef}
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="Custom"
+                                value={customMinutes ?? ""}
+                                onChange={(e) => {
+                                  const val = parseFormattedNumber(e.target.value);
+                                  if (val > 0) {
+                                    setCustomMinutes(val);
+                                    setMinutesSaved(val);
+                                  } else if (e.target.value === "") {
+                                    setCustomMinutes(null);
+                                  }
+                                }}
+                                onBlur={() => {
+                                  if (customMinutes === null) {
+                                    setShowCustomMinutesInput(false);
+                                  }
+                                }}
+                                className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] font-mono"
+                                data-testid="input-custom-minutes"
+                              />
+                              <span className="text-sm text-neutral-500">
+                                min
+                              </span>
+                            </div>
+                          )}
                         </div>
+                        <p className="text-xs text-neutral-500 mt-2">
+                          Based on observed documentation time deltas across
+                          deployments
+                        </p>
+                      </div>
 
-                        {/* Time Realization Rate */}
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Realization factor
-                          </label>
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              onClick={() => setTimeRealizationRate(45)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                timeRealizationRate === 45
-                                  ? "bg-[#F03319] text-white"
-                                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                              }`}
-                              data-testid="chip-realization-45"
-                            >
-                              Conservative (45%)
-                            </button>
-                            <button
-                              onClick={() => setTimeRealizationRate(55)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                timeRealizationRate === 55
-                                  ? "bg-[#F03319] text-white"
-                                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                              }`}
-                              data-testid="chip-realization-55"
-                            >
-                              Expected (55%)
-                            </button>
-                            <button
-                              onClick={() => setTimeRealizationRate(65)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                timeRealizationRate === 65
-                                  ? "bg-[#F03319] text-white"
-                                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                              }`}
-                              data-testid="chip-realization-65"
-                            >
-                              Optimistic (65%)
-                            </button>
-                          </div>
-                          <p className="text-xs text-neutral-500 mt-2">
-                            What portion converts to usable capacity
-                          </p>
+                      {/* Time Realization Rate */}
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          How much of this time is realistically usable?
+                        </label>
+                        <p className="text-xs text-neutral-500 mb-3">
+                          Not all saved time converts to productive capacity
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => setTimeRealizationRate(45)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              timeRealizationRate === 45
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-realization-45"
+                          >
+                            Conservative (45%)
+                          </button>
+                          <button
+                            onClick={() => setTimeRealizationRate(55)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              timeRealizationRate === 55
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-realization-55"
+                          >
+                            Expected (55%)
+                          </button>
+                          <button
+                            onClick={() => setTimeRealizationRate(65)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              timeRealizationRate === 65
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-realization-65"
+                          >
+                            Optimistic (65%)
+                          </button>
                         </div>
                       </div>
 
-                      {/* B) Documentation Mechanics Section */}
-                      <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-6 space-y-6">
-                        <h4 className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
-                          Documentation Mechanics
-                        </h4>
-                        
-                        {hasAnyDocumentationLever ? (
+                      {/* Documentation-based Value Section - only show if relevant levers selected */}
+                      {hasAnyDocumentationLever && (
+                        <div className="border-t border-neutral-100 pt-6">
+                          <h4 className="text-sm font-medium text-neutral-900 mb-4">
+                            Documentation-based Value
+                          </h4>
                           <div className="space-y-5">
                             {/* Level of Service (wRVU) */}
                             {hasWrvuSelected && (
                               <div>
                                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                  Level-of-service alignment
+                                  Level of Service improvement
                                 </label>
                                 <div className="flex flex-wrap gap-2">
                                   <button
@@ -1293,7 +1260,7 @@ export default function ObjectiveSelectionScreen({
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                       wrvuSensitivity === 3
                                         ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                                     }`}
                                     data-testid="chip-wrvu-3"
                                   >
@@ -1304,7 +1271,7 @@ export default function ObjectiveSelectionScreen({
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                       wrvuSensitivity === 5
                                         ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                                     }`}
                                     data-testid="chip-wrvu-5"
                                   >
@@ -1315,7 +1282,7 @@ export default function ObjectiveSelectionScreen({
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                       wrvuSensitivity === 7
                                         ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                                     }`}
                                     data-testid="chip-wrvu-7"
                                   >
@@ -1323,54 +1290,7 @@ export default function ObjectiveSelectionScreen({
                                   </button>
                                 </div>
                                 <p className="text-xs text-neutral-500 mt-1.5">
-                                  Visits billed at appropriate level
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Denial Reduction */}
-                            {hasDenialsSelected && (
-                              <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                  Denials reduction
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    onClick={() => setDenialsSensitivity(2)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      denialsSensitivity === 2
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                                    }`}
-                                    data-testid="chip-denials-2"
-                                  >
-                                    Conservative (2%)
-                                  </button>
-                                  <button
-                                    onClick={() => setDenialsSensitivity(5)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      denialsSensitivity === 5
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                                    }`}
-                                    data-testid="chip-denials-5"
-                                  >
-                                    Expected (5%)
-                                  </button>
-                                  <button
-                                    onClick={() => setDenialsSensitivity(8)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      denialsSensitivity === 8
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
-                                    }`}
-                                    data-testid="chip-denials-8"
-                                  >
-                                    Optimistic (8%)
-                                  </button>
-                                </div>
-                                <p className="text-xs text-neutral-500 mt-1.5">
-                                  Documentation-related denial reduction
+                                  Percentage of visits billed at a higher level
                                 </p>
                               </div>
                             )}
@@ -1379,7 +1299,7 @@ export default function ObjectiveSelectionScreen({
                             {hasHccSelected && (
                               <div>
                                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                  HCC capture
+                                  HCC / RAF lift
                                 </label>
                                 <div className="flex flex-wrap gap-2">
                                   <button
@@ -1387,7 +1307,7 @@ export default function ObjectiveSelectionScreen({
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                       hccSensitivity === 0.3
                                         ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                                     }`}
                                     data-testid="chip-hcc-03"
                                   >
@@ -1398,7 +1318,7 @@ export default function ObjectiveSelectionScreen({
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                       hccSensitivity === 0.7
                                         ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                                     }`}
                                     data-testid="chip-hcc-07"
                                   >
@@ -1409,7 +1329,7 @@ export default function ObjectiveSelectionScreen({
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                       hccSensitivity === 1.2
                                         ? "bg-[#F03319] text-white"
-                                        : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                                     }`}
                                     data-testid="chip-hcc-12"
                                   >
@@ -1417,19 +1337,61 @@ export default function ObjectiveSelectionScreen({
                                   </button>
                                 </div>
                                 <p className="text-xs text-neutral-500 mt-1.5">
-                                  RAF score improvement
+                                  Relative RAF score improvement
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Denial Reduction */}
+                            {hasDenialsSelected && (
+                              <div>
+                                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                                  Denial rate reduction
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    onClick={() => setDenialsSensitivity(2)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      denialsSensitivity === 2
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-denials-2"
+                                  >
+                                    Conservative (2%)
+                                  </button>
+                                  <button
+                                    onClick={() => setDenialsSensitivity(5)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      denialsSensitivity === 5
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-denials-5"
+                                  >
+                                    Expected (5%)
+                                  </button>
+                                  <button
+                                    onClick={() => setDenialsSensitivity(8)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      denialsSensitivity === 8
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-denials-8"
+                                  >
+                                    Optimistic (8%)
+                                  </button>
+                                </div>
+                                <p className="text-xs text-neutral-500 mt-1.5">
+                                  Reduction in documentation-related denials
                                 </p>
                               </div>
                             )}
                           </div>
-                        ) : (
-                          <p className="text-sm text-neutral-500 italic">
-                            No documentation levers selected. Return to Strategic Priorities to enable documentation-based value.
-                          </p>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
-
                     <div className="mt-8 flex flex-col sm:flex-row sm:justify-between gap-3">
                       <button
                         onClick={() => setModelSetupStep(1)}
@@ -1557,9 +1519,7 @@ export default function ObjectiveSelectionScreen({
                                   placeholder="Years"
                                   value={contractYears ?? ""}
                                   onChange={(e) => {
-                                    const val = parseFormattedNumber(
-                                      e.target.value,
-                                    );
+                                    const val = parseFormattedNumber(e.target.value);
                                     if (val > 0) {
                                       setContractYears(val);
                                     } else if (e.target.value === "") {
@@ -1596,11 +1556,7 @@ export default function ObjectiveSelectionScreen({
                             <input
                               type="text"
                               inputMode="numeric"
-                              value={
-                                perClinicianCost !== null
-                                  ? formatNumber(perClinicianCost)
-                                  : ""
-                              }
+                              value={perClinicianCost !== null ? formatNumber(perClinicianCost) : ""}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setPerClinicianCost(
@@ -1644,11 +1600,7 @@ export default function ObjectiveSelectionScreen({
                             <input
                               type="text"
                               inputMode="numeric"
-                              value={
-                                enterpriseAnnualCost !== null
-                                  ? formatNumber(enterpriseAnnualCost)
-                                  : ""
-                              }
+                              value={enterpriseAnnualCost !== null ? formatNumber(enterpriseAnnualCost) : ""}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setEnterpriseAnnualCost(
@@ -1663,8 +1615,7 @@ export default function ObjectiveSelectionScreen({
                             />
                           </div>
                           <p className="text-xs text-neutral-500 mt-1.5">
-                            Total annual subscription for enterprise-wide
-                            deployment.
+                            Total annual subscription for enterprise-wide deployment.
                           </p>
                         </div>
                       )}
@@ -1701,20 +1652,13 @@ export default function ObjectiveSelectionScreen({
                                 <input
                                   type="text"
                                   inputMode="numeric"
-                                  value={
-                                    implementationFee !== null
-                                      ? formatNumber(implementationFee)
-                                      : ""
-                                  }
+                                  value={implementationFee !== null ? formatNumber(implementationFee) : ""}
                                   onChange={(e) => {
                                     const val = e.target.value;
                                     setImplementationFee(
                                       val === ""
                                         ? null
-                                        : Math.max(
-                                            0,
-                                            parseFormattedNumber(val),
-                                          ),
+                                        : Math.max(0, parseFormattedNumber(val)),
                                     );
                                   }}
                                   placeholder="Enter one-time fee"
@@ -1842,85 +1786,65 @@ export default function ObjectiveSelectionScreen({
                     </div>
                   </div>
 
-                  {/* Model Outputs (live) - Neutral readout panel */}
-                  <div className="bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm p-6">
-                    <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
-                      Model outputs (live)
-                    </h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">
-                          Encounters affected
-                        </span>
-                        <span className="font-mono font-medium text-neutral-900">
-                          {eligibleEncounters !== null
-                            ? eligibleEncounters.toLocaleString()
-                            : "—"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">
-                          Hours returned (gross)
-                        </span>
-                        <span className="font-mono font-medium text-neutral-900">
-                          {totalHoursSaved !== null
-                            ? `${totalHoursSaved.toLocaleString(undefined, {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 1,
-                              })} hrs`
-                            : "—"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">
-                          Hours usable (net)
-                        </span>
-                        <span className="font-mono font-semibold text-neutral-900">
-                          {realizedHoursSaved !== null
-                            ? `${realizedHoursSaved.toLocaleString(undefined, {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 1,
-                              })} hrs`
-                            : "—"}
-                        </span>
-                      </div>
-                      
-                      {/* Documentation lift assumptions */}
-                      {hasAnyDocumentationLever && (
-                        <div className="border-t border-neutral-200 pt-3 mt-3">
-                          <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                            Documentation lift assumptions
+                  {/* Time Saved Box */}
+                  {totalMinutesSaved !== null && totalHoursSaved !== null && (
+                    <div className="bg-[#F03319] rounded-xl shadow-sm p-6">
+                      <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-4">
+                        Time Saved
+                      </h4>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-white/90">
+                            Total minutes saved
                           </span>
-                          <div className="mt-2 space-y-1.5">
-                            {hasWrvuSelected && (
-                              <div className="flex justify-between">
-                                <span className="text-neutral-600 text-xs">Level of service</span>
-                                <span className="font-mono text-xs text-neutral-900">
-                                  {wrvuSensitivity !== null ? `${wrvuSensitivity}%` : "—"}
-                                </span>
-                              </div>
-                            )}
-                            {hasDenialsSelected && (
-                              <div className="flex justify-between">
-                                <span className="text-neutral-600 text-xs">Denials reduction</span>
-                                <span className="font-mono text-xs text-neutral-900">
-                                  {denialsSensitivity !== null ? `${denialsSensitivity}%` : "—"}
-                                </span>
-                              </div>
-                            )}
-                            {hasHccSelected && (
-                              <div className="flex justify-between">
-                                <span className="text-neutral-600 text-xs">HCC / RAF lift</span>
-                                <span className="font-mono text-xs text-neutral-900">
-                                  {hccSensitivity !== null ? `${hccSensitivity}%` : "—"}
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                          <span className="font-semibold text-white">
+                            {totalMinutesSaved.toLocaleString()} min
+                          </span>
                         </div>
-                      )}
+                        <div className="flex justify-between">
+                          <span className="text-white/90">
+                            Total hours saved
+                          </span>
+                          <span className="font-semibold text-white">
+                            {totalHoursSaved.toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 1,
+                            })}{" "}
+                            hrs
+                          </span>
+                        </div>
+                        {/* Realized time (when realization rate is set) */}
+                        {realizedMinutesSaved !== null && realizedHoursSaved !== null && (
+                          <>
+                            <div className="border-t border-white/30 pt-3 mt-3">
+                              <div className="flex justify-between">
+                                <span className="text-white/90">
+                                  Realized minutes ({timeRealizationRate}%)
+                                </span>
+                                <span className="font-semibold text-white">
+                                  {realizedMinutesSaved.toLocaleString(undefined, {
+                                    maximumFractionDigits: 0,
+                                  })} min
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-white/90">
+                                Realized hours
+                              </span>
+                              <span className="font-bold text-white">
+                                {realizedHoursSaved.toLocaleString(undefined, {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 1,
+                                })}{" "}
+                                hrs
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2007,79 +1931,59 @@ export default function ObjectiveSelectionScreen({
                 </div>
               </div>
 
-              {/* Model Outputs (live) - Mobile */}
-              <div className="bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm p-6">
-                <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
-                  Model outputs (live)
-                </h4>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Encounters affected</span>
-                    <span className="font-mono font-medium text-neutral-900">
-                      {eligibleEncounters !== null
-                        ? eligibleEncounters.toLocaleString()
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Hours returned (gross)</span>
-                    <span className="font-mono font-medium text-neutral-900">
-                      {totalHoursSaved !== null
-                        ? `${totalHoursSaved.toLocaleString(undefined, {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 1,
-                          })} hrs`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Hours usable (net)</span>
-                    <span className="font-mono font-semibold text-neutral-900">
-                      {realizedHoursSaved !== null
-                        ? `${realizedHoursSaved.toLocaleString(undefined, {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 1,
-                          })} hrs`
-                        : "—"}
-                    </span>
-                  </div>
-                  
-                  {/* Documentation lift assumptions */}
-                  {hasAnyDocumentationLever && (
-                    <div className="border-t border-neutral-200 pt-3 mt-3">
-                      <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
-                        Documentation lift assumptions
+              {/* Time Saved Box - Mobile */}
+              {totalMinutesSaved !== null && totalHoursSaved !== null && (
+                <div className="bg-[#F03319] rounded-xl shadow-sm p-6">
+                  <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-4">
+                    Time Saved
+                  </h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-white/90">Total minutes saved</span>
+                      <span className="font-semibold text-white">
+                        {totalMinutesSaved.toLocaleString()} min
                       </span>
-                      <div className="mt-2 space-y-1.5">
-                        {hasWrvuSelected && (
-                          <div className="flex justify-between">
-                            <span className="text-neutral-600 text-xs">Level of service</span>
-                            <span className="font-mono text-xs text-neutral-900">
-                              {wrvuSensitivity !== null ? `${wrvuSensitivity}%` : "—"}
-                            </span>
-                          </div>
-                        )}
-                        {hasDenialsSelected && (
-                          <div className="flex justify-between">
-                            <span className="text-neutral-600 text-xs">Denials reduction</span>
-                            <span className="font-mono text-xs text-neutral-900">
-                              {denialsSensitivity !== null ? `${denialsSensitivity}%` : "—"}
-                            </span>
-                          </div>
-                        )}
-                        {hasHccSelected && (
-                          <div className="flex justify-between">
-                            <span className="text-neutral-600 text-xs">HCC / RAF lift</span>
-                            <span className="font-mono text-xs text-neutral-900">
-                              {hccSensitivity !== null ? `${hccSensitivity}%` : "—"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
                     </div>
-                  )}
+                    <div className="flex justify-between">
+                      <span className="text-white/90">Total hours saved</span>
+                      <span className="font-semibold text-white">
+                        {totalHoursSaved.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 1,
+                        })}{" "}
+                        hrs
+                      </span>
+                    </div>
+                    {/* Realized time (when realization rate is set) */}
+                    {realizedMinutesSaved !== null && realizedHoursSaved !== null && (
+                      <>
+                        <div className="border-t border-white/30 pt-3 mt-3">
+                          <div className="flex justify-between">
+                            <span className="text-white/90">
+                              Realized minutes ({timeRealizationRate}%)
+                            </span>
+                            <span className="font-semibold text-white">
+                              {realizedMinutesSaved.toLocaleString(undefined, {
+                                maximumFractionDigits: 0,
+                              })} min
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/90">Realized hours</span>
+                          <span className="font-bold text-white">
+                            {realizedHoursSaved.toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 1,
+                            })}{" "}
+                            hrs
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}
