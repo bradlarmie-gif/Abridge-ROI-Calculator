@@ -1475,29 +1475,29 @@ export default function RoiCalculator({
 
                 {/* How this model works (orientation layer) - appears before financial verdict */}
                 <Card className="border-neutral-200">
-                  <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <CardContent className="p-3 md:p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
                       <div>
                         <div className="text-sm font-semibold text-neutral-900">
                           How this model works
                         </div>
-                        <div className="text-sm text-neutral-500 mt-1 max-w-2xl">
+                        <div className="text-xs md:text-sm text-neutral-500 mt-1 max-w-2xl">
                           This model translates operational changes into financial impact using the assumptions you entered. Every driver is reviewable.
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <Badge variant="secondary" className="text-xs">
                           {enabledDriverCount} drivers enabled
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="mt-3 rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-700">
+                    <div className="mt-3 rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-xs md:text-sm text-neutral-700">
                       <span className="font-semibold text-neutral-900">
                         Want to validate a number?
                       </span>{" "}
-                      Use <span className="font-semibold">Review inputs</span>{" "}
+                      Use <span className="font-semibold">Review</span>{" "}
                       next to each driver below, or open{" "}
                       <span className="font-semibold">Model details</span> to
                       add or remove drivers.
