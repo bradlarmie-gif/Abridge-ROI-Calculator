@@ -1922,141 +1922,147 @@ export default function ObjectiveSelectionScreen({
               </div>
             </div>
 
-            {/* Summary Panel - Mobile for Page 3 */}
-            <div className="lg:hidden mt-8 space-y-4">
-              <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
-                <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
-                  Model Inputs
-                </h4>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Providers</span>
-                    <span className="font-medium text-neutral-900">
-                      {effectiveClinicians > 0 ? effectiveClinicians : "—"}
-                    </span>
+            {/* Live Receipt - Mobile for Page 3 */}
+            <div className="lg:hidden mt-8">
+              <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+                <div className="p-5">
+                  <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                    Live Receipt
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Encounters</span>
-                    <span className="font-medium text-neutral-900">
-                      {effectiveEncounters > 0
-                        ? effectiveEncounters.toLocaleString()
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Utilization</span>
-                    <span className="font-medium text-neutral-900">
-                      {utilizationPercent !== null
-                        ? `${utilizationPercent}%`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">
-                      Eligible encounters
-                    </span>
-                    <span className="font-medium text-neutral-900">
-                      {eligibleEncounters !== null
-                        ? eligibleEncounters.toLocaleString()
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Minutes saved</span>
-                    <span className="font-medium text-neutral-900">
-                      {effectiveMinutesSaved !== null
-                        ? `${effectiveMinutesSaved} min`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className="border-t border-neutral-200 pt-3 mt-3">
-                    {implementationEnabled && implementationFee !== null && (
-                      <div className="flex justify-between mb-2">
-                        <span className="text-neutral-600">
-                          Implementation fee
-                        </span>
-                        <span className="font-medium text-neutral-900">
-                          ${implementationFee.toLocaleString()}
-                        </span>
+
+                  <div className="mt-3 divide-y divide-neutral-200">
+                    {/* Adoption section */}
+                    <div className="py-2 space-y-2">
+                      <div className="text-xs font-semibold text-neutral-500 mb-2">
+                        Adoption
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">
-                        Annual subscription cost
-                      </span>
-                      <span className="font-semibold text-neutral-900">
-                        {annualSubscriptionCost !== null
-                          ? `$${annualSubscriptionCost.toLocaleString()}`
-                          : "—"}
-                      </span>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-sm text-neutral-600">Providers</div>
+                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                          {effectiveClinicians > 0 ? effectiveClinicians.toLocaleString() : "—"}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-sm text-neutral-600">Annual encounters</div>
+                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                          {effectiveEncounters > 0 ? effectiveEncounters.toLocaleString() : "—"}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-sm text-neutral-600">Utilization</div>
+                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                          {utilizationPercent !== null ? `${utilizationPercent}%` : "—"}
+                        </div>
+                      </div>
                     </div>
-                    {year1TotalCost !== null && (
-                      <div className="flex justify-between mt-2 pt-2 border-t border-neutral-200">
-                        <span className="text-neutral-600">
-                          Year 1 total cost
-                        </span>
-                        <span className="font-bold text-neutral-900">
-                          ${year1TotalCost.toLocaleString()}
-                        </span>
+
+                    {/* System output section */}
+                    <div className="py-2 space-y-2">
+                      <div className="text-xs font-semibold text-neutral-500 mb-2">
+                        System output
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-sm text-neutral-600">Eligible encounters</div>
+                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                          {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-sm text-neutral-600">Minutes returned / encounter</div>
+                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                          {effectiveMinutesSaved !== null ? `${effectiveMinutesSaved} min` : "—"}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-sm text-neutral-600">Hours returned (gross)</div>
+                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                          {totalHoursSaved !== null
+                            ? totalHoursSaved.toLocaleString(undefined, { maximumFractionDigits: 1 })
+                            : "—"}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-sm text-neutral-600">Hours usable (net)</div>
+                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                          {realizedHoursSaved !== null
+                            ? realizedHoursSaved.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                            : "—"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Documentation assumptions section */}
+                    {hasAnyDocumentationLever && (
+                      <div className="py-2 space-y-2">
+                        <div className="text-xs font-semibold text-neutral-500 mb-2">
+                          Documentation assumptions
+                        </div>
+                        {hasWrvuSelected && wrvuSensitivity !== null && (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Level of service lift</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {wrvuSensitivity}%
+                            </div>
+                          </div>
+                        )}
+                        {hasHccSelected && hccSensitivity !== null && (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">HCC / RAF lift</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {hccSensitivity}%
+                            </div>
+                          </div>
+                        )}
+                        {hasDenialsSelected && denialsSensitivity !== null && (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Denial rate reduction</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {denialsSensitivity}%
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
+
+                    {/* Investment info - only show on step 3 */}
+                    {modelSetupStep === 3 && (annualSubscriptionCost !== null || implementationFee !== null) && (
+                      <div className="py-2 space-y-2">
+                        <div className="text-xs font-semibold text-neutral-500 mb-2">
+                          Investment
+                        </div>
+                        {implementationEnabled && implementationFee !== null && (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Implementation fee</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              ${implementationFee.toLocaleString()}
+                            </div>
+                          </div>
+                        )}
+                        {annualSubscriptionCost !== null && (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Annual subscription</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              ${annualSubscriptionCost.toLocaleString()}
+                            </div>
+                          </div>
+                        )}
+                        {year1TotalCost !== null && (
+                          <div className="flex items-center justify-between gap-4 pt-2 border-t border-neutral-200">
+                            <div className="text-sm text-neutral-600">Year 1 total cost</div>
+                            <div className="text-sm font-bold text-neutral-900 tabular-nums">
+                              ${year1TotalCost.toLocaleString()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 rounded-xl bg-neutral-50 p-3 text-xs text-neutral-600">
+                    Tip: If a number looks high, open Results and use "Review inputs" to validate the driver math.
                   </div>
                 </div>
               </div>
-
-              {/* Time Saved Box - Mobile */}
-              {totalMinutesSaved !== null && totalHoursSaved !== null && (
-                <div className="bg-[#F03319] rounded-xl shadow-sm p-6">
-                  <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-4">
-                    Time Saved
-                  </h4>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-white/90">Total minutes saved</span>
-                      <span className="font-semibold text-white">
-                        {totalMinutesSaved.toLocaleString()} min
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/90">Total hours saved</span>
-                      <span className="font-semibold text-white">
-                        {totalHoursSaved.toLocaleString(undefined, {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 1,
-                        })}{" "}
-                        hrs
-                      </span>
-                    </div>
-                    {/* Realized time (when realization rate is set) */}
-                    {realizedMinutesSaved !== null && realizedHoursSaved !== null && (
-                      <>
-                        <div className="border-t border-white/30 pt-3 mt-3">
-                          <div className="flex justify-between">
-                            <span className="text-white/90">
-                              Realized minutes ({timeRealizationRate}%)
-                            </span>
-                            <span className="font-semibold text-white">
-                              {realizedMinutesSaved.toLocaleString(undefined, {
-                                maximumFractionDigits: 0,
-                              })} min
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/90">Realized hours</span>
-                          <span className="font-bold text-white">
-                            {realizedHoursSaved.toLocaleString(undefined, {
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 1,
-                            })}{" "}
-                            hrs
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}
