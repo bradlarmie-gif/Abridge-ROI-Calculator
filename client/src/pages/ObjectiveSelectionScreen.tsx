@@ -396,6 +396,30 @@ export default function ObjectiveSelectionScreen({
   const [hccSensitivity, setHccSensitivity] = useState<number | null>(null); // No default - user must select
   const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(null); // No default - user must select
 
+  // Value posture state and edit accordion tracking
+  type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
+  const [valuePosture, setValuePosture] = useState<ValuePosture | null>(null);
+  const [editingAssumption, setEditingAssumption] = useState<string | null>(null);
+
+  // Posture preset mappings
+  const POSTURE_PRESETS = {
+    conservative: { minutes: 2, realization: 45, wrvu: 3 },
+    typical: { minutes: 4, realization: 55, wrvu: 5 },
+    aggressive: { minutes: 6, realization: 65, wrvu: 7 },
+  };
+
+  // Apply posture to all assumptions
+  const applyPosture = (posture: "conservative" | "typical" | "aggressive") => {
+    const preset = POSTURE_PRESETS[posture];
+    setMinutesSaved(preset.minutes);
+    setCustomMinutes(null);
+    setShowCustomMinutesInput(false);
+    setTimeRealizationRate(preset.realization);
+    setWrvuSensitivity(preset.wrvu);
+    setValuePosture(posture);
+    setEditingAssumption(null);
+  };
+
   // Pricing step state
   const [pricingModel, setPricingModel] = useState<
     "per-clinician" | "enterprise" | null
@@ -485,6 +509,28 @@ export default function ObjectiveSelectionScreen({
   const hasHccSelected = selectedLeverIds.has("hcc");
   const hasDenialsSelected = selectedLeverIds.has("denials");
   const hasAnyDocumentationLever = hasWrvuSelected || hasHccSelected || hasDenialsSelected;
+
+  // Detect if current values match a posture or are custom
+  const detectedPosture = useMemo((): ValuePosture | null => {
+    const currentMinutes = customMinutes ?? minutesSaved;
+    const currentRealization = timeRealizationRate;
+    const currentWrvu = wrvuSensitivity;
+    
+    if (currentMinutes === null || currentRealization === null) {
+      return null;
+    }
+    
+    for (const [posture, preset] of Object.entries(POSTURE_PRESETS)) {
+      if (
+        currentMinutes === preset.minutes &&
+        currentRealization === preset.realization &&
+        (currentWrvu === preset.wrvu || !hasWrvuSelected)
+      ) {
+        return posture as ValuePosture;
+      }
+    }
+    return "custom";
+  }, [minutesSaved, customMinutes, timeRealizationRate, wrvuSensitivity, hasWrvuSelected, POSTURE_PRESETS]);
 
   // Annual subscription cost
   const annualSubscriptionCost = useMemo(() => {

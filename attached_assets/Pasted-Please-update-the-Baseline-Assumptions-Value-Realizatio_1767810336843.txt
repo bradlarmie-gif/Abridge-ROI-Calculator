@@ -1,0 +1,143 @@
+Please update the Baseline Assumptions → Value Realization section UI/UX to feel more like Stripe: one clear “posture” decision that sets defaults, with advanced controls hidden unless the user chooses to edit.
+
+Goals
+
+Make the center card feel like a guided model (not a form).
+
+Add a Value Posture header that sets all assumptions in one click.
+
+Convert the current button-heavy assumption controls into derived assumption “badges + explanations”, with edits behind a subtle link.
+
+Do not add any new live summary bar (we already have the “Live Receipt” panel on the right).
+
+1) Add a “Value posture” control at the top of Value Realization
+
+Inside the main “Value realization” container, above the two columns, add a new section:
+
+Label: Value posture
+Helper text: How aggressively should this model assume value realization? Choose the posture that best matches your rollout confidence.
+
+Provide 3 options (pill-style segmented control or 3 pills with a selected state):
+
+Conservative
+
+Typical (Recommended)
+
+Aggressive (replace “Upper bound” with “Aggressive” everywhere in UI)
+
+Behavior:
+
+Selecting a posture updates all defaults inside both columns:
+
+minutes returned per encounter
+
+realization factor
+
+level-of-service alignment
+
+“Typical” should be the default selected state unless we already have something in state.
+
+Keep everything fully reversible (clicking posture changes the underlying values again).
+
+Copy note: do not use “Upper bound” in UI; use “Aggressive” instead. (We can keep internal enum as upperBound if it exists, but UI label should be Aggressive.)
+
+2) Convert the two columns into “Derived assumptions” cards (not button grids)
+
+Replace the current direct selection button grids with:
+
+A clean, Stripe-style “assumption row” presentation: Label + selected value badge + one-line explanation
+
+Each row has a subtle action on the right: “Edit” (link-style, small, neutral color)
+
+Column headers
+
+Rename the two column titles:
+
+TIME MECHANICS → Operational value
+
+DOCUMENTATION MECHANICS → Documentation value
+
+Add a one-line description under each header:
+
+Operational value: Time returned to clinicians that can be redeployed to capacity or reduced after-hours work.
+
+Documentation value: Documentation more accurately reflects care delivered, supporting correct coding and fewer avoidable issues.
+
+Rows to show in Operational value column
+
+Show two rows:
+
+Minutes returned per encounter
+Badge shows current selection (e.g., 4 min / encounter)
+Explanation: Based on observed ambient documentation time reduction.
+Right side: Edit
+
+Realization factor
+Badge shows current selection (e.g., 55% usable)
+Explanation: Portion of returned time that converts into usable capacity (scheduling, staffing, demand).
+Right side: Edit
+
+Row to show in Documentation value column
+
+Show one row:
+
+Level-of-service alignment
+Badge shows current selection (e.g., 5% alignment lift)
+Explanation: Percent of visits billed at the level that matches documented care delivered.
+Right side: Edit
+
+Keep “Additional documentation drivers” but present it as a clean callout module below, with a clearer CTA:
+
+Title: Add downstream documentation drivers
+
+Body: Optionally include additional impacts on the Results page (e.g., denials, risk adjustment). Only what you enable will be modeled.
+
+CTA (small button or link): Choose drivers on Results (or “Manage on Results”)
+
+3) Progressive disclosure: clicking “Edit” reveals the old controls inline
+
+When user clicks “Edit” on a row:
+
+Expand an inline panel directly under that row (accordion style).
+
+Show the existing choices (Conservative / Typical / Aggressive) and Custom if applicable (for minutes).
+
+This is the only time the full button grid appears.
+
+Include a small “Done” link to collapse.
+
+Important behavior details:
+
+If a user manually edits any individual assumption after picking a posture:
+
+Keep the posture selection visible, but change it to an “Custom” state (not a 4th posture button; just a small text next to the posture control like Posture: Custom or a subtle badge).
+
+Do not break anything else—just reflect that the model is no longer purely Conservative/Typical/Aggressive.
+
+(If implementing “Custom posture” state is too heavy, minimum viable: allow edits without changing posture UI, but do not override manual edits unless posture is re-selected.)
+
+4) Layout / spacing improvements (fix the “smushed” look)
+
+Increase the width of the Value Realization container slightly if possible (within the existing max width constraints).
+
+Increase internal padding and spacing between the two columns.
+
+Ensure each column card has equal height and consistent top padding.
+
+Keep the right-side “Live Receipt” panel unchanged.
+
+Responsive:
+
+On smaller screens, stack the two columns vertically with comfortable spacing.
+
+5) Acceptance criteria
+
+A user can pick one posture and see all assumptions update.
+
+The main view looks like 3–4 clean rows, not a pile of buttons.
+
+A hesitant user can click Edit on a specific assumption and adjust only that value.
+
+UI uses Aggressive label instead of Upper bound.
+
+No new live summary bar is added (Live Receipt stays as the summary).
