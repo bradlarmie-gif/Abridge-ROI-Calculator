@@ -1135,7 +1135,7 @@ export default function ObjectiveSelectionScreen({
                             data-testid="chip-util-high"
                           >
                             <div className="flex flex-col items-center">
-                              <span>Upper Bound (80%)</span>
+                              <span>Aggressive (80%)</span>
                               <span className="text-[10px] mt-0.5 opacity-70">
                                 Mature deployment
                               </span>
@@ -1170,332 +1170,501 @@ export default function ObjectiveSelectionScreen({
 
                 {/* Step 2: Value Realization */}
                 {modelSetupStep === 2 && (
-                  <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-7">
-                    <div className="text-sm font-semibold text-neutral-900">
-                      Value realization
-                    </div>
-                    <div className="mt-1 text-sm text-neutral-600">
-                      Typical defaults are applied based on observed deployments. Adjust only if your environment differs.
-                    </div>
-
-                    {/* Two sections grid */}
-                    <div className="mt-6 grid md:grid-cols-2 gap-6">
-                      {/* Time Mechanics Section */}
-                      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5">
-                        <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                          Time Mechanics
+                  <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-8">
+                    {/* Value Posture Header */}
+                    <div className="mb-8">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="text-base font-semibold text-neutral-900">
+                          Value posture
                         </div>
+                        {detectedPosture === "custom" && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 font-medium">
+                            Custom
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-neutral-600 mb-4">
+                        How aggressively should this model assume value realization? Choose the posture that best matches your rollout confidence.
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => applyPosture("conservative")}
+                          className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                            detectedPosture === "conservative"
+                              ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                          }`}
+                          data-testid="posture-conservative"
+                        >
+                          Conservative
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyPosture("typical")}
+                          className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                            detectedPosture === "typical"
+                              ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                          }`}
+                          data-testid="posture-typical"
+                        >
+                          Typical
+                          <span className="ml-1.5 text-xs text-neutral-500">(Recommended)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyPosture("aggressive")}
+                          className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                            detectedPosture === "aggressive"
+                              ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                          }`}
+                          data-testid="posture-aggressive"
+                        >
+                          Aggressive
+                        </button>
+                      </div>
+                    </div>
 
-                        <div className="mt-3">
-                          <div className="text-sm font-semibold text-neutral-900">
-                            Minutes returned per encounter
-                          </div>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setMinutesSaved(2);
-                                setCustomMinutes(null);
-                                setShowCustomMinutesInput(false);
-                              }}
-                              className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                minutesSaved === 2 && customMinutes === null
-                                  ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                              }`}
-                              data-testid="chip-minutes-2"
-                            >
-                              Conservative (2 min)
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setMinutesSaved(4);
-                                setCustomMinutes(null);
-                                setShowCustomMinutesInput(false);
-                              }}
-                              className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                minutesSaved === 4 && customMinutes === null
-                                  ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                              }`}
-                              data-testid="chip-minutes-4"
-                            >
-                              Typical (4 min)
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setMinutesSaved(6);
-                                setCustomMinutes(null);
-                                setShowCustomMinutesInput(false);
-                              }}
-                              className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                minutesSaved === 6 && customMinutes === null
-                                  ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                              }`}
-                              data-testid="chip-minutes-6"
-                            >
-                              Upper bound (6 min)
-                            </button>
-                            {!showCustomMinutesInput ? (
+                    {/* Two columns grid */}
+                    <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                      {/* Operational Value Column */}
+                      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5 md:p-6">
+                        <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase mb-1">
+                          Operational Value
+                        </div>
+                        <p className="text-xs text-neutral-500 mb-5">
+                          Time returned to clinicians that can be redeployed to capacity or reduced after-hours work.
+                        </p>
+
+                        {/* Minutes returned row */}
+                        <div className="space-y-4">
+                          <div className="border-b border-neutral-200 pb-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-neutral-900">
+                                  Minutes returned per encounter
+                                </div>
+                                <div className="mt-1.5 flex items-center gap-2">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
+                                    {effectiveMinutesSaved !== null ? `${effectiveMinutesSaved} min` : "—"}
+                                  </span>
+                                </div>
+                                <p className="mt-1.5 text-xs text-neutral-500">
+                                  Based on observed ambient documentation time reduction.
+                                </p>
+                              </div>
                               <button
                                 type="button"
-                                onClick={() => setShowCustomMinutesInput(true)}
-                                className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                  customMinutes !== null
-                                    ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                }`}
-                                data-testid="chip-minutes-custom"
+                                onClick={() => setEditingAssumption(editingAssumption === "minutes" ? null : "minutes")}
+                                className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
+                                data-testid="edit-minutes"
                               >
-                                {customMinutes !== null ? `Custom (${customMinutes} min)` : "Custom"}
+                                {editingAssumption === "minutes" ? "Done" : "Edit"}
                               </button>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <input
-                                  ref={customMinutesInputRef}
-                                  type="text"
-                                  inputMode="numeric"
-                                  placeholder="Custom"
-                                  value={customMinutes ?? ""}
-                                  onChange={(e) => {
-                                    const val = parseFormattedNumber(e.target.value);
-                                    if (val > 0) {
-                                      setCustomMinutes(val);
-                                      setMinutesSaved(val);
-                                    } else if (e.target.value === "") {
+                            </div>
+
+                            {/* Inline edit accordion */}
+                            {editingAssumption === "minutes" && (
+                              <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setMinutesSaved(2);
                                       setCustomMinutes(null);
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    if (customMinutes === null) {
                                       setShowCustomMinutesInput(false);
-                                    }
-                                  }}
-                                  className="w-20 px-3 py-1.5 border border-neutral-300 rounded-full text-sm focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 font-mono"
-                                  data-testid="input-custom-minutes"
-                                />
-                                <span className="text-sm text-neutral-500">min</span>
+                                    }}
+                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                      minutesSaved === 2 && customMinutes === null
+                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                    }`}
+                                    data-testid="chip-minutes-2"
+                                  >
+                                    Conservative (2 min)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setMinutesSaved(4);
+                                      setCustomMinutes(null);
+                                      setShowCustomMinutesInput(false);
+                                    }}
+                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                      minutesSaved === 4 && customMinutes === null
+                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                    }`}
+                                    data-testid="chip-minutes-4"
+                                  >
+                                    Typical (4 min)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setMinutesSaved(6);
+                                      setCustomMinutes(null);
+                                      setShowCustomMinutesInput(false);
+                                    }}
+                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                      minutesSaved === 6 && customMinutes === null
+                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                    }`}
+                                    data-testid="chip-minutes-6"
+                                  >
+                                    Aggressive (6 min)
+                                  </button>
+                                  {!showCustomMinutesInput ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowCustomMinutesInput(true)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        customMinutes !== null
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-minutes-custom"
+                                    >
+                                      {customMinutes !== null ? `Custom (${customMinutes} min)` : "Custom"}
+                                    </button>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        ref={customMinutesInputRef}
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="Custom"
+                                        value={customMinutes ?? ""}
+                                        onChange={(e) => {
+                                          const val = parseFormattedNumber(e.target.value);
+                                          if (val > 0) {
+                                            setCustomMinutes(val);
+                                            setMinutesSaved(val);
+                                          } else if (e.target.value === "") {
+                                            setCustomMinutes(null);
+                                          }
+                                        }}
+                                        onBlur={() => {
+                                          if (customMinutes === null) {
+                                            setShowCustomMinutesInput(false);
+                                          }
+                                        }}
+                                        className="w-20 px-3 py-1.5 border border-neutral-300 rounded-full text-sm focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 font-mono"
+                                        data-testid="input-custom-minutes"
+                                      />
+                                      <span className="text-sm text-neutral-500">min</span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             )}
                           </div>
-                          <div className="mt-2 text-xs text-neutral-500">
-                            Observed defaults from live deployments. Use Custom if you have internal time study data.
-                          </div>
 
-                          <div className="mt-5 border-t border-neutral-200 pt-4">
-                            <div className="text-sm font-semibold text-neutral-900">
-                              Realization factor
+                          {/* Realization factor row */}
+                          <div>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-neutral-900">
+                                  Realization factor
+                                </div>
+                                <div className="mt-1.5 flex items-center gap-2">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
+                                    {timeRealizationRate !== null ? `${timeRealizationRate}% usable` : "—"}
+                                  </span>
+                                </div>
+                                <p className="mt-1.5 text-xs text-neutral-500">
+                                  Portion of returned time that converts into usable capacity (scheduling, staffing, demand).
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setEditingAssumption(editingAssumption === "realization" ? null : "realization")}
+                                className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
+                                data-testid="edit-realization"
+                              >
+                                {editingAssumption === "realization" ? "Done" : "Edit"}
+                              </button>
                             </div>
 
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setTimeRealizationRate(45)}
-                                className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                  timeRealizationRate === 45
-                                    ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                }`}
-                                data-testid="chip-realization-45"
-                              >
-                                Conservative (45%)
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setTimeRealizationRate(55)}
-                                className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                  timeRealizationRate === 55
-                                    ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                }`}
-                                data-testid="chip-realization-55"
-                              >
-                                Typical (55%)
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setTimeRealizationRate(65)}
-                                className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                  timeRealizationRate === 65
-                                    ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                }`}
-                                data-testid="chip-realization-65"
-                              >
-                                Upper bound (65%)
-                              </button>
-                            </div>
-                            <div className="mt-2 text-xs text-neutral-500">
-                              Portion of returned time that converts into usable capacity (varies by scheduling, staffing, and demand).
-                            </div>
+                            {/* Inline edit accordion */}
+                            {editingAssumption === "realization" && (
+                              <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setTimeRealizationRate(45)}
+                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                      timeRealizationRate === 45
+                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                    }`}
+                                    data-testid="chip-realization-45"
+                                  >
+                                    Conservative (45%)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setTimeRealizationRate(55)}
+                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                      timeRealizationRate === 55
+                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                    }`}
+                                    data-testid="chip-realization-55"
+                                  >
+                                    Typical (55%)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setTimeRealizationRate(65)}
+                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                      timeRealizationRate === 65
+                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                    }`}
+                                    data-testid="chip-realization-65"
+                                  >
+                                    Aggressive (65%)
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </section>
 
-                      {/* Documentation Mechanics Section */}
-                      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5">
-                        <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                          Documentation Mechanics
+                      {/* Documentation Value Column */}
+                      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5 md:p-6">
+                        <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase mb-1">
+                          Documentation Value
                         </div>
+                        <p className="text-xs text-neutral-500 mb-5">
+                          Documentation more accurately reflects care delivered, supporting correct coding and fewer avoidable issues.
+                        </p>
 
-                        <div className="mt-3">
-                          {/* Level of Service - always shown if wrvu lever selected */}
+                        <div className="space-y-4">
+                          {/* Level of Service row */}
                           {hasWrvuSelected && (
-                            <div>
-                              <div className="text-sm font-semibold text-neutral-900">
-                                Level-of-service alignment
+                            <div className="border-b border-neutral-200 pb-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-neutral-900">
+                                    Level-of-service alignment
+                                  </div>
+                                  <div className="mt-1.5 flex items-center gap-2">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
+                                      {wrvuSensitivity !== null ? `${wrvuSensitivity}% alignment lift` : "—"}
+                                    </span>
+                                  </div>
+                                  <p className="mt-1.5 text-xs text-neutral-500">
+                                    Percent of visits billed at the level that matches documented care delivered.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingAssumption(editingAssumption === "wrvu" ? null : "wrvu")}
+                                  className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
+                                  data-testid="edit-wrvu"
+                                >
+                                  {editingAssumption === "wrvu" ? "Done" : "Edit"}
+                                </button>
                               </div>
 
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setWrvuSensitivity(3)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    wrvuSensitivity === 3
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-wrvu-3"
-                                >
-                                  Conservative (3%)
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setWrvuSensitivity(5)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    wrvuSensitivity === 5
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-wrvu-5"
-                                >
-                                  Typical (5%)
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setWrvuSensitivity(7)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    wrvuSensitivity === 7
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-wrvu-7"
-                                >
-                                  Upper bound (7%)
-                                </button>
-                              </div>
-                              <div className="mt-2 text-xs text-neutral-500">
-                                Derived from documentation review patterns: percent of visits billed at the level actually delivered.
-                              </div>
+                              {/* Inline edit accordion */}
+                              {editingAssumption === "wrvu" && (
+                                <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
+                                  <div className="flex flex-wrap gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setWrvuSensitivity(3)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        wrvuSensitivity === 3
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-wrvu-3"
+                                    >
+                                      Conservative (3%)
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setWrvuSensitivity(5)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        wrvuSensitivity === 5
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-wrvu-5"
+                                    >
+                                      Typical (5%)
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setWrvuSensitivity(7)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        wrvuSensitivity === 7
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-wrvu-7"
+                                    >
+                                      Aggressive (7%)
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
 
-                          {/* HCC / RAF Lift */}
+                          {/* HCC / RAF Lift row */}
                           {hasHccSelected && (
-                            <div className={hasWrvuSelected ? "mt-5 border-t border-neutral-200 pt-4" : ""}>
-                              <div className="text-sm font-semibold text-neutral-900">
-                                HCC / RAF lift
-                              </div>
-                              <div className="mt-1 text-xs text-neutral-600">
-                                Relative RAF score improvement.
+                            <div className={hasWrvuSelected ? "" : "border-b border-neutral-200 pb-4"}>
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-neutral-900">
+                                    HCC / RAF lift
+                                  </div>
+                                  <div className="mt-1.5 flex items-center gap-2">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
+                                      {hccSensitivity !== null ? `${hccSensitivity}% RAF improvement` : "—"}
+                                    </span>
+                                  </div>
+                                  <p className="mt-1.5 text-xs text-neutral-500">
+                                    Relative RAF score improvement from better chronic condition capture.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingAssumption(editingAssumption === "hcc" ? null : "hcc")}
+                                  className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
+                                  data-testid="edit-hcc"
+                                >
+                                  {editingAssumption === "hcc" ? "Done" : "Edit"}
+                                </button>
                               </div>
 
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setHccSensitivity(0.3)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    hccSensitivity === 0.3
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-hcc-03"
-                                >
-                                  Conservative (0.3%)
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setHccSensitivity(0.7)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    hccSensitivity === 0.7
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-hcc-07"
-                                >
-                                  Typical (0.7%)
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setHccSensitivity(1.2)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    hccSensitivity === 1.2
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-hcc-12"
-                                >
-                                  Upper bound (1.2%)
-                                </button>
-                              </div>
+                              {editingAssumption === "hcc" && (
+                                <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
+                                  <div className="flex flex-wrap gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setHccSensitivity(0.3)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        hccSensitivity === 0.3
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-hcc-03"
+                                    >
+                                      Conservative (0.3%)
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setHccSensitivity(0.7)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        hccSensitivity === 0.7
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-hcc-07"
+                                    >
+                                      Typical (0.7%)
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setHccSensitivity(1.2)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        hccSensitivity === 1.2
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-hcc-12"
+                                    >
+                                      Aggressive (1.2%)
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
 
-                          {/* Denial Reduction */}
+                          {/* Denial Reduction row */}
                           {hasDenialsSelected && (
-                            <div className={(hasWrvuSelected || hasHccSelected) ? "mt-5 border-t border-neutral-200 pt-4" : ""}>
-                              <div className="text-sm font-semibold text-neutral-900">
-                                Denial rate reduction
-                              </div>
-                              <div className="mt-1 text-xs text-neutral-600">
-                                Reduction in documentation-related denials.
+                            <div>
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-neutral-900">
+                                    Denial rate reduction
+                                  </div>
+                                  <div className="mt-1.5 flex items-center gap-2">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
+                                      {denialsSensitivity !== null ? `${denialsSensitivity}% reduction` : "—"}
+                                    </span>
+                                  </div>
+                                  <p className="mt-1.5 text-xs text-neutral-500">
+                                    Reduction in documentation-related denials.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingAssumption(editingAssumption === "denials" ? null : "denials")}
+                                  className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
+                                  data-testid="edit-denials"
+                                >
+                                  {editingAssumption === "denials" ? "Done" : "Edit"}
+                                </button>
                               </div>
 
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setDenialsSensitivity(2)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    denialsSensitivity === 2
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-denials-2"
-                                >
-                                  Conservative (2%)
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setDenialsSensitivity(5)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    denialsSensitivity === 5
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-denials-5"
-                                >
-                                  Typical (5%)
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setDenialsSensitivity(8)}
-                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                    denialsSensitivity === 8
-                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                  }`}
-                                  data-testid="chip-denials-8"
-                                >
-                                  Upper bound (8%)
-                                </button>
-                              </div>
+                              {editingAssumption === "denials" && (
+                                <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
+                                  <div className="flex flex-wrap gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setDenialsSensitivity(2)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        denialsSensitivity === 2
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-denials-2"
+                                    >
+                                      Conservative (2%)
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setDenialsSensitivity(5)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        denialsSensitivity === 5
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-denials-5"
+                                    >
+                                      Typical (5%)
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setDenialsSensitivity(8)}
+                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                        denialsSensitivity === 8
+                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                      }`}
+                                      data-testid="chip-denials-8"
+                                    >
+                                      Aggressive (8%)
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
 
-                          {/* Placeholder for additional documentation drivers */}
+                          {/* Placeholder when no documentation drivers selected */}
                           {!hasAnyDocumentationLever && (
                             <div className="rounded-xl border border-dashed border-neutral-200 bg-white p-4">
                               <div className="text-xs font-semibold text-neutral-600">
@@ -1506,18 +1675,28 @@ export default function ObjectiveSelectionScreen({
                               </div>
                             </div>
                           )}
-
-                          {hasAnyDocumentationLever && (
-                            <div className="mt-5 rounded-xl border border-dashed border-neutral-200 bg-white p-4">
-                              <div className="text-xs font-semibold text-neutral-600">
-                                Additional documentation drivers
-                              </div>
-                              <div className="mt-1 text-xs text-neutral-500">
-                                Enable more drivers on the Results page (e.g., denials, HCC). This model will include only what you select.
-                              </div>
-                            </div>
-                          )}
                         </div>
+
+                        {/* Additional documentation drivers callout */}
+                        {hasAnyDocumentationLever && (
+                          <div className="mt-6 rounded-xl border border-dashed border-neutral-200 bg-white p-4">
+                            <div className="text-sm font-medium text-neutral-700">
+                              Add downstream documentation drivers
+                            </div>
+                            <p className="mt-1 text-xs text-neutral-500">
+                              Optionally include additional impacts on the Results page (e.g., denials, risk adjustment). Only what you enable will be modeled.
+                            </p>
+                            <button
+                              type="button"
+                              className="mt-3 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
+                              onClick={() => {
+                                setModelSetupStep(3);
+                              }}
+                            >
+                              Manage on Results
+                            </button>
+                          </div>
+                        )}
                       </section>
                     </div>
 
