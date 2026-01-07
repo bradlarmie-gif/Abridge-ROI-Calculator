@@ -525,6 +525,18 @@ export default function ObjectiveSelectionScreen({
     return null;
   }, [implementationEnabled, annualSubscriptionCost, implementationFee]);
 
+  // Lifetime subscription = annual cost × contract term + implementation fee (if enabled)
+  const lifetimeSubscription = useMemo(() => {
+    if (annualSubscriptionCost === null || contractYears === null) {
+      return null;
+    }
+    const base = annualSubscriptionCost * contractYears;
+    if (implementationEnabled && implementationFee !== null) {
+      return base + implementationFee;
+    }
+    return base;
+  }, [annualSubscriptionCost, contractYears, implementationEnabled, implementationFee]);
+
   // Levers by category for Page 2
   const leversByCategory = useMemo(() => {
     if (!selectedSetting) return null;
@@ -1896,6 +1908,14 @@ export default function ObjectiveSelectionScreen({
                                 </div>
                               </div>
                             )}
+                            {lifetimeSubscription !== null && (
+                              <div className="flex items-center justify-between gap-4 pt-2 border-t border-neutral-200">
+                                <div className="text-sm text-neutral-600">Lifetime subscription</div>
+                                <div className="text-sm font-bold text-neutral-900 tabular-nums">
+                                  ${lifetimeSubscription.toLocaleString()}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -2038,6 +2058,14 @@ export default function ObjectiveSelectionScreen({
                             <div className="text-sm text-neutral-600">Year 1 total cost</div>
                             <div className="text-sm font-bold text-neutral-900 tabular-nums">
                               ${year1TotalCost.toLocaleString()}
+                            </div>
+                          </div>
+                        )}
+                        {lifetimeSubscription !== null && (
+                          <div className="flex items-center justify-between gap-4 pt-2 border-t border-neutral-200">
+                            <div className="text-sm text-neutral-600">Lifetime subscription</div>
+                            <div className="text-sm font-bold text-neutral-900 tabular-nums">
+                              ${lifetimeSubscription.toLocaleString()}
                             </div>
                           </div>
                         )}
