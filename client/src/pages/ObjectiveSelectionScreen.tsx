@@ -1678,25 +1678,11 @@ export default function ObjectiveSelectionScreen({
                           )}
                         </div>
 
-                        {/* Additional documentation drivers callout */}
+                        {/* Tip about additional assumptions */}
                         {hasAnyDocumentationLever && (
-                          <div className="mt-6 rounded-xl border border-dashed border-neutral-200 bg-white p-4">
-                            <div className="text-sm font-medium text-neutral-700">
-                              Add downstream documentation drivers
-                            </div>
-                            <p className="mt-1 text-xs text-neutral-500">
-                              Optionally include additional impacts on the Results page (e.g., denials, risk adjustment). Only what you enable will be modeled.
-                            </p>
-                            <button
-                              type="button"
-                              className="mt-3 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
-                              onClick={() => {
-                                setModelSetupStep(3);
-                              }}
-                            >
-                              Manage on Results
-                            </button>
-                          </div>
+                          <p className="mt-6 text-xs text-neutral-500 italic">
+                            Additional assumptions can be added in the ROI model summary.
+                          </p>
                         )}
                       </section>
                     </div>
