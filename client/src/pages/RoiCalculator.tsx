@@ -1759,7 +1759,7 @@ export default function RoiCalculator({
                                         }
                                         className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4"
                                       >
-                                        Why
+                                        Logic
                                       </button>
 
                                       {action ? (
@@ -2050,35 +2050,32 @@ export default function RoiCalculator({
             <DialogHeader>
               <DialogTitle>{selectedLeverForModal.label}</DialogTitle>
               <DialogDescription>
-                {getLeverConfigById(
-                  selectedLeverForModal.settingId,
-                  selectedLeverForModal.id,
-                )?.description || "No description available."}
+                Why ambient documentation affects {selectedLeverForModal.label.toLowerCase()}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-neutral-500">Care Setting</span>
                 <span className="font-medium">
                   {CARE_SETTING_LABELS[selectedLeverForModal.settingId]}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">Annual Value</span>
-                <span className="font-mono font-medium">
-                  {formatCurrency(selectedLeverForModal.value)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">This lever drives</span>
-                <span className="text-right max-w-[200px]">
-                  {getLeverConfigById(
-                    selectedLeverForModal.settingId,
-                    selectedLeverForModal.id,
-                  )?.driverSummary || "—"}
-                </span>
-              </div>
+
+              <p className="text-sm text-neutral-700 leading-relaxed">
+                {selectedLeverForModal.id === "patientAccess" &&
+                  "Ambient documentation captures the clinical conversation in real time, eliminating the need for providers to reconstruct notes after the visit. Because documentation is largely completed during the encounter, providers regain time that would otherwise be spent charting between or after visits. Across a full clinic schedule, those recovered minutes accumulate into additional appointment capacity without extending clinic hours."}
+                {selectedLeverForModal.id === "overtime" &&
+                  "In outpatient settings, a significant share of clinician overtime is driven by after-hours documentation. Ambient documentation shifts note creation into the visit itself by passively capturing the encounter, reducing the volume of work left for evenings and weekends. As after-hours charting declines, organizations see less overtime and reduced dependence on temporary or supplemental staffing to maintain access."}
+                {selectedLeverForModal.id === "workforce" &&
+                  "Manual documentation forces providers to split attention during visits and complete unfinished work outside scheduled hours. Ambient documentation reduces this burden by handling note capture in the background, allowing providers to focus on the patient without sacrificing documentation quality. Over time, lower administrative load and fewer after-hours demands are associated with improved job satisfaction and lower turnover risk."}
+                {selectedLeverForModal.id === "billingOptim" &&
+                  "Level-of-service coding depends on documentation fully reflecting the complexity discussed and addressed during the visit. Ambient documentation captures clinical detail as it naturally occurs in conversation, reducing omissions that commonly happen with manual note reconstruction. When documentation more completely reflects the care delivered, visits are more likely to be coded at the appropriate level."}
+                {selectedLeverForModal.id === "hccCapture" &&
+                  "Chronic conditions are often discussed during visits but inconsistently documented due to time pressure or reliance on memory. Ambient documentation records these discussions as they happen, increasing the likelihood that relevant conditions are explicitly documented. More complete documentation improves the accuracy of risk adjustment for the outpatient population."}
+                {selectedLeverForModal.id === "denialReduction" &&
+                  "A subset of outpatient denials occur when required clinical detail is missing at the time a claim is submitted and cannot be recovered later. Ambient documentation captures supporting context and clinical rationale during the visit itself, reducing gaps that lead to unrecoverable documentation denials. This model applies impact only to the documentation-related portion of denials where completeness at submission is the limiting factor."}
+              </p>
             </div>
 
             <DialogFooter className="mt-6">
