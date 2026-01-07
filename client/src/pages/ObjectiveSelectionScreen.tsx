@@ -748,10 +748,10 @@ export default function ObjectiveSelectionScreen({
                   <button
                     type="button"
                     onClick={handleContinueToPage1}
-                    className="inline-flex items-center justify-center gap-3 px-16 py-5 rounded-2xl font-semibold text-base md:text-lg bg-[#F03319] text-white hover:bg-[#D92E17] transition-all duration-200 shadow-md hover:shadow-lg"
+                    className="inline-flex items-center justify-center gap-3 px-16 py-5 rounded-2xl font-semibold text-base md:text-lg bg-[#FFF5F3] text-[#F03319] ring-1 ring-[#F03319]/20 hover:bg-[#FFEBE8] transition-all duration-200 shadow-sm hover:shadow"
                     data-testid="button-start"
                   >
-                    Build ROI Case
+                    Build ROI Model
                     <ChevronRight className="h-5 w-5" />
                   </button>
                 </div>
