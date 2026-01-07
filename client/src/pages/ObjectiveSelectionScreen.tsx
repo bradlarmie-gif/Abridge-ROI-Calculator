@@ -62,6 +62,15 @@ const ALL_SETTINGS: AllSettingType[] = [
 
 type Page = "orientation" | "setting" | "priorities" | "model-setup";
 
+// Value posture presets for Step 2 (moved outside component to avoid recreation each render)
+type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
+
+const POSTURE_PRESETS: Record<Exclude<ValuePosture, "custom">, { minutes: number; realization: number; wrvu: number }> = {
+  conservative: { minutes: 2, realization: 45, wrvu: 3 },
+  typical: { minutes: 4, realization: 55, wrvu: 5 },
+  aggressive: { minutes: 6, realization: 65, wrvu: 7 },
+};
+
 function StepIndicator({
   stepNumber,
   label,
@@ -397,16 +406,8 @@ export default function ObjectiveSelectionScreen({
   const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(null); // No default - user must select
 
   // Value posture state and edit accordion tracking
-  type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
   const [valuePosture, setValuePosture] = useState<ValuePosture | null>(null);
   const [editingAssumption, setEditingAssumption] = useState<string | null>(null);
-
-  // Posture preset mappings
-  const POSTURE_PRESETS = {
-    conservative: { minutes: 2, realization: 45, wrvu: 3 },
-    typical: { minutes: 4, realization: 55, wrvu: 5 },
-    aggressive: { minutes: 6, realization: 65, wrvu: 7 },
-  };
 
   // Apply posture to all assumptions
   const applyPosture = (posture: "conservative" | "typical" | "aggressive") => {
@@ -530,7 +531,7 @@ export default function ObjectiveSelectionScreen({
       }
     }
     return "custom";
-  }, [minutesSaved, customMinutes, timeRealizationRate, wrvuSensitivity, hasWrvuSelected, POSTURE_PRESETS]);
+  }, [minutesSaved, customMinutes, timeRealizationRate, wrvuSensitivity, hasWrvuSelected]);
 
   // Annual subscription cost
   const annualSubscriptionCost = useMemo(() => {
