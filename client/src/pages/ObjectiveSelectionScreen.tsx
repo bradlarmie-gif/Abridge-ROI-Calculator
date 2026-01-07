@@ -1813,6 +1813,35 @@ export default function ObjectiveSelectionScreen({
                             hrs
                           </span>
                         </div>
+                        {/* Realized time (when realization rate is set) */}
+                        {realizedMinutesSaved !== null && realizedHoursSaved !== null && (
+                          <>
+                            <div className="border-t border-white/30 pt-3 mt-3">
+                              <div className="flex justify-between">
+                                <span className="text-white/90">
+                                  Realized minutes ({timeRealizationRate}%)
+                                </span>
+                                <span className="font-semibold text-white">
+                                  {realizedMinutesSaved.toLocaleString(undefined, {
+                                    maximumFractionDigits: 0,
+                                  })} min
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-white/90">
+                                Realized hours
+                              </span>
+                              <span className="font-bold text-white">
+                                {realizedHoursSaved.toLocaleString(undefined, {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 1,
+                                })}{" "}
+                                hrs
+                              </span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1925,6 +1954,33 @@ export default function ObjectiveSelectionScreen({
                         hrs
                       </span>
                     </div>
+                    {/* Realized time (when realization rate is set) */}
+                    {realizedMinutesSaved !== null && realizedHoursSaved !== null && (
+                      <>
+                        <div className="border-t border-white/30 pt-3 mt-3">
+                          <div className="flex justify-between">
+                            <span className="text-white/90">
+                              Realized minutes ({timeRealizationRate}%)
+                            </span>
+                            <span className="font-semibold text-white">
+                              {realizedMinutesSaved.toLocaleString(undefined, {
+                                maximumFractionDigits: 0,
+                              })} min
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/90">Realized hours</span>
+                          <span className="font-bold text-white">
+                            {realizedHoursSaved.toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 1,
+                            })}{" "}
+                            hrs
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
