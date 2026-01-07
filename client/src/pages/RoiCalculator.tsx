@@ -257,6 +257,7 @@ export default function RoiCalculator({
   ] = useState(false);
   const [hccConditionCaptureDrawerOpen, setHccConditionCaptureDrawerOpen] =
     useState(false);
+  const [modelDetailsOpen, setModelDetailsOpen] = useState(false);
 
   // Outpatient-only: one consistent action label + handler for each driver
   const outpatientLeverAction: Record<
@@ -1389,14 +1390,18 @@ export default function RoiCalculator({
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap gap-1.5 md:justify-end">
+                      <div 
+                        className="flex flex-wrap gap-1.5 md:justify-end cursor-pointer"
+                        onClick={() => setModelDetailsOpen(!modelDetailsOpen)}
+                        data-testid="selections-badges-toggle"
+                      >
                         {enabledDriverCount > 0 ? (
                           <>
                             {enabledCapacityLaborLevers.map((l) => (
                               <Badge
                                 key={`${l.settingId}:${l.id}`}
                                 variant="secondary"
-                                className="text-[11px] px-2 py-0.5"
+                                className="text-[11px] px-2 py-0.5 cursor-pointer"
                               >
                                 {l.label}
                               </Badge>
@@ -1405,7 +1410,7 @@ export default function RoiCalculator({
                               <Badge
                                 key={`${l.settingId}:${l.id}`}
                                 variant="secondary"
-                                className="text-[11px] px-2 py-0.5"
+                                className="text-[11px] px-2 py-0.5 cursor-pointer"
                               >
                                 {l.label}
                               </Badge>
@@ -1419,6 +1424,286 @@ export default function RoiCalculator({
                       </div>
                     </div>
                   </div>
+
+                  {/* Model details (collapsed by default) */}
+                  <Card className="w-full overflow-hidden border-neutral-200 bg-white">
+                    <CardContent className="p-0">
+                      <details className="group" open={modelDetailsOpen}>
+                        <summary 
+                          className="list-none cursor-pointer select-none px-6 py-5 flex items-start justify-between gap-6 hover:bg-neutral-50 transition-colors"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setModelDetailsOpen(!modelDetailsOpen);
+                          }}
+                        >
+                          <div>
+                            <div className="text-base font-semibold text-neutral-900">
+                              Model details
+                            </div>
+                            <div className="text-sm text-neutral-500 mt-1">
+                              Review what's included in totals, and enable
+                              additional drivers.
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 shrink-0">
+                            <Badge variant="secondary" className="text-xs">
+                              {enabledDriverCount} included
+                            </Badge>
+
+                            <span className={`text-xs text-neutral-500 ${modelDetailsOpen ? 'hidden' : ''}`}>
+                              Show
+                            </span>
+                            <span className={`text-xs text-neutral-500 ${modelDetailsOpen ? '' : 'hidden'}`}>
+                              Hide
+                            </span>
+
+                            {/* Chevron (rotates) */}
+                            <svg
+                              className={`h-4 w-4 text-neutral-400 transition-transform ${modelDetailsOpen ? 'rotate-180' : ''}`}
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                        </summary>
+
+                        <div className="border-t border-neutral-200">
+                          <div className="overflow-x-auto">
+                            <Table className="min-w-[900px]">
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-20 text-center text-xs uppercase tracking-wide text-neutral-500">
+                                    Include
+                                  </TableHead>
+                                  <TableHead className="text-xs uppercase tracking-wide text-neutral-500">
+                                    Driver
+                                  </TableHead>
+                                  <TableHead className="w-32 text-xs uppercase tracking-wide text-neutral-500">
+                                    Setting
+                                  </TableHead>
+                                  <TableHead className="w-40 text-right text-xs uppercase tracking-wide text-neutral-500">
+                                    Annual value
+                                  </TableHead>
+                                  <TableHead className="w-48 text-right text-xs uppercase tracking-wide text-neutral-500">
+                                    Actions
+                                  </TableHead>
+                                </TableRow>
+                              </TableHeader>
+
+                              <TableBody>
+                                {(() => {
+                                  const activeLevers = leversWithSettings.filter(
+                                    (l) => l.enabled,
+                                  );
+                                  const inactiveLevers =
+                                    leversWithSettings.filter((l) => !l.enabled);
+
+                                  const renderActions = (
+                                    lever: LeverWithSetting,
+                                  ) => {
+                                    const action = getLeverAction(
+                                      lever.settingId,
+                                      lever.id,
+                                    );
+
+                                    return (
+                                      <div className="flex justify-end items-center gap-3">
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setSelectedLeverForModal(lever)
+                                          }
+                                          className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4"
+                                        >
+                                          Logic
+                                        </button>
+
+                                        {action ? (
+                                          <button
+                                            type="button"
+                                            onClick={action.onClick}
+                                            className="text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
+                                          >
+                                            {action.label}
+                                          </button>
+                                        ) : (
+                                          <span className="text-xs text-neutral-300">
+                                            —
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  };
+
+                                  return (
+                                    <>
+                                      {/* Section: Included */}
+                                      <TableRow className="bg-neutral-50">
+                                        <TableCell
+                                          colSpan={5}
+                                          className="px-6 py-3"
+                                        >
+                                          <div className="flex items-center justify-between">
+                                            <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                                              Included drivers
+                                            </span>
+                                            <span className="text-xs text-neutral-500">
+                                              {activeLevers.length}
+                                            </span>
+                                          </div>
+                                        </TableCell>
+                                      </TableRow>
+
+                                      {activeLevers.length > 0 ? (
+                                        activeLevers.map((lever) => {
+                                          const key = `${lever.settingId}:${lever.id}`;
+
+                                          return (
+                                            <TableRow
+                                              key={key}
+                                              className="hover:bg-neutral-50 transition-colors"
+                                              data-testid={`lever-row-${key}`}
+                                            >
+                                              <TableCell className="text-center">
+                                                <Checkbox
+                                                  checked
+                                                  onCheckedChange={() =>
+                                                    handleLeverToggle(
+                                                      lever.settingId,
+                                                      lever.id,
+                                                    )
+                                                  }
+                                                  data-testid={`checkbox-${key}`}
+                                                />
+                                              </TableCell>
+
+                                              <TableCell className="font-medium text-neutral-900">
+                                                {lever.label}
+                                              </TableCell>
+
+                                              <TableCell>
+                                                <Badge
+                                                  variant="secondary"
+                                                  className="text-xs"
+                                                >
+                                                  {
+                                                    CARE_SETTING_LABELS[
+                                                      lever.settingId
+                                                    ]
+                                                  }
+                                                </Badge>
+                                              </TableCell>
+
+                                              <TableCell className="text-right font-mono">
+                                                {formatCurrency(lever.value)}
+                                              </TableCell>
+
+                                              <TableCell className="text-right">
+                                                {renderActions(lever)}
+                                              </TableCell>
+                                            </TableRow>
+                                          );
+                                        })
+                                      ) : (
+                                        <TableRow>
+                                          <TableCell
+                                            colSpan={5}
+                                            className="px-6 py-6"
+                                          >
+                                            <div className="text-sm text-neutral-400 italic text-center">
+                                              No drivers currently included
+                                            </div>
+                                          </TableCell>
+                                        </TableRow>
+                                      )}
+
+                                      {/* Section: Available */}
+                                      {inactiveLevers.length > 0 && (
+                                        <>
+                                          <TableRow className="bg-neutral-50">
+                                            <TableCell
+                                              colSpan={5}
+                                              className="px-6 py-3"
+                                            >
+                                              <div className="flex items-center justify-between">
+                                                <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                                                  Available drivers
+                                                </span>
+                                                <span className="text-xs text-neutral-500">
+                                                  {inactiveLevers.length}
+                                                </span>
+                                              </div>
+                                            </TableCell>
+                                          </TableRow>
+
+                                          {inactiveLevers.map((lever) => {
+                                            const key = `${lever.settingId}:${lever.id}`;
+
+                                            return (
+                                              <TableRow
+                                                key={key}
+                                                className="hover:bg-neutral-50 transition-colors opacity-60"
+                                                data-testid={`lever-row-${key}`}
+                                              >
+                                                <TableCell className="text-center">
+                                                  <Checkbox
+                                                    checked={false}
+                                                    onCheckedChange={() =>
+                                                      handleLeverToggle(
+                                                        lever.settingId,
+                                                        lever.id,
+                                                      )
+                                                    }
+                                                    data-testid={`checkbox-${key}`}
+                                                  />
+                                                </TableCell>
+
+                                                <TableCell className="font-medium text-neutral-900">
+                                                  {lever.label}
+                                                </TableCell>
+
+                                                <TableCell>
+                                                  <Badge
+                                                    variant="secondary"
+                                                    className="text-xs"
+                                                  >
+                                                    {
+                                                      CARE_SETTING_LABELS[
+                                                        lever.settingId
+                                                      ]
+                                                    }
+                                                  </Badge>
+                                                </TableCell>
+
+                                                <TableCell className="text-right font-mono text-neutral-400">
+                                                  {formatCurrency(lever.value)}
+                                                </TableCell>
+
+                                                <TableCell className="text-right">
+                                                  {renderActions(lever)}
+                                                </TableCell>
+                                              </TableRow>
+                                            );
+                                          })}
+                                        </>
+                                      )}
+                                    </>
+                                  );
+                                })()}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      </details>
+                    </CardContent>
+                  </Card>
 
                   {/* Scenario receipt (secondary weight) */}
                   <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4">
@@ -1667,280 +1952,6 @@ export default function RoiCalculator({
                     </CardContent>
                   </Card>
                 </div>
-
-                {/* (5) Model details (collapsed by default) */}
-                <Card className="w-full overflow-hidden border-neutral-200 bg-white">
-                  <CardContent className="p-0">
-                    <details className="group">
-                      <summary className="list-none cursor-pointer select-none px-6 py-5 flex items-start justify-between gap-6 hover:bg-neutral-50 transition-colors">
-                        <div>
-                          <div className="text-base font-semibold text-neutral-900">
-                            Model details
-                          </div>
-                          <div className="text-sm text-neutral-500 mt-1">
-                            Review what's included in totals, and enable
-                            additional drivers.
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 shrink-0">
-                          <Badge variant="secondary" className="text-xs">
-                            {enabledDriverCount} included
-                          </Badge>
-
-                          <span className="text-xs text-neutral-500 group-open:hidden">
-                            Show
-                          </span>
-                          <span className="text-xs text-neutral-500 hidden group-open:inline">
-                            Hide
-                          </span>
-
-                          {/* Chevron (rotates) */}
-                          <svg
-                            className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                      </summary>
-
-                      <div className="border-t border-neutral-200">
-                        <div className="overflow-x-auto">
-                          <Table className="min-w-[900px]">
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead className="w-20 text-center text-xs uppercase tracking-wide text-neutral-500">
-                                  Include
-                                </TableHead>
-                                <TableHead className="text-xs uppercase tracking-wide text-neutral-500">
-                                  Driver
-                                </TableHead>
-                                <TableHead className="w-32 text-xs uppercase tracking-wide text-neutral-500">
-                                  Setting
-                                </TableHead>
-                                <TableHead className="w-40 text-right text-xs uppercase tracking-wide text-neutral-500">
-                                  Annual value
-                                </TableHead>
-                                <TableHead className="w-48 text-right text-xs uppercase tracking-wide text-neutral-500">
-                                  Actions
-                                </TableHead>
-                              </TableRow>
-                            </TableHeader>
-
-                            <TableBody>
-                              {(() => {
-                                const activeLevers = leversWithSettings.filter(
-                                  (l) => l.enabled,
-                                );
-                                const inactiveLevers =
-                                  leversWithSettings.filter((l) => !l.enabled);
-
-                                const renderActions = (
-                                  lever: LeverWithSetting,
-                                ) => {
-                                  const action = getLeverAction(
-                                    lever.settingId,
-                                    lever.id,
-                                  );
-
-                                  return (
-                                    <div className="flex justify-end items-center gap-3">
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          setSelectedLeverForModal(lever)
-                                        }
-                                        className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4"
-                                      >
-                                        Logic
-                                      </button>
-
-                                      {action ? (
-                                        <button
-                                          type="button"
-                                          onClick={action.onClick}
-                                          className="text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
-                                        >
-                                          {action.label}
-                                        </button>
-                                      ) : (
-                                        <span className="text-xs text-neutral-300">
-                                          —
-                                        </span>
-                                      )}
-                                    </div>
-                                  );
-                                };
-
-                                return (
-                                  <>
-                                    {/* Section: Included */}
-                                    <TableRow className="bg-neutral-50">
-                                      <TableCell
-                                        colSpan={5}
-                                        className="px-6 py-3"
-                                      >
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                                            Included drivers
-                                          </span>
-                                          <span className="text-xs text-neutral-500">
-                                            {activeLevers.length}
-                                          </span>
-                                        </div>
-                                      </TableCell>
-                                    </TableRow>
-
-                                    {activeLevers.length > 0 ? (
-                                      activeLevers.map((lever) => {
-                                        const key = `${lever.settingId}:${lever.id}`;
-
-                                        return (
-                                          <TableRow
-                                            key={key}
-                                            className="hover:bg-neutral-50 transition-colors"
-                                            data-testid={`lever-row-${key}`}
-                                          >
-                                            <TableCell className="text-center">
-                                              <Checkbox
-                                                checked
-                                                onCheckedChange={() =>
-                                                  handleLeverToggle(
-                                                    lever.settingId,
-                                                    lever.id,
-                                                  )
-                                                }
-                                                data-testid={`checkbox-${key}`}
-                                              />
-                                            </TableCell>
-
-                                            <TableCell className="font-medium text-neutral-900">
-                                              {lever.label}
-                                            </TableCell>
-
-                                            <TableCell>
-                                              <Badge
-                                                variant="secondary"
-                                                className="text-xs"
-                                              >
-                                                {
-                                                  CARE_SETTING_LABELS[
-                                                    lever.settingId
-                                                  ]
-                                                }
-                                              </Badge>
-                                            </TableCell>
-
-                                            <TableCell className="text-right font-mono">
-                                              {formatCurrency(lever.value)}
-                                            </TableCell>
-
-                                            <TableCell className="text-right">
-                                              {renderActions(lever)}
-                                            </TableCell>
-                                          </TableRow>
-                                        );
-                                      })
-                                    ) : (
-                                      <TableRow>
-                                        <TableCell
-                                          colSpan={5}
-                                          className="px-6 py-6"
-                                        >
-                                          <div className="text-sm text-neutral-400 italic text-center">
-                                            No drivers currently included
-                                          </div>
-                                        </TableCell>
-                                      </TableRow>
-                                    )}
-
-                                    {/* Section: Available */}
-                                    {inactiveLevers.length > 0 && (
-                                      <>
-                                        <TableRow className="bg-neutral-50">
-                                          <TableCell
-                                            colSpan={5}
-                                            className="px-6 py-3"
-                                          >
-                                            <div className="flex items-center justify-between">
-                                              <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                                                Available drivers
-                                              </span>
-                                              <span className="text-xs text-neutral-500">
-                                                {inactiveLevers.length}
-                                              </span>
-                                            </div>
-                                          </TableCell>
-                                        </TableRow>
-
-                                        {inactiveLevers.map((lever) => {
-                                          const key = `${lever.settingId}:${lever.id}`;
-
-                                          return (
-                                            <TableRow
-                                              key={key}
-                                              className="hover:bg-neutral-50 transition-colors opacity-60"
-                                              data-testid={`lever-row-${key}`}
-                                            >
-                                              <TableCell className="text-center">
-                                                <Checkbox
-                                                  checked={false}
-                                                  onCheckedChange={() =>
-                                                    handleLeverToggle(
-                                                      lever.settingId,
-                                                      lever.id,
-                                                    )
-                                                  }
-                                                  data-testid={`checkbox-${key}`}
-                                                />
-                                              </TableCell>
-
-                                              <TableCell className="font-medium text-neutral-900">
-                                                {lever.label}
-                                              </TableCell>
-
-                                              <TableCell>
-                                                <Badge
-                                                  variant="secondary"
-                                                  className="text-xs"
-                                                >
-                                                  {
-                                                    CARE_SETTING_LABELS[
-                                                      lever.settingId
-                                                    ]
-                                                  }
-                                                </Badge>
-                                              </TableCell>
-
-                                              <TableCell className="text-right font-mono text-neutral-400">
-                                                {formatCurrency(lever.value)}
-                                              </TableCell>
-
-                                              <TableCell className="text-right">
-                                                {renderActions(lever)}
-                                              </TableCell>
-                                            </TableRow>
-                                          );
-                                        })}
-                                      </>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </div>
-                    </details>
-                  </CardContent>
-                </Card>
 
                 {/* (6) Scale - Enterprise Expansion Chart */}
                 <div className="space-y-8">
