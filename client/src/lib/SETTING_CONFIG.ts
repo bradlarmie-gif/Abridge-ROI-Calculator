@@ -22,7 +22,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
     {
       id: "overtime",
-      label: "Overtime & Locum Cost Avoidance",
+      label: "Overtime & Locum Cost Savings",
       category: "time",
       description:
         "Reduce overtime and locum reliance driven by after-hours documentation.",
@@ -38,7 +38,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
     {
       id: "wrvu",
-      label: "Level of Service Alignment",
+      label: "Accurate Level of Service",
       category: "documentation",
       description: "Ensure visits are billed at the level actually delivered.",
       driverSummary: "wRVUs, per-visit reimbursement.",
@@ -53,7 +53,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
     {
       id: "denials",
-      label: "Medical Necessity-Driven Denials",
+      label: "Documentation Related Denials",
       category: "documentation",
       description:
         "Reduce preventable denials caused by incomplete or unclear documentation.",
