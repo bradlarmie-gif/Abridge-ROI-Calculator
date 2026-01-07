@@ -1195,6 +1195,202 @@ export default function ObjectiveSelectionScreen({
                           deployments
                         </p>
                       </div>
+
+                      {/* Time Realization Rate */}
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          How much of this time is realistically usable?
+                        </label>
+                        <p className="text-xs text-neutral-500 mb-3">
+                          Not all saved time converts to productive capacity
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => setTimeRealizationRate(45)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              timeRealizationRate === 45
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-realization-45"
+                          >
+                            Conservative (45%)
+                          </button>
+                          <button
+                            onClick={() => setTimeRealizationRate(55)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              timeRealizationRate === 55
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-realization-55"
+                          >
+                            Expected (55%)
+                          </button>
+                          <button
+                            onClick={() => setTimeRealizationRate(65)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              timeRealizationRate === 65
+                                ? "bg-[#F03319] text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                            }`}
+                            data-testid="chip-realization-65"
+                          >
+                            Optimistic (65%)
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Documentation-based Value Section - only show if relevant levers selected */}
+                      {hasAnyDocumentationLever && (
+                        <div className="border-t border-neutral-100 pt-6">
+                          <h4 className="text-sm font-medium text-neutral-900 mb-4">
+                            Documentation-based Value
+                          </h4>
+                          <div className="space-y-5">
+                            {/* Level of Service (wRVU) */}
+                            {hasWrvuSelected && (
+                              <div>
+                                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                                  Level of Service improvement
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    onClick={() => setWrvuSensitivity(3)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      wrvuSensitivity === 3
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-wrvu-3"
+                                  >
+                                    Conservative (3%)
+                                  </button>
+                                  <button
+                                    onClick={() => setWrvuSensitivity(5)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      wrvuSensitivity === 5
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-wrvu-5"
+                                  >
+                                    Expected (5%)
+                                  </button>
+                                  <button
+                                    onClick={() => setWrvuSensitivity(7)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      wrvuSensitivity === 7
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-wrvu-7"
+                                  >
+                                    Optimistic (7%)
+                                  </button>
+                                </div>
+                                <p className="text-xs text-neutral-500 mt-1.5">
+                                  Percentage of visits billed at a higher level
+                                </p>
+                              </div>
+                            )}
+
+                            {/* HCC & Chronic Condition Capture */}
+                            {hasHccSelected && (
+                              <div>
+                                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                                  HCC / RAF lift
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    onClick={() => setHccSensitivity(0.3)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      hccSensitivity === 0.3
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-hcc-03"
+                                  >
+                                    Conservative (0.3%)
+                                  </button>
+                                  <button
+                                    onClick={() => setHccSensitivity(0.7)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      hccSensitivity === 0.7
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-hcc-07"
+                                  >
+                                    Expected (0.7%)
+                                  </button>
+                                  <button
+                                    onClick={() => setHccSensitivity(1.2)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      hccSensitivity === 1.2
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-hcc-12"
+                                  >
+                                    Optimistic (1.2%)
+                                  </button>
+                                </div>
+                                <p className="text-xs text-neutral-500 mt-1.5">
+                                  Relative RAF score improvement
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Denial Reduction */}
+                            {hasDenialsSelected && (
+                              <div>
+                                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                                  Denial rate reduction
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    onClick={() => setDenialsSensitivity(2)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      denialsSensitivity === 2
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-denials-2"
+                                  >
+                                    Conservative (2%)
+                                  </button>
+                                  <button
+                                    onClick={() => setDenialsSensitivity(5)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      denialsSensitivity === 5
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-denials-5"
+                                  >
+                                    Expected (5%)
+                                  </button>
+                                  <button
+                                    onClick={() => setDenialsSensitivity(8)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                      denialsSensitivity === 8
+                                        ? "bg-[#F03319] text-white"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    }`}
+                                    data-testid="chip-denials-8"
+                                  >
+                                    Optimistic (8%)
+                                  </button>
+                                </div>
+                                <p className="text-xs text-neutral-500 mt-1.5">
+                                  Reduction in documentation-related denials
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="mt-8 flex flex-col sm:flex-row sm:justify-between gap-3">
                       <button
