@@ -16,7 +16,8 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       id: "patientAccess",
       label: "Patient Access",
       category: "time",
-      description: "Turn documentation time into additional visit capacity.",
+      description:
+        "Turn documentation efficiency into additional visit capacity.",
       driverSummary: "visits per provider per day, downstream revenue.",
     },
     {
@@ -24,7 +25,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "Overtime & Locum Cost Savings",
       category: "time",
       description:
-        "Reduce after-hours documentation that drives premium labor.",
+        "Reduce overtime and locum reliance driven by after-hours documentation.",
       driverSummary: "overtime spend, locum hours.",
     },
     {
@@ -32,15 +33,14 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "Clinician Retention",
       category: "time",
       description:
-        "Reduce administrative burden that contributes to burnout and provider turnover.",
+        "Lower burnout and turnover by reducing administrative burden.",
       driverSummary: "avoided replacement cost, team stability.",
     },
     {
       id: "wrvu",
       label: "Accurate Level of Service",
       category: "documentation",
-      description:
-        "Ensure documentation supports billing at the level delivered.",
+      description: "Ensure visits are billed at the level actually delivered.",
       driverSummary: "wRVUs, per-visit reimbursement.",
     },
     {
@@ -48,7 +48,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "HCC & Chronic Condition Capture",
       category: "documentation",
       description:
-        "Capture chronic conditions consistently to support accurate risk adjustment.",
+        "Improve risk adjustment through more complete clinical documentation.",
       driverSummary: "RAF accuracy, risk-adjusted reimbursement.",
     },
     {
@@ -56,7 +56,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "Denial Reduction",
       category: "documentation",
       description:
-        "Reduce preventable denials by improving documentation clarity and completeness.",
+        "Reduce preventable denials caused by incomplete or unclear documentation.",
       driverSummary: "fewer denied claims, higher net collections.",
     },
   ],

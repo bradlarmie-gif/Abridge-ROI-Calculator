@@ -755,7 +755,7 @@ export default function ObjectiveSelectionScreen({
                     Care setting
                   </h3>
                   <p className="text-sm text-neutral-500 mt-1.5">
-                    Select one to continue
+                    Select to continue
                   </p>
                 </div>
                 <div className="divide-y divide-neutral-100/80">
@@ -868,7 +868,7 @@ export default function ObjectiveSelectionScreen({
 
                 <div className="mb-10">
                   <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
-                    Baseline Assumptions
+                    Adoption
                   </h2>
                   <p className="text-lg text-neutral-600 leading-relaxed">
                     These inputs shape your ROI model.
@@ -896,14 +896,14 @@ export default function ObjectiveSelectionScreen({
                           step
                         )}
                       </span>
-                      {step === 1 && "Baseline"}
-                      {step === 2 && "Adoption"}
+                      {step === 1 && "Adoption"}
+                      {step === 2 && "Value Realization"}
                       {step === 3 && "Investment"}
                     </button>
                   ))}
                 </div>
 
-                {/* Step 1: Baseline */}
+                {/* Step 1: Adoption */}
                 {modelSetupStep === 1 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
                     <div className="space-y-6">
@@ -960,36 +960,7 @@ export default function ObjectiveSelectionScreen({
                           Total annual patient encounters for the providers in scope. This drives encounter-based ROI calculations.
                         </p>
                       </div>
-                    </div>
 
-                    <div className="mt-8 flex justify-end">
-                      <button
-                        onClick={() => setModelSetupStep(2)}
-                        disabled={
-                          effectiveClinicians === 0 || effectiveEncounters === 0
-                        }
-                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
-                          effectiveClinicians > 0 && effectiveEncounters > 0
-                            ? "bg-neutral-900 text-white hover:bg-neutral-800"
-                            : "bg-neutral-300 text-neutral-500 cursor-not-allowed"
-                        }`}
-                        data-testid="button-step1-next"
-                      >
-                        Next: Adoption
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 2: Adoption */}
-                {modelSetupStep === 2 && (
-                  <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
-                    <p className="text-sm text-neutral-600 mb-6">
-                      This determines how many encounters are affected by
-                      ambient documentation.
-                    </p>
-                    <div className="space-y-8">
                       {/* Utilization Rate */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-3">
@@ -1061,8 +1032,39 @@ export default function ObjectiveSelectionScreen({
                             </div>
                           </button>
                         </div>
+                        <p className="text-xs text-neutral-500 mt-2">
+                          Percentage of encounters where Abridge is actively used for documentation.
+                        </p>
                       </div>
+                    </div>
 
+                    <div className="mt-8 flex justify-end">
+                      <button
+                        onClick={() => setModelSetupStep(2)}
+                        disabled={
+                          effectiveClinicians === 0 || effectiveEncounters === 0
+                        }
+                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+                          effectiveClinicians > 0 && effectiveEncounters > 0
+                            ? "bg-neutral-900 text-white hover:bg-neutral-800"
+                            : "bg-neutral-300 text-neutral-500 cursor-not-allowed"
+                        }`}
+                        data-testid="button-step1-next"
+                      >
+                        Next: Value Realization
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Value Realization */}
+                {modelSetupStep === 2 && (
+                  <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
+                    <p className="text-sm text-neutral-600 mb-6">
+                      How much time does Abridge save per encounter?
+                    </p>
+                    <div className="space-y-8">
                       {/* Minutes Saved */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-3">
