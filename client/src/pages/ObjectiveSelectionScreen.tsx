@@ -1788,7 +1788,7 @@ export default function ObjectiveSelectionScreen({
                       <div className="mt-3 divide-y divide-neutral-200">
                         {/* Adoption section */}
                         <div className="py-2 space-y-2">
-                          <div className="text-xs font-semibold text-neutral-500 mb-2">
+                          <div className="text-xs font-bold text-neutral-700 mb-2">
                             Adoption
                           </div>
                           <div className="flex items-center justify-between gap-4">
@@ -1819,7 +1819,7 @@ export default function ObjectiveSelectionScreen({
 
                         {/* Time Assumptions section */}
                         <div className="py-2 space-y-2">
-                          <div className="text-xs font-semibold text-neutral-500 mb-2">
+                          <div className="text-xs font-bold text-neutral-700 mb-2">
                             Time Assumptions
                           </div>
                           <div className="flex items-center justify-between gap-4">
@@ -1849,7 +1849,7 @@ export default function ObjectiveSelectionScreen({
                         {/* Documentation Assumptions section */}
                         {hasAnyDocumentationLever && (
                           <div className="py-2 space-y-2">
-                            <div className="text-xs font-semibold text-neutral-500 mb-2">
+                            <div className="text-xs font-bold text-neutral-700 mb-2">
                               Documentation Assumptions
                             </div>
                             {hasWrvuSelected && wrvuSensitivity !== null && (
@@ -1882,7 +1882,7 @@ export default function ObjectiveSelectionScreen({
                         {/* Investment info - only show on step 3 */}
                         {modelSetupStep === 3 && (annualSubscriptionCost !== null || implementationFee !== null) && (
                           <div className="py-2 space-y-2">
-                            <div className="text-xs font-semibold text-neutral-500 mt-1">
+                            <div className="text-xs font-bold text-neutral-700 mt-1">
                               Investment
                             </div>
                             {implementationEnabled && implementationFee !== null && (
@@ -1933,7 +1933,7 @@ export default function ObjectiveSelectionScreen({
                   <div className="mt-3 divide-y divide-neutral-200">
                     {/* Adoption section */}
                     <div className="py-2 space-y-2">
-                      <div className="text-xs font-semibold text-neutral-500 mb-2">
+                      <div className="text-xs font-bold text-neutral-700 mb-2">
                         Adoption
                       </div>
                       <div className="flex items-center justify-between gap-4">
@@ -1964,7 +1964,7 @@ export default function ObjectiveSelectionScreen({
 
                     {/* Time Assumptions section */}
                     <div className="py-2 space-y-2">
-                      <div className="text-xs font-semibold text-neutral-500 mb-2">
+                      <div className="text-xs font-bold text-neutral-700 mb-2">
                         Time Assumptions
                       </div>
                       <div className="flex items-center justify-between gap-4">
@@ -1994,7 +1994,7 @@ export default function ObjectiveSelectionScreen({
                     {/* Documentation Assumptions section */}
                     {hasAnyDocumentationLever && (
                       <div className="py-2 space-y-2">
-                        <div className="text-xs font-semibold text-neutral-500 mb-2">
+                        <div className="text-xs font-bold text-neutral-700 mb-2">
                           Documentation Assumptions
                         </div>
                         {hasWrvuSelected && wrvuSensitivity !== null && (
@@ -2027,7 +2027,7 @@ export default function ObjectiveSelectionScreen({
                     {/* Investment info - only show on step 3 */}
                     {modelSetupStep === 3 && (annualSubscriptionCost !== null || implementationFee !== null) && (
                       <div className="py-2 space-y-2">
-                        <div className="text-xs font-semibold text-neutral-500 mb-2">
+                        <div className="text-xs font-bold text-neutral-700 mb-2">
                           Investment
                         </div>
                         {implementationEnabled && implementationFee !== null && (
