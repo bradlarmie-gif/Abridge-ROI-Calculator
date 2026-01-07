@@ -388,6 +388,14 @@ export default function ObjectiveSelectionScreen({
   const [showCustomMinutesInput, setShowCustomMinutesInput] = useState(false);
   const customMinutesInputRef = useRef<HTMLInputElement>(null);
 
+  // Value Realization step state
+  const [timeRealizationRate, setTimeRealizationRate] = useState<number | null>(null);
+  
+  // Documentation lever sensitivity states (only shown if lever is selected)
+  const [wrvuSensitivity, setWrvuSensitivity] = useState<number | null>(null); // 3%, 5%, 7% level of service
+  const [hccSensitivity, setHccSensitivity] = useState<number | null>(null); // 0.3%, 0.7%, 1.2% RAF lift
+  const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(null); // 2%, 5%, 8% denial reduction
+
   // Pricing step state
   const [pricingModel, setPricingModel] = useState<
     "per-clinician" | "enterprise" | null
@@ -456,6 +464,27 @@ export default function ObjectiveSelectionScreen({
     }
     return null;
   }, [totalMinutesSaved]);
+
+  // Realized minutes saved (total minutes × time realization rate)
+  const realizedMinutesSaved = useMemo(() => {
+    if (totalMinutesSaved !== null && timeRealizationRate !== null) {
+      return totalMinutesSaved * (timeRealizationRate / 100);
+    }
+    return null;
+  }, [totalMinutesSaved, timeRealizationRate]);
+
+  const realizedHoursSaved = useMemo(() => {
+    if (realizedMinutesSaved !== null) {
+      return realizedMinutesSaved / 60;
+    }
+    return null;
+  }, [realizedMinutesSaved]);
+
+  // Check which documentation levers are selected
+  const hasWrvuSelected = selectedLeverIds.has("wrvu") || selectedLeverIds.has("edLevelOfService");
+  const hasHccSelected = selectedLeverIds.has("hcc");
+  const hasDenialsSelected = selectedLeverIds.has("denials");
+  const hasAnyDocumentationLever = hasWrvuSelected || hasHccSelected || hasDenialsSelected;
 
   // Annual subscription cost
   const annualSubscriptionCost = useMemo(() => {
@@ -1062,13 +1091,13 @@ export default function ObjectiveSelectionScreen({
                 {modelSetupStep === 2 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
                     <p className="text-sm text-neutral-600 mb-6">
-                      How much time does Abridge save per encounter?
+                      When Abridge is used, how does value actually get realized?
                     </p>
                     <div className="space-y-8">
                       {/* Minutes Saved */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-3">
-                          Documentation efficiency scenario
+                          Minutes saved per encounter
                         </label>
                         <div className="flex flex-wrap gap-2">
                           <button
