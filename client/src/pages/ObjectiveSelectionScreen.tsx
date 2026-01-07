@@ -903,7 +903,7 @@ export default function ObjectiveSelectionScreen({
         {/* PAGE 3 — BASELINE ASSUMPTIONS */}
         {currentPage === "model-setup" && selectedSetting && (
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16">
-            <div className="grid lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
+            <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
               <div>
                 <button
                   onClick={handleBackToPage2}
