@@ -1039,7 +1039,7 @@ export default function ObjectiveSelectionScreen({
                             onClick={() => setUtilizationPercent(50)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                               utilizationPercent === 50
-                                ? "bg-[#F03319] text-white"
+                                ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                 : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                             }`}
                             data-testid="chip-util-conservative"
@@ -1055,7 +1055,7 @@ export default function ObjectiveSelectionScreen({
                             onClick={() => setUtilizationPercent(65)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                               utilizationPercent === 65
-                                ? "bg-[#F03319] text-white"
+                                ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                 : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                             }`}
                             data-testid="chip-util-expected"
@@ -1071,7 +1071,7 @@ export default function ObjectiveSelectionScreen({
                             onClick={() => setUtilizationPercent(80)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                               utilizationPercent === 80
-                                ? "bg-[#F03319] text-white"
+                                ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                 : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                             }`}
                             data-testid="chip-util-high"
@@ -1142,7 +1142,7 @@ export default function ObjectiveSelectionScreen({
                               }}
                               className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                 minutesSaved === 2 && customMinutes === null
-                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                  ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                   : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                               }`}
                               data-testid="chip-minutes-2"
@@ -1158,7 +1158,7 @@ export default function ObjectiveSelectionScreen({
                               }}
                               className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                 minutesSaved === 4 && customMinutes === null
-                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                  ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                   : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                               }`}
                               data-testid="chip-minutes-4"
@@ -1174,7 +1174,7 @@ export default function ObjectiveSelectionScreen({
                               }}
                               className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                 minutesSaved === 6 && customMinutes === null
-                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                  ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                   : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                               }`}
                               data-testid="chip-minutes-6"
@@ -1187,7 +1187,7 @@ export default function ObjectiveSelectionScreen({
                                 onClick={() => setShowCustomMinutesInput(true)}
                                 className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                   customMinutes !== null
-                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                    ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                     : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                 }`}
                                 data-testid="chip-minutes-custom"
@@ -1238,7 +1238,7 @@ export default function ObjectiveSelectionScreen({
                                 onClick={() => setTimeRealizationRate(45)}
                                 className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                   timeRealizationRate === 45
-                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                    ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                     : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                 }`}
                                 data-testid="chip-realization-45"
@@ -1250,7 +1250,7 @@ export default function ObjectiveSelectionScreen({
                                 onClick={() => setTimeRealizationRate(55)}
                                 className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                   timeRealizationRate === 55
-                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                    ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                     : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                 }`}
                                 data-testid="chip-realization-55"
@@ -1262,7 +1262,7 @@ export default function ObjectiveSelectionScreen({
                                 onClick={() => setTimeRealizationRate(65)}
                                 className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                   timeRealizationRate === 65
-                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                    ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                     : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                 }`}
                                 data-testid="chip-realization-65"
@@ -1297,7 +1297,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setWrvuSensitivity(3)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     wrvuSensitivity === 3
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-wrvu-3"
@@ -1309,7 +1309,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setWrvuSensitivity(5)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     wrvuSensitivity === 5
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-wrvu-5"
@@ -1321,7 +1321,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setWrvuSensitivity(7)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     wrvuSensitivity === 7
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-wrvu-7"
@@ -1351,7 +1351,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setHccSensitivity(0.3)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     hccSensitivity === 0.3
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-hcc-03"
@@ -1363,7 +1363,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setHccSensitivity(0.7)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     hccSensitivity === 0.7
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-hcc-07"
@@ -1375,7 +1375,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setHccSensitivity(1.2)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     hccSensitivity === 1.2
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-hcc-12"
@@ -1402,7 +1402,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setDenialsSensitivity(2)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     denialsSensitivity === 2
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-denials-2"
@@ -1414,7 +1414,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setDenialsSensitivity(5)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     denialsSensitivity === 5
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-denials-5"
@@ -1426,7 +1426,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => setDenialsSensitivity(8)}
                                   className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
                                     denialsSensitivity === 8
-                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
                                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                                   }`}
                                   data-testid="chip-denials-8"
