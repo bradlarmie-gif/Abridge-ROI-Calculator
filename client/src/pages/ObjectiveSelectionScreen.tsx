@@ -1749,7 +1749,7 @@ export default function ObjectiveSelectionScreen({
                       )}
                     </div>
 
-                    <div className="mt-8 flex justify-between">
+                    <div className="mt-8 flex justify-start">
                       <button
                         onClick={() => setModelSetupStep(2)}
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-neutral-700 hover:bg-neutral-100 transition-all"
@@ -1757,19 +1757,6 @@ export default function ObjectiveSelectionScreen({
                       >
                         <ArrowLeft className="h-4 w-4" />
                         Back
-                      </button>
-                      <button
-                        onClick={handleFinalSubmit}
-                        disabled={!canContinuePage3}
-                        className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm transition-all ${
-                          canContinuePage3
-                            ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-md hover:shadow-lg"
-                            : "bg-neutral-300 text-neutral-500 cursor-not-allowed"
-                        }`}
-                        data-testid="button-see-results"
-                      >
-                        View ROI Model
-                        <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
@@ -2084,6 +2071,28 @@ export default function ObjectiveSelectionScreen({
               data-testid="button-continue-to-model-setup-mobile"
             >
               Continue
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky Bottom Bar — Page 3 Step 3 Only */}
+      {currentPage === "model-setup" && modelSetupStep === 3 && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-neutral-200/60 shadow-lg">
+          <div className="max-w-[1200px] mx-auto px-6 py-4">
+            <button
+              type="button"
+              disabled={!canContinuePage3}
+              onClick={handleFinalSubmit}
+              className={`w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
+                canContinuePage3
+                  ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-md"
+                  : "opacity-40 bg-neutral-300 text-neutral-500 cursor-not-allowed"
+              }`}
+              data-testid="button-see-results"
+            >
+              View ROI Model
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
