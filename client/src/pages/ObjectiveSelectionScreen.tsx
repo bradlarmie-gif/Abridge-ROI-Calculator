@@ -1089,321 +1089,373 @@ export default function ObjectiveSelectionScreen({
 
                 {/* Step 2: Value Realization */}
                 {modelSetupStep === 2 && (
-                  <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
-                    <p className="text-sm text-neutral-600 mb-6">
-                      When Abridge is used, how does value actually get realized?
-                    </p>
-                    <div className="space-y-8">
-                      {/* Minutes Saved */}
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-3">
-                          Minutes saved per encounter
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            onClick={() => {
-                              setMinutesSaved(2);
-                              setCustomMinutes(null);
-                              setShowCustomMinutesInput(false);
-                            }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              minutesSaved === 2 && customMinutes === null
-                                ? "bg-[#F03319] text-white"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-minutes-2"
-                          >
-                            Conservative (2 min)
-                          </button>
-                          <button
-                            onClick={() => {
-                              setMinutesSaved(4);
-                              setCustomMinutes(null);
-                              setShowCustomMinutesInput(false);
-                            }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              minutesSaved === 4 && customMinutes === null
-                                ? "bg-[#F03319] text-white"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-minutes-4"
-                          >
-                            Expected (4 min)
-                          </button>
-                          <button
-                            onClick={() => {
-                              setMinutesSaved(6);
-                              setCustomMinutes(null);
-                              setShowCustomMinutesInput(false);
-                            }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              minutesSaved === 6 && customMinutes === null
-                                ? "bg-[#F03319] text-white"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-minutes-6"
-                          >
-                            Optimistic (6 min)
-                          </button>
-                          {!showCustomMinutesInput ? (
+                  <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-7">
+                    <div className="text-sm font-semibold text-neutral-900">
+                      How does value get realized when Abridge is used?
+                    </div>
+                    <div className="mt-1 text-sm text-neutral-600">
+                      Choose assumptions you can defend. Start with typical defaults, then adjust if needed.
+                    </div>
+
+                    {/* Two sections grid */}
+                    <div className="mt-6 grid md:grid-cols-2 gap-6">
+                      {/* Time Mechanics Section */}
+                      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5">
+                        <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                          Time Mechanics
+                        </div>
+
+                        <div className="mt-3">
+                          <div className="text-sm font-semibold text-neutral-900">
+                            Minutes returned per encounter
+                          </div>
+                          <div className="mt-1 text-xs text-neutral-600">
+                            Observed defaults from deployments. Use Custom if you have internal data.
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
                             <button
-                              onClick={() => setShowCustomMinutesInput(true)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                customMinutes !== null
-                                  ? "bg-[#F03319] text-white"
-                                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                              type="button"
+                              onClick={() => {
+                                setMinutesSaved(2);
+                                setCustomMinutes(null);
+                                setShowCustomMinutesInput(false);
+                              }}
+                              className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                minutesSaved === 2 && customMinutes === null
+                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                               }`}
-                              data-testid="chip-minutes-custom"
+                              data-testid="chip-minutes-2"
                             >
-                              {customMinutes !== null
-                                ? `Custom (${customMinutes} min)`
-                                : "Custom"}
+                              Conservative (2 min)
                             </button>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <input
-                                ref={customMinutesInputRef}
-                                type="text"
-                                inputMode="numeric"
-                                placeholder="Custom"
-                                value={customMinutes ?? ""}
-                                onChange={(e) => {
-                                  const val = parseFormattedNumber(e.target.value);
-                                  if (val > 0) {
-                                    setCustomMinutes(val);
-                                    setMinutesSaved(val);
-                                  } else if (e.target.value === "") {
-                                    setCustomMinutes(null);
-                                  }
-                                }}
-                                onBlur={() => {
-                                  if (customMinutes === null) {
-                                    setShowCustomMinutesInput(false);
-                                  }
-                                }}
-                                className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] font-mono"
-                                data-testid="input-custom-minutes"
-                              />
-                              <span className="text-sm text-neutral-500">
-                                min
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-xs text-neutral-500 mt-2">
-                          Based on observed documentation time deltas across
-                          deployments
-                        </p>
-                      </div>
-
-                      {/* Time Realization Rate */}
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
-                          How much of this time is realistically usable?
-                        </label>
-                        <p className="text-xs text-neutral-500 mb-3">
-                          Not all saved time converts to productive capacity
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            onClick={() => setTimeRealizationRate(45)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              timeRealizationRate === 45
-                                ? "bg-[#F03319] text-white"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-realization-45"
-                          >
-                            Conservative (45%)
-                          </button>
-                          <button
-                            onClick={() => setTimeRealizationRate(55)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              timeRealizationRate === 55
-                                ? "bg-[#F03319] text-white"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-realization-55"
-                          >
-                            Expected (55%)
-                          </button>
-                          <button
-                            onClick={() => setTimeRealizationRate(65)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              timeRealizationRate === 65
-                                ? "bg-[#F03319] text-white"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-realization-65"
-                          >
-                            Optimistic (65%)
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Documentation-based Value Section - only show if relevant levers selected */}
-                      {hasAnyDocumentationLever && (
-                        <div className="border-t border-neutral-100 pt-6">
-                          <h4 className="text-sm font-medium text-neutral-900 mb-4">
-                            Documentation-based Value
-                          </h4>
-                          <div className="space-y-5">
-                            {/* Level of Service (wRVU) */}
-                            {hasWrvuSelected && (
-                              <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                  Level of Service improvement
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    onClick={() => setWrvuSensitivity(3)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      wrvuSensitivity === 3
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-wrvu-3"
-                                  >
-                                    Conservative (3%)
-                                  </button>
-                                  <button
-                                    onClick={() => setWrvuSensitivity(5)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      wrvuSensitivity === 5
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-wrvu-5"
-                                  >
-                                    Expected (5%)
-                                  </button>
-                                  <button
-                                    onClick={() => setWrvuSensitivity(7)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      wrvuSensitivity === 7
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-wrvu-7"
-                                  >
-                                    Optimistic (7%)
-                                  </button>
-                                </div>
-                                <p className="text-xs text-neutral-500 mt-1.5">
-                                  Percentage of visits billed at a higher level
-                                </p>
-                              </div>
-                            )}
-
-                            {/* HCC & Chronic Condition Capture */}
-                            {hasHccSelected && (
-                              <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                  HCC / RAF lift
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    onClick={() => setHccSensitivity(0.3)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      hccSensitivity === 0.3
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-hcc-03"
-                                  >
-                                    Conservative (0.3%)
-                                  </button>
-                                  <button
-                                    onClick={() => setHccSensitivity(0.7)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      hccSensitivity === 0.7
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-hcc-07"
-                                  >
-                                    Expected (0.7%)
-                                  </button>
-                                  <button
-                                    onClick={() => setHccSensitivity(1.2)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      hccSensitivity === 1.2
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-hcc-12"
-                                  >
-                                    Optimistic (1.2%)
-                                  </button>
-                                </div>
-                                <p className="text-xs text-neutral-500 mt-1.5">
-                                  Relative RAF score improvement
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Denial Reduction */}
-                            {hasDenialsSelected && (
-                              <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                  Denial rate reduction
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    onClick={() => setDenialsSensitivity(2)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      denialsSensitivity === 2
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-denials-2"
-                                  >
-                                    Conservative (2%)
-                                  </button>
-                                  <button
-                                    onClick={() => setDenialsSensitivity(5)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      denialsSensitivity === 5
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-denials-5"
-                                  >
-                                    Expected (5%)
-                                  </button>
-                                  <button
-                                    onClick={() => setDenialsSensitivity(8)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                      denialsSensitivity === 8
-                                        ? "bg-[#F03319] text-white"
-                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                                    }`}
-                                    data-testid="chip-denials-8"
-                                  >
-                                    Optimistic (8%)
-                                  </button>
-                                </div>
-                                <p className="text-xs text-neutral-500 mt-1.5">
-                                  Reduction in documentation-related denials
-                                </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMinutesSaved(4);
+                                setCustomMinutes(null);
+                                setShowCustomMinutesInput(false);
+                              }}
+                              className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                minutesSaved === 4 && customMinutes === null
+                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                              }`}
+                              data-testid="chip-minutes-4"
+                            >
+                              Typical (4 min)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMinutesSaved(6);
+                                setCustomMinutes(null);
+                                setShowCustomMinutesInput(false);
+                              }}
+                              className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                minutesSaved === 6 && customMinutes === null
+                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                              }`}
+                              data-testid="chip-minutes-6"
+                            >
+                              Upper bound (6 min)
+                            </button>
+                            {!showCustomMinutesInput ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowCustomMinutesInput(true)}
+                                className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                  customMinutes !== null
+                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                }`}
+                                data-testid="chip-minutes-custom"
+                              >
+                                {customMinutes !== null ? `Custom (${customMinutes} min)` : "Custom"}
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  ref={customMinutesInputRef}
+                                  type="text"
+                                  inputMode="numeric"
+                                  placeholder="Custom"
+                                  value={customMinutes ?? ""}
+                                  onChange={(e) => {
+                                    const val = parseFormattedNumber(e.target.value);
+                                    if (val > 0) {
+                                      setCustomMinutes(val);
+                                      setMinutesSaved(val);
+                                    } else if (e.target.value === "") {
+                                      setCustomMinutes(null);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (customMinutes === null) {
+                                      setShowCustomMinutesInput(false);
+                                    }
+                                  }}
+                                  className="w-20 px-3 py-1.5 border border-neutral-300 rounded-full text-sm focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 font-mono"
+                                  data-testid="input-custom-minutes"
+                                />
+                                <span className="text-sm text-neutral-500">min</span>
                               </div>
                             )}
                           </div>
+
+                          <div className="mt-5 border-t border-neutral-200 pt-4">
+                            <div className="text-sm font-semibold text-neutral-900">
+                              Realization factor
+                            </div>
+                            <div className="mt-1 text-xs text-neutral-600">
+                              Portion of returned time that converts to usable capacity.
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setTimeRealizationRate(45)}
+                                className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                  timeRealizationRate === 45
+                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                }`}
+                                data-testid="chip-realization-45"
+                              >
+                                Conservative (45%)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setTimeRealizationRate(55)}
+                                className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                  timeRealizationRate === 55
+                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                }`}
+                                data-testid="chip-realization-55"
+                              >
+                                Typical (55%)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setTimeRealizationRate(65)}
+                                className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                  timeRealizationRate === 65
+                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                }`}
+                                data-testid="chip-realization-65"
+                              >
+                                Upper bound (65%)
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      )}
+                      </section>
+
+                      {/* Documentation Mechanics Section */}
+                      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5">
+                        <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                          Documentation Mechanics
+                        </div>
+
+                        <div className="mt-3">
+                          {/* Level of Service - always shown if wrvu lever selected */}
+                          {hasWrvuSelected && (
+                            <div>
+                              <div className="text-sm font-semibold text-neutral-900">
+                                Level-of-service alignment
+                              </div>
+                              <div className="mt-1 text-xs text-neutral-600">
+                                Percent of visits billed at the level actually delivered.
+                              </div>
+
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setWrvuSensitivity(3)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    wrvuSensitivity === 3
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-wrvu-3"
+                                >
+                                  Conservative (3%)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setWrvuSensitivity(5)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    wrvuSensitivity === 5
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-wrvu-5"
+                                >
+                                  Typical (5%)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setWrvuSensitivity(7)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    wrvuSensitivity === 7
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-wrvu-7"
+                                >
+                                  Upper bound (7%)
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* HCC / RAF Lift */}
+                          {hasHccSelected && (
+                            <div className={hasWrvuSelected ? "mt-5 border-t border-neutral-200 pt-4" : ""}>
+                              <div className="text-sm font-semibold text-neutral-900">
+                                HCC / RAF lift
+                              </div>
+                              <div className="mt-1 text-xs text-neutral-600">
+                                Relative RAF score improvement.
+                              </div>
+
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setHccSensitivity(0.3)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    hccSensitivity === 0.3
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-hcc-03"
+                                >
+                                  Conservative (0.3%)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setHccSensitivity(0.7)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    hccSensitivity === 0.7
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-hcc-07"
+                                >
+                                  Typical (0.7%)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setHccSensitivity(1.2)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    hccSensitivity === 1.2
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-hcc-12"
+                                >
+                                  Upper bound (1.2%)
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Denial Reduction */}
+                          {hasDenialsSelected && (
+                            <div className={(hasWrvuSelected || hasHccSelected) ? "mt-5 border-t border-neutral-200 pt-4" : ""}>
+                              <div className="text-sm font-semibold text-neutral-900">
+                                Denial rate reduction
+                              </div>
+                              <div className="mt-1 text-xs text-neutral-600">
+                                Reduction in documentation-related denials.
+                              </div>
+
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setDenialsSensitivity(2)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    denialsSensitivity === 2
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-denials-2"
+                                >
+                                  Conservative (2%)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setDenialsSensitivity(5)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    denialsSensitivity === 5
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-denials-5"
+                                >
+                                  Typical (5%)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setDenialsSensitivity(8)}
+                                  className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
+                                    denialsSensitivity === 8
+                                      ? "border-neutral-900 bg-neutral-900 text-white"
+                                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  }`}
+                                  data-testid="chip-denials-8"
+                                >
+                                  Upper bound (8%)
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Placeholder for additional documentation drivers */}
+                          {!hasAnyDocumentationLever && (
+                            <div className="rounded-xl border border-dashed border-neutral-200 bg-white p-4">
+                              <div className="text-xs font-semibold text-neutral-600">
+                                No documentation drivers selected
+                              </div>
+                              <div className="mt-1 text-xs text-neutral-500">
+                                Enable documentation drivers on the Strategic Priorities page to configure these assumptions.
+                              </div>
+                            </div>
+                          )}
+
+                          {hasAnyDocumentationLever && (
+                            <div className="mt-5 rounded-xl border border-dashed border-neutral-200 bg-white p-4">
+                              <div className="text-xs font-semibold text-neutral-600">
+                                Additional documentation drivers
+                              </div>
+                              <div className="mt-1 text-xs text-neutral-500">
+                                Enable more drivers on the Results page (e.g., denials, HCC). This model will include only what you select.
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </section>
                     </div>
-                    <div className="mt-8 flex flex-col sm:flex-row sm:justify-between gap-3">
+
+                    {/* Footer actions */}
+                    <div className="mt-8 flex items-center justify-between gap-3">
                       <button
+                        type="button"
                         onClick={() => setModelSetupStep(1)}
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-neutral-700 hover:bg-neutral-100 transition-all"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-700 hover:text-neutral-900"
                         data-testid="button-step2-back"
                       >
                         <ArrowLeft className="h-4 w-4" />
                         Back
                       </button>
                       <button
+                        type="button"
                         onClick={() => setModelSetupStep(3)}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-neutral-900 text-white hover:bg-neutral-800 transition-all"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
                         data-testid="button-step2-next"
                       >
                         Next: Investment
@@ -1703,148 +1755,151 @@ export default function ObjectiveSelectionScreen({
               </div>
 
               {/* Summary sidebar for Page 3 - Desktop */}
-              <div className="hidden lg:block">
-                <div className="sticky top-8 space-y-4">
-                  <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
-                    <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
-                      Model Inputs
-                    </h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Providers</span>
-                        <span className="font-medium text-neutral-900">
-                          {effectiveClinicians > 0 ? effectiveClinicians : "—"}
-                        </span>
+              <div className="hidden lg:block w-[360px]">
+                <div className="sticky top-8">
+                  <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+                    <div className="p-5">
+                      <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                        Live Receipt
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Encounters</span>
-                        <span className="font-medium text-neutral-900">
-                          {effectiveEncounters > 0
-                            ? effectiveEncounters.toLocaleString()
-                            : "—"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Utilization</span>
-                        <span className="font-medium text-neutral-900">
-                          {utilizationPercent !== null
-                            ? `${utilizationPercent}%`
-                            : "—"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">
-                          Eligible encounters
-                        </span>
-                        <span className="font-medium text-neutral-900">
-                          {eligibleEncounters !== null
-                            ? eligibleEncounters.toLocaleString()
-                            : "—"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Minutes saved</span>
-                        <span className="font-medium text-neutral-900">
-                          {effectiveMinutesSaved !== null
-                            ? `${effectiveMinutesSaved} min`
-                            : "—"}
-                        </span>
-                      </div>
-                      <div className="border-t border-neutral-200 pt-3 mt-3">
-                        {implementationEnabled &&
-                          implementationFee !== null && (
-                            <div className="flex justify-between mb-2">
-                              <span className="text-neutral-600">
-                                Implementation fee
-                              </span>
-                              <span className="font-medium text-neutral-900">
-                                ${implementationFee.toLocaleString()}
-                              </span>
+
+                      <div className="mt-3 divide-y divide-neutral-200">
+                        {/* Baseline info */}
+                        <div className="py-2 space-y-2">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Providers</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {effectiveClinicians > 0 ? effectiveClinicians.toLocaleString() : "—"}
                             </div>
-                          )}
-                        <div className="flex justify-between">
-                          <span className="text-neutral-600">
-                            Annual subscription cost
-                          </span>
-                          <span className="font-semibold text-neutral-900">
-                            {annualSubscriptionCost !== null
-                              ? `$${annualSubscriptionCost.toLocaleString()}`
-                              : "—"}
-                          </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Annual encounters</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {effectiveEncounters > 0 ? effectiveEncounters.toLocaleString() : "—"}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Utilization</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {utilizationPercent !== null ? `${utilizationPercent}%` : "—"}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Eligible encounters</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
+                            </div>
+                          </div>
                         </div>
-                        {year1TotalCost !== null && (
-                          <div className="flex justify-between mt-2 pt-2 border-t border-neutral-200">
-                            <span className="text-neutral-600">
-                              Year 1 total cost
-                            </span>
-                            <span className="font-bold text-neutral-900">
-                              ${year1TotalCost.toLocaleString()}
-                            </span>
+
+                        {/* Time mechanics info */}
+                        <div className="py-2 space-y-2">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Minutes returned / encounter</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {effectiveMinutesSaved !== null ? `${effectiveMinutesSaved} min` : "—"}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Encounters affected</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Time saved results */}
+                        <div className="py-2 space-y-2">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Hours returned (gross)</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {totalHoursSaved !== null
+                                ? totalHoursSaved.toLocaleString(undefined, { maximumFractionDigits: 1 })
+                                : "—"}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-600">Hours usable (net)</div>
+                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                              {realizedHoursSaved !== null
+                                ? realizedHoursSaved.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                                : "—"}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Documentation assumptions */}
+                        {hasAnyDocumentationLever && (
+                          <div className="py-2 space-y-2">
+                            <div className="text-xs font-semibold text-neutral-500 mt-1">
+                              Documentation assumptions
+                            </div>
+                            {hasWrvuSelected && wrvuSensitivity !== null && (
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="text-sm text-neutral-600">Level of service lift</div>
+                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                                  {wrvuSensitivity}%
+                                </div>
+                              </div>
+                            )}
+                            {hasHccSelected && hccSensitivity !== null && (
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="text-sm text-neutral-600">HCC / RAF lift</div>
+                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                                  {hccSensitivity}%
+                                </div>
+                              </div>
+                            )}
+                            {hasDenialsSelected && denialsSensitivity !== null && (
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="text-sm text-neutral-600">Denial rate reduction</div>
+                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                                  {denialsSensitivity}%
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Investment info - only show on step 3 */}
+                        {modelSetupStep === 3 && (annualSubscriptionCost !== null || implementationFee !== null) && (
+                          <div className="py-2 space-y-2">
+                            <div className="text-xs font-semibold text-neutral-500 mt-1">
+                              Investment
+                            </div>
+                            {implementationEnabled && implementationFee !== null && (
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="text-sm text-neutral-600">Implementation fee</div>
+                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                                  ${implementationFee.toLocaleString()}
+                                </div>
+                              </div>
+                            )}
+                            {annualSubscriptionCost !== null && (
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="text-sm text-neutral-600">Annual subscription</div>
+                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+                                  ${annualSubscriptionCost.toLocaleString()}
+                                </div>
+                              </div>
+                            )}
+                            {year1TotalCost !== null && (
+                              <div className="flex items-center justify-between gap-4 pt-2 border-t border-neutral-200">
+                                <div className="text-sm text-neutral-600">Year 1 total cost</div>
+                                <div className="text-sm font-bold text-neutral-900 tabular-nums">
+                                  ${year1TotalCost.toLocaleString()}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Time Saved Box */}
-                  {totalMinutesSaved !== null && totalHoursSaved !== null && (
-                    <div className="bg-[#F03319] rounded-xl shadow-sm p-6">
-                      <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-4">
-                        Time Saved
-                      </h4>
-                      <div className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-white/90">
-                            Total minutes saved
-                          </span>
-                          <span className="font-semibold text-white">
-                            {totalMinutesSaved.toLocaleString()} min
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/90">
-                            Total hours saved
-                          </span>
-                          <span className="font-semibold text-white">
-                            {totalHoursSaved.toLocaleString(undefined, {
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 1,
-                            })}{" "}
-                            hrs
-                          </span>
-                        </div>
-                        {/* Realized time (when realization rate is set) */}
-                        {realizedMinutesSaved !== null && realizedHoursSaved !== null && (
-                          <>
-                            <div className="border-t border-white/30 pt-3 mt-3">
-                              <div className="flex justify-between">
-                                <span className="text-white/90">
-                                  Realized minutes ({timeRealizationRate}%)
-                                </span>
-                                <span className="font-semibold text-white">
-                                  {realizedMinutesSaved.toLocaleString(undefined, {
-                                    maximumFractionDigits: 0,
-                                  })} min
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-white/90">
-                                Realized hours
-                              </span>
-                              <span className="font-bold text-white">
-                                {realizedHoursSaved.toLocaleString(undefined, {
-                                  minimumFractionDigits: 0,
-                                  maximumFractionDigits: 1,
-                                })}{" "}
-                                hrs
-                              </span>
-                            </div>
-                          </>
-                        )}
+                      <div className="mt-4 rounded-xl bg-neutral-50 p-3 text-xs text-neutral-600">
+                        Tip: If a number looks high, open Results and use "Review inputs" to validate the driver math.
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,0 +1,342 @@
+import React from "react";
+
+type Scenario = "conservative" | "expected" | "optimistic" | "custom";
+
+function Pill({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition",
+        "border",
+        selected
+          ? "border-neutral-900 bg-neutral-900 text-white"
+          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
+      ].join(" ")}
+    >
+      {label}
+    </button>
+  );
+}
+
+function StatRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2">
+      <div className="text-sm text-neutral-600">{label}</div>
+      <div className="text-sm font-semibold text-neutral-900 tabular-nums">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+export default function ValueRealizationPage({
+  // --- INPUTS (wire from your existing state) ---
+  minutesSavedScenario = "expected" as Scenario,
+  onMinutesSavedScenarioChange,
+  realizationScenario = "expected" as Scenario,
+  onRealizationScenarioChange,
+  losScenario = "expected" as Scenario,
+  onLosScenarioChange,
+
+  // --- LIVE RECEIPT VALUES (wire from your computed outputs) ---
+  providers = 50,
+  encounters = 80000,
+  utilizationPct = 65,
+  eligibleEncounters = 52000,
+
+  minutesSavedPerEncounter = 4,
+  encountersAffected = 65000,
+  hoursReturnedGross = 3466.7,
+  hoursUsableNet = 1560,
+
+  losLiftPct = 5,
+
+  onBack,
+  onNext,
+}: {
+  minutesSavedScenario?: Scenario;
+  onMinutesSavedScenarioChange?: (v: Scenario) => void;
+
+  realizationScenario?: Scenario;
+  onRealizationScenarioChange?: (v: Scenario) => void;
+
+  losScenario?: Scenario;
+  onLosScenarioChange?: (v: Scenario) => void;
+
+  providers?: number;
+  encounters?: number;
+  utilizationPct?: number;
+  eligibleEncounters?: number;
+
+  minutesSavedPerEncounter?: number;
+  encountersAffected?: number;
+  hoursReturnedGross?: number;
+  hoursUsableNet?: number;
+
+  losLiftPct?: number;
+
+  onBack?: () => void;
+  onNext?: () => void;
+}) {
+  return (
+    <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-10 md:py-12">
+      {/* Header */}
+      <button
+        type="button"
+        onClick={onBack}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[#F03319] hover:opacity-80"
+      >
+        ← Back
+      </button>
+
+      <div className="mt-4">
+        <h1 className="text-4xl font-semibold tracking-tight text-neutral-900">
+          Value realization
+        </h1>
+        <p className="mt-2 text-base text-neutral-600 max-w-2xl">
+          Set the operational assumptions. Outputs update live, and every number
+          is reviewable.
+        </p>
+      </div>
+
+      <div className="mt-8 grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
+        {/* Main card */}
+        <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="p-6 md:p-7">
+            <div className="text-sm font-semibold text-neutral-900">
+              How does value get realized when Abridge is used?
+            </div>
+            <div className="mt-1 text-sm text-neutral-600">
+              Choose assumptions you can defend. Start with typical defaults,
+              then adjust if needed.
+            </div>
+
+            {/* Two sections, clean + balanced */}
+            <div className="mt-6 grid md:grid-cols-2 gap-6">
+              {/* Time mechanics */}
+              <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5">
+                <div className="text-xs font-semibold tracking-wide text-neutral-500">
+                  TIME MECHANICS
+                </div>
+
+                <div className="mt-3">
+                  <div className="text-sm font-semibold text-neutral-900">
+                    Minutes returned per encounter
+                  </div>
+                  <div className="mt-1 text-xs text-neutral-600">
+                    Observed defaults from deployments. Use Custom if you have
+                    internal data.
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Pill
+                      label="Conservative (2 min)"
+                      selected={minutesSavedScenario === "conservative"}
+                      onClick={() =>
+                        onMinutesSavedScenarioChange?.("conservative")
+                      }
+                    />
+                    <Pill
+                      label="Typical (4 min)"
+                      selected={minutesSavedScenario === "expected"}
+                      onClick={() => onMinutesSavedScenarioChange?.("expected")}
+                    />
+                    <Pill
+                      label="Upper bound (6 min)"
+                      selected={minutesSavedScenario === "optimistic"}
+                      onClick={() =>
+                        onMinutesSavedScenarioChange?.("optimistic")
+                      }
+                    />
+                    <Pill
+                      label="Custom"
+                      selected={minutesSavedScenario === "custom"}
+                      onClick={() => onMinutesSavedScenarioChange?.("custom")}
+                    />
+                  </div>
+
+                  <div className="mt-5 border-t border-neutral-200 pt-4">
+                    <div className="text-sm font-semibold text-neutral-900">
+                      Realization factor
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-600">
+                      Portion of returned time that converts to usable capacity.
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Pill
+                        label="Conservative (45%)"
+                        selected={realizationScenario === "conservative"}
+                        onClick={() =>
+                          onRealizationScenarioChange?.("conservative")
+                        }
+                      />
+                      <Pill
+                        label="Typical (55%)"
+                        selected={realizationScenario === "expected"}
+                        onClick={() =>
+                          onRealizationScenarioChange?.("expected")
+                        }
+                      />
+                      <Pill
+                        label="Upper bound (65%)"
+                        selected={realizationScenario === "optimistic"}
+                        onClick={() =>
+                          onRealizationScenarioChange?.("optimistic")
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Documentation mechanics */}
+              <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5">
+                <div className="text-xs font-semibold tracking-wide text-neutral-500">
+                  DOCUMENTATION MECHANICS
+                </div>
+
+                <div className="mt-3">
+                  <div className="text-sm font-semibold text-neutral-900">
+                    Level-of-service alignment
+                  </div>
+                  <div className="mt-1 text-xs text-neutral-600">
+                    Percent of visits billed at the level actually delivered.
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Pill
+                      label="Conservative (3%)"
+                      selected={losScenario === "conservative"}
+                      onClick={() => onLosScenarioChange?.("conservative")}
+                    />
+                    <Pill
+                      label="Typical (5%)"
+                      selected={losScenario === "expected"}
+                      onClick={() => onLosScenarioChange?.("expected")}
+                    />
+                    <Pill
+                      label="Upper bound (7%)"
+                      selected={losScenario === "optimistic"}
+                      onClick={() => onLosScenarioChange?.("optimistic")}
+                    />
+                  </div>
+
+                  {/* Optional placeholder for future drivers, so the card never feels empty */}
+                  <div className="mt-5 rounded-xl border border-dashed border-neutral-200 bg-white p-4">
+                    <div className="text-xs font-semibold text-neutral-600">
+                      Additional documentation drivers
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-500">
+                      Enable more drivers on the Results page (e.g., denials,
+                      HCC). This model will include only what you select.
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            {/* Footer actions */}
+            <div className="mt-8 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={onBack}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-700 hover:text-neutral-900"
+              >
+                ← Back
+              </button>
+
+              <button
+                type="button"
+                onClick={onNext}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
+              >
+                Next: Investment →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right rail: ONE receipt only */}
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+            <div className="p-5">
+              <div className="text-xs font-semibold tracking-wide text-neutral-500">
+                LIVE RECEIPT
+              </div>
+
+              <div className="mt-3 divide-y divide-neutral-200">
+                <div className="py-2">
+                  <StatRow label="Providers" value={providers.toLocaleString()} />
+                  <StatRow
+                    label="Annual encounters"
+                    value={encounters.toLocaleString()}
+                  />
+                  <StatRow label="Utilization" value={`${utilizationPct}%`} />
+                  <StatRow
+                    label="Eligible encounters"
+                    value={eligibleEncounters.toLocaleString()}
+                  />
+                </div>
+
+                <div className="py-2">
+                  <StatRow
+                    label="Minutes returned / encounter"
+                    value={`${minutesSavedPerEncounter} min`}
+                  />
+                  <StatRow
+                    label="Encounters affected"
+                    value={encountersAffected.toLocaleString()}
+                  />
+                </div>
+
+                <div className="py-2">
+                  <StatRow
+                    label="Hours returned (gross)"
+                    value={hoursReturnedGross.toLocaleString(undefined, {
+                      maximumFractionDigits: 1,
+                    })}
+                  />
+                  <StatRow
+                    label="Hours usable (net)"
+                    value={hoursUsableNet.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  />
+                </div>
+
+                <div className="py-2">
+                  <div className="text-xs font-semibold text-neutral-500 mt-1">
+                    Documentation assumptions
+                  </div>
+                  <StatRow label="Level of service lift" value={`${losLiftPct}%`} />
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-xl bg-neutral-50 p-3 text-xs text-neutral-600">
+                Tip: If a number looks high, open Results → “Review inputs” to
+                validate the driver math.
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
