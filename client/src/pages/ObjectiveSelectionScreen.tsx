@@ -1809,18 +1809,18 @@ export default function ObjectiveSelectionScreen({
                               {utilizationPercent !== null ? `${utilizationPercent}%` : "—"}
                             </div>
                           </div>
-                        </div>
-
-                        {/* System output section */}
-                        <div className="py-2 space-y-2">
-                          <div className="text-xs font-semibold text-neutral-500 mb-2">
-                            System output
-                          </div>
                           <div className="flex items-center justify-between gap-4">
                             <div className="text-sm text-neutral-600">Eligible encounters</div>
                             <div className="text-sm font-semibold text-neutral-900 tabular-nums">
                               {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
                             </div>
+                          </div>
+                        </div>
+
+                        {/* Time Assumptions section */}
+                        <div className="py-2 space-y-2">
+                          <div className="text-xs font-semibold text-neutral-500 mb-2">
+                            Time Assumptions
                           </div>
                           <div className="flex items-center justify-between gap-4">
                             <div className="text-sm text-neutral-600">Minutes returned / encounter</div>
@@ -1846,11 +1846,11 @@ export default function ObjectiveSelectionScreen({
                           </div>
                         </div>
 
-                        {/* Documentation assumptions section */}
+                        {/* Documentation Assumptions section */}
                         {hasAnyDocumentationLever && (
                           <div className="py-2 space-y-2">
                             <div className="text-xs font-semibold text-neutral-500 mb-2">
-                              Documentation assumptions
+                              Documentation Assumptions
                             </div>
                             {hasWrvuSelected && wrvuSensitivity !== null && (
                               <div className="flex items-center justify-between gap-4">
@@ -1954,18 +1954,18 @@ export default function ObjectiveSelectionScreen({
                           {utilizationPercent !== null ? `${utilizationPercent}%` : "—"}
                         </div>
                       </div>
-                    </div>
-
-                    {/* System output section */}
-                    <div className="py-2 space-y-2">
-                      <div className="text-xs font-semibold text-neutral-500 mb-2">
-                        System output
-                      </div>
                       <div className="flex items-center justify-between gap-4">
                         <div className="text-sm text-neutral-600">Eligible encounters</div>
                         <div className="text-sm font-semibold text-neutral-900 tabular-nums">
                           {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Time Assumptions section */}
+                    <div className="py-2 space-y-2">
+                      <div className="text-xs font-semibold text-neutral-500 mb-2">
+                        Time Assumptions
                       </div>
                       <div className="flex items-center justify-between gap-4">
                         <div className="text-sm text-neutral-600">Minutes returned / encounter</div>
@@ -1991,11 +1991,11 @@ export default function ObjectiveSelectionScreen({
                       </div>
                     </div>
 
-                    {/* Documentation assumptions section */}
+                    {/* Documentation Assumptions section */}
                     {hasAnyDocumentationLever && (
                       <div className="py-2 space-y-2">
                         <div className="text-xs font-semibold text-neutral-500 mb-2">
-                          Documentation assumptions
+                          Documentation Assumptions
                         </div>
                         {hasWrvuSelected && wrvuSensitivity !== null && (
                           <div className="flex items-center justify-between gap-4">
