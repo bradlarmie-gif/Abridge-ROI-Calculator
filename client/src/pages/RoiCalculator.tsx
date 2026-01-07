@@ -1375,10 +1375,10 @@ export default function RoiCalculator({
                     </div>
                   </div>
 
-                  {/* Scenario receipt (secondary weight) */}
+                  {/* Model configuration (what was modeled) */}
                   <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4">
                     <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Scenario receipt
+                      Model configuration
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -1439,43 +1439,41 @@ export default function RoiCalculator({
                   </div>
                 </div>
 
-                {/* (3) Executive KPI row */}
+                {/* (3) Operational KPI row - leads with outputs, not money */}
                 <div>
                   <KpiGrid>
                     <KpiCard
-                      label="Total annual benefit"
-                      value={formatCurrency(totalBenefitFromSelectedLevers)}
-                      subtitle="Value from enabled drivers"
-                      icon={<DollarSign className="h-8 w-8" />}
-                      variant="positive"
+                      label="Encounters affected"
+                      value={formatNumber(Math.round(encountersCoveredByAbridge))}
+                      subtitle="Ambient-documented visits"
+                      icon={<Users className="h-8 w-8" />}
+                      variant="neutral"
+                    />
+                    <KpiCard
+                      label="Hours usable (net)"
+                      value={formatNumber(Math.round(patientAccessCalculations.reinvestedHours))}
+                      subtitle="Realized capacity returned"
+                      icon={<Clock className="h-8 w-8" />}
+                      variant="neutral"
+                    />
+                    <KpiCard
+                      label="Drivers enabled"
+                      value={enabledDriverCount.toString()}
+                      subtitle="Active value levers"
+                      icon={<Target className="h-8 w-8" />}
+                      variant="neutral"
                     />
                     <KpiCard
                       label="Annual program cost"
                       value={formatCurrency(annualAbridgeCost)}
-                      subtitle="Abridge investment (Year 1)"
+                      subtitle="Year 1 investment"
                       icon={<DollarSign className="h-8 w-8" />}
                       variant="negative"
-                    />
-                    <KpiCard
-                      label="Net gain"
-                      value={formatCurrency(adjustedNetValue)}
-                      subtitle="Benefit minus cost"
-                      icon={<TrendingUp className="h-8 w-8" />}
-                      variant={adjustedNetValue >= 0 ? "positive" : "negative"}
-                    />
-                    <KpiCard
-                      label="Return (x)"
-                      value={`${adjustedRoiMultiple.toFixed(2)}x`}
-                      subtitle="Value per $1 invested"
-                      icon={<TrendingUp className="h-8 w-8" />}
-                      variant={
-                        adjustedRoiMultiple >= 1 ? "positive" : "negative"
-                      }
                     />
                   </KpiGrid>
                 </div>
 
-                {/* How this model works (orientation layer) */}
+                {/* How this model works (orientation layer) - appears before financial verdict */}
                 <Card className="border-neutral-200">
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1484,9 +1482,7 @@ export default function RoiCalculator({
                           How this model works
                         </div>
                         <div className="text-sm text-neutral-500 mt-1 max-w-2xl">
-                          Totals reflect enabled drivers only. Each line item
-                          below shows its modeled contribution, based on the
-                          assumptions you entered.
+                          This model translates operational changes into financial impact using the assumptions you entered. Every driver is reviewable.
                         </div>
                       </div>
 
@@ -1508,6 +1504,35 @@ export default function RoiCalculator({
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* (4) Financial KPI row - the money verdict */}
+                <div>
+                  <KpiGrid>
+                    <KpiCard
+                      label="Modeled annual benefit"
+                      value={formatCurrency(totalBenefitFromSelectedLevers)}
+                      subtitle="Value from enabled drivers"
+                      icon={<DollarSign className="h-8 w-8" />}
+                      variant="positive"
+                    />
+                    <KpiCard
+                      label="Net gain"
+                      value={formatCurrency(adjustedNetValue)}
+                      subtitle="Benefit minus cost"
+                      icon={<TrendingUp className="h-8 w-8" />}
+                      variant={adjustedNetValue >= 0 ? "positive" : "negative"}
+                    />
+                    <KpiCard
+                      label="Return (x)"
+                      value={`${adjustedRoiMultiple.toFixed(2)}x`}
+                      subtitle="Benefit per $1 of cost"
+                      icon={<TrendingUp className="h-8 w-8" />}
+                      variant={
+                        adjustedRoiMultiple >= 1 ? "positive" : "negative"
+                      }
+                    />
+                  </KpiGrid>
+                </div>
 
                 {/* (4) Two-column Outcomes */}
                 <div className="grid md:grid-cols-2 gap-6">
@@ -1558,13 +1583,13 @@ export default function RoiCalculator({
                                       {formatCurrency(lever.value)}
                                     </span>
 
-                                    {/* One consistent CTA */}
+                                    {/* One consistent CTA - made more prominent */}
                                     {lever.settingId === "outpatient" && (
                                       <Button
-                                        variant="ghost"
+                                        variant="outline"
                                         size="sm"
                                         onClick={openInputs}
-                                        className="h-6 px-2 text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
+                                        className="h-6 px-2 text-xs font-medium"
                                       >
                                         Review inputs
                                       </Button>
@@ -1631,13 +1656,13 @@ export default function RoiCalculator({
                                       {formatCurrency(lever.value)}
                                     </span>
 
-                                    {/* One consistent CTA */}
+                                    {/* One consistent CTA - made more prominent */}
                                     {lever.settingId === "outpatient" && (
                                       <Button
-                                        variant="ghost"
+                                        variant="outline"
                                         size="sm"
                                         onClick={openInputs}
-                                        className="h-6 px-2 text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
+                                        className="h-6 px-2 text-xs font-medium"
                                       >
                                         Review inputs
                                       </Button>
