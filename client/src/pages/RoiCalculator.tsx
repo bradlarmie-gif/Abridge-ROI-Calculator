@@ -1312,8 +1312,8 @@ export default function RoiCalculator({
             </div>
           </aside>
 
-          <main className="flex-1 flex flex-col min-[1200px]:overflow-hidden bg-white/50 overflow-x-hidden">
-            <header className="p-4 md:p-6 border-b border-neutral-200 bg-white flex items-center justify-between gap-4 flex-wrap">
+          <main className="flex-1 flex flex-col min-[1200px]:overflow-hidden bg-white/50">
+            <header className="p-6 border-b border-neutral-200 bg-white flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold text-black">
                 Results summary
               </h2>
@@ -1328,17 +1328,17 @@ export default function RoiCalculator({
               </Button>
             </header>
             <ScrollArea className="flex-1">
-              <div className="p-4 md:p-6 space-y-6 md:space-y-8">
+              <div className="p-6 space-y-8">
                 {/* (1) Top strip: selections + model receipt (hierarchy) */}
                 <div className="space-y-4">
                   {/* Compact "You chose" strip */}
-                  <div className="rounded-xl border border-neutral-200 bg-white px-3 py-3 md:px-4">
+                  <div className="rounded-xl border border-neutral-200 bg-white px-4 py-3">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
                           Your selections
                         </span>
-                        <span className="text-neutral-300 hidden sm:inline">•</span>
+                        <span className="text-neutral-300">•</span>
                         <span className="text-sm font-medium text-neutral-900">
                           {settingsText}
                         </span>
@@ -1375,13 +1375,13 @@ export default function RoiCalculator({
                     </div>
                   </div>
 
-                  {/* Model configuration (what was modeled) */}
-                  <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3 md:px-4 md:py-4">
+                  {/* Scenario receipt (secondary weight) */}
+                  <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4">
                     <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Model configuration
+                      Scenario receipt
                     </div>
 
-                    <div className="mt-3 md:mt-4 grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                    <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
                       <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
                         <div className="text-[11px] text-neutral-500">
                           Providers
@@ -1439,81 +1439,22 @@ export default function RoiCalculator({
                   </div>
                 </div>
 
-                {/* (3) Operational KPI row - leads with outputs, not money */}
+                {/* (3) Executive KPI row */}
                 <div>
                   <KpiGrid>
                     <KpiCard
-                      label="Encounters affected"
-                      value={formatNumber(Math.round(encountersCoveredByAbridge))}
-                      subtitle="Ambient-documented visits"
-                      icon={<Users className="h-8 w-8" />}
-                      variant="neutral"
-                    />
-                    <KpiCard
-                      label="Hours usable (net)"
-                      value={formatNumber(Math.round(patientAccessCalculations.reinvestedHours))}
-                      subtitle="Realized capacity returned"
-                      icon={<Clock className="h-8 w-8" />}
-                      variant="neutral"
-                    />
-                    <KpiCard
-                      label="Drivers enabled"
-                      value={enabledDriverCount.toString()}
-                      subtitle="Active value levers"
-                      icon={<Target className="h-8 w-8" />}
-                      variant="neutral"
-                    />
-                    <KpiCard
-                      label="Annual program cost"
-                      value={formatCurrency(annualAbridgeCost)}
-                      subtitle="Year 1 investment"
-                      icon={<DollarSign className="h-8 w-8" />}
-                      variant="negative"
-                    />
-                  </KpiGrid>
-                </div>
-
-                {/* How this model works (orientation layer) - appears before financial verdict */}
-                <Card className="border-neutral-200">
-                  <CardContent className="p-3 md:p-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-                      <div>
-                        <div className="text-sm font-semibold text-neutral-900">
-                          How this model works
-                        </div>
-                        <div className="text-xs md:text-sm text-neutral-500 mt-1 max-w-2xl">
-                          This model translates operational changes into financial impact using the assumptions you entered. Every driver is reviewable.
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Badge variant="secondary" className="text-xs">
-                          {enabledDriverCount} drivers enabled
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-xs md:text-sm text-neutral-700">
-                      <span className="font-semibold text-neutral-900">
-                        Want to validate a number?
-                      </span>{" "}
-                      Use <span className="font-semibold">Review</span>{" "}
-                      next to each driver below, or open{" "}
-                      <span className="font-semibold">Model details</span> to
-                      add or remove drivers.
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* (4) Financial KPI row - the money verdict */}
-                <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                    <KpiCard
-                      label="Modeled annual benefit"
+                      label="Total annual benefit"
                       value={formatCurrency(totalBenefitFromSelectedLevers)}
                       subtitle="Value from enabled drivers"
                       icon={<DollarSign className="h-8 w-8" />}
                       variant="positive"
+                    />
+                    <KpiCard
+                      label="Annual program cost"
+                      value={formatCurrency(annualAbridgeCost)}
+                      subtitle="Abridge investment (Year 1)"
+                      icon={<DollarSign className="h-8 w-8" />}
+                      variant="negative"
                     />
                     <KpiCard
                       label="Net gain"
@@ -1525,17 +1466,51 @@ export default function RoiCalculator({
                     <KpiCard
                       label="Return (x)"
                       value={`${adjustedRoiMultiple.toFixed(2)}x`}
-                      subtitle="Benefit per $1 of cost"
+                      subtitle="Value per $1 invested"
                       icon={<TrendingUp className="h-8 w-8" />}
                       variant={
                         adjustedRoiMultiple >= 1 ? "positive" : "negative"
                       }
                     />
-                  </div>
+                  </KpiGrid>
                 </div>
 
-                {/* (5) Two-column Outcomes */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                {/* How this model works (orientation layer) */}
+                <Card className="border-neutral-200">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-semibold text-neutral-900">
+                          How this model works
+                        </div>
+                        <div className="text-sm text-neutral-500 mt-1 max-w-2xl">
+                          Totals reflect enabled drivers only. Each line item
+                          below shows its modeled contribution, based on the
+                          assumptions you entered.
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Badge variant="secondary" className="text-xs">
+                          {enabledDriverCount} drivers enabled
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 rounded-md bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-700">
+                      <span className="font-semibold text-neutral-900">
+                        Want to validate a number?
+                      </span>{" "}
+                      Use <span className="font-semibold">Review inputs</span>{" "}
+                      next to each driver below, or open{" "}
+                      <span className="font-semibold">Model details</span> to
+                      add or remove drivers.
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* (4) Two-column Outcomes */}
+                <div className="grid md:grid-cols-2 gap-6">
                   <Card className="border-neutral-200">
                     <CardHeader className="pb-4">
                       <CardTitle className="text-base font-semibold text-neutral-900">
@@ -1572,26 +1547,26 @@ export default function RoiCalculator({
                               return (
                                 <div
                                   key={`${lever.settingId}:${lever.id}`}
-                                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-3"
+                                  className="flex justify-between items-center"
                                 >
                                   <span className="text-neutral-600">
                                     {lever.label}
                                   </span>
 
-                                  <div className="flex items-center gap-2 sm:gap-3">
+                                  <div className="flex items-center gap-3">
                                     <span className="font-mono font-medium">
                                       {formatCurrency(lever.value)}
                                     </span>
 
-                                    {/* One consistent CTA - made more prominent */}
+                                    {/* One consistent CTA */}
                                     {lever.settingId === "outpatient" && (
                                       <Button
-                                        variant="outline"
+                                        variant="ghost"
                                         size="sm"
                                         onClick={openInputs}
-                                        className="h-6 px-2 text-xs font-medium shrink-0"
+                                        className="h-6 px-2 text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
                                       >
-                                        Review
+                                        Review inputs
                                       </Button>
                                     )}
                                   </div>
@@ -1645,26 +1620,26 @@ export default function RoiCalculator({
                               return (
                                 <div
                                   key={`${lever.settingId}:${lever.id}`}
-                                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-3"
+                                  className="flex justify-between items-center"
                                 >
                                   <span className="text-neutral-600">
                                     {lever.label}
                                   </span>
 
-                                  <div className="flex items-center gap-2 sm:gap-3">
+                                  <div className="flex items-center gap-3">
                                     <span className="font-mono font-medium">
                                       {formatCurrency(lever.value)}
                                     </span>
 
-                                    {/* One consistent CTA - made more prominent */}
+                                    {/* One consistent CTA */}
                                     {lever.settingId === "outpatient" && (
                                       <Button
-                                        variant="outline"
+                                        variant="ghost"
                                         size="sm"
                                         onClick={openInputs}
-                                        className="h-6 px-2 text-xs font-medium shrink-0"
+                                        className="h-6 px-2 text-xs text-neutral-600 hover:text-neutral-900 hover:underline underline-offset-4"
                                       >
-                                        Review
+                                        Review inputs
                                       </Button>
                                     )}
                                   </div>
@@ -1686,18 +1661,18 @@ export default function RoiCalculator({
                 <Card className="w-full overflow-hidden border-neutral-200 bg-white">
                   <CardContent className="p-0">
                     <details className="group">
-                      <summary className="list-none cursor-pointer select-none px-4 py-4 md:px-6 md:py-5 flex items-start justify-between gap-4 md:gap-6 hover:bg-neutral-50 transition-colors">
-                        <div className="min-w-0">
-                          <div className="text-sm md:text-base font-semibold text-neutral-900">
+                      <summary className="list-none cursor-pointer select-none px-6 py-5 flex items-start justify-between gap-6 hover:bg-neutral-50 transition-colors">
+                        <div>
+                          <div className="text-base font-semibold text-neutral-900">
                             Model details
                           </div>
-                          <div className="text-xs md:text-sm text-neutral-500 mt-1">
+                          <div className="text-sm text-neutral-500 mt-1">
                             Review what's included in totals, and enable
                             additional drivers.
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                        <div className="flex items-center gap-3 shrink-0">
                           <Badge variant="secondary" className="text-xs">
                             {enabledDriverCount} included
                           </Badge>
@@ -1726,8 +1701,8 @@ export default function RoiCalculator({
                       </summary>
 
                       <div className="border-t border-neutral-200">
-                        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-                          <Table className="min-w-[700px] md:min-w-[900px]">
+                        <div className="overflow-x-auto">
+                          <Table className="min-w-[900px]">
                             <TableHeader>
                               <TableRow>
                                 <TableHead className="w-20 text-center text-xs uppercase tracking-wide text-neutral-500">
