@@ -383,18 +383,18 @@ export default function ObjectiveSelectionScreen({
   const [utilizationPercent, setUtilizationPercent] = useState<number | null>(
     null,
   );
-  const [minutesSaved, setMinutesSaved] = useState<number | null>(4); // Default to Typical (4 min)
+  const [minutesSaved, setMinutesSaved] = useState<number | null>(null); // No default - user must select
   const [customMinutes, setCustomMinutes] = useState<number | null>(null);
   const [showCustomMinutesInput, setShowCustomMinutesInput] = useState(false);
   const customMinutesInputRef = useRef<HTMLInputElement>(null);
 
   // Value Realization step state
-  const [timeRealizationRate, setTimeRealizationRate] = useState<number | null>(55); // Default to Typical (55%)
+  const [timeRealizationRate, setTimeRealizationRate] = useState<number | null>(null); // No default - user must select
   
   // Documentation lever sensitivity states (only shown if lever is selected)
-  const [wrvuSensitivity, setWrvuSensitivity] = useState<number | null>(5); // Default to Typical (5%)
-  const [hccSensitivity, setHccSensitivity] = useState<number | null>(0.7); // Default to Typical (0.7%)
-  const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(5); // Default to Typical (5%)
+  const [wrvuSensitivity, setWrvuSensitivity] = useState<number | null>(null); // No default - user must select
+  const [hccSensitivity, setHccSensitivity] = useState<number | null>(null); // No default - user must select
+  const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(null); // No default - user must select
 
   // Pricing step state
   const [pricingModel, setPricingModel] = useState<
@@ -632,6 +632,25 @@ export default function ObjectiveSelectionScreen({
     effectiveEncounters > 0 &&
     utilizationPercent !== null &&
     effectiveMinutesSaved !== null &&
+    pricingModel !== null &&
+    annualSubscriptionCost !== null &&
+    (!implementationEnabled ||
+      (implementationFee !== null && implementationFee > 0));
+
+  // Step completion flags for pill navigation (all required info on that step is filled)
+  const isStep1Complete =
+    effectiveClinicians > 0 &&
+    effectiveEncounters > 0 &&
+    utilizationPercent !== null &&
+    effectiveMinutesSaved !== null;
+
+  const isStep2Complete =
+    timeRealizationRate !== null &&
+    (!hasWrvuSelected || wrvuSensitivity !== null) &&
+    (!hasHccSelected || hccSensitivity !== null) &&
+    (!hasDenialsSelected || denialsSensitivity !== null);
+
+  const isStep3Complete =
     pricingModel !== null &&
     annualSubscriptionCost !== null &&
     (!implementationEnabled ||
@@ -906,30 +925,35 @@ export default function ObjectiveSelectionScreen({
 
                 {/* Mini-wizard step indicator */}
                 <div className="flex items-center gap-2 mb-8">
-                  {([1, 2, 3] as const).map((step) => (
-                    <button
-                      key={step}
-                      onClick={() => setModelSetupStep(step)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        modelSetupStep === step
-                          ? "bg-[#F03319] text-white"
-                          : modelSetupStep > step
-                            ? "bg-neutral-200 text-neutral-700"
-                            : "bg-neutral-100 text-neutral-400"
-                      }`}
-                    >
-                      <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">
-                        {modelSetupStep > step ? (
-                          <Check className="w-3 h-3" />
-                        ) : (
-                          step
-                        )}
-                      </span>
-                      {step === 1 && "Adoption"}
-                      {step === 2 && "Value Realization"}
-                      {step === 3 && "Investment"}
-                    </button>
-                  ))}
+                  {([1, 2, 3] as const).map((step) => {
+                    const isComplete = step === 1 ? isStep1Complete : step === 2 ? isStep2Complete : isStep3Complete;
+                    const isActive = modelSetupStep === step;
+                    
+                    return (
+                      <button
+                        key={step}
+                        onClick={() => setModelSetupStep(step)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          isActive
+                            ? "bg-[#F03319] text-white"
+                            : isComplete
+                              ? "bg-[#F03319] text-white"
+                              : "bg-neutral-100 text-neutral-400"
+                        }`}
+                      >
+                        <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">
+                          {isComplete && !isActive ? (
+                            <Check className="w-3 h-3" />
+                          ) : (
+                            step
+                          )}
+                        </span>
+                        {step === 1 && "Adoption"}
+                        {step === 2 && "Value Realization"}
+                        {step === 3 && "Investment"}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Step 1: Adoption */}
@@ -1763,10 +1787,10 @@ export default function ObjectiveSelectionScreen({
                       </div>
 
                       <div className="mt-3 divide-y divide-neutral-200">
-                        {/* Configuration section */}
+                        {/* Adoption section */}
                         <div className="py-2 space-y-2">
-                          <div className="text-xs font-semibold text-neutral-500">
-                            Configuration
+                          <div className="text-xs font-semibold text-neutral-500 mb-2">
+                            Adoption
                           </div>
                           <div className="flex items-center justify-between gap-4">
                             <div className="text-sm text-neutral-600">Providers</div>
@@ -1790,7 +1814,7 @@ export default function ObjectiveSelectionScreen({
 
                         {/* System output section */}
                         <div className="py-2 space-y-2">
-                          <div className="text-xs font-semibold text-neutral-500">
+                          <div className="text-xs font-semibold text-neutral-500 mb-2">
                             System output
                           </div>
                           <div className="flex items-center justify-between gap-4">
@@ -1826,7 +1850,7 @@ export default function ObjectiveSelectionScreen({
                         {/* Documentation assumptions section */}
                         {hasAnyDocumentationLever && (
                           <div className="py-2 space-y-2">
-                            <div className="text-xs font-semibold text-neutral-500">
+                            <div className="text-xs font-semibold text-neutral-500 mb-2">
                               Documentation assumptions
                             </div>
                             {hasWrvuSelected && wrvuSensitivity !== null && (
