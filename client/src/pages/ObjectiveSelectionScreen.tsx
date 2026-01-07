@@ -769,8 +769,7 @@ export default function ObjectiveSelectionScreen({
                   Select a care setting
                 </h2>
                 <p className="text-lg text-neutral-600 leading-relaxed mb-10">
-                  Workflow patterns, documentation burden, and potential time
-                  savings vary by setting.
+                  This sets baseline documentation patterns and default assumptions.
                 </p>
                 <div className="space-y-4 mb-8">
                   <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
@@ -803,7 +802,7 @@ export default function ObjectiveSelectionScreen({
                     Care setting
                   </h3>
                   <p className="text-sm text-neutral-500 mt-1.5">
-                    Select to continue
+                    Choose one to set assumptions
                   </p>
                 </div>
                 <div className="divide-y divide-neutral-100/80">
@@ -916,7 +915,7 @@ export default function ObjectiveSelectionScreen({
 
                 <div className="mb-10">
                   <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
-                    Adoption
+                    Baseline Assumptions
                   </h2>
                   <p className="text-lg text-neutral-600 leading-relaxed">
                     These inputs shape your ROI model.
@@ -936,14 +935,14 @@ export default function ObjectiveSelectionScreen({
                         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                           isActive
                             ? "bg-[#F03319] text-white"
-                            : isComplete
-                              ? "bg-[#F03319] text-white"
-                              : "bg-neutral-100 text-neutral-400"
+                            : "bg-neutral-100 text-neutral-500"
                         }`}
                       >
-                        <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                          isActive ? "bg-white/20" : isComplete ? "bg-neutral-300" : "bg-neutral-200"
+                        }`}>
                           {isComplete && !isActive ? (
-                            <Check className="w-3 h-3" />
+                            <Check className="w-3 h-3 text-neutral-600" />
                           ) : (
                             step
                           )}
@@ -1062,7 +1061,7 @@ export default function ObjectiveSelectionScreen({
                             data-testid="chip-util-expected"
                           >
                             <div className="flex flex-col items-center">
-                              <span>Expected (65%)</span>
+                              <span>Typical (65%)</span>
                               <span className="text-[10px] mt-0.5 opacity-70">
                                 Steady adoption with enablement
                               </span>
@@ -1078,7 +1077,7 @@ export default function ObjectiveSelectionScreen({
                             data-testid="chip-util-high"
                           >
                             <div className="flex flex-col items-center">
-                              <span>High (80%)</span>
+                              <span>Upper Bound (80%)</span>
                               <span className="text-[10px] mt-0.5 opacity-70">
                                 Mature deployment
                               </span>
