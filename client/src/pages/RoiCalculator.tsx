@@ -1033,43 +1033,54 @@ export default function RoiCalculator({
                           />
                         </InputField>
 
-                        <div className="pt-2 border-t border-neutral-200" />
+                        <div className="pt-3 mt-3 border-t border-neutral-200">
+                          <p className="text-xs text-neutral-500 mb-2">
+                            Tip: If curious about enterprise impact, click below
+                          </p>
+                          <details className="group">
+                            <summary className="cursor-pointer list-none flex items-center gap-2 text-sm font-medium text-neutral-700 hover:text-neutral-900">
+                              <ChevronRight className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-90" />
+                              Enterprise View
+                            </summary>
+                            <div className="mt-3 space-y-4 pl-6">
+                              <InputField
+                                label="Enterprise Provider Count"
+                                helperText="Total clinicians across your enterprise."
+                              >
+                                <Input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={formatNumber(inputs.enterpriseProviderCount)}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "enterpriseProviderCount",
+                                      parseFormattedNumber(e.target.value),
+                                    )
+                                  }
+                                  data-testid="input-enterprise-providers"
+                                />
+                              </InputField>
 
-                        <InputField
-                          label="Enterprise Provider Count"
-                          helperText="Total clinicians across your enterprise."
-                        >
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            value={formatNumber(inputs.enterpriseProviderCount)}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "enterpriseProviderCount",
-                                parseFormattedNumber(e.target.value),
-                              )
-                            }
-                            data-testid="input-enterprise-providers"
-                          />
-                        </InputField>
-
-                        <InputField
-                          label="Annual Outpatient Encounters (enterprise)"
-                          helperText="Total annual outpatient visits across the enterprise."
-                        >
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            value={formatNumber(inputs.enterpriseAnnualEncounters)}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "enterpriseAnnualEncounters",
-                                parseFormattedNumber(e.target.value),
-                              )
-                            }
-                            data-testid="input-enterprise-encounters"
-                          />
-                        </InputField>
+                              <InputField
+                                label="Annual Outpatient Encounters (enterprise)"
+                                helperText="Total annual outpatient visits across the enterprise."
+                              >
+                                <Input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={formatNumber(inputs.enterpriseAnnualEncounters)}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "enterpriseAnnualEncounters",
+                                      parseFormattedNumber(e.target.value),
+                                    )
+                                  }
+                                  data-testid="input-enterprise-encounters"
+                                />
+                              </InputField>
+                            </div>
+                          </details>
+                        </div>
                       </div>
                     </details>
 
