@@ -1086,8 +1086,8 @@ export default function ObjectiveSelectionScreen({
             <span className="text-lg md:text-xl font-semibold text-neutral-900 tracking-tight">
               ROI Calculator
             </span>
-            <span className="text-sm text-neutral-500 leading-tight flex items-center gap-1">
-              by <img src={abridgeLogo} alt="Abridge" className="h-4 inline-block" style={{ verticalAlign: 'middle' }} />
+            <span className="text-sm text-neutral-500 leading-tight flex items-center gap-1.5">
+              by <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6 inline-block" style={{ verticalAlign: 'middle' }} />
             </span>
           </div>
 
