@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +52,8 @@ import {
   Download,
   Mail,
   Loader2,
+  Trash2,
+  Sliders,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -125,6 +127,8 @@ export default function RoiCalculator({
   // Detailed breakdown state
   const [expandedDriver, setExpandedDriver] = useState<LeverId | null>(null);
   const [localAdjustments, setLocalAdjustments] = useState<Record<string, number>>({});
+  const [removedDriverToast, setRemovedDriverToast] = useState<string | null>(null);
+  const removedToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Scenario Builder state
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
@@ -308,6 +312,25 @@ export default function RoiCalculator({
   // Helper: reset local adjustments
   const resetLocalAdjustments = () => {
     setLocalAdjustments({});
+  };
+
+  // Helper: remove a driver from the model
+  const removeDriver = (driverId: LeverId) => {
+    setInputs((prev) => ({
+      ...prev,
+      levers: {
+        ...prev.levers,
+        [driverId]: false,
+      },
+    }));
+    setExpandedDriver(null);
+    setRemovedDriverToast(leverLabels[driverId]);
+    // Clear any existing timeout to prevent stale dismissals
+    if (removedToastTimeoutRef.current) {
+      clearTimeout(removedToastTimeoutRef.current);
+    }
+    // Auto-dismiss toast after 5 seconds
+    removedToastTimeoutRef.current = setTimeout(() => setRemovedDriverToast(null), 5000);
   };
 
   // Helper: apply local adjustments to model
@@ -884,13 +907,43 @@ export default function RoiCalculator({
           <div className="space-y-6">
             {/* Header */}
             <div className="bg-white rounded-2xl border border-neutral-200 p-8 shadow-sm">
-              <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-2">
-                Driver Deep Dive
-              </h2>
-              <p className="text-sm text-neutral-600">
-                Review calculations and adjust assumptions based on your organization's specifics
-              </p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-2">
+                    Driver Deep Dive
+                  </h2>
+                  <p className="text-sm text-neutral-600">
+                    Review calculations and adjust assumptions to refine your model
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setAddDriverModalOpen(true)}
+                  className="gap-2 shrink-0"
+                  data-testid="button-add-driver-detailed"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Driver
+                </Button>
+              </div>
             </div>
+
+            {/* Removed driver toast */}
+            {removedDriverToast && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between">
+                <p className="text-sm text-amber-800">
+                  {removedDriverToast} removed. You can add it back with the "Add Driver" button above.
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setRemovedDriverToast(null)}
+                  className="text-amber-600"
+                >
+                  Dismiss
+                </Button>
+              </div>
+            )}
 
             {/* Driver Cards */}
             <div className="space-y-4">
@@ -1077,6 +1130,19 @@ export default function RoiCalculator({
                                   Apply Changes
                                 </Button>
                               </div>
+
+                              {/* Remove Driver */}
+                              <div className="border-t border-neutral-100 pt-6 mt-6">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => removeDriver("patientAccess")}
+                                  className="gap-2 text-neutral-500 hover:text-red-600"
+                                  data-testid="button-remove-patientAccess"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Remove This Driver
+                                </Button>
+                              </div>
                             </div>
                           </>
                         )}
@@ -1217,6 +1283,19 @@ export default function RoiCalculator({
                                   Apply Changes
                                 </Button>
                               </div>
+
+                              {/* Remove Driver */}
+                              <div className="border-t border-neutral-100 pt-6 mt-6">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => removeDriver("wrvu")}
+                                  className="gap-2 text-neutral-500 hover:text-red-600"
+                                  data-testid="button-remove-wrvu"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Remove This Driver
+                                </Button>
+                              </div>
                             </div>
                           </>
                         )}
@@ -1353,6 +1432,19 @@ export default function RoiCalculator({
                                   data-testid="button-apply-workforce"
                                 >
                                   Apply Changes
+                                </Button>
+                              </div>
+
+                              {/* Remove Driver */}
+                              <div className="border-t border-neutral-100 pt-6 mt-6">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => removeDriver("workforce")}
+                                  className="gap-2 text-neutral-500 hover:text-red-600"
+                                  data-testid="button-remove-workforce"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Remove This Driver
                                 </Button>
                               </div>
                             </div>
@@ -1519,6 +1611,19 @@ export default function RoiCalculator({
                                   Apply Changes
                                 </Button>
                               </div>
+
+                              {/* Remove Driver */}
+                              <div className="border-t border-neutral-100 pt-6 mt-6">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => removeDriver("hcc")}
+                                  className="gap-2 text-neutral-500 hover:text-red-600"
+                                  data-testid="button-remove-hcc"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Remove This Driver
+                                </Button>
+                              </div>
                             </div>
                           </>
                         );})()}
@@ -1669,6 +1774,19 @@ export default function RoiCalculator({
                                   Apply Changes
                                 </Button>
                               </div>
+
+                              {/* Remove Driver */}
+                              <div className="border-t border-neutral-100 pt-6 mt-6">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => removeDriver("denials")}
+                                  className="gap-2 text-neutral-500 hover:text-red-600"
+                                  data-testid="button-remove-denials"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Remove This Driver
+                                </Button>
+                              </div>
                             </div>
                           </>
                         );})()}
@@ -1817,6 +1935,19 @@ export default function RoiCalculator({
                                   data-testid="button-apply-overtime"
                                 >
                                   Apply Changes
+                                </Button>
+                              </div>
+
+                              {/* Remove Driver */}
+                              <div className="border-t border-neutral-100 pt-6 mt-6">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => removeDriver("overtime")}
+                                  className="gap-2 text-neutral-500 hover:text-red-600"
+                                  data-testid="button-remove-overtime"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Remove This Driver
                                 </Button>
                               </div>
                             </div>
