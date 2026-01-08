@@ -106,10 +106,10 @@ const DRIVER_COLORS: Record<LeverId, string> = {
 const DRIVER_ESTIMATES: Record<LeverId, { min: number; max: number; subtitle: string }> = {
   patientAccess: { min: 150000, max: 200000, subtitle: "Returns visit-time documentation minutes back to patient capacity" },
   wrvu: { min: 200000, max: 260000, subtitle: "Improves coding support by capturing clinical reasoning" },
-  workforce: { min: 160000, max: 240000, subtitle: "Lower burnout and turnover by reducing admin burden" },
+  workforce: { min: 50000, max: 120000, subtitle: "Lower burnout and turnover by reducing admin burden" },
   overtime: { min: 100000, max: 180000, subtitle: "Reduce premium labor costs from documentation backlog" },
   hcc: { min: 180000, max: 400000, subtitle: "Improve RAF scores through complete documentation" },
-  denials: { min: 120000, max: 180000, subtitle: "Reduce claims denied due to documentation issues" },
+  denials: { min: 70000, max: 150000, subtitle: "Reduce claims denied due to documentation issues" },
 };
 
 export default function RoiCalculator({
