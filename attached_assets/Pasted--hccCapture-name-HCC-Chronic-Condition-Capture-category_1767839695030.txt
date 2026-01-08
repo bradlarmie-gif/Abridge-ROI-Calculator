@@ -1,0 +1,67 @@
+{
+  "hccCapture": {
+    "name": "HCC & Chronic Condition Capture",
+    "category": "REVENUE & RISK",
+    "icon": "📊",
+    "referenceValue": 337000,
+    "theory": "For Medicare Advantage patients, complete documentation of chronic conditions drives Risk Adjustment Factor (RAF) scores, which determine per-member-per-month (PMPM) capitated payments to health plans.",
+    "calculationSteps": [
+      {
+        "title": "STEP 1: IDENTIFY MA PATIENT POPULATION",
+        "rows": [
+          {"label": "Total annual encounters", "value": "52,000"},
+          {"label": "Average visits per unique patient", "value": "2.5 visits/year"},
+          {"label": "Total unique patients", "value": "20,800"},
+          {"label": "% Medicare Advantage", "value": "15%", "note": "(typical outpatient)"},
+          {"label": "Unique MA patients", "value": "3,120 patients"}
+        ]
+      },
+      {
+        "title": "STEP 2: BASELINE RAF SCORE",
+        "rows": [
+          {"label": "Average MA member RAF score", "value": "1.0", "note": "(national average)"}
+        ]
+      },
+      {
+        "title": "STEP 3: DIAGNOSTIC DOCUMENTATION GAP",
+        "rows": [
+          {"label": "Chronic conditions per MA patient", "value": "2.5", "note": "(typical)"},
+          {"label": "Expected total HCC-eligible conditions", "value": "7,800"},
+          {"label": "Current documentation capture rate", "value": "70%"},
+          {"label": "Conditions currently documented", "value": "5,460"},
+          {"label": "Documentation gap", "value": "30%"},
+          {"label": "Conditions missed annually", "value": "2,340"}
+        ]
+      },
+      {
+        "title": "STEP 4: ABRIDGE RECAPTURE",
+        "rows": [
+          {"label": "Conditions missed annually", "value": "2,340"},
+          {"label": "Abridge recapture rate", "value": "50%", "note": "(typical)"},
+          {"label": "New conditions documented", "value": "1,170 conditions"}
+        ]
+      },
+      {
+        "title": "STEP 5: RAF SCORE IMPACT",
+        "rows": [
+          {"label": "New conditions documented", "value": "1,170"},
+          {"label": "Average RAF weight per condition", "value": "0.25", "note": "(HCC blended)"},
+          {"label": "Total RAF points added", "value": "292.5 points"},
+          {"label": "Average RAF increase per patient", "value": "0.09"}
+        ]
+      },
+      {
+        "title": "STEP 6: REVENUE IMPACT",
+        "rows": [
+          {"label": "Unique MA patients", "value": "3,120"},
+          {"label": "Average RAF increase per patient", "value": "0.09"},
+          {"label": "Benchmark PMPM", "value": "$1,000", "note": "(county-specific)"},
+          {"label": "Incremental revenue per patient/year", "value": "$1,080"},
+          {"label": "Annual value", "value": "$337,000"}
+        ]
+      }
+    ],
+    "keyVariables": ["% MA patients", "Conditions per member", "Documentation gap %", "Recapture rate", "PMPM benchmark"],
+    "rangeCustomers": "Conservative (10% MA): $150k-200k    Typical (15% MA): $300k-400k    High MA (30%): $600k-800k"
+  }
+}

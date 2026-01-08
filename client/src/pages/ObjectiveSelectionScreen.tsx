@@ -156,27 +156,42 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     id: "wrvu",
     label: "Accurate Level of Service",
     icon: BarChart3,
-    theory: "Better real-time documentation captures the full complexity of care delivered—supporting accurate E/M levels and reducing billing errors.",
+    theory: "Better real-time documentation captures the full complexity of care delivered—supporting accurate work RVU (wRVU) documentation and E/M coding, which drives proper reimbursement levels.",
     calculationSteps: [
       {
-        title: "STEP 1: DOCUMENTATION QUALITY LIFT",
+        title: "STEP 1: BASELINE wRVU PERFORMANCE",
         steps: [
-          { label: "Improvement in level-of-service alignment", value: "3%", note: "(typical)" },
+          { label: "Annual Abridge-documented encounters", value: "52,000" },
+          { label: "Baseline wRVU per encounter", value: "1.75", note: "(typical outpatient)" },
+          { label: "Current annual wRVUs", value: "91,000 wRVUs" },
         ],
       },
       {
-        title: "STEP 2: REVENUE CAPTURED",
+        title: "STEP 2: DOCUMENTATION QUALITY LIFT",
         steps: [
-          { label: "Documented encounters", value: "52,000" },
-          { label: "Average revenue per visit", value: "$200" },
-          { label: "Quality lift", value: "3%" },
-          { label: "Annual value", value: "$312,000" },
+          { label: "wRVU improvement with better documentation", value: "5%", note: "(typical)" },
+        ],
+      },
+      {
+        title: "STEP 3: ADDITIONAL wRVUs CAPTURED",
+        steps: [
+          { label: "Current annual wRVUs", value: "91,000" },
+          { label: "× Documentation lift", value: "5%" },
+          { label: "Additional wRVUs captured", value: "4,550 wRVUs" },
+        ],
+      },
+      {
+        title: "STEP 4: REVENUE IMPACT",
+        steps: [
+          { label: "Additional wRVUs captured", value: "4,550" },
+          { label: "Average revenue per wRVU", value: "$50", note: "(typical payer mix)" },
+          { label: "Annual value", value: "$227,500" },
         ],
       },
     ],
-    keyVariables: ["Visit volume", "Revenue per visit", "Documentation quality lift %"],
-    rangeData: { conservative: "2% lift", typical: "3% lift", aggressive: "5% lift" },
-    referenceValue: 312000,
+    keyVariables: ["Visit volume", "Baseline wRVU per encounter", "Documentation quality lift %", "Revenue per wRVU"],
+    rangeData: { conservative: "2% lift ($91,000)", typical: "5% lift ($227,500)", aggressive: "8% lift ($364,000)" },
+    referenceValue: 227500,
   },
   overtime: {
     id: "overtime",
@@ -253,47 +268,66 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     id: "hcc",
     label: "HCC & Chronic Condition Capture",
     icon: Target,
-    theory: "For Medicare Advantage patients, complete documentation of chronic conditions drives Risk Adjustment Factor (RAF) scores, which determine capitated payments.",
+    theory: "For Medicare Advantage patients, complete documentation of chronic conditions drives Risk Adjustment Factor (RAF) scores, which determine per-member-per-month (PMPM) capitated payments to health plans.",
     calculationSteps: [
       {
-        title: "STEP 1: IDENTIFY MA POPULATION",
+        title: "STEP 1: IDENTIFY MA PATIENT POPULATION",
         steps: [
           { label: "Total annual encounters", value: "52,000" },
-          { label: "% Medicare Advantage patients", value: "15%", note: "(typical)" },
-          { label: "MA encounters annually", value: "7,800" },
-          { label: "Unique MA patients", value: "3,120" },
+          { label: "Average visits per unique patient", value: "2.5 visits/year" },
+          { label: "Total unique patients", value: "20,800" },
+          { label: "% Medicare Advantage", value: "15%", note: "(typical outpatient)" },
+          { label: "Unique MA patients", value: "3,120 patients" },
         ],
       },
       {
-        title: "STEP 2: DIAGNOSTIC GAP",
+        title: "STEP 2: BASELINE RAF SCORE",
+        steps: [
+          { label: "Average MA member RAF score", value: "1.0", note: "(national average)" },
+        ],
+      },
+      {
+        title: "STEP 3: DIAGNOSTIC DOCUMENTATION GAP",
+        steps: [
+          { label: "Chronic conditions per MA patient", value: "2.5", note: "(typical)" },
+          { label: "Expected total HCC-eligible conditions", value: "7,800" },
+          { label: "Current documentation capture rate", value: "70%" },
+          { label: "Conditions currently documented", value: "5,460" },
+          { label: "Documentation gap", value: "30%" },
+          { label: "Conditions missed annually", value: "2,340" },
+        ],
+      },
+      {
+        title: "STEP 4: ABRIDGE RECAPTURE",
+        steps: [
+          { label: "Conditions missed annually", value: "2,340" },
+          { label: "Abridge recapture rate", value: "50%", note: "(typical)" },
+          { label: "New conditions documented", value: "1,170 conditions" },
+        ],
+      },
+      {
+        title: "STEP 5: RAF SCORE IMPACT",
+        steps: [
+          { label: "New conditions documented", value: "1,170" },
+          { label: "Average RAF weight per condition", value: "0.25", note: "(HCC blended)" },
+          { label: "Total RAF points added", value: "292.5 points" },
+          { label: "Average RAF increase per patient", value: "0.09" },
+        ],
+      },
+      {
+        title: "STEP 6: REVENUE IMPACT",
         steps: [
           { label: "Unique MA patients", value: "3,120" },
-          { label: "Avg conditions per patient", value: "1.5" },
-          { label: "Total expected conditions", value: "4,680" },
-          { label: "Documentation gap rate", value: "33%" },
-          { label: "Conditions missed annually", value: "1,544" },
-        ],
-      },
-      {
-        title: "STEP 3: ABRIDGE RECAPTURE",
-        steps: [
-          { label: "Conditions missed", value: "1,544" },
-          { label: "Recapture rate", value: "60%", note: "(typical)" },
-          { label: "Conditions newly documented", value: "927" },
-        ],
-      },
-      {
-        title: "STEP 4: RAF & REVENUE IMPACT",
-        steps: [
-          { label: "Conditions recaptured", value: "927" },
-          { label: "Avg RAF points per condition", value: "0.015" },
-          { label: "Member-level revenue calculation", value: "$212,000" },
+          { label: "Average RAF increase per patient", value: "0.09" },
+          { label: "Benchmark PMPM", value: "$1,000", note: "(county-specific)" },
+          { label: "Incremental revenue per patient/year", value: "$1,080" },
+          { label: "Annual value", value: "$337,000" },
         ],
       },
     ],
-    keyVariables: ["% MA patients", "Conditions per member", "Documentation gap", "Recapture rate"],
-    rangeData: { conservative: "$80k-120k (Low MA 10%)", typical: "$180k-250k (15-20% MA)" },
-    referenceValue: 212000,
+    keyVariables: ["% MA patients", "Conditions per member", "Documentation gap %", "Recapture rate", "PMPM benchmark"],
+    rangeData: { conservative: "$150k-200k (10% MA)", typical: "$300k-400k (15% MA)", aggressive: "$600k-800k (30% MA)" },
+    referenceValue: 337000,
   },
   denials: {
     id: "denials",
