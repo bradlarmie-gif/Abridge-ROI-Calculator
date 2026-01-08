@@ -698,10 +698,10 @@ export default function ObjectiveSelectionScreen({
   const [modelSetupStep, setModelSetupStep] = useState<1 | 2 | 3>(1);
 
   // Baseline step state - using number | "" to allow empty field while typing
-  const [cliniciansInScope, setCliniciansInScope] = useState<number | "">(40);
+  const [cliniciansInScope, setCliniciansInScope] = useState<number | "">("");
   const [annualEncountersInScope, setAnnualEncountersInScope] = useState<
     number | ""
-  >(80000);
+  >("");
 
   // Adoption step state
   const [utilizationPercent, setUtilizationPercent] = useState<number | null>(
@@ -1658,7 +1658,7 @@ export default function ObjectiveSelectionScreen({
                         <div className="flex items-start gap-3">
                           <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                           <p className="text-sm text-blue-800">
-                            <span className="font-medium">Remember the Blueprint?</span> We used 40 providers and 52,000 encounters as a reference. Now input YOUR actual numbers—everything else adjusts automatically.
+                            The Blueprint showed a reference scenario. Now input YOUR organization's actual numbers to see your specific ROI.
                           </p>
                         </div>
                       </div>
@@ -1809,7 +1809,7 @@ export default function ObjectiveSelectionScreen({
                             <div className="bg-neutral-50 rounded-lg p-3">
                               <div className="flex items-center gap-2 text-sm font-medium text-neutral-700 mb-2">
                                 <BarChart3 className="w-4 h-4" />
-                                Based on 50+ rollouts:
+                                Based on 200+ health system rollouts:
                               </div>
                               <ul className="text-sm text-neutral-600 space-y-1 ml-6">
                                 <li>Month 1-3: 40-50%</li>
@@ -1817,6 +1817,9 @@ export default function ObjectiveSelectionScreen({
                                 <li>Month 7+: 70-85%</li>
                               </ul>
                             </div>
+                            <p className="text-xs text-neutral-500 italic mt-3">
+                              Your organization's actual adoption may vary based on training, workflow integration, and clinician engagement.
+                            </p>
                           </div>
                         )}
                       </div>
@@ -1827,39 +1830,58 @@ export default function ObjectiveSelectionScreen({
                           <BarChart3 className="w-4 h-4 text-emerald-700" />
                           <span className="text-sm font-semibold text-emerald-800">YOUR SCENARIO</span>
                         </div>
-                        <div className="text-sm text-emerald-700">
-                          <span className="font-mono">{formatNumber(effectiveClinicians)}</span> providers{" "}
-                          <span className="text-emerald-500 mx-1">×</span>{" "}
-                          <span className="font-mono">{formatNumber(effectiveEncounters)}</span> encounters{" "}
-                          <span className="text-emerald-500 mx-1">×</span>{" "}
-                          <span className="font-mono">{utilizationPercent ?? 0}%</span> utilization
-                        </div>
-                        <div className="mt-2 pt-2 border-t border-emerald-200">
-                          <span className="text-emerald-700">=</span>{" "}
-                          <span className="font-semibold text-emerald-800 font-mono text-lg">
-                            {formatNumber(Math.round(effectiveEncounters * ((utilizationPercent ?? 0) / 100)))}
-                          </span>{" "}
-                          <span className="text-emerald-700">Abridge-documented encounters per year</span>
-                        </div>
+                        {effectiveClinicians === 0 || effectiveEncounters === 0 ? (
+                          <p className="text-sm text-emerald-700">
+                            Enter your providers and encounter volume above to see your projected Abridge-documented encounters.
+                          </p>
+                        ) : (
+                          <>
+                            <div className="text-sm text-emerald-700">
+                              <span className="font-mono">{formatNumber(effectiveClinicians)}</span> providers{" "}
+                              <span className="text-emerald-500 mx-1">×</span>{" "}
+                              <span className="font-mono">{formatNumber(effectiveEncounters)}</span> encounters{" "}
+                              <span className="text-emerald-500 mx-1">×</span>{" "}
+                              <span className="font-mono">{utilizationPercent ?? 0}%</span> utilization
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-emerald-200">
+                              <span className="text-emerald-700">=</span>{" "}
+                              <span className="font-semibold text-emerald-800 font-mono text-lg">
+                                {formatNumber(Math.round(effectiveEncounters * ((utilizationPercent ?? 0) / 100)))}
+                              </span>{" "}
+                              <span className="text-emerald-700">Abridge-documented encounters per year</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    <div className="mt-8 flex justify-end">
-                      <button
-                        onClick={() => setModelSetupStep(2)}
-                        disabled={
-                          effectiveClinicians === 0 || effectiveEncounters === 0
-                        }
-                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
-                          effectiveClinicians > 0 && effectiveEncounters > 0
-                            ? "bg-neutral-900 text-white hover:bg-neutral-800"
-                            : "bg-neutral-300 text-neutral-500 cursor-not-allowed"
-                        }`}
-                        data-testid="button-step1-next"
-                      >
-                        Next: Value Realization
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
+                    <div className="mt-8 flex items-center justify-between gap-4">
+                      {(effectiveClinicians === 0 || effectiveEncounters === 0) && (
+                        <p className="text-sm text-[#F03319]">
+                          {effectiveClinicians === 0 && effectiveEncounters === 0
+                            ? "Please enter number of providers and annual encounters"
+                            : effectiveClinicians === 0
+                            ? "Please enter number of providers"
+                            : "Please enter annual encounters"}
+                        </p>
+                      )}
+                      <div className="ml-auto">
+                        <button
+                          onClick={() => setModelSetupStep(2)}
+                          disabled={
+                            effectiveClinicians === 0 || effectiveEncounters === 0
+                          }
+                          className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+                            effectiveClinicians > 0 && effectiveEncounters > 0
+                              ? "bg-neutral-900 text-white hover:bg-neutral-800"
+                              : "bg-neutral-300 text-neutral-500 cursor-not-allowed"
+                          }`}
+                          data-testid="button-step1-next"
+                        >
+                          Next: Value Realization
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1948,7 +1970,7 @@ export default function ObjectiveSelectionScreen({
                           {detectedPosture === "aggressive" && "Best for: Growth targets, high-confidence rollouts"}
                         </p>
                         <p className="text-xs text-neutral-600 mb-3">
-                          Based on: {detectedPosture === "conservative" ? "Conservative" : detectedPosture === "typical" ? "Median" : "Optimistic"} performance from 50+ Abridge customers
+                          Based on: {detectedPosture === "conservative" ? "Conservative" : detectedPosture === "typical" ? "Median" : "Optimistic"} performance from 200+ health system partners
                         </p>
                         
                         {/* Posture multiplier helper */}

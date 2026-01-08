@@ -1,0 +1,104 @@
+Make the following changes to the Model Setup - Tab 1 (Adoption) page:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. REMOVE PRE-FILLED VALUES IN INPUT FIELDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CURRENT:
+- "Providers (in scope)" field shows: 40
+- "Annual outpatient encounters (in scope)" field shows: 80,000
+
+CHANGE TO:
+- Both fields should be EMPTY by default
+- Show placeholder text instead:
+  - Providers field placeholder: "e.g., 50"
+  - Encounters field placeholder: "e.g., 100,000"
+
+Users must enter their own numbers—no pre-filled defaults.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. UPDATE "50+" TO "200+"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In the "Why this matters" expanded section, change:
+
+FROM: "Based on 50+ rollouts:"
+TO: "Based on 200+ health system rollouts:"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. UPDATE THE BLUE INFO BOX TEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CURRENT:
+"Remember the Blueprint? We used 40 providers and 52,000 encounters as a reference. Now input YOUR actual numbers—everything else adjusts automatically."
+
+CHANGE TO:
+"💡 The Blueprint showed a reference scenario. Now input YOUR organization's actual numbers to see your specific ROI."
+
+(Shorter, doesn't reference specific numbers that won't be pre-filled anymore)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. UPDATE "YOUR SCENARIO" BOX BEHAVIOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The green "YOUR SCENARIO" box should:
+
+WHEN FIELDS ARE EMPTY (no provider/encounter input yet):
+Show: "Enter your providers and encounter volume above to see your projected Abridge-documented encounters."
+
+WHEN FIELDS ARE FILLED:
+Show: "[X] providers × [Y] encounters × [Z]% utilization
+= [calculated] Abridge-documented encounters per year"
+
+(Dynamic—only shows calculation when there's data to calculate)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. ADD CONTEXT TO "WHY THIS MATTERS" SECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+At the end of the "Why this matters" expanded content (after the month-by-month rollout timeline), add:
+
+"Your organization's actual adoption may vary based on training, workflow integration, and clinician engagement."
+
+Style this as a subtle note (gray text, slightly smaller).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. FORM VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Since fields are now empty by default:
+
+- "Next: Value Realization" button should be DISABLED until both provider and encounter fields are filled
+- Show inline validation: "Please enter number of providers" if they try to proceed without filling it
+- Ensure utilization slider works even when other fields are empty (defaults to 65%)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. LIVE RECEIPT PANEL UPDATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The right-side "LIVE RECEIPT" panel currently shows:
+
+Providers: 40
+Annual encounters: 80,000
+Eligible encounters: 52,000
+
+CHANGE TO show:
+- Providers: — (until filled)
+- Annual encounters: — (until filled)
+- Eligible encounters: — (until calculated)
+
+Once they input values, these update in real-time.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY OF CHANGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Provider and encounter fields: Empty by default (placeholders only)
+2. "50+ rollouts" → "200+ health system rollouts"
+3. Blue info box: Shorter, clearer text
+4. "YOUR SCENARIO" box: Dynamic based on whether inputs exist
+5. "Why this matters": Added adoption variability note
+6. Form validation: Require inputs before proceeding
+7. Live receipt: Show "—" until data is entered
+
+The page should feel like a form they need to complete, not a pre-filled template.
