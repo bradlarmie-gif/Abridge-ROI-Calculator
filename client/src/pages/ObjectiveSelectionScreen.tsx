@@ -2074,18 +2074,6 @@ export default function ObjectiveSelectionScreen({
                                     ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 1.3, 0)))}
                                   </td>
                                 </tr>
-                                <tr className="text-xs text-neutral-500">
-                                  <td className="py-1 pr-4">Est. ROI (at $57,600 investment)</td>
-                                  <td className={`py-1 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50" : ""}`}>
-                                    {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 0.7, 0) / 57600)).toFixed(1)}x
-                                  </td>
-                                  <td className={`py-1 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 font-medium" : ""}`}>
-                                    {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0), 0) / 57600)).toFixed(1)}x
-                                  </td>
-                                  <td className={`py-1 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50" : ""}`}>
-                                    {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 1.3, 0) / 57600)).toFixed(1)}x
-                                  </td>
-                                </tr>
                               </tbody>
                             </table>
                             
