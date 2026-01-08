@@ -1,0 +1,221 @@
+Create a new "Results Dashboard" page that users land on after completing the Model Setup (after clicking "View Your ROI Model").
+
+STRUCTURE:
+The dashboard should have 4 main sections accessible via tabs at the top:
+1. Summary View (default/landing)
+2. Detailed Breakdown
+3. Scenario Builder
+4. Export Summary
+
+Create a tab navigation component at the top with these 4 tabs. The Summary View tab should be active by default.
+
+Style the tabs to match the existing design system:
+- Same font family and sizing as the rest of the app
+- Active tab: bold text, bottom border accent color
+- Inactive tabs: gray text, no border
+- Smooth transition when switching tabs
+
+For now, create placeholder content for each tab that says:
+"[Tab Name] - Coming soon"
+
+The dashboard should pull data from the completed Model Setup:
+- Providers (from Tab 1 Adoption)
+- Annual encounters (from Tab 1 Adoption)  
+- Utilization % (from Tab 1 Adoption)
+- Selected value drivers (from Strategic Priorities)
+- Driver calculations (from Tab 2 Value Realization)
+- Investment cost (from Tab 3 Investment)
+
+Make sure this data is accessible in the dashboard component's state.
+
+In the Summary View tab, build the headline results section at the top.
+
+LAYOUT:
+Create a prominent card/section that displays:
+
+Header:
+"YOUR ROI MODEL"
+Subtitle line 1: "Based on [X] providers, [Y] Abridge-documented encounters"
+Subtitle line 2: "[Care Setting] care setting"
+
+(Pull X, Y, and Care Setting from the model data)
+
+Main Metrics Section:
+Display two large metrics side-by-side:
+
+Left metric:
+- Large dollar amount: NET ANNUAL GAIN
+- Calculate as: (Total Annual Benefit - Annual Investment)
+- Format with $ and commas (e.g., $343,100)
+- Label below in smaller text: "Net Annual Gain"
+
+Right metric:
+- Large number with "x": RETURN ON INVESTMENT  
+- Calculate as: (Total Annual Benefit / Annual Investment)
+- Format as decimal with 2 places (e.g., 6.96x)
+- Label below in smaller text: "Return on Investment"
+
+Below the main metrics, show:
+"Total Annual Benefit: $[calculated]"
+"Annual Investment: $[calculated]"
+
+STYLE:
+- Large card with subtle shadow
+- Generous padding
+- Main metrics in very large, bold font
+- Use accent/brand color for the dollar amounts
+- Clean, spacious layout
+- Match the card styling from Value Blueprint section
+
+CALCULATIONS:
+- Total Annual Benefit = sum of all selected driver values
+- Annual Investment = from Tab 3 (providers × cost per provider × 12)
+- Net Annual Gain = Total Benefit - Investment
+- ROI = Total Benefit / Investment
+
+Below the headline metrics in Summary View, create a "VALUE BREAKDOWN" section.
+
+LAYOUT:
+Section title: "VALUE BREAKDOWN"
+
+Visual representation:
+Create a horizontal stacked bar chart showing the breakdown of value by driver.
+
+For each selected driver, show:
+- A colored segment in the bar (different color per driver)
+- Below the bar, list each driver with:
+  - Driver name
+  - Dollar value (formatted with $ and commas)
+  - Percentage of total (e.g., "43%")
+
+The bar should be a single horizontal strip divided proportionally by each driver's percentage of total value.
+
+Below the driver list, show:
+Divider line
+"TOTAL ANNUAL BENEFIT" label with total value (bold)
+
+At the bottom, add a prominent button:
+"[+ Add Another Driver]"
+
+COLORS:
+Use distinct colors for each driver type:
+- Patient Access: Blue shade
+- Level of Service: Purple shade  
+- Clinician Retention: Green shade
+- HCC Capture: Orange shade
+- Denial Reduction: Teal shade
+- Overtime Cost Avoidance: Red shade
+
+STYLE:
+- Card/section with padding
+- Stacked bar should be prominent (at least 40-50px tall)
+- Smooth color transitions in the bar
+- Driver list with icons if possible
+- Clean spacing between elements
+- Match the design system from previous sections
+
+INTERACTION:
+The "[+ Add Another Driver]" button should be styled prominently but not overpowering.
+When clicked, it will open a modal (we'll build this in the next step).
+Create a modal that opens when the "[+ Add Another Driver]" button is clicked in the Summary View.
+
+MODAL STRUCTURE:
+Title: "ADD VALUE DRIVER"
+
+Description:
+"Select additional drivers to include in your model:"
+
+Two sections with headers:
+
+SECTION 1: "CAPACITY & LABOR"
+Show drivers NOT currently selected:
+
+☐ Clinician Retention
+Subtitle: "Lower burnout and turnover by reducing admin burden"
+Est. value: "$160k-240k ([X] providers)" (use their provider count)
+
+☐ Overtime & Locum Cost Avoidance  
+Subtitle: "Reduce premium labor costs from documentation backlog"
+Est. value: "$100k-180k ([X] providers)"
+
+SECTION 2: "REVENUE & RISK"  
+Show drivers NOT currently selected:
+
+☐ HCC & Chronic Condition Capture
+Subtitle: "Improve RAF scores through complete documentation"  
+Est. value: "$180k-400k (15% MA population)"
+
+☐ Denial Reduction
+Subtitle: "Reduce claims denied due to documentation issues"
+Est. value: "$120k-180k (5% denial rate)"
+
+Bottom buttons:
+[Cancel] [Add Selected Drivers]
+
+BEHAVIOR:
+- Only show drivers that are NOT already in the model
+- Checkboxes are selectable
+- "Add Selected Drivers" is only enabled if at least one driver is checked
+- When clicked, run calculations for the selected drivers using current model inputs
+- Add them to the model data
+- Close modal
+- Update the Value Breakdown section with new drivers
+- Update Total Annual Benefit and ROI calculations
+
+STYLE:
+- Modal overlay with semi-transparent background
+- White modal card, centered on screen
+- Close X in top right corner
+- Checkboxes with clear hit areas
+- Subtle borders between drivers
+- Match existing design system
+- Smooth open/close animation
+
+At the bottom of the Summary View tab, add a "WHAT'S NEXT?" section with action cards.
+
+LAYOUT:
+Section title: "WHAT'S NEXT?"
+
+Three cards in a row (responsive - stack on mobile):
+
+CARD 1: Deep Dive into Drivers
+Icon: 🔍 or magnifying glass icon
+Title: "Deep Dive into Drivers"
+Description: "Review calculations & adjust assumptions"
+Button/Click: Navigates to "Detailed Breakdown" tab
+
+CARD 2: Model Growth Scenarios  
+Icon: 📈 or growth chart icon
+Title: "Model Growth Scenarios"
+Description: "See what expansion looks like"
+Button/Click: Navigates to "Scenario Builder" tab
+
+CARD 3: Download Summary
+Icon: 📄 or document icon  
+Title: "Download Summary"
+Description: "Create executive PDF"
+Button/Click: Navigates to "Export Summary" tab
+
+STYLE:
+- Three equal-width cards with subtle borders
+- Hover state: slight shadow increase
+- Icon at top, large and prominent
+- Title in bold
+- Description in gray text
+- Entire card is clickable
+- Subtle arrow or indicator showing it's clickable
+- Match card styling from Value Blueprint
+- Good spacing between cards
+
+INTERACTION:
+Each card should smoothly navigate to its respective tab when clicked.
+Review the Results Dashboard styling and ensure it matches the Value Blueprint section exactly:
+- Same color palette for cards, text, accents
+- Same font family, sizing, and weights  
+- Same card shadows and borders
+- Same spacing and padding
+- Same icon usage (💡 for tips, 📊 for data notes)
+- Same button styles
+- Same input field styles
+
+The entire user experience should feel like a seamless continuation from Value Blueprint → Model Setup → Results Dashboard. No visual jarring or style inconsistencies.
