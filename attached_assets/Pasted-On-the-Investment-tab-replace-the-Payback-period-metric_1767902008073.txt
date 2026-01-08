@@ -1,0 +1,95 @@
+On the Investment tab, replace the "Payback period" metric with a "Time to Value" contextual note.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REMOVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remove this line from the 3-Year View section:
+"Payback period: 3 months"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KEEP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep this line:
+"Cumulative ROI: 4.6x"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADD - TIME TO VALUE NOTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Below the Cumulative ROI line, add a new section:
+
+Title: "Time to value"
+
+Content:
+"Impact timeline varies by driver:
+
+- Operational drivers (Patient Access, Overtime): 3-6 months
+- Documentation drivers (Level of Service, Denials): 2-4 months
+- Long-term drivers (Retention, HCC): 12+ months
+
+Full value realization typically occurs at 12-18 months as utilization matures."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STYLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Style the "Time to value" section as:
+- Subtle info box with light gray or light blue background
+- "Time to value" as a small header (14px, semibold)
+- Bullet points in regular weight, gray text (14px)
+- Final sentence slightly smaller or italicized as a summary note
+- Should feel informational, not like a headline metric
+- Add a 💡 icon before "Full value realization..." line (optional)
+
+The Cumulative ROI (4.6x) should remain prominent.
+The Time to Value section should be secondary/contextual.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LAYOUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current layout:
+┌─────────────────────────────────────┐
+│ Cumulative ROI:         4.6x       │
+│ Payback period:         3 months   │  ← REMOVE
+└─────────────────────────────────────┘
+
+New layout:
+┌─────────────────────────────────────┐
+│ Cumulative ROI:         4.6x       │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│ Time to value                       │
+│                                     │
+│ Impact timeline varies by driver:   │
+│                                     │
+│ • Operational drivers               │
+│   (Patient Access, Overtime):       │
+│   3-6 months                        │
+│                                     │
+│ • Documentation drivers             │
+│   (Level of Service, Denials):      │
+│   2-4 months                        │
+│                                     │
+│ • Long-term drivers                 │
+│   (Retention, HCC):                 │
+│   12+ months                        │
+│                                     │
+│ 💡 Full value realization typically │
+│    occurs at 12-18 months as        │
+│    utilization matures.             │
+└─────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ALSO UPDATE PDF EXPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If the PDF export currently shows "Payback period", remove it there as well and replace with the same "Time to value" content.
+
+The PDF should show:
+- Cumulative ROI: 4.6x
+- Time to value section with the driver-specific timelines
+- No "Payback period" metric

@@ -3487,16 +3487,33 @@ export default function ObjectiveSelectionScreen({
                                 </table>
                               </div>
                               
-                              <div className="mt-4 p-4 bg-neutral-50 rounded-xl space-y-2" data-testid="roi-summary">
+                              <div className="mt-4 p-4 bg-neutral-50 rounded-xl" data-testid="roi-summary">
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-neutral-600">Cumulative ROI:</span>
                                   <span className="text-lg font-bold font-mono text-neutral-900">{cumulativeRoi.toFixed(1)}x</span>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-neutral-600">Payback period:</span>
-                                  <span className={`text-lg font-bold font-mono ${paybackMonths === null ? 'text-red-600' : 'text-neutral-900'}`}>
-                                    {paybackMonths === null ? 'Not achieved' : paybackMonths === 0 ? 'Immediate' : `${paybackMonths} months`}
-                                  </span>
+                              </div>
+                              
+                              <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100" data-testid="time-to-value">
+                                <h4 className="text-sm font-semibold text-neutral-800 mb-3">Time to value</h4>
+                                <p className="text-sm text-neutral-600 mb-2">Impact timeline varies by driver:</p>
+                                <ul className="space-y-1.5 text-sm text-neutral-600 mb-3">
+                                  <li className="flex items-start gap-2">
+                                    <span className="text-neutral-400 mt-0.5">•</span>
+                                    <span><span className="font-medium">Operational drivers</span> (Patient Access, Overtime): 3-6 months</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <span className="text-neutral-400 mt-0.5">•</span>
+                                    <span><span className="font-medium">Documentation drivers</span> (Level of Service, Denials): 2-4 months</span>
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <span className="text-neutral-400 mt-0.5">•</span>
+                                    <span><span className="font-medium">Long-term drivers</span> (Retention, HCC): 12+ months</span>
+                                  </li>
+                                </ul>
+                                <div className="flex items-start gap-2 pt-2 border-t border-blue-100">
+                                  <Lightbulb className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                                  <p className="text-xs text-neutral-500 italic">Full value realization typically occurs at 12-18 months as utilization matures.</p>
                                 </div>
                               </div>
                             </div>
