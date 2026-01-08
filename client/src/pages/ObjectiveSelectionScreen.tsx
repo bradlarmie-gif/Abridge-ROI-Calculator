@@ -115,7 +115,7 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     id: "patientAccess",
     label: "Patient Access",
     icon: Users,
-    theory: "When providers spend less time on documentation, that time can partially convert into seeing more patients—reducing access bottlenecks and wait times.",
+    theory: "When providers spend less time on documentation, that time can partially convert into seeing more patients—reducing access bottlenecks and wait times. This value assumes patient demand exists to fill additional capacity.",
     calculationSteps: [
       {
         title: "STEP 1: TIME RETURNED",
@@ -139,6 +139,7 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
           { label: "Usable hours", value: "433" },
           { label: "Avg visit duration", value: "30 min" },
           { label: "Additional visits possible", value: "866 visits" },
+          { label: "Assumes sufficient patient demand to fill additional capacity", value: "", note: "warning" },
         ],
       },
       {
@@ -158,7 +159,7 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     id: "wrvu",
     label: "Accurate Level of Service",
     icon: BarChart3,
-    theory: "Better real-time documentation captures the full complexity of care delivered—supporting accurate work RVU (wRVU) documentation and E/M coding, which drives proper reimbursement levels.",
+    theory: "Better real-time documentation captures the full complexity of care delivered—supporting accurate work RVU (wRVU) documentation and E/M coding. More complete documentation allows coding to reflect the work actually performed, improving reimbursement accuracy.",
     calculationSteps: [
       {
         title: "STEP 1: BASELINE wRVU PERFORMANCE",
@@ -186,8 +187,9 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         title: "STEP 4: REVENUE IMPACT",
         steps: [
           { label: "Additional wRVUs captured", value: "4,550" },
-          { label: "Average revenue per wRVU", value: "$50", note: "(typical payer mix)" },
+          { label: "Average revenue per wRVU", value: "$50", note: "(blended: Medicare ~$36-40, Commercial ~$50-80)" },
           { label: "Annual value", value: "$227,500" },
+          { label: "Actual reimbursement varies by payer mix and contracted rates. This uses a blended average.", value: "", note: "warning" },
         ],
       },
     ],
@@ -234,37 +236,38 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     id: "workforce",
     label: "Clinician Retention",
     icon: HeartPulse,
-    theory: "Administrative burden, particularly documentation, drives clinician burnout and turnover. Reducing documentation time improves work-life balance and retention.",
+    theory: "Administrative burden, particularly documentation, drives clinician burnout and turnover. Reducing documentation time improves work-life balance and retention. Note: Retention impact is a longer-term metric, typically measurable after 12+ months.",
     calculationSteps: [
       {
         title: "STEP 1: BASELINE TURNOVER",
         steps: [
           { label: "Total providers", value: "40" },
-          { label: "Annual turnover rate", value: "8%", note: "(typical)" },
-          { label: "Expected departures", value: "3.2 providers/year" },
+          { label: "Annual turnover rate", value: "5%", note: "(typical)" },
+          { label: "Expected departures", value: "2.0 providers/year" },
         ],
       },
       {
         title: "STEP 2: ABRIDGE IMPACT",
         steps: [
-          { label: "Expected departures", value: "3.2" },
+          { label: "Expected departures", value: "2.0" },
           { label: "% due to burnout/workload", value: "40%" },
-          { label: "% preventable with Abridge", value: "50%", note: "(typical)" },
-          { label: "Departures avoided", value: "0.64 per year" },
+          { label: "% preventable with Abridge", value: "40%", note: "(typical)" },
+          { label: "Departures avoided", value: "0.32 per year" },
         ],
       },
       {
         title: "STEP 3: COST SAVINGS",
         steps: [
-          { label: "Departures avoided", value: "0.64" },
+          { label: "Departures avoided", value: "0.32" },
           { label: "Replacement cost per provider", value: "$250,000" },
-          { label: "Annual value", value: "$160,000" },
+          { label: "Annual value", value: "$80,000" },
+          { label: "Impact timeline: Retention improvements typically measurable at 12+ months as turnover is an annual metric.", value: "", note: "info" },
         ],
       },
     ],
     keyVariables: ["Provider count", "Current turnover rate", "% attributable to burnout", "Replacement cost"],
-    rangeData: { conservative: "$100k-150k", typical: "$160k-240k" },
-    referenceValue: 160000,
+    rangeData: { conservative: "$50k-80k", typical: "$80k-120k" },
+    referenceValue: 80000,
   },
   hcc: {
     id: "hcc",
@@ -335,7 +338,7 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     id: "denials",
     label: "Denial Reduction",
     icon: DollarSign,
-    theory: "Incomplete documentation is a leading cause of claim denials. Real-time, complete documentation reduces denial rates and improves revenue cycle performance.",
+    theory: "Incomplete documentation is a leading cause of claim denials, particularly denials deemed unrecoverable due to insufficient medical necessity support. Real-time, complete documentation reduces denial rates by capturing clinical rationale as care is delivered.",
     calculationSteps: [
       {
         title: "STEP 1: BASELINE DENIALS",
@@ -351,20 +354,21 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
           { label: "Revenue denied annually", value: "$520,000" },
           { label: "% documentation-related", value: "30%" },
           { label: "Documentation-driven denials", value: "$156,000" },
+          { label: "These are denials attributed to insufficient or unclear documentation—often unrecoverable due to lack of medical necessity support.", value: "", note: "explanatory" },
         ],
       },
       {
         title: "STEP 3: ABRIDGE PREVENTION",
         steps: [
           { label: "Documentation-driven denials", value: "$156,000" },
-          { label: "% preventable with real-time docs", value: "75%", note: "(typical)" },
-          { label: "Annual value", value: "$117,000" },
+          { label: "% preventable with real-time docs", value: "66%", note: "(typical)" },
+          { label: "Annual value", value: "$103,000" },
         ],
       },
     ],
     keyVariables: ["Annual revenue", "Baseline denial rate", "% documentation-related", "Prevention rate"],
-    rangeData: { conservative: "$120k-180k (5-6%)", typical: "$200k-300k (8-10% high-complexity)" },
-    referenceValue: 117000,
+    rangeData: { conservative: "$70k-100k (5-6%)", typical: "$100k-150k (8-10% high-complexity)" },
+    referenceValue: 103000,
   },
 };
 
