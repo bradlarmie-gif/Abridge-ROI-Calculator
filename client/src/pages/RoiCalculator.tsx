@@ -674,12 +674,9 @@ export default function RoiCalculator({
                     
                     return (
                       <div>
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="mb-3">
                           <span className="text-sm font-semibold text-neutral-500 uppercase tracking-wide">
                             Capacity & Labor
-                          </span>
-                          <span className="text-lg font-semibold text-neutral-900 font-mono">
-                            {formatCurrency(capacityTotal)}
                           </span>
                         </div>
                         <div className="space-y-3">
@@ -763,12 +760,9 @@ export default function RoiCalculator({
                     
                     return (
                       <div>
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="mb-3">
                           <span className="text-sm font-semibold text-neutral-500 uppercase tracking-wide">
                             Revenue & Risk
-                          </span>
-                          <span className="text-lg font-semibold text-neutral-900 font-mono">
-                            {formatCurrency(revenueTotal)}
                           </span>
                         </div>
                         <div className="space-y-3">

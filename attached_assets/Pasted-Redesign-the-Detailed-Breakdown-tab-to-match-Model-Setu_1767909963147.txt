@@ -1,0 +1,146 @@
+Redesign the Detailed Breakdown tab to match Model Setup's style and add driver management:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HEADER SECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Title: "DRIVER DEEP DIVE"
+Subtitle: "Review calculations and adjust assumptions to refine your model"
+
+Add a button in the top-right: "[+ Add Driver]"
+- When clicked, opens a modal to select additional drivers
+- Same functionality as adding drivers in Strategic Priorities
+- This allows users to add drivers without going back
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DRIVER CARDS (Expandable/Collapsible)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each selected driver, show an expandable card:
+
+COLLAPSED STATE:
+┌─────────────────────────────────────────────────────────────┐
+│  ▶ [Driver Name]                            [Dollar Value] │
+└─────────────────────────────────────────────────────────────┘
+
+Clicking anywhere on the card expands it.
+
+EXPANDED STATE:
+┌─────────────────────────────────────────────────────────────┐
+│  ▼ [Driver Name]                            [Dollar Value] │
+│                                                             │
+│  HOW WE CALCULATED THIS                                    │
+│                                                             │
+│  [Show step-by-step calculation with actual values]        │
+│  (Match the format from Value Blueprint)                   │
+│                                                             │
+│  ───────────────────────────────────────────────────────    │
+│                                                             │
+│  ADJUST FOR YOUR ORGANIZATION                              │
+│                                                             │
+│  [Show adjustable inputs - SAME as Fine-Tune section]      │
+│                                                             │
+│  For each adjustable input:                                │
+│  - Input field (number, slider, or text)                   │
+│  - Helper text: "Typical range: X-Y | Blueprint: Z"        │
+│  - "Common pushback: '...'" note (if applicable)           │
+│  - "New value: $[calculated]" that updates in real-time    │
+│                                                             │
+│  💡 Why adjustable? [Explanation of why this matters]      │
+│                                                             │
+│  [Reset to Model Setup]  [Apply Changes]                   │
+│                                                             │
+│  ───────────────────────────────────────────────────────    │
+│                                                             │
+│  [× Remove This Driver] (button to remove from model)      │
+└─────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DETAILED INPUT SPECIFICATIONS BY DRIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PATIENT ACCESS:
+- Minutes saved per encounter
+- Capacity realization factor
+- Average visit duration
+- Revenue per visit
+
+ACCURATE LEVEL OF SERVICE:
+- Baseline wRVU per encounter
+- Documentation quality lift
+- Revenue per wRVU
+
+CLINICIAN RETENTION:
+- Annual turnover rate
+- Replacement cost per provider
+- Note: "Abridge prevention effectiveness is set by posture"
+
+HCC & CHRONIC CONDITION CAPTURE:
+- Medicare Advantage population %
+- Recapture rate
+- Benchmark PMPM
+
+DENIAL REDUCTION:
+- Baseline denial rate
+- Prevention rate
+
+OVERTIME & LOCUM COST AVOIDANCE:
+- After-hours documentation reduction %
+- Blended premium labor rate
+
+(Match exactly what's in the Fine-Tune section from Model Setup)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BEHAVIOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Only one driver can be expanded at a time
+   - Expanding a new driver collapses the previous one
+
+2. When inputs change:
+   - "New value: $[X]" updates in real-time
+   - Live Receipt panel updates
+   - Summary View updates
+
+3. "Apply Changes" button:
+   - Updates the model permanently
+   - Shows brief success message
+   - Card stays expanded
+
+4. "Reset to Model Setup" button:
+   - Reverts to original Model Setup values
+   - Recalculates
+
+5. "[× Remove This Driver]" button:
+   - Removes driver from model
+   - Updates all totals
+   - Shows confirmation: "Driver removed. You can add it back with [+ Add Driver]"
+
+6. "[+ Add Driver]" button in header:
+   - Opens modal showing available drivers (not currently selected)
+   - Same modal as Strategic Priorities
+   - Adding a driver adds it to the list, collapsed by default
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STYLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Match the Model Setup / Value Blueprint styling:
+- Same card borders and shadows
+- Same input field styling
+- Same helper text formatting
+- Same button styles
+- Same collapsible/expandable animations
+- Same color palette (no bright colors)
+
+The page should feel like an extension of Model Setup, but in results mode.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Detailed Breakdown should feel like:
+"I can see exactly how each number was calculated, adjust what I need to, 
+add or remove drivers, and the model updates immediately."
+
+It should be the "expert mode" for refining their business case without leaving the Results page.
