@@ -2889,8 +2889,16 @@ export default function RoiCalculator({
 
                       // Helper for subtle geometric pattern (Abridge brand element)
                       const addGeometricPattern = (isCover = false) => {
-                        doc.setDrawColor(240, 51, 25, 0.08); // Abridge red with low opacity
-                        doc.setLineWidth(0.3);
+                        // Abridge red color (#F03319 = RGB 240, 51, 25)
+                        // Use very light version for subtle pattern (3-4% opacity effect via light color blend)
+                        // Since jsPDF doesn't support stroke opacity directly, we blend the color toward white
+                        // 3.5% opacity of #F03319 on white ≈ RGB(253, 248, 247)
+                        doc.setDrawColor(240, 51, 25); // Abridge red
+                        doc.setLineWidth(0.2);
+                        
+                        // Create a GState for transparency (3.5% opacity)
+                        const gState = new (doc as any).GState({ "stroke-opacity": 0.035 });
+                        doc.setGState(gState);
                         
                         if (isCover) {
                           // Cover page: larger, more prominent pattern in top-right corner
@@ -2942,7 +2950,9 @@ export default function RoiCalculator({
                           }
                         }
                         
-                        // Reset draw color
+                        // Reset to full opacity and neutral color
+                        const resetState = new (doc as any).GState({ "stroke-opacity": 1.0 });
+                        doc.setGState(resetState);
                         doc.setDrawColor(200);
                       };
 
