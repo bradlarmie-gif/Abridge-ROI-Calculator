@@ -126,7 +126,7 @@ export default function RoiCalculator({
   
   // Detailed breakdown state
   const [expandedDriver, setExpandedDriver] = useState<LeverId | null>(null);
-  const [localAdjustments, setLocalAdjustments] = useState<Record<string, number>>({});
+  const [localAdjustments, setLocalAdjustments] = useState<Record<string, number | string>>({});
   const [removedDriverToast, setRemovedDriverToast] = useState<string | null>(null);
   const removedToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -305,8 +305,18 @@ export default function RoiCalculator({
   };
 
   // Helper: get local value or fallback to model
-  const getLocalOrModel = (key: string, modelValue: number) => {
-    return localAdjustments[key] ?? modelValue;
+  const getLocalOrModel = (key: string, modelValue: number): number | string => {
+    const localVal = localAdjustments[key];
+    if (localVal === undefined) return modelValue;
+    return localVal;
+  };
+  
+  // Helper: get numeric value for calculations (treats empty string as 0)
+  const getNumericValue = (key: string, modelValue: number): number => {
+    const localVal = localAdjustments[key];
+    if (localVal === undefined) return modelValue;
+    if (localVal === '' || typeof localVal === 'string') return parseFloat(localVal as string) || 0;
+    return localVal;
   };
 
   // Helper: reset local adjustments
@@ -1043,7 +1053,7 @@ export default function RoiCalculator({
                                   </label>
                                   <div className="flex items-center gap-4 mb-2">
                                     <Slider
-                                      value={[getLocalOrModel("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes)]}
+                                      value={[getNumericValue("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes)]}
                                       onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, avgVisitDurationMinutes: val }))}
                                       min={20}
                                       max={45}
@@ -1061,7 +1071,7 @@ export default function RoiCalculator({
                                     {localAdjustments.avgVisitDurationMinutes !== undefined && (
                                       <p className="text-[#F03319] font-semibold">
                                         New value: {formatCurrency(
-                                          ((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (localAdjustments.avgVisitDurationMinutes / 60)) * getLocalOrModel("avgNetRevenuePerVisit", inputs.patientAccess.avgNetRevenuePerVisit)
+                                          ((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (getNumericValue("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes) / 60)) * getNumericValue("avgNetRevenuePerVisit", inputs.patientAccess.avgNetRevenuePerVisit)
                                         )}
                                       </p>
                                     )}
@@ -1078,7 +1088,7 @@ export default function RoiCalculator({
                                     <Input
                                       type="number"
                                       value={getLocalOrModel("avgNetRevenuePerVisit", inputs.patientAccess.avgNetRevenuePerVisit)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, avgNetRevenuePerVisit: parseFloat(e.target.value) || 0 }))}
+                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, avgNetRevenuePerVisit: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
                                       className="w-32 font-mono"
                                       data-testid="input-revenue-per-visit"
                                     />
@@ -1089,7 +1099,7 @@ export default function RoiCalculator({
                                     {localAdjustments.avgNetRevenuePerVisit !== undefined && (
                                       <p className="text-[#F03319] font-semibold">
                                         New value: {formatCurrency(
-                                          ((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (getLocalOrModel("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes) / 60)) * localAdjustments.avgNetRevenuePerVisit
+                                          ((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (getNumericValue("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes) / 60)) * getNumericValue("avgNetRevenuePerVisit", inputs.patientAccess.avgNetRevenuePerVisit)
                                         )}
                                       </p>
                                     )}
@@ -1199,7 +1209,7 @@ export default function RoiCalculator({
                                     type="number"
                                     step="0.1"
                                     value={getLocalOrModel("baselineWrvuPerEncounter", inputs.baselineWrvuPerEncounter)}
-                                    onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, baselineWrvuPerEncounter: parseFloat(e.target.value) || 0 }))}
+                                    onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, baselineWrvuPerEncounter: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
                                     className="w-32 font-mono"
                                     data-testid="input-baseline-wrvu"
                                   />
@@ -1220,7 +1230,7 @@ export default function RoiCalculator({
                                     <Input
                                       type="number"
                                       value={getLocalOrModel("wrvuConversionFactor", inputs.wrvu.wrvuConversionFactor)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, wrvuConversionFactor: parseFloat(e.target.value) || 0 }))}
+                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, wrvuConversionFactor: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
                                       className="w-32 font-mono"
                                       data-testid="input-wrvu-conversion"
                                     />
@@ -1238,9 +1248,9 @@ export default function RoiCalculator({
                                     <p className="text-sm font-semibold text-green-800">
                                       New value: {formatCurrency(
                                         encountersWithAbridge * 
-                                        getLocalOrModel("baselineWrvuPerEncounter", inputs.baselineWrvuPerEncounter) * 
+                                        getNumericValue("baselineWrvuPerEncounter", inputs.baselineWrvuPerEncounter) * 
                                         (inputs.wrvu.pctIncreaseWrvuPerEncounter / 100) * 
-                                        getLocalOrModel("wrvuConversionFactor", inputs.wrvu.wrvuConversionFactor)
+                                        getNumericValue("wrvuConversionFactor", inputs.wrvu.wrvuConversionFactor)
                                       )}
                                     </p>
                                     <p className="text-xs text-green-600 mt-1">
@@ -1346,7 +1356,7 @@ export default function RoiCalculator({
                                     <Input
                                       type="number"
                                       value={getLocalOrModel("baselineAttritionRate", inputs.workforce.baselineAttritionRate)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, baselineAttritionRate: parseFloat(e.target.value) || 0 }))}
+                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, baselineAttritionRate: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
                                       className="w-24 font-mono"
                                       data-testid="input-turnover-rate"
                                     />
@@ -1368,7 +1378,7 @@ export default function RoiCalculator({
                                     <Input
                                       type="number"
                                       value={getLocalOrModel("costPerDeparture", inputs.workforce.costPerDeparture)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, costPerDeparture: parseFloat(e.target.value) || 0 }))}
+                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, costPerDeparture: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
                                       className="w-40 font-mono"
                                       data-testid="input-replacement-cost"
                                     />
@@ -1382,8 +1392,8 @@ export default function RoiCalculator({
 
                                 {/* Real-time preview */}
                                 {(localAdjustments.baselineAttritionRate !== undefined || localAdjustments.costPerDeparture !== undefined) && (() => {
-                                  const attrRate = getLocalOrModel("baselineAttritionRate", inputs.workforce.baselineAttritionRate);
-                                  const cost = getLocalOrModel("costPerDeparture", inputs.workforce.costPerDeparture);
+                                  const attrRate = getNumericValue("baselineAttritionRate", inputs.workforce.baselineAttritionRate);
+                                  const cost = getNumericValue("costPerDeparture", inputs.workforce.costPerDeparture);
                                   const departures = inputs.workforce.providerCount * (attrRate / 100);
                                   const burnoutDep = departures * (inputs.workforce.pctAttritionLinkedToBurnout / 100);
                                   const avoided = burnoutDep * (inputs.workforce.pctBurnoutExitsAvoided / 100);
@@ -1511,7 +1521,7 @@ export default function RoiCalculator({
                                   </label>
                                   <div className="flex items-center gap-4 mb-2">
                                     <Slider
-                                      value={[getLocalOrModel("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage)]}
+                                      value={[getNumericValue("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage)]}
                                       onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, pctMedicareAdvantage: val }))}
                                       min={5}
                                       max={60}
@@ -1539,7 +1549,7 @@ export default function RoiCalculator({
                                     <Input
                                       type="number"
                                       value={getLocalOrModel("pmpmBenchmark", inputs.hcc.pmpmBenchmark)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, pmpmBenchmark: parseFloat(e.target.value) || 0 }))}
+                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, pmpmBenchmark: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
                                       className="w-32 font-mono"
                                       data-testid="input-pmpm"
                                     />
@@ -1553,8 +1563,8 @@ export default function RoiCalculator({
 
                                 {/* Real-time preview */}
                                 {(localAdjustments.pctMedicareAdvantage !== undefined || localAdjustments.pmpmBenchmark !== undefined) && (() => {
-                                  const maPct = getLocalOrModel("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage);
-                                  const pmpm = getLocalOrModel("pmpmBenchmark", inputs.hcc.pmpmBenchmark);
+                                  const maPct = getNumericValue("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage);
+                                  const pmpm = getNumericValue("pmpmBenchmark", inputs.hcc.pmpmBenchmark);
                                   const maPats = Math.round(uniquePatients * (maPct / 100));
                                   const totalConditions = maPats * inputs.hcc.avgConditionsPerMember;
                                   const missedConditions = totalConditions * (inputs.hcc.pctConditionsMissed / 100);
@@ -1681,7 +1691,7 @@ export default function RoiCalculator({
                                   </label>
                                   <div className="flex items-center gap-4 mb-2">
                                     <Slider
-                                      value={[getLocalOrModel("baselineDenialRate", inputs.denials.baselineDenialRate)]}
+                                      value={[getNumericValue("baselineDenialRate", inputs.denials.baselineDenialRate)]}
                                       onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, baselineDenialRate: val }))}
                                       min={3}
                                       max={12}
@@ -1709,7 +1719,7 @@ export default function RoiCalculator({
                                     <Input
                                       type="number"
                                       value={getLocalOrModel("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, avgRevenuePerEncounter: parseFloat(e.target.value) || 0 }))}
+                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, avgRevenuePerEncounter: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
                                       className="w-32 font-mono"
                                       data-testid="input-avg-revenue"
                                     />
@@ -1722,9 +1732,9 @@ export default function RoiCalculator({
 
                                 {/* Real-time preview */}
                                 {(localAdjustments.baselineDenialRate !== undefined || localAdjustments.avgRevenuePerEncounter !== undefined) && (() => {
-                                  const avgRev = getLocalOrModel("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter);
+                                  const avgRev = getNumericValue("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter);
                                   const revenue = encountersWithAbridge * avgRev;
-                                  const denialRate = getLocalOrModel("baselineDenialRate", inputs.denials.baselineDenialRate);
+                                  const denialRate = getNumericValue("baselineDenialRate", inputs.denials.baselineDenialRate);
                                   const baselineDenied = revenue * (denialRate / 100);
                                   const docDenied = baselineDenied * (inputs.denials.pctDenialsFromDocumentation / 100);
                                   const newValue = docDenied * (inputs.denials.pctDocDenialsRecovered / 100);
@@ -1845,7 +1855,7 @@ export default function RoiCalculator({
                                   </label>
                                   <div className="flex items-center gap-4 mb-2">
                                     <Slider
-                                      value={[getLocalOrModel("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced)]}
+                                      value={[getNumericValue("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced)]}
                                       onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, pctOvertimeReduced: val }))}
                                       min={5}
                                       max={50}
@@ -1873,7 +1883,7 @@ export default function RoiCalculator({
                                     <Input
                                       type="number"
                                       value={getLocalOrModel("blendedOvertimeRate", inputs.overtime.blendedOvertimeRate)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, blendedOvertimeRate: parseFloat(e.target.value) || 0 }))}
+                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, blendedOvertimeRate: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
                                       className="w-32 font-mono"
                                       data-testid="input-ot-rate"
                                     />
@@ -1887,8 +1897,8 @@ export default function RoiCalculator({
 
                                 {/* Real-time preview */}
                                 {(localAdjustments.pctOvertimeReduced !== undefined || localAdjustments.blendedOvertimeRate !== undefined) && (() => {
-                                  const otPct = getLocalOrModel("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced);
-                                  const otRate = getLocalOrModel("blendedOvertimeRate", inputs.overtime.blendedOvertimeRate);
+                                  const otPct = getNumericValue("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced);
+                                  const otRate = getNumericValue("blendedOvertimeRate", inputs.overtime.blendedOvertimeRate);
                                   const otHoursAvoided = afterHoursReclaimed * (otPct / 100);
                                   const newValue = otHoursAvoided * otRate;
                                   return (
