@@ -1,0 +1,471 @@
+In the "Detailed Breakdown" tab, create the main structure:
+
+HEADER SECTION:
+Title: "DRIVER DEEP DIVE"
+Subtitle: "Review calculations and adjust assumptions based on your organization's specifics"
+
+Style: Same header styling as Summary View
+
+MAIN CONTENT:
+Below the header, create an expandable/collapsible card for EACH driver that's currently in the model.
+
+Each driver card should show:
+
+COLLAPSED STATE (default):
+- Driver icon and name on the left
+- Dollar value on the right (bold, large)
+- Expand arrow icon (▶) on far right
+- Entire card is clickable to expand
+
+EXPANDED STATE (when clicked):
+- Arrow rotates to (▼)
+- Shows full content (we'll build this in next steps)
+- Click again to collapse
+
+LAYOUT:
+- Stack driver cards vertically with spacing between them
+- Cards should have subtle border and shadow
+- Smooth expand/collapse animation
+- Only one card can be expanded at a time (clicking another collapses the previous)
+
+INITIAL DRIVERS TO SHOW:
+Loop through the selected drivers from the model and create a card for each:
+- Patient Access
+- Level of Service  
+- Clinician Retention (if added)
+- HCC Capture (if added)
+- Denial Reduction (if added)
+- Overtime Cost Avoidance (if added)
+
+Pull the current calculated value for each from the model state.
+
+STYLE:
+- Match the expandable card style from Value Blueprint
+- Smooth transitions
+- Clear visual hierarchy
+- Good hit area for clicking
+
+Build the expanded content for the PATIENT ACCESS driver card.
+
+When expanded, show three main sections:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 1: HOW WE CALCULATED THIS
+
+Title: "HOW WE CALCULATED THIS"
+
+Show the step-by-step calculation:
+
+Step 1: Time Returned
+"[X] min saved × [Y] encounters = [Z] hours"
+(Pull X from model, Y from eligible encounters, calculate Z)
+
+Step 2: Realized Capacity  
+"[Z] hours × [R]% realization = [U] usable hours"
+(Pull R from model's realization factor, calculate U)
+
+Step 3: New Visit Capacity
+"[U] hours ÷ [V] min per visit = [W] new visits"
+(Pull V from model's visit length, calculate W)
+
+Step 4: Revenue Impact
+"[W] visits × $[P] per visit = $[TOTAL]"
+(Pull P from model's revenue per visit, calculate TOTAL)
+
+Format:
+- Each step on its own line with subtle spacing
+- Use monospace or code-style font for the calculations
+- Bold the step titles
+- Gray text for the calculations
+- Results in the accent color
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 2: ADJUST FOR YOUR ORGANIZATION
+
+Title: "ADJUST FOR YOUR ORGANIZATION"
+
+Create two adjustable inputs:
+
+INPUT 1: Average visit length
+Label: "Average visit length"
+Component: Range slider from 20 to 45 minutes
+Current value: [show current value] minutes
+Default from model: 30 minutes
+
+Below slider:
+"Common pushback: 'Our visits are longer'"
+"Impact: Longer visits → fewer new visit slots"
+"New value: $[CALCULATED]" (updates in real-time as slider moves)
+
+INPUT 2: Revenue per visit  
+Label: "Revenue per visit"
+Component: Text input field with $ prefix
+Current value: [show current value]
+Default from model: $200
+
+Below input:
+"Common pushback: 'Our reimbursement is different'"
+"What this is: Net collectible revenue per completed visit"
+"New value: $[CALCULATED]" (updates in real-time as they type)
+
+Format:
+- Each input in its own subsection with spacing
+- Labels in bold
+- Slider with clear markers at 20, 30, 45
+- Current value display next to slider
+- Helper text in gray
+- "New value" in accent color, bold
+- Real-time calculation updates
+
+At bottom of section:
+"💡 Why adjustable? These are organization-specific and leadership may have different assumptions"
+
+Buttons:
+[Reset to Model Setup] [Apply Changes]
+
+Format:
+- "Reset" button: secondary style (outlined)
+- "Apply Changes" button: primary style (filled, accent color)
+- Side by side with spacing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEHAVIOR:
+- When slider or input changes, immediately recalculate the "New value"
+- Show the updated calculation in real-time but don't save to model yet
+- When "Apply Changes" is clicked:
+  - Update the model state with new values
+  - Recalculate driver value
+  - Update Summary View totals
+  - Show a brief success message
+  - Keep card expanded
+- When "Reset to Model Setup" is clicked:
+  - Revert to original Model Setup values
+  - Recalculate with original values
+  - Update display
+
+STYLE:
+- Generous padding in each section
+- Visual separation between sections (divider lines)
+- Helper text in smaller, gray font
+- Interactive elements clearly styled
+- Match existing form input styles from Model Setup
+
+Build the expanded content for the LEVEL OF SERVICE driver card.
+
+Use the same three-section structure as Patient Access:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 1: HOW WE CALCULATED THIS
+
+Step 1: Baseline wRVU Performance
+"[E] encounters × [B] wRVU = [C] current wRVUs"
+(E = eligible encounters, B = baseline wRVU per encounter, calculate C)
+
+Step 2: Documentation Quality Lift  
+"[L]% improvement (typical)"
+(L = doc quality lift percentage from model)
+
+Step 3: Additional wRVUs
+"[C] × [L]% = [A] additional wRVUs"
+(Calculate A)
+
+Step 4: Revenue Impact
+"[A] wRVUs × $[R] per wRVU = $[TOTAL]"
+(R = revenue per wRVU from model, calculate TOTAL)
+
+Same formatting as Patient Access calculation section.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 2: ADJUST FOR YOUR ORGANIZATION
+
+INPUT 1: Baseline wRVU per encounter
+Label: "Baseline wRVU per encounter"
+Component: Text input field
+Current value: [show current value]
+Default from model: 1.75
+
+Below input:
+"Common pushback: 'Our complexity is different'"
+"What this is: Current average work RVU per visit"
+"Tip: Check your MGMA data or billing reports"
+"New value: $[CALCULATED]"
+
+INPUT 2: Revenue per wRVU
+Label: "Revenue per wRVU"  
+Component: Text input field with $ prefix
+Current value: [show current value]
+Default from model: $50
+
+Below input:
+"Common pushback: 'Our payer mix is different'"
+"What this is: Blended average across all payers"
+"Tip: Medicare ≈$36-40, Commercial ≈$50-80"
+"New value: $[CALCULATED]"
+
+Same helper text format as Patient Access.
+
+Bottom note:
+"💡 Why adjustable? Payer mix and case complexity vary"
+
+Buttons:
+[Reset to Model Setup] [Apply Changes]
+
+Same button styling and behavior as Patient Access.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEHAVIOR:
+Same real-time calculation and update logic as Patient Access:
+- Live calculation preview
+- Apply changes updates model
+- Reset reverts to original
+- Updates propagate to Summary View
+
+Build the expanded content for the CLINICIAN RETENTION driver card (if this driver is in the model).
+
+Same three-section structure:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 1: HOW WE CALCULATED THIS
+
+Step 1: Baseline Turnover
+"[P] providers × [T]% turnover = [D] expected departures/year"
+(P = providers, T = turnover rate, calculate D)
+
+Step 2: Abridge Impact  
+"[D] departures × [B]% due to burnout × [A]% preventable = [V] departures avoided"
+(B = burnout attribution %, A = Abridge prevention %, calculate V)
+
+Step 3: Cost Savings
+"[V] departures avoided × $[C] replacement cost = $[TOTAL]"
+(C = cost per provider replacement, calculate TOTAL)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 2: ADJUST FOR YOUR ORGANIZATION
+
+INPUT 1: Annual turnover rate
+Label: "Annual turnover rate"
+Component: Text input field with % suffix
+Current value: [show current value]
+Default from model: 8%
+
+Below input:
+"Common pushback: 'Our turnover is higher/lower'"
+"What this is: Percentage of providers who leave annually"
+"New value: $[CALCULATED]"
+
+INPUT 2: Replacement cost per provider
+Label: "Replacement cost per provider"
+Component: Text input field with $ prefix  
+Current value: [show current value]
+Default from model: $250,000
+
+Below input:
+"Common pushback: 'Our replacement costs differ'"
+"What this is: Total cost to recruit, onboard, and ramp a new provider"
+"Tip: Includes recruiting, training, lost productivity, coverage costs"
+"New value: $[CALCULATED]"
+
+Bottom note:
+"💡 Why adjustable? Turnover rates and replacement costs vary by organization and specialty"
+
+Buttons:
+[Reset to Model Setup] [Apply Changes]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same behavior as previous drivers.
+
+Build the expanded content for the HCC & CHRONIC CONDITION CAPTURE driver card (if this driver is in the model).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 1: HOW WE CALCULATED THIS
+
+Step 1: Identify MA Population
+"[E] total encounters ÷ 2.5 visits = [U] unique patients"
+"[U] × [M]% MA = [P] MA patients"
+(E = eligible encounters, M = MA percentage, calculate P)
+
+Step 2: Diagnostic Gap
+"[P] patients × [C] conditions per patient = [T] expected conditions"
+"[T] × [G]% gap = [D] conditions missed"
+(C = conditions per patient, G = doc gap %, calculate D)
+
+Step 3: Abridge Recapture  
+"[D] missed × [R]% recapture = [N] conditions documented"
+(R = recapture rate, calculate N)
+
+Step 4: RAF Score Impact
+"[N] conditions × 0.25 RAF weight = [F] RAF points"
+"[P] patients × 0.09 RAF increase = RAF impact"
+
+Step 5: Revenue Impact
+"[P] patients × $[I] incremental annual revenue = $[TOTAL]"
+(I = calculated per-patient revenue increase, calculate TOTAL)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 2: ADJUST FOR YOUR ORGANIZATION
+
+INPUT 1: Medicare Advantage percentage
+Label: "Medicare Advantage percentage"
+Component: Range slider from 5% to 50%
+Current value: [show current value]
+Default from model: 15%
+
+Below slider:
+"Common pushback: 'Our MA population is different'"
+"What this is: Percentage of patients in Medicare Advantage plans"
+"New value: $[CALCULATED]"
+
+INPUT 2: Benchmark PMPM
+Label: "Benchmark PMPM rate"
+Component: Text input field with $ prefix
+Current value: [show current value]  
+Default from model: $1,000
+
+Below input:
+"Common pushback: 'Our capitation rates differ'"
+"What this is: Average per-member-per-month payment rate"
+"Tip: This is county/region-specific, typically $900-$1,400"
+"New value: $[CALCULATED]"
+
+Bottom note:
+"💡 Why adjustable? MA population and regional payment rates vary significantly"
+
+Buttons:
+[Reset to Model Setup] [Apply Changes]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same behavior as previous drivers.
+
+Build the expanded content for the DENIAL REDUCTION driver card (if this driver is in the model).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 1: HOW WE CALCULATED THIS
+
+Step 1: Baseline Denials
+"[E] encounters × $[R] revenue = $[T] total revenue"
+"$[T] × [D]% denial rate = $[B] denied annually"
+(E = encounters, R = revenue per visit, D = denial rate, calculate B)
+
+Step 2: Documentation-Related Denials
+"$[B] × [P]% documentation-related = $[L] doc denials"
+(P = doc-related percentage, calculate L)
+
+Step 3: Abridge Prevention  
+"$[L] × [V]% preventable = $[TOTAL]"
+(V = prevention rate, calculate TOTAL)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 2: ADJUST FOR YOUR ORGANIZATION
+
+INPUT 1: Baseline denial rate
+Label: "Baseline denial rate"
+Component: Range slider from 3% to 12%
+Current value: [show current value]
+Default from model: 5%
+
+Below slider:
+"Common pushback: 'Our denial rate is different'"
+"What this is: Percentage of submitted claims initially denied"
+"New value: $[CALCULATED]"
+
+INPUT 2: Average revenue per visit
+Label: "Average revenue per visit"
+Component: Text input field with $ prefix
+Current value: [show current value]
+Default from model: $200
+
+Below input:
+"Common pushback: 'Our reimbursement is different'"
+"What this is: Net collectible revenue per visit"
+"New value: $[CALCULATED]"
+
+Bottom note:
+"💡 Why adjustable? Denial rates vary by specialty and payer mix"
+
+Buttons:
+[Reset to Model Setup] [Apply Changes]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same behavior as previous drivers.
+
+Build the expanded content for the OVERTIME & LOCUM COST AVOIDANCE driver card (if this driver is in the model).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 1: HOW WE CALCULATED THIS
+
+Step 1: Hours Returned
+"[M] min saved × [E] encounters = [H] hours"
+(M = minutes saved, E = encounters, calculate H)
+
+Step 2: After-Hours Reduction
+"[H] hours × [A]% after-hours = [P] premium hours avoided"
+(A = after-hours percentage, calculate P)
+
+Step 3: Cost Savings  
+"[P] hours × $[B] blended rate = $[TOTAL]"
+(B = blended premium rate, calculate TOTAL)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 2: ADJUST FOR YOUR ORGANIZATION
+
+INPUT 1: Blended premium labor rate
+Label: "Blended premium labor rate"
+Component: Text input field with $/hr
+Current value: [show current value]
+Default from model: $145/hr
+
+Below input:
+"Common pushback: 'Our premium rates are different'"
+"What this is: Average hourly cost for overtime/locum coverage"
+"Tip: Mix of staff overtime ($40-50/hr) and provider locums ($150-300/hr)"
+"New value: $[CALCULATED]"
+
+INPUT 2: After-hours documentation percentage
+Label: "After-hours documentation %"
+Component: Range slider from 10% to 40%
+Current value: [show current value]
+Default from model: 20%
+
+Below slider:
+"Common pushback: 'Our after-hours work is different'"
+"What this is: Portion of documentation that triggers premium pay"
+"New value: $[CALCULATED]"
+
+Bottom note:
+"💡 Why adjustable? Premium labor usage varies by organization and staffing model"
+
+Buttons:
+[Reset to Model Setup] [Apply Changes]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same behavior as previous drivers.
+
+Ensure the Detailed Breakdown tab maintains visual consistency:
+- Card expand/collapse animations are smooth
+- Calculation steps are clearly formatted and easy to read
+- Input fields match Model Setup styling
+- Sliders are intuitive with clear value display
+- Helper text is consistently styled (gray, smaller font)
+- "New value" displays are prominent (accent color, bold)
+- Buttons are consistently styled
+- Spacing and padding match Value Blueprint section
+- The tone of "Common pushback" text is conversational and helpful
+- All calculations update in real-time without lag
