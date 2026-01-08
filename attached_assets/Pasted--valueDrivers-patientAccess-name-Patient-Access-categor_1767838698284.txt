@@ -1,0 +1,230 @@
+{
+  "valueDrivers": {
+    "patientAccess": {
+      "name": "Patient Access",
+      "category": "CAPACITY & LABOR",
+      "icon": "👥",
+      "referenceValue": 173200,
+      "theory": "When providers spend less time on documentation, that time can partially convert into seeing more patients—reducing access bottlenecks and wait times.",
+      "calculationSteps": [
+        {
+          "title": "STEP 1: TIME RETURNED",
+          "rows": [
+            {"label": "Minutes saved per encounter", "value": "2.5 min", "note": "(typical)"},
+            {"label": "Documented encounters", "value": "52,000"},
+            {"label": "Hours returned annually", "value": "2,167 hrs"}
+          ]
+        },
+        {
+          "title": "STEP 2: REALIZED CAPACITY",
+          "rows": [
+            {"label": "Not all time becomes new visits", "value": "", "note": "(admin, rest, etc)"},
+            {"label": "Realization factor", "value": "20%", "note": "(typical)"},
+            {"label": "Usable hours", "value": "433 hrs"}
+          ]
+        },
+        {
+          "title": "STEP 3: NEW VISIT CAPACITY",
+          "rows": [
+            {"label": "Usable hours", "value": "433"},
+            {"label": "Avg visit duration", "value": "30 min"},
+            {"label": "Additional visits possible", "value": "866 visits"}
+          ]
+        },
+        {
+          "title": "STEP 4: REVENUE IMPACT",
+          "rows": [
+            {"label": "Additional visits", "value": "866"},
+            {"label": "Net revenue per visit", "value": "$200"},
+            {"label": "Annual value", "value": "$173,200"}
+          ]
+        }
+      ],
+      "keyVariables": ["Provider count", "Visit volume", "Revenue per visit", "Capacity conversion %"],
+      "rangeCustomers": "Conservative: $80k-120k    Typical: $150k-200k"
+    },
+    
+    "levelOfService": {
+      "name": "Accurate Level of Service",
+      "category": "REVENUE & RISK",
+      "icon": "📋",
+      "referenceValue": 312000,
+      "theory": "Better real-time documentation captures the full complexity of care delivered—supporting accurate E/M levels and reducing billing errors.",
+      "calculationSteps": [
+        {
+          "title": "STEP 1: DOCUMENTATION QUALITY LIFT",
+          "rows": [
+            {"label": "Improvement in level-of-service alignment", "value": "3%", "note": "(typical)"}
+          ]
+        },
+        {
+          "title": "STEP 2: REVENUE CAPTURED",
+          "rows": [
+            {"label": "Documented encounters", "value": "52,000"},
+            {"label": "Average revenue per visit", "value": "$200"},
+            {"label": "Quality lift", "value": "3%"},
+            {"label": "Annual value", "value": "$312,000"}
+          ]
+        }
+      ],
+      "keyVariables": ["Visit volume", "Revenue per visit", "Documentation quality lift %"],
+      "rangeCustomers": "Conservative: 2% lift    Typical: 3% lift    Aggressive: 5% lift"
+    },
+    
+    "clinicianRetention": {
+      "name": "Clinician Retention",
+      "category": "CAPACITY & LABOR",
+      "icon": "🏥",
+      "referenceValue": 160000,
+      "theory": "Administrative burden, particularly documentation, drives clinician burnout and turnover. Reducing documentation time improves work-life balance and retention.",
+      "calculationSteps": [
+        {
+          "title": "STEP 1: BASELINE TURNOVER",
+          "rows": [
+            {"label": "Total providers", "value": "40"},
+            {"label": "Annual turnover rate", "value": "8%", "note": "(typical)"},
+            {"label": "Expected departures", "value": "3.2 providers/year"}
+          ]
+        },
+        {
+          "title": "STEP 2: ABRIDGE IMPACT",
+          "rows": [
+            {"label": "Expected departures", "value": "3.2"},
+            {"label": "% due to burnout/workload", "value": "40%"},
+            {"label": "% preventable with Abridge", "value": "50%", "note": "(typical)"},
+            {"label": "Departures avoided", "value": "0.64 per year"}
+          ]
+        },
+        {
+          "title": "STEP 3: COST SAVINGS",
+          "rows": [
+            {"label": "Departures avoided", "value": "0.64"},
+            {"label": "Replacement cost per provider", "value": "$250,000"},
+            {"label": "Annual value", "value": "$160,000"}
+          ]
+        }
+      ],
+      "keyVariables": ["Provider count", "Current turnover rate", "% attributable to burnout", "Replacement cost"],
+      "rangeCustomers": "Conservative: $100k-150k    Typical: $160k-240k"
+    },
+    
+    "hccCapture": {
+      "name": "HCC & Chronic Condition Capture",
+      "category": "REVENUE & RISK",
+      "icon": "📊",
+      "referenceValue": 212000,
+      "theory": "For Medicare Advantage patients, complete documentation of chronic conditions drives Risk Adjustment Factor (RAF) scores, which determine capitated payments.",
+      "calculationSteps": [
+        {
+          "title": "STEP 1: IDENTIFY MA POPULATION",
+          "rows": [
+            {"label": "Total annual encounters", "value": "52,000"},
+            {"label": "% Medicare Advantage patients", "value": "15%", "note": "(typical)"},
+            {"label": "MA encounters annually", "value": "7,800"},
+            {"label": "Unique MA patients", "value": "3,120"}
+          ]
+        },
+        {
+          "title": "STEP 2: DIAGNOSTIC GAP",
+          "rows": [
+            {"label": "Unique MA patients", "value": "3,120"},
+            {"label": "Avg conditions per patient", "value": "1.5"},
+            {"label": "Total expected conditions", "value": "4,680"},
+            {"label": "Documentation gap rate", "value": "33%"},
+            {"label": "Conditions missed annually", "value": "1,544"}
+          ]
+        },
+        {
+          "title": "STEP 3: ABRIDGE RECAPTURE",
+          "rows": [
+            {"label": "Conditions missed", "value": "1,544"},
+            {"label": "Recapture rate", "value": "60%", "note": "(typical)"},
+            {"label": "Conditions newly documented", "value": "927"}
+          ]
+        },
+        {
+          "title": "STEP 4: RAF & REVENUE IMPACT",
+          "rows": [
+            {"label": "Conditions recaptured", "value": "927"},
+            {"label": "Avg RAF points per condition", "value": "0.015"},
+            {"label": "Member-level revenue calculation", "value": "$212,000"}
+          ]
+        }
+      ],
+      "keyVariables": ["% MA patients", "Conditions per member", "Documentation gap", "Recapture rate"],
+      "rangeCustomers": "Low MA (10%): $80k-120k    Typical (15-20%): $180k-250k"
+    },
+    
+    "denialReduction": {
+      "name": "Denial Reduction",
+      "category": "REVENUE & RISK",
+      "icon": "💰",
+      "referenceValue": 117000,
+      "theory": "Incomplete documentation is a leading cause of claim denials. Real-time, complete documentation reduces denial rates and improves revenue cycle performance.",
+      "calculationSteps": [
+        {
+          "title": "STEP 1: BASELINE DENIALS",
+          "rows": [
+            {"label": "Total annual revenue", "value": "$10,400,000"},
+            {"label": "Baseline denial rate", "value": "5%", "note": "(typical)"},
+            {"label": "Revenue denied annually", "value": "$520,000"}
+          ]
+        },
+        {
+          "title": "STEP 2: DOCUMENTATION-RELATED",
+          "rows": [
+            {"label": "Revenue denied annually", "value": "$520,000"},
+            {"label": "% documentation-related", "value": "30%"},
+            {"label": "Documentation-driven denials", "value": "$156,000"}
+          ]
+        },
+        {
+          "title": "STEP 3: ABRIDGE PREVENTION",
+          "rows": [
+            {"label": "Documentation-driven denials", "value": "$156,000"},
+            {"label": "% preventable with real-time docs", "value": "75%", "note": "(typical)"},
+            {"label": "Annual value", "value": "$117,000"}
+          ]
+        }
+      ],
+      "keyVariables": ["Annual revenue", "Baseline denial rate", "% documentation-related", "Prevention rate"],
+      "rangeCustomers": "Typical (5-6%): $120k-180k    High-complexity (8-10%): $200k-300k"
+    },
+    
+    "overtimeCostAvoidance": {
+      "name": "Overtime & Locum Cost Avoidance",
+      "category": "CAPACITY & LABOR",
+      "icon": "⏰",
+      "referenceValue": 185000,
+      "theory": "Documentation backlog drives premium labor costs (overtime, locums). Reducing documentation time decreases reliance on premium labor.",
+      "calculationSteps": [
+        {
+          "title": "STEP 1: HOURS RETURNED",
+          "rows": [
+            {"label": "Minutes saved per encounter", "value": "2.5 min"},
+            {"label": "Documented encounters", "value": "52,000"},
+            {"label": "Total hours returned", "value": "2,167 hrs"}
+          ]
+        },
+        {
+          "title": "STEP 2: AFTER-HOURS REDUCTION",
+          "rows": [
+            {"label": "Total hours returned", "value": "2,167 hrs"},
+            {"label": "% after-hours documentation", "value": "20%", "note": "(typical)"},
+            {"label": "Premium labor hours avoided", "value": "433 hrs"}
+          ]
+        },
+        {
+          "title": "STEP 3: COST SAVINGS",
+          "rows": [
+            {"label": "Premium hours avoided", "value": "433"},
+            {"label": "Blended premium rate", "value": "$145-250/hr"},
+            {"label": "Annual value", "value": "$185,000"}
+          ]
+        }
+      ],
+      "keyVariables": ["Hours returned", "% after-hours work", "Overtime rates", "Locum rates"],
+      "rangeCustomers": "Typical: $100k-180k    High premium labor: $180k-300k"
+    }
+  }
+}

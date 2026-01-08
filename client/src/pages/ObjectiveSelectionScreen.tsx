@@ -116,23 +116,23 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     theory: "When providers spend less time on documentation, that time can partially convert into seeing more patients—reducing access bottlenecks and wait times.",
     calculationSteps: [
       {
-        title: "Step 1: Time Returned",
+        title: "STEP 1: TIME RETURNED",
         steps: [
-          { label: "Minutes saved per encounter", value: "2.5 min", note: "typical" },
+          { label: "Minutes saved per encounter", value: "2.5 min", note: "(typical)" },
           { label: "Documented encounters", value: "52,000" },
           { label: "Hours returned annually", value: "2,167 hrs" },
         ],
       },
       {
-        title: "Step 2: Realized Capacity",
+        title: "STEP 2: REALIZED CAPACITY",
         steps: [
-          { label: "Not all time becomes new visits", value: "(admin, rest, etc)" },
-          { label: "Realization factor", value: "20%", note: "typical" },
+          { label: "Not all time becomes new visits", value: "", note: "(admin, rest, etc)" },
+          { label: "Realization factor", value: "20%", note: "(typical)" },
           { label: "Usable hours", value: "433 hrs" },
         ],
       },
       {
-        title: "Step 3: New Visit Capacity",
+        title: "STEP 3: NEW VISIT CAPACITY",
         steps: [
           { label: "Usable hours", value: "433" },
           { label: "Avg visit duration", value: "30 min" },
@@ -140,7 +140,7 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         ],
       },
       {
-        title: "Step 4: Revenue Impact",
+        title: "STEP 4: REVENUE IMPACT",
         steps: [
           { label: "Additional visits", value: "866" },
           { label: "Net revenue per visit", value: "$200" },
@@ -159,13 +159,13 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     theory: "Better real-time documentation captures the full complexity of care delivered—supporting accurate E/M levels and reducing billing errors.",
     calculationSteps: [
       {
-        title: "Step 1: Documentation Quality Lift",
+        title: "STEP 1: DOCUMENTATION QUALITY LIFT",
         steps: [
-          { label: "Improvement in level-of-service alignment", value: "3%", note: "typical" },
+          { label: "Improvement in level-of-service alignment", value: "3%", note: "(typical)" },
         ],
       },
       {
-        title: "Step 2: Revenue Captured",
+        title: "STEP 2: REVENUE CAPTURED",
         steps: [
           { label: "Documented encounters", value: "52,000" },
           { label: "Average revenue per visit", value: "$200" },
@@ -180,113 +180,155 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
   },
   overtime: {
     id: "overtime",
-    label: "Overtime & Locum Cost Savings",
+    label: "Overtime & Locum Cost Avoidance",
     icon: Clock,
-    theory: "Documentation burden extends the workday. By reducing after-hours charting, organizations can decrease overtime costs and reduce reliance on expensive locum coverage.",
+    theory: "Documentation backlog drives premium labor costs (overtime, locums). Reducing documentation time decreases reliance on premium labor.",
     calculationSteps: [
       {
-        title: "Step 1: Overtime Reduction",
+        title: "STEP 1: HOURS RETURNED",
         steps: [
-          { label: "Hours saved per provider/week", value: "2 hrs" },
-          { label: "Providers affected", value: "40" },
-          { label: "Weeks per year", value: "48" },
-          { label: "Total overtime hours avoided", value: "3,840 hrs" },
+          { label: "Minutes saved per encounter", value: "2.5 min" },
+          { label: "Documented encounters", value: "52,000" },
+          { label: "Total hours returned", value: "2,167 hrs" },
         ],
       },
       {
-        title: "Step 2: Cost Impact",
+        title: "STEP 2: AFTER-HOURS REDUCTION",
         steps: [
-          { label: "Overtime rate premium", value: "$75/hr" },
-          { label: "Annual savings", value: "$288,000" },
+          { label: "Total hours returned", value: "2,167 hrs" },
+          { label: "% after-hours documentation", value: "20%", note: "(typical)" },
+          { label: "Premium labor hours avoided", value: "433 hrs" },
+        ],
+      },
+      {
+        title: "STEP 3: COST SAVINGS",
+        steps: [
+          { label: "Premium hours avoided", value: "433" },
+          { label: "Blended premium rate", value: "$145-250/hr" },
+          { label: "Annual value", value: "$185,000" },
         ],
       },
     ],
-    keyVariables: ["Provider count", "Overtime rate", "Hours reduced per week"],
-    rangeData: { conservative: "$100k-200k", typical: "$250k-350k" },
-    referenceValue: 288000,
+    keyVariables: ["Hours returned", "% after-hours work", "Overtime rates", "Locum rates"],
+    rangeData: { conservative: "$100k-180k", typical: "$180k-300k" },
+    referenceValue: 185000,
   },
   workforce: {
     id: "workforce",
     label: "Clinician Retention",
     icon: HeartPulse,
-    theory: "Documentation burden is a leading driver of clinician burnout. Reducing this burden improves satisfaction and reduces costly turnover.",
+    theory: "Administrative burden, particularly documentation, drives clinician burnout and turnover. Reducing documentation time improves work-life balance and retention.",
     calculationSteps: [
       {
-        title: "Step 1: Turnover Impact",
+        title: "STEP 1: BASELINE TURNOVER",
         steps: [
-          { label: "Baseline annual turnover rate", value: "8%" },
-          { label: "Providers", value: "40" },
-          { label: "Expected departures/year", value: "3.2" },
+          { label: "Total providers", value: "40" },
+          { label: "Annual turnover rate", value: "8%", note: "(typical)" },
+          { label: "Expected departures", value: "3.2 providers/year" },
         ],
       },
       {
-        title: "Step 2: Retention Improvement",
+        title: "STEP 2: ABRIDGE IMPACT",
         steps: [
-          { label: "Turnover reduction with Abridge", value: "25%" },
-          { label: "Departures avoided", value: "0.8" },
-          { label: "Cost per departure", value: "$250,000" },
-          { label: "Annual savings", value: "$200,000" },
+          { label: "Expected departures", value: "3.2" },
+          { label: "% due to burnout/workload", value: "40%" },
+          { label: "% preventable with Abridge", value: "50%", note: "(typical)" },
+          { label: "Departures avoided", value: "0.64 per year" },
+        ],
+      },
+      {
+        title: "STEP 3: COST SAVINGS",
+        steps: [
+          { label: "Departures avoided", value: "0.64" },
+          { label: "Replacement cost per provider", value: "$250,000" },
+          { label: "Annual value", value: "$160,000" },
         ],
       },
     ],
-    keyVariables: ["Provider count", "Turnover rate", "Replacement cost", "Retention improvement"],
-    rangeData: { conservative: "$100k-150k", typical: "$175k-250k" },
-    referenceValue: 200000,
+    keyVariables: ["Provider count", "Current turnover rate", "% attributable to burnout", "Replacement cost"],
+    rangeData: { conservative: "$100k-150k", typical: "$160k-240k" },
+    referenceValue: 160000,
   },
   hcc: {
     id: "hcc",
     label: "HCC & Chronic Condition Capture",
     icon: Target,
-    theory: "More complete clinical documentation improves risk adjustment accuracy, ensuring appropriate reimbursement for the complexity of patients served.",
+    theory: "For Medicare Advantage patients, complete documentation of chronic conditions drives Risk Adjustment Factor (RAF) scores, which determine capitated payments.",
     calculationSteps: [
       {
-        title: "Step 1: Population at Risk",
+        title: "STEP 1: IDENTIFY MA POPULATION",
         steps: [
-          { label: "Medicare Advantage patients", value: "30%", note: "of volume" },
-          { label: "Documented encounters", value: "52,000" },
-          { label: "MA encounters", value: "15,600" },
+          { label: "Total annual encounters", value: "52,000" },
+          { label: "% Medicare Advantage patients", value: "15%", note: "(typical)" },
+          { label: "MA encounters annually", value: "7,800" },
+          { label: "Unique MA patients", value: "3,120" },
         ],
       },
       {
-        title: "Step 2: RAF Improvement",
+        title: "STEP 2: DIAGNOSTIC GAP",
         steps: [
-          { label: "Baseline RAF gap", value: "5%" },
-          { label: "Documentation improvement", value: "40%" },
-          { label: "Revenue per RAF point", value: "$1,000" },
-          { label: "Annual value", value: "$312,000" },
+          { label: "Unique MA patients", value: "3,120" },
+          { label: "Avg conditions per patient", value: "1.5" },
+          { label: "Total expected conditions", value: "4,680" },
+          { label: "Documentation gap rate", value: "33%" },
+          { label: "Conditions missed annually", value: "1,544" },
+        ],
+      },
+      {
+        title: "STEP 3: ABRIDGE RECAPTURE",
+        steps: [
+          { label: "Conditions missed", value: "1,544" },
+          { label: "Recapture rate", value: "60%", note: "(typical)" },
+          { label: "Conditions newly documented", value: "927" },
+        ],
+      },
+      {
+        title: "STEP 4: RAF & REVENUE IMPACT",
+        steps: [
+          { label: "Conditions recaptured", value: "927" },
+          { label: "Avg RAF points per condition", value: "0.015" },
+          { label: "Member-level revenue calculation", value: "$212,000" },
         ],
       },
     ],
-    keyVariables: ["MA patient %", "Baseline RAF gap", "Documentation improvement %"],
-    rangeData: { conservative: "$150k-250k", typical: "$300k-400k" },
-    referenceValue: 312000,
+    keyVariables: ["% MA patients", "Conditions per member", "Documentation gap", "Recapture rate"],
+    rangeData: { conservative: "$80k-120k (Low MA 10%)", typical: "$180k-250k (15-20% MA)" },
+    referenceValue: 212000,
   },
   denials: {
     id: "denials",
-    label: "Documentation Related Denials",
-    icon: AlertTriangle,
-    theory: "Incomplete or unclear documentation leads to preventable claim denials. Better real-time documentation reduces rework and improves net collections.",
+    label: "Denial Reduction",
+    icon: DollarSign,
+    theory: "Incomplete documentation is a leading cause of claim denials. Real-time, complete documentation reduces denial rates and improves revenue cycle performance.",
     calculationSteps: [
       {
-        title: "Step 1: Denial Baseline",
+        title: "STEP 1: BASELINE DENIALS",
         steps: [
-          { label: "Documentation-related denial rate", value: "3%" },
-          { label: "Annual revenue at risk", value: "$10.4M" },
-          { label: "Current denials", value: "$312,000" },
+          { label: "Total annual revenue", value: "$10,400,000" },
+          { label: "Baseline denial rate", value: "5%", note: "(typical)" },
+          { label: "Revenue denied annually", value: "$520,000" },
         ],
       },
       {
-        title: "Step 2: Improvement Impact",
+        title: "STEP 2: DOCUMENTATION-RELATED",
         steps: [
-          { label: "Denial reduction with Abridge", value: "30%" },
-          { label: "Denials avoided", value: "$93,600" },
-          { label: "Annual value", value: "$93,600" },
+          { label: "Revenue denied annually", value: "$520,000" },
+          { label: "% documentation-related", value: "30%" },
+          { label: "Documentation-driven denials", value: "$156,000" },
+        ],
+      },
+      {
+        title: "STEP 3: ABRIDGE PREVENTION",
+        steps: [
+          { label: "Documentation-driven denials", value: "$156,000" },
+          { label: "% preventable with real-time docs", value: "75%", note: "(typical)" },
+          { label: "Annual value", value: "$117,000" },
         ],
       },
     ],
-    keyVariables: ["Total revenue", "Denial rate", "Denial reduction %"],
-    rangeData: { conservative: "$50k-75k", typical: "$80k-120k" },
-    referenceValue: 93600,
+    keyVariables: ["Annual revenue", "Baseline denial rate", "% documentation-related", "Prevention rate"],
+    rangeData: { conservative: "$120k-180k (5-6%)", typical: "$200k-300k (8-10% high-complexity)" },
+    referenceValue: 117000,
   },
 };
 
