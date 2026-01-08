@@ -30,6 +30,23 @@ Preferred communication style: Simple, everyday language.
 - **Pure calculation functions**: ROI calculations are side-effect free functions in `roi-calculator.ts`
 - **Reusable card components**: `CareSettingCard` component used across multiple screens with compact mode
 - **Background pattern component**: Decorative SVG-based background shared across all screens
+- **Eligible Encounters as Foundation**: All driver calculations derive from eligible encounters (annual encounters × utilization rate) to ensure values automatically recalculate when inputs change
+
+### Calculation Architecture (Critical)
+All ROI driver calculations must derive from **eligible encounters** (encountersWithAbridge = annualEncounters × utilizationPct / 100):
+
+1. **HCC Capture**: MA patients = (eligible encounters ÷ 2.5) × pctMedicareAdvantage%
+   - Type field: `pctMedicareAdvantage` (percentage, not absolute patient count)
+   
+2. **Denial Reduction**: Revenue base = eligible encounters × avgRevenuePerEncounter
+   - Type field: `avgRevenuePerEncounter` (per-visit amount, not total revenue)
+   
+3. **Overtime Savings**: Hours = total hours × pctAfterHours% × pctOvertimeReduced% × rate
+   - Type field: `pctAfterHours` (percentage of time occurring after-hours)
+   
+4. **Patient Access, wRVU, Workforce**: Already use encountersWithAbridge directly
+
+This architecture ensures that when providers, encounters, or utilization rate change (including in scenarios), all downstream values automatically recalculate correctly.
 
 ### Directory Structure
 - `/client/src/pages/` - Main page components (ObjectiveSelectionScreen, RoiCalculator)

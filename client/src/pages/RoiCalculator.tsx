@@ -384,8 +384,7 @@ export default function RoiCalculator({
     const encounterRatio = form.encounters / inputs.annualOutpatientEncounters;
     scenarioInputs.totalMedicareAdvantagePatients = Math.round(inputs.totalMedicareAdvantagePatients * encounterRatio);
     
-    // Scale denials netCollectibleRevenue proportionally to encounters
-    scenarioInputs.denials.netCollectibleRevenue = Math.round(inputs.denials.netCollectibleRevenue * encounterRatio);
+    // Denials avgRevenuePerEncounter doesn't need scaling - it's per-encounter already
     
     // Apply advanced inputs - visit length
     if (form.visitLengthOverride !== null) {
@@ -403,9 +402,8 @@ export default function RoiCalculator({
     const newPatientAdjustment = ((form.newPatientPct - 30) / 100) * 0.3; // +/- 0.3 for 10% change
     scenarioInputs.baselineWrvuPerEncounter = baselineWrvuFromMix + newPatientAdjustment;
     
-    // Apply MA population to HCC (scale impactedMaPatients proportionally)
-    const maPatientsRatio = form.maPopulationPct / 15; // 15% is default
-    scenarioInputs.hcc.impactedMaPatients = Math.round(inputs.hcc.impactedMaPatients * maPatientsRatio * encounterRatio);
+    // Apply MA population to HCC (override the MA percentage)
+    scenarioInputs.hcc.pctMedicareAdvantage = form.maPopulationPct;
     
     // Run calculations
     const scenarioResults = calculateRoi(scenarioInputs);
@@ -1261,7 +1259,11 @@ export default function RoiCalculator({
                         )}
 
                         {/* HCC & CHRONIC CONDITION CAPTURE */}
-                        {driverId === "hcc" && (
+                        {driverId === "hcc" && (() => {
+                          // Compute MA patients from eligible encounters
+                          const uniquePatients = Math.round(encountersWithAbridge / 2.5);
+                          const impactedMaPatients = Math.round(uniquePatients * (inputs.hcc.pctMedicareAdvantage / 100));
+                          return (
                           <>
                             {/* Section 1: How We Calculated This */}
                             <div>
@@ -1270,21 +1272,21 @@ export default function RoiCalculator({
                               </h3>
                               <div className="space-y-3 font-mono text-sm bg-neutral-50 rounded-lg p-4">
                                 <div>
-                                  <span className="text-neutral-500">Step 1: Identify MA Population</span>
+                                  <span className="text-neutral-500">Step 1: Derive MA Population</span>
                                   <div className="text-neutral-700">
-                                    <span className="text-[#F03319] font-semibold">{inputs.hcc.impactedMaPatients.toLocaleString()} MA patients</span> in scope
+                                    {encountersWithAbridge.toLocaleString()} encounters / 2.5 = {uniquePatients.toLocaleString()} unique patients × {inputs.hcc.pctMedicareAdvantage}% MA = <span className="text-[#F03319] font-semibold">{impactedMaPatients.toLocaleString()} MA patients</span>
                                   </div>
                                 </div>
                                 <div>
                                   <span className="text-neutral-500">Step 2: Diagnostic Gap</span>
                                   <div className="text-neutral-700">
-                                    {inputs.hcc.impactedMaPatients.toLocaleString()} × {inputs.hcc.avgConditionsPerMember} conditions × {inputs.hcc.pctConditionsMissed}% gap = <span className="text-[#F03319] font-semibold">{(inputs.hcc.impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} conditions missed</span>
+                                    {impactedMaPatients.toLocaleString()} × {inputs.hcc.avgConditionsPerMember} conditions × {inputs.hcc.pctConditionsMissed}% gap = <span className="text-[#F03319] font-semibold">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} conditions missed</span>
                                   </div>
                                 </div>
                                 <div>
                                   <span className="text-neutral-500">Step 3: Abridge Recapture</span>
                                   <div className="text-neutral-700">
-                                    {(inputs.hcc.impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} missed × {inputs.hcc.pctMissedConditionsRecaptured}% recapture = <span className="text-[#F03319] font-semibold">{(inputs.hcc.impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100 * inputs.hcc.pctMissedConditionsRecaptured / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} documented</span>
+                                    {(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} missed × {inputs.hcc.pctMissedConditionsRecaptured}% recapture = <span className="text-[#F03319] font-semibold">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100 * inputs.hcc.pctMissedConditionsRecaptured / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} documented</span>
                                   </div>
                                 </div>
                                 <div>
@@ -1309,21 +1311,28 @@ export default function RoiCalculator({
                               </h3>
                               
                               <div className="space-y-8">
-                                {/* Input 1: MA patients */}
+                                {/* Input 1: MA percentage */}
                                 <div>
                                   <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Medicare Advantage patients
+                                    Medicare Advantage patient percentage
                                   </label>
-                                  <Input
-                                    type="number"
-                                    value={getLocalOrModel("impactedMaPatients", inputs.hcc.impactedMaPatients)}
-                                    onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, impactedMaPatients: parseInt(e.target.value) || 0 }))}
-                                    className="w-40 font-mono"
-                                    data-testid="input-ma-patients"
-                                  />
+                                  <div className="flex items-center gap-4 mb-2">
+                                    <Slider
+                                      value={[getLocalOrModel("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage)]}
+                                      onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, pctMedicareAdvantage: val }))}
+                                      min={5}
+                                      max={60}
+                                      step={1}
+                                      className="flex-1"
+                                      data-testid="slider-ma-pct"
+                                    />
+                                    <span className="text-sm font-mono text-neutral-900 w-12 text-right">
+                                      {getLocalOrModel("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage)}%
+                                    </span>
+                                  </div>
                                   <div className="text-xs text-neutral-500 space-y-1 mt-2">
                                     <p>Common pushback: "Our MA population is different"</p>
-                                    <p>What this is: Number of patients in Medicare Advantage plans</p>
+                                    <p>What this is: Percentage of patients in Medicare Advantage plans</p>
                                   </div>
                                 </div>
 
@@ -1350,9 +1359,10 @@ export default function RoiCalculator({
                                 </div>
 
                                 {/* Real-time preview */}
-                                {(localAdjustments.impactedMaPatients !== undefined || localAdjustments.pmpmBenchmark !== undefined) && (() => {
-                                  const maPats = getLocalOrModel("impactedMaPatients", inputs.hcc.impactedMaPatients);
+                                {(localAdjustments.pctMedicareAdvantage !== undefined || localAdjustments.pmpmBenchmark !== undefined) && (() => {
+                                  const maPct = getLocalOrModel("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage);
                                   const pmpm = getLocalOrModel("pmpmBenchmark", inputs.hcc.pmpmBenchmark);
+                                  const maPats = Math.round(uniquePatients * (maPct / 100));
                                   const totalConditions = maPats * inputs.hcc.avgConditionsPerMember;
                                   const missedConditions = totalConditions * (inputs.hcc.pctConditionsMissed / 100);
                                   const recaptured = missedConditions * (inputs.hcc.pctMissedConditionsRecaptured / 100);
@@ -1398,7 +1408,7 @@ export default function RoiCalculator({
                                   onClick={() => applyAdjustments("hcc", {
                                     hcc: {
                                       ...inputs.hcc,
-                                      impactedMaPatients: getLocalOrModel("impactedMaPatients", inputs.hcc.impactedMaPatients),
+                                      pctMedicareAdvantage: getLocalOrModel("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage),
                                       pmpmBenchmark: getLocalOrModel("pmpmBenchmark", inputs.hcc.pmpmBenchmark),
                                     },
                                   })}
@@ -1410,10 +1420,13 @@ export default function RoiCalculator({
                               </div>
                             </div>
                           </>
-                        )}
+                        );})()}
 
                         {/* DENIAL REDUCTION */}
-                        {driverId === "denials" && (
+                        {driverId === "denials" && (() => {
+                          // Compute net collectible revenue from eligible encounters
+                          const netCollectibleRevenue = encountersWithAbridge * inputs.denials.avgRevenuePerEncounter;
+                          return (
                           <>
                             {/* Section 1: How We Calculated This */}
                             <div>
@@ -1422,21 +1435,27 @@ export default function RoiCalculator({
                               </h3>
                               <div className="space-y-3 font-mono text-sm bg-neutral-50 rounded-lg p-4">
                                 <div>
-                                  <span className="text-neutral-500">Step 1: Baseline Denials</span>
+                                  <span className="text-neutral-500">Step 1: Derive Revenue Base</span>
                                   <div className="text-neutral-700">
-                                    ${inputs.denials.netCollectibleRevenue.toLocaleString()} revenue × {inputs.denials.baselineDenialRate}% denial rate = <span className="text-[#F03319] font-semibold">{formatCurrency(inputs.denials.netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)} denied annually</span>
+                                    {encountersWithAbridge.toLocaleString()} encounters × ${inputs.denials.avgRevenuePerEncounter}/visit = <span className="text-[#F03319] font-semibold">{formatCurrency(netCollectibleRevenue)} revenue</span>
                                   </div>
                                 </div>
                                 <div>
-                                  <span className="text-neutral-500">Step 2: Documentation-Related Denials</span>
+                                  <span className="text-neutral-500">Step 2: Baseline Denials</span>
                                   <div className="text-neutral-700">
-                                    {formatCurrency(inputs.denials.netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)} × {inputs.denials.pctDenialsFromDocumentation}% doc-related = <span className="text-[#F03319] font-semibold">{formatCurrency(inputs.denials.netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)}</span>
+                                    {formatCurrency(netCollectibleRevenue)} × {inputs.denials.baselineDenialRate}% denial rate = <span className="text-[#F03319] font-semibold">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)} denied annually</span>
                                   </div>
                                 </div>
                                 <div>
-                                  <span className="text-neutral-500">Step 3: Abridge Prevention</span>
+                                  <span className="text-neutral-500">Step 3: Documentation-Related Denials</span>
                                   <div className="text-neutral-700">
-                                    {formatCurrency(inputs.denials.netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)} × {inputs.denials.pctDocDenialsRecovered}% preventable = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
+                                    {formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)} × {inputs.denials.pctDenialsFromDocumentation}% doc-related = <span className="text-[#F03319] font-semibold">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)}</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-neutral-500">Step 4: Abridge Prevention</span>
+                                  <div className="text-neutral-700">
+                                    {formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)} × {inputs.denials.pctDocDenialsRecovered}% preventable = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1474,30 +1493,31 @@ export default function RoiCalculator({
                                   </div>
                                 </div>
 
-                                {/* Input 2: Net collectible revenue */}
+                                {/* Input 2: Avg revenue per encounter */}
                                 <div>
                                   <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Net collectible revenue (annual)
+                                    Average revenue per encounter
                                   </label>
                                   <div className="flex items-center gap-2 mb-2">
                                     <span className="text-neutral-500">$</span>
                                     <Input
                                       type="number"
-                                      value={getLocalOrModel("netCollectibleRevenue", inputs.denials.netCollectibleRevenue)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, netCollectibleRevenue: parseFloat(e.target.value) || 0 }))}
-                                      className="w-48 font-mono"
-                                      data-testid="input-net-revenue"
+                                      value={getLocalOrModel("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter)}
+                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, avgRevenuePerEncounter: parseFloat(e.target.value) || 0 }))}
+                                      className="w-32 font-mono"
+                                      data-testid="input-avg-revenue"
                                     />
                                   </div>
                                   <div className="text-xs text-neutral-500 space-y-1">
                                     <p>Common pushback: "Our reimbursement is different"</p>
-                                    <p>What this is: Total annual net collectible revenue</p>
+                                    <p>What this is: Average net collectible revenue per visit</p>
                                   </div>
                                 </div>
 
                                 {/* Real-time preview */}
-                                {(localAdjustments.baselineDenialRate !== undefined || localAdjustments.netCollectibleRevenue !== undefined) && (() => {
-                                  const revenue = getLocalOrModel("netCollectibleRevenue", inputs.denials.netCollectibleRevenue);
+                                {(localAdjustments.baselineDenialRate !== undefined || localAdjustments.avgRevenuePerEncounter !== undefined) && (() => {
+                                  const avgRev = getLocalOrModel("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter);
+                                  const revenue = encountersWithAbridge * avgRev;
                                   const denialRate = getLocalOrModel("baselineDenialRate", inputs.denials.baselineDenialRate);
                                   const baselineDenied = revenue * (denialRate / 100);
                                   const docDenied = baselineDenied * (inputs.denials.pctDenialsFromDocumentation / 100);
@@ -1539,7 +1559,7 @@ export default function RoiCalculator({
                                     denials: {
                                       ...inputs.denials,
                                       baselineDenialRate: getLocalOrModel("baselineDenialRate", inputs.denials.baselineDenialRate),
-                                      netCollectibleRevenue: getLocalOrModel("netCollectibleRevenue", inputs.denials.netCollectibleRevenue),
+                                      avgRevenuePerEncounter: getLocalOrModel("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter),
                                     },
                                   })}
                                   className="bg-[#F03319] hover:bg-[#D92D16] text-white"
@@ -1550,10 +1570,14 @@ export default function RoiCalculator({
                               </div>
                             </div>
                           </>
-                        )}
+                        );})()}
 
                         {/* OVERTIME COST AVOIDANCE */}
-                        {driverId === "overtime" && (
+                        {driverId === "overtime" && (() => {
+                          // Compute after-hours time
+                          const afterHoursReclaimed = totalHoursReclaimed * (inputs.overtime.pctAfterHours / 100);
+                          const overtimeHoursReduced = afterHoursReclaimed * (inputs.overtime.pctOvertimeReduced / 100);
+                          return (
                           <>
                             {/* Section 1: How We Calculated This */}
                             <div>
@@ -1568,15 +1592,21 @@ export default function RoiCalculator({
                                   </div>
                                 </div>
                                 <div>
-                                  <span className="text-neutral-500">Step 2: Overtime Reduction</span>
+                                  <span className="text-neutral-500">Step 2: After-Hours Portion</span>
                                   <div className="text-neutral-700">
-                                    {totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × {inputs.overtime.pctOvertimeReduced}% converted = <span className="text-[#F03319] font-semibold">{(totalHoursReclaimed * inputs.overtime.pctOvertimeReduced / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} OT hours avoided</span>
+                                    {totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × {inputs.overtime.pctAfterHours}% after-hours = <span className="text-[#F03319] font-semibold">{afterHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} after-hours reclaimed</span>
                                   </div>
                                 </div>
                                 <div>
-                                  <span className="text-neutral-500">Step 3: Cost Savings</span>
+                                  <span className="text-neutral-500">Step 3: Overtime Reduction</span>
                                   <div className="text-neutral-700">
-                                    {(totalHoursReclaimed * inputs.overtime.pctOvertimeReduced / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × ${inputs.overtime.blendedOvertimeRate}/hr = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
+                                    {afterHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × {inputs.overtime.pctOvertimeReduced}% converted = <span className="text-[#F03319] font-semibold">{overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })} OT hours avoided</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-neutral-500">Step 4: Cost Savings</span>
+                                  <div className="text-neutral-700">
+                                    {overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × ${inputs.overtime.blendedOvertimeRate}/hr = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1640,7 +1670,7 @@ export default function RoiCalculator({
                                 {(localAdjustments.pctOvertimeReduced !== undefined || localAdjustments.blendedOvertimeRate !== undefined) && (() => {
                                   const otPct = getLocalOrModel("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced);
                                   const otRate = getLocalOrModel("blendedOvertimeRate", inputs.overtime.blendedOvertimeRate);
-                                  const otHoursAvoided = totalHoursReclaimed * (otPct / 100);
+                                  const otHoursAvoided = afterHoursReclaimed * (otPct / 100);
                                   const newValue = otHoursAvoided * otRate;
                                   return (
                                     <div className="p-3 bg-green-50 rounded-lg border border-green-200">
@@ -1690,7 +1720,7 @@ export default function RoiCalculator({
                               </div>
                             </div>
                           </>
-                        )}
+                        );})()}
                       </div>
                     )}
                   </div>

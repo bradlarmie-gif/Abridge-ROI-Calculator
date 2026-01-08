@@ -31,8 +31,8 @@ export function calculateRoi(inputs: RoiInputs): RoiResults {
   );
   const workforceSavings = calculateWorkforce(inputs);
   const wrvuRevenue = calculateWrvu(inputs, encountersWithAbridge);
-  const denialResults = calculateDenials(inputs);
-  const riskAdjRevenue = calculateRiskAdjustment(inputs);
+  const denialResults = calculateDenials(inputs, encountersWithAbridge);
+  const riskAdjRevenue = calculateRiskAdjustment(inputs, encountersWithAbridge);
 
   // KPI: projected wRVU/visit
   const postWrvuPerEncounter =
@@ -129,9 +129,11 @@ function calculatePatientAccess(
 }
 
 function calculateOvertime(inputs: RoiInputs, hoursReclaimed: number): number {
-  const { pctOvertimeReduced, blendedOvertimeRate } = inputs.overtime;
+  const { pctOvertimeReduced, blendedOvertimeRate, pctAfterHours } = inputs.overtime;
 
-  const overtimeHoursReduced = hoursReclaimed * (pctOvertimeReduced / 100);
+  // Only after-hours time contributes to overtime savings
+  const afterHoursReclaimed = hoursReclaimed * (pctAfterHours / 100);
+  const overtimeHoursReduced = afterHoursReclaimed * (pctOvertimeReduced / 100);
   return overtimeHoursReduced * blendedOvertimeRate;
 }
 
@@ -169,17 +171,20 @@ function calculateWrvu(
   return totalIncrementalWrvus * wrvuConversionFactor;
 }
 
-function calculateDenials(inputs: RoiInputs): {
+function calculateDenials(inputs: RoiInputs, encountersWithAbridge: number): {
   revenueRecovered: number;
   newEffectiveDenialRate: number;
 } {
   const {
-    netCollectibleRevenue,
+    avgRevenuePerEncounter,
     baselineDenialRate,
     pctDenialsFromDocumentation,
     pctDocDenialsRecovered,
   } = inputs.denials;
 
+  // Compute revenue from eligible encounters
+  const netCollectibleRevenue = encountersWithAbridge * avgRevenuePerEncounter;
+  
   const baselineDeniedRevenue =
     netCollectibleRevenue * (baselineDenialRate / 100);
   const documentationDeniedRevenue =
@@ -197,9 +202,9 @@ function calculateDenials(inputs: RoiInputs): {
   return { revenueRecovered: denialRevenueRecovered, newEffectiveDenialRate };
 }
 
-function calculateRiskAdjustment(inputs: RoiInputs): number {
+function calculateRiskAdjustment(inputs: RoiInputs, encountersWithAbridge: number): number {
   const {
-    impactedMaPatients,
+    pctMedicareAdvantage,
     avgConditionsPerMember,
     pctConditionsMissed,
     pctMissedConditionsRecaptured,
@@ -208,6 +213,11 @@ function calculateRiskAdjustment(inputs: RoiInputs): number {
     rafRealizationHaircut,
     pmpmBenchmark,
   } = inputs.hcc;
+
+  // Derive unique MA patients from eligible encounters
+  // Eligible encounters / 2.5 = unique patients, then apply MA %
+  const uniquePatients = encountersWithAbridge / 2.5;
+  const impactedMaPatients = uniquePatients * (pctMedicareAdvantage / 100);
 
   const totalConditions = impactedMaPatients * avgConditionsPerMember;
   const missedConditions = totalConditions * (pctConditionsMissed / 100);

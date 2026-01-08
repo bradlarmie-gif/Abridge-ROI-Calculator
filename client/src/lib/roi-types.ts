@@ -39,6 +39,7 @@ export interface RoiInputs {
   overtime: {
     pctOvertimeReduced: number;
     blendedOvertimeRate: number;
+    pctAfterHours: number;
   };
   workforce: {
     providerCount: number;
@@ -52,14 +53,14 @@ export interface RoiInputs {
     pctIncreaseWrvuPerEncounter: number;
   };
   denials: {
-    netCollectibleRevenue: number;
+    avgRevenuePerEncounter: number;
     baselineDenialRate: number;
     pctDenialsRecoveredAfterRework: number;
     pctDenialsFromDocumentation: number;
     pctDocDenialsRecovered: number;
   };
   hcc: {
-    impactedMaPatients: number;
+    pctMedicareAdvantage: number;
     avgConditionsPerMember: number;
     pctConditionsMissed: number;
     pctMissedConditionsRecaptured: number;
@@ -110,6 +111,7 @@ export const defaultInputs: RoiInputs = {
   overtime: {
     pctOvertimeReduced: 20,
     blendedOvertimeRate: 145,
+    pctAfterHours: 25,
   },
   workforce: {
     providerCount: 100,
@@ -123,14 +125,14 @@ export const defaultInputs: RoiInputs = {
     pctIncreaseWrvuPerEncounter: 5,
   },
   denials: {
-    netCollectibleRevenue: 14000000,
+    avgRevenuePerEncounter: 200,
     baselineDenialRate: 5,
     pctDenialsRecoveredAfterRework: 60,
     pctDenialsFromDocumentation: 30,
     pctDocDenialsRecovered: 75,
   },
   hcc: {
-    impactedMaPatients: 7000,
+    pctMedicareAdvantage: 25,
     avgConditionsPerMember: 1.5,
     pctConditionsMissed: 33,
     pctMissedConditionsRecaptured: 60,

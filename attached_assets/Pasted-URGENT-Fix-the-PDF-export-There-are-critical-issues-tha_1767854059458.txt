@@ -1,0 +1,166 @@
+URGENT: Fix the PDF export. There are critical issues that make it unusable for CFO/leadership review.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. ADD STEP-BY-STEP CALCULATIONS TO DRIVER PAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Currently, each driver page just says:
+"Calculations are based on evidence from 50+ health system implementations. Specific methodology varies by driver and utilizes organizational inputs."
+
+This is NOT SUFFICIENT. The finance team needs to see the actual math.
+
+REPLACE "How This Was Calculated" section with the ACTUAL step-by-step calculation:
+
+FOR PATIENT ACCESS PAGE:
+Replace generic text with:
+
+How This Was Calculated
+
+Step 1: Time Returned
+2.5 minutes saved per encounter × 52,000 encounters = 130,000 minutes
+130,000 minutes ÷ 60 = 2,167 hours returned annually
+
+Step 2: Realized Capacity
+2,167 hours × 20% realization factor = 433 usable hours
+(Not all time becomes new visits—some goes to admin, rest, quality improvement)
+
+Step 3: New Visit Capacity
+433 hours × 60 minutes = 25,980 minutes
+25,980 minutes ÷ 30 minutes per visit = 866 additional visits possible
+
+Step 4: Revenue Impact
+866 visits × $200 net revenue per visit = $173,200 annual value
+
+Key Assumptions:
+- Minutes saved: 2.5 min per encounter (typical posture)
+- Capacity realization: 20% (typical for managed rollout)
+- Visit duration: 30 minutes
+- Revenue per visit: $200 (net collectible)
+
+FOR CLINICIAN RETENTION PAGE:
+Replace generic text with:
+
+How This Was Calculated
+
+Step 1: Baseline Turnover
+40 providers × 8% annual turnover rate = 3.2 expected departures per year
+
+Step 2: Abridge Impact
+3.2 departures × 40% attributable to burnout = 1.28 burnout-driven departures
+1.28 departures × 50% preventable with reduced admin burden = 0.64 departures avoided
+
+Step 3: Cost Savings
+0.64 departures avoided × $250,000 replacement cost = $160,000 annual value
+
+Key Assumptions:
+- Turnover rate: 8% (typical for outpatient providers)
+- Burnout attribution: 40% (per JAMA physician workforce studies)
+- Abridge prevention: 50% (typical—documentation is major but not sole driver)
+- Replacement cost: $250,000 (includes recruiting, onboarding, lost productivity, coverage)
+
+FOR LEVEL OF SERVICE PAGE:
+Replace generic text with:
+
+How This Was Calculated
+
+Step 1: Baseline wRVU Performance
+52,000 encounters × 1.75 wRVU per encounter = 91,000 current annual wRVUs
+
+Step 2: Documentation Quality Lift
+5% improvement in wRVU capture (typical posture)
+
+Step 3: Additional wRVUs Captured
+91,000 wRVUs × 5% = 4,550 additional wRVUs
+
+Step 4: Revenue Impact
+4,550 wRVUs × $50 revenue per wRVU = $227,500 annual value
+
+Key Assumptions:
+- Baseline wRVU: 1.75 per encounter (typical outpatient)
+- Documentation lift: 5% (typical—better real-time capture supports accurate coding)
+- Revenue per wRVU: $50 (blended average: Medicare ~$36-40, Commercial ~$50-80)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. UPDATE "50+" TO "200+"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FIND ALL INSTANCES of "50+ health system implementations"
+
+REPLACE WITH: "200+ health system partners"
+
+This appears in:
+- Methodology page: "This ROI model uses evidence-based assumptions from 200+ health system partners..."
+- Each driver page (if mentioned)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. ADD SUBTLE BACKGROUND PATTERN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add the Abridge geometric pattern as a subtle background across ALL PDF pages:
+
+Requirements:
+- Use the Abridge geometric shapes (same as landing page background)
+- Opacity: 3-4% (VERY subtle—should be barely visible when printed)
+- Position: Large shapes in corners (top-right, bottom-left)
+- Should NOT interfere with text readability
+- Consistent across all pages
+- Professional and architectural feel
+
+This creates visual brand consistency and makes the PDF feel premium.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. FIX SCENARIO COMPARISON MATH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The expansion scenario shows:
+Current: 40 providers → $524k benefit, 6.2x ROI
+Expansion: 95 providers → $698k benefit, 3.5x ROI
+
+This is WRONG. If providers increase by 2.4x, the benefit should increase by ~2.4x (not 1.3x).
+And ROI should NOT go DOWN—it should stay similar or improve.
+
+VERIFY the scenario calculation logic:
+
+When expansion scenario is created:
+1. New providers: 95 (was 40)
+2. New encounters: 130,000 (was 80,000)
+3. New utilization: 70% (was 65%)
+4. New eligible encounters: 130,000 × 0.70 = 91,000 (was 52,000)
+
+Each driver should recalculate:
+- Patient Access: Should be ~$300k-350k (proportional to eligible encounters)
+- Clinician Retention: Should be ~$380k-400k (proportional to providers)
+- Level of Service: Should be ~$400k-450k (proportional to eligible encounters)
+
+TOTAL should be ~$1.1-1.2M, not $698k.
+
+Investment: 95 providers × $175 × 12 = $199,500
+
+Net gain: ~$900k-1M
+ROI: ~5.5-6x (not 3.5x)
+
+PLEASE DEBUG AND FIX THIS CALCULATION.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMATTING REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Maintain professional typography
+- Keep generous margins
+- Ensure all numbers have comma formatting ($173,200 not $173200)
+- Page numbers in footer
+- "Abridge ROI Analysis | [Date]" footer on each page
+- Clean, scannable layout
+- No unnecessary graphics or decoration
+- Professional enough for board presentation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRIORITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. CRITICAL: Add step-by-step math to driver pages
+2. CRITICAL: Fix expansion scenario calculations
+3. HIGH: Update 50+ to 200+
+4. MEDIUM: Add subtle background pattern
+
+The PDF must be defensible in a CFO review. Right now it would get rejected because "you didn't show your work."
