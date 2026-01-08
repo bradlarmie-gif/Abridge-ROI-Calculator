@@ -1,0 +1,280 @@
+CRITICAL BUG FIX: All driver calculations must be DYNAMIC, not static.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE PROBLEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Currently, the driver values (Patient Access: $173,200, Level of Service: $227,500, etc.) appear to be STATIC or HARDCODED.
+
+When I change:
+- Providers from 40 to 100
+- Encounters from 80,000 to 200,000
+- Any Fine-Tune assumption
+
+The values DO NOT CHANGE. They should change dynamically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE FIX: IMPLEMENT REAL-TIME CALCULATION ENGINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create a centralized calculation function that recalculates ALL driver values whenever ANY input changes.
+
+INPUTS THAT TRIGGER RECALCULATION:
+1. Providers (Adoption tab)
+2. Annual encounters (Adoption tab)
+3. Utilization % (Adoption tab)
+4. Posture selection (Value Realization tab)
+5. ANY Fine-Tune assumption (Value Realization tab)
+
+WHEN ANY OF THESE CHANGE → RECALCULATE ALL DRIVERS → UPDATE ALL DISPLAYS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CALCULATION FORMULAS (IMPLEMENT THESE EXACTLY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 0: CALCULATE ELIGIBLE ENCOUNTERS (used by most drivers)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+eligible_encounters = annual_encounters × (utilization / 100)
+
+Example: 80,000 × 0.65 = 52,000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PATIENT ACCESS CALCULATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inputs needed:
+- eligible_encounters (calculated above)
+- minutes_saved (from Fine-Tune, default from posture)
+- realization_factor (from Fine-Tune, default from posture)
+- visit_duration (from Fine-Tune, default 30)
+- revenue_per_visit (from Fine-Tune, default 200)
+
+Formula:
+total_minutes = minutes_saved × eligible_encounters
+total_hours = total_minutes / 60
+usable_hours = total_hours × (realization_factor / 100)
+usable_minutes = usable_hours × 60
+new_visits = usable_minutes / visit_duration
+patient_access_value = new_visits × revenue_per_visit
+
+Example with defaults (40 providers, 80k encounters, 65% util, Typical posture):
+total_minutes = 2.5 × 52,000 = 130,000
+total_hours = 130,000 / 60 = 2,166.67
+usable_hours = 2,166.67 × 0.20 = 433.33
+usable_minutes = 433.33 × 60 = 26,000
+new_visits = 26,000 / 30 = 866.67
+patient_access_value = 866.67 × 200 = $173,333
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACCURATE LEVEL OF SERVICE CALCULATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inputs needed:
+- eligible_encounters (calculated above)
+- baseline_wRVU (from Fine-Tune, default 1.75)
+- doc_quality_lift (from Fine-Tune, default from posture)
+- revenue_per_wRVU (from Fine-Tune, default 50)
+
+Formula:
+current_wRVUs = eligible_encounters × baseline_wRVU
+additional_wRVUs = current_wRVUs × (doc_quality_lift / 100)
+level_of_service_value = additional_wRVUs × revenue_per_wRVU
+
+Example with defaults:
+current_wRVUs = 52,000 × 1.75 = 91,000
+additional_wRVUs = 91,000 × 0.05 = 4,550
+level_of_service_value = 4,550 × 50 = $227,500
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLINICIAN RETENTION CALCULATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inputs needed:
+- providers (from Adoption tab)
+- turnover_rate (from Fine-Tune, default 5)
+- burnout_attribution = 40 (FIXED, not adjustable)
+- abridge_prevention (from posture: Con 30, Typ 40, Agg 50)
+- replacement_cost (from Fine-Tune, default 250000)
+
+Formula:
+expected_departures = providers × (turnover_rate / 100)
+burnout_departures = expected_departures × (burnout_attribution / 100)
+departures_avoided = burnout_departures × (abridge_prevention / 100)
+clinician_retention_value = departures_avoided × replacement_cost
+
+Example with defaults (40 providers, Typical posture):
+expected_departures = 40 × 0.05 = 2.0
+burnout_departures = 2.0 × 0.40 = 0.8
+departures_avoided = 0.8 × 0.40 = 0.32
+clinician_retention_value = 0.32 × 250,000 = $80,000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HCC & CHRONIC CONDITION CAPTURE CALCULATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inputs needed:
+- eligible_encounters (calculated above)
+- visits_per_patient = 2.5 (FIXED)
+- ma_population (from Fine-Tune, default 15)
+- conditions_per_patient = 2.5 (FIXED)
+- doc_gap_rate = 30 (FIXED)
+- recapture_rate (from Fine-Tune, default from posture)
+- raf_weight = 0.25 (FIXED)
+- benchmark_pmpm (from Fine-Tune, default 1000)
+
+Formula:
+unique_patients = eligible_encounters / visits_per_patient
+ma_patients = unique_patients × (ma_population / 100)
+expected_conditions = ma_patients × conditions_per_patient
+conditions_missed = expected_conditions × (doc_gap_rate / 100)
+conditions_recaptured = conditions_missed × (recapture_rate / 100)
+total_raf_points = conditions_recaptured × raf_weight
+raf_increase_per_patient = total_raf_points / ma_patients
+annual_baseline_per_patient = benchmark_pmpm × 12
+incremental_revenue_per_patient = annual_baseline_per_patient × raf_increase_per_patient
+hcc_capture_value = ma_patients × incremental_revenue_per_patient
+
+Example with defaults:
+unique_patients = 52,000 / 2.5 = 20,800
+ma_patients = 20,800 × 0.15 = 3,120
+expected_conditions = 3,120 × 2.5 = 7,800
+conditions_missed = 7,800 × 0.30 = 2,340
+conditions_recaptured = 2,340 × 0.50 = 1,170
+total_raf_points = 1,170 × 0.25 = 292.5
+raf_increase_per_patient = 292.5 / 3,120 = 0.0938
+annual_baseline = 1,000 × 12 = 12,000
+incremental_per_patient = 12,000 × 0.0938 = 1,125
+hcc_capture_value = 3,120 × 1,125 = $351,000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DENIAL REDUCTION CALCULATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inputs needed:
+- eligible_encounters (calculated above)
+- revenue_per_visit (from Patient Access Fine-Tune, default 200)
+- baseline_denial_rate (from Fine-Tune, default 5)
+- doc_related_percent = 30 (FIXED)
+- prevention_rate (from Fine-Tune, default from posture)
+
+Formula:
+total_revenue = eligible_encounters × revenue_per_visit
+revenue_denied = total_revenue × (baseline_denial_rate / 100)
+doc_denials = revenue_denied × (doc_related_percent / 100)
+denial_reduction_value = doc_denials × (prevention_rate / 100)
+
+Example with defaults:
+total_revenue = 52,000 × 200 = 10,400,000
+revenue_denied = 10,400,000 × 0.05 = 520,000
+doc_denials = 520,000 × 0.30 = 156,000
+denial_reduction_value = 156,000 × 0.66 = $102,960
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OVERTIME & LOCUM COST AVOIDANCE CALCULATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inputs needed:
+- eligible_encounters (calculated above)
+- minutes_saved (from Patient Access Fine-Tune, shared)
+- after_hours_reduction (from Fine-Tune, default from posture)
+- blended_premium_rate (from Fine-Tune, default 145)
+
+Formula:
+total_minutes = minutes_saved × eligible_encounters
+total_hours = total_minutes / 60
+premium_hours_avoided = total_hours × (after_hours_reduction / 100)
+overtime_cost_value = premium_hours_avoided × blended_premium_rate
+
+Example with defaults:
+total_minutes = 2.5 × 52,000 = 130,000
+total_hours = 130,000 / 60 = 2,166.67
+premium_hours_avoided = 2,166.67 × 0.20 = 433.33
+overtime_cost_value = 433.33 × 145 = $62,833
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHERE TO DISPLAY CALCULATED VALUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These calculated values must display and update in ALL of these places:
+
+1. VALUE REALIZATION TAB:
+   - Driver preview cards (Patient Access: $173,200, etc.)
+   - Total Projected Value
+   - Compare All Postures table (all three columns should recalculate)
+   - Each posture column uses different posture-driven defaults
+
+2. INVESTMENT TAB:
+   - "You've modeled ~$400,700 in annual value" banner
+   - 3-Year View table (Value row)
+   - All derived calculations (Net, ROI)
+
+3. LIVE RECEIPT PANEL:
+   - Should show calculated values, not static
+
+4. RESULTS DASHBOARD (when implemented):
+   - All driver values
+   - Totals
+   - Scenario comparisons
+
+5. PDF EXPORT:
+   - All calculations must use these dynamically calculated values
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMPLEMENTATION APPROACH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Create a centralized state object that holds:
+   - Adoption inputs (providers, encounters, utilization)
+   - Selected drivers (from Strategic Priorities)
+   - Posture selection
+   - All Fine-Tune inputs for each driver
+
+2. Create calculation functions for each driver that take inputs and return value
+
+3. Create a master recalculate function that:
+   - Calculates eligible_encounters
+   - For each SELECTED driver, runs its calculation function
+   - Sums all selected driver values for total
+   - Updates all display locations
+
+4. Call the master recalculate function whenever ANY input changes:
+   - Adoption inputs change → recalculate
+   - Posture changes → recalculate
+   - Any Fine-Tune input changes → recalculate
+
+5. For the Compare All Postures table:
+   - Run calculations THREE times (once per posture)
+   - Use posture-specific defaults for posture-driven inputs
+   - Use current Fine-Tune values for org-specific inputs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERIFICATION TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After implementing, test these scenarios:
+
+TEST 1: Change providers from 40 to 100
+- Clinician Retention should increase proportionally (2.5x)
+- Other drivers should NOT change (they're encounter-based, not provider-based)
+
+TEST 2: Change encounters from 80,000 to 160,000
+- Patient Access should roughly double
+- Level of Service should roughly double
+- Denial Reduction should roughly double
+- HCC Capture should roughly double
+- Overtime Cost should roughly double
+- Clinician Retention should NOT change (provider-based)
+
+TEST 3: Change utilization from 65% to 80%
+- All encounter-based drivers should increase proportionally
+
+TEST 4: Change Minutes Saved from 2.5 to 4
+- Patient Access should increase significantly
+- Overtime Cost should increase significantly
+
+TEST 5: Change posture from Typical to Conservative
+- All posture-driven values should decrease
+- All org-specific values should stay the same
+
+If ANY of these tests fail, the calculation engine is not working correctly.

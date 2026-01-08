@@ -979,6 +979,202 @@ export default function ObjectiveSelectionScreen({
   }, [selectedSetting]);
 
   // ============================================
+  // DYNAMIC DRIVER VALUE CALCULATIONS
+  // These recalculate whenever ANY input changes
+  // ============================================
+  
+  // Helper function to calculate driver values for a specific posture
+  // FOLLOWS USER SPEC FORMULAS EXACTLY
+  const calculateDriverValues = useMemo(() => {
+    return (posture: "conservative" | "typical" | "aggressive" | "current") => {
+      // Get eligible encounters (use default 65% if utilization not set)
+      const util = utilizationPercent ?? 65;
+      const eligibleEncounters = effectiveEncounters > 0
+        ? Math.round((util / 100) * effectiveEncounters)
+        : 0;
+      
+      // Get posture-specific values or current values
+      const getPostureValues = () => {
+        if (posture === "current") {
+          return {
+            minutesSaved: effectiveMinutesSaved ?? POSTURE_PRESETS.typical.minutes,
+            realizationRate: timeRealizationRate ?? POSTURE_PRESETS.typical.realization,
+            wrvuLift: wrvuSensitivity ?? POSTURE_PRESETS.typical.wrvu,
+            hccRecapture: ftHccRecaptureRate ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate,
+            denialPrevention: ftDenialPreventionRate ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate,
+            overtimeReduction: ftOvertimeAfterHoursReduction ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction,
+            retentionPrevention: getRetentionPreventionPct(),
+          };
+        }
+        const preset = POSTURE_PRESETS[posture];
+        const extraPreset = FINE_TUNE_EXTRA_POSTURE_VALUES[posture];
+        return {
+          minutesSaved: preset.minutes,
+          realizationRate: preset.realization,
+          wrvuLift: preset.wrvu,
+          hccRecapture: extraPreset.hccRecaptureRate,
+          denialPrevention: extraPreset.denialPreventionRate,
+          overtimeReduction: extraPreset.overtimeReduction,
+          retentionPrevention: extraPreset.retentionPrevention,
+        };
+      };
+      
+      const pv = getPostureValues();
+      
+      // PATIENT ACCESS CALCULATION (per user spec)
+      // Formula: total_minutes → usable_hours → new_visits → revenue
+      const calcPatientAccess = () => {
+        // Step 1: Time returned
+        const totalMinutes = pv.minutesSaved * eligibleEncounters;
+        const totalHours = totalMinutes / 60;
+        // Step 2: Realized capacity (apply realization factor)
+        const usableHours = totalHours * (pv.realizationRate / 100);
+        const usableMinutes = usableHours * 60;
+        // Step 3: New visit capacity
+        const newVisits = usableMinutes / ftPatientAccessVisitDuration;
+        // Step 4: Revenue impact
+        return Math.round(newVisits * ftPatientAccessRevenuePerVisit);
+      };
+      
+      // ACCURATE LEVEL OF SERVICE (wRVU) CALCULATION (per user spec)
+      const calcWrvu = () => {
+        // Step 1: Current wRVUs
+        const currentWrvus = eligibleEncounters * ftWrvuBaseline;
+        // Step 2 & 3: Documentation quality lift
+        const additionalWrvus = currentWrvus * (pv.wrvuLift / 100);
+        // Step 4: Revenue impact
+        return Math.round(additionalWrvus * ftWrvuRevenuePerUnit);
+      };
+      
+      // CLINICIAN RETENTION CALCULATION (per user spec)
+      // Uses providers directly, not encounters
+      const calcRetention = () => {
+        const providers = effectiveClinicians > 0 ? effectiveClinicians : 40; // default to reference
+        // Step 1: Baseline turnover
+        const expectedDepartures = providers * (ftRetentionTurnoverRate / 100);
+        // Step 2: Abridge impact (40% burnout attribution is FIXED)
+        const burnoutDepartures = expectedDepartures * 0.40;
+        const departuresAvoided = burnoutDepartures * (pv.retentionPrevention / 100);
+        // Step 3: Cost savings
+        return Math.round(departuresAvoided * ftRetentionReplacementCost);
+      };
+      
+      // HCC & CHRONIC CONDITION CAPTURE CALCULATION (per user spec)
+      const calcHcc = () => {
+        // Step 1: Identify MA patient population
+        const visitsPerPatient = 2.5; // FIXED
+        const uniquePatients = eligibleEncounters / visitsPerPatient;
+        const maPatients = uniquePatients * (ftHccMedicareAdvantage / 100);
+        
+        // Fixed assumptions per spec
+        const conditionsPerPatient = 2.5; // FIXED
+        const docGapRate = 0.30; // 30% FIXED
+        const rafWeight = 0.25; // FIXED
+        
+        // Step 3: Diagnostic documentation gap
+        const expectedConditions = maPatients * conditionsPerPatient;
+        const conditionsMissed = expectedConditions * docGapRate;
+        
+        // Step 4: Abridge recapture
+        const conditionsRecaptured = conditionsMissed * (pv.hccRecapture / 100);
+        const totalRafPoints = conditionsRecaptured * rafWeight;
+        
+        // Step 5: Revenue impact
+        const rafIncreasePerPatient = maPatients > 0 ? totalRafPoints / maPatients : 0;
+        const annualBaseline = ftHccBenchmarkPmpm * 12;
+        const incrementalPerPatient = annualBaseline * rafIncreasePerPatient;
+        return Math.round(maPatients * incrementalPerPatient);
+      };
+      
+      // DENIAL REDUCTION CALCULATION (per user spec)
+      const calcDenials = () => {
+        // Use revenue per encounter for total revenue base
+        const totalRevenue = eligibleEncounters * ftPatientAccessRevenuePerVisit;
+        const revenueDenied = totalRevenue * (ftDenialBaselineRate / 100);
+        const docRelatedPercent = 0.30; // 30% FIXED
+        const docDenials = revenueDenied * docRelatedPercent;
+        return Math.round(docDenials * (pv.denialPrevention / 100));
+      };
+      
+      // OVERTIME & LOCUM COST AVOIDANCE CALCULATION (per user spec)
+      // Formula: total_hours × after_hours_reduction% × premium_rate
+      const calcOvertime = () => {
+        const totalMinutes = pv.minutesSaved * eligibleEncounters;
+        const totalHours = totalMinutes / 60;
+        // Apply after-hours reduction directly per spec
+        const premiumHoursAvoided = totalHours * (pv.overtimeReduction / 100);
+        return Math.round(premiumHoursAvoided * ftOvertimePremiumRate);
+      };
+      
+      return {
+        patientAccess: calcPatientAccess(),
+        wrvu: calcWrvu(),
+        workforce: calcRetention(),
+        hcc: calcHcc(),
+        denials: calcDenials(),
+        overtime: calcOvertime(),
+      };
+    };
+  }, [
+    effectiveEncounters,
+    utilizationPercent,
+    effectiveClinicians,
+    effectiveMinutesSaved,
+    timeRealizationRate,
+    wrvuSensitivity,
+    ftPatientAccessVisitDuration,
+    ftPatientAccessRevenuePerVisit,
+    ftWrvuBaseline,
+    ftWrvuRevenuePerUnit,
+    ftRetentionTurnoverRate,
+    ftRetentionReplacementCost,
+    ftHccMedicareAdvantage,
+    ftHccBenchmarkPmpm,
+    ftHccRecaptureRate,
+    ftDenialBaselineRate,
+    ftDenialPreventionRate,
+    ftOvertimeAfterHoursReduction,
+    ftOvertimePremiumRate,
+  ]);
+  
+  // Current driver values (using current posture/inputs)
+  const currentDriverValues = useMemo(() => {
+    return calculateDriverValues("current");
+  }, [calculateDriverValues]);
+  
+  // Posture-specific driver values for comparison table
+  const conservativeDriverValues = useMemo(() => calculateDriverValues("conservative"), [calculateDriverValues]);
+  const typicalDriverValues = useMemo(() => calculateDriverValues("typical"), [calculateDriverValues]);
+  const aggressiveDriverValues = useMemo(() => calculateDriverValues("aggressive"), [calculateDriverValues]);
+  
+  // Total value for selected drivers using current posture
+  const totalProjectedValue = useMemo(() => {
+    return Array.from(selectedLeverIds).reduce((sum, leverId) => {
+      const value = currentDriverValues[leverId as keyof typeof currentDriverValues];
+      return sum + (typeof value === "number" ? value : 0);
+    }, 0);
+  }, [selectedLeverIds, currentDriverValues]);
+  
+  // Get driver value for a specific posture
+  const getDriverValueForPosture = (leverId: string, posture: "conservative" | "typical" | "aggressive") => {
+    const values = posture === "conservative" ? conservativeDriverValues
+      : posture === "aggressive" ? aggressiveDriverValues
+      : typicalDriverValues;
+    return values[leverId as keyof typeof values] || 0;
+  };
+  
+  // Get total for a posture (selected drivers only)
+  const getTotalForPosture = (posture: "conservative" | "typical" | "aggressive") => {
+    const values = posture === "conservative" ? conservativeDriverValues
+      : posture === "aggressive" ? aggressiveDriverValues
+      : typicalDriverValues;
+    return Array.from(selectedLeverIds).reduce((sum, leverId) => {
+      const value = values[leverId as keyof typeof values];
+      return sum + (typeof value === "number" ? value : 0);
+    }, 0);
+  };
+
+  // ============================================
   // Handlers
   // ============================================
   const handleSettingSelect = (setting: AllSettingType) => {
@@ -2084,62 +2280,52 @@ export default function ObjectiveSelectionScreen({
                           Based on: {detectedPosture === "conservative" ? "Conservative" : detectedPosture === "typical" ? "Median" : "Optimistic"} performance from 200+ health system partners
                         </p>
                         
-                        {/* Posture multiplier helper */}
-                        {(() => {
-                          const postureMultiplier = detectedPosture === "conservative" ? 0.7 : detectedPosture === "aggressive" ? 1.3 : 1.0;
-                          return (
-                            <>
-                              <div className="text-xs font-medium text-neutral-700 mb-2">
-                                Your value drivers:
-                              </div>
-                              <div className="space-y-3">
-                                {Array.from(selectedLeverIds).map((leverId) => {
-                                  const driverContent = DRIVER_CONTENT[leverId];
-                                  if (!driverContent) return null;
-                                  const scaledValue = Math.round(driverContent.referenceValue * postureMultiplier);
-                                  return (
-                                    <div key={leverId} className="flex items-start justify-between gap-3 bg-white rounded-lg p-3 border border-neutral-100" data-testid={`driver-preview-${leverId}`}>
-                                      <div className="flex items-start gap-2">
-                                        <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                                        <div>
-                                          <div className="text-sm font-medium text-neutral-800">{driverContent.label}</div>
-                                          <div className="text-xs text-neutral-500 mt-0.5">
-                                            {leverId === "patientAccess" && `Minutes saved: ${effectiveMinutesSaved || 2.5} per encounter`}
-                                            {leverId === "wrvu" && `Documentation lift: ${wrvuSensitivity || 5}%`}
-                                            {leverId === "overtime" && `After-hours reduction: 20%`}
-                                            {leverId === "workforce" && `Turnover reduction via burnout relief`}
-                                            {leverId === "hcc" && `RAF improvement: ${hccSensitivity || 0.7}%`}
-                                            {leverId === "denials" && `Denial reduction: ${denialsSensitivity || 30}%`}
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <span className="text-sm font-semibold text-emerald-700 font-mono whitespace-nowrap" data-testid={`value-${leverId}`}>
-                                        ${formatNumber(scaledValue)}
-                                      </span>
+                        {/* Dynamic driver values */}
+                        <div className="text-xs font-medium text-neutral-700 mb-2">
+                          Your value drivers:
+                        </div>
+                        <div className="space-y-3">
+                          {Array.from(selectedLeverIds).map((leverId) => {
+                            const driverContent = DRIVER_CONTENT[leverId];
+                            if (!driverContent) return null;
+                            const dynamicValue = currentDriverValues[leverId as keyof typeof currentDriverValues] || 0;
+                            return (
+                              <div key={leverId} className="flex items-start justify-between gap-3 bg-white rounded-lg p-3 border border-neutral-100" data-testid={`driver-preview-${leverId}`}>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <div className="text-sm font-medium text-neutral-800">{driverContent.label}</div>
+                                    <div className="text-xs text-neutral-500 mt-0.5">
+                                      {leverId === "patientAccess" && `Minutes saved: ${effectiveMinutesSaved || 2.5} per encounter`}
+                                      {leverId === "wrvu" && `Documentation lift: ${wrvuSensitivity || 5}%`}
+                                      {leverId === "overtime" && `After-hours reduction: ${ftOvertimeAfterHoursReduction || 20}%`}
+                                      {leverId === "workforce" && `Turnover reduction via burnout relief`}
+                                      {leverId === "hcc" && `Recapture rate: ${ftHccRecaptureRate || 50}%`}
+                                      {leverId === "denials" && `Prevention rate: ${ftDenialPreventionRate || 66}%`}
                                     </div>
-                                  );
-                                })}
-                              </div>
-                              
-                              <div className="mt-4 pt-4 border-t border-neutral-200">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-semibold text-neutral-900">TOTAL PROJECTED VALUE:</span>
-                                  <span className="text-lg font-bold text-emerald-700 font-mono" data-testid="total-projected-value">
-                                    ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => {
-                                      const content = DRIVER_CONTENT[leverId];
-                                      return sum + (content?.referenceValue || 0);
-                                    }, 0) * postureMultiplier))}
-                                  </span>
+                                  </div>
                                 </div>
-                                <p className="text-xs text-neutral-500 mt-1">(Before investment costs)</p>
-                                <div className="flex items-start gap-1.5 mt-2">
-                                  <Lightbulb className="w-3.5 h-3.5 text-neutral-400 mt-0.5 flex-shrink-0" />
-                                  <p className="text-xs text-neutral-500">Based on median performance from 200+ health system partners.</p>
-                                </div>
+                                <span className="text-sm font-semibold text-emerald-700 font-mono whitespace-nowrap" data-testid={`value-${leverId}`}>
+                                  ${formatNumber(dynamicValue)}
+                                </span>
                               </div>
-                            </>
-                          );
-                        })()}
+                            );
+                          })}
+                        </div>
+                        
+                        <div className="mt-4 pt-4 border-t border-neutral-200">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-neutral-900">TOTAL PROJECTED VALUE:</span>
+                            <span className="text-lg font-bold text-emerald-700 font-mono" data-testid="total-projected-value">
+                              ${formatNumber(totalProjectedValue)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-neutral-500 mt-1">(Before investment costs)</p>
+                          <div className="flex items-start gap-1.5 mt-2">
+                            <Lightbulb className="w-3.5 h-3.5 text-neutral-400 mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-neutral-500">Calculated from your inputs and posture settings.</p>
+                          </div>
+                        </div>
 
                         <button
                           type="button"
@@ -2167,26 +2353,25 @@ export default function ObjectiveSelectionScreen({
                                 {Array.from(selectedLeverIds).map((leverId, idx) => {
                                   const content = DRIVER_CONTENT[leverId];
                                   if (!content) return null;
-                                  const baseValue = content.referenceValue;
                                   return (
                                     <tr key={leverId} className={idx % 2 === 0 ? "bg-neutral-50/50" : ""}>
                                       <td className="py-2 pr-4 font-medium text-neutral-800">{content.label}</td>
-                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(Math.round(baseValue * 0.7))}</td>
-                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(baseValue)}</td>
-                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(Math.round(baseValue * 1.3))}</td>
+                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(getDriverValueForPosture(leverId, "conservative"))}</td>
+                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(getDriverValueForPosture(leverId, "typical"))}</td>
+                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(getDriverValueForPosture(leverId, "aggressive"))}</td>
                                     </tr>
                                   );
                                 })}
                                 <tr className="border-t-2 border-neutral-300 font-bold">
                                   <td className="py-2 pr-4 text-neutral-900">TOTAL</td>
                                   <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
-                                    ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 0.7, 0)))}
+                                    ${formatNumber(getTotalForPosture("conservative"))}
                                   </td>
                                   <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
-                                    ${formatNumber(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0), 0))}
+                                    ${formatNumber(getTotalForPosture("typical"))}
                                   </td>
                                   <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
-                                    ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 1.3, 0)))}
+                                    ${formatNumber(getTotalForPosture("aggressive"))}
                                   </td>
                                 </tr>
                               </tbody>
@@ -3113,24 +3298,15 @@ export default function ObjectiveSelectionScreen({
                 {/* Step 3: Investment */}
                 {modelSetupStep === 3 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
-                    {/* Context Callout */}
-                    {(() => {
-                      const postureMultiplier = detectedPosture === "conservative" ? 0.7 : detectedPosture === "aggressive" ? 1.3 : 1.0;
-                      const calculatedValue = Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => {
-                        const content = DRIVER_CONTENT[leverId];
-                        return sum + (content?.referenceValue || 0);
-                      }, 0) * postureMultiplier);
-                      return (
-                        <div className="mb-6 p-4 bg-amber-50/60 border border-amber-200 rounded-xl" data-testid="investment-context-callout">
-                          <div className="flex items-start gap-3">
-                            <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-amber-900">
-                              You've modeled <span className="font-semibold font-mono">~${formatNumber(calculatedValue)}</span> in annual value. Now let's account for what this investment costs.
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })()}
+                    {/* Context Callout - uses dynamic totalProjectedValue */}
+                    <div className="mb-6 p-4 bg-amber-50/60 border border-amber-200 rounded-xl" data-testid="investment-context-callout">
+                      <div className="flex items-start gap-3">
+                        <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-amber-900">
+                          You've modeled <span className="font-semibold font-mono">~${formatNumber(totalProjectedValue)}</span> in annual value. Now let's account for what this investment costs.
+                        </p>
+                      </div>
+                    </div>
                     
                     <p className="text-sm text-neutral-600 mb-6">
                       How is this investment shaped?
@@ -3401,14 +3577,10 @@ export default function ObjectiveSelectionScreen({
                         </div>
                       )}
 
-                      {/* Multi-Year Projection Table */}
+                      {/* Multi-Year Projection Table - uses dynamic totalProjectedValue */}
                       {contractYears !== null && (pricingModel === "per-clinician" ? perClinicianCost !== null : enterpriseAnnualCost !== null) && (
                         (() => {
-                          const postureMultiplier = detectedPosture === "conservative" ? 0.7 : detectedPosture === "aggressive" ? 1.3 : 1.0;
-                          const annualValue = Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => {
-                            const content = DRIVER_CONTENT[leverId];
-                            return sum + (content?.referenceValue || 0);
-                          }, 0) * postureMultiplier);
+                          const annualValue = totalProjectedValue; // Dynamic calculation
                           const annualCost = pricingModel === "per-clinician" 
                             ? effectiveClinicians * (perClinicianCost || 0) * 12 
                             : (enterpriseAnnualCost || 0);
