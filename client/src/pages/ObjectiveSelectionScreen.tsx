@@ -2925,6 +2925,9 @@ export default function ObjectiveSelectionScreen({
                           <p className="text-xs text-neutral-500 mt-2">
                             Monthly subscription cost per licensed provider
                           </p>
+                          <p className="text-xs text-neutral-400 mt-1 italic">
+                            Tip: Enterprise contracts often have lower per-provider pricing
+                          </p>
                           {perClinicianCost !== null && effectiveClinicians > 0 && (
                             <div className="mt-4 p-4 bg-neutral-50 rounded-xl border border-neutral-100" data-testid="live-calculation-box">
                               <div className="text-xs font-semibold text-neutral-700 mb-2">Your calculation:</div>
