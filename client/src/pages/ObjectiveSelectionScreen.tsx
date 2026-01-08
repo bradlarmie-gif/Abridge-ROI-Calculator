@@ -1824,35 +1824,31 @@ export default function ObjectiveSelectionScreen({
                         )}
                       </div>
 
-                      {/* Live Calculation Summary */}
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <BarChart3 className="w-4 h-4 text-emerald-700" />
-                          <span className="text-sm font-semibold text-emerald-800">YOUR SCENARIO</span>
+                      {/* Live Calculation Summary - Only show when both fields have values */}
+                      {effectiveClinicians > 0 && effectiveEncounters > 0 && (
+                        <div 
+                          className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 animate-in fade-in duration-200"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <BarChart3 className="w-4 h-4 text-emerald-700" />
+                            <span className="text-sm font-semibold text-emerald-800">YOUR SCENARIO</span>
+                          </div>
+                          <div className="text-sm text-emerald-700">
+                            <span className="font-mono">{formatNumber(effectiveClinicians)}</span> providers{" "}
+                            <span className="text-emerald-500 mx-1">×</span>{" "}
+                            <span className="font-mono">{formatNumber(effectiveEncounters)}</span> encounters{" "}
+                            <span className="text-emerald-500 mx-1">×</span>{" "}
+                            <span className="font-mono">{utilizationPercent ?? 0}%</span> utilization
+                          </div>
+                          <div className="mt-2 pt-2 border-t border-emerald-200">
+                            <span className="text-emerald-700">=</span>{" "}
+                            <span className="font-semibold text-emerald-800 font-mono text-lg">
+                              {formatNumber(Math.round(effectiveEncounters * ((utilizationPercent ?? 0) / 100)))}
+                            </span>{" "}
+                            <span className="text-emerald-700">Abridge-documented encounters per year</span>
+                          </div>
                         </div>
-                        {effectiveClinicians === 0 || effectiveEncounters === 0 ? (
-                          <p className="text-sm text-emerald-700">
-                            Enter your providers and encounter volume above to see your projected Abridge-documented encounters.
-                          </p>
-                        ) : (
-                          <>
-                            <div className="text-sm text-emerald-700">
-                              <span className="font-mono">{formatNumber(effectiveClinicians)}</span> providers{" "}
-                              <span className="text-emerald-500 mx-1">×</span>{" "}
-                              <span className="font-mono">{formatNumber(effectiveEncounters)}</span> encounters{" "}
-                              <span className="text-emerald-500 mx-1">×</span>{" "}
-                              <span className="font-mono">{utilizationPercent ?? 0}%</span> utilization
-                            </div>
-                            <div className="mt-2 pt-2 border-t border-emerald-200">
-                              <span className="text-emerald-700">=</span>{" "}
-                              <span className="font-semibold text-emerald-800 font-mono text-lg">
-                                {formatNumber(Math.round(effectiveEncounters * ((utilizationPercent ?? 0) / 100)))}
-                              </span>{" "}
-                              <span className="text-emerald-700">Abridge-documented encounters per year</span>
-                            </div>
-                          </>
-                        )}
-                      </div>
+                      )}
                     </div>
 
                     <div className="mt-8 flex items-center justify-between gap-4">

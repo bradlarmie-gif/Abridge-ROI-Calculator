@@ -1,0 +1,57 @@
+Fix the "YOUR SCENARIO" box behavior on Model Setup Tab 1 (Adoption) to reduce redundant messaging:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HIDE "YOUR SCENARIO" BOX UNTIL DATA EXISTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CURRENT BEHAVIOR:
+The green "YOUR SCENARIO" box is always visible. When fields are empty, it shows instructional text: "Enter your providers and encounter volume above to see your projected Abridge-documented encounters."
+
+NEW BEHAVIOR:
+
+WHEN FIELDS ARE EMPTY:
+- Do not display the "YOUR SCENARIO" box at all
+- The box should be completely hidden (not just empty)
+
+WHEN BOTH PROVIDERS AND ENCOUNTERS ARE FILLED:
+- Show the "YOUR SCENARIO" box with the calculation
+- Display: "📊 YOUR SCENARIO"
+- Show: "[X] providers × [Y] encounters × [Z]% utilization"
+- Show: "= [calculated] Abridge-documented encounters per year"
+
+REAL-TIME UPDATES:
+- If user clears either providers or encounters field, hide the box again
+- As they type or adjust utilization slider, update the calculation in real-time
+- Smooth fade-in animation when box appears (200ms)
+- Smooth fade-out animation when box disappears (200ms)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VISUAL SPECIFICATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The box should:
+- Maintain existing green/light background styling
+- Keep the chart icon (📊)
+- Keep the "YOUR SCENARIO" heading
+- Use the same padding and spacing as current design
+- Appear below the "Why this matters" section (same position as now)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KEEP EXISTING MESSAGING (NO CHANGES)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These remain unchanged:
+1. Blue info box at top: "The Blueprint showed a reference scenario. Now input YOUR organization's actual numbers to see your specific ROI."
+
+2. Form validation at bottom: "Please enter number of providers and annual encounters" (shown when trying to proceed without filling required fields)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TECHNICAL NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trigger conditions:
+- Show box when: (providers field has value) AND (encounters field has value)
+- Hide box when: (providers field is empty) OR (encounters field is empty)
+- Utilization slider does not affect visibility (only the calculation if box is shown)
+
+This creates a cleaner UI with progressive disclosure and provides immediate feedback when users enter their data.
