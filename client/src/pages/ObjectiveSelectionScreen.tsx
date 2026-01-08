@@ -2922,18 +2922,9 @@ export default function ObjectiveSelectionScreen({
                               data-testid="input-per-clinician-cost"
                             />
                           </div>
-                          <div className="mt-2 space-y-1">
-                            <p className="text-xs text-neutral-500">
-                              Monthly subscription cost per licensed provider
-                            </p>
-                            <div className="flex items-start gap-2 text-xs text-neutral-500">
-                              <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-                              <div>
-                                <p>Typical range: $100-150 per provider/month</p>
-                                <p className="mt-0.5">Enterprise contracts: Often lower per-unit pricing</p>
-                              </div>
-                            </div>
-                          </div>
+                          <p className="text-xs text-neutral-500 mt-2">
+                            Monthly subscription cost per licensed provider
+                          </p>
                           {perClinicianCost !== null && effectiveClinicians > 0 && (
                             <div className="mt-4 p-4 bg-neutral-50 rounded-xl border border-neutral-100" data-testid="live-calculation-box">
                               <div className="text-xs font-semibold text-neutral-700 mb-2">Your calculation:</div>
