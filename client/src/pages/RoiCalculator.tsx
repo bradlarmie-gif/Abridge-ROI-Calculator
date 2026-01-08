@@ -2887,16 +2887,79 @@ export default function RoiCalculator({
                         doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
                       };
 
-                      // Helper for new page
+                      // Helper for subtle geometric pattern (Abridge brand element)
+                      const addGeometricPattern = (isCover = false) => {
+                        doc.setDrawColor(240, 51, 25, 0.08); // Abridge red with low opacity
+                        doc.setLineWidth(0.3);
+                        
+                        if (isCover) {
+                          // Cover page: larger, more prominent pattern in top-right corner
+                          const startX = pageWidth - 80;
+                          const startY = 15;
+                          const size = 6;
+                          const gap = 10;
+                          
+                          for (let row = 0; row < 8; row++) {
+                            for (let col = 0; col < 8; col++) {
+                              const x = startX + col * gap;
+                              const yPos = startY + row * gap;
+                              // Alternate between circles and squares
+                              if ((row + col) % 2 === 0) {
+                                doc.circle(x, yPos, size / 3, 'S');
+                              } else {
+                                doc.rect(x - size / 4, yPos - size / 4, size / 2, size / 2, 'S');
+                              }
+                            }
+                          }
+                          
+                          // Bottom-left decorative element
+                          const bottomX = 15;
+                          const bottomY = pageHeight - 60;
+                          for (let row = 0; row < 4; row++) {
+                            for (let col = 0; col < 4; col++) {
+                              const x = bottomX + col * gap;
+                              const yPos = bottomY + row * gap;
+                              if ((row + col) % 2 === 0) {
+                                doc.circle(x, yPos, size / 3, 'S');
+                              }
+                            }
+                          }
+                        } else {
+                          // Regular pages: subtle corner accent only
+                          const cornerX = pageWidth - 25;
+                          const cornerY = 15;
+                          const smallSize = 4;
+                          const smallGap = 6;
+                          
+                          for (let row = 0; row < 3; row++) {
+                            for (let col = 0; col < 3; col++) {
+                              const x = cornerX + col * smallGap;
+                              const yPos = cornerY + row * smallGap;
+                              if ((row + col) % 2 === 0) {
+                                doc.circle(x, yPos, smallSize / 4, 'S');
+                              }
+                            }
+                          }
+                        }
+                        
+                        // Reset draw color
+                        doc.setDrawColor(200);
+                      };
+
+                      // Helper for new page with optional pattern
                       let pageNumber = 1;
-                      const newPage = () => {
+                      const newPage = (addPattern = true) => {
                         addFooter(pageNumber);
                         doc.addPage();
                         pageNumber++;
                         y = margin;
+                        if (addPattern) {
+                          addGeometricPattern(false);
+                        }
                       };
 
                       // PAGE 1: Cover Page
+                      addGeometricPattern(true);
                       y = pageHeight / 3;
                       doc.setFontSize(24);
                       doc.setTextColor(0);
@@ -3017,6 +3080,200 @@ export default function RoiCalculator({
 
                       // VALUE DRIVER DETAILS
                       if (exportContentSelections.valueDriverDetails) {
+                        // Helper function for step-by-step calculations for each driver
+                        const getDriverCalculationSteps = (driverId: LeverId): string[] => {
+                          const encountersWithAbridge = Math.round(inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100));
+                          const totalHoursReclaimed = (inputs.minutesSavedPerEncounter * encountersWithAbridge) / 60;
+                          
+                          switch (driverId) {
+                            case "patientAccess": {
+                              const minutesSaved = inputs.minutesSavedPerEncounter;
+                              const totalMinutes = minutesSaved * encountersWithAbridge;
+                              const hoursReturned = totalMinutes / 60;
+                              const realizationPct = inputs.patientAccess.pctTimeToNewVisits;
+                              const usableHours = hoursReturned * (realizationPct / 100);
+                              const usableMinutes = usableHours * 60;
+                              const visitDuration = inputs.patientAccess.avgVisitDurationMinutes;
+                              const additionalVisits = usableMinutes / visitDuration;
+                              const revenuePerVisit = inputs.patientAccess.avgNetRevenuePerVisit;
+                              const value = additionalVisits * revenuePerVisit;
+                              
+                              return [
+                                `Step 1: Time Returned`,
+                                `${minutesSaved} min saved per encounter x ${encountersWithAbridge.toLocaleString()} encounters = ${totalMinutes.toLocaleString()} minutes`,
+                                `${totalMinutes.toLocaleString()} minutes / 60 = ${hoursReturned.toLocaleString(undefined, {maximumFractionDigits: 0})} hours returned annually`,
+                                ``,
+                                `Step 2: Realized Capacity`,
+                                `${hoursReturned.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x ${realizationPct}% realization = ${usableHours.toLocaleString(undefined, {maximumFractionDigits: 0})} usable hours`,
+                                `(Not all time becomes visits - some goes to admin, rest, quality improvement)`,
+                                ``,
+                                `Step 3: New Visit Capacity`,
+                                `${usableHours.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x 60 min = ${usableMinutes.toLocaleString(undefined, {maximumFractionDigits: 0})} minutes`,
+                                `${usableMinutes.toLocaleString(undefined, {maximumFractionDigits: 0})} min / ${visitDuration} min per visit = ${additionalVisits.toLocaleString(undefined, {maximumFractionDigits: 0})} additional visits`,
+                                ``,
+                                `Step 4: Revenue Impact`,
+                                `${additionalVisits.toLocaleString(undefined, {maximumFractionDigits: 0})} visits x $${revenuePerVisit} per visit = ${formatCurrency(value)}`,
+                                ``,
+                                `Key Assumptions:`,
+                                `- Minutes saved: ${minutesSaved} min per encounter`,
+                                `- Capacity realization: ${realizationPct}%`,
+                                `- Visit duration: ${visitDuration} minutes`,
+                                `- Revenue per visit: $${revenuePerVisit} (net collectible)`,
+                              ];
+                            }
+                            case "workforce": {
+                              const providers = inputs.workforce.providerCount;
+                              const turnoverRate = inputs.workforce.baselineAttritionRate;
+                              const expectedDepartures = providers * (turnoverRate / 100);
+                              const burnoutAttribution = inputs.workforce.pctAttritionLinkedToBurnout;
+                              const burnoutDepartures = expectedDepartures * (burnoutAttribution / 100);
+                              const abridgePrevention = inputs.workforce.pctBurnoutExitsAvoided;
+                              const departuresAvoided = burnoutDepartures * (abridgePrevention / 100);
+                              const costPerDeparture = inputs.workforce.costPerDeparture;
+                              const value = departuresAvoided * costPerDeparture;
+                              
+                              return [
+                                `Step 1: Baseline Turnover`,
+                                `${providers} providers x ${turnoverRate}% turnover rate = ${expectedDepartures.toFixed(1)} expected departures/year`,
+                                ``,
+                                `Step 2: Abridge Impact`,
+                                `${expectedDepartures.toFixed(1)} departures x ${burnoutAttribution}% burnout-related = ${burnoutDepartures.toFixed(2)} burnout-driven departures`,
+                                `${burnoutDepartures.toFixed(2)} x ${abridgePrevention}% preventable = ${departuresAvoided.toFixed(2)} departures avoided`,
+                                ``,
+                                `Step 3: Cost Savings`,
+                                `${departuresAvoided.toFixed(2)} departures avoided x $${costPerDeparture.toLocaleString()} = ${formatCurrency(value)}`,
+                                ``,
+                                `Key Assumptions:`,
+                                `- Turnover rate: ${turnoverRate}% (typical for outpatient providers)`,
+                                `- Burnout attribution: ${burnoutAttribution}% (per JAMA physician workforce studies)`,
+                                `- Abridge prevention: ${abridgePrevention}% (documentation is major driver)`,
+                                `- Replacement cost: $${costPerDeparture.toLocaleString()} (recruiting, onboarding, coverage)`,
+                              ];
+                            }
+                            case "wrvu": {
+                              const baselineWrvu = inputs.baselineWrvuPerEncounter;
+                              const currentWrvus = encountersWithAbridge * baselineWrvu;
+                              const improvementPct = inputs.wrvu.pctIncreaseWrvuPerEncounter;
+                              const additionalWrvus = currentWrvus * (improvementPct / 100);
+                              const revenuePerWrvu = inputs.wrvu.wrvuConversionFactor;
+                              const value = additionalWrvus * revenuePerWrvu;
+                              
+                              return [
+                                `Step 1: Baseline wRVU Performance`,
+                                `${encountersWithAbridge.toLocaleString()} encounters x ${baselineWrvu.toFixed(2)} wRVU = ${currentWrvus.toLocaleString(undefined, {maximumFractionDigits: 0})} current wRVUs`,
+                                ``,
+                                `Step 2: Documentation Quality Lift`,
+                                `${improvementPct}% improvement in wRVU capture`,
+                                ``,
+                                `Step 3: Additional wRVUs Captured`,
+                                `${currentWrvus.toLocaleString(undefined, {maximumFractionDigits: 0})} wRVUs x ${improvementPct}% = ${additionalWrvus.toLocaleString(undefined, {maximumFractionDigits: 0})} additional wRVUs`,
+                                ``,
+                                `Step 4: Revenue Impact`,
+                                `${additionalWrvus.toLocaleString(undefined, {maximumFractionDigits: 0})} wRVUs x $${revenuePerWrvu} per wRVU = ${formatCurrency(value)}`,
+                                ``,
+                                `Key Assumptions:`,
+                                `- Baseline wRVU: ${baselineWrvu.toFixed(2)} per encounter`,
+                                `- Documentation lift: ${improvementPct}% (better real-time capture)`,
+                                `- Revenue per wRVU: $${revenuePerWrvu} (blended average)`,
+                              ];
+                            }
+                            case "hcc": {
+                              const uniquePatients = Math.round(encountersWithAbridge / 2.5);
+                              const maPct = inputs.hcc.pctMedicareAdvantage;
+                              const maPatients = Math.round(uniquePatients * (maPct / 100));
+                              const conditionsPerMember = inputs.hcc.avgConditionsPerMember;
+                              const totalConditions = maPatients * conditionsPerMember;
+                              const missedPct = inputs.hcc.pctConditionsMissed;
+                              const missedConditions = totalConditions * (missedPct / 100);
+                              const recapturePct = inputs.hcc.pctMissedConditionsRecaptured;
+                              const recaptured = missedConditions * (recapturePct / 100);
+                              const rafGain = inputs.hcc.rafGainPerCondition;
+                              const pmpm = inputs.hcc.pmpmBenchmark;
+                              
+                              return [
+                                `Step 1: Derive MA Population`,
+                                `${encountersWithAbridge.toLocaleString()} encounters / 2.5 = ${uniquePatients.toLocaleString()} unique patients`,
+                                `${uniquePatients.toLocaleString()} x ${maPct}% MA = ${maPatients.toLocaleString()} MA patients`,
+                                ``,
+                                `Step 2: Diagnostic Gap`,
+                                `${maPatients.toLocaleString()} patients x ${conditionsPerMember} conditions = ${totalConditions.toLocaleString(undefined, {maximumFractionDigits: 0})} total`,
+                                `${totalConditions.toLocaleString(undefined, {maximumFractionDigits: 0})} x ${missedPct}% gap = ${missedConditions.toLocaleString(undefined, {maximumFractionDigits: 0})} conditions missed`,
+                                ``,
+                                `Step 3: Abridge Recapture`,
+                                `${missedConditions.toLocaleString(undefined, {maximumFractionDigits: 0})} missed x ${recapturePct}% recapture = ${recaptured.toLocaleString(undefined, {maximumFractionDigits: 0})} documented`,
+                                ``,
+                                `Step 4: Revenue Impact`,
+                                `RAF gain x $${pmpm}/PMPM x 12 months = ${formatCurrency(driverValues[driverId])}`,
+                                ``,
+                                `Key Assumptions:`,
+                                `- MA population: ${maPct}% of patients`,
+                                `- Avg conditions: ${conditionsPerMember} per member`,
+                                `- Gap rate: ${missedPct}% undocumented`,
+                                `- PMPM benchmark: $${pmpm}`,
+                              ];
+                            }
+                            case "denials": {
+                              const avgRevenue = inputs.denials.avgRevenuePerEncounter;
+                              const totalRevenue = encountersWithAbridge * avgRevenue;
+                              const denialRate = inputs.denials.baselineDenialRate;
+                              const deniedAmount = totalRevenue * (denialRate / 100);
+                              const docPct = inputs.denials.pctDenialsFromDocumentation;
+                              const docDenials = deniedAmount * (docPct / 100);
+                              const preventPct = inputs.denials.pctDocDenialsRecovered;
+                              const prevented = docDenials * (preventPct / 100);
+                              
+                              return [
+                                `Step 1: Derive Revenue Base`,
+                                `${encountersWithAbridge.toLocaleString()} encounters x $${avgRevenue}/visit = ${formatCurrency(totalRevenue)}`,
+                                ``,
+                                `Step 2: Baseline Denials`,
+                                `${formatCurrency(totalRevenue)} x ${denialRate}% denial rate = ${formatCurrency(deniedAmount)} denied`,
+                                ``,
+                                `Step 3: Documentation-Related Denials`,
+                                `${formatCurrency(deniedAmount)} x ${docPct}% doc-related = ${formatCurrency(docDenials)}`,
+                                ``,
+                                `Step 4: Abridge Prevention`,
+                                `${formatCurrency(docDenials)} x ${preventPct}% preventable = ${formatCurrency(prevented)}`,
+                                ``,
+                                `Key Assumptions:`,
+                                `- Revenue per encounter: $${avgRevenue}`,
+                                `- Baseline denial rate: ${denialRate}%`,
+                                `- Doc-related denials: ${docPct}%`,
+                                `- Preventable: ${preventPct}%`,
+                              ];
+                            }
+                            case "overtime": {
+                              const afterHoursPct = inputs.overtime.pctAfterHours;
+                              const afterHours = totalHoursReclaimed * (afterHoursPct / 100);
+                              const otReductionPct = inputs.overtime.pctOvertimeReduced;
+                              const otAvoided = afterHours * (otReductionPct / 100);
+                              const otRate = inputs.overtime.blendedOvertimeRate;
+                              const value = otAvoided * otRate;
+                              
+                              return [
+                                `Step 1: Hours Reclaimed`,
+                                `${inputs.minutesSavedPerEncounter} min x ${encountersWithAbridge.toLocaleString()} encounters = ${totalHoursReclaimed.toLocaleString(undefined, {maximumFractionDigits: 0})} hours`,
+                                ``,
+                                `Step 2: After-Hours Portion`,
+                                `${totalHoursReclaimed.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x ${afterHoursPct}% after-hours = ${afterHours.toLocaleString(undefined, {maximumFractionDigits: 0})} hrs`,
+                                ``,
+                                `Step 3: Overtime Reduction`,
+                                `${afterHours.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x ${otReductionPct}% converted = ${otAvoided.toLocaleString(undefined, {maximumFractionDigits: 0})} OT hours avoided`,
+                                ``,
+                                `Step 4: Cost Savings`,
+                                `${otAvoided.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x $${otRate}/hr = ${formatCurrency(value)}`,
+                                ``,
+                                `Key Assumptions:`,
+                                `- After-hours work: ${afterHoursPct}%`,
+                                `- OT reduction: ${otReductionPct}%`,
+                                `- OT rate: $${otRate}/hr`,
+                              ];
+                            }
+                            default:
+                              return [];
+                          }
+                        };
+                        
                         // Uses global driversForExport (useMemo)
                         driversForExport.forEach((id) => {
                           newPage();
@@ -3047,10 +3304,30 @@ export default function RoiCalculator({
                           doc.text("How This Was Calculated", margin, y);
                           y += 7;
                           doc.setFont("helvetica", "normal");
-                          doc.setFontSize(10);
-                          doc.text("Calculations are based on evidence from 50+ health system implementations.", margin, y);
-                          y += 5;
-                          doc.text("Specific methodology varies by driver and utilizes organizational inputs.", margin, y);
+                          doc.setFontSize(9);
+                          
+                          const steps = getDriverCalculationSteps(id);
+                          steps.forEach((step) => {
+                            if (step === '') {
+                              y += 3;
+                            } else if (step.startsWith('Step ') || step.startsWith('Key ')) {
+                              doc.setFont("helvetica", "bold");
+                              doc.text(step, margin, y);
+                              doc.setFont("helvetica", "normal");
+                              y += 5;
+                            } else {
+                              doc.text(step, margin, y);
+                              y += 4;
+                            }
+                            
+                            // Check if we need a new page
+                            if (y > pageHeight - 30) {
+                              addFooter(pageNumber);
+                              doc.addPage();
+                              pageNumber++;
+                              y = margin;
+                            }
+                          });
                           
                           addFooter(pageNumber);
                         });
@@ -3069,7 +3346,7 @@ export default function RoiCalculator({
                         y += 7;
                         doc.setFont("helvetica", "normal");
                         doc.setFontSize(10);
-                        const aboutText = "This ROI model uses evidence-based assumptions from 50+ health system implementations of Abridge ambient documentation. All calculations are transparent and adjustable to reflect your organization's specific characteristics.";
+                        const aboutText = "This ROI model uses evidence-based assumptions from 200+ health system partners using Abridge ambient documentation. All calculations are transparent and adjustable to reflect your organization's specific characteristics.";
                         const aboutLines = doc.splitTextToSize(aboutText, contentWidth);
                         doc.text(aboutLines, margin, y);
                         y += aboutLines.length * 5 + 10;

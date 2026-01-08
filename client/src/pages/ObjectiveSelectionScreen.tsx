@@ -1298,7 +1298,7 @@ export default function ObjectiveSelectionScreen({
                   Value Blueprint
                 </h2>
                 <p className="text-lg text-neutral-600 leading-relaxed">
-                  See how each driver creates value using typical assumptions from 50+ health systems.
+                  See how each driver creates value using typical assumptions from 200+ health system partners.
                 </p>
               </div>
 
@@ -1527,7 +1527,7 @@ export default function ObjectiveSelectionScreen({
                     <div>
                       <h4 className="font-semibold text-amber-900 mb-2">Important to Know</h4>
                       <p className="text-sm text-amber-800 mb-3">
-                        These calculations use typical assumptions from 50+ health systems. In the next step, you'll customize:
+                        These calculations use typical assumptions from 200+ health system partners. In the next step, you'll customize:
                       </p>
                       <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc">
                         <li>Your organization size and volume</li>
