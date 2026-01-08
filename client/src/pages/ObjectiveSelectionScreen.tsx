@@ -34,6 +34,7 @@ import {
   Settings,
   BarChart3,
   ArrowRight,
+  Sliders,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -2418,23 +2419,28 @@ export default function ObjectiveSelectionScreen({
                     )}
 
                     {/* Fine-Tune Assumptions Section */}
-                    <div className="border border-neutral-200 rounded-xl mb-6">
+                    <div className="border-2 border-[#F03319]/20 bg-gradient-to-r from-[#FFF7F5] to-white rounded-xl mb-6 shadow-sm">
                       <button
                         type="button"
                         onClick={() => setFineTuneExpanded(!fineTuneExpanded)}
                         className="w-full flex items-center justify-between p-4 text-left"
                         data-testid="button-fine-tune-toggle"
                       >
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <ChevronDown className={`w-4 h-4 text-neutral-500 transition-transform ${fineTuneExpanded ? "" : "-rotate-90"}`} />
-                            <span className="text-sm font-semibold text-neutral-900">FINE-TUNE ASSUMPTIONS</span>
-                            <span className="text-xs text-neutral-500">(Optional)</span>
+                        <div className="flex items-center gap-3">
+                          <div className={`flex items-center justify-center w-8 h-8 rounded-lg bg-[#F03319]/10 transition-transform ${fineTuneExpanded ? "rotate-0" : ""}`}>
+                            <Sliders className="w-4 h-4 text-[#F03319]" />
                           </div>
-                          <p className="text-xs text-neutral-500 mt-1 ml-6">
-                            Want more control? Adjust the key assumptions that drive your selected value drivers.
-                          </p>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-[#F03319]">FINE-TUNE ASSUMPTIONS</span>
+                              <span className="text-xs px-2 py-0.5 bg-[#F03319]/10 text-[#F03319] rounded-full font-medium">Optional</span>
+                            </div>
+                            <p className="text-xs text-neutral-600 mt-0.5">
+                              Want more control? Adjust the key assumptions that drive your selected value drivers.
+                            </p>
+                          </div>
                         </div>
+                        <ChevronDown className={`w-5 h-5 text-[#F03319] transition-transform ${fineTuneExpanded ? "" : "-rotate-90"}`} />
                       </button>
                       
                       {fineTuneExpanded && (

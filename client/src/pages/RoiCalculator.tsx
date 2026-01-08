@@ -497,29 +497,27 @@ export default function RoiCalculator({
   return (
     <div className="min-h-screen bg-[#FAFAF8]">
       {/* Header */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onBack}
-                className="shrink-0"
-                data-testid="button-back"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex flex-col gap-2 cursor-pointer" onClick={onBack} data-testid="logo-home">
-                <img 
-                  src={abridgeLogo} 
-                  alt="Abridge" 
-                  className="h-9 md:h-10 w-auto" 
-                />
-                <span className="text-[16px] md:text-[18px] font-semibold text-[#111827] tracking-tight leading-none">
-                  ROI Calculator
-                </span>
-              </div>
+      <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
+        <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="shrink-0"
+              data-testid="button-back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex flex-col gap-2 cursor-pointer" onClick={onBack} data-testid="logo-home">
+              <img 
+                src={abridgeLogo} 
+                alt="Abridge" 
+                className="h-9 md:h-10 w-auto" 
+              />
+              <span className="text-[16px] md:text-[18px] font-semibold text-[#111827] tracking-tight leading-none">
+                ROI Calculator
+              </span>
             </div>
           </div>
         </div>
