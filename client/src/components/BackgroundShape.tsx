@@ -15,11 +15,29 @@ export function BackgroundShape() {
       
       {/* Abridge pattern - top right corner */}
       <div
-        className="absolute -top-20 -right-20 md:-top-16 md:-right-16"
+        className="absolute -top-8 -right-8 md:top-0 md:right-0"
         style={{
-          width: "420px",
-          height: "420px",
-          opacity: 0.045,
+          width: "500px",
+          height: "500px",
+          opacity: 0.065,
+          filter: "saturate(0.75)",
+        }}
+      >
+        <img
+          src={abridgePattern}
+          alt=""
+          className="w-full h-full object-contain"
+          style={{ transform: "translate(25%, -25%)" }}
+        />
+      </div>
+      
+      {/* Abridge pattern - bottom left corner */}
+      <div
+        className="absolute bottom-0 left-0 hidden md:block"
+        style={{
+          width: "520px",
+          height: "520px",
+          opacity: 0.06,
           filter: "saturate(0.7)",
         }}
       >
@@ -27,25 +45,7 @@ export function BackgroundShape() {
           src={abridgePattern}
           alt=""
           className="w-full h-full object-contain"
-          style={{ transform: "rotate(0deg)" }}
-        />
-      </div>
-      
-      {/* Abridge pattern - bottom left corner */}
-      <div
-        className="absolute -bottom-24 -left-24 md:-bottom-20 md:-left-20 hidden md:block"
-        style={{
-          width: "480px",
-          height: "480px",
-          opacity: 0.04,
-          filter: "saturate(0.6)",
-        }}
-      >
-        <img
-          src={abridgePattern}
-          alt=""
-          className="w-full h-full object-contain"
-          style={{ transform: "rotate(180deg)" }}
+          style={{ transform: "translate(-30%, 30%) rotate(180deg)" }}
         />
       </div>
     </div>
