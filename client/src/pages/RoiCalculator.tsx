@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,6 +28,8 @@ import {
 } from "@/lib/SETTING_CONFIG";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { jsPDF } from "jspdf";
 import {
   ArrowLeft,
   Plus,
@@ -46,6 +48,9 @@ import {
   FileX,
   Lightbulb,
   RotateCcw,
+  Download,
+  Mail,
+  Loader2,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -140,6 +145,27 @@ export default function RoiCalculator({
     revenuePerVisitOverride: null as number | null,
     visitLengthOverride: null as number | null,
   });
+
+  // Export form state
+  const [exportForm, setExportForm] = useState({
+    documentTitle: "",
+    organizationName: "",
+    preparedBy: "",
+    customNotes: "",
+  });
+  const [exportContentSelections, setExportContentSelections] = useState({
+    valueDriverDetails: true,
+    methodology: true,
+    modelInputs: true,
+    scenarios: true,
+    appendix: false,
+  });
+  const [exportDriverSelections, setExportDriverSelections] = useState<Set<LeverId>>(new Set());
+  const [exportScenarioSelections, setExportScenarioSelections] = useState<Set<string>>(new Set());
+  const [driverSectionExpanded, setDriverSectionExpanded] = useState(false);
+  const [scenarioSectionExpanded, setScenarioSectionExpanded] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfSuccess, setPdfSuccess] = useState(false);
 
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {
@@ -2328,15 +2354,870 @@ export default function RoiCalculator({
         )}
 
         {activeTab === "export" && (
-          <div className="bg-white rounded-2xl border border-neutral-200 p-8 shadow-sm">
-            <div className="text-center py-16">
-              <FileText className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-neutral-900 mb-2">
-                Export Summary
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <h2 className="text-sm font-bold text-[#F03319] uppercase tracking-wide mb-1">
+                EXECUTIVE SUMMARY EXPORT
               </h2>
               <p className="text-neutral-500">
-                Coming soon - Generate executive PDF reports
+                Create a professional business case document for leadership review
               </p>
+            </div>
+
+            {/* Section 1: Document Settings */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-6">
+                Document Details
+              </h3>
+
+              <div className="space-y-6 max-w-xl">
+                {/* Document Title */}
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                    Document title
+                  </label>
+                  <Input
+                    value={exportForm.documentTitle}
+                    onChange={(e) => setExportForm({ ...exportForm, documentTitle: e.target.value })}
+                    placeholder={`Abridge ROI Analysis - ${careSettingLabel} Deployment`}
+                    data-testid="input-export-title"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">This will appear on the cover page</p>
+                </div>
+
+                {/* Organization Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                    Organization name <span className="font-normal text-neutral-400">(optional)</span>
+                  </label>
+                  <Input
+                    value={exportForm.organizationName}
+                    onChange={(e) => setExportForm({ ...exportForm, organizationName: e.target.value })}
+                    placeholder="Leave blank or enter your organization"
+                    data-testid="input-export-org"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">If provided, appears on cover page</p>
+                </div>
+
+                {/* Date */}
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                    Date
+                  </label>
+                  <Input
+                    type="text"
+                    value={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    readOnly
+                    className="bg-neutral-50"
+                    data-testid="input-export-date"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">Document preparation date</p>
+                </div>
+
+                {/* Prepared By */}
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                    Prepared by <span className="font-normal text-neutral-400">(optional)</span>
+                  </label>
+                  <Input
+                    value={exportForm.preparedBy}
+                    onChange={(e) => setExportForm({ ...exportForm, preparedBy: e.target.value })}
+                    placeholder="Your name or department"
+                    data-testid="input-export-preparedby"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">Attribution for the analysis</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Content Selection */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-2">
+                What to Include
+              </h3>
+              <p className="text-sm text-neutral-500 mb-6">
+                Choose which sections to include in your PDF
+              </p>
+
+              <div className="space-y-4">
+                {/* Executive Summary (always included) */}
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 border border-neutral-200">
+                  <Checkbox checked disabled className="mt-0.5" />
+                  <div className="flex-1">
+                    <div className="font-semibold text-neutral-900">Executive Summary</div>
+                    <p className="text-sm text-neutral-500">1-page overview with headline metrics, value breakdown, and key drivers</p>
+                    <Badge variant="outline" className="mt-2 text-xs">Always included</Badge>
+                  </div>
+                </div>
+
+                {/* Value Driver Details */}
+                <div className="rounded-xl border border-neutral-200 overflow-hidden">
+                  <label className="flex items-start gap-3 p-4 cursor-pointer hover:bg-neutral-50 transition-colors">
+                    <Checkbox
+                      checked={exportContentSelections.valueDriverDetails}
+                      onCheckedChange={(checked) => setExportContentSelections({ ...exportContentSelections, valueDriverDetails: !!checked })}
+                      className="mt-0.5"
+                      data-testid="checkbox-value-drivers"
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold text-neutral-900">Value Driver Details</div>
+                      <p className="text-sm text-neutral-500">Full calculations and methodology for each selected driver</p>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setDriverSectionExpanded(!driverSectionExpanded);
+                        }}
+                        className="text-sm text-blue-600 hover:underline mt-2 flex items-center gap-1"
+                        data-testid="button-expand-drivers"
+                      >
+                        {driverSectionExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                        {enabledDriverIds.length} drivers selected
+                      </button>
+                    </div>
+                  </label>
+                  
+                  {driverSectionExpanded && exportContentSelections.valueDriverDetails && (
+                    <div className="px-4 pb-4 space-y-2 border-t border-neutral-100 pt-3">
+                      {enabledDriverIds.map((id) => (
+                        <label key={id} className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={exportDriverSelections.has(id) || exportDriverSelections.size === 0}
+                            onCheckedChange={(checked) => {
+                              const newSet = new Set(exportDriverSelections);
+                              if (checked) {
+                                newSet.add(id);
+                              } else {
+                                newSet.delete(id);
+                              }
+                              setExportDriverSelections(newSet);
+                            }}
+                            data-testid={`checkbox-driver-${id}`}
+                          />
+                          <span className="text-sm text-neutral-700">{leverLabels[id]}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Methodology & Assumptions */}
+                <label className="flex items-start gap-3 p-4 rounded-xl border border-neutral-200 cursor-pointer hover:bg-neutral-50 transition-colors">
+                  <Checkbox
+                    checked={exportContentSelections.methodology}
+                    onCheckedChange={(checked) => setExportContentSelections({ ...exportContentSelections, methodology: !!checked })}
+                    className="mt-0.5"
+                    data-testid="checkbox-methodology"
+                  />
+                  <div className="flex-1">
+                    <div className="font-semibold text-neutral-900">Methodology & Assumptions</div>
+                    <p className="text-sm text-neutral-500">How we calculated ROI, key assumptions, and data sources</p>
+                    <p className="text-xs text-neutral-400 mt-1">Includes: calculation approach, posture selection, and assumption transparency</p>
+                  </div>
+                </label>
+
+                {/* Model Inputs */}
+                <label className="flex items-start gap-3 p-4 rounded-xl border border-neutral-200 cursor-pointer hover:bg-neutral-50 transition-colors">
+                  <Checkbox
+                    checked={exportContentSelections.modelInputs}
+                    onCheckedChange={(checked) => setExportContentSelections({ ...exportContentSelections, modelInputs: !!checked })}
+                    className="mt-0.5"
+                    data-testid="checkbox-model-inputs"
+                  />
+                  <div className="flex-1">
+                    <div className="font-semibold text-neutral-900">Model Inputs</div>
+                    <p className="text-sm text-neutral-500">Your organization's specific inputs (providers, encounters, utilization, etc.)</p>
+                  </div>
+                </label>
+
+                {/* Scenario Comparisons */}
+                {scenarios.length > 0 ? (
+                  <div className="rounded-xl border border-neutral-200 overflow-hidden">
+                    <label className="flex items-start gap-3 p-4 cursor-pointer hover:bg-neutral-50 transition-colors">
+                      <Checkbox
+                        checked={exportContentSelections.scenarios}
+                        onCheckedChange={(checked) => setExportContentSelections({ ...exportContentSelections, scenarios: !!checked })}
+                        className="mt-0.5"
+                        data-testid="checkbox-scenarios"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-neutral-900">Scenario Comparisons</div>
+                        <p className="text-sm text-neutral-500">Side-by-side comparison of different deployment configurations</p>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setScenarioSectionExpanded(!scenarioSectionExpanded);
+                          }}
+                          className="text-sm text-blue-600 hover:underline mt-2 flex items-center gap-1"
+                          data-testid="button-expand-scenarios"
+                        >
+                          {scenarioSectionExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                          Select scenarios to include
+                        </button>
+                      </div>
+                    </label>
+                    
+                    {scenarioSectionExpanded && exportContentSelections.scenarios && (
+                      <div className="px-4 pb-4 space-y-2 border-t border-neutral-100 pt-3">
+                        {scenarios.map((scenario) => (
+                          <label key={scenario.id} className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                              checked={exportScenarioSelections.has(scenario.id) || exportScenarioSelections.size === 0}
+                              onCheckedChange={(checked) => {
+                                const newSet = new Set(exportScenarioSelections);
+                                if (checked) {
+                                  newSet.add(scenario.id);
+                                } else {
+                                  newSet.delete(scenario.id);
+                                }
+                                setExportScenarioSelections(newSet);
+                              }}
+                              data-testid={`checkbox-scenario-${scenario.id}`}
+                            />
+                            <span className="text-sm text-neutral-700">{scenario.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50">
+                    <p className="text-sm text-neutral-500">
+                      No scenarios created yet. Go to Scenario Builder to create comparisons.
+                    </p>
+                  </div>
+                )}
+
+                {/* Appendix */}
+                <label className="flex items-start gap-3 p-4 rounded-xl border border-neutral-200 cursor-pointer hover:bg-neutral-50 transition-colors">
+                  <Checkbox
+                    checked={exportContentSelections.appendix}
+                    onCheckedChange={(checked) => setExportContentSelections({ ...exportContentSelections, appendix: !!checked })}
+                    className="mt-0.5"
+                    data-testid="checkbox-appendix"
+                  />
+                  <div className="flex-1">
+                    <div className="font-semibold text-neutral-900">Appendix: All Available Drivers</div>
+                    <p className="text-sm text-neutral-500">Include calculation details for drivers NOT selected in your model</p>
+                    <p className="text-xs text-neutral-400 mt-1">Educational reference showing what other value drivers exist</p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Page estimate */}
+              <div className="mt-6 pt-4 border-t border-neutral-200">
+                <p className="text-sm text-neutral-600">
+                  Your PDF will include:{" "}
+                  <span className="font-semibold">
+                    {(() => {
+                      let sections = 2; // Cover + Executive Summary
+                      let pages = 2;
+                      if (exportContentSelections.valueDriverDetails) {
+                        sections++;
+                        pages += enabledDriverIds.length * 0.75;
+                      }
+                      if (exportContentSelections.methodology) {
+                        sections++;
+                        pages += 1;
+                      }
+                      if (exportContentSelections.modelInputs) {
+                        sections++;
+                        pages += 0.5;
+                      }
+                      if (exportContentSelections.scenarios && scenarios.length > 0) {
+                        sections++;
+                        pages += scenarios.length;
+                      }
+                      if (exportContentSelections.appendix) {
+                        sections++;
+                        pages += 1.5;
+                      }
+                      return `${sections} sections, approximately ${Math.ceil(pages)}-${Math.ceil(pages + 1)} pages`;
+                    })()}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            {/* Section 3: Custom Notes */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-2">
+                Custom Notes <span className="font-normal text-neutral-400">(Optional)</span>
+              </h3>
+              <p className="text-sm text-neutral-500 mb-4">
+                Add context, talking points, or background for your leadership team. These notes will appear in the Executive Summary section.
+              </p>
+
+              <Textarea
+                value={exportForm.customNotes}
+                onChange={(e) => {
+                  if (e.target.value.length <= 1000) {
+                    setExportForm({ ...exportForm, customNotes: e.target.value });
+                  }
+                }}
+                placeholder="Example: This analysis models a phased Abridge deployment starting with our cardiology and primary care departments (40 providers). Based on early adoption metrics, we project expansion to 100 providers. The expansion scenario reflects this growth plan with expected utilization improvements and inclusion of our Medicare Advantage population for HCC capture."
+                className="min-h-[160px]"
+                data-testid="textarea-custom-notes"
+              />
+              <p className="text-xs text-neutral-500 mt-2">
+                {exportForm.customNotes.length} / 1000 characters
+              </p>
+
+              <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <p className="text-xs text-amber-700">
+                  Use this space to:
+                </p>
+                <ul className="text-xs text-amber-600 mt-1 space-y-0.5 list-disc list-inside">
+                  <li>Provide organizational context</li>
+                  <li>Highlight key priorities or constraints</li>
+                  <li>Add next steps or recommendations</li>
+                  <li>Reference internal initiatives or strategic goals</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Section 4: Preview & Download */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-2">
+                Preview
+              </h3>
+              <p className="text-sm text-neutral-500 mb-6">
+                Your PDF will be structured as follows:
+              </p>
+
+              {/* Document Structure Outline */}
+              <div className="bg-neutral-50 rounded-xl border border-neutral-200 p-6 font-mono text-sm">
+                <div className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-4">
+                  Document Structure
+                </div>
+
+                <div className="space-y-4 text-neutral-700">
+                  <div>
+                    <div className="font-semibold">Page 1: Cover Page</div>
+                    <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
+                      <li>Document title</li>
+                      {exportForm.organizationName && <li>Organization name</li>}
+                      <li>Date</li>
+                      {exportForm.preparedBy && <li>Prepared by</li>}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <div className="font-semibold">Page 2: Executive Summary</div>
+                    <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
+                      <li>Model overview</li>
+                      <li>Financial results</li>
+                      <li>Value breakdown</li>
+                      <li>Key drivers summary</li>
+                      {exportForm.customNotes && <li>Custom notes</li>}
+                    </ul>
+                  </div>
+
+                  {exportContentSelections.valueDriverDetails && (
+                    <div>
+                      <div className="font-semibold">Pages 3-{2 + Math.ceil(enabledDriverIds.length * 0.75)}: Value Driver Details</div>
+                      <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
+                        {enabledDriverIds.map((id) => (
+                          <li key={id}>{leverLabels[id]}</li>
+                        ))}
+                        <li>Calculation for each</li>
+                        <li>Key assumptions</li>
+                      </ul>
+                    </div>
+                  )}
+
+                  {exportContentSelections.methodology && (
+                    <div>
+                      <div className="font-semibold">Methodology & Assumptions</div>
+                      <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
+                        <li>Calculation approach</li>
+                        <li>Posture selection rationale</li>
+                        <li>Data sources</li>
+                        <li>How to use this analysis</li>
+                      </ul>
+                    </div>
+                  )}
+
+                  {exportContentSelections.modelInputs && (
+                    <div>
+                      <div className="font-semibold">Model Inputs</div>
+                      <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
+                        <li>Your organization's inputs</li>
+                        <li>Configuration summary</li>
+                      </ul>
+                    </div>
+                  )}
+
+                  {exportContentSelections.scenarios && scenarios.length > 0 && (
+                    <div>
+                      <div className="font-semibold">Scenario Comparisons</div>
+                      <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
+                        {scenarios.map((s) => (
+                          <li key={s.id}>{s.name}</li>
+                        ))}
+                        <li>Side-by-side analysis</li>
+                        <li>Key insights</li>
+                      </ul>
+                    </div>
+                  )}
+
+                  {exportContentSelections.appendix && (
+                    <div>
+                      <div className="font-semibold">Appendix</div>
+                      <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
+                        <li>Additional available drivers</li>
+                        <li>Calculation references</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Metrics */}
+              <div className="mt-4 flex flex-wrap gap-4 text-sm text-neutral-600">
+                <span>
+                  Estimated length:{" "}
+                  <span className="font-semibold">
+                    {(() => {
+                      let pages = 2;
+                      if (exportContentSelections.valueDriverDetails) pages += enabledDriverIds.length * 0.75;
+                      if (exportContentSelections.methodology) pages += 1;
+                      if (exportContentSelections.modelInputs) pages += 0.5;
+                      if (exportContentSelections.scenarios && scenarios.length > 0) pages += scenarios.length;
+                      if (exportContentSelections.appendix) pages += 1.5;
+                      return `${Math.ceil(pages)}-${Math.ceil(pages + 1)} pages`;
+                    })()}
+                  </span>
+                </span>
+                <span>File format: <span className="font-semibold">PDF</span></span>
+                <span>File size: <span className="font-semibold">~50-150 KB</span></span>
+              </div>
+
+              {/* Download Button */}
+              <div className="mt-8 space-y-4">
+                <Button
+                  size="lg"
+                  onClick={async () => {
+                    setIsGeneratingPdf(true);
+                    setPdfSuccess(false);
+                    
+                    try {
+                      // Generate PDF
+                      const doc = new jsPDF();
+                      const pageWidth = doc.internal.pageSize.getWidth();
+                      const pageHeight = doc.internal.pageSize.getHeight();
+                      const margin = 25;
+                      const contentWidth = pageWidth - 2 * margin;
+                      let y = margin;
+                      
+                      const docTitle = exportForm.documentTitle || `Abridge ROI Analysis - ${careSettingLabel} Deployment`;
+                      const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                      
+                      // Helper function for adding page footer
+                      const addFooter = (pageNum: number) => {
+                        doc.setFontSize(8);
+                        doc.setTextColor(150);
+                        doc.text(`Abridge ROI Analysis | ${currentDate}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+                        doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+                      };
+
+                      // Helper for new page
+                      let pageNumber = 1;
+                      const newPage = () => {
+                        addFooter(pageNumber);
+                        doc.addPage();
+                        pageNumber++;
+                        y = margin;
+                      };
+
+                      // PAGE 1: Cover Page
+                      y = pageHeight / 3;
+                      doc.setFontSize(24);
+                      doc.setTextColor(0);
+                      doc.setFont("helvetica", "bold");
+                      const titleLines = doc.splitTextToSize(docTitle, contentWidth);
+                      doc.text(titleLines, pageWidth / 2, y, { align: 'center' });
+                      y += titleLines.length * 10 + 10;
+                      
+                      doc.setFontSize(14);
+                      doc.setFont("helvetica", "normal");
+                      doc.setTextColor(100);
+                      doc.text(`${careSettingLabel} Deployment Model`, pageWidth / 2, y, { align: 'center' });
+                      y += 20;
+
+                      if (exportForm.organizationName) {
+                        doc.setFontSize(12);
+                        doc.text(exportForm.organizationName, pageWidth / 2, y, { align: 'center' });
+                        y += 8;
+                      }
+                      
+                      doc.text(currentDate, pageWidth / 2, y, { align: 'center' });
+                      y += 8;
+
+                      if (exportForm.preparedBy) {
+                        doc.text(`Prepared by: ${exportForm.preparedBy}`, pageWidth / 2, y, { align: 'center' });
+                      }
+
+                      // Footer text at bottom
+                      doc.setFontSize(10);
+                      doc.setTextColor(150);
+                      doc.text("Prepared using Abridge ROI Calculator", pageWidth / 2, pageHeight - 30, { align: 'center' });
+                      addFooter(pageNumber);
+
+                      // PAGE 2: Executive Summary
+                      newPage();
+                      doc.setFontSize(18);
+                      doc.setTextColor(0);
+                      doc.setFont("helvetica", "bold");
+                      doc.text("EXECUTIVE SUMMARY", margin, y);
+                      y += 15;
+
+                      // Model Overview
+                      doc.setFontSize(11);
+                      doc.setFont("helvetica", "bold");
+                      doc.text("Model Overview", margin, y);
+                      y += 7;
+                      doc.setFont("helvetica", "normal");
+                      doc.setFontSize(10);
+                      doc.text(`${inputs.numberOfProviders} providers | ${abridgeDocumentedEncounters.toLocaleString()} Abridge-documented encounters/year`, margin, y);
+                      y += 5;
+                      doc.text(`${careSettingLabel} care setting | ${inputs.abridgeUtilizationPct}% utilization`, margin, y);
+                      y += 12;
+
+                      // Financial Results Box
+                      doc.setFontSize(11);
+                      doc.setFont("helvetica", "bold");
+                      doc.text("Financial Results", margin, y);
+                      y += 8;
+                      
+                      doc.setDrawColor(200);
+                      doc.setFillColor(250, 250, 248);
+                      doc.roundedRect(margin, y, contentWidth, 45, 3, 3, 'FD');
+                      y += 10;
+                      
+                      doc.setFontSize(10);
+                      doc.setFont("helvetica", "normal");
+                      doc.text(`Total Annual Benefit:`, margin + 5, y);
+                      doc.setFont("helvetica", "bold");
+                      doc.text(formatCurrency(totalAnnualBenefit), margin + contentWidth - 5, y, { align: 'right' });
+                      y += 7;
+                      
+                      doc.setFont("helvetica", "normal");
+                      doc.text(`Annual Investment:`, margin + 5, y);
+                      doc.text(formatCurrency(annualInvestment), margin + contentWidth - 5, y, { align: 'right' });
+                      y += 10;
+                      
+                      doc.setDrawColor(150);
+                      doc.line(margin + 5, y - 3, margin + contentWidth - 5, y - 3);
+                      
+                      doc.setFont("helvetica", "bold");
+                      doc.text(`NET ANNUAL GAIN:`, margin + 5, y + 4);
+                      doc.setTextColor(14, 159, 110);
+                      doc.text(formatCurrency(netAnnualGain), margin + contentWidth - 5, y + 4, { align: 'right' });
+                      y += 11;
+                      
+                      doc.setTextColor(0);
+                      doc.text(`RETURN ON INVESTMENT:`, margin + 5, y);
+                      doc.text(`${roiMultiple.toFixed(1)}x`, margin + contentWidth - 5, y, { align: 'right' });
+                      y += 20;
+
+                      // Value Breakdown
+                      doc.setFontSize(11);
+                      doc.text("Value Breakdown", margin, y);
+                      y += 8;
+                      
+                      doc.setFontSize(10);
+                      doc.setFont("helvetica", "normal");
+                      enabledDriverIds.forEach((id) => {
+                        const value = driverValues[id];
+                        const pct = totalAnnualBenefit > 0 ? ((value / totalAnnualBenefit) * 100).toFixed(0) : 0;
+                        doc.text(`${leverLabels[id]}: ${formatCurrency(value)} (${pct}%)`, margin, y);
+                        y += 6;
+                      });
+                      y += 8;
+
+                      // Custom Notes
+                      if (exportForm.customNotes) {
+                        doc.setFontSize(11);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("Notes", margin, y);
+                        y += 7;
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        const noteLines = doc.splitTextToSize(exportForm.customNotes, contentWidth);
+                        doc.text(noteLines, margin, y);
+                      }
+                      addFooter(pageNumber);
+
+                      // VALUE DRIVER DETAILS
+                      if (exportContentSelections.valueDriverDetails) {
+                        enabledDriverIds.forEach((id) => {
+                          newPage();
+                          doc.setFontSize(16);
+                          doc.setFont("helvetica", "bold");
+                          doc.setTextColor(0);
+                          doc.text(leverLabels[id].toUpperCase(), margin, y);
+                          y += 10;
+                          
+                          doc.setFontSize(12);
+                          doc.setTextColor(14, 159, 110);
+                          doc.text(`Annual Value: ${formatCurrency(driverValues[id])}`, margin, y);
+                          y += 15;
+                          
+                          doc.setTextColor(0);
+                          doc.setFontSize(11);
+                          doc.setFont("helvetica", "bold");
+                          doc.text("What This Driver Captures", margin, y);
+                          y += 7;
+                          doc.setFont("helvetica", "normal");
+                          doc.setFontSize(10);
+                          const descLines = doc.splitTextToSize(leverDescriptions[id], contentWidth);
+                          doc.text(descLines, margin, y);
+                          y += descLines.length * 5 + 10;
+
+                          doc.setFontSize(11);
+                          doc.setFont("helvetica", "bold");
+                          doc.text("How This Was Calculated", margin, y);
+                          y += 7;
+                          doc.setFont("helvetica", "normal");
+                          doc.setFontSize(10);
+                          doc.text("Calculations are based on evidence from 50+ health system implementations.", margin, y);
+                          y += 5;
+                          doc.text("Specific methodology varies by driver and utilizes organizational inputs.", margin, y);
+                          
+                          addFooter(pageNumber);
+                        });
+                      }
+
+                      // METHODOLOGY
+                      if (exportContentSelections.methodology) {
+                        newPage();
+                        doc.setFontSize(16);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("METHODOLOGY & ASSUMPTIONS", margin, y);
+                        y += 15;
+
+                        doc.setFontSize(11);
+                        doc.text("About This Analysis", margin, y);
+                        y += 7;
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        const aboutText = "This ROI model uses evidence-based assumptions from 50+ health system implementations of Abridge ambient documentation. All calculations are transparent and adjustable to reflect your organization's specific characteristics.";
+                        const aboutLines = doc.splitTextToSize(aboutText, contentWidth);
+                        doc.text(aboutLines, margin, y);
+                        y += aboutLines.length * 5 + 10;
+
+                        doc.setFontSize(11);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("Calculation Approach", margin, y);
+                        y += 7;
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        doc.text("Each value driver follows a step-down calculation:", margin, y);
+                        y += 6;
+                        doc.text("1. Organizational inputs (providers, encounters, utilization)", margin + 5, y);
+                        y += 5;
+                        doc.text("2. Evidence-based operational impacts (time saved, quality improvements)", margin + 5, y);
+                        y += 5;
+                        doc.text("3. Financial translation (capacity value, revenue capture, cost avoidance)", margin + 5, y);
+                        y += 10;
+
+                        doc.setFontSize(11);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("How to Use This Analysis", margin, y);
+                        y += 7;
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        const useText = "This document is designed to support internal business case development, facilitate discussion with finance and clinical leadership, provide transparent calculations for validation, and model different deployment configurations.";
+                        const useLines = doc.splitTextToSize(useText, contentWidth);
+                        doc.text(useLines, margin, y);
+                        
+                        addFooter(pageNumber);
+                      }
+
+                      // MODEL INPUTS
+                      if (exportContentSelections.modelInputs) {
+                        newPage();
+                        doc.setFontSize(16);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("MODEL INPUTS", margin, y);
+                        y += 15;
+
+                        doc.setFontSize(11);
+                        doc.text("Scope", margin, y);
+                        y += 7;
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        doc.text(`Providers: ${inputs.numberOfProviders}`, margin, y);
+                        y += 5;
+                        doc.text(`Annual encounters: ${inputs.annualOutpatientEncounters.toLocaleString()}`, margin, y);
+                        y += 5;
+                        doc.text(`Care setting: ${careSettingLabel}`, margin, y);
+                        y += 5;
+                        doc.text(`Utilization rate: ${inputs.abridgeUtilizationPct}%`, margin, y);
+                        y += 5;
+                        doc.text(`Abridge-documented encounters: ${abridgeDocumentedEncounters.toLocaleString()}`, margin, y);
+                        y += 12;
+
+                        doc.setFontSize(11);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("Value Drivers Selected", margin, y);
+                        y += 7;
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        enabledDriverIds.forEach((id) => {
+                          doc.text(`- ${leverLabels[id]}`, margin, y);
+                          y += 5;
+                        });
+                        y += 8;
+
+                        doc.setFontSize(11);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("Investment", margin, y);
+                        y += 7;
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        doc.text(`Cost per provider: $${inputs.monthlyCostPerProvider}/month`, margin, y);
+                        y += 5;
+                        doc.text(`Total annual investment: ${formatCurrency(annualInvestment)}`, margin, y);
+                        
+                        addFooter(pageNumber);
+                      }
+
+                      // SCENARIO COMPARISONS
+                      if (exportContentSelections.scenarios && scenarios.length > 0) {
+                        scenarios.forEach((scenario) => {
+                          newPage();
+                          doc.setFontSize(16);
+                          doc.setFont("helvetica", "bold");
+                          doc.text(`SCENARIO: ${scenario.name}`, margin, y);
+                          y += 15;
+
+                          // Side by side comparison
+                          const colWidth = (contentWidth - 10) / 2;
+                          
+                          doc.setFontSize(10);
+                          doc.setFont("helvetica", "bold");
+                          doc.text("Current Model", margin, y);
+                          doc.text(scenario.name, margin + colWidth + 10, y);
+                          y += 8;
+
+                          doc.setFont("helvetica", "normal");
+                          doc.text(`${inputs.numberOfProviders} providers`, margin, y);
+                          doc.text(`${scenario.providers} providers`, margin + colWidth + 10, y);
+                          y += 5;
+                          doc.text(`${inputs.annualOutpatientEncounters.toLocaleString()} encounters`, margin, y);
+                          doc.text(`${scenario.encounters.toLocaleString()} encounters`, margin + colWidth + 10, y);
+                          y += 5;
+                          doc.text(`${inputs.abridgeUtilizationPct}% utilization`, margin, y);
+                          doc.text(`${scenario.utilizationRate}% utilization`, margin + colWidth + 10, y);
+                          y += 12;
+
+                          doc.setFont("helvetica", "bold");
+                          doc.text("Total Benefit", margin, y);
+                          doc.text("Total Benefit", margin + colWidth + 10, y);
+                          y += 6;
+                          doc.setFont("helvetica", "normal");
+                          doc.text(formatCurrency(totalAnnualBenefit), margin, y);
+                          doc.text(formatCurrency(scenario.totalBenefit), margin + colWidth + 10, y);
+                          y += 8;
+
+                          doc.setFont("helvetica", "bold");
+                          doc.text("Net Gain", margin, y);
+                          doc.text("Net Gain", margin + colWidth + 10, y);
+                          y += 6;
+                          doc.setFont("helvetica", "normal");
+                          doc.text(formatCurrency(netAnnualGain), margin, y);
+                          doc.text(formatCurrency(scenario.netGain), margin + colWidth + 10, y);
+                          y += 6;
+                          doc.text(`${roiMultiple.toFixed(1)}x ROI`, margin, y);
+                          doc.text(`${scenario.roiMultiple.toFixed(1)}x ROI`, margin + colWidth + 10, y);
+                          
+                          addFooter(pageNumber);
+                        });
+                      }
+
+                      // APPENDIX
+                      if (exportContentSelections.appendix) {
+                        const disabledDrivers = allDriverIds.filter((id) => !inputs.levers[id]);
+                        if (disabledDrivers.length > 0) {
+                          newPage();
+                          doc.setFontSize(16);
+                          doc.setFont("helvetica", "bold");
+                          doc.text("APPENDIX: Additional Value Drivers", margin, y);
+                          y += 15;
+
+                          doc.setFontSize(10);
+                          doc.setFont("helvetica", "normal");
+                          doc.text("The following drivers were not selected for this model but may be relevant:", margin, y);
+                          y += 10;
+
+                          disabledDrivers.forEach((id) => {
+                            doc.setFontSize(11);
+                            doc.setFont("helvetica", "bold");
+                            doc.text(leverLabels[id], margin, y);
+                            y += 6;
+                            doc.setFont("helvetica", "normal");
+                            doc.setFontSize(10);
+                            const descLines = doc.splitTextToSize(leverDescriptions[id], contentWidth);
+                            doc.text(descLines, margin, y);
+                            y += descLines.length * 5 + 8;
+                          });
+                          
+                          addFooter(pageNumber);
+                        }
+                      }
+
+                      // Save PDF
+                      const fileName = `Abridge_ROI_Analysis_${currentDate.replace(/,?\s+/g, '_')}.pdf`;
+                      doc.save(fileName);
+                      
+                      setPdfSuccess(true);
+                      setTimeout(() => setPdfSuccess(false), 5000);
+                    } catch (error) {
+                      console.error('PDF generation failed:', error);
+                      alert('PDF generation failed. Please try again.');
+                    } finally {
+                      setIsGeneratingPdf(false);
+                    }
+                  }}
+                  disabled={isGeneratingPdf}
+                  className="w-full bg-[#F03319] hover:bg-[#D92D16] text-white gap-2"
+                  data-testid="button-download-pdf"
+                >
+                  {isGeneratingPdf ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-5 w-5" />
+                      Download PDF
+                    </>
+                  )}
+                </Button>
+
+                {pdfSuccess && (
+                  <div className="flex items-center gap-2 justify-center text-green-600">
+                    <Check className="h-4 w-4" />
+                    <span className="text-sm font-medium">PDF downloaded successfully</span>
+                  </div>
+                )}
+
+                {/* Email button (coming soon) */}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  disabled
+                  className="w-full gap-2 opacity-50"
+                  data-testid="button-email-pdf"
+                >
+                  <Mail className="h-5 w-5" />
+                  Email PDF
+                  <Badge variant="secondary" className="ml-2 text-xs">Coming soon</Badge>
+                </Button>
+              </div>
             </div>
           </div>
         )}

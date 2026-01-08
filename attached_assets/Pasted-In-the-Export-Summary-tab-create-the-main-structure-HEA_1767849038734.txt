@@ -1,0 +1,649 @@
+In the "Export Summary" tab, create the main structure:
+
+HEADER SECTION:
+Title: "EXECUTIVE SUMMARY EXPORT"
+Subtitle: "Create a professional business case document for leadership review"
+
+Style: Same header styling as other tabs
+
+MAIN CONTENT:
+Create three main sections stacked vertically:
+
+1. Document Settings
+2. Content Selection  
+3. Custom Context (optional)
+4. Preview & Download
+
+Layout should feel like a form that builds toward the final output.
+
+SECTION 1: DOCUMENT SETTINGS
+A card with basic document metadata
+
+SECTION 2: CONTENT SELECTION  
+Checkboxes for what to include in the PDF
+
+SECTION 3: CUSTOM CONTEXT
+Optional text area for adding notes
+
+SECTION 4: PREVIEW & DOWNLOAD
+Shows what will be in the PDF and download button
+
+Style: Generous spacing between sections, clear progression from setup → content → context → output
+
+Build the DOCUMENT SETTINGS section:
+
+Card title: "DOCUMENT DETAILS"
+
+Input fields:
+
+FIELD 1: Document title
+Label: "Document title"
+Component: Text input
+Default value: "Abridge ROI Analysis - [Care Setting] Deployment"
+(Pull care setting from model, e.g., "Outpatient")
+Placeholder: "e.g., Abridge Business Case for [Organization]"
+
+Helper text: "This will appear on the cover page"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FIELD 2: Organization name  
+Label: "Organization name (optional)"
+Component: Text input
+Placeholder: "[Leave blank or enter your organization]"
+
+Helper text: "If provided, appears on cover page"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FIELD 3: Date
+Label: "Date"
+Component: Date picker or text input
+Default: Today's date (auto-filled)
+Format: "Month DD, YYYY" (e.g., "December 15, 2024")
+
+Helper text: "Document preparation date"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FIELD 4: Prepared by (optional)
+Label: "Prepared by (optional)"
+Component: Text input
+Placeholder: "Your name or department"
+
+Helper text: "Attribution for the analysis"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STYLE:
+- Clean form inputs matching Model Setup
+- Optional fields clearly marked
+- Helper text in gray
+- Good spacing between fields
+- Auto-fill smart defaults where possible
+
+Build the CONTENT SELECTION section:
+
+Card title: "WHAT TO INCLUDE"
+
+Description: "Choose which sections to include in your PDF"
+
+Checkbox list (all checked by default):
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☑ EXECUTIVE SUMMARY (always included, can't uncheck)
+Description: "1-page overview with headline metrics, value breakdown, and key drivers"
+Note: "Always included"
+
+☑ Value Driver Details
+Description: "Full calculations and methodology for each selected driver"
+Expandable: "Show which drivers ([X] drivers selected)"
+When expanded, show checkboxes for individual drivers:
+  ☑ Patient Access
+  ☑ Level of Service  
+  ☑ Clinician Retention
+  (etc., based on what's in the model)
+
+☑ Methodology & Assumptions
+Description: "How we calculated ROI, key assumptions, and data sources"
+Sub-description: "Includes: calculation approach, posture selection, and assumption transparency"
+
+☑ Model Inputs
+Description: "Your organization's specific inputs (providers, encounters, utilization, etc.)"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCENARIOS SECTION (conditional):
+If scenarios exist, show:
+
+☑ Scenario Comparisons
+Description: "Side-by-side comparison of different deployment configurations"
+
+Expandable: "Select scenarios to include"
+When expanded, show checkboxes:
+  ☑ [Scenario 1 name]
+  ☑ [Scenario 2 name]
+  (etc.)
+
+If NO scenarios exist, show:
+"No scenarios created yet. Go to Scenario Builder to create comparisons."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☐ APPENDIX: All Available Drivers (optional, unchecked by default)
+Description: "Include calculation details for drivers NOT selected in your model"
+Sub-description: "Educational reference showing what other value drivers exist"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+At bottom of section, show a summary:
+"Your PDF will include: [X] sections, approximately [Y-Z] pages"
+
+Calculate pages:
+- Cover: 1 page
+- Executive Summary: 1 page
+- Value Driver Details: 0.5-1 page per driver
+- Methodology: 1 page
+- Model Inputs: 0.5 page
+- Scenarios: 1 page per scenario
+- Appendix: 1-2 pages if included
+
+STYLE:
+- Clear checkbox hierarchy
+- Expandable sections for sub-options
+- Descriptions explain what's in each section
+- Page count estimate helps set expectations
+- Good visual separation between major sections
+
+Build the CUSTOM CONTEXT section:
+
+Card title: "CUSTOM NOTES (Optional)"
+
+Description: 
+"Add context, talking points, or background for your leadership team. These notes will appear in the Executive Summary section."
+
+Text area component:
+- Multi-line input (textarea)
+- Placeholder text:
+  "Example: This analysis models a phased Abridge deployment starting with our cardiology and primary care departments (40 providers). Based on early adoption metrics, we project expansion to 100 providers. The expansion scenario reflects this growth plan with expected utilization improvements and inclusion of our Medicare Advantage population for HCC capture."
+
+- Character limit: 1000 characters
+- Show character count: "[X] / 1000 characters"
+
+Helper text below:
+"💡 Use this space to:
+- Provide organizational context
+- Highlight key priorities or constraints  
+- Add next steps or recommendations
+- Reference internal initiatives or strategic goals"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STYLE:
+- Large, comfortable text area (at least 6 rows tall)
+- Clear character count
+- Helpful placeholder that shows the tone
+- Optional but prominent
+- Helper bullets give clear guidance
+
+Build the PREVIEW & DOWNLOAD section:
+
+Card title: "PREVIEW"
+
+Description:
+"Your PDF will be structured as follows:"
+
+Show a visual outline/table of contents:
+
+┌─────────────────────────────────────────┐
+│ DOCUMENT STRUCTURE                      │
+│                                         │
+│ Page 1: Cover Page                      │
+│   • Document title                      │
+│   • Organization name (if provided)     │
+│   • Date                                │
+│   • Prepared by (if provided)           │
+│                                         │
+│ Page 2: Executive Summary               │
+│   • Model overview                      │
+│   • Financial results                   │
+│   • Value breakdown                     │
+│   • Key drivers summary                 │
+│   • Custom notes (if provided)          │
+│                                         │
+│ Pages 3-[X]: Value Driver Details       │
+│   • [List selected drivers]             │
+│   • Calculation for each                │
+│   • Key assumptions                     │
+│                                         │
+│ Page [Y]: Methodology & Assumptions     │
+│   • Calculation approach                │
+│   • Posture selection rationale         │
+│   • Data sources                        │
+│   • How to use this analysis            │
+│                                         │
+│ Page [Z]: Model Inputs                  │
+│   • Your organization's inputs          │
+│   • Configuration summary               │
+│                                         │
+│ [If scenarios selected]                 │
+│ Page [A]: Scenario Comparisons          │
+│   • [List scenario names]               │
+│   • Side-by-side analysis               │
+│   • Key insights                        │
+│                                         │
+│ [If appendix selected]                  │
+│ Page [B]: Appendix                      │
+│   • Additional available drivers        │
+│   • Calculation references              │
+└─────────────────────────────────────────┘
+
+Below the outline, show:
+
+Estimated document length: [X-Y] pages
+File format: PDF
+File size: ~[Z] KB (estimated)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Large, prominent download button:
+[📄 Download PDF]
+
+Button should be:
+- Large, full-width or prominently centered
+- Primary button style
+- Icon + text
+- Engaging copy: "Download PDF" or "Generate Business Case PDF"
+
+Below button, optional:
+[✉️ Email PDF] (future feature, grayed out or with "Coming soon")
+
+STYLE:
+- Clean outline/table of contents format
+- Clear page references
+- Conditional sections only shown if included
+- Estimated metrics give confidence
+- Download button is the hero element
+- Professional, anticipates their questions
+
+Implement the actual PDF generation when "Download PDF" is clicked.
+
+Use a PDF library appropriate for React (e.g., react-pdf, jsPDF, or pdfmake).
+
+PDF STRUCTURE:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGE 1: COVER PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Layout:
+- Top 1/3: Whitespace
+- Middle 1/3: 
+  [Document Title - Large, bold]
+  [Care Setting] Deployment Model
+  
+  [Organization Name - if provided]
+  [Date]
+  [Prepared by - if provided]
+  
+- Bottom 1/3:
+  "Prepared using Abridge ROI Calculator"
+  (Small text, gray)
+
+Style:
+- Clean, minimal
+- Professional typography
+- Centered alignment
+- Subtle horizontal lines as separators
+- NO logo (as requested)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGE 2: EXECUTIVE SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Section 1: MODEL OVERVIEW
+"[X] providers | [Y] Abridge-documented encounters per year
+[Care Setting] care setting | [Posture] value posture"
+
+Section 2: FINANCIAL RESULTS
+┌─────────────────────────────────────┐
+│ Total Annual Benefit    $[X]        │
+│ Annual Investment       $[Y]        │
+│ ─────────────────────────────────── │
+│ NET ANNUAL GAIN        $[Z]         │
+│ RETURN ON INVESTMENT    [R]x        │
+└─────────────────────────────────────┘
+
+Section 3: VALUE BREAKDOWN
+[Simple horizontal bar chart or text breakdown]
+- Patient Access: $[X] ([Y]%)
+- Level of Service: $[A] ([B]%)
+[etc. for all selected drivers]
+
+Section 4: SELECTED DRIVERS
+For each driver, brief description:
+- Driver Name: [One-sentence description from the model]
+
+Section 5: CUSTOM NOTES (if provided)
+[User's custom text goes here]
+
+Style:
+- Clean sections with clear headers
+- Use tables/boxes for financial results
+- Simple visualizations (text-based if charts are complex)
+- Professional but readable font sizes
+- Good spacing and hierarchy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGES 3-X: VALUE DRIVER DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each selected driver, create a detailed page:
+
+[DRIVER NAME]
+Annual Value: $[X]
+
+How This Was Calculated:
+[Show the step-by-step calculation from the model]
+
+Step 1: [Step Name]
+[Formula with actual numbers]
+Example: "2.5 min saved × 52,000 encounters = 2,167 hours"
+
+Step 2: [Step Name]  
+[Formula with actual numbers]
+
+[Continue for all steps]
+
+Key Assumptions:
+- [Assumption 1]: [Value] ([Context])
+- [Assumption 2]: [Value] ([Context])
+
+What This Value Represents:
+[Brief explanation of what this driver captures]
+
+Style:
+- One driver per page (or 2 if they're short)
+- Clear step-down calculation format
+- Assumption list is scannable
+- Numbers are prominent and formatted
+- Context helps non-technical readers
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGE Y: METHODOLOGY & ASSUMPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Section 1: ABOUT THIS ANALYSIS
+"This ROI model uses evidence-based assumptions from 50+ health system implementations of Abridge ambient documentation. All calculations are transparent and adjustable to reflect your organization's specific characteristics."
+
+Section 2: CALCULATION APPROACH
+"Each value driver follows a step-down calculation:
+1. Organizational inputs (providers, encounters, utilization)
+2. Evidence-based operational impacts (time saved, quality improvements)
+3. Financial translation (capacity value, revenue capture, cost avoidance)
+
+All assumptions are drawn from pilot data, published research, or industry benchmarks."
+
+Section 3: VALUE POSTURE
+"This analysis uses a [Conservative/Typical/Aggressive] posture.
+
+[If Typical:]
+Best for: Initial business case and CFO review
+Based on: Median performance across Abridge customers
+Approach: Balanced assumptions that reflect typical adoption patterns"
+
+[Adjust description based on selected posture]
+
+Section 4: KEY ASSUMPTIONS
+List the major assumptions used:
+- Minutes saved per encounter: [X] min
+- Capacity realization factor: [Y]%
+- Documentation quality lift: [Z]%
+[etc.]
+
+Section 5: HOW TO USE THIS ANALYSIS
+"This document is designed to:
+- Support internal business case development
+- Facilitate discussion with finance and clinical leadership
+- Provide transparent calculations for validation
+- Model different deployment configurations
+
+All assumptions can be adjusted in the Abridge ROI Calculator to reflect your organization's specific context."
+
+Style:
+- Educational tone
+- Paragraph format with clear sections
+- Builds credibility through transparency
+- Positions the document as a tool, not a pitch
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGE Z: MODEL INPUTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your Configuration:
+
+SCOPE
+- Providers: [X]
+- Annual encounters: [Y]
+- Care setting: [Z]
+- Utilization rate: [A]%
+- Abridge-documented encounters: [B]
+
+VALUE DRIVERS SELECTED
+- [Driver 1]
+- [Driver 2]
+[etc.]
+
+VALUE REALIZATION
+- Posture: [Conservative/Typical/Aggressive]
+- Key assumptions:
+  - [Assumption 1]
+  - [Assumption 2]
+
+INVESTMENT
+- Cost per provider: $[X]/month
+- Total annual investment: $[Y]
+- Contract term: [Z] years
+
+Style:
+- Clean, scannable list format
+- Grouped by category
+- Numbers formatted consistently
+- Easy to reference
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGE A: SCENARIO COMPARISONS (if included)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each scenario, create a comparison section:
+
+SCENARIO: [Scenario Name]
+
+┌──────────────────┬──────────────────┐
+│ CURRENT MODEL    │ [SCENARIO NAME]  │
+├──────────────────┼──────────────────┤
+│ Configuration    │ Configuration    │
+│ [X] providers    │ [A] providers    │
+│ [Y] encounters   │ [B] encounters   │
+│ [Z]% utilization │ [C]% utilization │
+├──────────────────┼──────────────────┤
+│ Value Drivers    │ Value Drivers    │
+│ [Driver]: $[X]   │ [Driver]: $[A]   │
+│ [Driver]: $[Y]   │ [Driver]: $[B]   │
+├──────────────────┼──────────────────┤
+│ Total Benefit    │ Total Benefit    │
+│ $[X]             │ $[Y]             │
+│                  │                  │
+│ Investment       │ Investment       │
+│ $[A]             │ $[B]             │
+├──────────────────┼──────────────────┤
+│ Net Gain         │ Net Gain         │
+│ $[Z]             │ $[C]             │
+│ [R]x ROI         │ [S]x ROI         │
+└──────────────────┴──────────────────┘
+
+Key Insight:
+[Pull the generated insight from the scenario comparison]
+
+Style:
+- Side-by-side table format
+- Clear comparison
+- Include the insight
+- Professional table formatting
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGE B: APPENDIX (if included)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADDITIONAL VALUE DRIVERS
+
+For each driver NOT selected in the model, show:
+
+[Driver Name]
+Description: [Brief description]
+Typical value range: [Range]
+Applies when: [Conditions that make this relevant]
+
+Example calculation (using reference scenario):
+[Show the step-by-step with reference numbers]
+
+This provides educational context about what else could be included.
+
+Style:
+- Reference format
+- Concise
+- Educational, not sales-y
+- Helps them understand the full picture
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IMPLEMENTATION NOTES:
+
+1. Use consistent typography throughout
+   - Headers: 16-18pt, bold
+   - Body: 11-12pt
+   - Captions: 9-10pt, gray
+   
+2. Maintain generous margins (1" on all sides)
+
+3. Use subtle horizontal lines as section separators
+
+4. Format all currency: $XXX,XXX (with commas)
+
+5. Format all percentages: XX%
+
+6. Use tables for financial data (clean borders)
+
+7. Keep it black & white (or subtle grays) - professional
+
+8. Add page numbers in footer (small, centered)
+
+9. Consider adding a footer on each page: "Abridge ROI Analysis | [Date]"
+
+10. Ensure it's printable and readable in B&W
+
+BEHAVIOR:
+- When download is clicked, show a loading state: "Generating PDF..."
+- Generate the PDF with all selected sections
+- Filename: "Abridge_ROI_Analysis_[Date].pdf"
+- Automatically download to user's browser
+- Show success message: "✓ PDF downloaded successfully"
+- Log the download event (analytics)
+
+Add proper feedback and error handling for PDF generation:
+
+BEFORE GENERATION:
+When "Download PDF" is clicked:
+1. Validate that required fields are filled (document title)
+2. Show loading state on button: "Generating PDF..."
+3. Disable the button during generation
+
+DURING GENERATION:
+Show a modal or overlay:
+┌─────────────────────────────────────────┐
+│ 📄 GENERATING YOUR PDF                  │
+│                                         │
+│ [Progress indicator/spinner]            │
+│                                         │
+│ Preparing your business case document...│
+│ This may take a few seconds.            │
+└─────────────────────────────────────────┘
+
+SUCCESS:
+Close the modal and show success message:
+"✓ PDF downloaded successfully"
+"File: Abridge_ROI_Analysis_[Date].pdf"
+
+Reset button to normal state
+
+ERRORS:
+If PDF generation fails:
+Show error message:
+"⚠️ PDF generation failed. Please try again or contact support."
+
+Reset button to normal state
+Log error for debugging
+
+STYLE:
+- Loading states should be clear and professional
+- Success feedback reassures the user
+- Error handling is graceful
+- No technical jargon in messages
+
+Below the "Download PDF" button, add a placeholder for future email functionality:
+
+Button (grayed out/disabled):
+[✉️ Email PDF]
+
+Tooltip on hover:
+"Coming soon: Email this PDF directly to your team"
+
+OR show as a link:
+"Want to email this PDF? Contact your Abridge representative."
+
+This sets up for future enhancement without cluttering the current experience.
+
+STYLE:
+- Secondary, muted styling
+- Clear that it's not yet active
+- Doesn't distract from the download button
+
+Verify your generated PDF meets these standards:
+
+CONTENT:
+☐ All selected drivers included
+☐ Calculations are accurate
+☐ Scenarios (if selected) display correctly
+☐ Custom notes appear in Executive Summary
+☐ All numbers formatted with $ and commas
+☐ Percentages formatted correctly
+
+FORMATTING:
+☐ Professional typography (consistent fonts and sizes)
+☐ Good margins (1" all sides)
+☐ Clear section headers
+☐ Tables are aligned and readable
+☐ Page breaks in logical places
+☐ Page numbers present
+☐ Footer with date/title
+
+TONE:
+☐ Educational, not sales-y
+☐ Transparent about methodology
+☐ Positions as a tool for analysis
+☐ Appropriate for CFO/CMO/VP audience
+☐ Builds credibility through transparency
+
+USABILITY:
+☐ Can be printed in black & white
+☐ Readable on screen and paper
+☐ Scannable (clear hierarchy)
+☐ Actionable (clear next steps implied)
+☐ Professional enough for board presentation
+
+TECHNICAL:
+☐ File size reasonable (<5MB)
+☐ Downloads automatically
+☐ Filename is descriptive
+☐ Compatible with standard PDF readers
