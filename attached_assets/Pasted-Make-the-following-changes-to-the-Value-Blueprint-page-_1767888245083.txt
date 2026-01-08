@@ -1,0 +1,103 @@
+Make the following changes to the Value Blueprint page to improve accuracy and defensibility:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PATIENT ACCESS DRIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Update "The Theory" text to:
+"When providers spend less time on documentation, that time can partially convert into seeing more patients—reducing access bottlenecks and wait times. This value assumes patient demand exists to fill additional capacity."
+
+2. In STEP 3: NEW VISIT CAPACITY, after "Additional visits possible: 866 visits", add:
+"⚠️ Assumes sufficient patient demand to fill additional capacity"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACCURATE LEVEL OF SERVICE DRIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Update "The Theory" text to:
+"Better real-time documentation captures the full complexity of care delivered—supporting accurate work RVU (wRVU) documentation and E/M coding. More complete documentation allows coding to reflect the work actually performed, improving reimbursement accuracy."
+
+2. In STEP 4: REVENUE IMPACT, change "Average revenue per wRVU" line to:
+"Average revenue per wRVU        $50 ((blended: Medicare ~$36-40, Commercial ~$50-80))"
+
+3. Add note after "Annual value" line:
+"⚠️ Actual reimbursement varies by payer mix and contracted rates. This uses a blended average."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLINICIAN RETENTION DRIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Update "The Theory" text to:
+"Administrative burden, particularly documentation, drives clinician burnout and turnover. Reducing documentation time improves work-life balance and retention. Note: Retention impact is a longer-term metric, typically measurable after 12+ months."
+
+2. Change STEP 1 calculations:
+   - Annual turnover rate: 5% (was 8%)
+   - Expected departures: 2.0 providers/year (was 3.2)
+
+3. Change STEP 2 calculations:
+   - Expected departures: 2.0 (was 3.2)
+   - % preventable with Abridge: 40% (was 50%)
+   - Departures avoided: 0.32 per year (was 0.64)
+
+4. Change STEP 3 calculations:
+   - Departures avoided: 0.32 (was 0.64)
+   - Annual value: $80,000 (was $160,000)
+
+5. Add note after "Annual value" line:
+"⚠️ Impact timeline: Retention improvements typically measurable at 12+ months as turnover is an annual metric."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DENIAL REDUCTION DRIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Update "The Theory" text to:
+"Incomplete documentation is a leading cause of claim denials, particularly denials deemed unrecoverable due to insufficient medical necessity support. Real-time, complete documentation reduces denial rates by capturing clinical rationale as care is delivered."
+
+2. After STEP 2 "Documentation-driven denials" line, add:
+"These are denials attributed to insufficient or unclear documentation—often unrecoverable due to lack of medical necessity support."
+
+3. Change STEP 3 calculations:
+   - % preventable with real-time docs: 66% (was 75%)
+   - Annual value: $103,000 (was $117,000)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"IMPORTANT TO KNOW" BOX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Replace the entire "Important to Know" box content with:
+
+"These calculations use typical assumptions from 200+ health system partners. 
+
+In the next step, you'll customize:
+- Your organization size and volume
+- Your financial metrics (revenue, costs)
+- How conservatively to model outcomes
+
+⚠️ Important limitations:
+- We don't have access to your specific payer contracts, reimbursement rates, or financial systems
+- Revenue assumptions use blended averages—your actual rates may vary
+- Capacity value assumes patient demand exists to fill additional appointment slots
+- Long-term metrics (retention) require 12+ months to measure
+
+The formulas stay the same—only YOUR numbers change. Adjust assumptions to reflect your organization's reality."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL: UPDATE DEFAULT VALUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Make sure the following default values are updated in the model:
+
+CLINICIAN RETENTION:
+- Default turnover rate: 5% (not 8%)
+- Default prevention rate (Typical posture): 40% (not 50%)
+
+DENIAL REDUCTION:
+- Default prevention rate (Typical posture): 66% (not 75%)
+
+These changes should propagate through:
+1. Value Blueprint reference calculations
+2. Model Setup default values
+3. Results Dashboard displays
+4. PDF export
+
+All calculations must recalculate correctly with these new defaults.

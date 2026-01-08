@@ -1,0 +1,168 @@
+Make the following changes to the Value Blueprint page to improve accuracy and defensibility:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PATIENT ACCESS DRIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Update "The Theory" text to:
+"When providers spend less time on documentation, that time can partially convert into seeing more patients—reducing access bottlenecks and wait times. This value assumes patient demand exists to fill additional capacity."
+
+2. In STEP 3: NEW VISIT CAPACITY, after "Additional visits possible: 866 visits", add on a new line:
+"⚠️ Assumes sufficient patient demand to fill additional capacity"
+
+Style this warning with a subtle background (light yellow/amber tint) to make it noticeable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACCURATE LEVEL OF SERVICE DRIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Update "The Theory" text to:
+"Better real-time documentation captures the full complexity of care delivered—supporting accurate work RVU (wRVU) documentation and E/M coding. More complete documentation allows coding to reflect the work actually performed, improving reimbursement accuracy."
+
+2. In STEP 4: REVENUE IMPACT, change the "Average revenue per wRVU" line from:
+"Average revenue per wRVU        $50 ((typical payer mix))"
+
+TO:
+"Average revenue per wRVU        $50 ((blended: Medicare ~$36-40, Commercial ~$50-80))"
+
+3. Add a warning note after the "Annual value" line:
+"⚠️ Actual reimbursement varies by payer mix and contracted rates. This uses a blended average."
+
+Style this warning with a subtle background (light yellow/amber tint).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLINICIAN RETENTION DRIVER - CRITICAL CHANGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Update "The Theory" text to:
+"Administrative burden, particularly documentation, drives clinician burnout and turnover. Reducing documentation time improves work-life balance and retention. Note: Retention impact is a longer-term metric, typically measurable after 12+ months."
+
+2. Change the DEFAULT VALUES in the model (this affects calculations):
+   - Default annual turnover rate: Change from 8% to 5%
+   - Default Abridge prevention rate (Typical posture): Change from 50% to 40%
+
+3. Update STEP 1: BASELINE TURNOVER to show:
+   Annual turnover rate            5% ((typical))
+   Expected departures             2.0 providers/year
+
+4. Update STEP 2: ABRIDGE IMPACT to show:
+   Expected departures             2.0
+   % due to burnout/workload       40%
+   % preventable with Abridge      40% ((typical))
+   Departures avoided              0.32 per year
+
+5. Update STEP 3: COST SAVINGS to show:
+   Departures avoided              0.32
+   Replacement cost per provider   $250,000
+   Annual value                    $80,000
+
+6. Add a warning note after "Annual value" line:
+"⚠️ Impact timeline: Retention improvements typically measurable at 12+ months as turnover is an annual metric."
+
+Style this warning with a subtle background (light blue/info tint).
+
+IMPORTANT: The reference value for Clinician Retention should now be $80,000 (was $160,000).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DENIAL REDUCTION DRIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Update "The Theory" text to:
+"Incomplete documentation is a leading cause of claim denials, particularly denials deemed unrecoverable due to insufficient medical necessity support. Real-time, complete documentation reduces denial rates by capturing clinical rationale as care is delivered."
+
+2. After STEP 2, after the "Documentation-driven denials: $156,000" line, add an explanatory note:
+"These are denials attributed to insufficient or unclear documentation—often unrecoverable due to lack of medical necessity support."
+
+Style this as explanatory text (slightly smaller font, gray color).
+
+3. Change the DEFAULT VALUE in the model:
+   - Default prevention rate (Typical posture): Change from 75% to 66%
+
+4. Update STEP 3: ABRIDGE PREVENTION to show:
+   Documentation-driven denials                         $156,000
+   % preventable with real-time docs                    66% ((typical))
+   Annual value                                         $103,000
+
+IMPORTANT: The reference value for Denial Reduction should now be $103,000 (was $117,000).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"IMPORTANT TO KNOW" BOX - COMPLETE REPLACEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Replace the ENTIRE content of the "Important to Know" box at the bottom of the Value Blueprint page with:
+
+"These calculations use typical assumptions from 200+ health system partners. 
+
+In the next step, you'll customize:
+- Your organization size and volume
+- Your financial metrics (revenue, costs)
+- How conservatively to model outcomes
+
+⚠️ Important limitations:
+- We don't have access to your specific payer contracts, reimbursement rates, or financial systems
+- Revenue assumptions use blended averages—your actual rates may vary
+- Capacity value assumes patient demand exists to fill additional appointment slots
+- Long-term metrics (retention) require 12+ months to measure
+
+The formulas stay the same—only YOUR numbers change. Adjust assumptions to reflect your organization's reality."
+
+Keep the warning triangle icon and amber/yellow background styling.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL: UPDATE ALL AFFECTED CALCULATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These default value changes must propagate through the ENTIRE application:
+
+1. VALUE BLUEPRINT:
+   - Clinician Retention reference value: $80,000 (was $160,000)
+   - Denial Reduction reference value: $103,000 (was $117,000)
+   - Update the "Combined Impact" total to reflect new values
+
+2. MODEL SETUP:
+   - Value Realization tab: Update default assumptions
+   - Clinician Retention: 5% turnover, 40% prevention (Typical posture)
+   - Denial Reduction: 66% prevention (Typical posture)
+
+3. RESULTS DASHBOARD:
+   - Recalculate all driver values with new defaults
+   - Update Summary View totals
+   - Update Detailed Breakdown displays
+
+4. SCENARIOS:
+   - New scenarios created should use new default values
+   - Existing scenarios should recalculate if using default values
+
+5. PDF EXPORT:
+   - Driver detail pages must show correct calculations
+   - Executive Summary must show correct totals
+   - All step-by-step math must reflect new values
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERIFICATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After making these changes, verify:
+
+1. Value Blueprint "Combined Impact" total has decreased (Retention and Denials are lower)
+2. All warning messages display with appropriate styling
+3. Clinician Retention calculations use 5% and 40% (not 8% and 50%)
+4. Denial Reduction calculations use 66% (not 75%)
+5. Model Setup defaults match new values
+6. Results Dashboard reflects new calculations
+7. PDF export shows correct values and warnings
+
+The math must be completely consistent across all pages.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STYLING NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Warning messages should be:
+- Amber/yellow tint for assumptions/caveats (⚠️)
+- Light blue tint for timeline/informational notes (ℹ️)
+- Subtle background, not loud
+- Small padding (8-12px)
+- Clear but not alarming
+
+Keep all other styling consistent with existing design.

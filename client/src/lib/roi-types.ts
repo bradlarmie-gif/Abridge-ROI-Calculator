@@ -115,9 +115,9 @@ export const defaultInputs: RoiInputs = {
   },
   workforce: {
     providerCount: 100,
-    baselineAttritionRate: 4,
+    baselineAttritionRate: 5,
     pctAttritionLinkedToBurnout: 40,
-    pctBurnoutExitsAvoided: 50,
+    pctBurnoutExitsAvoided: 40,
     costPerDeparture: 250000,
   },
   wrvu: {
@@ -129,7 +129,7 @@ export const defaultInputs: RoiInputs = {
     baselineDenialRate: 5,
     pctDenialsRecoveredAfterRework: 60,
     pctDenialsFromDocumentation: 30,
-    pctDocDenialsRecovered: 75,
+    pctDocDenialsRecovered: 66,
   },
   hcc: {
     pctMedicareAdvantage: 25,
