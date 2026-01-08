@@ -239,6 +239,22 @@ export default function RoiCalculator({
   const capacityLaborIds: LeverId[] = ["patientAccess", "workforce", "overtime"];
   const revenueRiskIds: LeverId[] = ["wrvu", "denials", "hcc"];
 
+  // Initialize export driver selections when enabledDriverIds changes
+  useEffect(() => {
+    // Only initialize if the set is empty (first render or reset)
+    if (exportDriverSelections.size === 0 && enabledDriverIds.length > 0) {
+      setExportDriverSelections(new Set(enabledDriverIds));
+    }
+  }, [enabledDriverIds]);
+
+  // Initialize export scenario selections when scenarios change
+  useEffect(() => {
+    // Only initialize if the set is empty
+    if (exportScenarioSelections.size === 0 && scenarios.length > 0) {
+      setExportScenarioSelections(new Set(scenarios.map(s => s.id)));
+    }
+  }, [scenarios]);
+
   // Handle adding new drivers - update inputs.levers so calculateRoi recomputes
   const handleAddDrivers = () => {
     setInputs((prev) => {
@@ -2482,7 +2498,7 @@ export default function RoiCalculator({
                       {enabledDriverIds.map((id) => (
                         <label key={id} className="flex items-center gap-2 cursor-pointer">
                           <Checkbox
-                            checked={exportDriverSelections.has(id) || exportDriverSelections.size === 0}
+                            checked={exportDriverSelections.has(id)}
                             onCheckedChange={(checked) => {
                               const newSet = new Set(exportDriverSelections);
                               if (checked) {
@@ -2562,7 +2578,7 @@ export default function RoiCalculator({
                         {scenarios.map((scenario) => (
                           <label key={scenario.id} className="flex items-center gap-2 cursor-pointer">
                             <Checkbox
-                              checked={exportScenarioSelections.has(scenario.id) || exportScenarioSelections.size === 0}
+                              checked={exportScenarioSelections.has(scenario.id)}
                               onCheckedChange={(checked) => {
                                 const newSet = new Set(exportScenarioSelections);
                                 if (checked) {
@@ -2951,7 +2967,9 @@ export default function RoiCalculator({
 
                       // VALUE DRIVER DETAILS
                       if (exportContentSelections.valueDriverDetails) {
-                        enabledDriverIds.forEach((id) => {
+                        // Only include drivers selected for export
+                        const driversForExport = enabledDriverIds.filter((id) => exportDriverSelections.has(id));
+                        driversForExport.forEach((id) => {
                           newPage();
                           doc.setFontSize(16);
                           doc.setFont("helvetica", "bold");
@@ -3086,7 +3104,9 @@ export default function RoiCalculator({
 
                       // SCENARIO COMPARISONS
                       if (exportContentSelections.scenarios && scenarios.length > 0) {
-                        scenarios.forEach((scenario) => {
+                        // Only include scenarios selected for export
+                        const scenariosForExport = scenarios.filter((s) => exportScenarioSelections.has(s.id));
+                        scenariosForExport.forEach((scenario) => {
                           newPage();
                           doc.setFontSize(16);
                           doc.setFont("helvetica", "bold");

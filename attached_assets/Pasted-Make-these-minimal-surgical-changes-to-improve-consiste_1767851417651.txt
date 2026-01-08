@@ -1,0 +1,132 @@
+Make these minimal, surgical changes to improve consistency and polish. Do NOT redesign anything. Just refine what's already there.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. COLOR REFINEMENT (Very minimal)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In the Results Dashboard ONLY:
+
+DO NOT change the color palette.
+DO NOT introduce new colors.
+
+ONLY do this: If any colors feel too bright/saturated (like neon bright), reduce the saturation by 15-20%. Keep the same hue, just make it slightly more muted.
+
+Look for:
+- Any colors that feel "neon" or overly vibrant
+- Tone them down to match the softer palette used in Value Blueprint
+- Keep the same color family (blue stays blue, green stays green, etc.)
+- The goal: colors should feel like they're from the same brand family across all pages
+
+If the Results Dashboard colors already match the Value Blueprint colors, DO NOTHING here.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. REMOVE TOP PROGRESS BAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+On the Results Dashboard page, if there's a progress bar or "100%" indicator at the very top of the page, remove it.
+
+It should just be: Page title, then tab navigation, then content.
+
+No progress bars or completion percentages at the top.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SPACING CONSISTENCY (Across entire app)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit the spacing across ALL pages and make it consistent:
+
+If card padding varies (some cards have 16px, others 24px, others 20px):
+- Standardize to 24px for all cards
+
+If gaps between sections vary:
+- Small gaps (between related items): 16px
+- Medium gaps (between sections): 32px  
+- Large gaps (between major page sections): 48px
+
+If button padding varies:
+- Standardize to 12px vertical, 24px horizontal
+
+This is NOT a visual redesign—it's just making the spacing values consistent so the rhythm feels professional.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. TYPOGRAPHY CONSISTENCY (Across entire app)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit the typography across ALL pages:
+
+If heading sizes vary (e.g., some section titles are 22px, others 24px, others 20px):
+- Standardize section titles to the same size throughout
+
+If body text varies (some 14px, some 15px, some 16px):
+- Standardize body text to one consistent size
+
+If number displays vary:
+- Large headline numbers: keep consistent size/weight
+- Medium driver values: keep consistent size/weight
+- Make sure dollar amounts are always formatted the same: $XXX,XXX
+
+This is NOT changing the font or drastically changing sizes—just making sure the same elements use the same typography across all pages.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. MOBILE RESPONSIVENESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ensure everything works on mobile (< 640px) and tablet (640-1024px):
+
+Mobile:
+- Stack layouts vertically where appropriate
+- Buttons can be full-width
+- Text remains readable (minimum 14px)
+- No horizontal scrolling
+- Touch targets are at least 44px tall
+- Tables convert to stacked cards or remain scrollable
+- Comparison tables stack vertically (baseline on top, scenario below)
+
+Tablet:
+- Optimize for iPad (1024px width)
+- Most layouts can stay similar to desktop
+- Ensure touch targets work
+
+Desktop:
+- Keep existing layouts
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. SUBTLE TRANSITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add these minimal transitions if they're not already present:
+
+- Button hover: 150ms ease-out (background color, shadow)
+- Tab switch: 200ms fade (opacity transition)
+- Card expand/collapse: 300ms ease-in-out (height)
+- Input focus: 150ms ease-out (border color)
+
+These should be so subtle the user barely notices them—they just make interactions feel smooth.
+
+DO NOT ADD:
+- Bounce
+- Elastic
+- Complex animations
+- Anything playful
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL: WHAT NOT TO CHANGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT:
+- Change the overall color palette or introduce new colors
+- Redesign layouts or component structures
+- Change fonts or drastically change font sizes
+- Add new UI elements
+- Remove existing functionality
+- Change anything that's already working well
+
+ONLY:
+- Tone down any overly bright colors slightly (keep same hue)
+- Remove the top progress bar on Results Dashboard
+- Make spacing consistent (same padding/gaps everywhere)
+- Make typography consistent (same sizes for same elements)
+- Ensure mobile responsiveness
+- Add subtle transitions if missing
+
+The goal is REFINEMENT, not REDESIGN. The app already looks good—just making it more consistent and polished.
