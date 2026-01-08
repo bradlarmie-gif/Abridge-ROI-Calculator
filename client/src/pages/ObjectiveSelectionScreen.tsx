@@ -702,6 +702,8 @@ export default function ObjectiveSelectionScreen({
     65,
   );
   const [whyMattersExpanded, setWhyMattersExpanded] = useState(false);
+  const [comparePosturesExpanded, setComparePosturesExpanded] = useState(false);
+  const [fineTuneExpanded, setFineTuneExpanded] = useState(false);
   const [minutesSaved, setMinutesSaved] = useState<number | null>(null); // No default - user must select
   const [customMinutes, setCustomMinutes] = useState<number | null>(null);
   const [showCustomMinutesInput, setShowCustomMinutesInput] = useState(false);
@@ -1816,6 +1818,16 @@ export default function ObjectiveSelectionScreen({
                 {/* Step 2: Value Realization */}
                 {modelSetupStep === 2 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-8">
+                    {/* Context Callout */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-blue-800">
+                          <span className="font-medium">In the Blueprint</span>, we showed typical assumptions for each driver. Now choose how conservatively or aggressively to apply them to YOUR scenario.
+                        </p>
+                      </div>
+                    </div>
+
                     {/* Value Posture Header */}
                     <div className="mb-8">
                       <div className="flex items-center gap-3 mb-2">
@@ -1871,6 +1883,304 @@ export default function ObjectiveSelectionScreen({
                           Aggressive
                         </button>
                       </div>
+                    </div>
+
+                    {/* Posture Preview Card */}
+                    {detectedPosture && detectedPosture !== "custom" && (
+                      <div className="border border-neutral-200 rounded-xl p-5 mb-6 bg-neutral-50/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
+                            {detectedPosture.toUpperCase()} POSTURE
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-500 mb-4">
+                          {detectedPosture === "conservative" && "Best for: CFO/board review, pilot phase"}
+                          {detectedPosture === "typical" && "Best for: Initial business case, balanced approach"}
+                          {detectedPosture === "aggressive" && "Best for: Growth targets, high-confidence rollouts"}
+                        </p>
+                        <p className="text-xs text-neutral-600 mb-3">
+                          Based on: {detectedPosture === "conservative" ? "Conservative" : detectedPosture === "typical" ? "Median" : "Optimistic"} performance from 50+ Abridge customers
+                        </p>
+                        
+                        <div className="text-xs font-medium text-neutral-700 mb-2">
+                          Your selected drivers (from Strategic Priorities):
+                        </div>
+                        <div className="space-y-3">
+                          {Array.from(selectedLeverIds).map((leverId) => {
+                            const driverContent = DRIVER_CONTENT[leverId];
+                            if (!driverContent) return null;
+                            return (
+                              <div key={leverId} className="flex items-start justify-between gap-3 bg-white rounded-lg p-3 border border-neutral-100">
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <div className="text-sm font-medium text-neutral-800">{driverContent.label}</div>
+                                    <div className="text-xs text-neutral-500 mt-0.5">
+                                      {leverId === "patientAccess" && `Minutes saved: ${effectiveMinutesSaved || 2.5} per encounter`}
+                                      {leverId === "wrvu" && `Documentation lift: ${wrvuSensitivity || 5}%`}
+                                      {leverId === "overtime" && `After-hours reduction: 20%`}
+                                      {leverId === "workforce" && `Turnover reduction via burnout relief`}
+                                      {leverId === "hcc" && `RAF improvement: ${hccSensitivity || 0.7}%`}
+                                      {leverId === "denials" && `Denial reduction: ${denialsSensitivity || 30}%`}
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="text-sm font-semibold text-emerald-700 font-mono whitespace-nowrap">
+                                  ${formatNumber(driverContent.referenceValue)}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        <div className="mt-4 pt-4 border-t border-neutral-200">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-neutral-900">TOTAL PROJECTED VALUE:</span>
+                            <span className="text-lg font-bold text-emerald-700 font-mono">
+                              ${formatNumber(Array.from(selectedLeverIds).reduce((sum, leverId) => {
+                                const content = DRIVER_CONTENT[leverId];
+                                return sum + (content?.referenceValue || 0);
+                              }, 0))}
+                            </span>
+                          </div>
+                          <p className="text-xs text-neutral-500 mt-1">(Before investment costs)</p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setComparePosturesExpanded(!comparePosturesExpanded)}
+                          className="mt-4 text-sm font-medium text-neutral-700 hover:text-neutral-900 flex items-center gap-1"
+                          data-testid="button-compare-postures"
+                        >
+                          <ChevronRight className={`w-4 h-4 transition-transform ${comparePosturesExpanded ? "rotate-90" : ""}`} />
+                          Compare All Postures
+                        </button>
+
+                        {/* Compare Postures Table */}
+                        {comparePosturesExpanded && (
+                          <div className="mt-4 overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-neutral-200">
+                                  <th className="text-left py-2 pr-4 font-medium text-neutral-600">Driver</th>
+                                  <th className="text-right py-2 px-2 font-medium text-neutral-600">Conservative</th>
+                                  <th className="text-right py-2 px-2 font-medium text-neutral-600">Typical</th>
+                                  <th className="text-right py-2 px-2 font-medium text-neutral-600">Aggressive</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {Array.from(selectedLeverIds).map((leverId, idx) => {
+                                  const content = DRIVER_CONTENT[leverId];
+                                  if (!content) return null;
+                                  const baseValue = content.referenceValue;
+                                  return (
+                                    <tr key={leverId} className={idx % 2 === 0 ? "bg-neutral-50/50" : ""}>
+                                      <td className="py-2 pr-4 font-medium text-neutral-800">{content.label}</td>
+                                      <td className="py-2 px-2 text-right font-mono text-neutral-600">${formatNumber(Math.round(baseValue * 0.7))}</td>
+                                      <td className="py-2 px-2 text-right font-mono text-neutral-800 font-medium">${formatNumber(baseValue)}</td>
+                                      <td className="py-2 px-2 text-right font-mono text-neutral-600">${formatNumber(Math.round(baseValue * 1.3))}</td>
+                                    </tr>
+                                  );
+                                })}
+                                <tr className="border-t-2 border-neutral-300 font-bold">
+                                  <td className="py-2 pr-4 text-neutral-900">TOTAL</td>
+                                  <td className="py-2 px-2 text-right font-mono text-neutral-700">
+                                    ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 0.7, 0)))}
+                                  </td>
+                                  <td className="py-2 px-2 text-right font-mono text-emerald-700">
+                                    ${formatNumber(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0), 0))}
+                                  </td>
+                                  <td className="py-2 px-2 text-right font-mono text-neutral-700">
+                                    ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 1.3, 0)))}
+                                  </td>
+                                </tr>
+                                <tr className="text-xs text-neutral-500">
+                                  <td className="py-1 pr-4">Est. ROI (at $57,600 investment)</td>
+                                  <td className="py-1 px-2 text-right font-mono">
+                                    {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 0.7, 0) / 57600)).toFixed(1)}x
+                                  </td>
+                                  <td className="py-1 px-2 text-right font-mono font-medium">
+                                    {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0), 0) / 57600)).toFixed(1)}x
+                                  </td>
+                                  <td className="py-1 px-2 text-right font-mono">
+                                    {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 1.3, 0) / 57600)).toFixed(1)}x
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            
+                            <div className="flex flex-wrap gap-2 mt-4">
+                              <button
+                                type="button"
+                                onClick={() => applyPosture("conservative")}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  detectedPosture === "conservative"
+                                    ? "bg-neutral-800 text-white"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                              >
+                                Select Conservative {detectedPosture === "conservative" && <Check className="w-3 h-3 inline ml-1" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => applyPosture("typical")}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  detectedPosture === "typical"
+                                    ? "bg-neutral-800 text-white"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                              >
+                                Keep Typical {detectedPosture === "typical" && <Check className="w-3 h-3 inline ml-1" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => applyPosture("aggressive")}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  detectedPosture === "aggressive"
+                                    ? "bg-neutral-800 text-white"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                              >
+                                Select Aggressive {detectedPosture === "aggressive" && <Check className="w-3 h-3 inline ml-1" />}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Fine-Tune Assumptions Section */}
+                    <div className="border border-neutral-200 rounded-xl mb-6">
+                      <button
+                        type="button"
+                        onClick={() => setFineTuneExpanded(!fineTuneExpanded)}
+                        className="w-full flex items-center justify-between p-4 text-left"
+                        data-testid="button-fine-tune-toggle"
+                      >
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <ChevronDown className={`w-4 h-4 text-neutral-500 transition-transform ${fineTuneExpanded ? "" : "-rotate-90"}`} />
+                            <span className="text-sm font-semibold text-neutral-900">FINE-TUNE ASSUMPTIONS</span>
+                            <span className="text-xs text-neutral-500">(Optional)</span>
+                          </div>
+                          <p className="text-xs text-neutral-500 mt-1 ml-6">
+                            Want more control? Adjust the key assumptions that drive your selected value drivers.
+                          </p>
+                        </div>
+                      </button>
+                      
+                      {fineTuneExpanded && (
+                        <div className="px-4 pb-4">
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                            <div className="flex items-start gap-2">
+                              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-amber-800">
+                                <span className="font-medium">Note:</span> Changing these overrides your posture selection
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Fine-tune inputs - showing selected drivers only */}
+                          <div className="space-y-4">
+                            {/* Patient Access Fine-tune */}
+                            {selectedLeverIds.has("patientAccess") && (
+                              <div className="border border-neutral-200 rounded-lg p-4 bg-white">
+                                <div className="text-sm font-medium text-neutral-900 mb-3">Patient Access</div>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-xs font-medium text-neutral-600">Minutes saved per encounter</label>
+                                    <input
+                                      type="number"
+                                      step="0.5"
+                                      value={effectiveMinutesSaved || 2.5}
+                                      onChange={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        if (!isNaN(val) && val > 0) {
+                                          setMinutesSaved(val);
+                                          setCustomMinutes(val);
+                                        }
+                                      }}
+                                      className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                    />
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 1.5-4 min | Blueprint reference: 2.5 min</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-neutral-600">Capacity realization factor</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={timeRealizationRate || 20}
+                                        onChange={(e) => setTimeRealizationRate(parseInt(e.target.value))}
+                                        className="w-20 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 10-35% | Blueprint reference: 20%</p>
+                                  </div>
+                                </div>
+                                <button 
+                                  type="button" 
+                                  onClick={() => { setMinutesSaved(4); setTimeRealizationRate(55); }}
+                                  className="mt-3 text-xs text-neutral-500 hover:text-neutral-700"
+                                >
+                                  Reset to Typical Defaults
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Level of Service Fine-tune */}
+                            {selectedLeverIds.has("wrvu") && (
+                              <div className="border border-neutral-200 rounded-lg p-4 bg-white">
+                                <div className="text-sm font-medium text-neutral-900 mb-3">Accurate Level of Service</div>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-xs font-medium text-neutral-600">Baseline wRVU per encounter</label>
+                                    <input
+                                      type="number"
+                                      step="0.05"
+                                      defaultValue={1.75}
+                                      className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                    />
+                                    <p className="text-xs text-neutral-500 mt-1">Typical outpatient range: 1.5-2.0 | Blueprint: 1.75</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-neutral-600">Documentation quality lift</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={wrvuSensitivity || 5}
+                                        onChange={(e) => setWrvuSensitivity(parseInt(e.target.value))}
+                                        className="w-20 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 2-8% | Blueprint reference: 5%</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-neutral-600">Revenue per wRVU</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="text-sm text-neutral-500">$</span>
+                                      <input
+                                        type="number"
+                                        defaultValue={50}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                      />
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $40-70 depending on payer mix</p>
+                                  </div>
+                                </div>
+                                <button 
+                                  type="button" 
+                                  onClick={() => setWrvuSensitivity(5)}
+                                  className="mt-3 text-xs text-neutral-500 hover:text-neutral-700"
+                                >
+                                  Reset to Typical Defaults
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Two columns grid */}

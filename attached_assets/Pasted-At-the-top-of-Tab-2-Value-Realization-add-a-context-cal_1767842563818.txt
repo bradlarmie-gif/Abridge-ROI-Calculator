@@ -1,0 +1,101 @@
+At the top of Tab 2 (Value Realization), add a context callout box:
+
+Content:
+"💡 In the Blueprint, we showed typical assumptions for each driver. Now choose how conservatively or aggressively to apply them to YOUR scenario."
+
+Style: Same as Tab 1 context box
+
+When a user selects a posture (Conservative/Typical/Aggressive), show a preview card that displays:
+
+Title: "[SELECTED POSTURE] POSTURE"
+
+Subtitle: 
+- Conservative: "Best for: CFO/board review, pilot phase"
+- Typical: "Best for: Initial business case, balanced approach"
+- Aggressive: "Best for: Growth targets, high-confidence rollouts"
+
+Content:
+"Based on: [Median/Conservative/Optimistic] performance from 50+ Abridge customers
+
+Your selected drivers (from Strategic Priorities):"
+
+Then dynamically list ONLY the drivers they selected in Step 2, showing:
+- Driver name with checkmark icon
+- Key assumption bullets (e.g., "• Minutes saved: 2.5 per encounter")
+- Projected value in green (e.g., "$173,200")
+
+At the bottom, show:
+"TOTAL PROJECTED VALUE: $[SUM]
+(Before investment costs)"
+
+Add a button: "[Compare All Postures]"
+
+Style: Card with subtle border, assumptions in gray text, values in bold
+
+When user clicks "Compare All Postures", expand to show a comparison table:
+
+Structure:
+3 columns: Conservative | Typical | Aggressive
+Rows for EACH selected driver showing:
+- Driver name
+- Total value for that posture
+- Key assumption differences (bullets)
+
+Bottom row:
+- TOTAL values for each column
+- ROI estimate (assuming $57,600 investment)
+
+Add selection buttons at bottom:
+"[Select Conservative] [Keep Typical ✓] [Select Aggressive]"
+
+The checkmark should indicate currently selected posture.
+
+Style: Clean table with column headers, alternating row colors, bold totals
+
+Below the posture selection, add a collapsed section:
+
+Title: "▼ FINE-TUNE ASSUMPTIONS (Optional)"
+
+Subtitle: "Want more control? Adjust the key assumptions that drive your selected value drivers."
+
+Warning: "⚠️ Note: Changing these overrides your posture selection"
+
+When expanded, show subsections for EACH selected driver with editable inputs.
+
+For Patient Access, show:
+1. "Minutes saved per encounter"
+   - Input field, default from posture
+   - Helper text: "Range: 1.5-4 min | Blueprint reference: 2.5 min"
+   - Data note: "📊 Pilot data: P25: 1.8 min | Median: 2.5 | P75: 3.2"
+
+2. "Capacity realization factor"
+   - Input field, default from posture
+   - Helper text: "Range: 10-35% | Blueprint reference: 20%"
+   - Explanation: "💡 What this means: 20% of saved time becomes new patient capacity (Rest goes to admin, rest, quality improvement)"
+
+3. "Average revenue per visit"
+   - Input field with $ prefix
+   - Helper text: "Typical range: $150-$350 depending on specialty"
+   - Tip: "💭 Use your actual net collectible revenue per visit"
+
+For Level of Service, show:
+1. "Baseline wRVU per encounter"
+   - Input field, default: 1.75
+   - Helper text: "Typical outpatient range: 1.5-2.0 | Blueprint: 1.75"
+   - Tip: "💡 This is your current average work RVU per visit"
+
+2. "Documentation quality lift"
+   - Input field with % symbol
+   - Helper text: "Range: 2-8% | Blueprint reference: 5%"
+   - Data: "📊 Customer data: Conservative: 2% | Typical: 5% | Strong: 8%"
+
+3. "Revenue per wRVU"
+   - Input field with $ prefix
+   - Helper text: "Typical range: $40-70 depending on payer mix"
+   - Breakdown: "💰 Medicare ~$36-40 | Commercial ~$50-80"
+
+Each subsection should have:
+- Live calculation box showing the math
+- [Reset to Typical Defaults] button
+
+Style: Indented subsections, input fields with inline helpers, calculation boxes in light gray
