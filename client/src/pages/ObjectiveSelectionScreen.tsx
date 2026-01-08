@@ -16,10 +16,22 @@ import {
   HeartPulse,
   Building2,
   ChevronRight,
+  ChevronDown,
   Check,
   Clock,
   FileText,
   ArrowLeft,
+  Users,
+  Calendar,
+  TrendingUp,
+  DollarSign,
+  AlertTriangle,
+  Info,
+  Lightbulb,
+  Target,
+  Calculator,
+  Settings,
+  BarChart3,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -69,6 +81,213 @@ const POSTURE_PRESETS: Record<Exclude<ValuePosture, "custom">, { minutes: number
   conservative: { minutes: 2, realization: 45, wrvu: 3 },
   typical: { minutes: 4, realization: 55, wrvu: 5 },
   aggressive: { minutes: 6, realization: 65, wrvu: 7 },
+};
+
+// Reference scenario defaults for Value Blueprint
+const REFERENCE_SCENARIO = {
+  providers: 40,
+  annualVisits: 80000,
+  adoptionPercent: 65,
+  get documentedEncounters() {
+    return Math.round(this.annualVisits * (this.adoptionPercent / 100));
+  },
+};
+
+// Value driver content for the Blueprint page
+interface DriverContent {
+  id: string;
+  label: string;
+  icon: typeof Clock;
+  theory: string;
+  calculationSteps: {
+    title: string;
+    steps: { label: string; value: string; note?: string }[];
+  }[];
+  keyVariables: string[];
+  rangeData: { conservative: string; typical: string; aggressive?: string };
+  referenceValue: number;
+}
+
+const DRIVER_CONTENT: Record<string, DriverContent> = {
+  patientAccess: {
+    id: "patientAccess",
+    label: "Patient Access",
+    icon: Users,
+    theory: "When providers spend less time on documentation, that time can partially convert into seeing more patients—reducing access bottlenecks and wait times.",
+    calculationSteps: [
+      {
+        title: "Step 1: Time Returned",
+        steps: [
+          { label: "Minutes saved per encounter", value: "2.5 min", note: "typical" },
+          { label: "Documented encounters", value: "52,000" },
+          { label: "Hours returned annually", value: "2,167 hrs" },
+        ],
+      },
+      {
+        title: "Step 2: Realized Capacity",
+        steps: [
+          { label: "Not all time becomes new visits", value: "(admin, rest, etc)" },
+          { label: "Realization factor", value: "20%", note: "typical" },
+          { label: "Usable hours", value: "433 hrs" },
+        ],
+      },
+      {
+        title: "Step 3: New Visit Capacity",
+        steps: [
+          { label: "Usable hours", value: "433" },
+          { label: "Avg visit duration", value: "30 min" },
+          { label: "Additional visits possible", value: "866 visits" },
+        ],
+      },
+      {
+        title: "Step 4: Revenue Impact",
+        steps: [
+          { label: "Additional visits", value: "866" },
+          { label: "Net revenue per visit", value: "$200" },
+          { label: "Annual value", value: "$173,200" },
+        ],
+      },
+    ],
+    keyVariables: ["Provider count", "Visit volume", "Revenue per visit", "Capacity conversion %"],
+    rangeData: { conservative: "$80k-120k", typical: "$150k-200k" },
+    referenceValue: 173200,
+  },
+  wrvu: {
+    id: "wrvu",
+    label: "Accurate Level of Service",
+    icon: BarChart3,
+    theory: "Better real-time documentation captures the full complexity of care delivered—supporting accurate E/M levels and reducing billing errors.",
+    calculationSteps: [
+      {
+        title: "Step 1: Documentation Quality Lift",
+        steps: [
+          { label: "Improvement in level-of-service alignment", value: "3%", note: "typical" },
+        ],
+      },
+      {
+        title: "Step 2: Revenue Captured",
+        steps: [
+          { label: "Documented encounters", value: "52,000" },
+          { label: "Average revenue per visit", value: "$200" },
+          { label: "Quality lift", value: "3%" },
+          { label: "Annual value", value: "$312,000" },
+        ],
+      },
+    ],
+    keyVariables: ["Visit volume", "Revenue per visit", "Documentation quality lift %"],
+    rangeData: { conservative: "2% lift", typical: "3% lift", aggressive: "5% lift" },
+    referenceValue: 312000,
+  },
+  overtime: {
+    id: "overtime",
+    label: "Overtime & Locum Cost Savings",
+    icon: Clock,
+    theory: "Documentation burden extends the workday. By reducing after-hours charting, organizations can decrease overtime costs and reduce reliance on expensive locum coverage.",
+    calculationSteps: [
+      {
+        title: "Step 1: Overtime Reduction",
+        steps: [
+          { label: "Hours saved per provider/week", value: "2 hrs" },
+          { label: "Providers affected", value: "40" },
+          { label: "Weeks per year", value: "48" },
+          { label: "Total overtime hours avoided", value: "3,840 hrs" },
+        ],
+      },
+      {
+        title: "Step 2: Cost Impact",
+        steps: [
+          { label: "Overtime rate premium", value: "$75/hr" },
+          { label: "Annual savings", value: "$288,000" },
+        ],
+      },
+    ],
+    keyVariables: ["Provider count", "Overtime rate", "Hours reduced per week"],
+    rangeData: { conservative: "$100k-200k", typical: "$250k-350k" },
+    referenceValue: 288000,
+  },
+  workforce: {
+    id: "workforce",
+    label: "Clinician Retention",
+    icon: HeartPulse,
+    theory: "Documentation burden is a leading driver of clinician burnout. Reducing this burden improves satisfaction and reduces costly turnover.",
+    calculationSteps: [
+      {
+        title: "Step 1: Turnover Impact",
+        steps: [
+          { label: "Baseline annual turnover rate", value: "8%" },
+          { label: "Providers", value: "40" },
+          { label: "Expected departures/year", value: "3.2" },
+        ],
+      },
+      {
+        title: "Step 2: Retention Improvement",
+        steps: [
+          { label: "Turnover reduction with Abridge", value: "25%" },
+          { label: "Departures avoided", value: "0.8" },
+          { label: "Cost per departure", value: "$250,000" },
+          { label: "Annual savings", value: "$200,000" },
+        ],
+      },
+    ],
+    keyVariables: ["Provider count", "Turnover rate", "Replacement cost", "Retention improvement"],
+    rangeData: { conservative: "$100k-150k", typical: "$175k-250k" },
+    referenceValue: 200000,
+  },
+  hcc: {
+    id: "hcc",
+    label: "HCC & Chronic Condition Capture",
+    icon: Target,
+    theory: "More complete clinical documentation improves risk adjustment accuracy, ensuring appropriate reimbursement for the complexity of patients served.",
+    calculationSteps: [
+      {
+        title: "Step 1: Population at Risk",
+        steps: [
+          { label: "Medicare Advantage patients", value: "30%", note: "of volume" },
+          { label: "Documented encounters", value: "52,000" },
+          { label: "MA encounters", value: "15,600" },
+        ],
+      },
+      {
+        title: "Step 2: RAF Improvement",
+        steps: [
+          { label: "Baseline RAF gap", value: "5%" },
+          { label: "Documentation improvement", value: "40%" },
+          { label: "Revenue per RAF point", value: "$1,000" },
+          { label: "Annual value", value: "$312,000" },
+        ],
+      },
+    ],
+    keyVariables: ["MA patient %", "Baseline RAF gap", "Documentation improvement %"],
+    rangeData: { conservative: "$150k-250k", typical: "$300k-400k" },
+    referenceValue: 312000,
+  },
+  denials: {
+    id: "denials",
+    label: "Documentation Related Denials",
+    icon: AlertTriangle,
+    theory: "Incomplete or unclear documentation leads to preventable claim denials. Better real-time documentation reduces rework and improves net collections.",
+    calculationSteps: [
+      {
+        title: "Step 1: Denial Baseline",
+        steps: [
+          { label: "Documentation-related denial rate", value: "3%" },
+          { label: "Annual revenue at risk", value: "$10.4M" },
+          { label: "Current denials", value: "$312,000" },
+        ],
+      },
+      {
+        title: "Step 2: Improvement Impact",
+        steps: [
+          { label: "Denial reduction with Abridge", value: "30%" },
+          { label: "Denials avoided", value: "$93,600" },
+          { label: "Annual value", value: "$93,600" },
+        ],
+      },
+    ],
+    keyVariables: ["Total revenue", "Denial rate", "Denial reduction %"],
+    rangeData: { conservative: "$50k-75k", typical: "$80k-120k" },
+    referenceValue: 93600,
+  },
 };
 
 function StepIndicator({
@@ -385,6 +604,11 @@ export default function ObjectiveSelectionScreen({
     initialSelectedLevers.forEach((lever) => ids.add(lever.leverId));
     return ids;
   });
+
+  // ============================================
+  // Value Blueprint State
+  // ============================================
+  const [expandedDrivers, setExpandedDrivers] = useState<Set<string>>(new Set());
 
   // ============================================
   // Model Setup State
@@ -978,8 +1202,8 @@ export default function ObjectiveSelectionScreen({
 
         {/* PAGE 3 — VALUE BLUEPRINT */}
         {currentPage === "value-blueprint" && selectedSetting && (
-          <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16">
-            <div className="max-w-3xl">
+          <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16 pb-32">
+            <div className="max-w-4xl">
               <button
                 onClick={handleBackToPage2}
                 className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
@@ -994,16 +1218,249 @@ export default function ObjectiveSelectionScreen({
                   Value Blueprint
                 </h2>
                 <p className="text-lg text-neutral-600 leading-relaxed">
-                  Define how value will be measured and realized.
+                  See how each driver creates value using typical assumptions from 50+ health systems.
                 </p>
               </div>
 
-              {/* Placeholder content */}
-              <div className="rounded-xl border border-dashed border-neutral-300 bg-white p-8 text-center">
-                <p className="text-neutral-500">
-                  Value Blueprint content coming soon
-                </p>
-              </div>
+              {/* Reference Scenario Section */}
+              <section className="mb-10">
+                <div className="rounded-xl bg-gradient-to-br from-slate-50 to-blue-50/50 border border-slate-200 p-6">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold text-neutral-900">Reference Scenario</h3>
+                    <p className="text-sm text-neutral-500">Typical mid-sized outpatient practice</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4 mb-5">
+                    <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-slate-100">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50">
+                        <Users className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold text-neutral-900 font-mono">{REFERENCE_SCENARIO.providers}</div>
+                        <div className="text-xs text-neutral-500">providers</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-slate-100">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50">
+                        <Calendar className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold text-neutral-900 font-mono">{formatNumber(REFERENCE_SCENARIO.annualVisits)}</div>
+                        <div className="text-xs text-neutral-500">annual visits</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-slate-100">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-50">
+                        <TrendingUp className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold text-neutral-900 font-mono">{REFERENCE_SCENARIO.adoptionPercent}%</div>
+                        <div className="text-xs text-neutral-500">adoption</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-4 border-t border-slate-200">
+                    <Calculator className="w-4 h-4 text-neutral-400" />
+                    <span className="text-sm text-neutral-600">This creates:</span>
+                    <span className="text-base font-semibold text-neutral-900">
+                      ~{formatNumber(REFERENCE_SCENARIO.documentedEncounters)} Abridge-documented encounters/year
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              {/* Value Drivers Section */}
+              <section className="mb-10">
+                <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4">
+                  Your Selected Value Drivers
+                </h3>
+                
+                <div className="space-y-4">
+                  {Array.from(selectedLeverIds).map((leverId) => {
+                    const driver = DRIVER_CONTENT[leverId];
+                    if (!driver) return null;
+                    
+                    const DriverIcon = driver.icon;
+                    const isExpanded = expandedDrivers.has(leverId);
+                    
+                    return (
+                      <div 
+                        key={leverId}
+                        className="rounded-xl border border-neutral-200 bg-white overflow-hidden"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExpandedDrivers(prev => {
+                              const next = new Set(prev);
+                              if (next.has(leverId)) {
+                                next.delete(leverId);
+                              } else {
+                                next.add(leverId);
+                              }
+                              return next;
+                            });
+                          }}
+                          className="w-full flex items-center justify-between p-5 text-left hover:bg-neutral-50 transition-colors"
+                          data-testid={`driver-toggle-${leverId}`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#FFF5F3]">
+                              <DriverIcon className="w-5 h-5 text-[#F03319]" />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-neutral-900">{driver.label}</div>
+                              <div className="text-sm text-neutral-500">
+                                Reference value: <span className="font-mono font-medium text-green-600">${formatNumber(driver.referenceValue)}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {isExpanded && (
+                          <div className="px-5 pb-5 border-t border-neutral-100">
+                            {/* The Theory */}
+                            <div className="mt-5 mb-6">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Lightbulb className="w-4 h-4 text-amber-500" />
+                                <span className="text-sm font-semibold text-neutral-700">The Theory</span>
+                              </div>
+                              <p className="text-sm text-neutral-600 leading-relaxed pl-6">
+                                {driver.theory}
+                              </p>
+                            </div>
+                            
+                            {/* How We Calculate It */}
+                            <div className="mb-6">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Calculator className="w-4 h-4 text-blue-500" />
+                                <span className="text-sm font-semibold text-neutral-700">How We Calculate It</span>
+                              </div>
+                              <div className="space-y-4 pl-6">
+                                {driver.calculationSteps.map((step, idx) => (
+                                  <div key={idx} className="bg-slate-50 rounded-lg p-4">
+                                    <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">{step.title}</div>
+                                    <div className="space-y-1">
+                                      {step.steps.map((s, sIdx) => (
+                                        <div key={sIdx} className="flex items-center justify-between text-sm">
+                                          <span className="text-neutral-600">{s.label}</span>
+                                          <span className="font-mono text-neutral-900">
+                                            {s.value}
+                                            {s.note && <span className="text-neutral-400 text-xs ml-1">({s.note})</span>}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {/* Key Variables */}
+                            <div className="mb-6">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Settings className="w-4 h-4 text-neutral-500" />
+                                <span className="text-sm font-semibold text-neutral-700">Key Variables You'll Customize</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2 pl-6">
+                                {driver.keyVariables.map((v, idx) => (
+                                  <span key={idx} className="px-3 py-1 bg-neutral-100 rounded-full text-xs text-neutral-600">
+                                    {v}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {/* Range Across Customers */}
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <BarChart3 className="w-4 h-4 text-green-500" />
+                                <span className="text-sm font-semibold text-neutral-700">Range Across Customers</span>
+                              </div>
+                              <div className="flex gap-4 pl-6 text-sm">
+                                <span className="text-neutral-600">Conservative: <span className="font-medium">{driver.rangeData.conservative}</span></span>
+                                <span className="text-neutral-600">Typical: <span className="font-medium">{driver.rangeData.typical}</span></span>
+                                {driver.rangeData.aggressive && (
+                                  <span className="text-neutral-600">Aggressive: <span className="font-medium">{driver.rangeData.aggressive}</span></span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+
+              {/* Combined Impact Summary */}
+              <section className="mb-10">
+                <div className="rounded-xl bg-white border border-neutral-200 p-6">
+                  <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4">
+                    Combined Impact (Reference Scenario)
+                  </h3>
+                  
+                  <div className="space-y-3 mb-4">
+                    {Array.from(selectedLeverIds).map((leverId) => {
+                      const driver = DRIVER_CONTENT[leverId];
+                      if (!driver) return null;
+                      return (
+                        <div key={leverId} className="flex items-center justify-between text-sm">
+                          <span className="text-neutral-700">{driver.label}</span>
+                          <span className="font-mono font-medium text-neutral-900">${formatNumber(driver.referenceValue)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="border-t border-neutral-200 pt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-semibold text-neutral-900">Total Annual Benefit</span>
+                      <span className="text-2xl font-bold text-green-600 font-mono">
+                        ${formatNumber(
+                          Array.from(selectedLeverIds).reduce((sum, leverId) => {
+                            const driver = DRIVER_CONTENT[leverId];
+                            return sum + (driver?.referenceValue || 0);
+                          }, 0)
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Callout box */}
+                <div className="mt-4 rounded-lg bg-blue-50 border border-blue-100 p-4 flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-blue-800">
+                    This is before accounting for investment costs. Next, you'll input your specifics to see YOUR numbers.
+                  </p>
+                </div>
+              </section>
+
+              {/* Important to Know Warning */}
+              <section className="mb-6">
+                <div className="rounded-xl bg-amber-50 border border-amber-200 p-6">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-amber-900 mb-2">Important to Know</h4>
+                      <p className="text-sm text-amber-800 mb-3">
+                        These calculations use typical assumptions from 50+ health systems. In the next step, you'll customize:
+                      </p>
+                      <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc">
+                        <li>Your organization size and volume</li>
+                        <li>Your financial metrics (revenue, costs)</li>
+                        <li>How conservatively to model outcomes</li>
+                      </ul>
+                      <p className="text-sm text-amber-800 mt-3 font-medium">
+                        The formulas stay the same—only YOUR numbers change.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         )}

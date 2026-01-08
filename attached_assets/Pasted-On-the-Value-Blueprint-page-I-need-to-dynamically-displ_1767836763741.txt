@@ -1,0 +1,60 @@
+On the Value Blueprint page, I need to dynamically display value driver explanations 
+based on what was selected on the Strategic Priorities page.
+
+The system should:
+1. Read which priorities were selected (e.g., "Patient Access", "Accurate Level of Service")
+2. For EACH selected priority, display a detailed card showing:
+   - Driver name and icon
+   - "The Theory" section (why this matters)
+   - "How We Calculate It" section with step-by-step math
+   - "Key Variables You'll Customize" list
+   - "Range Across Customers" benchmark data
+
+Here's the content for the first two drivers:
+
+PATIENT ACCESS:
+- Theory: "When providers spend less time on documentation, that time can partially 
+  convert into seeing more patients—reducing access bottlenecks and wait times."
+  
+- Calculation steps:
+  Step 1: Time Returned
+  - Minutes saved per encounter: 2.5 min (typical)
+  - × Documented encounters: 52,000
+  - = 2,167 hours returned annually
+  
+  Step 2: Realized Capacity
+  - Not all time becomes new visits (admin, rest, etc)
+  - Realization factor: 20% (typical)
+  - = 433 usable hours
+  
+  Step 3: New Visit Capacity
+  - Usable hours: 433
+  - ÷ Avg visit duration: 30 minutes
+  - = 866 additional visits possible
+  
+  Step 4: Revenue Impact
+  - Additional visits: 866
+  - × Net revenue per visit: $200
+  - = $173,200 annual value
+
+- Key Variables: Provider count, visit volume, revenue per visit, capacity conversion %
+- Range: Conservative: $80k-120k | Typical: $150k-200k
+
+ACCURATE LEVEL OF SERVICE:
+- Theory: "Better real-time documentation captures the full complexity of care 
+  delivered—supporting accurate E/M levels and reducing billing errors."
+  
+- Calculation:
+  Step 1: Documentation Quality Lift
+  - Improvement in level-of-service alignment: 3% (typical)
+  
+  Step 2: Revenue Captured
+  - Documented encounters: 52,000
+  - × Average revenue per visit: $200
+  - × Quality lift: 3%
+  - = $312,000 annual value
+
+- Key Variables: Visit volume, revenue per visit, documentation quality lift %
+- Range: Conservative: 2% lift | Typical: 3% | Strong: 5%
+
+Please create expandable/collapsible cards for each selected driver with this structure.
