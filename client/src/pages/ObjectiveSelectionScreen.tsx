@@ -1430,15 +1430,44 @@ export default function ObjectiveSelectionScreen({
                                   <div key={idx} className="bg-slate-50 rounded-lg p-4">
                                     <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">{step.title}</div>
                                     <div className="space-y-1">
-                                      {step.steps.map((s, sIdx) => (
-                                        <div key={sIdx} className="flex items-center justify-between text-sm">
-                                          <span className="text-neutral-600">{s.label}</span>
-                                          <span className="font-mono text-neutral-900">
-                                            {s.value}
-                                            {s.note && <span className="text-neutral-400 text-xs ml-1">({s.note})</span>}
-                                          </span>
-                                        </div>
-                                      ))}
+                                      {step.steps.map((s, sIdx) => {
+                                        if (s.note === "warning") {
+                                          return (
+                                            <div key={sIdx} className="mt-2 p-2 rounded bg-amber-50 border border-amber-200">
+                                              <span className="text-xs text-amber-800 flex items-center gap-1.5">
+                                                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                                                {s.label}
+                                              </span>
+                                            </div>
+                                          );
+                                        }
+                                        if (s.note === "info") {
+                                          return (
+                                            <div key={sIdx} className="mt-2 p-2 rounded bg-blue-50 border border-blue-200">
+                                              <span className="text-xs text-blue-800 flex items-center gap-1.5">
+                                                <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                                                {s.label}
+                                              </span>
+                                            </div>
+                                          );
+                                        }
+                                        if (s.note === "explanatory") {
+                                          return (
+                                            <div key={sIdx} className="mt-1 text-xs text-neutral-500 italic">
+                                              {s.label}
+                                            </div>
+                                          );
+                                        }
+                                        return (
+                                          <div key={sIdx} className="flex items-center justify-between text-sm">
+                                            <span className="text-neutral-600">{s.label}</span>
+                                            <span className="font-mono text-neutral-900">
+                                              {s.value}
+                                              {s.note && <span className="text-neutral-400 text-xs ml-1">({s.note})</span>}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   </div>
                                 ))}
@@ -1534,15 +1563,27 @@ export default function ObjectiveSelectionScreen({
                     <div>
                       <h4 className="font-semibold text-amber-900 mb-2">Important to Know</h4>
                       <p className="text-sm text-amber-800 mb-3">
-                        These calculations use typical assumptions from 200+ health system partners. In the next step, you'll customize:
+                        These calculations use typical assumptions from 200+ health system partners.
                       </p>
-                      <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc">
+                      <p className="text-sm text-amber-800 mb-2">
+                        In the next step, you'll customize:
+                      </p>
+                      <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc mb-3">
                         <li>Your organization size and volume</li>
                         <li>Your financial metrics (revenue, costs)</li>
                         <li>How conservatively to model outcomes</li>
                       </ul>
-                      <p className="text-sm text-amber-800 mt-3 font-medium">
-                        The formulas stay the same—only YOUR numbers change.
+                      <p className="text-sm text-amber-800 mb-2 font-medium">
+                        Important limitations:
+                      </p>
+                      <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc mb-3">
+                        <li>We don't have access to your specific payer contracts, reimbursement rates, or financial systems</li>
+                        <li>Revenue assumptions use blended averages—your actual rates may vary</li>
+                        <li>Capacity value assumes patient demand exists to fill additional appointment slots</li>
+                        <li>Long-term metrics (retention) require 12+ months to measure</li>
+                      </ul>
+                      <p className="text-sm text-amber-800 font-medium">
+                        The formulas stay the same—only YOUR numbers change. Adjust assumptions to reflect your organization's reality.
                       </p>
                     </div>
                   </div>
