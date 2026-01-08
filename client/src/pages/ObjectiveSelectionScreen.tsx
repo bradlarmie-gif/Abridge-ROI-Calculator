@@ -1082,14 +1082,13 @@ export default function ObjectiveSelectionScreen({
       {/* Header */}
       <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
         <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-lg md:text-xl font-semibold text-neutral-900 tracking-tight">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight leading-tight">
               ROI Calculator
             </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm text-neutral-500">by</span>
-              <img src={abridgeLogo} alt="Abridge" className="h-[18px] md:h-[22px]" style={{ marginBottom: '-3px' }} />
-            </div>
+            <span className="text-sm text-[#6B7280] leading-tight">
+              by Abridge
+            </span>
           </div>
 
           {currentPage !== "orientation" && (

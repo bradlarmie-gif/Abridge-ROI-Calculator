@@ -509,13 +509,13 @@ export default function RoiCalculator({
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div>
-                <h1 className="text-xl font-bold text-neutral-900">
-                  Results Dashboard
+              <div className="flex flex-col gap-0.5">
+                <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight leading-tight">
+                  ROI Calculator
                 </h1>
-                <p className="text-sm text-neutral-500">
-                  Your ROI model is ready
-                </p>
+                <span className="text-sm text-[#6B7280] leading-tight">
+                  by Abridge
+                </span>
               </div>
             </div>
           </div>
