@@ -692,15 +692,16 @@ export default function ObjectiveSelectionScreen({
   const [modelSetupStep, setModelSetupStep] = useState<1 | 2 | 3>(1);
 
   // Baseline step state - using number | "" to allow empty field while typing
-  const [cliniciansInScope, setCliniciansInScope] = useState<number | "">("");
+  const [cliniciansInScope, setCliniciansInScope] = useState<number | "">(40);
   const [annualEncountersInScope, setAnnualEncountersInScope] = useState<
     number | ""
-  >("");
+  >(80000);
 
   // Adoption step state
   const [utilizationPercent, setUtilizationPercent] = useState<number | null>(
-    null,
+    65,
   );
+  const [whyMattersExpanded, setWhyMattersExpanded] = useState(false);
   const [minutesSaved, setMinutesSaved] = useState<number | null>(null); // No default - user must select
   const [customMinutes, setCustomMinutes] = useState<number | null>(null);
   const [showCustomMinutesInput, setShowCustomMinutesInput] = useState(false);
@@ -1601,6 +1602,16 @@ export default function ObjectiveSelectionScreen({
                 {modelSetupStep === 1 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
                     <div className="space-y-6">
+                      {/* Blueprint Context Callout */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div className="flex items-start gap-3">
+                          <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <p className="text-sm text-blue-800">
+                            <span className="font-medium">Remember the Blueprint?</span> We used 40 providers and 52,000 encounters as a reference. Now input YOUR actual numbers—everything else adjusts automatically.
+                          </p>
+                        </div>
+                      </div>
+
                       {/* Providers in scope - Required */}
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
@@ -1621,7 +1632,7 @@ export default function ObjectiveSelectionScreen({
                           }}
                           className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
                           data-testid="input-clinicians"
-                          placeholder="e.g. 50"
+                          placeholder="e.g., 50"
                         />
                         <p className="text-xs text-neutral-500 mt-1.5">
                           Number of providers who will use Abridge. This is the foundation of your ROI model.
@@ -1648,7 +1659,7 @@ export default function ObjectiveSelectionScreen({
                           }}
                           className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
                           data-testid="input-encounters"
-                          placeholder="e.g. 100,000"
+                          placeholder="e.g., 100,000"
                         />
                         <p className="text-xs text-neutral-500 mt-1.5">
                           Total annual patient encounters for the providers in scope. This drives encounter-based ROI calculations.
@@ -1729,6 +1740,56 @@ export default function ObjectiveSelectionScreen({
                         <p className="text-xs text-neutral-500 mt-2">
                           Percentage of encounters where Abridge is actively used for documentation.
                         </p>
+
+                        {/* Why this matters - Expandable */}
+                        <button
+                          onClick={() => setWhyMattersExpanded(!whyMattersExpanded)}
+                          className="flex items-center gap-2 mt-3 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+                          data-testid="button-why-matters-toggle"
+                        >
+                          <ChevronRight className={`w-4 h-4 transition-transform ${whyMattersExpanded ? "rotate-90" : ""}`} />
+                          <span className="font-medium">Why this matters</span>
+                        </button>
+                        {whyMattersExpanded && (
+                          <div className="mt-3 pl-6 border-l-2 border-neutral-200">
+                            <p className="text-sm text-neutral-600 mb-3">
+                              This determines how many encounters will actually be documented with Abridge—which drives all value calculations.
+                            </p>
+                            <div className="bg-neutral-50 rounded-lg p-3">
+                              <div className="flex items-center gap-2 text-sm font-medium text-neutral-700 mb-2">
+                                <BarChart3 className="w-4 h-4" />
+                                Based on 50+ rollouts:
+                              </div>
+                              <ul className="text-sm text-neutral-600 space-y-1 ml-6">
+                                <li>Month 1-3: 40-50%</li>
+                                <li>Month 4-6: 60-70%</li>
+                                <li>Month 7+: 70-85%</li>
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Live Calculation Summary */}
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <BarChart3 className="w-4 h-4 text-emerald-700" />
+                          <span className="text-sm font-semibold text-emerald-800">YOUR SCENARIO</span>
+                        </div>
+                        <div className="text-sm text-emerald-700">
+                          <span className="font-mono">{formatNumber(effectiveClinicians)}</span> providers{" "}
+                          <span className="text-emerald-500 mx-1">×</span>{" "}
+                          <span className="font-mono">{formatNumber(effectiveEncounters)}</span> encounters{" "}
+                          <span className="text-emerald-500 mx-1">×</span>{" "}
+                          <span className="font-mono">{utilizationPercent ?? 0}%</span> utilization
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-emerald-200">
+                          <span className="text-emerald-700">=</span>{" "}
+                          <span className="font-semibold text-emerald-800 font-mono text-lg">
+                            {formatNumber(Math.round(effectiveEncounters * ((utilizationPercent ?? 0) / 100)))}
+                          </span>{" "}
+                          <span className="text-emerald-700">Abridge-documented encounters per year</span>
+                        </div>
                       </div>
                     </div>
 
