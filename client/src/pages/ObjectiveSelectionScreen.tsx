@@ -60,7 +60,7 @@ const ALL_SETTINGS: AllSettingType[] = [
   "inpatient",
 ];
 
-type Page = "orientation" | "setting" | "priorities" | "model-setup";
+type Page = "orientation" | "setting" | "priorities" | "value-blueprint" | "model-setup";
 
 // Value posture presets for Step 2 (moved outside component to avoid recreation each render)
 type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
@@ -113,10 +113,12 @@ function StepIndicator({
 function Stepper({ currentPage }: { currentPage: Page }) {
   const step1Active = currentPage === "setting";
   const step1Completed =
-    currentPage === "priorities" || currentPage === "model-setup";
+    currentPage === "priorities" || currentPage === "value-blueprint" || currentPage === "model-setup";
   const step2Active = currentPage === "priorities";
-  const step2Completed = currentPage === "model-setup";
-  const step3Active = currentPage === "model-setup";
+  const step2Completed = currentPage === "value-blueprint" || currentPage === "model-setup";
+  const step3Active = currentPage === "value-blueprint";
+  const step3Completed = currentPage === "model-setup";
+  const step4Active = currentPage === "model-setup";
 
   return (
     <div className="flex items-center gap-3">
@@ -136,8 +138,15 @@ function Stepper({ currentPage }: { currentPage: Page }) {
       <div className="w-8 h-px bg-neutral-300" />
       <StepIndicator
         stepNumber={3}
-        label="Model Setup"
+        label="Value Blueprint"
         isActive={step3Active}
+        isCompleted={step3Completed}
+      />
+      <div className="w-8 h-px bg-neutral-300" />
+      <StepIndicator
+        stepNumber={4}
+        label="Model Setup"
+        isActive={step4Active}
         isCompleted={false}
       />
     </div>
@@ -621,12 +630,21 @@ export default function ObjectiveSelectionScreen({
 
   const handleContinueToPage3 = () => {
     if (!selectedSetting || selectedLeverIds.size === 0) return;
-    setModelSetupStep(1);
-    setCurrentPage("model-setup");
+    setCurrentPage("value-blueprint");
   };
 
   const handleBackToPage2 = () => {
     setCurrentPage("priorities");
+  };
+
+  const handleContinueToPage4 = () => {
+    if (!selectedSetting || selectedLeverIds.size === 0) return;
+    setModelSetupStep(1);
+    setCurrentPage("model-setup");
+  };
+
+  const handleBackToPage3 = () => {
+    setCurrentPage("value-blueprint");
   };
 
   const handleLeverToggle = (leverId: string) => {
@@ -958,15 +976,47 @@ export default function ObjectiveSelectionScreen({
           </div>
         )}
 
-        {/* PAGE 3 — BASELINE ASSUMPTIONS */}
+        {/* PAGE 3 — VALUE BLUEPRINT */}
+        {currentPage === "value-blueprint" && selectedSetting && (
+          <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16">
+            <div className="max-w-3xl">
+              <button
+                onClick={handleBackToPage2}
+                className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
+                data-testid="button-back-to-priorities"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </button>
+
+              <div className="mb-10">
+                <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
+                  Value Blueprint
+                </h2>
+                <p className="text-lg text-neutral-600 leading-relaxed">
+                  Define how value will be measured and realized.
+                </p>
+              </div>
+
+              {/* Placeholder content */}
+              <div className="rounded-xl border border-dashed border-neutral-300 bg-white p-8 text-center">
+                <p className="text-neutral-500">
+                  Value Blueprint content coming soon
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PAGE 4 — BASELINE ASSUMPTIONS */}
         {currentPage === "model-setup" && selectedSetting && (
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16">
             <div className="grid lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
               <div>
                 <button
-                  onClick={handleBackToPage2}
+                  onClick={handleBackToPage3}
                   className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
-                  data-testid="button-back-to-priorities"
+                  data-testid="button-back-to-blueprint"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back
@@ -2317,7 +2367,29 @@ export default function ObjectiveSelectionScreen({
         </div>
       )}
 
-      {/* Sticky Bottom Bar — Page 3 Step 3 Only */}
+      {/* Sticky Bottom Bar — Page 3 (Value Blueprint) */}
+      {currentPage === "value-blueprint" && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-neutral-200/60 shadow-lg">
+          <div className="max-w-[1200px] mx-auto px-6 py-4">
+            <button
+              type="button"
+              disabled={!canContinuePage2}
+              onClick={handleContinueToPage4}
+              className={`w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
+                canContinuePage2
+                  ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-md"
+                  : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
+              }`}
+              data-testid="button-continue-to-model-setup"
+            >
+              Continue
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky Bottom Bar — Page 4 Step 3 Only */}
       {currentPage === "model-setup" && modelSetupStep === 3 && (
         <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-neutral-200/60 shadow-lg">
           <div className="max-w-[1200px] mx-auto px-6 py-4">
