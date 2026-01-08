@@ -1317,32 +1317,32 @@ export default function ObjectiveSelectionScreen({
                     <p className="text-sm text-neutral-500">Typical mid-sized outpatient practice</p>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-4 mb-5">
-                    <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-slate-100">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50">
-                        <Users className="w-5 h-5 text-blue-600" />
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-5">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 bg-white rounded-lg px-2 sm:px-4 py-3 border border-slate-100">
+                      <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-50 flex-shrink-0">
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                       </div>
-                      <div>
-                        <div className="text-xl font-bold text-neutral-900 font-mono">{REFERENCE_SCENARIO.providers}</div>
-                        <div className="text-xs text-neutral-500">providers</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-slate-100">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50">
-                        <Calendar className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold text-neutral-900 font-mono">{formatNumber(REFERENCE_SCENARIO.annualVisits)}</div>
-                        <div className="text-xs text-neutral-500">annual visits</div>
+                      <div className="text-center sm:text-left min-w-0">
+                        <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{REFERENCE_SCENARIO.providers}</div>
+                        <div className="text-[10px] sm:text-xs text-neutral-500">providers</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-slate-100">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-50">
-                        <TrendingUp className="w-5 h-5 text-purple-600" />
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 bg-white rounded-lg px-2 sm:px-4 py-3 border border-slate-100">
+                      <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-50 flex-shrink-0">
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                       </div>
-                      <div>
-                        <div className="text-xl font-bold text-neutral-900 font-mono">{REFERENCE_SCENARIO.adoptionPercent}%</div>
-                        <div className="text-xs text-neutral-500">adoption</div>
+                      <div className="text-center sm:text-left min-w-0">
+                        <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{formatNumber(REFERENCE_SCENARIO.annualVisits)}</div>
+                        <div className="text-[10px] sm:text-xs text-neutral-500">annual visits</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 bg-white rounded-lg px-2 sm:px-4 py-3 border border-slate-100">
+                      <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-50 flex-shrink-0">
+                        <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                      </div>
+                      <div className="text-center sm:text-left min-w-0">
+                        <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{REFERENCE_SCENARIO.adoptionPercent}%</div>
+                        <div className="text-[10px] sm:text-xs text-neutral-500">adoption</div>
                       </div>
                     </div>
                   </div>
