@@ -620,159 +620,259 @@ export default function RoiCalculator({
               </div>
             </section>
 
-            {/* VALUE BREAKDOWN */}
+            {/* WHERE YOUR VALUE COMES FROM */}
             <section
               className="bg-white rounded-2xl border border-neutral-200 p-8 shadow-sm"
               data-testid="section-value-breakdown"
             >
               <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-6">
-                Value Breakdown
+                Where Your Value Comes From
               </h2>
 
-              {/* Stacked Bar Chart */}
               {enabledDriverIds.length > 0 ? (
-                <>
-                  <div className="h-12 rounded-lg overflow-hidden flex mb-6" data-testid="chart-stacked-bar">
-                    {enabledDriverIds.map((id) => {
-                      const value = driverValues[id];
-                      const percentage = totalAnnualBenefit > 0 ? (value / totalAnnualBenefit) * 100 : 0;
-                      if (percentage <= 0) return null;
-                      return (
-                        <div
-                          key={id}
-                          className="h-full transition-all duration-300"
-                          style={{
-                            width: `${percentage}%`,
-                            backgroundColor: DRIVER_COLORS[id],
-                          }}
-                          title={`${leverLabels[id]}: ${formatCurrency(value)} (${percentage.toFixed(0)}%)`}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* Driver List */}
-                  <div className="space-y-4 mb-6">
-                    {enabledDriverIds.map((id) => {
-                      const value = driverValues[id];
-                      const percentage = totalAnnualBenefit > 0 ? (value / totalAnnualBenefit) * 100 : 0;
-                      return (
-                        <div
-                          key={id}
-                          className="flex items-center justify-between py-2"
-                          data-testid={`driver-row-${id}`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-4 h-4 rounded-sm shrink-0"
-                              style={{ backgroundColor: DRIVER_COLORS[id] }}
-                            />
-                            <span className="text-sm font-medium text-neutral-900">
-                              {leverLabels[id]}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <span className="text-sm font-mono text-neutral-900">
-                              {formatCurrency(value)}
-                            </span>
-                            <Badge variant="secondary" className="text-xs">
-                              {percentage.toFixed(0)}%
-                            </Badge>
-                          </div>
+                <div className="space-y-8">
+                  {/* CAPACITY & LABOR Category */}
+                  {(() => {
+                    const capacityDrivers: LeverId[] = ["patientAccess", "workforce", "overtime"];
+                    const activeCapacityDrivers = enabledDriverIds.filter(id => capacityDrivers.includes(id));
+                    const capacityTotal = activeCapacityDrivers.reduce((sum, id) => sum + driverValues[id], 0);
+                    
+                    if (activeCapacityDrivers.length === 0) return null;
+                    
+                    return (
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-semibold text-neutral-500 uppercase tracking-wide">
+                            Capacity & Labor
+                          </span>
+                          <span className="text-lg font-semibold text-neutral-900 font-mono">
+                            {formatCurrency(capacityTotal)}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="space-y-3">
+                          {activeCapacityDrivers.map((id) => {
+                            const value = driverValues[id];
+                            const DriverIcon = DRIVER_ICONS[id];
+                            
+                            // Generate calculation snippet based on driver - mirrors calculateRoi formulas
+                            let calcSnippet = "";
+                            if (id === "patientAccess") {
+                              const reinvestedHours = totalHoursReclaimed * (inputs.patientAccess.pctTimeToNewVisits / 100);
+                              const addedVisits = Math.round(reinvestedHours / (inputs.patientAccess.avgVisitDurationMinutes / 60));
+                              calcSnippet = `${addedVisits.toLocaleString()} incremental visits × ${formatCurrency(inputs.patientAccess.avgNetRevenuePerVisit)}/visit`;
+                            } else if (id === "workforce") {
+                              const departuresAvoided = Math.round(inputs.numberOfProviders * (inputs.workforce.baselineAttritionRate / 100) * (inputs.workforce.pctAttritionLinkedToBurnout / 100) * (inputs.workforce.pctBurnoutExitsAvoided / 100));
+                              calcSnippet = `${departuresAvoided} departures avoided × ${formatCurrency(inputs.workforce.costPerDeparture)} replacement cost`;
+                            } else if (id === "overtime") {
+                              const afterHoursReclaimed = totalHoursReclaimed * (inputs.overtime.pctAfterHours / 100);
+                              const overtimeReduced = Math.round(afterHoursReclaimed * (inputs.overtime.pctOvertimeReduced / 100));
+                              calcSnippet = `${overtimeReduced.toLocaleString()} overtime hours reduced × ${formatCurrency(inputs.overtime.blendedOvertimeRate)}/hr`;
+                            }
+                            
+                            // One-line description
+                            const descriptions: Record<LeverId, string> = {
+                              patientAccess: "Time returned → visit capacity",
+                              workforce: "Reduced turnover from lower admin burden",
+                              overtime: "Reduced premium labor from documentation backlog",
+                              wrvu: "Accurate wRVU capture from better documentation",
+                              hcc: "Improved RAF scores from complete documentation",
+                              denials: "Fewer denials from complete documentation",
+                            };
+                            
+                            return (
+                              <div
+                                key={id}
+                                className="bg-white border border-neutral-200 rounded-lg p-4"
+                                data-testid={`driver-card-summary-${id}`}
+                              >
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex items-start gap-3">
+                                    <div
+                                      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                                      style={{ backgroundColor: `${DRIVER_COLORS[id]}15` }}
+                                    >
+                                      <DriverIcon
+                                        className="h-4 w-4"
+                                        style={{ color: DRIVER_COLORS[id] }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <div className="text-base font-semibold text-neutral-900">
+                                        {leverLabels[id]}
+                                      </div>
+                                      <div className="text-sm text-neutral-500 mt-0.5">
+                                        {descriptions[id]}
+                                      </div>
+                                      <div className="text-xs text-neutral-400 mt-1 font-mono">
+                                        {calcSnippet}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="text-lg font-semibold text-green-600 font-mono shrink-0">
+                                    {formatCurrency(value)}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
-                  {/* Total */}
-                  <div className="border-t border-neutral-200 pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
-                        Total Annual Benefit
-                      </span>
-                      <span className="text-lg font-bold font-mono text-neutral-900">
-                        {formatCurrency(totalAnnualBenefit)}
-                      </span>
-                    </div>
-                  </div>
-                </>
+                  {/* REVENUE & RISK Category */}
+                  {(() => {
+                    const revenueDrivers: LeverId[] = ["wrvu", "hcc", "denials"];
+                    const activeRevenueDrivers = enabledDriverIds.filter(id => revenueDrivers.includes(id));
+                    const revenueTotal = activeRevenueDrivers.reduce((sum, id) => sum + driverValues[id], 0);
+                    
+                    if (activeRevenueDrivers.length === 0) return null;
+                    
+                    return (
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-semibold text-neutral-500 uppercase tracking-wide">
+                            Revenue & Risk
+                          </span>
+                          <span className="text-lg font-semibold text-neutral-900 font-mono">
+                            {formatCurrency(revenueTotal)}
+                          </span>
+                        </div>
+                        <div className="space-y-3">
+                          {activeRevenueDrivers.map((id) => {
+                            const value = driverValues[id];
+                            const DriverIcon = DRIVER_ICONS[id];
+                            
+                            // Generate calculation snippet based on driver - mirrors calculateRoi formulas
+                            let calcSnippet = "";
+                            if (id === "wrvu") {
+                              const incrementalWrvuPerEncounter = inputs.baselineWrvuPerEncounter * (inputs.wrvu.pctIncreaseWrvuPerEncounter / 100);
+                              const totalIncrementalWrvus = Math.round(incrementalWrvuPerEncounter * encountersWithAbridge);
+                              calcSnippet = `${totalIncrementalWrvus.toLocaleString()} incremental wRVUs × ${formatCurrency(inputs.wrvu.wrvuConversionFactor)}/wRVU`;
+                            } else if (id === "hcc") {
+                              const maPatients = Math.round((encountersWithAbridge / 2.5) * (inputs.hcc.pctMedicareAdvantage / 100));
+                              const totalConditions = maPatients * inputs.hcc.avgConditionsPerMember;
+                              const missedConditions = totalConditions * (inputs.hcc.pctConditionsMissed / 100);
+                              const recapturedConditions = missedConditions * (inputs.hcc.pctMissedConditionsRecaptured / 100);
+                              const newConditions = totalConditions * (inputs.hcc.pctNewConditionsIdentified / 100);
+                              const totalImproved = recapturedConditions + newConditions;
+                              const rawRafPointsGained = totalImproved * inputs.hcc.rafGainPerCondition;
+                              const rawRafChange = maPatients > 0 ? rawRafPointsGained / maPatients : 0;
+                              const adjustedRafChange = rawRafChange * (1 - inputs.hcc.rafRealizationHaircut / 100);
+                              calcSnippet = `${maPatients.toLocaleString()} MA patients × ${(adjustedRafChange * 100).toFixed(2)}% RAF lift × ${formatCurrency(inputs.hcc.pmpmBenchmark)}/PMPM × 12 mo`;
+                            } else if (id === "denials") {
+                              const netRevenue = encountersWithAbridge * inputs.denials.avgRevenuePerEncounter;
+                              const docDenialRevenue = Math.round(netRevenue * (inputs.denials.baselineDenialRate / 100) * (inputs.denials.pctDenialsFromDocumentation / 100));
+                              calcSnippet = `${formatCurrency(docDenialRevenue)} doc-related denials × ${inputs.denials.pctDocDenialsRecovered}% recovered`;
+                            }
+                            
+                            // One-line description
+                            const descriptions: Record<LeverId, string> = {
+                              patientAccess: "Time returned → visit capacity",
+                              workforce: "Reduced turnover from lower admin burden",
+                              overtime: "Reduced premium labor from documentation backlog",
+                              wrvu: "Accurate wRVU capture from better documentation",
+                              hcc: "Improved RAF scores from complete documentation",
+                              denials: "Fewer denials from complete documentation",
+                            };
+                            
+                            return (
+                              <div
+                                key={id}
+                                className="bg-white border border-neutral-200 rounded-lg p-4"
+                                data-testid={`driver-card-summary-${id}`}
+                              >
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex items-start gap-3">
+                                    <div
+                                      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                                      style={{ backgroundColor: `${DRIVER_COLORS[id]}15` }}
+                                    >
+                                      <DriverIcon
+                                        className="h-4 w-4"
+                                        style={{ color: DRIVER_COLORS[id] }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <div className="text-base font-semibold text-neutral-900">
+                                        {leverLabels[id]}
+                                      </div>
+                                      <div className="text-sm text-neutral-500 mt-0.5">
+                                        {descriptions[id]}
+                                      </div>
+                                      <div className="text-xs text-neutral-400 mt-1 font-mono">
+                                        {calcSnippet}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="text-lg font-semibold text-green-600 font-mono shrink-0">
+                                    {formatCurrency(value)}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
               ) : (
                 <div className="text-center py-12 text-neutral-500">
                   <p>No drivers selected. Add drivers to see your value breakdown.</p>
                 </div>
               )}
-
-              {/* Add Another Driver Button */}
-              {availableDrivers.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-neutral-100">
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={() => setAddDriverModalOpen(true)}
-                    data-testid="button-add-driver"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Another Driver
-                  </Button>
-                </div>
-              )}
             </section>
 
-            {/* WHAT'S NEXT */}
-            <section data-testid="section-whats-next">
-              <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-6">
-                What's Next?
+            {/* EXPLORE YOUR MODEL */}
+            <section data-testid="section-explore-model">
+              <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-6">
+                Explore Your Model
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Card 1: Deep Dive */}
                 <button
                   onClick={() => setActiveTab("detailed")}
-                  className="group bg-white rounded-2xl border border-neutral-200 p-6 text-left hover:shadow-md transition-all"
+                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
                   data-testid="card-deep-dive"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
-                    <Search className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <h3 className="text-base font-bold text-neutral-900 mb-2">
-                    Deep Dive into Drivers
+                  <Search className="h-6 w-6 text-neutral-400 mb-3 group-hover:text-neutral-600 transition-colors" />
+                  <h3 className="text-base font-semibold text-neutral-900 mb-1">
+                    Deep Dive
                   </h3>
                   <p className="text-sm text-neutral-500">
-                    Review calculations & adjust assumptions
+                    Review calculations and adjust assumptions
                   </p>
                 </button>
 
-                {/* Card 2: Growth Scenarios */}
+                {/* Card 2: Model Scenarios */}
                 <button
                   onClick={() => setActiveTab("scenarios")}
-                  className="group bg-white rounded-2xl border border-neutral-200 p-6 text-left hover:shadow-md transition-all"
+                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
                   data-testid="card-scenarios"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4 group-hover:bg-green-100 transition-colors">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
-                  </div>
-                  <h3 className="text-base font-bold text-neutral-900 mb-2">
-                    Model Growth Scenarios
+                  <TrendingUp className="h-6 w-6 text-neutral-400 mb-3 group-hover:text-neutral-600 transition-colors" />
+                  <h3 className="text-base font-semibold text-neutral-900 mb-1">
+                    Model Scenarios
                   </h3>
                   <p className="text-sm text-neutral-500">
-                    See what expansion looks like
+                    See what expansion could look like
                   </p>
                 </button>
 
-                {/* Card 3: Download Summary */}
+                {/* Card 3: Export PDF */}
                 <button
                   onClick={() => setActiveTab("export")}
-                  className="group bg-white rounded-2xl border border-neutral-200 p-6 text-left hover:shadow-md transition-all"
+                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
                   data-testid="card-export"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center mb-4 group-hover:bg-purple-100 transition-colors">
-                    <FileText className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <h3 className="text-base font-bold text-neutral-900 mb-2">
-                    Download Summary
+                  <Download className="h-6 w-6 text-neutral-400 mb-3 group-hover:text-neutral-600 transition-colors" />
+                  <h3 className="text-base font-semibold text-neutral-900 mb-1">
+                    Export PDF
                   </h3>
                   <p className="text-sm text-neutral-500">
-                    Create executive PDF
+                    Create executive summary for leadership
                   </p>
                 </button>
               </div>

@@ -1,0 +1,173 @@
+Redesign the Results Dashboard Summary View to be more professional and continue the educational tone:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: HEADLINE METRICS (Keep mostly as-is)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep the current headline section with:
+- "YOUR ROI MODEL" header
+- "Based on X providers, Y Abridge-documented encounters"
+- "Outpatient care setting"
+- Large Net Annual Gain amount
+- Large ROI multiple
+- Total Annual Benefit and Annual Investment below
+
+This is working well. No changes needed here.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: VALUE BREAKDOWN (Complete redesign)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REMOVE:
+- The horizontal stacked bar chart with bright colors (blue, green, purple)
+- The percentage badges (40%, 17%, 42%)
+- The "VALUE BREAKDOWN" header in red
+
+REPLACE WITH:
+
+Section header: "WHERE YOUR VALUE COMES FROM"
+
+Group drivers by category with subtotals:
+
+CATEGORY 1: "CAPACITY & LABOR" with category subtotal on the right
+
+Inside, show each selected driver as a card:
+
+Driver Card Structure:
+┌─────────────────────────────────────────────────────────────┐
+│  [Driver Name]                              [Dollar Value] │
+│  [One-line description of what this driver captures]       │
+│  [Key calculation snippet from their inputs]               │
+└─────────────────────────────────────────────────────────────┘
+
+CAPACITY & LABOR DRIVERS (show if selected):
+- Patient Access
+  - Description: "Time returned → visit capacity"
+  - Calculation: "[X] min saved × [Y] encounters"
+  
+- Clinician Retention
+  - Description: "Reduced turnover from lower admin burden"
+  - Calculation: "[X] departures avoided × $[Y] replacement"
+
+- Overtime & Locum Cost Avoidance
+  - Description: "Reduced premium labor from documentation backlog"
+  - Calculation: "[X] premium hours avoided × $[Y]/hr"
+
+CATEGORY 2: "REVENUE & RISK" with category subtotal on the right
+
+REVENUE & RISK DRIVERS (show if selected):
+- Accurate Level of Service
+  - Description: "Accurate wRVU capture from better documentation"
+  - Calculation: "[X] additional wRVUs × $[Y]"
+
+- HCC & Chronic Condition Capture
+  - Description: "Improved RAF scores from complete documentation"
+  - Calculation: "[X] MA patients × $[Y] incremental revenue"
+
+- Denial Reduction
+  - Description: "Fewer denials from complete medical necessity documentation"
+  - Calculation: "$[X] doc-related denials × [Y]% prevented"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STYLING FOR VALUE BREAKDOWN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Category headers:
+- "CAPACITY & LABOR" and "REVENUE & RISK"
+- Font: 14px, uppercase, semibold, gray color (#6B7280)
+- Category subtotal on the right: 18px, semibold, dark color
+
+Driver cards:
+- White background with subtle border (1px #E5E7EB)
+- Padding: 16px
+- Stack vertically with 12px gap between cards
+- 16px gap between categories
+
+Driver name:
+- Font: 16px, semibold, dark color (#111827)
+- Dollar value on the right: 18px, semibold, green color (#059669)
+
+Description:
+- Font: 14px, regular, gray color (#6B7280)
+- One line, below driver name
+
+Calculation snippet:
+- Font: 13px, regular, lighter gray (#9CA3AF)
+- Shows the key inputs that drove this calculation
+- Helps them remember "oh right, that's how we got there"
+
+NO colored squares/dots next to driver names.
+NO percentage badges.
+NO horizontal bar chart.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: NEXT ACTIONS (Add this section)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Below the value breakdown, add a "What's Next" section:
+
+Section header: "EXPLORE YOUR MODEL"
+
+Three action cards in a row:
+
+Card 1: "Deep Dive"
+- Subtitle: "Review calculations and adjust assumptions"
+- Click navigates to: Detailed Breakdown tab
+- Icon: magnifying glass or document icon
+
+Card 2: "Model Scenarios"
+- Subtitle: "See what expansion could look like"
+- Click navigates to: Scenario Builder tab
+- Icon: chart/growth icon
+
+Card 3: "Export PDF"
+- Subtitle: "Create executive summary for leadership"
+- Click navigates to: Export Summary tab
+- Icon: download/document icon
+
+Style these as clickable cards with:
+- Subtle border
+- Icon at top (24px, gray)
+- Title in semibold (16px)
+- Subtitle in gray (14px)
+- Hover state: slight shadow increase
+- Equal width, responsive (stack on mobile)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REMOVE "[+ Add Another Driver]" BUTTON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If there's an "Add Another Driver" button on this page, remove it.
+
+Adding drivers should happen in Strategic Priorities or in the Detailed Breakdown tab, not on the Summary View.
+
+The Summary View should be clean and focused on results.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OVERALL PAGE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+From top to bottom:
+1. Tab navigation (Summary View, Detailed Breakdown, Scenario Builder, Export Summary)
+2. YOUR ROI MODEL headline card
+3. WHERE YOUR VALUE COMES FROM section
+4. EXPLORE YOUR MODEL action cards
+5. (footer/padding)
+
+Keep generous spacing between sections (32-48px).
+The page should feel like an executive summary, not a dashboard full of widgets.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When someone lands on this page, they should think:
+
+"This is MY business case. I can see exactly where the value comes from, 
+I remember how we calculated it, and I know what to do next."
+
+NOT:
+
+"Here's a colorful chart that looks like every other SaaS dashboard."
+
+The design should feel like the culmination of the educational journey they just took, not a generic results page.

@@ -1,0 +1,142 @@
+Redesign the Results Dashboard Summary View to be more professional and educational:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: HEADLINE METRICS (Keep as-is)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep the current headline section:
+- "YOUR ROI MODEL" header
+- "Based on X providers, Y Abridge-documented encounters"
+- Care setting
+- Net Annual Gain (large number)
+- Return on Investment (large number)
+- Total Annual Benefit and Annual Investment
+
+No changes needed here.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: VALUE BREAKDOWN (Complete redesign)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REMOVE:
+- The horizontal stacked bar chart with rainbow colors
+- The percentage badges (40%, 17%, 42%)
+- The "[+ Add Another Driver]" button
+
+REPLACE WITH:
+
+Section header: "WHERE YOUR VALUE COMES FROM"
+
+Group selected drivers by category:
+
+CATEGORY 1: "CAPACITY & LABOR"
+Show category subtotal on the right: $[sum of drivers in this category]
+
+For each CAPACITY & LABOR driver that was selected, show a card:
+
+┌─────────────────────────────────────────────────────────────┐
+│  [Driver Name]                              [Dollar Value] │
+│  [One-line description]                                    │
+│  [Calculation snippet showing key inputs]                  │
+└─────────────────────────────────────────────────────────────┘
+
+CAPACITY & LABOR DRIVERS (if selected):
+
+Patient Access:
+- Description: "Time returned → visit capacity"
+- Calculation: "[X] min saved × [Y] encounters"
+
+Clinician Retention:
+- Description: "Reduced turnover from lower admin burden"
+- Calculation: "[X] departures avoided × $[Y] replacement cost"
+
+Overtime & Locum Cost Avoidance:
+- Description: "Reduced premium labor from documentation backlog"
+- Calculation: "[X] premium hours avoided × $[Y]/hr"
+
+CATEGORY 2: "REVENUE & RISK"
+Show category subtotal on the right: $[sum of drivers in this category]
+
+REVENUE & RISK DRIVERS (if selected):
+
+Accurate Level of Service:
+- Description: "Accurate wRVU capture from better documentation"
+- Calculation: "[X] additional wRVUs × $[Y] per wRVU"
+
+HCC & Chronic Condition Capture:
+- Description: "Improved RAF scores from complete documentation"
+- Calculation: "[X] MA patients × $[Y] incremental revenue"
+
+Denial Reduction:
+- Description: "Fewer denials from complete documentation"
+- Calculation: "$[X] doc-related denials × [Y]% prevented"
+
+STYLING:
+
+Category headers:
+- Font: 14px, uppercase, semibold, gray (#6B7280)
+- Category subtotal on right: 18px, semibold, dark color
+
+Driver cards:
+- White background, subtle border (1px #E5E7EB)
+- Padding: 16px
+- Stack vertically with 12px gap
+- 16px gap between categories
+
+Driver name and value:
+- Name: 16px, semibold, dark (#111827)
+- Value on right: 18px, semibold, green (#059669)
+
+Description line:
+- 14px, regular, gray (#6B7280)
+
+Calculation snippet:
+- 13px, regular, light gray (#9CA3AF)
+- Shows the actual input values from their model
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: NEXT ACTIONS (Add this)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Below value breakdown, add:
+
+Section header: "EXPLORE YOUR MODEL"
+
+Three action cards in a row (equal width, responsive):
+
+Card 1: "Deep Dive"
+- Icon: 🔍 or magnifying glass
+- Subtitle: "Review calculations and adjust assumptions"
+- Clicks to: Detailed Breakdown tab
+
+Card 2: "Model Scenarios"
+- Icon: 📈 or chart
+- Subtitle: "See what expansion could look like"
+- Clicks to: Scenario Builder tab
+
+Card 3: "Export PDF"
+- Icon: 📄 or download
+- Subtitle: "Create executive summary for leadership"
+- Clicks to: Export Summary tab
+
+Card styling:
+- Subtle border, white background
+- Icon at top (24px, gray)
+- Title: 16px, semibold
+- Subtitle: 14px, gray
+- Hover: slight shadow increase
+- Entire card clickable
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OVERALL PAGE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+From top to bottom:
+1. Tab navigation
+2. YOUR ROI MODEL headline
+3. WHERE YOUR VALUE COMES FROM (grouped by category)
+4. EXPLORE YOUR MODEL action cards
+
+Generous spacing: 32-48px between major sections.
+
+The page should feel like an executive summary, not a busy dashboard.
