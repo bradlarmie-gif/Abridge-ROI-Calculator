@@ -2595,7 +2595,7 @@ export default function ObjectiveSelectionScreen({
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                       data-testid="input-ft-baseline-wrvu"
                                     />
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 1.5-2.0 | Blueprint reference: 1.75</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 1.3-3.4 | Blueprint reference: 1.75</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Documentation quality lift</label>
