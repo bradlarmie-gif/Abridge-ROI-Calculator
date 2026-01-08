@@ -1,0 +1,298 @@
+Implement complete, dynamic Fine-Tune Assumptions for all value drivers. This is a critical update that affects calculations across the entire application.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Fine-Tune Assumptions section on the Value Realization tab must:
+1. ONLY show cards for drivers the user selected in Strategic Priorities
+2. Include ALL inputs that drive each driver's calculation
+3. Have some inputs driven by posture selection (Conservative/Typical/Aggressive)
+4. Have some inputs that are organization-specific (not posture-driven)
+5. Propagate these values to ALL calculations throughout the app
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PATIENT ACCESS CARD (only show if Patient Access was selected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Card Title: "Patient Access"
+
+INPUT 1: Minutes saved per encounter
+- Type: Number input
+- Default value: Driven by posture selection
+  - Conservative: 1.5
+  - Typical: 2.5
+  - Aggressive: 3.5
+- Helper text below input: "Range: 1.5-4 min | Blueprint reference: 2.5 min"
+- Label: "Minutes saved per encounter"
+
+INPUT 2: Capacity realization factor
+- Type: Number input with % suffix
+- Default value: Driven by posture selection
+  - Conservative: 10
+  - Typical: 20
+  - Aggressive: 35
+- Helper text below input: "Range: 10-35% | Blueprint reference: 20%"
+- Label: "Capacity realization factor"
+
+INPUT 3: Average visit duration
+- Type: Number input with "min" suffix
+- Default value: 30 (NOT driven by posture - org-specific)
+- Helper text below input: "Range: 20-45 min | Blueprint reference: 30 min"
+- Label: "Average visit duration"
+
+INPUT 4: Revenue per visit
+- Type: Number input with $ prefix
+- Default value: 200 (NOT driven by posture - org-specific)
+- Helper text below input: "Range: $150-350 | Blueprint reference: $200"
+- Label: "Revenue per visit"
+
+At bottom of card: Link text "[Reset to Typical Defaults]" that resets all 4 inputs to Typical values
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACCURATE LEVEL OF SERVICE CARD (only show if Accurate Level of Service was selected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Card Title: "Accurate Level of Service"
+
+INPUT 1: Baseline wRVU per encounter
+- Type: Number input (decimal allowed)
+- Default value: 1.75 (NOT driven by posture - org-specific)
+- Helper text below input: "Range: 1.5-2.0 | Blueprint reference: 1.75"
+- Label: "Baseline wRVU per encounter"
+
+INPUT 2: Documentation quality lift
+- Type: Number input with % suffix
+- Default value: Driven by posture selection
+  - Conservative: 2
+  - Typical: 5
+  - Aggressive: 8
+- Helper text below input: "Range: 2-8% | Blueprint reference: 5%"
+- Label: "Documentation quality lift"
+
+INPUT 3: Revenue per wRVU
+- Type: Number input with $ prefix
+- Default value: 50 (NOT driven by posture - org-specific)
+- Helper text below input: "Range: $40-70 | Blueprint reference: $50"
+- Label: "Revenue per wRVU"
+
+At bottom of card: Link text "[Reset to Typical Defaults]" that resets all 3 inputs to Typical/default values
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLINICIAN RETENTION CARD (only show if Clinician Retention was selected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Card Title: "Clinician Retention"
+
+INPUT 1: Annual turnover rate
+- Type: Number input with % suffix
+- Default value: 5 (NOT driven by posture - org-specific)
+- Helper text below input: "Range: 4-8% | Blueprint reference: 5%"
+- Label: "Annual turnover rate"
+
+INPUT 2: Replacement cost per provider
+- Type: Number input with $ prefix
+- Default value: 250000 (NOT driven by posture - org-specific)
+- Display as: $250,000 (with comma formatting)
+- Helper text below input: "Range: $200k-350k | Blueprint reference: $250,000"
+- Label: "Replacement cost per provider"
+
+IMPORTANT NOTE (display below inputs in a subtle info box):
+"ℹ️ Abridge prevention effectiveness is set by your posture selection:
+Conservative: 30% | Typical: 40% | Aggressive: 50%"
+
+The Abridge prevention % is NOT directly editable - it's driven by posture selection.
+But the CALCULATION must use these values:
+- Conservative posture: 30% prevention
+- Typical posture: 40% prevention
+- Aggressive posture: 50% prevention
+
+At bottom of card: Link text "[Reset to Typical Defaults]" that resets inputs to default values
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HCC & CHRONIC CONDITION CAPTURE CARD (only show if HCC Capture was selected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Card Title: "HCC & Chronic Condition Capture"
+
+INPUT 1: Medicare Advantage population
+- Type: Number input with % suffix
+- Default value: 15 (NOT driven by posture - org-specific)
+- Helper text below input: "Range: 10-40% | Blueprint reference: 15%"
+- Label: "Medicare Advantage population"
+
+INPUT 2: Recapture rate
+- Type: Number input with % suffix
+- Default value: Driven by posture selection
+  - Conservative: 40
+  - Typical: 50
+  - Aggressive: 60
+- Helper text below input: "Range: 40-70% | Blueprint reference: 50%"
+- Label: "Recapture rate"
+
+INPUT 3: Benchmark PMPM
+- Type: Number input with $ prefix
+- Default value: 1000 (NOT driven by posture - org-specific)
+- Display as: $1,000 (with comma formatting)
+- Helper text below input: "Range: $900-1,400 | Blueprint reference: $1,000"
+- Label: "Benchmark PMPM"
+
+At bottom of card: Link text "[Reset to Typical Defaults]" that resets all 3 inputs to Typical/default values
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DENIAL REDUCTION CARD (only show if Denial Reduction was selected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Card Title: "Denial Reduction"
+
+INPUT 1: Baseline denial rate
+- Type: Number input with % suffix
+- Default value: 5 (NOT driven by posture - org-specific)
+- Helper text below input: "Range: 3-10% | Blueprint reference: 5%"
+- Label: "Baseline denial rate"
+
+INPUT 2: Prevention rate
+- Type: Number input with % suffix
+- Default value: Driven by posture selection
+  - Conservative: 50
+  - Typical: 66
+  - Aggressive: 80
+- Helper text below input: "Range: 50-80% | Blueprint reference: 66%"
+- Label: "Prevention rate"
+
+At bottom of card: Link text "[Reset to Typical Defaults]" that resets both inputs to Typical/default values
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OVERTIME & LOCUM COST AVOIDANCE CARD (only show if Overtime Cost Avoidance was selected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Card Title: "Overtime & Locum Cost Avoidance"
+
+INPUT 1: After-hours documentation reduction
+- Type: Number input with % suffix
+- Default value: Driven by posture selection
+  - Conservative: 15
+  - Typical: 20
+  - Aggressive: 30
+- Helper text below input: "Range: 15-30% | Blueprint reference: 20%"
+- Label: "After-hours documentation reduction"
+
+INPUT 2: Blended premium labor rate
+- Type: Number input with $ prefix and /hr suffix
+- Default value: 145 (NOT driven by posture - org-specific)
+- Helper text below input: "Range: $100-250/hr | Blueprint reference: $145"
+- Label: "Blended premium labor rate"
+
+At bottom of card: Link text "[Reset to Typical Defaults]" that resets both inputs to Typical/default values
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BEHAVIOR REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. DYNAMIC CARD DISPLAY:
+   - Read which drivers were selected in Strategic Priorities
+   - Only render Fine-Tune cards for those selected drivers
+   - If user selected 2 drivers, show 2 cards
+   - If user selected 6 drivers, show 6 cards
+
+2. POSTURE SELECTION BEHAVIOR:
+   - When user selects Conservative/Typical/Aggressive posture above
+   - All POSTURE-DRIVEN inputs should automatically update to that posture's values
+   - ORG-SPECIFIC inputs should NOT change when posture changes
+
+3. MANUAL OVERRIDE BEHAVIOR:
+   - If user manually edits a posture-driven input to a non-standard value
+   - Keep their custom value (don't reset when they click around)
+   - The warning "Note: Changing these overrides your posture selection" should already be showing
+
+4. RESET BEHAVIOR:
+   - "[Reset to Typical Defaults]" on each card resets ALL inputs in that card
+   - Posture-driven inputs reset to Typical posture values
+   - Org-specific inputs reset to Blueprint reference values
+
+5. REAL-TIME CALCULATION:
+   - When any input changes, immediately recalculate that driver's value
+   - Update the driver preview section above (showing $173,200 etc.)
+   - Update the Total Projected Value
+   - Update the Live Receipt panel on the right
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CALCULATION FORMULAS (for reference)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PATIENT ACCESS:
+Value = ((Minutes_saved × Eligible_encounters / 60) × Realization_factor × 60 / Visit_duration) × Revenue_per_visit
+
+ACCURATE LEVEL OF SERVICE:
+Value = Eligible_encounters × Baseline_wRVU × Doc_quality_lift × Revenue_per_wRVU
+
+CLINICIAN RETENTION:
+Value = Providers × Turnover_rate × 0.40 × Abridge_prevention × Replacement_cost
+(Note: 0.40 is fixed burnout attribution - not exposed to user)
+(Note: Abridge_prevention comes from posture: 0.30/0.40/0.50)
+
+HCC CAPTURE:
+Unique_patients = Eligible_encounters / 2.5
+MA_patients = Unique_patients × MA_population_percent
+Conditions_missed = MA_patients × 2.5 × 0.30
+Conditions_recaptured = Conditions_missed × Recapture_rate
+RAF_increase_per_patient = (Conditions_recaptured × 0.25) / MA_patients
+Value = MA_patients × (Benchmark_PMPM × 12 × RAF_increase_per_patient)
+
+DENIAL REDUCTION:
+Total_revenue = Eligible_encounters × Revenue_per_visit (use Patient Access revenue or $200 default)
+Revenue_denied = Total_revenue × Baseline_denial_rate
+Doc_denials = Revenue_denied × 0.30
+Value = Doc_denials × Prevention_rate
+
+OVERTIME COST AVOIDANCE:
+Total_hours = Minutes_saved × Eligible_encounters / 60 (use Patient Access minutes saved)
+Premium_hours = Total_hours × After_hours_reduction
+Value = Premium_hours × Blended_premium_rate
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROPAGATION REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These Fine-Tune input values MUST be used in calculations throughout the ENTIRE app:
+
+1. Value Realization tab - driver preview and totals
+2. Investment tab - if showing any preview calculations
+3. Results Dashboard - Summary View totals
+4. Results Dashboard - Detailed Breakdown (Review inputs section)
+5. Results Dashboard - Scenario Builder (baseline values)
+6. PDF Export - all driver calculations and step-by-step math
+
+If ANY calculation anywhere in the app is using hardcoded values instead of these Fine-Tune inputs, replace the hardcoded value with the Fine-Tune input value.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STYLING REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Each driver card should have a subtle border and white background
+- Card title (driver name) should be bold, 16-18px
+- Input labels should be 14px, regular weight
+- Helper text should be 13px, gray color (#6B7280)
+- Input fields should match existing styling in the app
+- "[Reset to Typical Defaults]" should be a text link, not a button
+- Cards should stack vertically with 16px gap between them
+- Keep the Fine-Tune section collapsible (collapsed by default)
+- Maintain the existing warning banner: "Note: Changing these overrides your posture selection"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERIFICATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After implementing, verify:
+
+[ ] Only selected drivers show Fine-Tune cards
+[ ] Posture-driven inputs update when posture changes
+[ ] Org-specific inputs do NOT change when posture changes
+[ ] Manual edits are preserved (not overwritten)
+[ ] Reset link resets all inputs in that card
+[ ] Driver value preview updates in real-time when inputs change
+[ ] Total Projected Value updates when any input changes
+[ ] Live Receipt panel updates when inputs change
+[ ] Results Dashboard uses these input values
+[ ] PDF export shows correct values based on these inputs
+[ ] All calculations match the formulas provided above

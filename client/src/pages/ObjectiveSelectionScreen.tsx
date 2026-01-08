@@ -723,20 +723,90 @@ export default function ObjectiveSelectionScreen({
   const [hccSensitivity, setHccSensitivity] = useState<number | null>(null); // No default - user must select
   const [denialsSensitivity, setDenialsSensitivity] = useState<number | null>(null); // No default - user must select
 
+  // ============================================
+  // Fine-Tune Assumptions State (per driver)
+  // ============================================
+  
+  // Patient Access - org-specific inputs
+  const [ftPatientAccessVisitDuration, setFtPatientAccessVisitDuration] = useState<number>(30);
+  const [ftPatientAccessRevenuePerVisit, setFtPatientAccessRevenuePerVisit] = useState<number>(200);
+  
+  // Accurate Level of Service - org-specific inputs
+  const [ftWrvuBaseline, setFtWrvuBaseline] = useState<number>(1.75);
+  const [ftWrvuRevenuePerUnit, setFtWrvuRevenuePerUnit] = useState<number>(50);
+  
+  // Clinician Retention - org-specific inputs
+  const [ftRetentionTurnoverRate, setFtRetentionTurnoverRate] = useState<number>(5);
+  const [ftRetentionReplacementCost, setFtRetentionReplacementCost] = useState<number>(250000);
+  
+  // HCC Capture - org-specific inputs
+  const [ftHccMedicareAdvantage, setFtHccMedicareAdvantage] = useState<number>(15);
+  const [ftHccBenchmarkPmpm, setFtHccBenchmarkPmpm] = useState<number>(1000);
+  // HCC posture-driven: recapture rate (handled separately)
+  const [ftHccRecaptureRate, setFtHccRecaptureRate] = useState<number | null>(null);
+  
+  // Denial Reduction - org-specific inputs
+  const [ftDenialBaselineRate, setFtDenialBaselineRate] = useState<number>(5);
+  // Denial posture-driven: prevention rate (handled separately)
+  const [ftDenialPreventionRate, setFtDenialPreventionRate] = useState<number | null>(null);
+  
+  // Overtime - org-specific inputs
+  const [ftOvertimePremiumRate, setFtOvertimePremiumRate] = useState<number>(145);
+  // Overtime posture-driven: after-hours reduction (handled separately)
+  const [ftOvertimeAfterHoursReduction, setFtOvertimeAfterHoursReduction] = useState<number | null>(null);
+
   // Value posture state and edit accordion tracking
   const [valuePosture, setValuePosture] = useState<ValuePosture | null>(null);
   const [editingAssumption, setEditingAssumption] = useState<string | null>(null);
 
-  // Apply posture to all assumptions
+  // Extended posture presets for additional drivers (aligned with POSTURE_PRESETS)
+  const FINE_TUNE_EXTRA_POSTURE_VALUES = {
+    conservative: {
+      hccRecaptureRate: 40,
+      denialPreventionRate: 50,
+      overtimeReduction: 15,
+      retentionPrevention: 30,
+    },
+    typical: {
+      hccRecaptureRate: 50,
+      denialPreventionRate: 66,
+      overtimeReduction: 20,
+      retentionPrevention: 40,
+    },
+    aggressive: {
+      hccRecaptureRate: 60,
+      denialPreventionRate: 80,
+      overtimeReduction: 30,
+      retentionPrevention: 50,
+    },
+  };
+
+  // Apply posture to all posture-driven assumptions (uses authoritative POSTURE_PRESETS)
   const applyPosture = (posture: "conservative" | "typical" | "aggressive") => {
     const preset = POSTURE_PRESETS[posture];
+    const extraPreset = FINE_TUNE_EXTRA_POSTURE_VALUES[posture];
+    
+    // Core posture-driven values from POSTURE_PRESETS (authoritative source)
     setMinutesSaved(preset.minutes);
     setCustomMinutes(null);
     setShowCustomMinutesInput(false);
     setTimeRealizationRate(preset.realization);
     setWrvuSensitivity(preset.wrvu);
+    
+    // Additional posture-driven values for other drivers
+    setFtHccRecaptureRate(extraPreset.hccRecaptureRate);
+    setFtDenialPreventionRate(extraPreset.denialPreventionRate);
+    setFtOvertimeAfterHoursReduction(extraPreset.overtimeReduction);
+    
     setValuePosture(posture);
     setEditingAssumption(null);
+  };
+
+  // Get current retention prevention percentage based on posture
+  const getRetentionPreventionPct = () => {
+    if (valuePosture === "conservative") return 30;
+    if (valuePosture === "aggressive") return 50;
+    return 40; // typical
   };
 
   // Pricing step state
@@ -981,17 +1051,62 @@ export default function ObjectiveSelectionScreen({
       }),
     );
 
-    // Build the seedInputs object with all collected data
+    // Build the seedInputs object with all collected data including Fine-Tune values
     const seedInputs: Partial<RoiInputs> = {
       numberOfProviders: effectiveClinicians,
       annualOutpatientEncounters: effectiveEncounters,
       abridgeUtilizationPct: utilizationPercent ?? 70,
-      minutesSavedPerEncounter: effectiveMinutesSaved ?? 4,
+      minutesSavedPerEncounter: effectiveMinutesSaved ?? 2.5,
       monthlyCostPerProvider:
         pricingModel === "per-clinician" ? (perClinicianCost ?? 0) : 0,
       implementationCostYear1: implementationEnabled
         ? (implementationFee ?? 0)
         : 0,
+      baselineWrvuPerEncounter: ftWrvuBaseline,
+      // Patient Access fine-tune values
+      patientAccess: {
+        pctTimeToNewVisits: timeRealizationRate ?? 20,
+        avgVisitDurationMinutes: ftPatientAccessVisitDuration,
+        avgNetRevenuePerVisit: ftPatientAccessRevenuePerVisit,
+      },
+      // wRVU fine-tune values
+      wrvu: {
+        wrvuConversionFactor: ftWrvuRevenuePerUnit,
+        pctIncreaseWrvuPerEncounter: wrvuSensitivity ?? 5,
+      },
+      // Workforce (Clinician Retention) fine-tune values
+      workforce: {
+        providerCount: effectiveClinicians,
+        baselineAttritionRate: ftRetentionTurnoverRate,
+        pctAttritionLinkedToBurnout: 40, // Fixed
+        pctBurnoutExitsAvoided: getRetentionPreventionPct(),
+        costPerDeparture: ftRetentionReplacementCost,
+      },
+      // HCC Capture fine-tune values
+      hcc: {
+        pctMedicareAdvantage: ftHccMedicareAdvantage,
+        avgConditionsPerMember: 2.5,
+        pctConditionsMissed: 30,
+        pctMissedConditionsRecaptured: ftHccRecaptureRate ?? 50,
+        pctNewConditionsIdentified: 5,
+        rafGainPerCondition: 0.25,
+        rafRealizationHaircut: 70,
+        pmpmBenchmark: ftHccBenchmarkPmpm,
+      },
+      // Denial Reduction fine-tune values
+      denials: {
+        avgRevenuePerEncounter: ftPatientAccessRevenuePerVisit,
+        baselineDenialRate: ftDenialBaselineRate,
+        pctDenialsRecoveredAfterRework: 60,
+        pctDenialsFromDocumentation: 30,
+        pctDocDenialsRecovered: ftDenialPreventionRate ?? 66,
+      },
+      // Overtime fine-tune values
+      overtime: {
+        pctOvertimeReduced: ftOvertimeAfterHoursReduction ?? 20,
+        blendedOvertimeRate: ftOvertimePremiumRate,
+        pctAfterHours: 25,
+      },
     };
 
     // If enterprise pricing, convert to monthly per-provider equivalent
@@ -2153,14 +2268,14 @@ export default function ObjectiveSelectionScreen({
                             {/* Patient Access Fine-tune */}
                             {selectedLeverIds.has("patientAccess") && (
                               <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-patientAccess">
-                                <div className="text-sm font-medium text-neutral-900 mb-3">Patient Access</div>
+                                <div className="text-sm font-semibold text-neutral-900 mb-3">Patient Access</div>
                                 <div className="space-y-3">
                                   <div>
-                                    <label className="text-xs font-medium text-neutral-600">Minutes saved per encounter</label>
+                                    <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
                                     <input
                                       type="number"
                                       step="0.5"
-                                      value={effectiveMinutesSaved || 2.5}
+                                      value={effectiveMinutesSaved ?? ""}
                                       onChange={(e) => {
                                         const val = parseFloat(e.target.value);
                                         if (!isNaN(val) && val > 0) {
@@ -2169,32 +2284,66 @@ export default function ObjectiveSelectionScreen({
                                         }
                                       }}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                      data-testid="input-minutes-saved"
+                                      data-testid="input-ft-minutes-saved"
                                     />
                                     <p className="text-xs text-neutral-500 mt-1">Range: 1.5-4 min | Blueprint reference: 2.5 min</p>
                                   </div>
                                   <div>
-                                    <label className="text-xs font-medium text-neutral-600">Capacity realization factor</label>
+                                    <label className="text-sm font-medium text-neutral-600">Capacity realization factor</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="number"
-                                        value={timeRealizationRate || 20}
-                                        onChange={(e) => setTimeRealizationRate(parseInt(e.target.value))}
-                                        className="w-20 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                        data-testid="input-realization-rate"
+                                        value={timeRealizationRate ?? ""}
+                                        onChange={(e) => setTimeRealizationRate(parseInt(e.target.value) || null)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-realization-rate"
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
                                     <p className="text-xs text-neutral-500 mt-1">Range: 10-35% | Blueprint reference: 20%</p>
                                   </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Average visit duration</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={ftPatientAccessVisitDuration}
+                                        onChange={(e) => setFtPatientAccessVisitDuration(parseInt(e.target.value) || 30)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-visit-duration"
+                                      />
+                                      <span className="text-sm text-neutral-500">min</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 20-45 min | Blueprint reference: 30 min</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Revenue per visit</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="text-sm text-neutral-500">$</span>
+                                      <input
+                                        type="number"
+                                        value={ftPatientAccessRevenuePerVisit}
+                                        onChange={(e) => setFtPatientAccessRevenuePerVisit(parseInt(e.target.value) || 200)}
+                                        className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-revenue-per-visit"
+                                      />
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: $150-350 | Blueprint reference: $200</p>
+                                  </div>
                                 </div>
                                 <button 
                                   type="button" 
-                                  onClick={() => { setMinutesSaved(4); setTimeRealizationRate(55); }}
-                                  className="mt-3 text-xs text-neutral-500 hover:text-neutral-700"
+                                  onClick={() => { 
+                                    setMinutesSaved(POSTURE_PRESETS.typical.minutes); 
+                                    setCustomMinutes(null);
+                                    setTimeRealizationRate(POSTURE_PRESETS.typical.realization); 
+                                    setFtPatientAccessVisitDuration(30);
+                                    setFtPatientAccessRevenuePerVisit(200);
+                                  }}
+                                  className="mt-3 text-xs text-[#F03319] hover:underline"
                                   data-testid="button-reset-patientAccess"
                                 >
-                                  Reset to Typical Defaults
+                                  [Reset to Typical Defaults]
                                 </button>
                               </div>
                             )}
@@ -2202,54 +2351,275 @@ export default function ObjectiveSelectionScreen({
                             {/* Level of Service Fine-tune */}
                             {selectedLeverIds.has("wrvu") && (
                               <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-wrvu">
-                                <div className="text-sm font-medium text-neutral-900 mb-3">Accurate Level of Service</div>
+                                <div className="text-sm font-semibold text-neutral-900 mb-3">Accurate Level of Service</div>
                                 <div className="space-y-3">
                                   <div>
-                                    <label className="text-xs font-medium text-neutral-600">Baseline wRVU per encounter</label>
+                                    <label className="text-sm font-medium text-neutral-600">Baseline wRVU per encounter</label>
                                     <input
                                       type="number"
                                       step="0.05"
-                                      defaultValue={1.75}
+                                      value={ftWrvuBaseline}
+                                      onChange={(e) => setFtWrvuBaseline(parseFloat(e.target.value) || 1.75)}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                      data-testid="input-baseline-wrvu"
+                                      data-testid="input-ft-baseline-wrvu"
                                     />
-                                    <p className="text-xs text-neutral-500 mt-1">Typical outpatient range: 1.5-2.0 | Blueprint: 1.75</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 1.5-2.0 | Blueprint reference: 1.75</p>
                                   </div>
                                   <div>
-                                    <label className="text-xs font-medium text-neutral-600">Documentation quality lift</label>
+                                    <label className="text-sm font-medium text-neutral-600">Documentation quality lift</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="number"
-                                        value={wrvuSensitivity || 5}
-                                        onChange={(e) => setWrvuSensitivity(parseInt(e.target.value))}
-                                        className="w-20 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                        data-testid="input-wrvu-sensitivity"
+                                        value={wrvuSensitivity ?? ""}
+                                        onChange={(e) => setWrvuSensitivity(parseInt(e.target.value) || null)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-wrvu-lift"
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
                                     <p className="text-xs text-neutral-500 mt-1">Range: 2-8% | Blueprint reference: 5%</p>
                                   </div>
                                   <div>
-                                    <label className="text-xs font-medium text-neutral-600">Revenue per wRVU</label>
+                                    <label className="text-sm font-medium text-neutral-600">Revenue per wRVU</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
                                         type="number"
-                                        defaultValue={50}
+                                        value={ftWrvuRevenuePerUnit}
+                                        onChange={(e) => setFtWrvuRevenuePerUnit(parseInt(e.target.value) || 50)}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                        data-testid="input-revenue-wrvu"
+                                        data-testid="input-ft-revenue-wrvu"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $40-70 depending on payer mix</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: $40-70 | Blueprint reference: $50</p>
                                   </div>
                                 </div>
                                 <button 
                                   type="button" 
-                                  onClick={() => setWrvuSensitivity(5)}
-                                  className="mt-3 text-xs text-neutral-500 hover:text-neutral-700"
+                                  onClick={() => {
+                                    setFtWrvuBaseline(1.75);
+                                    setWrvuSensitivity(POSTURE_PRESETS.typical.wrvu);
+                                    setFtWrvuRevenuePerUnit(50);
+                                  }}
+                                  className="mt-3 text-xs text-[#F03319] hover:underline"
                                   data-testid="button-reset-wrvu"
                                 >
-                                  Reset to Typical Defaults
+                                  [Reset to Typical Defaults]
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Clinician Retention Fine-tune */}
+                            {selectedLeverIds.has("workforce") && (
+                              <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-workforce">
+                                <div className="text-sm font-semibold text-neutral-900 mb-3">Clinician Retention</div>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Annual turnover rate</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={ftRetentionTurnoverRate}
+                                        onChange={(e) => setFtRetentionTurnoverRate(parseFloat(e.target.value) || 5)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-turnover-rate"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 4-8% | Blueprint reference: 5%</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Replacement cost per provider</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="text-sm text-neutral-500">$</span>
+                                      <input
+                                        type="number"
+                                        value={ftRetentionReplacementCost}
+                                        onChange={(e) => setFtRetentionReplacementCost(parseInt(e.target.value) || 250000)}
+                                        className="w-36 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-replacement-cost"
+                                      />
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: $200k-350k | Blueprint reference: $250,000</p>
+                                  </div>
+                                </div>
+                                <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                  <p className="text-xs text-blue-800">
+                                    <Info className="w-3 h-3 inline mr-1" />
+                                    Abridge prevention effectiveness is set by your posture selection:
+                                    Conservative: 30% | Typical: 40% | Aggressive: 50%
+                                  </p>
+                                </div>
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    setFtRetentionTurnoverRate(5);
+                                    setFtRetentionReplacementCost(250000);
+                                  }}
+                                  className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  data-testid="button-reset-workforce"
+                                >
+                                  [Reset to Typical Defaults]
+                                </button>
+                              </div>
+                            )}
+
+                            {/* HCC Capture Fine-tune */}
+                            {selectedLeverIds.has("hccCapture") && (
+                              <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-hccCapture">
+                                <div className="text-sm font-semibold text-neutral-900 mb-3">HCC & Chronic Condition Capture</div>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Medicare Advantage population</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={ftHccMedicareAdvantage}
+                                        onChange={(e) => setFtHccMedicareAdvantage(parseInt(e.target.value) || 15)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-medicare-advantage"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 10-40% | Blueprint reference: 15%</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Recapture rate</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={ftHccRecaptureRate ?? ""}
+                                        onChange={(e) => setFtHccRecaptureRate(parseInt(e.target.value) || null)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-recapture-rate"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 40-70% | Blueprint reference: 50%</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Benchmark PMPM</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="text-sm text-neutral-500">$</span>
+                                      <input
+                                        type="number"
+                                        value={ftHccBenchmarkPmpm}
+                                        onChange={(e) => setFtHccBenchmarkPmpm(parseInt(e.target.value) || 1000)}
+                                        className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-benchmark-pmpm"
+                                      />
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: $900-1,400 | Blueprint reference: $1,000</p>
+                                  </div>
+                                </div>
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    setFtHccMedicareAdvantage(15);
+                                    setFtHccRecaptureRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate);
+                                    setFtHccBenchmarkPmpm(1000);
+                                  }}
+                                  className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  data-testid="button-reset-hccCapture"
+                                >
+                                  [Reset to Typical Defaults]
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Denial Reduction Fine-tune */}
+                            {selectedLeverIds.has("denialReduction") && (
+                              <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-denialReduction">
+                                <div className="text-sm font-semibold text-neutral-900 mb-3">Denial Reduction</div>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Baseline denial rate</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={ftDenialBaselineRate}
+                                        onChange={(e) => setFtDenialBaselineRate(parseFloat(e.target.value) || 5)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-denial-rate"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 3-10% | Blueprint reference: 5%</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Prevention rate</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={ftDenialPreventionRate ?? ""}
+                                        onChange={(e) => setFtDenialPreventionRate(parseInt(e.target.value) || null)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-denial-prevention"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 50-80% | Blueprint reference: 66%</p>
+                                  </div>
+                                </div>
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    setFtDenialBaselineRate(5);
+                                    setFtDenialPreventionRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate);
+                                  }}
+                                  className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  data-testid="button-reset-denialReduction"
+                                >
+                                  [Reset to Typical Defaults]
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Overtime Cost Avoidance Fine-tune */}
+                            {selectedLeverIds.has("overtime") && (
+                              <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-overtime">
+                                <div className="text-sm font-semibold text-neutral-900 mb-3">Overtime & Locum Cost Avoidance</div>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">After-hours documentation reduction</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <input
+                                        type="number"
+                                        value={ftOvertimeAfterHoursReduction ?? ""}
+                                        onChange={(e) => setFtOvertimeAfterHoursReduction(parseInt(e.target.value) || null)}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-overtime-reduction"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: 15-30% | Blueprint reference: 20%</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Blended premium labor rate</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="text-sm text-neutral-500">$</span>
+                                      <input
+                                        type="number"
+                                        value={ftOvertimePremiumRate}
+                                        onChange={(e) => setFtOvertimePremiumRate(parseInt(e.target.value) || 145)}
+                                        className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-ft-premium-rate"
+                                      />
+                                      <span className="text-sm text-neutral-500">/hr</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: $100-250/hr | Blueprint reference: $145</p>
+                                  </div>
+                                </div>
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
+                                    setFtOvertimePremiumRate(145);
+                                  }}
+                                  className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  data-testid="button-reset-overtime"
+                                >
+                                  [Reset to Typical Defaults]
                                 </button>
                               </div>
                             )}
@@ -3161,7 +3531,7 @@ export default function ObjectiveSelectionScreen({
                           <button
                             type="button"
                             onClick={() => {
-                              // Create the seed inputs from all the wizard inputs
+                              // Create the seed inputs from all the wizard inputs including Fine-Tune values
                               const seedInputs: Partial<RoiInputs> = {
                                 numberOfProviders: effectiveClinicians,
                                 annualOutpatientEncounters: effectiveEncounters,
@@ -3170,6 +3540,45 @@ export default function ObjectiveSelectionScreen({
                                 monthlyCostPerProvider: perClinicianCost !== null ? perClinicianCost : undefined,
                                 contractLengthYears: contractYears !== null ? contractYears : undefined,
                                 implementationCostYear1: implementationEnabled && implementationFee !== null ? implementationFee : undefined,
+                                baselineWrvuPerEncounter: ftWrvuBaseline,
+                                patientAccess: {
+                                  pctTimeToNewVisits: timeRealizationRate ?? 20,
+                                  avgVisitDurationMinutes: ftPatientAccessVisitDuration,
+                                  avgNetRevenuePerVisit: ftPatientAccessRevenuePerVisit,
+                                },
+                                wrvu: {
+                                  wrvuConversionFactor: ftWrvuRevenuePerUnit,
+                                  pctIncreaseWrvuPerEncounter: wrvuSensitivity ?? 5,
+                                },
+                                workforce: {
+                                  providerCount: effectiveClinicians,
+                                  baselineAttritionRate: ftRetentionTurnoverRate,
+                                  pctAttritionLinkedToBurnout: 40,
+                                  pctBurnoutExitsAvoided: getRetentionPreventionPct(),
+                                  costPerDeparture: ftRetentionReplacementCost,
+                                },
+                                hcc: {
+                                  pctMedicareAdvantage: ftHccMedicareAdvantage,
+                                  avgConditionsPerMember: 2.5,
+                                  pctConditionsMissed: 30,
+                                  pctMissedConditionsRecaptured: ftHccRecaptureRate ?? 50,
+                                  pctNewConditionsIdentified: 5,
+                                  rafGainPerCondition: 0.25,
+                                  rafRealizationHaircut: 70,
+                                  pmpmBenchmark: ftHccBenchmarkPmpm,
+                                },
+                                denials: {
+                                  avgRevenuePerEncounter: ftPatientAccessRevenuePerVisit,
+                                  baselineDenialRate: ftDenialBaselineRate,
+                                  pctDenialsRecoveredAfterRework: 60,
+                                  pctDenialsFromDocumentation: 30,
+                                  pctDocDenialsRecovered: ftDenialPreventionRate ?? 66,
+                                },
+                                overtime: {
+                                  pctOvertimeReduced: ftOvertimeAfterHoursReduction ?? 20,
+                                  blendedOvertimeRate: ftOvertimePremiumRate,
+                                  pctAfterHours: 25,
+                                },
                               };
                               // Build selected levers from selectedLeverIds
                               const levers: SelectedLever[] = Array.from(selectedLeverIds).map(leverId => ({
