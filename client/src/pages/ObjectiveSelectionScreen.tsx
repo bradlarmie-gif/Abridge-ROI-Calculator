@@ -1887,7 +1887,7 @@ export default function ObjectiveSelectionScreen({
 
                     {/* Posture Preview Card */}
                     {detectedPosture && detectedPosture !== "custom" && (
-                      <div className="border border-neutral-200 rounded-xl p-5 mb-6 bg-neutral-50/50">
+                      <div className="border border-neutral-200 rounded-xl p-5 mb-6 bg-neutral-50/50" data-testid="posture-preview-card">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
                             {detectedPosture.toUpperCase()} POSTURE
@@ -1902,49 +1902,58 @@ export default function ObjectiveSelectionScreen({
                           Based on: {detectedPosture === "conservative" ? "Conservative" : detectedPosture === "typical" ? "Median" : "Optimistic"} performance from 50+ Abridge customers
                         </p>
                         
-                        <div className="text-xs font-medium text-neutral-700 mb-2">
-                          Your selected drivers (from Strategic Priorities):
-                        </div>
-                        <div className="space-y-3">
-                          {Array.from(selectedLeverIds).map((leverId) => {
-                            const driverContent = DRIVER_CONTENT[leverId];
-                            if (!driverContent) return null;
-                            return (
-                              <div key={leverId} className="flex items-start justify-between gap-3 bg-white rounded-lg p-3 border border-neutral-100">
-                                <div className="flex items-start gap-2">
-                                  <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                                  <div>
-                                    <div className="text-sm font-medium text-neutral-800">{driverContent.label}</div>
-                                    <div className="text-xs text-neutral-500 mt-0.5">
-                                      {leverId === "patientAccess" && `Minutes saved: ${effectiveMinutesSaved || 2.5} per encounter`}
-                                      {leverId === "wrvu" && `Documentation lift: ${wrvuSensitivity || 5}%`}
-                                      {leverId === "overtime" && `After-hours reduction: 20%`}
-                                      {leverId === "workforce" && `Turnover reduction via burnout relief`}
-                                      {leverId === "hcc" && `RAF improvement: ${hccSensitivity || 0.7}%`}
-                                      {leverId === "denials" && `Denial reduction: ${denialsSensitivity || 30}%`}
-                                    </div>
-                                  </div>
-                                </div>
-                                <span className="text-sm font-semibold text-emerald-700 font-mono whitespace-nowrap">
-                                  ${formatNumber(driverContent.referenceValue)}
-                                </span>
+                        {/* Posture multiplier helper */}
+                        {(() => {
+                          const postureMultiplier = detectedPosture === "conservative" ? 0.7 : detectedPosture === "aggressive" ? 1.3 : 1.0;
+                          return (
+                            <>
+                              <div className="text-xs font-medium text-neutral-700 mb-2">
+                                Your selected drivers (from Strategic Priorities):
                               </div>
-                            );
-                          })}
-                        </div>
-                        
-                        <div className="mt-4 pt-4 border-t border-neutral-200">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-semibold text-neutral-900">TOTAL PROJECTED VALUE:</span>
-                            <span className="text-lg font-bold text-emerald-700 font-mono">
-                              ${formatNumber(Array.from(selectedLeverIds).reduce((sum, leverId) => {
-                                const content = DRIVER_CONTENT[leverId];
-                                return sum + (content?.referenceValue || 0);
-                              }, 0))}
-                            </span>
-                          </div>
-                          <p className="text-xs text-neutral-500 mt-1">(Before investment costs)</p>
-                        </div>
+                              <div className="space-y-3">
+                                {Array.from(selectedLeverIds).map((leverId) => {
+                                  const driverContent = DRIVER_CONTENT[leverId];
+                                  if (!driverContent) return null;
+                                  const scaledValue = Math.round(driverContent.referenceValue * postureMultiplier);
+                                  return (
+                                    <div key={leverId} className="flex items-start justify-between gap-3 bg-white rounded-lg p-3 border border-neutral-100" data-testid={`driver-preview-${leverId}`}>
+                                      <div className="flex items-start gap-2">
+                                        <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                        <div>
+                                          <div className="text-sm font-medium text-neutral-800">{driverContent.label}</div>
+                                          <div className="text-xs text-neutral-500 mt-0.5">
+                                            {leverId === "patientAccess" && `Minutes saved: ${effectiveMinutesSaved || 2.5} per encounter`}
+                                            {leverId === "wrvu" && `Documentation lift: ${wrvuSensitivity || 5}%`}
+                                            {leverId === "overtime" && `After-hours reduction: 20%`}
+                                            {leverId === "workforce" && `Turnover reduction via burnout relief`}
+                                            {leverId === "hcc" && `RAF improvement: ${hccSensitivity || 0.7}%`}
+                                            {leverId === "denials" && `Denial reduction: ${denialsSensitivity || 30}%`}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <span className="text-sm font-semibold text-emerald-700 font-mono whitespace-nowrap" data-testid={`value-${leverId}`}>
+                                        ${formatNumber(scaledValue)}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              
+                              <div className="mt-4 pt-4 border-t border-neutral-200">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-semibold text-neutral-900">TOTAL PROJECTED VALUE:</span>
+                                  <span className="text-lg font-bold text-emerald-700 font-mono" data-testid="total-projected-value">
+                                    ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => {
+                                      const content = DRIVER_CONTENT[leverId];
+                                      return sum + (content?.referenceValue || 0);
+                                    }, 0) * postureMultiplier))}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-neutral-500 mt-1">(Before investment costs)</p>
+                              </div>
+                            </>
+                          );
+                        })()}
 
                         <button
                           type="button"
@@ -2084,7 +2093,7 @@ export default function ObjectiveSelectionScreen({
                           <div className="space-y-4">
                             {/* Patient Access Fine-tune */}
                             {selectedLeverIds.has("patientAccess") && (
-                              <div className="border border-neutral-200 rounded-lg p-4 bg-white">
+                              <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-patientAccess">
                                 <div className="text-sm font-medium text-neutral-900 mb-3">Patient Access</div>
                                 <div className="space-y-3">
                                   <div>
@@ -2101,6 +2110,7 @@ export default function ObjectiveSelectionScreen({
                                         }
                                       }}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                      data-testid="input-minutes-saved"
                                     />
                                     <p className="text-xs text-neutral-500 mt-1">Range: 1.5-4 min | Blueprint reference: 2.5 min</p>
                                   </div>
@@ -2112,6 +2122,7 @@ export default function ObjectiveSelectionScreen({
                                         value={timeRealizationRate || 20}
                                         onChange={(e) => setTimeRealizationRate(parseInt(e.target.value))}
                                         className="w-20 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-realization-rate"
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
@@ -2122,6 +2133,7 @@ export default function ObjectiveSelectionScreen({
                                   type="button" 
                                   onClick={() => { setMinutesSaved(4); setTimeRealizationRate(55); }}
                                   className="mt-3 text-xs text-neutral-500 hover:text-neutral-700"
+                                  data-testid="button-reset-patientAccess"
                                 >
                                   Reset to Typical Defaults
                                 </button>
@@ -2130,7 +2142,7 @@ export default function ObjectiveSelectionScreen({
 
                             {/* Level of Service Fine-tune */}
                             {selectedLeverIds.has("wrvu") && (
-                              <div className="border border-neutral-200 rounded-lg p-4 bg-white">
+                              <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-wrvu">
                                 <div className="text-sm font-medium text-neutral-900 mb-3">Accurate Level of Service</div>
                                 <div className="space-y-3">
                                   <div>
@@ -2140,6 +2152,7 @@ export default function ObjectiveSelectionScreen({
                                       step="0.05"
                                       defaultValue={1.75}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                      data-testid="input-baseline-wrvu"
                                     />
                                     <p className="text-xs text-neutral-500 mt-1">Typical outpatient range: 1.5-2.0 | Blueprint: 1.75</p>
                                   </div>
@@ -2151,6 +2164,7 @@ export default function ObjectiveSelectionScreen({
                                         value={wrvuSensitivity || 5}
                                         onChange={(e) => setWrvuSensitivity(parseInt(e.target.value))}
                                         className="w-20 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-wrvu-sensitivity"
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
@@ -2164,6 +2178,7 @@ export default function ObjectiveSelectionScreen({
                                         type="number"
                                         defaultValue={50}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-revenue-wrvu"
                                       />
                                     </div>
                                     <p className="text-xs text-neutral-500 mt-1">Typical range: $40-70 depending on payer mix</p>
@@ -2173,6 +2188,7 @@ export default function ObjectiveSelectionScreen({
                                   type="button" 
                                   onClick={() => setWrvuSensitivity(5)}
                                   className="mt-3 text-xs text-neutral-500 hover:text-neutral-700"
+                                  data-testid="button-reset-wrvu"
                                 >
                                   Reset to Typical Defaults
                                 </button>
