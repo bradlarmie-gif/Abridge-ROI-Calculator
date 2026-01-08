@@ -19,7 +19,7 @@ export function BackgroundShape() {
         style={{
           width: "600px",
           height: "600px",
-          opacity: 0.07,
+          opacity: 0.035,
           filter: "saturate(0.8)",
         }}
       >
@@ -37,7 +37,7 @@ export function BackgroundShape() {
         style={{
           width: "650px",
           height: "650px",
-          opacity: 0.065,
+          opacity: 0.03,
           filter: "saturate(0.75)",
         }}
       >
