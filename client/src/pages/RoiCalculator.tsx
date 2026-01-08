@@ -57,6 +57,27 @@ interface RoiCalculatorProps {
 
 type TabId = "summary" | "detailed" | "scenarios" | "export";
 
+// Scenario type definition
+interface Scenario {
+  id: string;
+  name: string;
+  providers: number;
+  encounters: number;
+  utilizationRate: number;
+  // Advanced inputs
+  maPopulationPct: number;
+  newPatientPct: number;
+  specialtyPct: number;
+  revenuePerVisitOverride: number | null;
+  visitLengthOverride: number | null;
+  // Calculated results
+  totalBenefit: number;
+  investment: number;
+  netGain: number;
+  roiMultiple: number;
+  driverValues: Record<LeverId, number>;
+}
+
 // Driver icons mapping
 const DRIVER_ICONS: Record<LeverId, typeof Clock> = {
   patientAccess: Clock,
@@ -98,6 +119,27 @@ export default function RoiCalculator({
   // Detailed breakdown state
   const [expandedDriver, setExpandedDriver] = useState<LeverId | null>(null);
   const [localAdjustments, setLocalAdjustments] = useState<Record<string, number>>({});
+
+  // Scenario Builder state
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [showScenarioForm, setShowScenarioForm] = useState(false);
+  const [editingScenarioId, setEditingScenarioId] = useState<string | null>(null);
+  const [showComparison, setShowComparison] = useState<string | null>(null);
+  const [showBaselineDetails, setShowBaselineDetails] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  
+  // Scenario form state
+  const [scenarioForm, setScenarioForm] = useState({
+    name: "",
+    providers: 0,
+    encounters: 0,
+    utilizationRate: 70,
+    maPopulationPct: 15,
+    newPatientPct: 30,
+    specialtyPct: 40,
+    revenuePerVisitOverride: null as number | null,
+    visitLengthOverride: null as number | null,
+  });
 
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {
@@ -242,6 +284,154 @@ export default function RoiCalculator({
     });
     setLocalAdjustments({});
   };
+
+  // Scenario Builder functions
+  const initScenarioForm = (scenario?: Scenario) => {
+    if (scenario) {
+      setScenarioForm({
+        name: scenario.name,
+        providers: scenario.providers,
+        encounters: scenario.encounters,
+        utilizationRate: scenario.utilizationRate,
+        maPopulationPct: scenario.maPopulationPct,
+        newPatientPct: scenario.newPatientPct,
+        specialtyPct: scenario.specialtyPct,
+        revenuePerVisitOverride: scenario.revenuePerVisitOverride,
+        visitLengthOverride: scenario.visitLengthOverride,
+      });
+      setEditingScenarioId(scenario.id);
+    } else {
+      setScenarioForm({
+        name: "",
+        providers: inputs.numberOfProviders,
+        encounters: inputs.annualOutpatientEncounters,
+        utilizationRate: inputs.abridgeUtilizationPct,
+        maPopulationPct: 15,
+        newPatientPct: 30,
+        specialtyPct: 40,
+        revenuePerVisitOverride: null,
+        visitLengthOverride: null,
+      });
+      setEditingScenarioId(null);
+    }
+    setAdvancedOpen(false);
+  };
+
+  const calculateScenarioResults = (form: typeof scenarioForm) => {
+    // Build scenario-specific inputs by cloning current inputs
+    const scenarioInputs: RoiInputs = JSON.parse(JSON.stringify(inputs));
+    
+    // Apply basic inputs
+    scenarioInputs.numberOfProviders = form.providers;
+    scenarioInputs.annualOutpatientEncounters = form.encounters;
+    scenarioInputs.abridgeUtilizationPct = form.utilizationRate;
+    
+    // Update dependent fields that scale with providers/encounters
+    // Workforce: providerCount should match scenario providers
+    scenarioInputs.workforce.providerCount = form.providers;
+    
+    // Scale totalMedicareAdvantagePatients proportionally to encounters
+    const encounterRatio = form.encounters / inputs.annualOutpatientEncounters;
+    scenarioInputs.totalMedicareAdvantagePatients = Math.round(inputs.totalMedicareAdvantagePatients * encounterRatio);
+    
+    // Scale denials netCollectibleRevenue proportionally to encounters
+    scenarioInputs.denials.netCollectibleRevenue = Math.round(inputs.denials.netCollectibleRevenue * encounterRatio);
+    
+    // Apply advanced inputs - visit length
+    if (form.visitLengthOverride !== null) {
+      scenarioInputs.patientAccess.avgVisitDurationMinutes = form.visitLengthOverride;
+    }
+    
+    // Apply advanced inputs - revenue per visit
+    if (form.revenuePerVisitOverride !== null) {
+      scenarioInputs.patientAccess.avgNetRevenuePerVisit = form.revenuePerVisitOverride;
+    }
+    
+    // Apply specialty mix to baseline wRVU
+    const baselineWrvuFromMix = (form.specialtyPct / 100) * 1.9 + ((100 - form.specialtyPct) / 100) * 1.6;
+    // Adjust for new patient percentage
+    const newPatientAdjustment = ((form.newPatientPct - 30) / 100) * 0.3; // +/- 0.3 for 10% change
+    scenarioInputs.baselineWrvuPerEncounter = baselineWrvuFromMix + newPatientAdjustment;
+    
+    // Apply MA population to HCC (scale impactedMaPatients proportionally)
+    const maPatientsRatio = form.maPopulationPct / 15; // 15% is default
+    scenarioInputs.hcc.impactedMaPatients = Math.round(inputs.hcc.impactedMaPatients * maPatientsRatio * encounterRatio);
+    
+    // Run calculations
+    const scenarioResults = calculateRoi(scenarioInputs);
+    
+    // Extract driver values
+    const scenarioDriverValues: Record<LeverId, number> = {
+      patientAccess: 0,
+      wrvu: 0,
+      workforce: 0,
+      hcc: 0,
+      denials: 0,
+      overtime: 0,
+    };
+    scenarioResults.levers.forEach((lever) => {
+      scenarioDriverValues[lever.id as LeverId] = lever.value;
+    });
+    
+    return {
+      totalBenefit: scenarioResults.totalAnnualBenefit,
+      investment: scenarioResults.annualAbridgeCost,
+      netGain: scenarioResults.netValueCreated,
+      roiMultiple: scenarioResults.roiMultiple,
+      driverValues: scenarioDriverValues,
+    };
+  };
+
+  const handleCalculateScenario = () => {
+    const name = scenarioForm.name.trim() || `Scenario ${scenarios.length + 1}`;
+    const results = calculateScenarioResults(scenarioForm);
+    
+    const newScenario: Scenario = {
+      id: editingScenarioId || Date.now().toString(),
+      name,
+      providers: scenarioForm.providers,
+      encounters: scenarioForm.encounters,
+      utilizationRate: scenarioForm.utilizationRate,
+      maPopulationPct: scenarioForm.maPopulationPct,
+      newPatientPct: scenarioForm.newPatientPct,
+      specialtyPct: scenarioForm.specialtyPct,
+      revenuePerVisitOverride: scenarioForm.revenuePerVisitOverride,
+      visitLengthOverride: scenarioForm.visitLengthOverride,
+      ...results,
+    };
+    
+    if (editingScenarioId) {
+      setScenarios((prev) => prev.map((s) => (s.id === editingScenarioId ? newScenario : s)));
+    } else {
+      setScenarios((prev) => [newScenario, ...prev]);
+    }
+    
+    setShowScenarioForm(false);
+    setShowComparison(newScenario.id);
+    setEditingScenarioId(null);
+  };
+
+  const handleDeleteScenario = (id: string) => {
+    setScenarios((prev) => prev.filter((s) => s.id !== id));
+    if (showComparison === id) {
+      setShowComparison(null);
+    }
+  };
+
+  // Scenario preview calculations
+  const scenarioPreview = useMemo(() => {
+    const eligibleEncounters = Math.round(scenarioForm.encounters * (scenarioForm.utilizationRate / 100));
+    const baselineEligible = Math.round(inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100));
+    const changeFromBaseline = baselineEligible > 0 ? ((eligibleEncounters - baselineEligible) / baselineEligible) * 100 : 0;
+    return { eligibleEncounters, changeFromBaseline };
+  }, [scenarioForm.encounters, scenarioForm.utilizationRate, inputs.annualOutpatientEncounters, inputs.abridgeUtilizationPct]);
+
+  // Blended wRVU calculation for display
+  const blendedWrvuPreview = useMemo(() => {
+    const base = (scenarioForm.specialtyPct / 100) * 1.9 + ((100 - scenarioForm.specialtyPct) / 100) * 1.6;
+    const adjustment = ((scenarioForm.newPatientPct - 30) / 100) * 0.3;
+    return base + adjustment;
+  }, [scenarioForm.specialtyPct, scenarioForm.newPatientPct]);
 
   // Calculation helpers for detailed breakdown
   const encountersWithAbridge = inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100);
@@ -1474,16 +1664,666 @@ export default function RoiCalculator({
         )}
 
         {activeTab === "scenarios" && (
-          <div className="bg-white rounded-2xl border border-neutral-200 p-8 shadow-sm">
-            <div className="text-center py-16">
-              <TrendingUp className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-neutral-900 mb-2">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h2 className="text-sm font-bold text-[#F03319] uppercase tracking-wide mb-1">
                 Scenario Builder
               </h2>
-              <p className="text-neutral-500">
-                Coming soon - Model expansion scenarios and compare outcomes
+              <p className="text-neutral-500 text-sm">
+                Model what different deployment configurations could look like
               </p>
             </div>
+
+            {/* Comparison View (if showing) */}
+            {showComparison && (() => {
+              const scenario = scenarios.find((s) => s.id === showComparison);
+              if (!scenario) return null;
+              
+              const providerChange = ((scenario.providers - inputs.numberOfProviders) / inputs.numberOfProviders) * 100;
+              const encounterChange = ((scenario.encounters - inputs.annualOutpatientEncounters) / inputs.annualOutpatientEncounters) * 100;
+              const benefitChange = ((scenario.totalBenefit - totalAnnualBenefit) / totalAnnualBenefit) * 100;
+              
+              return (
+                <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+                  <div className="flex items-center justify-between gap-4 mb-6">
+                    <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
+                      Scenario Comparison
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowComparison(null)}
+                      data-testid="button-close-comparison"
+                    >
+                      Close
+                    </Button>
+                  </div>
+
+                  {/* Side-by-side table */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Baseline Column */}
+                    <div className="bg-neutral-50 rounded-xl p-4">
+                      <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-4">
+                        Current Model (Baseline)
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-xs text-neutral-500 uppercase mb-1">Configuration</p>
+                          <p className="text-sm font-medium">{inputs.numberOfProviders} providers</p>
+                          <p className="text-sm font-medium">{inputs.annualOutpatientEncounters.toLocaleString()} encounters</p>
+                          <p className="text-sm font-medium">{inputs.abridgeUtilizationPct}% utilization</p>
+                        </div>
+                        
+                        <div className="border-t border-neutral-200 pt-4">
+                          <p className="text-xs text-neutral-500 uppercase mb-2">Value Drivers</p>
+                          <div className="space-y-2">
+                            {enabledDriverIds.map((id) => (
+                              <div key={id} className="flex items-center justify-between gap-2">
+                                <span className="text-sm text-neutral-600">{leverLabels[id]}</span>
+                                <span className="text-sm font-mono">{formatCurrency(driverValues[id])}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="border-t border-neutral-200 pt-4">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-sm font-semibold">Total Benefit</span>
+                            <span className="text-sm font-mono font-bold">{formatCurrency(totalAnnualBenefit)}</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-sm text-neutral-500">Investment</span>
+                            <span className="text-sm font-mono text-neutral-500">{formatCurrency(annualInvestment)}/year</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-neutral-200">
+                            <span className="text-sm font-bold">Net Gain</span>
+                            <span className="text-sm font-mono font-bold text-green-600">{formatCurrency(netAnnualGain)}</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm text-neutral-500">ROI</span>
+                            <span className="text-sm font-mono font-bold">{roiMultiple.toFixed(1)}x</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Scenario Column */}
+                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                      <h4 className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-4">
+                        {scenario.name}
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-xs text-neutral-500 uppercase mb-1">Configuration</p>
+                          <p className="text-sm font-medium">
+                            {scenario.providers} providers
+                            <span className={`ml-2 text-xs ${providerChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              ({providerChange >= 0 ? '+' : ''}{providerChange.toFixed(0)}%)
+                            </span>
+                          </p>
+                          <p className="text-sm font-medium">
+                            {scenario.encounters.toLocaleString()} encounters
+                            <span className={`ml-2 text-xs ${encounterChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              ({encounterChange >= 0 ? '+' : ''}{encounterChange.toFixed(0)}%)
+                            </span>
+                          </p>
+                          <p className="text-sm font-medium">{scenario.utilizationRate}% utilization</p>
+                          
+                          {/* Advanced inputs if used */}
+                          {(scenario.maPopulationPct !== 15 || scenario.specialtyPct !== 40 || scenario.newPatientPct !== 30) && (
+                            <div className="mt-2 pt-2 border-t border-blue-200">
+                              {scenario.maPopulationPct !== 15 && (
+                                <p className="text-xs text-blue-600">{scenario.maPopulationPct}% MA population</p>
+                              )}
+                              {scenario.specialtyPct !== 40 && (
+                                <p className="text-xs text-blue-600">{scenario.specialtyPct}% specialty mix</p>
+                              )}
+                              {scenario.newPatientPct !== 30 && (
+                                <p className="text-xs text-blue-600">{scenario.newPatientPct}% new patients</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="border-t border-blue-200 pt-4">
+                          <p className="text-xs text-neutral-500 uppercase mb-2">Value Drivers</p>
+                          <div className="space-y-2">
+                            {enabledDriverIds.map((id) => {
+                              const baseValue = driverValues[id];
+                              const scenarioValue = scenario.driverValues[id];
+                              const change = baseValue > 0 ? ((scenarioValue - baseValue) / baseValue) * 100 : 0;
+                              return (
+                                <div key={id} className="flex items-center justify-between gap-2">
+                                  <span className="text-sm text-neutral-600">{leverLabels[id]}</span>
+                                  <span className="text-sm font-mono">
+                                    {formatCurrency(scenarioValue)}
+                                    <span className={`ml-1 text-xs ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      ({change >= 0 ? '+' : ''}{change.toFixed(0)}%)
+                                    </span>
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        
+                        <div className="border-t border-blue-200 pt-4">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-sm font-semibold">Total Benefit</span>
+                            <span className="text-sm font-mono font-bold">
+                              {formatCurrency(scenario.totalBenefit)}
+                              <span className={`ml-1 text-xs ${benefitChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                ({benefitChange >= 0 ? '+' : ''}{benefitChange.toFixed(0)}%)
+                              </span>
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-sm text-neutral-500">Investment</span>
+                            <span className="text-sm font-mono text-neutral-500">{formatCurrency(scenario.investment)}/year</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-blue-200">
+                            <span className="text-sm font-bold">Net Gain</span>
+                            <span className="text-sm font-mono font-bold text-green-600">{formatCurrency(scenario.netGain)}</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm text-neutral-500">ROI</span>
+                            <span className="text-sm font-mono font-bold">{scenario.roiMultiple.toFixed(1)}x</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Key Insight */}
+                  <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                    <h4 className="text-sm font-bold text-amber-800 mb-2">Key Insight</h4>
+                    <p className="text-sm text-amber-700">
+                      Expanding to {scenario.providers} providers (from {inputs.numberOfProviders}) with {scenario.utilizationRate}% utilization generates {(scenario.totalBenefit / totalAnnualBenefit).toFixed(1)}x more value while maintaining strong ROI ({scenario.roiMultiple.toFixed(1)}x).
+                      {scenario.maPopulationPct > 20 && inputs.levers.hcc && ` Higher Medicare Advantage population (${scenario.maPopulationPct}%) increases HCC Capture value.`}
+                      {scenario.utilizationRate - inputs.abridgeUtilizationPct > 10 && ` Increased utilization (${scenario.utilizationRate}% vs ${inputs.abridgeUtilizationPct}%) improves value realization across all drivers.`}
+                    </p>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center justify-end gap-3 mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        initScenarioForm();
+                        setShowScenarioForm(true);
+                        setShowComparison(null);
+                      }}
+                      data-testid="button-create-another"
+                    >
+                      Create Another Scenario
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Your Scenarios Section */}
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-4">
+                Your Scenarios
+              </h3>
+
+              {/* Baseline Card (always present) */}
+              <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-200 mb-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-6 w-6 rounded-full bg-neutral-200 flex items-center justify-center">
+                    <Check className="h-3.5 w-3.5 text-neutral-600" />
+                  </div>
+                  <span className="text-sm font-bold text-neutral-900">Current Model (Baseline)</span>
+                  <Badge variant="secondary" className="text-xs">Locked</Badge>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-neutral-600 mb-3">
+                  <span>{inputs.numberOfProviders} providers</span>
+                  <span className="text-neutral-300">|</span>
+                  <span className="text-green-600 font-medium">{formatCurrency(netAnnualGain)} net gain</span>
+                  <span className="text-neutral-300">|</span>
+                  <span className="font-medium">{roiMultiple.toFixed(1)}x ROI</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowBaselineDetails(!showBaselineDetails)}
+                  className="text-xs gap-1"
+                  data-testid="button-view-baseline"
+                >
+                  {showBaselineDetails ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  View Details
+                </Button>
+                
+                {/* Baseline Details */}
+                {showBaselineDetails && (
+                  <div className="mt-4 pt-4 border-t border-neutral-200">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {enabledDriverIds.map((id) => (
+                        <div key={id} className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-neutral-500">{leverLabels[id]}</span>
+                          <span className="text-xs font-mono">{formatCurrency(driverValues[id])}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Saved Scenarios */}
+              {scenarios.map((scenario) => (
+                <div key={scenario.id} className="bg-white rounded-xl p-4 border border-neutral-200 mb-4">
+                  <div className="flex items-center justify-between gap-4 mb-2">
+                    <span className="text-sm font-bold text-neutral-900">{scenario.name}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-neutral-600 mb-3">
+                    <span>{scenario.providers} providers</span>
+                    <span className="text-neutral-300">|</span>
+                    <span className="text-green-600 font-medium">{formatCurrency(scenario.netGain)} net gain</span>
+                    <span className="text-neutral-300">|</span>
+                    <span className="font-medium">{scenario.roiMultiple.toFixed(1)}x ROI</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowComparison(scenario.id)}
+                      className="text-xs"
+                      data-testid={`button-compare-${scenario.id}`}
+                    >
+                      View Comparison
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        initScenarioForm(scenario);
+                        setShowScenarioForm(true);
+                      }}
+                      className="text-xs"
+                      data-testid={`button-edit-${scenario.id}`}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteScenario(scenario.id)}
+                      className="text-xs text-red-600 hover:text-red-700"
+                      data-testid={`button-delete-${scenario.id}`}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              {/* Empty state guidance */}
+              {scenarios.length === 0 && (
+                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200 mb-4">
+                  <h4 className="text-sm font-semibold text-blue-800 mb-2">
+                    Create Your First Scenario
+                  </h4>
+                  <p className="text-sm text-blue-700 mb-2">
+                    Model different deployment configurations to explore:
+                  </p>
+                  <ul className="text-sm text-blue-600 space-y-1 mb-2">
+                    <li>Expanding to more providers</li>
+                    <li>Higher utilization as teams mature</li>
+                    <li>Different specialty or payer mixes</li>
+                  </ul>
+                  <p className="text-xs text-blue-500">
+                    Use scenarios to explore "what if" questions without changing your baseline model.
+                  </p>
+                </div>
+              )}
+
+              {/* Create New Scenario Button */}
+              {!showScenarioForm && scenarios.length < 5 && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    initScenarioForm();
+                    setShowScenarioForm(true);
+                  }}
+                  className="w-full gap-2 mt-2"
+                  data-testid="button-create-scenario"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create New Scenario
+                </Button>
+              )}
+              
+              {scenarios.length >= 5 && (
+                <p className="text-sm text-neutral-500 text-center mt-2">
+                  Maximum 5 scenarios. Delete one to create another.
+                </p>
+              )}
+            </div>
+
+            {/* Scenario Form */}
+            {showScenarioForm && (
+              <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-2">
+                  {editingScenarioId ? "Edit Scenario" : "New Scenario"}
+                </h3>
+
+                {/* Scenario Name */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Scenario name
+                  </label>
+                  <Input
+                    value={scenarioForm.name}
+                    onChange={(e) => setScenarioForm({ ...scenarioForm, name: e.target.value })}
+                    placeholder="e.g., Expansion to 100 providers"
+                    className="max-w-md"
+                    data-testid="input-scenario-name"
+                  />
+                </div>
+
+                {/* Deployment Configuration */}
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">
+                    Deployment Configuration
+                  </h4>
+                  <p className="text-sm text-neutral-500 mb-4">
+                    Model a different configuration of your Abridge deployment. Adjust the fundamentals and optionally add specificity with advanced inputs.
+                  </p>
+
+                  <div className="space-y-6">
+                    {/* Providers */}
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                        Providers in scope
+                      </label>
+                      <Input
+                        type="number"
+                        value={scenarioForm.providers}
+                        onChange={(e) => setScenarioForm({ ...scenarioForm, providers: parseInt(e.target.value) || 0 })}
+                        placeholder="e.g., 100"
+                        className="w-40"
+                        data-testid="input-scenario-providers"
+                      />
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Model: Expand to more departments, locations, or specialties
+                      </p>
+                      <p className="text-xs text-neutral-400">Currently: {inputs.numberOfProviders} providers</p>
+                    </div>
+
+                    {/* Annual Encounters */}
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                        Annual encounters
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          value={scenarioForm.encounters}
+                          onChange={(e) => setScenarioForm({ ...scenarioForm, encounters: parseInt(e.target.value) || 0 })}
+                          placeholder="e.g., 200,000"
+                          className="w-48"
+                          data-testid="input-scenario-encounters"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (inputs.numberOfProviders > 0) {
+                              const scaledEncounters = Math.round((scenarioForm.providers / inputs.numberOfProviders) * inputs.annualOutpatientEncounters);
+                              setScenarioForm({ ...scenarioForm, encounters: scaledEncounters });
+                            }
+                          }}
+                          className="text-xs"
+                          data-testid="button-calc-encounters"
+                        >
+                          Calculate from providers
+                        </Button>
+                      </div>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Scales with providers, or enter custom volume if you know it
+                      </p>
+                      <p className="text-xs text-neutral-400">Currently: {inputs.annualOutpatientEncounters.toLocaleString()} encounters</p>
+                    </div>
+
+                    {/* Utilization Rate */}
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                        Utilization rate
+                      </label>
+                      <div className="flex items-center gap-4 max-w-md">
+                        <Slider
+                          value={[scenarioForm.utilizationRate]}
+                          onValueChange={([val]) => setScenarioForm({ ...scenarioForm, utilizationRate: val })}
+                          min={40}
+                          max={90}
+                          step={5}
+                          className="flex-1"
+                          data-testid="slider-scenario-utilization"
+                        />
+                        <span className="text-sm font-mono text-neutral-900 w-12 text-right">
+                          {scenarioForm.utilizationRate}%
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Higher utilization as the team becomes more familiar with Abridge
+                      </p>
+                      <p className="text-xs text-neutral-400">Currently: {inputs.abridgeUtilizationPct}%</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Preview */}
+                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200 mb-6">
+                  <h4 className="text-xs font-bold text-blue-800 uppercase tracking-wide mb-3">
+                    Scenario Preview
+                  </h4>
+                  <div className="space-y-1 text-sm text-blue-700">
+                    <p>
+                      {scenarioForm.providers} providers (was {inputs.numberOfProviders})
+                    </p>
+                    <p>
+                      {scenarioForm.encounters.toLocaleString()} encounters (was {inputs.annualOutpatientEncounters.toLocaleString()})
+                    </p>
+                    <p>
+                      {scenarioForm.utilizationRate}% utilization (was {inputs.abridgeUtilizationPct}%)
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-blue-200">
+                    <p className="text-sm font-medium text-blue-800">
+                      Eligible encounters: {scenarioPreview.eligibleEncounters.toLocaleString()}
+                    </p>
+                    <p className={`text-sm ${scenarioPreview.changeFromBaseline >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      Change from baseline: {scenarioPreview.changeFromBaseline >= 0 ? '+' : ''}{scenarioPreview.changeFromBaseline.toFixed(0)}%
+                    </p>
+                  </div>
+                </div>
+
+                {/* Advanced Section (Collapsible) */}
+                <div className="border border-neutral-200 rounded-xl mb-6">
+                  <button
+                    onClick={() => setAdvancedOpen(!advancedOpen)}
+                    className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-neutral-50 transition-colors"
+                    data-testid="button-toggle-advanced"
+                  >
+                    <div>
+                      <span className="text-sm font-semibold text-neutral-900">
+                        Advanced: Add Specificity (Optional)
+                      </span>
+                      <p className="text-xs text-neutral-500 mt-0.5">
+                        Add organization-specific details to increase precision
+                      </p>
+                    </div>
+                    {advancedOpen ? (
+                      <ChevronDown className="h-4 w-4 text-neutral-400" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-neutral-400" />
+                    )}
+                  </button>
+
+                  {advancedOpen && (
+                    <div className="p-4 pt-0 space-y-6">
+                      <p className="text-sm text-neutral-500 mb-4">
+                        These inputs adjust the baseline assumptions for THIS scenario only. They don't change your current model.
+                      </p>
+
+                      {/* MA Population */}
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                          Medicare Advantage population
+                        </label>
+                        <div className="flex items-center gap-4 max-w-md">
+                          <Slider
+                            value={[scenarioForm.maPopulationPct]}
+                            onValueChange={([val]) => setScenarioForm({ ...scenarioForm, maPopulationPct: val })}
+                            min={5}
+                            max={50}
+                            step={5}
+                            className="flex-1"
+                            data-testid="slider-ma-population"
+                          />
+                          <span className="text-sm font-mono text-neutral-900 w-12 text-right">
+                            {scenarioForm.maPopulationPct}%
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">Percentage of patients in MA plans</p>
+                        <p className="text-xs text-neutral-400">Impacts: HCC Capture driver value</p>
+                        {!inputs.levers.hcc && scenarioForm.maPopulationPct > 20 && (
+                          <p className="text-xs text-amber-600 mt-1">
+                            Increasing MA % above 20% may make HCC Capture relevant - you can add it later
+                          </p>
+                        )}
+                      </div>
+
+                      {/* New Patient Percentage */}
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                          New patient percentage
+                        </label>
+                        <div className="flex items-center gap-4 max-w-md">
+                          <Slider
+                            value={[scenarioForm.newPatientPct]}
+                            onValueChange={([val]) => setScenarioForm({ ...scenarioForm, newPatientPct: val })}
+                            min={10}
+                            max={60}
+                            step={5}
+                            className="flex-1"
+                            data-testid="slider-new-patient"
+                          />
+                          <span className="text-sm font-mono text-neutral-900 w-12 text-right">
+                            {scenarioForm.newPatientPct}%
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">Percentage of encounters that are new patients (vs established)</p>
+                        <p className="text-xs text-neutral-400">Typical range: 20-40%</p>
+                      </div>
+
+                      {/* Specialty Mix */}
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                          Specialty care percentage
+                        </label>
+                        <div className="flex items-center gap-4 max-w-md">
+                          <Slider
+                            value={[scenarioForm.specialtyPct]}
+                            onValueChange={([val]) => setScenarioForm({ ...scenarioForm, specialtyPct: val })}
+                            min={0}
+                            max={100}
+                            step={10}
+                            className="flex-1"
+                            data-testid="slider-specialty"
+                          />
+                          <span className="text-sm font-mono text-neutral-900 w-12 text-right">
+                            {scenarioForm.specialtyPct}%
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">Percentage of providers who are specialty (vs primary care)</p>
+                        <p className="text-xs text-neutral-400">
+                          Blended wRVU: {blendedWrvuPreview.toFixed(2)}
+                        </p>
+                      </div>
+
+                      {/* Revenue Override */}
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                          Average revenue per visit (optional override)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-500">$</span>
+                          <Input
+                            type="number"
+                            value={scenarioForm.revenuePerVisitOverride ?? ""}
+                            onChange={(e) => setScenarioForm({ 
+                              ...scenarioForm, 
+                              revenuePerVisitOverride: e.target.value ? parseFloat(e.target.value) : null 
+                            })}
+                            placeholder={inputs.patientAccess.avgNetRevenuePerVisit.toString()}
+                            className="w-32"
+                            data-testid="input-revenue-override"
+                          />
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">Leave blank to use baseline (${inputs.patientAccess.avgNetRevenuePerVisit})</p>
+                      </div>
+
+                      {/* Visit Length Override */}
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-900 mb-2">
+                          Average visit length (optional override)
+                        </label>
+                        <div className="flex items-center gap-4 max-w-md">
+                          <Slider
+                            value={[scenarioForm.visitLengthOverride ?? inputs.patientAccess.avgVisitDurationMinutes]}
+                            onValueChange={([val]) => setScenarioForm({ ...scenarioForm, visitLengthOverride: val })}
+                            min={20}
+                            max={60}
+                            step={5}
+                            className="flex-1"
+                            data-testid="slider-visit-length"
+                          />
+                          <span className="text-sm font-mono text-neutral-900 w-16 text-right">
+                            {scenarioForm.visitLengthOverride ?? inputs.patientAccess.avgVisitDurationMinutes} min
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">Currently in baseline: {inputs.patientAccess.avgVisitDurationMinutes} minutes</p>
+                      </div>
+
+                      {/* Info callout */}
+                      <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                        <p className="text-xs text-amber-700">
+                          Advanced inputs apply ONLY to this scenario. Your baseline model remains unchanged. These help model expansions into different specialties, populations, or care settings.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowScenarioForm(false);
+                      setEditingScenarioId(null);
+                    }}
+                    data-testid="button-cancel-scenario"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCalculateScenario}
+                    disabled={scenarioForm.providers <= 0 || scenarioForm.encounters <= 0}
+                    className="bg-[#F03319] hover:bg-[#D92D16] text-white"
+                    data-testid="button-calculate-scenario"
+                  >
+                    Calculate Scenario
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

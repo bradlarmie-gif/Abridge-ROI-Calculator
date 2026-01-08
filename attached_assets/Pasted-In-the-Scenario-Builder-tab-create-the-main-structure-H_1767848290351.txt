@@ -1,0 +1,474 @@
+In the "Scenario Builder" tab, create the main structure:
+
+HEADER SECTION:
+Title: "SCENARIO BUILDER"
+Subtitle: "Model what different deployment configurations could look like"
+
+Style: Same header styling as other tabs
+
+MAIN CONTENT:
+Create two main sections:
+
+SECTION 1: YOUR SCENARIOS
+This shows a list of saved scenarios. Always include the baseline:
+
+Default card (always present, not editable):
+┌─────────────────────────────────────────┐
+│ ✓ CURRENT MODEL (BASELINE)              │
+│ [X] providers | $[Y] net gain | [Z]x ROI│
+│ [View Details]                          │
+└─────────────────────────────────────────┘
+
+This should be styled as "locked" - subtle background to indicate it's the reference point.
+
+Below the baseline, show any saved scenarios (initially empty).
+
+At the bottom:
+Large prominent button: "[+ Create New Scenario]"
+
+SECTION 2: SCENARIO FORM (initially hidden)
+This appears when they click "Create New Scenario"
+
+LAYOUT:
+- Stack sections vertically with clear separation
+- Baseline card should be prominent but clearly locked/unchangeable  
+- Good spacing between elements
+- Match card styling from previous sections
+
+BEHAVIOR:
+- "View Details" on baseline card should show the current model's driver breakdown in a modal or expandable section
+- When "[+ Create New Scenario]" is clicked, show the scenario form (we'll build this next)
+
+Build the scenario creation form that appears when "[+ Create New Scenario]" is clicked.
+
+At the top of the form:
+┌─────────────────────────────────────────┐
+│ NEW SCENARIO                            │
+│                                         │
+│ Scenario name:                          │
+│ [text input - editable]                 │
+│ Placeholder: "e.g., Expansion to 100 providers"│
+└─────────────────────────────────────────┘
+
+Below that, create a section:
+
+DEPLOYMENT CONFIGURATION
+
+Description text:
+"Model a different configuration of your Abridge deployment. Adjust the fundamentals and optionally add specificity with advanced inputs."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BASIC INPUTS SECTION:
+
+Input 1: Providers
+Label: "Providers in scope"
+Component: Number input
+Current baseline: [show from current model]
+Placeholder: "e.g., 100"
+
+Helper text below:
+"Model: Expand to more departments, locations, or specialties"
+Show comparison: "Currently: [X] providers"
+
+Input 2: Annual Encounters  
+Label: "Annual encounters"
+Component: Number input
+Current baseline: [show from current model]
+Placeholder: "e.g., 200,000"
+
+Helper text below:
+"Scales with providers, or enter custom volume if you know it"
+Show comparison: "Currently: [Y] encounters"
+Optional: Add a "Calculate from providers" helper button that suggests: new_encounters = (new_providers / current_providers) × current_encounters
+
+Input 3: Utilization Rate
+Label: "Utilization rate"
+Component: Range slider 40% to 90%
+Current baseline: [show from current model]
+Default: same as current model
+
+Helper text below:
+"Higher utilization as the team becomes more familiar with Abridge"
+Show comparison: "Currently: [Z]%"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+At the bottom of basic inputs, show a live preview:
+
+┌─────────────────────────────────────────┐
+│ 📊 SCENARIO PREVIEW                     │
+│                                         │
+│ With these inputs:                      │
+│ • [X] providers (was [current])         │
+│ • [Y] encounters (was [current])        │
+│ • [Z]% utilization (was [current])      │
+│                                         │
+│ Eligible encounters: [calculated]       │
+│ Change from baseline: [+/-X%]          │
+└─────────────────────────────────────────┘
+
+STYLE:
+- Clear visual separation between inputs
+- Input fields match Model Setup styling
+- Helper text in gray, smaller font
+- "Currently: X" comparisons in subtle boxes or highlighted text
+- Preview box with light background, updates in real-time as they type
+- Good spacing, clean layout
+
+BEHAVIOR:
+- All inputs update the preview box in real-time
+- "Calculate from providers" helper is optional but useful
+- Show clear before/after comparison
+
+Below the basic inputs, add a collapsible advanced section:
+
+┌─────────────────────────────────────────┐
+│ ▶ ADVANCED: ADD SPECIFICITY (Optional) │
+└─────────────────────────────────────────┘
+
+Subtitle when collapsed:
+"Add organization-specific details to increase precision"
+
+When clicked, expand to show:
+
+Description:
+"These inputs adjust the baseline assumptions for THIS scenario only. They don't change your current model."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADVANCED INPUT 1: Payer Mix
+Label: "Medicare Advantage population"
+Component: Range slider 5% to 50%
+Default: 15% (or pull from current model if MA is relevant)
+
+Helper text:
+"Percentage of patients in MA plans"
+"Impacts: HCC Capture driver value"
+"Currently in baseline: 15%"
+
+Show conditional message:
+If HCC driver is NOT in the model: "💡 Increasing MA % above 20% may make HCC Capture relevant - you can add it later"
+If HCC driver IS in the model: "This will adjust HCC Capture calculations"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADVANCED INPUT 2: Patient Type Mix
+Label: "New patient percentage"
+Component: Range slider 10% to 60%
+Default: 30%
+
+Helper text:
+"Percentage of encounters that are new patients (vs established)"
+"Impacts: Baseline wRVU calculation (new patients typically generate higher wRVUs)"
+"Typical range: 20-40%"
+
+Show calculation note:
+"Baseline wRVU will adjust: Higher new patient % → Higher baseline wRVU"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADVANCED INPUT 3: Specialty Mix
+Label: "Specialty care percentage"
+Component: Range slider 0% to 100%
+Default: 40%
+
+Helper text:
+"Percentage of providers who are specialty (vs primary care)"
+"Impacts: Average wRVU baseline and revenue per visit"
+"Primary care baseline wRVU: ~1.6 | Specialty baseline wRVU: ~1.9"
+
+Show calculation note:
+"Blended wRVU: [calculated based on mix]"
+Example: "60% primary (1.6) + 40% specialty (1.9) = 1.72 blended"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADVANCED INPUT 4: Revenue per Visit Override
+Label: "Average revenue per visit"
+Component: Text input with $ prefix
+Default: Pull from current model (e.g., $200)
+Placeholder: Leave blank to auto-calculate
+
+Helper text:
+"Override if this expansion includes different specialties with higher/lower reimbursement"
+"If blank, uses baseline revenue from current model"
+"Specialty care typically: $250-350 | Primary care typically: $150-200"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADVANCED INPUT 5: Visit Length Override  
+Label: "Average visit length"
+Component: Range slider 20-60 minutes
+Default: Pull from current model (e.g., 30 min)
+
+Helper text:
+"Override if this expansion includes longer/shorter visit types"
+"Impacts: Patient Access capacity calculations"
+"Currently in baseline: [X] minutes"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+At bottom of advanced section:
+
+Callout box:
+"💡 Advanced inputs apply ONLY to this scenario. Your baseline model remains unchanged. These help model expansions into different specialties, populations, or care settings."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STYLE:
+- Collapsed by default with clear expand indicator
+- When expanded, good spacing between advanced inputs
+- Each input clearly labeled with impacts
+- Helper text explains WHY you'd adjust this
+- Conditional messages guide the user
+- Calculation notes show the math impact
+- Matches existing input styling
+
+BEHAVIOR:
+- Can be collapsed/expanded without losing input values
+- All inputs are optional (have defaults)
+- Changes update the scenario preview box
+- Show real-time calculation adjustments
+
+At the bottom of the scenario form (below basic and advanced inputs), add:
+
+Action buttons:
+[Cancel]  [Calculate Scenario]
+
+Button styling:
+- Cancel: Secondary style (outline)
+- Calculate Scenario: Primary style (filled, accent color), prominent
+
+BEHAVIOR WHEN "CALCULATE SCENARIO" IS CLICKED:
+
+1. VALIDATION:
+- Ensure scenario name is filled (if empty, use "Scenario [number]")
+- Ensure providers and encounters are > 0
+- Ensure utilization is 40-90%
+
+2. CALCULATION:
+Run the ROI calculation with the scenario's inputs:
+
+For BASIC inputs:
+- Use new providers, encounters, utilization to calculate eligible encounters
+- Run all existing drivers through the formulas with new encounter volume
+
+For ADVANCED inputs (if provided):
+- Adjust MA %: Recalculate HCC Capture with new MA population
+- Adjust new patient %: Modify baseline wRVU calculation
+  - Formula: baseline_wRVU = (new_patient_% × 2.0) + (established_% × 1.65)
+- Adjust specialty mix: Modify baseline wRVU calculation  
+  - Formula: baseline_wRVU = (specialty_% × 1.9) + (primary_% × 1.6)
+- Revenue override: Use this instead of baseline revenue per visit
+- Visit length override: Use this in Patient Access calculations
+
+If BOTH new patient % and specialty mix are adjusted:
+- Combine their effects: Specialty mix sets the base wRVU range, then new patient % adjusts within that range
+
+3. CALCULATE INVESTMENT:
+- New investment = (new providers × cost per provider × 12)
+- Keep the same cost per provider from baseline model
+
+4. CALCULATE TOTALS:
+- Total benefit = sum of all driver values with new calculations
+- Net gain = total benefit - investment
+- ROI = total benefit / investment
+
+5. SAVE SCENARIO:
+- Add to the scenarios list
+- Show it in "YOUR SCENARIOS" section
+- Collapse the form
+- Automatically show the comparison view (next step)
+
+6. FEEDBACK:
+Show a success message: "✓ Scenario '[name]' created"
+
+After a scenario is calculated, automatically display a comparison view.
+
+This should appear between "YOUR SCENARIOS" and the form (or replace the form temporarily).
+
+COMPARISON VIEW LAYOUT:
+
+Title: "SCENARIO COMPARISON"
+
+Create a side-by-side comparison table:
+
+┌────────────────────────┬────────────────────────┐
+│ CURRENT MODEL          │ [SCENARIO NAME]        │
+│ (Baseline)             │                        │
+├────────────────────────┼────────────────────────┤
+│ CONFIGURATION          │ CONFIGURATION          │
+│ [X] providers          │ [A] providers (+B%)    │
+│ [Y] encounters         │ [C] encounters (+D%)   │
+│ [Z]% utilization       │ [E]% utilization       │
+│                        │                        │
+│ (show advanced if used)│ (show advanced if used)│
+│                        │ [F]% MA population     │
+│                        │ [G]% specialty mix     │
+├────────────────────────┼────────────────────────┤
+│ VALUE DRIVERS          │ VALUE DRIVERS          │
+│                        │                        │
+│ Patient Access         │ Patient Access         │
+│ $[value1]              │ $[value1'] (+X.Xx)    │
+│                        │                        │
+│ Level of Service       │ Level of Service       │
+│ $[value2]              │ $[value2'] (+X.Xx)    │
+│                        │                        │
+│ [other drivers...]     │ [other drivers...]     │
+│                        │                        │
+│ (if new driver added)  │ HCC Capture (added)    │
+│                        │ $[valueN] (new)        │
+├────────────────────────┼────────────────────────┤
+│ TOTAL BENEFIT          │ TOTAL BENEFIT          │
+│ $[baseline_total]      │ $[scenario_total]      │
+│                        │ (+X.Xx or +Y%)         │
+│                        │                        │
+│ Investment             │ Investment             │
+│ $[baseline_inv]/year   │ $[scenario_inv]/year   │
+├────────────────────────┼────────────────────────┤
+│ NET GAIN               │ NET GAIN               │
+│ $[baseline_net]        │ $[scenario_net]        │
+│ [baseline_roi]x ROI    │ [scenario_roi]x ROI    │
+└────────────────────────┴────────────────────────┘
+
+Below the table, add:
+
+KEY INSIGHT section:
+
+Generate a dynamic insight based on the comparison:
+
+Template logic:
+"Expanding to [A] providers (from [X]) with [E]% utilization generates [multiplier]× more value while maintaining strong ROI ([roi]x)."
+
+If MA population increased AND HCC driver is present:
+Add: "Higher Medicare Advantage population ([F]%) increases HCC Capture value by $[amount]."
+
+If utilization increased by >10 percentage points:
+Add: "Increased utilization ([E]% vs [Z]%) improves value realization across all drivers."
+
+If specialty mix changed significantly:
+Add: "Higher specialty mix ([G]%) increases baseline wRVU and revenue per visit."
+
+If new driver was added (like HCC when it wasn't before):
+Add: "[Driver name] becomes relevant in this scenario, adding $[value] in additional annual value."
+
+Keep insights factual and specific to THEIR numbers - no generic statements.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+At bottom of comparison:
+
+Action buttons:
+[Save Scenario]  [Add to PDF Export]  [Create Another Scenario]
+
+STYLE:
+- Clean two-column table layout
+- Clear visual separation between columns
+- Use subtle background colors to distinguish baseline vs scenario
+- Show percentage changes in parentheses with +/- indicators
+- New or added items highlighted (like new drivers)
+- "KEY INSIGHT" section with subtle background box
+- Buttons clearly styled
+
+BEHAVIOR:
+- "Save Scenario" keeps it in the scenarios list
+- "Add to PDF Export" marks it for inclusion in the export (we'll build this in Phase 4)
+- "Create Another Scenario" shows the form again for a new scenario
+- Can create multiple scenarios and compare any of them to baseline
+
+In the "YOUR SCENARIOS" section, enhance the scenario cards:
+
+For each saved scenario (not the baseline), show:
+
+┌─────────────────────────────────────────┐
+│ [SCENARIO NAME]                         │
+│ [X] providers | $[Y] net gain | [Z]x ROI│
+│                                         │
+│ [View Comparison] [Edit] [Delete]      │
+└─────────────────────────────────────────┘
+
+BUTTONS:
+- "View Comparison": Shows the comparison view for this scenario vs baseline
+- "Edit": Opens the scenario form pre-filled with this scenario's values
+- "Delete": Removes the scenario from the list (with confirmation)
+
+BEHAVIOR:
+- Can have multiple saved scenarios
+- Each scenario can be compared to baseline
+- Editing a scenario recalculates it
+- Deleting shows a confirmation: "Are you sure you want to delete '[scenario name]'?"
+
+ORGANIZATION:
+- Scenarios listed in chronological order (most recent first)
+- Maximum of 5 scenarios (show message if they try to create more: "Maximum 5 scenarios. Delete one to create another.")
+
+STYLE:
+- Scenario cards have same styling as baseline but are clearly editable
+- Action buttons are small, secondary style
+- Good spacing between cards
+
+Add helpful guidance and handle edge cases:
+
+1. WHEN NO SCENARIOS EXIST YET:
+In the "YOUR SCENARIOS" section, below the baseline card, show:
+
+┌─────────────────────────────────────────┐
+│ 💡 CREATE YOUR FIRST SCENARIO           │
+│                                         │
+│ Model different deployment              │
+│ configurations to explore:              │
+│                                         │
+│ • Expanding to more providers           │
+│ • Higher utilization as teams mature    │
+│ • Different specialty or payer mixes    │
+│                                         │
+│ Use scenarios to explore "what if"      │
+│ questions without changing your         │
+│ baseline model.                         │
+└─────────────────────────────────────────┘
+
+2. VALIDATION MESSAGES:
+When calculating a scenario, validate:
+
+- If providers < current: Show warning "⚠️ This scenario has fewer providers than baseline. Modeling a reduction?"
+- If utilization < 40%: Show warning "⚠️ Utilization below 40% is unusual. Double-check this value."
+- If utilization > 90%: Show warning "⚠️ 90%+ utilization assumes near-universal adoption. Is this realistic?"
+- If MA % > 40%: Show note "💡 High MA population (40%+) significantly increases HCC value"
+
+These are non-blocking - just informational.
+
+3. CALCULATION NOTES:
+When advanced inputs are used, show what changed in the comparison:
+
+"⚙️ Adjusted for this scenario:"
+- "Specialty mix: 60% (affects baseline wRVU)"
+- "MA population: 25% (affects HCC calculations)"
+- "New patient mix: 35% (affects wRVU baseline)"
+
+This helps them understand why numbers changed.
+
+4. INTELLIGENT DEFAULTS:
+When creating a new scenario:
+- Pre-fill with current model values
+- Suggest reasonable expansions in placeholder text
+- If they increase providers by 2x, suggest increasing encounters by ~2x
+- Show "smart suggestions" based on their inputs
+
+STYLE:
+- Guidance boxes with light background
+- Warning/note icons (⚠️ 💡 ⚙️)
+- Clear, friendly language
+- Non-intrusive but helpful
+
+Ensure Scenario Builder maintains the established style:
+- Forms match Model Setup input styling
+- Comparison table is clean and readable
+- Scenarios list is well-organized
+- Guidance boxes are helpful, not intrusive
+- Calculations display clearly
+- Insights are specific to their numbers, not generic
+- The tone is: "Here's what YOUR expansion could look like" not "Here's what you should do"
+- Everything feels believable and grounded in their reality
+- No mention of timelines or "Year 2" unless they name it that
+- Focus on configuration changes, not time-based projections
