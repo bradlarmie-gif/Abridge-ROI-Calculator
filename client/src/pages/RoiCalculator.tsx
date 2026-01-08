@@ -73,18 +73,9 @@ export default function RoiCalculator({
   const [activeTab, setActiveTab] = useState<TabId>("summary");
   const [addDriverModalOpen, setAddDriverModalOpen] = useState(false);
   const [selectedNewDrivers, setSelectedNewDrivers] = useState<Set<LeverId>>(new Set());
-  
-  // Track enabled drivers
-  const [enabledDrivers, setEnabledDrivers] = useState<Set<LeverId>>(() => {
-    const set = new Set<LeverId>();
-    selectedLevers.forEach((l) => {
-      if (l.active) set.add(l.leverId as LeverId);
-    });
-    return set;
-  });
 
-  // Initialize inputs from seed
-  const [inputs] = useState<RoiInputs>(() => {
+  // Initialize inputs from seed with a setter for dynamic updates
+  const [inputs, setInputs] = useState<RoiInputs>(() => {
     const initial: RoiInputs = JSON.parse(JSON.stringify(defaultInputs));
     if (seedInputs) {
       Object.assign(initial, seedInputs);
@@ -103,7 +94,7 @@ export default function RoiCalculator({
   // Calculate results
   const results = useMemo(() => calculateRoi(inputs), [inputs]);
 
-  // Driver values from results
+  // Driver values directly from calculateRoi results (already filtered by inputs.levers)
   const driverValues = useMemo(() => {
     const values: Record<LeverId, number> = {
       patientAccess: 0,
@@ -114,28 +105,23 @@ export default function RoiCalculator({
       hcc: 0,
     };
     results.levers.forEach((lever) => {
-      if (enabledDrivers.has(lever.id)) {
+      // Only include if the lever is enabled in inputs
+      if (lever.enabled) {
         values[lever.id] = lever.value;
       }
     });
     return values;
-  }, [results, enabledDrivers]);
+  }, [results]);
 
-  // Total annual benefit from enabled drivers only
-  const totalAnnualBenefit = useMemo(() => {
-    return Object.entries(driverValues).reduce((sum, [id, value]) => {
-      return enabledDrivers.has(id as LeverId) ? sum + value : sum;
-    }, 0);
-  }, [driverValues, enabledDrivers]);
+  // Total annual benefit from calculateRoi (authoritative source)
+  const totalAnnualBenefit = results.totalAnnualBenefit;
 
-  // Annual investment
-  const annualInvestment = useMemo(() => {
-    return inputs.numberOfProviders * inputs.monthlyCostPerProvider * 12;
-  }, [inputs.numberOfProviders, inputs.monthlyCostPerProvider]);
+  // Annual investment from calculateRoi (authoritative source)
+  const annualInvestment = results.annualAbridgeCost;
 
-  // Net annual gain and ROI
-  const netAnnualGain = totalAnnualBenefit - annualInvestment;
-  const roiMultiple = annualInvestment > 0 ? totalAnnualBenefit / annualInvestment : 0;
+  // Net annual gain and ROI from calculateRoi (authoritative source)
+  const netAnnualGain = results.netValueCreated;
+  const roiMultiple = results.roiMultiple;
 
   // Get care setting label
   const careSettingLabel = selectedSettings.length > 0 
@@ -150,18 +136,26 @@ export default function RoiCalculator({
   // All available driver IDs
   const allDriverIds: LeverId[] = ["patientAccess", "workforce", "overtime", "wrvu", "denials", "hcc"];
   
+  // Enabled drivers (from inputs.levers)
+  const enabledDriverIds = allDriverIds.filter((id) => inputs.levers[id]);
+  
   // Drivers not yet enabled (for the modal)
-  const availableDrivers = allDriverIds.filter((id) => !enabledDrivers.has(id));
+  const availableDrivers = allDriverIds.filter((id) => !inputs.levers[id]);
   
   // Capacity & Labor drivers
   const capacityLaborIds: LeverId[] = ["patientAccess", "workforce", "overtime"];
   const revenueRiskIds: LeverId[] = ["wrvu", "denials", "hcc"];
 
-  // Handle adding new drivers
+  // Handle adding new drivers - update inputs.levers so calculateRoi recomputes
   const handleAddDrivers = () => {
-    const newDrivers = new Set(enabledDrivers);
-    selectedNewDrivers.forEach((id) => newDrivers.add(id));
-    setEnabledDrivers(newDrivers);
+    setInputs((prev) => {
+      const newLevers = { ...prev.levers };
+      selectedNewDrivers.forEach((id) => {
+        newLevers[id] = true;
+      });
+      return { ...prev, levers: newLevers };
+    });
+    
     setSelectedNewDrivers(new Set());
     setAddDriverModalOpen(false);
   };
@@ -321,10 +315,10 @@ export default function RoiCalculator({
               </h2>
 
               {/* Stacked Bar Chart */}
-              {enabledDrivers.size > 0 ? (
+              {enabledDriverIds.length > 0 ? (
                 <>
                   <div className="h-12 rounded-lg overflow-hidden flex mb-6" data-testid="chart-stacked-bar">
-                    {Array.from(enabledDrivers).map((id) => {
+                    {enabledDriverIds.map((id) => {
                       const value = driverValues[id];
                       const percentage = totalAnnualBenefit > 0 ? (value / totalAnnualBenefit) * 100 : 0;
                       if (percentage <= 0) return null;
@@ -344,7 +338,7 @@ export default function RoiCalculator({
 
                   {/* Driver List */}
                   <div className="space-y-4 mb-6">
-                    {Array.from(enabledDrivers).map((id) => {
+                    {enabledDriverIds.map((id) => {
                       const value = driverValues[id];
                       const percentage = totalAnnualBenefit > 0 ? (value / totalAnnualBenefit) * 100 : 0;
                       return (
