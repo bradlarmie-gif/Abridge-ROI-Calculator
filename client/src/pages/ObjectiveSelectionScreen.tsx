@@ -2998,7 +2998,8 @@ export default function ObjectiveSelectionScreen({
                           const totalNet = totalValue - totalCost;
                           const cumulativeRoi = totalCost > 0 ? (totalNet / totalCost) : 0;
                           const monthlyNet = annualValue - annualCost;
-                          const paybackMonths = monthlyNet > 0 ? Math.ceil((annualCost + implFee) / (monthlyNet / 12)) : 0;
+                          // Calculate payback: null means not achieved (negative net), otherwise months to break even
+                          const paybackMonths = monthlyNet > 0 ? Math.ceil((annualCost + implFee) / (monthlyNet / 12)) : null;
 
                           return (
                             <div className="border-t border-neutral-100 pt-6" data-testid="multi-year-projection">
@@ -3071,7 +3072,9 @@ export default function ObjectiveSelectionScreen({
                                 </div>
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-neutral-600">Payback period:</span>
-                                  <span className="text-lg font-bold font-mono text-neutral-900">{paybackMonths > 0 ? `${paybackMonths} months` : 'Immediate'}</span>
+                                  <span className={`text-lg font-bold font-mono ${paybackMonths === null ? 'text-red-600' : 'text-neutral-900'}`}>
+                                    {paybackMonths === null ? 'Not achieved' : paybackMonths === 0 ? 'Immediate' : `${paybackMonths} months`}
+                                  </span>
                                 </div>
                               </div>
                             </div>
