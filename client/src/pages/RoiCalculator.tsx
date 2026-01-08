@@ -864,7 +864,9 @@ export default function RoiCalculator({
                   className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
                   data-testid="card-deep-dive"
                 >
-                  <Search className="h-6 w-6 text-neutral-400 mb-3 group-hover:text-neutral-600 transition-colors" />
+                  <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
+                    <Search className="h-5 w-5 text-[#2563EB]" />
+                  </div>
                   <h3 className="text-base font-semibold text-neutral-900 mb-1">
                     Deep Dive
                   </h3>
@@ -879,7 +881,9 @@ export default function RoiCalculator({
                   className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
                   data-testid="card-scenarios"
                 >
-                  <TrendingUp className="h-6 w-6 text-neutral-400 mb-3 group-hover:text-neutral-600 transition-colors" />
+                  <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
+                    <TrendingUp className="h-5 w-5 text-[#2563EB]" />
+                  </div>
                   <h3 className="text-base font-semibold text-neutral-900 mb-1">
                     Model Scenarios
                   </h3>
@@ -894,7 +898,9 @@ export default function RoiCalculator({
                   className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
                   data-testid="card-export"
                 >
-                  <Download className="h-6 w-6 text-neutral-400 mb-3 group-hover:text-neutral-600 transition-colors" />
+                  <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
+                    <Download className="h-5 w-5 text-[#2563EB]" />
+                  </div>
                   <h3 className="text-base font-semibold text-neutral-900 mb-1">
                     Export PDF
                   </h3>
