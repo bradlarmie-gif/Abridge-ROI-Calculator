@@ -32,6 +32,7 @@ import {
   Calculator,
   Settings,
   BarChart3,
+  ArrowRight,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -2684,6 +2685,25 @@ export default function ObjectiveSelectionScreen({
                 {/* Step 3: Investment */}
                 {modelSetupStep === 3 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
+                    {/* Context Callout */}
+                    {(() => {
+                      const postureMultiplier = detectedPosture === "conservative" ? 0.7 : detectedPosture === "aggressive" ? 1.3 : 1.0;
+                      const calculatedValue = Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => {
+                        const content = DRIVER_CONTENT[leverId];
+                        return sum + (content?.referenceValue || 0);
+                      }, 0) * postureMultiplier);
+                      return (
+                        <div className="mb-6 p-4 bg-amber-50/60 border border-amber-200 rounded-xl" data-testid="investment-context-callout">
+                          <div className="flex items-start gap-3">
+                            <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-amber-900">
+                              You've modeled <span className="font-semibold font-mono">~${formatNumber(calculatedValue)}</span> in annual value. Now let's account for what this investment costs.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    
                     <p className="text-sm text-neutral-600 mb-6">
                       How is this investment shaped?
                     </p>
@@ -2691,39 +2711,45 @@ export default function ObjectiveSelectionScreen({
                       {/* Investment Model Section */}
                       <div>
                         <div className="space-y-3">
-                          <label className="flex items-center gap-3 p-4 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 transition-all">
+                          <label className="flex items-start gap-3 p-4 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 transition-all">
                             <input
                               type="radio"
                               name="pricing"
                               checked={pricingModel === "per-clinician"}
                               onChange={() => setPricingModel("per-clinician")}
-                              className="w-4 h-4 text-[#F03319] focus:ring-[#F03319]"
+                              className="w-4 h-4 mt-1 text-[#F03319] focus:ring-[#F03319]"
                               data-testid="radio-per-clinician"
                             />
                             <div>
                               <span className="font-medium text-neutral-900">
                                 Per clinician / month
                               </span>
-                              <p className="text-xs text-neutral-500 mt-0.5">
-                                Pay based on number of clinicians
+                              <p className="text-sm text-neutral-600 mt-0.5">
+                                Pay based on number of providers
+                              </p>
+                              <p className="text-xs text-neutral-500 mt-1">
+                                Most flexible for phased rollouts
                               </p>
                             </div>
                           </label>
-                          <label className="flex items-center gap-3 p-4 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 transition-all">
+                          <label className="flex items-start gap-3 p-4 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 transition-all">
                             <input
                               type="radio"
                               name="pricing"
                               checked={pricingModel === "enterprise"}
                               onChange={() => setPricingModel("enterprise")}
-                              className="w-4 h-4 text-[#F03319] focus:ring-[#F03319]"
+                              className="w-4 h-4 mt-1 text-[#F03319] focus:ring-[#F03319]"
                               data-testid="radio-enterprise"
                             />
                             <div>
                               <span className="font-medium text-neutral-900">
                                 Enterprise annual
                               </span>
-                              <p className="text-xs text-neutral-500 mt-0.5">
+                              <p className="text-sm text-neutral-600 mt-0.5">
                                 Fixed annual contract
+                              </p>
+                              <p className="text-xs text-neutral-500 mt-1">
+                                Often includes volume discounts
                               </p>
                             </div>
                           </label>
@@ -2838,20 +2864,31 @@ export default function ObjectiveSelectionScreen({
                               data-testid="input-per-clinician-cost"
                             />
                           </div>
-                          <p className="text-xs text-neutral-500 mt-1.5">
-                            Monthly subscription cost per licensed provider.
-                          </p>
-                          {annualSubscriptionCost !== null && (
-                            <p className="text-sm text-neutral-600 mt-3 p-3 bg-neutral-50 rounded-lg">
-                              Annual cost:{" "}
-                              <span className="font-semibold">
-                                ${annualSubscriptionCost.toLocaleString()}
-                              </span>
-                              <span className="text-xs text-neutral-500 ml-1">
-                                ({effectiveClinicians} × ${perClinicianCost} ×
-                                12)
-                              </span>
+                          <div className="mt-2 space-y-1">
+                            <p className="text-xs text-neutral-500">
+                              Monthly subscription cost per licensed provider
                             </p>
+                            <div className="flex items-start gap-2 text-xs text-neutral-500">
+                              <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <p>Typical range: $100-150 per provider/month</p>
+                                <p className="mt-0.5">Enterprise contracts: Often lower per-unit pricing</p>
+                              </div>
+                            </div>
+                          </div>
+                          {perClinicianCost !== null && effectiveClinicians > 0 && (
+                            <div className="mt-4 p-4 bg-neutral-50 rounded-xl border border-neutral-100" data-testid="live-calculation-box">
+                              <div className="text-xs font-semibold text-neutral-700 mb-2">Your calculation:</div>
+                              <p className="text-sm text-neutral-800 font-mono">
+                                <span className="text-neutral-600">{effectiveClinicians.toLocaleString()}</span> providers 
+                                <span className="text-neutral-400 mx-1">x</span> 
+                                <span className="text-neutral-600">${formatNumber(perClinicianCost)}</span>/month 
+                                <span className="text-neutral-400 mx-1">x</span> 
+                                <span className="text-neutral-600">12</span> months 
+                                <span className="text-neutral-400 mx-1">=</span> 
+                                <span className="font-semibold text-neutral-900">${formatNumber(effectiveClinicians * perClinicianCost * 12)}</span>/year
+                              </p>
+                            </div>
                           )}
                         </div>
                       )}
@@ -2941,17 +2978,160 @@ export default function ObjectiveSelectionScreen({
                           )}
                         </div>
                       )}
+
+                      {/* Multi-Year Projection Table */}
+                      {contractYears !== null && (pricingModel === "per-clinician" ? perClinicianCost !== null : enterpriseAnnualCost !== null) && (
+                        (() => {
+                          const postureMultiplier = detectedPosture === "conservative" ? 0.7 : detectedPosture === "aggressive" ? 1.3 : 1.0;
+                          const annualValue = Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => {
+                            const content = DRIVER_CONTENT[leverId];
+                            return sum + (content?.referenceValue || 0);
+                          }, 0) * postureMultiplier);
+                          const annualCost = pricingModel === "per-clinician" 
+                            ? effectiveClinicians * (perClinicianCost || 0) * 12 
+                            : (enterpriseAnnualCost || 0);
+                          const implFee = implementationEnabled ? (implementationFee || 0) : 0;
+                          const years = contractYears || 2;
+                          const yearsArray = Array.from({ length: years }, (_, i) => i + 1);
+                          const totalValue = annualValue * years;
+                          const totalCost = (annualCost * years) + implFee;
+                          const totalNet = totalValue - totalCost;
+                          const cumulativeRoi = totalCost > 0 ? (totalNet / totalCost) : 0;
+                          const monthlyNet = annualValue - annualCost;
+                          const paybackMonths = monthlyNet > 0 ? Math.ceil((annualCost + implFee) / (monthlyNet / 12)) : 0;
+
+                          return (
+                            <div className="border-t border-neutral-100 pt-6" data-testid="multi-year-projection">
+                              <div className="text-sm font-semibold text-neutral-900 mb-4 uppercase tracking-wide">
+                                {years} YEAR VIEW:
+                              </div>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm" data-testid="projection-table">
+                                  <thead>
+                                    <tr className="border-b border-neutral-200">
+                                      <th className="text-left py-2 pr-4 font-medium text-neutral-600"></th>
+                                      {yearsArray.map((year) => (
+                                        <th key={year} className="text-right py-2 px-3 font-medium text-neutral-600">
+                                          Year {year}
+                                        </th>
+                                      ))}
+                                      <th className="text-right py-2 pl-3 font-bold text-neutral-900">
+                                        TOTAL
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr className="bg-emerald-50/50">
+                                      <td className="py-2.5 pr-4 text-neutral-700">Value</td>
+                                      {yearsArray.map((year) => (
+                                        <td key={year} className="text-right py-2.5 px-3 font-mono text-emerald-700">
+                                          ${formatNumber(annualValue)}
+                                        </td>
+                                      ))}
+                                      <td className="text-right py-2.5 pl-3 font-mono font-semibold text-emerald-800">
+                                        ${formatNumber(totalValue)}
+                                      </td>
+                                    </tr>
+                                    <tr className="bg-neutral-50/50">
+                                      <td className="py-2.5 pr-4 text-neutral-700">
+                                        Cost{implFee > 0 && <span className="text-xs text-neutral-500 ml-1">(Year 1 incl. impl.)</span>}
+                                      </td>
+                                      {yearsArray.map((year) => (
+                                        <td key={year} className="text-right py-2.5 px-3 font-mono text-neutral-600">
+                                          ${formatNumber(year === 1 ? annualCost + implFee : annualCost)}
+                                        </td>
+                                      ))}
+                                      <td className="text-right py-2.5 pl-3 font-mono font-semibold text-neutral-700">
+                                        ${formatNumber(totalCost)}
+                                      </td>
+                                    </tr>
+                                    <tr className="border-t-2 border-neutral-300">
+                                      <td className="py-2.5 pr-4 font-semibold text-neutral-900">Net</td>
+                                      {yearsArray.map((year) => {
+                                        const yearCost = year === 1 ? annualCost + implFee : annualCost;
+                                        const yearNet = annualValue - yearCost;
+                                        return (
+                                          <td key={year} className={`text-right py-2.5 px-3 font-mono font-semibold ${yearNet >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                                            ${formatNumber(yearNet)}
+                                          </td>
+                                        );
+                                      })}
+                                      <td className={`text-right py-2.5 pl-3 font-mono font-bold ${totalNet >= 0 ? 'text-emerald-800' : 'text-red-700'}`}>
+                                        ${formatNumber(totalNet)}
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                              
+                              <div className="mt-4 p-4 bg-neutral-50 rounded-xl space-y-2" data-testid="roi-summary">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-neutral-600">Cumulative ROI:</span>
+                                  <span className="text-lg font-bold font-mono text-neutral-900">{cumulativeRoi.toFixed(1)}x</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-neutral-600">Payback period:</span>
+                                  <span className="text-lg font-bold font-mono text-neutral-900">{paybackMonths > 0 ? `${paybackMonths} months` : 'Immediate'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()
+                      )}
                     </div>
 
-                    <div className="mt-8 flex justify-start">
+                    {/* Footer with Completion Section */}
+                    <div className="mt-8">
                       <button
                         onClick={() => setModelSetupStep(2)}
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-neutral-700 hover:bg-neutral-100 transition-all"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-700 hover:text-neutral-900 mb-6"
                         data-testid="button-step3-back"
                       >
                         <ArrowLeft className="h-4 w-4" />
                         Back
                       </button>
+                      
+                      {/* Completion Section - show when investment info is complete */}
+                      {contractYears !== null && (pricingModel === "per-clinician" ? perClinicianCost !== null : enterpriseAnnualCost !== null) && (
+                        <div className="border-t border-neutral-100 pt-6 text-center" data-testid="completion-section">
+                          <div className="flex items-center justify-center gap-2 mb-3">
+                            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                              <Check className="w-5 h-5 text-emerald-600" />
+                            </div>
+                            <span className="text-lg font-semibold text-neutral-900">You've completed your model setup</span>
+                          </div>
+                          <p className="text-sm text-neutral-600 mb-6">
+                            Ready to see your complete ROI breakdown?
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Create the seed inputs from all the wizard inputs
+                              const seedInputs: Partial<RoiInputs> = {
+                                numberOfProviders: effectiveClinicians,
+                                annualOutpatientEncounters: effectiveEncounters,
+                                abridgeUtilizationPct: utilizationPercent !== null ? utilizationPercent : undefined,
+                                minutesSavedPerEncounter: effectiveMinutesSaved !== null ? effectiveMinutesSaved : undefined,
+                                monthlyCostPerProvider: perClinicianCost !== null ? perClinicianCost : undefined,
+                                contractLengthYears: contractYears !== null ? contractYears : undefined,
+                                implementationCostYear1: implementationEnabled && implementationFee !== null ? implementationFee : undefined,
+                              };
+                              // Build selected levers from selectedLeverIds
+                              const levers: SelectedLever[] = Array.from(selectedLeverIds).map(leverId => ({
+                                settingId: selectedSetting as CareSettingType,
+                                leverId,
+                                active: true,
+                              }));
+                              onComplete([selectedSetting as CareSettingType], levers, seedInputs);
+                            }}
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F03319] px-8 py-4 text-base font-bold text-white shadow-lg hover:bg-[#D92D16] transition-all"
+                            data-testid="button-view-roi-model"
+                          >
+                            View Your ROI Model
+                            <ArrowRight className="h-5 w-5" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

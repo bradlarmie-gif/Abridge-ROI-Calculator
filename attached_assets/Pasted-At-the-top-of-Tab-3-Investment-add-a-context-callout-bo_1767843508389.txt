@@ -1,0 +1,71 @@
+At the top of Tab 3 (Investment), add a context callout box that dynamically references their calculated value:
+
+Content:
+"💡 You've modeled ~$[CALCULATED_VALUE] in annual value. Now let's account for what this investment costs."
+
+The [CALCULATED_VALUE] should pull from their Tab 2 total.
+
+Style: Same as other context boxes
+
+Update the pricing model radio buttons to include more description:
+
+Option 1: "Per clinician / month"
+Subtitle: "Pay based on number of providers"
+Additional: "Most flexible for phased rollouts"
+
+Option 2: "Enterprise annual"
+Subtitle: "Fixed annual contract"
+Additional: "Often includes volume discounts"
+
+Style: Radio button with multi-line descriptions, subtle text hierarchy
+
+Update the "Cost per clinician / month" input section:
+
+Add helper text below input field:
+"Monthly subscription cost per licensed provider
+
+💡 Typical range: $100-150 per provider/month
+   Enterprise contracts: Often lower per-unit pricing"
+
+Add a live calculation box:
+"Your calculation:
+[X] providers × $[Y]/month × 12 months = $[TOTAL]/year"
+
+This should update in real-time as they change the cost input or provider count.
+
+Style: Gray helper text, calculation box with subtle background
+
+After the contract term selection (2 yrs / 3 yrs / Custom), add a multi-year projection table:
+
+Title: "[SELECTED] YEAR VIEW:"
+
+Table structure:
+Columns: Year 1 | Year 2 | Year 3 | TOTAL
+Rows:
+- Value: [calculated annual value for each year, same across all years]
+- Cost: [annual investment cost for each year, same across all years]
+- (divider line)
+- Net: [Value minus Cost for each year]
+
+Below table:
+"Cumulative ROI: [TOTAL Net / TOTAL Cost]x
+Payback period: [TOTAL Cost / Monthly Net] months"
+
+The table should dynamically update based on:
+- Their selected contract term (show 2 or 3 years accordingly)
+- Their calculated value from Tab 2
+- Their investment cost input
+
+Style: Clean table with alternating row backgrounds, bold totals column
+
+Replace the current "Next: Investment" button with a more exciting completion message:
+
+Container with checkmark icon:
+"✓ You've completed your model setup
+
+Ready to see your complete ROI breakdown?"
+
+Large prominent button:
+"[View Your ROI Model →]"
+
+Style: Centered, green checkmark, large button with arrow, exciting typography
