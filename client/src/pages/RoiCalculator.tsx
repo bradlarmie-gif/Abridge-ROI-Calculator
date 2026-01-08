@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -509,12 +510,14 @@ export default function RoiCalculator({
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div className="flex flex-col gap-0.5">
-                <h1 className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight leading-tight">
+              <div className="flex flex-col gap-1 cursor-pointer" onClick={onBack} data-testid="logo-home">
+                <img 
+                  src={abridgeLogo} 
+                  alt="Abridge" 
+                  className="h-8 md:h-9 w-auto" 
+                />
+                <span className="text-base md:text-lg font-semibold text-[#111827] tracking-tight leading-tight">
                   ROI Calculator
-                </h1>
-                <span className="text-sm text-[#6B7280] leading-tight">
-                  by Abridge
                 </span>
               </div>
             </div>

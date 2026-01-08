@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
-import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767884808060.jpg";
+import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import {
   CARE_SETTING_LABELS,
   getLeversByCategory,
@@ -1082,12 +1082,16 @@ export default function ObjectiveSelectionScreen({
       {/* Header */}
       <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
         <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-lg md:text-xl font-bold text-neutral-900 tracking-tight leading-tight">
+          <div className="flex flex-col gap-1">
+            <img 
+              src={abridgeLogo} 
+              alt="Abridge" 
+              className="h-8 md:h-9 w-auto cursor-pointer" 
+              onClick={() => setCurrentPage("orientation")}
+              data-testid="logo-home"
+            />
+            <span className="text-base md:text-lg font-semibold text-[#111827] tracking-tight leading-tight">
               ROI Calculator
-            </span>
-            <span className="text-sm text-[#6B7280] leading-tight">
-              by Abridge
             </span>
           </div>
 
