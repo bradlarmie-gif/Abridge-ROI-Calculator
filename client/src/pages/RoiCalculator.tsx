@@ -2480,7 +2480,13 @@ export default function RoiCalculator({
                   <label className="flex items-start gap-3 p-4 cursor-pointer hover:bg-neutral-50 transition-colors">
                     <Checkbox
                       checked={exportContentSelections.valueDriverDetails}
-                      onCheckedChange={(checked) => setExportContentSelections({ ...exportContentSelections, valueDriverDetails: !!checked })}
+                      onCheckedChange={(checked) => {
+                        setExportContentSelections({ ...exportContentSelections, valueDriverDetails: !!checked });
+                        // Reset driver deselections when re-enabling section (cleaner UX)
+                        if (checked) {
+                          setUserDeselectedDrivers(new Set());
+                        }
+                      }}
                       className="mt-0.5"
                       data-testid="checkbox-value-drivers"
                     />
@@ -2560,7 +2566,13 @@ export default function RoiCalculator({
                     <label className="flex items-start gap-3 p-4 cursor-pointer hover:bg-neutral-50 transition-colors">
                       <Checkbox
                         checked={exportContentSelections.scenarios}
-                        onCheckedChange={(checked) => setExportContentSelections({ ...exportContentSelections, scenarios: !!checked })}
+                        onCheckedChange={(checked) => {
+                          setExportContentSelections({ ...exportContentSelections, scenarios: !!checked });
+                          // Reset scenario deselections when re-enabling section (cleaner UX)
+                          if (checked) {
+                            setUserDeselectedScenarios(new Set());
+                          }
+                        }}
                         className="mt-0.5"
                         data-testid="checkbox-scenarios"
                       />
