@@ -733,7 +733,7 @@ export default function ObjectiveSelectionScreen({
   
   // Accurate Level of Service - org-specific inputs
   const [ftWrvuBaseline, setFtWrvuBaseline] = useState<number>(1.75);
-  const [ftWrvuRevenuePerUnit, setFtWrvuRevenuePerUnit] = useState<number>(50);
+  const [ftWrvuRevenuePerUnit, setFtWrvuRevenuePerUnit] = useState<number>(40);
   
   // Clinician Retention - org-specific inputs
   const [ftRetentionTurnoverRate, setFtRetentionTurnoverRate] = useState<number>(5);
@@ -2386,12 +2386,12 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="number"
                                         value={ftWrvuRevenuePerUnit}
-                                        onChange={(e) => setFtWrvuRevenuePerUnit(parseInt(e.target.value) || 50)}
+                                        onChange={(e) => setFtWrvuRevenuePerUnit(parseInt(e.target.value) || 40)}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-revenue-wrvu"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: $40-70 | Blueprint reference: $50</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Range: $25-75 | Blueprint reference: $34 (Medicare CF)</p>
                                   </div>
                                 </div>
                                 <button 
@@ -2399,7 +2399,7 @@ export default function ObjectiveSelectionScreen({
                                   onClick={() => {
                                     setFtWrvuBaseline(1.75);
                                     setWrvuSensitivity(POSTURE_PRESETS.typical.wrvu);
-                                    setFtWrvuRevenuePerUnit(50);
+                                    setFtWrvuRevenuePerUnit(40);
                                   }}
                                   className="mt-3 text-xs text-[#F03319] hover:underline"
                                   data-testid="button-reset-wrvu"

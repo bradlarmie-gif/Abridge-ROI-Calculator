@@ -121,7 +121,7 @@ export const defaultInputs: RoiInputs = {
     costPerDeparture: 250000,
   },
   wrvu: {
-    wrvuConversionFactor: 34,
+    wrvuConversionFactor: 40,
     pctIncreaseWrvuPerEncounter: 5,
   },
   denials: {
