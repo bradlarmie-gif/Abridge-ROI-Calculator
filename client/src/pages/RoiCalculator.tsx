@@ -826,6 +826,23 @@ export default function RoiCalculator({
                                     <p>Tip: Medicare is approx $36-40, Commercial is approx $50-80</p>
                                   </div>
                                 </div>
+
+                                {/* Real-time preview */}
+                                {(localAdjustments.baselineWrvuPerEncounter !== undefined || localAdjustments.wrvuConversionFactor !== undefined) && (
+                                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                    <p className="text-sm font-semibold text-green-800">
+                                      New value: {formatCurrency(
+                                        encountersWithAbridge * 
+                                        getLocalOrModel("baselineWrvuPerEncounter", inputs.baselineWrvuPerEncounter) * 
+                                        (inputs.wrvu.pctIncreaseWrvuPerEncounter / 100) * 
+                                        getLocalOrModel("wrvuConversionFactor", inputs.wrvu.wrvuConversionFactor)
+                                      )}
+                                    </p>
+                                    <p className="text-xs text-green-600 mt-1">
+                                      vs. current: {formatCurrency(driverValue)}
+                                    </p>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Helper note */}
@@ -944,6 +961,26 @@ export default function RoiCalculator({
                                     <p>Tip: Includes recruiting, training, lost productivity, coverage costs</p>
                                   </div>
                                 </div>
+
+                                {/* Real-time preview */}
+                                {(localAdjustments.baselineAttritionRate !== undefined || localAdjustments.costPerDeparture !== undefined) && (() => {
+                                  const attrRate = getLocalOrModel("baselineAttritionRate", inputs.workforce.baselineAttritionRate);
+                                  const cost = getLocalOrModel("costPerDeparture", inputs.workforce.costPerDeparture);
+                                  const departures = inputs.workforce.providerCount * (attrRate / 100);
+                                  const burnoutDep = departures * (inputs.workforce.pctAttritionLinkedToBurnout / 100);
+                                  const avoided = burnoutDep * (inputs.workforce.pctBurnoutExitsAvoided / 100);
+                                  const newValue = avoided * cost;
+                                  return (
+                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                      <p className="text-sm font-semibold text-green-800">
+                                        New value: {formatCurrency(newValue)}
+                                      </p>
+                                      <p className="text-xs text-green-600 mt-1">
+                                        vs. current: {formatCurrency(driverValue)}
+                                      </p>
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               {/* Helper note */}
@@ -1071,6 +1108,31 @@ export default function RoiCalculator({
                                     <p>Tip: This is county/region-specific, typically $900-$1,400</p>
                                   </div>
                                 </div>
+
+                                {/* Real-time preview */}
+                                {(localAdjustments.impactedMaPatients !== undefined || localAdjustments.pmpmBenchmark !== undefined) && (() => {
+                                  const maPats = getLocalOrModel("impactedMaPatients", inputs.hcc.impactedMaPatients);
+                                  const pmpm = getLocalOrModel("pmpmBenchmark", inputs.hcc.pmpmBenchmark);
+                                  const totalConditions = maPats * inputs.hcc.avgConditionsPerMember;
+                                  const missedConditions = totalConditions * (inputs.hcc.pctConditionsMissed / 100);
+                                  const recaptured = missedConditions * (inputs.hcc.pctMissedConditionsRecaptured / 100);
+                                  const newConditions = totalConditions * (inputs.hcc.pctNewConditionsIdentified / 100);
+                                  const totalImproved = recaptured + newConditions;
+                                  const rawRafPoints = totalImproved * inputs.hcc.rafGainPerCondition;
+                                  const rawRafChange = maPats > 0 ? rawRafPoints / maPats : 0;
+                                  const adjustedRafChange = rawRafChange * (1 - inputs.hcc.rafRealizationHaircut / 100);
+                                  const newValue = maPats * adjustedRafChange * pmpm * 12;
+                                  return (
+                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                      <p className="text-sm font-semibold text-green-800">
+                                        New value: {formatCurrency(newValue)}
+                                      </p>
+                                      <p className="text-xs text-green-600 mt-1">
+                                        vs. current: {formatCurrency(driverValue)}
+                                      </p>
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               {/* Helper note */}
@@ -1192,6 +1254,25 @@ export default function RoiCalculator({
                                     <p>What this is: Total annual net collectible revenue</p>
                                   </div>
                                 </div>
+
+                                {/* Real-time preview */}
+                                {(localAdjustments.baselineDenialRate !== undefined || localAdjustments.netCollectibleRevenue !== undefined) && (() => {
+                                  const revenue = getLocalOrModel("netCollectibleRevenue", inputs.denials.netCollectibleRevenue);
+                                  const denialRate = getLocalOrModel("baselineDenialRate", inputs.denials.baselineDenialRate);
+                                  const baselineDenied = revenue * (denialRate / 100);
+                                  const docDenied = baselineDenied * (inputs.denials.pctDenialsFromDocumentation / 100);
+                                  const newValue = docDenied * (inputs.denials.pctDocDenialsRecovered / 100);
+                                  return (
+                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                      <p className="text-sm font-semibold text-green-800">
+                                        New value: {formatCurrency(newValue)}
+                                      </p>
+                                      <p className="text-xs text-green-600 mt-1">
+                                        vs. current: {formatCurrency(driverValue)}
+                                      </p>
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               {/* Helper note */}
@@ -1314,6 +1395,24 @@ export default function RoiCalculator({
                                     <p>What this is: Average loaded cost of premium labor hours</p>
                                   </div>
                                 </div>
+
+                                {/* Real-time preview */}
+                                {(localAdjustments.pctOvertimeReduced !== undefined || localAdjustments.blendedOvertimeRate !== undefined) && (() => {
+                                  const otPct = getLocalOrModel("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced);
+                                  const otRate = getLocalOrModel("blendedOvertimeRate", inputs.overtime.blendedOvertimeRate);
+                                  const otHoursAvoided = totalHoursReclaimed * (otPct / 100);
+                                  const newValue = otHoursAvoided * otRate;
+                                  return (
+                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                      <p className="text-sm font-semibold text-green-800">
+                                        New value: {formatCurrency(newValue)}
+                                      </p>
+                                      <p className="text-xs text-green-600 mt-1">
+                                        vs. current: {formatCurrency(driverValue)}
+                                      </p>
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               {/* Helper note */}
