@@ -239,21 +239,29 @@ export default function RoiCalculator({
   const capacityLaborIds: LeverId[] = ["patientAccess", "workforce", "overtime"];
   const revenueRiskIds: LeverId[] = ["wrvu", "denials", "hcc"];
 
-  // Initialize export driver selections when enabledDriverIds changes
-  useEffect(() => {
-    // Only initialize if the set is empty (first render or reset)
-    if (exportDriverSelections.size === 0 && enabledDriverIds.length > 0) {
-      setExportDriverSelections(new Set(enabledDriverIds));
-    }
-  }, [enabledDriverIds]);
+  // Track which drivers user has explicitly deselected
+  const [userDeselectedDrivers, setUserDeselectedDrivers] = useState<Set<LeverId>>(new Set());
+  const [userDeselectedScenarios, setUserDeselectedScenarios] = useState<Set<string>>(new Set());
 
-  // Initialize export scenario selections when scenarios change
+  // Computed: drivers for export = enabled minus user deselections
+  const driversForExport = useMemo(() => {
+    return enabledDriverIds.filter((id) => !userDeselectedDrivers.has(id));
+  }, [enabledDriverIds, userDeselectedDrivers]);
+
+  // Computed: scenarios for export = all minus user deselections
+  const scenariosForExport = useMemo(() => {
+    return scenarios.filter((s) => !userDeselectedScenarios.has(s.id));
+  }, [scenarios, userDeselectedScenarios]);
+
+  // Sync exportDriverSelections with computed driversForExport
   useEffect(() => {
-    // Only initialize if the set is empty
-    if (exportScenarioSelections.size === 0 && scenarios.length > 0) {
-      setExportScenarioSelections(new Set(scenarios.map(s => s.id)));
-    }
-  }, [scenarios]);
+    setExportDriverSelections(new Set(driversForExport));
+  }, [driversForExport]);
+
+  // Sync exportScenarioSelections with computed scenariosForExport
+  useEffect(() => {
+    setExportScenarioSelections(new Set(scenariosForExport.map((s) => s.id)));
+  }, [scenariosForExport]);
 
   // Handle adding new drivers - update inputs.levers so calculateRoi recomputes
   const handleAddDrivers = () => {
@@ -2498,15 +2506,15 @@ export default function RoiCalculator({
                       {enabledDriverIds.map((id) => (
                         <label key={id} className="flex items-center gap-2 cursor-pointer">
                           <Checkbox
-                            checked={exportDriverSelections.has(id)}
+                            checked={!userDeselectedDrivers.has(id)}
                             onCheckedChange={(checked) => {
-                              const newSet = new Set(exportDriverSelections);
+                              const newSet = new Set(userDeselectedDrivers);
                               if (checked) {
-                                newSet.add(id);
+                                newSet.delete(id); // Re-include driver
                               } else {
-                                newSet.delete(id);
+                                newSet.add(id); // Mark as deselected
                               }
-                              setExportDriverSelections(newSet);
+                              setUserDeselectedDrivers(newSet);
                             }}
                             data-testid={`checkbox-driver-${id}`}
                           />
@@ -2578,15 +2586,15 @@ export default function RoiCalculator({
                         {scenarios.map((scenario) => (
                           <label key={scenario.id} className="flex items-center gap-2 cursor-pointer">
                             <Checkbox
-                              checked={exportScenarioSelections.has(scenario.id)}
+                              checked={!userDeselectedScenarios.has(scenario.id)}
                               onCheckedChange={(checked) => {
-                                const newSet = new Set(exportScenarioSelections);
+                                const newSet = new Set(userDeselectedScenarios);
                                 if (checked) {
-                                  newSet.add(scenario.id);
+                                  newSet.delete(scenario.id); // Re-include scenario
                                 } else {
-                                  newSet.delete(scenario.id);
+                                  newSet.add(scenario.id); // Mark as deselected
                                 }
-                                setExportScenarioSelections(newSet);
+                                setUserDeselectedScenarios(newSet);
                               }}
                               data-testid={`checkbox-scenario-${scenario.id}`}
                             />
@@ -2630,7 +2638,7 @@ export default function RoiCalculator({
                       let pages = 2;
                       if (exportContentSelections.valueDriverDetails) {
                         sections++;
-                        pages += enabledDriverIds.length * 0.75;
+                        pages += driversForExport.length * 0.75;
                       }
                       if (exportContentSelections.methodology) {
                         sections++;
@@ -2640,9 +2648,9 @@ export default function RoiCalculator({
                         sections++;
                         pages += 0.5;
                       }
-                      if (exportContentSelections.scenarios && scenarios.length > 0) {
+                      if (exportContentSelections.scenarios && scenariosForExport.length > 0) {
                         sections++;
-                        pages += scenarios.length;
+                        pages += scenariosForExport.length;
                       }
                       if (exportContentSelections.appendix) {
                         sections++;
@@ -2729,11 +2737,11 @@ export default function RoiCalculator({
                     </ul>
                   </div>
 
-                  {exportContentSelections.valueDriverDetails && (
+                  {exportContentSelections.valueDriverDetails && driversForExport.length > 0 && (
                     <div>
-                      <div className="font-semibold">Pages 3-{2 + Math.ceil(enabledDriverIds.length * 0.75)}: Value Driver Details</div>
+                      <div className="font-semibold">Pages 3-{2 + Math.ceil(driversForExport.length * 0.75)}: Value Driver Details</div>
                       <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
-                        {enabledDriverIds.map((id) => (
+                        {driversForExport.map((id) => (
                           <li key={id}>{leverLabels[id]}</li>
                         ))}
                         <li>Calculation for each</li>
@@ -2764,11 +2772,11 @@ export default function RoiCalculator({
                     </div>
                   )}
 
-                  {exportContentSelections.scenarios && scenarios.length > 0 && (
+                  {exportContentSelections.scenarios && scenariosForExport.length > 0 && (
                     <div>
                       <div className="font-semibold">Scenario Comparisons</div>
                       <ul className="ml-4 text-neutral-500 text-xs mt-1 space-y-0.5">
-                        {scenarios.map((s) => (
+                        {scenariosForExport.map((s) => (
                           <li key={s.id}>{s.name}</li>
                         ))}
                         <li>Side-by-side analysis</li>
@@ -2937,7 +2945,7 @@ export default function RoiCalculator({
                       doc.text(`${roiMultiple.toFixed(1)}x`, margin + contentWidth - 5, y, { align: 'right' });
                       y += 20;
 
-                      // Value Breakdown
+                      // Value Breakdown - shows all enabled drivers (complete picture for totals)
                       doc.setFontSize(11);
                       doc.text("Value Breakdown", margin, y);
                       y += 8;
@@ -2967,8 +2975,7 @@ export default function RoiCalculator({
 
                       // VALUE DRIVER DETAILS
                       if (exportContentSelections.valueDriverDetails) {
-                        // Only include drivers selected for export
-                        const driversForExport = enabledDriverIds.filter((id) => exportDriverSelections.has(id));
+                        // Uses global driversForExport (useMemo)
                         driversForExport.forEach((id) => {
                           newPage();
                           doc.setFontSize(16);
@@ -3079,10 +3086,11 @@ export default function RoiCalculator({
 
                         doc.setFontSize(11);
                         doc.setFont("helvetica", "bold");
-                        doc.text("Value Drivers Selected", margin, y);
+                        doc.text("Value Drivers in Model", margin, y);
                         y += 7;
                         doc.setFont("helvetica", "normal");
                         doc.setFontSize(10);
+                        // Show all enabled drivers (these contribute to the totals)
                         enabledDriverIds.forEach((id) => {
                           doc.text(`- ${leverLabels[id]}`, margin, y);
                           y += 5;
@@ -3103,9 +3111,8 @@ export default function RoiCalculator({
                       }
 
                       // SCENARIO COMPARISONS
-                      if (exportContentSelections.scenarios && scenarios.length > 0) {
-                        // Only include scenarios selected for export
-                        const scenariosForExport = scenarios.filter((s) => exportScenarioSelections.has(s.id));
+                      if (exportContentSelections.scenarios && scenariosForExport.length > 0) {
+                        // Uses global scenariosForExport (useMemo)
                         scenariosForExport.forEach((scenario) => {
                           newPage();
                           doc.setFontSize(16);
