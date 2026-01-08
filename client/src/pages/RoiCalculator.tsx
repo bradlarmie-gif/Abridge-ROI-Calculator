@@ -2896,8 +2896,8 @@ export default function RoiCalculator({
                         doc.setDrawColor(240, 51, 25); // Abridge red
                         doc.setLineWidth(0.2);
                         
-                        // Create a GState for transparency (3.5% opacity)
-                        const gState = new (doc as any).GState({ "stroke-opacity": 0.035 });
+                        // Create a GState for transparency (2% opacity - very subtle)
+                        const gState = new (doc as any).GState({ "stroke-opacity": 0.02 });
                         doc.setGState(gState);
                         
                         if (isCover) {
