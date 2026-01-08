@@ -80,9 +80,9 @@ type Page = "orientation" | "setting" | "priorities" | "value-blueprint" | "mode
 type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
 
 const POSTURE_PRESETS: Record<Exclude<ValuePosture, "custom">, { minutes: number; realization: number; wrvu: number }> = {
-  conservative: { minutes: 2, realization: 45, wrvu: 3 },
-  typical: { minutes: 4, realization: 55, wrvu: 5 },
-  aggressive: { minutes: 6, realization: 65, wrvu: 7 },
+  conservative: { minutes: 2, realization: 10, wrvu: 3 },
+  typical: { minutes: 2.5, realization: 20, wrvu: 5 },
+  aggressive: { minutes: 4, realization: 30, wrvu: 7 },
 };
 
 // Reference scenario defaults for Value Blueprint
@@ -1975,7 +1975,7 @@ export default function ObjectiveSelectionScreen({
                           return (
                             <>
                               <div className="text-xs font-medium text-neutral-700 mb-2">
-                                Your selected drivers (from Strategic Priorities):
+                                Your value drivers:
                               </div>
                               <div className="space-y-3">
                                 {Array.from(selectedLeverIds).map((leverId) => {
@@ -2017,6 +2017,10 @@ export default function ObjectiveSelectionScreen({
                                   </span>
                                 </div>
                                 <p className="text-xs text-neutral-500 mt-1">(Before investment costs)</p>
+                                <div className="flex items-start gap-1.5 mt-2">
+                                  <Lightbulb className="w-3.5 h-3.5 text-neutral-400 mt-0.5 flex-shrink-0" />
+                                  <p className="text-xs text-neutral-500">Based on median performance from 200+ health system partners.</p>
+                                </div>
                               </div>
                             </>
                           );
@@ -2039,9 +2043,9 @@ export default function ObjectiveSelectionScreen({
                               <thead>
                                 <tr className="border-b border-neutral-200">
                                   <th className="text-left py-2 pr-4 font-medium text-neutral-600">Driver</th>
-                                  <th className="text-right py-2 px-2 font-medium text-neutral-600">Conservative</th>
-                                  <th className="text-right py-2 px-2 font-medium text-neutral-600">Typical</th>
-                                  <th className="text-right py-2 px-2 font-medium text-neutral-600">Aggressive</th>
+                                  <th className={`text-right py-2 px-2 ${detectedPosture === "conservative" ? "font-bold text-neutral-900 bg-emerald-50" : "font-medium text-neutral-600"}`}>Conservative</th>
+                                  <th className={`text-right py-2 px-2 ${detectedPosture === "typical" ? "font-bold text-neutral-900 bg-emerald-50" : "font-medium text-neutral-600"}`}>Typical</th>
+                                  <th className={`text-right py-2 px-2 ${detectedPosture === "aggressive" ? "font-bold text-neutral-900 bg-emerald-50" : "font-medium text-neutral-600"}`}>Aggressive</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -2052,33 +2056,33 @@ export default function ObjectiveSelectionScreen({
                                   return (
                                     <tr key={leverId} className={idx % 2 === 0 ? "bg-neutral-50/50" : ""}>
                                       <td className="py-2 pr-4 font-medium text-neutral-800">{content.label}</td>
-                                      <td className="py-2 px-2 text-right font-mono text-neutral-600">${formatNumber(Math.round(baseValue * 0.7))}</td>
-                                      <td className="py-2 px-2 text-right font-mono text-neutral-800 font-medium">${formatNumber(baseValue)}</td>
-                                      <td className="py-2 px-2 text-right font-mono text-neutral-600">${formatNumber(Math.round(baseValue * 1.3))}</td>
+                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(Math.round(baseValue * 0.7))}</td>
+                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(baseValue)}</td>
+                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(Math.round(baseValue * 1.3))}</td>
                                     </tr>
                                   );
                                 })}
                                 <tr className="border-t-2 border-neutral-300 font-bold">
                                   <td className="py-2 pr-4 text-neutral-900">TOTAL</td>
-                                  <td className="py-2 px-2 text-right font-mono text-neutral-700">
+                                  <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
                                     ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 0.7, 0)))}
                                   </td>
-                                  <td className="py-2 px-2 text-right font-mono text-emerald-700">
+                                  <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
                                     ${formatNumber(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0), 0))}
                                   </td>
-                                  <td className="py-2 px-2 text-right font-mono text-neutral-700">
+                                  <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
                                     ${formatNumber(Math.round(Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 1.3, 0)))}
                                   </td>
                                 </tr>
                                 <tr className="text-xs text-neutral-500">
                                   <td className="py-1 pr-4">Est. ROI (at $57,600 investment)</td>
-                                  <td className="py-1 px-2 text-right font-mono">
+                                  <td className={`py-1 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50" : ""}`}>
                                     {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 0.7, 0) / 57600)).toFixed(1)}x
                                   </td>
-                                  <td className="py-1 px-2 text-right font-mono font-medium">
+                                  <td className={`py-1 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 font-medium" : ""}`}>
                                     {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0), 0) / 57600)).toFixed(1)}x
                                   </td>
-                                  <td className="py-1 px-2 text-right font-mono">
+                                  <td className={`py-1 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50" : ""}`}>
                                     {((Array.from(selectedLeverIds).reduce((sum, leverId) => sum + (DRIVER_CONTENT[leverId]?.referenceValue || 0) * 1.3, 0) / 57600)).toFixed(1)}x
                                   </td>
                                 </tr>
@@ -2092,7 +2096,7 @@ export default function ObjectiveSelectionScreen({
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                                   detectedPosture === "conservative"
                                     ? "bg-neutral-800 text-white"
-                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100"
                                 }`}
                               >
                                 Select Conservative {detectedPosture === "conservative" && <Check className="w-3 h-3 inline ml-1" />}
@@ -2103,7 +2107,7 @@ export default function ObjectiveSelectionScreen({
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                                   detectedPosture === "typical"
                                     ? "bg-neutral-800 text-white"
-                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100"
                                 }`}
                               >
                                 Keep Typical {detectedPosture === "typical" && <Check className="w-3 h-3 inline ml-1" />}
@@ -2114,7 +2118,7 @@ export default function ObjectiveSelectionScreen({
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                                   detectedPosture === "aggressive"
                                     ? "bg-neutral-800 text-white"
-                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                    : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100"
                                 }`}
                               >
                                 Select Aggressive {detectedPosture === "aggressive" && <Check className="w-3 h-3 inline ml-1" />}
