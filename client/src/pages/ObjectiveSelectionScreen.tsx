@@ -2458,14 +2458,20 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
                                     <input
-                                      type="number"
-                                      step="0.5"
-                                      value={effectiveMinutesSaved ?? ""}
+                                      type="text"
+                                      inputMode="decimal"
+                                      value={minutesSaved ?? ""}
                                       onChange={(e) => {
-                                        const val = parseFloat(e.target.value);
-                                        if (!isNaN(val) && val > 0) {
-                                          setMinutesSaved(val);
-                                          setCustomMinutes(val);
+                                        const val = e.target.value;
+                                        if (val === "") {
+                                          setMinutesSaved(null);
+                                          setCustomMinutes(null);
+                                        } else {
+                                          const num = parseFloat(val);
+                                          if (!isNaN(num)) {
+                                            setMinutesSaved(num);
+                                            setCustomMinutes(num);
+                                          }
                                         }
                                       }}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -2477,9 +2483,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Capacity realization factor</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         value={timeRealizationRate ?? ""}
-                                        onChange={(e) => setTimeRealizationRate(parseInt(e.target.value) || null)}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setTimeRealizationRate(null);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setTimeRealizationRate(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-realization-rate"
                                       />
@@ -2491,9 +2506,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Average visit duration</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
-                                        value={ftPatientAccessVisitDuration}
-                                        onChange={(e) => setFtPatientAccessVisitDuration(parseInt(e.target.value) || 30)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={ftPatientAccessVisitDuration === 30 ? "30" : ftPatientAccessVisitDuration || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtPatientAccessVisitDuration(30);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtPatientAccessVisitDuration(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-visit-duration"
                                       />
@@ -2506,9 +2530,18 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
-                                        type="number"
-                                        value={ftPatientAccessRevenuePerVisit}
-                                        onChange={(e) => setFtPatientAccessRevenuePerVisit(parseInt(e.target.value) || 200)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={ftPatientAccessRevenuePerVisit || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtPatientAccessRevenuePerVisit(200);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtPatientAccessRevenuePerVisit(num);
+                                          }
+                                        }}
                                         className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-revenue-per-visit"
                                       />
@@ -2541,10 +2574,18 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Baseline wRVU per encounter</label>
                                     <input
-                                      type="number"
-                                      step="0.05"
-                                      value={ftWrvuBaseline}
-                                      onChange={(e) => setFtWrvuBaseline(parseFloat(e.target.value) || 1.75)}
+                                      type="text"
+                                      inputMode="decimal"
+                                      value={ftWrvuBaseline || ""}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "") {
+                                          setFtWrvuBaseline(1.75);
+                                        } else {
+                                          const num = parseFloat(val);
+                                          if (!isNaN(num)) setFtWrvuBaseline(num);
+                                        }
+                                      }}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                       data-testid="input-ft-baseline-wrvu"
                                     />
@@ -2554,9 +2595,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Documentation quality lift</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         value={wrvuSensitivity ?? ""}
-                                        onChange={(e) => setWrvuSensitivity(parseInt(e.target.value) || null)}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setWrvuSensitivity(null);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setWrvuSensitivity(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-wrvu-lift"
                                       />
@@ -2569,9 +2619,18 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
-                                        type="number"
-                                        value={ftWrvuRevenuePerUnit}
-                                        onChange={(e) => setFtWrvuRevenuePerUnit(parseInt(e.target.value) || 40)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={ftWrvuRevenuePerUnit || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtWrvuRevenuePerUnit(40);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtWrvuRevenuePerUnit(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-revenue-wrvu"
                                       />
@@ -2603,9 +2662,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Annual turnover rate</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
-                                        value={ftRetentionTurnoverRate}
-                                        onChange={(e) => setFtRetentionTurnoverRate(parseFloat(e.target.value) || 5)}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={ftRetentionTurnoverRate || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtRetentionTurnoverRate(5);
+                                          } else {
+                                            const num = parseFloat(val);
+                                            if (!isNaN(num)) setFtRetentionTurnoverRate(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-turnover-rate"
                                       />
@@ -2618,9 +2686,18 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
-                                        type="number"
-                                        value={ftRetentionReplacementCost}
-                                        onChange={(e) => setFtRetentionReplacementCost(parseInt(e.target.value) || 250000)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={ftRetentionReplacementCost || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtRetentionReplacementCost(250000);
+                                          } else {
+                                            const num = parseInt(val.replace(/,/g, ""));
+                                            if (!isNaN(num)) setFtRetentionReplacementCost(num);
+                                          }
+                                        }}
                                         className="w-36 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-replacement-cost"
                                       />
@@ -2658,9 +2735,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Medicare Advantage population</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
-                                        value={ftHccMedicareAdvantage}
-                                        onChange={(e) => setFtHccMedicareAdvantage(parseInt(e.target.value) || 15)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={ftHccMedicareAdvantage || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtHccMedicareAdvantage(15);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtHccMedicareAdvantage(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-medicare-advantage"
                                       />
@@ -2672,9 +2758,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Recapture rate</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         value={ftHccRecaptureRate ?? ""}
-                                        onChange={(e) => setFtHccRecaptureRate(parseInt(e.target.value) || null)}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtHccRecaptureRate(null);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtHccRecaptureRate(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-recapture-rate"
                                       />
@@ -2687,9 +2782,18 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
-                                        type="number"
-                                        value={ftHccBenchmarkPmpm}
-                                        onChange={(e) => setFtHccBenchmarkPmpm(parseInt(e.target.value) || 1000)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={ftHccBenchmarkPmpm || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtHccBenchmarkPmpm(1000);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtHccBenchmarkPmpm(num);
+                                          }
+                                        }}
                                         className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-benchmark-pmpm"
                                       />
@@ -2721,9 +2825,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Baseline denial rate</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
-                                        value={ftDenialBaselineRate}
-                                        onChange={(e) => setFtDenialBaselineRate(parseFloat(e.target.value) || 5)}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={ftDenialBaselineRate || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtDenialBaselineRate(5);
+                                          } else {
+                                            const num = parseFloat(val);
+                                            if (!isNaN(num)) setFtDenialBaselineRate(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-denial-rate"
                                       />
@@ -2735,9 +2848,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Prevention rate</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         value={ftDenialPreventionRate ?? ""}
-                                        onChange={(e) => setFtDenialPreventionRate(parseInt(e.target.value) || null)}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtDenialPreventionRate(null);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtDenialPreventionRate(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-denial-prevention"
                                       />
@@ -2769,9 +2891,18 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">After-hours documentation reduction</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         value={ftOvertimeAfterHoursReduction ?? ""}
-                                        onChange={(e) => setFtOvertimeAfterHoursReduction(parseInt(e.target.value) || null)}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtOvertimeAfterHoursReduction(null);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtOvertimeAfterHoursReduction(num);
+                                          }
+                                        }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-overtime-reduction"
                                       />
@@ -2784,9 +2915,18 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
-                                        type="number"
-                                        value={ftOvertimePremiumRate}
-                                        onChange={(e) => setFtOvertimePremiumRate(parseInt(e.target.value) || 145)}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={ftOvertimePremiumRate || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "") {
+                                            setFtOvertimePremiumRate(145);
+                                          } else {
+                                            const num = parseInt(val);
+                                            if (!isNaN(num)) setFtOvertimePremiumRate(num);
+                                          }
+                                        }}
                                         className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-ft-premium-rate"
                                       />
