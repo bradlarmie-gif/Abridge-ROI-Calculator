@@ -2464,8 +2464,8 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
                                     <input
-                                      type="text"
-                                      inputMode="decimal"
+                                      type="number"
+                                      step="0.1"
                                       value={minutesSaved ?? ""}
                                       onChange={(e) => {
                                         const val = e.target.value;
@@ -2580,8 +2580,8 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Baseline wRVU per encounter</label>
                                     <input
-                                      type="text"
-                                      inputMode="decimal"
+                                      type="number"
+                                      step="0.01"
                                       value={ftWrvuBaseline || ""}
                                       onChange={(e) => {
                                         const val = e.target.value;
@@ -2668,8 +2668,8 @@ export default function ObjectiveSelectionScreen({
                                     <label className="text-sm font-medium text-neutral-600">Annual turnover rate</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
-                                        type="text"
-                                        inputMode="decimal"
+                                        type="number"
+                                        step="0.1"
                                         value={ftRetentionTurnoverRate || ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
