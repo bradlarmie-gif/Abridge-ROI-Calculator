@@ -1,0 +1,233 @@
+OBJECTIVE:
+Transform the Live Receipt sidebar into a sticky, real-time calculation companion that shows every input and derived value as the user builds their ROI model. It should feel like a Stripe payment receipt meets Bloomberg Terminal data panel - always visible, constantly updating, completely transparent.
+
+CRITICAL RULES:
+- Do NOT break existing calculations or state management
+- Do NOT change branding, core colors, or typography scale
+- Do NOT add playful animations (keep it 150-200ms ease-out, professional)
+- Live Receipt must work on ALL pages: Adoption, Value Realization, Investment, and Results tabs
+- All animations must be subtle highlights/transitions only
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: STICKY POSITIONING & RESPONSIVE BEHAVIOR
+
+DESKTOP (>1024px):
+- Live Receipt becomes a sticky right sidebar
+- Position: sticky, top: 24px
+- Width: 360px fixed
+- Right margin: 24px from viewport edge
+- Scrolls with user but stays in viewport
+- Main content area adjusts to accommodate (max-width: calc(100% - 420px))
+
+TABLET (768px - 1024px):
+- Live Receipt remains in right column but not sticky
+- Width: 320px
+- Normal scroll behavior
+
+MOBILE (<768px):
+- Live Receipt becomes a collapsible bottom sheet
+- Collapsed state: Fixed bottom bar, 60px height
+- Shows: "💰 Net Annual Gain: $XXX,XXX | XX.Xx ROI  ↑"
+- Tap or swipe up to expand to 80% viewport height
+- Expanded state: Scrollable, with close handle at top
+- Close by swiping down or tapping outside
+
+IMPLEMENTATION:
+- Use position: sticky on desktop
+- Use transform: translateY() for mobile bottom sheet
+- Smooth transitions (300ms ease-out)
+- Remember expanded/collapsed state in session storage
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: THREE-TIER STRUCTURE
+
+The Live Receipt should have clear visual hierarchy with three sections:
+
+┌─────────────────────────────────────────────────┐
+│ LIVE RECEIPT                                    │
+│ Updates in real-time as you input              │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│ [TIER 1: INPUTS] ← Light gray bg (#F9FAFB)    │
+│                                                 │
+│ [TIER 2: CALCULATED METRICS] ← White bg        │
+│                                                 │
+│ [TIER 3: VALUE OUTPUT] ← Emphasized section    │
+│                                                 │
+└─────────────────────────────────────────────────┘
+
+TIER 1: INPUTS SECTION (Light gray background #F9FAFB)
+Shows what the user has entered, grouped by category:
+
+ADOPTION INPUTS                           ∨
+Providers                                 50
+Annual encounters                    100,000
+Utilization                               65%
+─────────────────────────────────────────────
+Eligible encounters                   65,000
+  ⓘ Calculated: 100,000 × 65%
+
+TIME SAVINGS                              ∨
+Minutes saved per encounter          2.5 min
+Hours returned (gross)                 2,708
+Hours usable (net)                       542
+  ⓘ After 20% realization factor
+
+DOCUMENTATION IMPACT                      ∨
+Level of service lift                      5%
+Baseline wRVU per encounter             1.75
+Additional wRVUs captured              4,550
+
+POSTURE SELECTION                         ∨
+Current posture               ● Typical
+Confidence level                  Balanced
+[Change posture →]
+
+INVESTMENT                                ∨
+Cost per provider/month               $120
+Contract term                       3 years
+Annual investment                  $72,000
+
+STYLING FOR TIER 1:
+- Background: #F9FAFB (light gray)
+- Padding: 16px
+- Border-radius: 8px
+- Section headers: Bold, 14px, #111827, collapsible with ∨/› indicator
+- Input labels: 14px, #6B7280 (gray)
+- Input values: 16px, #111827 (black), right-aligned, tabular numbers
+- Calculated values: Slightly indented (12px), with ⓘ tooltip icon
+- Dividers: 1px solid #E5E7EB between major groups
+- Collapse/expand: Smooth 200ms transition
+
+TIER 2: KEY METRICS (White background)
+Shows selected value drivers and their individual contributions:
+
+YOUR VALUE DRIVERS
+
+Patient Access                        $173,333
+  866 new visits × $200/visit
+
+Clinician Retention                   $100,000
+  0.4 departures avoided × $250k
+
+Level of Service                      $182,000
+  4,550 wRVUs × $40/wRVU
+
+HCC Capture                           $125,000
+  0.09 RAF lift × 3,120 MA patients
+
+[Only show drivers selected on Strategic Priorities page]
+
+STYLING FOR TIER 2:
+- Background: White
+- Padding: 16px
+- Driver names: 16px, #111827, bold
+- Driver values: 18px, #059669 (green), right-aligned, tabular numbers
+- Sub-calculations: 13px, #6B7280 (gray), indented 12px
+- Spacing: 12px between drivers
+
+TIER 3: VALUE OUTPUT (Emphasized)
+Shows the final ROI calculation with visual emphasis:
+
+═══════════════════════════════════════════════
+
+PROJECTED ANNUAL VALUE
+
+Total Benefit                         $455,333
+Investment                            -$72,000
+─────────────────────────────────────────────
+Net Annual Gain                       $383,333
+
+3-YEAR VIEW
+Total Value (3 years)               $1,365,999
+Total Investment                      $216,000
+═════════════════════════════════════════════
+Net 3-Year Gain                     $1,149,999
+
+Return on Investment                    18.9x
+
+═══════════════════════════════════════════════
+
+STYLING FOR TIER 3:
+- Background: Very light green (#F0FDF4) for positive value area
+- Thick top border: 2px solid #E5E7EB
+- Padding: 20px
+- "PROJECTED ANNUAL VALUE" header: 12px uppercase, #6B7280, letter-spacing
+- "Total Benefit": 16px, #111827
+- "Investment": 16px, #DC2626 (red) with minus sign
+- Divider: 1px solid #9CA3AF
+- "Net Annual Gain": 24px, #059669 (green), bold, tabular numbers
+- 3-year section: 14px, subtle separator
+- "Return on Investment": 20px, #111827, bold
+- All numbers: Tabular numbers, right-aligned, proper comma formatting
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: REAL-TIME UPDATES & ANIMATIONS
+
+When any input changes anywhere in the app:
+
+1. DETECT CHANGE:
+   - Listen to all input fields across all tabs
+   - Debounce updates (150ms) to avoid excessive recalculation
+   - Update all affected values in Live Receipt
+
+2. HIGHLIGHT AFFECTED VALUES:
+   When a value updates, animate it:
+   
+   BEFORE:
+   Annual encounters                    100,000
+   
+   DURING UPDATE (when user types "150000"):
+   Annual encounters                    150,000
+   ^^^^^^^^^^^^^^^^^ Brief highlight with #FEF3C7 background
+   
+   AFTER (300ms later):
+   Annual encounters                    150,000
+   ^^^^^^^^^^^^^^^^^ Fade back to normal
+
+3. CASCADE EFFECT:
+   If one value affects others, highlight them in sequence:
+   
+   User changes: Annual encounters 100,000 → 150,000
+   
+   Step 1 (0ms): Highlight "Annual encounters" 
+   Step 2 (100ms): Highlight "Eligible encounters" (calculated from annual)
+   Step 3 (200ms): Highlight "Hours returned (gross)" 
+   Step 4 (300ms): Highlight affected driver values (Patient Access, etc.)
+   Step 5 (400ms): Highlight "Total Benefit" and "Net Annual Gain"
+
+4. NUMBER TRANSITIONS:
+   - Use CSS transitions for smooth number changes
+   - Duration: 200ms ease-out
+   - No counter animations (just smooth swap)
+   - Keep tabular number alignment during transition
+
+5. VISUAL FEEDBACK:
+   - Highlight color: #FEF3C7 (light yellow/orange)
+   - Fade from highlight to normal: 300ms ease-out
+   - Pulse on major values (Net Annual Gain): Subtle scale 1.0 → 1.02 → 1.0 (200ms)
+
+ANIMATION CODE PATTERN:
+```css
+.receipt-value-updated {
+  animation: highlight-value 300ms ease-out;
+}
+
+@keyframes highlight-value {
+  0% { background-color: transparent; }
+  30% { background-color: #FEF3C7; }
+  100% { background-color: transparent; }
+}
+
+.receipt-major-value-updated {
+  animation: pulse-value 200ms ease-out;
+}
+
+@keyframes pulse-value {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}

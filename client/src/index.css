@@ -286,3 +286,43 @@
     inset: -1px;
   }
 }
+
+/* Live Receipt Animations */
+.receipt-value-updated {
+  animation: highlight-value 400ms ease-out;
+}
+
+@keyframes highlight-value {
+  0% { background-color: transparent; }
+  30% { background-color: hsl(48 96% 89%); }
+  100% { background-color: transparent; }
+}
+
+.dark .receipt-value-updated {
+  animation: highlight-value-dark 400ms ease-out;
+}
+
+@keyframes highlight-value-dark {
+  0% { background-color: transparent; }
+  30% { background-color: hsl(48 60% 25%); }
+  100% { background-color: transparent; }
+}
+
+.receipt-major-value {
+  transition: transform 200ms ease-out;
+}
+
+.receipt-major-value.receipt-value-updated {
+  animation: highlight-value 400ms ease-out, pulse-value 200ms ease-out;
+}
+
+@keyframes pulse-value {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* Tabular numbers for consistent alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

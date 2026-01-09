@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
+import { LiveReceipt } from "@/components/LiveReceipt";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import {
   CARE_SETTING_LABELS,
@@ -3440,309 +3441,35 @@ export default function ObjectiveSelectionScreen({
                 )}
               </div>
 
-              {/* Summary sidebar for Page 3 - Desktop */}
-              <div className="hidden lg:block w-[360px]">
-                <div className="sticky top-8">
-                  <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
-                    <div className="p-5">
-                      <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                        Live Receipt
-                      </div>
-
-                      <div className="mt-3 divide-y divide-neutral-200">
-                        {/* Adoption section */}
-                        <div className="py-2 space-y-2">
-                          <div className="text-xs font-bold text-neutral-700 mb-2">
-                            Adoption
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Providers</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {effectiveClinicians > 0 ? effectiveClinicians.toLocaleString() : "—"}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Annual encounters</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {effectiveEncounters > 0 ? effectiveEncounters.toLocaleString() : "—"}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Utilization</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {utilizationPercent !== null ? `${utilizationPercent}%` : "—"}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Eligible encounters</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Time Assumptions section */}
-                        <div className="py-2 space-y-2">
-                          <div className="text-xs font-bold text-neutral-700 mb-2">
-                            Time Assumptions
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Minutes returned / encounter</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {effectiveMinutesSaved !== null ? `${effectiveMinutesSaved} min` : "—"}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Hours returned (gross)</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {totalHoursSaved !== null
-                                ? totalHoursSaved.toLocaleString(undefined, { maximumFractionDigits: 1 })
-                                : "—"}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Hours usable (net)</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {realizedHoursSaved !== null
-                                ? realizedHoursSaved.toLocaleString(undefined, { maximumFractionDigits: 0 })
-                                : "—"}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Documentation Assumptions section */}
-                        {hasAnyDocumentationLever && (
-                          <div className="py-2 space-y-2">
-                            <div className="text-xs font-bold text-neutral-700 mb-2">
-                              Documentation Assumptions
-                            </div>
-                            {hasWrvuSelected && wrvuSensitivity !== null && (
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="text-sm text-neutral-600">Level of service lift</div>
-                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                                  {wrvuSensitivity}%
-                                </div>
-                              </div>
-                            )}
-                            {hasHccSelected && hccSensitivity !== null && (
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="text-sm text-neutral-600">HCC / RAF lift</div>
-                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                                  {hccSensitivity}%
-                                </div>
-                              </div>
-                            )}
-                            {hasDenialsSelected && denialsSensitivity !== null && (
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="text-sm text-neutral-600">Denial rate reduction</div>
-                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                                  {denialsSensitivity}%
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Investment info - only show on step 3 */}
-                        {modelSetupStep === 3 && (annualSubscriptionCost !== null || implementationFee !== null) && (
-                          <div className="py-2 space-y-2">
-                            <div className="text-xs font-bold text-neutral-700 mt-1">
-                              Investment
-                            </div>
-                            {implementationEnabled && implementationFee !== null && (
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="text-sm text-neutral-600">Implementation fee</div>
-                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                                  ${implementationFee.toLocaleString()}
-                                </div>
-                              </div>
-                            )}
-                            {annualSubscriptionCost !== null && (
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="text-sm text-neutral-600">Annual subscription</div>
-                                <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                                  ${annualSubscriptionCost.toLocaleString()}
-                                </div>
-                              </div>
-                            )}
-                            {year1TotalCost !== null && (
-                              <div className="flex items-center justify-between gap-4 pt-2 border-t border-neutral-200">
-                                <div className="text-sm text-neutral-600">Year 1 total cost</div>
-                                <div className="text-sm font-bold text-neutral-900 tabular-nums">
-                                  ${year1TotalCost.toLocaleString()}
-                                </div>
-                              </div>
-                            )}
-                            {lifetimeSubscription !== null && (
-                              <div className="flex items-center justify-between gap-4 pt-2 border-t border-neutral-200">
-                                <div className="text-sm text-neutral-600">Lifetime subscription</div>
-                                <div className="text-sm font-bold text-neutral-900 tabular-nums">
-                                  ${lifetimeSubscription.toLocaleString()}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-4 rounded-xl bg-neutral-50 p-3 text-xs text-neutral-600">
-                        Tip: If a number looks high, open Results and use "Review inputs" to validate the driver math.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Live Receipt - Mobile for Page 3 */}
-            <div className="lg:hidden mt-8">
-              <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
-                <div className="p-5">
-                  <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                    Live Receipt
-                  </div>
-
-                  <div className="mt-3 divide-y divide-neutral-200">
-                    {/* Adoption section */}
-                    <div className="py-2 space-y-2">
-                      <div className="text-xs font-bold text-neutral-700 mb-2">
-                        Adoption
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="text-sm text-neutral-600">Providers</div>
-                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                          {effectiveClinicians > 0 ? effectiveClinicians.toLocaleString() : "—"}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="text-sm text-neutral-600">Annual encounters</div>
-                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                          {effectiveEncounters > 0 ? effectiveEncounters.toLocaleString() : "—"}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="text-sm text-neutral-600">Utilization</div>
-                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                          {utilizationPercent !== null ? `${utilizationPercent}%` : "—"}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="text-sm text-neutral-600">Eligible encounters</div>
-                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                          {eligibleEncounters !== null ? eligibleEncounters.toLocaleString() : "—"}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Time Assumptions section */}
-                    <div className="py-2 space-y-2">
-                      <div className="text-xs font-bold text-neutral-700 mb-2">
-                        Time Assumptions
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="text-sm text-neutral-600">Minutes returned / encounter</div>
-                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                          {effectiveMinutesSaved !== null ? `${effectiveMinutesSaved} min` : "—"}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="text-sm text-neutral-600">Hours returned (gross)</div>
-                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                          {totalHoursSaved !== null
-                            ? totalHoursSaved.toLocaleString(undefined, { maximumFractionDigits: 1 })
-                            : "—"}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="text-sm text-neutral-600">Hours usable (net)</div>
-                        <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                          {realizedHoursSaved !== null
-                            ? realizedHoursSaved.toLocaleString(undefined, { maximumFractionDigits: 0 })
-                            : "—"}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Documentation Assumptions section */}
-                    {hasAnyDocumentationLever && (
-                      <div className="py-2 space-y-2">
-                        <div className="text-xs font-bold text-neutral-700 mb-2">
-                          Documentation Assumptions
-                        </div>
-                        {hasWrvuSelected && wrvuSensitivity !== null && (
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Level of service lift</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {wrvuSensitivity}%
-                            </div>
-                          </div>
-                        )}
-                        {hasHccSelected && hccSensitivity !== null && (
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">HCC / RAF lift</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {hccSensitivity}%
-                            </div>
-                          </div>
-                        )}
-                        {hasDenialsSelected && denialsSensitivity !== null && (
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Denial rate reduction</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              {denialsSensitivity}%
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Investment info - only show on step 3 */}
-                    {modelSetupStep === 3 && (annualSubscriptionCost !== null || implementationFee !== null) && (
-                      <div className="py-2 space-y-2">
-                        <div className="text-xs font-bold text-neutral-700 mb-2">
-                          Investment
-                        </div>
-                        {implementationEnabled && implementationFee !== null && (
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Implementation fee</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              ${implementationFee.toLocaleString()}
-                            </div>
-                          </div>
-                        )}
-                        {annualSubscriptionCost !== null && (
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-neutral-600">Annual subscription</div>
-                            <div className="text-sm font-semibold text-neutral-900 tabular-nums">
-                              ${annualSubscriptionCost.toLocaleString()}
-                            </div>
-                          </div>
-                        )}
-                        {year1TotalCost !== null && (
-                          <div className="flex items-center justify-between gap-4 pt-2 border-t border-neutral-200">
-                            <div className="text-sm text-neutral-600">Year 1 total cost</div>
-                            <div className="text-sm font-bold text-neutral-900 tabular-nums">
-                              ${year1TotalCost.toLocaleString()}
-                            </div>
-                          </div>
-                        )}
-                        {lifetimeSubscription !== null && (
-                          <div className="flex items-center justify-between gap-4 pt-2 border-t border-neutral-200">
-                            <div className="text-sm text-neutral-600">Lifetime subscription</div>
-                            <div className="text-sm font-bold text-neutral-900 tabular-nums">
-                              ${lifetimeSubscription.toLocaleString()}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-4 rounded-xl bg-neutral-50 p-3 text-xs text-neutral-600">
-                    Tip: If a number looks high, open Results and use "Review inputs" to validate the driver math.
-                  </div>
-                </div>
-              </div>
+              {/* Live Receipt Sidebar - Desktop & Mobile */}
+              <LiveReceipt
+                providers={effectiveClinicians}
+                annualEncounters={effectiveEncounters}
+                utilizationPercent={utilizationPercent}
+                eligibleEncounters={eligibleEncounters}
+                minutesSaved={effectiveMinutesSaved}
+                realizationRate={timeRealizationRate}
+                totalHoursSaved={totalHoursSaved}
+                realizedHoursSaved={realizedHoursSaved}
+                wrvuLift={wrvuSensitivity}
+                baselineWrvu={ftWrvuBaseline}
+                selectedLeverIds={selectedLeverIds}
+                currentDriverValues={currentDriverValues}
+                totalProjectedValue={totalProjectedValue}
+                annualSubscriptionCost={annualSubscriptionCost}
+                implementationFee={implementationFee}
+                implementationEnabled={implementationEnabled}
+                contractYears={contractYears}
+                year1TotalCost={year1TotalCost}
+                lifetimeSubscription={lifetimeSubscription}
+                currentPosture={valuePosture}
+                modelSetupStep={modelSetupStep}
+                ftPatientAccessVisitDuration={ftPatientAccessVisitDuration}
+                ftPatientAccessRevenuePerVisit={ftPatientAccessRevenuePerVisit}
+                ftWrvuRevenuePerUnit={ftWrvuRevenuePerUnit}
+                ftRetentionReplacementCost={ftRetentionReplacementCost}
+                ftHccBenchmarkPmpm={ftHccBenchmarkPmpm}
+              />
             </div>
           </div>
         )}
