@@ -63,6 +63,7 @@ import {
   LayoutGrid,
   ArrowRight,
   ExternalLink,
+  BarChart3,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -195,6 +196,29 @@ export default function RoiCalculator({
   const [scenarioTypeModal, setScenarioTypeModal] = useState<ScenarioType | null>(null);
   const [currentScenarioType, setCurrentScenarioType] = useState<ScenarioType>("expand");
   const [pdfSuccess, setPdfSuccess] = useState(false);
+  
+  // Expand Providers full-page flow state
+  const [showExpandProviders, setShowExpandProviders] = useState(false);
+  const [expandProvidersMode, setExpandProvidersMode] = useState<"quick" | "advanced">("quick");
+  const [encounterScalingMode, setEncounterScalingMode] = useState<"proportional" | "custom">("proportional");
+  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
+  
+  // Advanced mode additional fields
+  const [providerBreakdown, setProviderBreakdown] = useState([
+    { type: "Primary Care Physicians", count: 40, encountersPerYear: 1800, avgWrvu: 1.2 },
+    { type: "Specialists", count: 35, encountersPerYear: 1200, avgWrvu: 2.1 },
+    { type: "NPs / PAs", count: 25, encountersPerYear: 1500, avgWrvu: 0.85 },
+  ]);
+  const [adoptionTimeline, setAdoptionTimeline] = useState<string>("q3_2025");
+  const [financialParams, setFinancialParams] = useState({
+    revenuePerVisit: 200,
+    revenuePerWrvu: 40,
+    providerReplacementCost: 250000,
+    maPopulationPct: 15,
+    benchmarkPmpm: 1000,
+    turnoverRate: 5,
+    denialRate: 5,
+  });
 
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {
@@ -1840,6 +1864,639 @@ export default function RoiCalculator({
 
         {activeTab === "scenarios" && (
           <div className="space-y-6">
+            {/* EXPAND PROVIDERS FULL-PAGE VIEW */}
+            {showExpandProviders ? (
+              <div className="space-y-6">
+                {/* Back navigation */}
+                <button
+                  onClick={() => setShowExpandProviders(false)}
+                  className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                  data-testid="button-back-scenario-builder"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Scenario Builder
+                </button>
+                
+                {/* Page header */}
+                <div>
+                  <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
+                    Expand Providers
+                  </h2>
+                  <p className="text-[16px] text-[#6B7280] mb-4">
+                    Model what happens when you add more users to your deployment
+                  </p>
+                  
+                  {/* Baseline reference box */}
+                  <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-center gap-3">
+                    <BarChart3 className="h-5 w-5 text-[#6B7280]" />
+                    <span className="text-[14px] text-[#6B7280]">
+                      Your baseline: {inputs.numberOfProviders} providers | {inputs.annualOutpatientEncounters.toLocaleString()} encounters | {formatCurrency(netAnnualGain)} net gain
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Two-column layout for desktop */}
+                <div className="flex flex-col lg:flex-row gap-8">
+                  {/* Left column - Input form */}
+                  <div className="flex-1 lg:max-w-[60%] space-y-6">
+                    {/* Mode Toggle */}
+                    <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-1 flex">
+                      <button
+                        onClick={() => setExpandProvidersMode("quick")}
+                        className={`flex-1 p-4 rounded-md transition-all ${
+                          expandProvidersMode === "quick"
+                            ? "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                            : "bg-transparent hover:bg-white/50"
+                        }`}
+                        data-testid="toggle-quick-mode"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          {expandProvidersMode === "quick" && <span className="text-[#E8532F]">●</span>}
+                          <span className="text-[14px] font-bold text-[#111827]">Quick Mode</span>
+                        </div>
+                        <p className="text-[13px] text-[#6B7280]">Fast estimate with typical assumptions</p>
+                      </button>
+                      <button
+                        onClick={() => setExpandProvidersMode("advanced")}
+                        className={`flex-1 p-4 rounded-md transition-all ${
+                          expandProvidersMode === "advanced"
+                            ? "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                            : "bg-transparent hover:bg-white/50"
+                        }`}
+                        data-testid="toggle-advanced-mode"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          {expandProvidersMode === "advanced" && <span className="text-[#E8532F]">●</span>}
+                          <span className="text-[14px] font-bold text-[#111827]">Advanced Mode</span>
+                        </div>
+                        <p className="text-[13px] text-[#6B7280]">Organization-specific inputs for precision</p>
+                      </button>
+                    </div>
+                    
+                    {/* Scenario Name */}
+                    <div>
+                      <label className="block text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">
+                        Scenario Name
+                      </label>
+                      <input
+                        type="text"
+                        value={scenarioForm.name}
+                        onChange={(e) => setScenarioForm({ ...scenarioForm, name: e.target.value })}
+                        placeholder={`Expand to ${Math.round(inputs.numberOfProviders * 1.5)} providers`}
+                        className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                        data-testid="input-scenario-name"
+                      />
+                      <p className="mt-1.5 text-[13px] text-[#6B7280]">Give this scenario a descriptive name</p>
+                    </div>
+                    
+                    <div className="border-t border-[#E5E7EB]" />
+                    
+                    {/* Deployment Size */}
+                    <div>
+                      <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                        Deployment Size
+                      </h3>
+                      
+                      {/* Providers in scope */}
+                      <div className="mb-6">
+                        <label className="block text-[14px] text-[#111827] mb-2">Providers in scope</label>
+                        <input
+                          type="number"
+                          value={scenarioForm.providers}
+                          onChange={(e) => {
+                            const newProviders = parseInt(e.target.value) || 0;
+                            const encountersPerProvider = inputs.annualOutpatientEncounters / inputs.numberOfProviders;
+                            setScenarioForm({ 
+                              ...scenarioForm, 
+                              providers: newProviders,
+                              encounters: encounterScalingMode === "proportional" 
+                                ? Math.round(newProviders * encountersPerProvider)
+                                : scenarioForm.encounters
+                            });
+                          }}
+                          className="w-[200px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                          data-testid="input-providers"
+                        />
+                        {scenarioForm.providers > 0 && inputs.numberOfProviders > 0 && (
+                          <p className="mt-1.5 text-[13px]">
+                            <span className="text-[#6B7280]">Currently: {inputs.numberOfProviders} providers </span>
+                            <span className={scenarioForm.providers >= inputs.numberOfProviders ? "text-[#059669]" : "text-[#DC2626]"}>
+                              ({scenarioForm.providers >= inputs.numberOfProviders ? "+" : ""}
+                              {(((scenarioForm.providers - inputs.numberOfProviders) / inputs.numberOfProviders) * 100).toFixed(0)}% change)
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                      
+                      {/* Annual encounters */}
+                      <div>
+                        <label className="block text-[14px] text-[#111827] mb-3">Annual encounters</label>
+                        
+                        {/* Scale proportionally option */}
+                        <div className="mb-3">
+                          <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="encounterScaling"
+                              checked={encounterScalingMode === "proportional"}
+                              onChange={() => {
+                                setEncounterScalingMode("proportional");
+                                const encountersPerProvider = inputs.annualOutpatientEncounters / inputs.numberOfProviders;
+                                setScenarioForm({
+                                  ...scenarioForm,
+                                  encounters: Math.round(scenarioForm.providers * encountersPerProvider)
+                                });
+                              }}
+                              className="mt-1 h-[18px] w-[18px] accent-[#E8532F]"
+                              data-testid="radio-proportional"
+                            />
+                            <div>
+                              <span className="text-[14px] text-[#111827]">Scale proportionally from baseline</span>
+                              <p className="text-[14px] text-[#111827] mt-1">
+                                {scenarioForm.providers} providers × {Math.round(inputs.annualOutpatientEncounters / inputs.numberOfProviders).toLocaleString()} encounters/provider = <span className="font-bold">{scenarioForm.encounters.toLocaleString()}</span>
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                        
+                        {/* Custom volume option */}
+                        <div>
+                          <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="encounterScaling"
+                              checked={encounterScalingMode === "custom"}
+                              onChange={() => setEncounterScalingMode("custom")}
+                              className="mt-1 h-[18px] w-[18px] accent-[#E8532F]"
+                              data-testid="radio-custom"
+                            />
+                            <div className="flex-1">
+                              <span className="text-[14px] text-[#111827]">Enter custom volume</span>
+                              <input
+                                type="number"
+                                value={scenarioForm.encounters}
+                                onChange={(e) => setScenarioForm({ ...scenarioForm, encounters: parseInt(e.target.value) || 0 })}
+                                disabled={encounterScalingMode !== "custom"}
+                                className="w-[200px] h-11 px-3 mt-2 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none disabled:bg-[#F9FAFB] disabled:text-[#9CA3AF]"
+                                data-testid="input-custom-encounters"
+                              />
+                              <p className="mt-1.5 text-[13px] text-[#6B7280]">Use if you have specific volume projections</p>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-[#E5E7EB]" />
+                    
+                    {/* Utilization Projection */}
+                    <div>
+                      <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                        Utilization Projection
+                      </h3>
+                      
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-[14px] text-[#111827]">Expected utilization rate</label>
+                          <span className="text-[18px] font-bold text-[#111827]">{scenarioForm.utilizationRate}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="20"
+                          max="100"
+                          value={scenarioForm.utilizationRate}
+                          onChange={(e) => setScenarioForm({ ...scenarioForm, utilizationRate: parseInt(e.target.value) })}
+                          className="w-full h-1 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#E8532F] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md"
+                          style={{
+                            background: `linear-gradient(to right, #E8532F 0%, #E8532F ${scenarioForm.utilizationRate}%, #E5E7EB ${scenarioForm.utilizationRate}%, #E5E7EB 100%)`
+                          }}
+                          data-testid="slider-utilization"
+                        />
+                        <p className="mt-2 text-[13px] text-[#6B7280]">
+                          {inputs.abridgeUtilizationPct}% (current) → {scenarioForm.utilizationRate}% (projected)
+                        </p>
+                      </div>
+                      
+                      {/* Utilization tips */}
+                      <div className="p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <Lightbulb className="h-4 w-4 text-[#1E40AF] mt-0.5 shrink-0" />
+                          <div className="text-[13px] text-[#1E40AF]">
+                            <p className="mb-2">Utilization typically increases as teams mature:</p>
+                            <ul className="space-y-1">
+                              <li>• Pilot (0-3 mo): 40-50%</li>
+                              <li>• Early (3-6 mo): 50-65%</li>
+                              <li>• Mature (6-12 mo): 65-80%</li>
+                              <li>• Optimized (12+ mo): 75-90%</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* ADVANCED MODE ADDITIONAL INPUTS */}
+                    {expandProvidersMode === "advanced" && (
+                      <>
+                        <div className="border-t border-[#E5E7EB]" />
+                        
+                        {/* Provider Breakdown */}
+                        <div>
+                          <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-2">
+                            Provider Breakdown
+                          </h3>
+                          <p className="text-[13px] text-[#6B7280] mb-4">Break down by provider type for more accurate calculations</p>
+                          
+                          <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+                            {providerBreakdown.map((provider, index) => (
+                              <div key={index}>
+                                {index > 0 && <div className="border-t border-[#E5E7EB] my-4" />}
+                                <div className="mb-2">
+                                  <span className="text-[14px] font-bold text-[#111827]">{provider.type}</span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  <div>
+                                    <label className="text-[13px] text-[#6B7280]">Count:</label>
+                                    <input
+                                      type="number"
+                                      value={provider.count}
+                                      onChange={(e) => {
+                                        const newBreakdown = [...providerBreakdown];
+                                        newBreakdown[index].count = parseInt(e.target.value) || 0;
+                                        setProviderBreakdown(newBreakdown);
+                                        const totalProviders = newBreakdown.reduce((sum, p) => sum + p.count, 0);
+                                        setScenarioForm({ ...scenarioForm, providers: totalProviders });
+                                      }}
+                                      className="w-[80px] h-9 px-2 ml-2 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[2px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                      data-testid={`input-provider-count-${index}`}
+                                    />
+                                  </div>
+                                </div>
+                                <p className="mt-1 text-[13px] text-[#6B7280]">
+                                  Avg encounters/year: {provider.encountersPerYear.toLocaleString()} | Avg wRVU: {provider.avgWrvu}
+                                </p>
+                              </div>
+                            ))}
+                            
+                            <button
+                              onClick={() => {
+                                setProviderBreakdown([
+                                  ...providerBreakdown,
+                                  { type: `Provider Type ${providerBreakdown.length + 1}`, count: 0, encountersPerYear: 1500, avgWrvu: 1.0 }
+                                ]);
+                              }}
+                              className="mt-4 text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                              data-testid="button-add-provider-type"
+                            >
+                              <Plus className="h-4 w-4" /> Add Provider Type
+                            </button>
+                            
+                            <div className="mt-4 pt-4 border-t border-[#E5E7EB] bg-[#F9FAFB] -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                              <div className="flex flex-wrap gap-6 text-[14px]">
+                                <span>Total: <span className="font-bold">{providerBreakdown.reduce((sum, p) => sum + p.count, 0)} providers</span></span>
+                                <span>Calculated encounters: <span className="font-bold">{providerBreakdown.reduce((sum, p) => sum + (p.count * p.encountersPerYear), 0).toLocaleString()}</span></span>
+                                <span>Blended wRVU: <span className="font-bold">
+                                  {(providerBreakdown.reduce((sum, p) => sum + (p.count * p.avgWrvu), 0) / Math.max(1, providerBreakdown.reduce((sum, p) => sum + p.count, 0))).toFixed(2)}
+                                </span></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="border-t border-[#E5E7EB]" />
+                        
+                        {/* Financial Parameters */}
+                        <div>
+                          <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-2">
+                            Financial Parameters
+                          </h3>
+                          <p className="text-[13px] text-[#6B7280] mb-4">Override with your organization's actual values</p>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <label className="block text-[14px] text-[#111827] mb-2">Revenue per visit</label>
+                              <div className="flex items-center">
+                                <span className="text-[16px] text-[#6B7280] mr-1">$</span>
+                                <input
+                                  type="number"
+                                  value={financialParams.revenuePerVisit}
+                                  onChange={(e) => setFinancialParams({ ...financialParams, revenuePerVisit: parseInt(e.target.value) || 0 })}
+                                  className="w-[160px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-revenue-per-visit"
+                                />
+                              </div>
+                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: $200 | Typical range: $150-350</p>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-[14px] text-[#111827] mb-2">Revenue per wRVU</label>
+                              <div className="flex items-center">
+                                <span className="text-[16px] text-[#6B7280] mr-1">$</span>
+                                <input
+                                  type="number"
+                                  value={financialParams.revenuePerWrvu}
+                                  onChange={(e) => setFinancialParams({ ...financialParams, revenuePerWrvu: parseInt(e.target.value) || 0 })}
+                                  className="w-[160px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-revenue-per-wrvu"
+                                />
+                              </div>
+                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: $40 | Typical range: $30-80</p>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-[14px] text-[#111827] mb-2">Provider replacement cost</label>
+                              <div className="flex items-center">
+                                <span className="text-[16px] text-[#6B7280] mr-1">$</span>
+                                <input
+                                  type="number"
+                                  value={financialParams.providerReplacementCost}
+                                  onChange={(e) => setFinancialParams({ ...financialParams, providerReplacementCost: parseInt(e.target.value) || 0 })}
+                                  className="w-[160px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-replacement-cost"
+                                />
+                              </div>
+                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: $250,000 | Typical range: $200k-400k</p>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-[14px] text-[#111827] mb-2">Medicare Advantage population</label>
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  value={financialParams.maPopulationPct}
+                                  onChange={(e) => setFinancialParams({ ...financialParams, maPopulationPct: parseInt(e.target.value) })}
+                                  className="flex-1 h-1 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#E8532F] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm"
+                                  style={{
+                                    background: `linear-gradient(to right, #E8532F 0%, #E8532F ${financialParams.maPopulationPct}%, #E5E7EB ${financialParams.maPopulationPct}%, #E5E7EB 100%)`
+                                  }}
+                                  data-testid="slider-ma-population"
+                                />
+                                <span className="text-[16px] font-bold text-[#111827] w-12 text-right">{financialParams.maPopulationPct}%</span>
+                              </div>
+                              <p className="mt-1 text-[13px] text-[#6B7280]">Affects HCC Capture calculations</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="border-t border-[#E5E7EB]" />
+                        
+                        {/* Current Performance */}
+                        <div>
+                          <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-2">
+                            Current Performance
+                          </h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <label className="block text-[14px] text-[#111827] mb-2">Your actual turnover rate</label>
+                              <div className="flex items-center">
+                                <input
+                                  type="number"
+                                  value={financialParams.turnoverRate}
+                                  onChange={(e) => setFinancialParams({ ...financialParams, turnoverRate: parseInt(e.target.value) || 0 })}
+                                  className="w-[80px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-turnover-rate"
+                                />
+                                <span className="text-[16px] text-[#6B7280] ml-1">%</span>
+                              </div>
+                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: 5% | National average: 6-8%</p>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-[14px] text-[#111827] mb-2">Your actual denial rate</label>
+                              <div className="flex items-center">
+                                <input
+                                  type="number"
+                                  value={financialParams.denialRate}
+                                  onChange={(e) => setFinancialParams({ ...financialParams, denialRate: parseInt(e.target.value) || 0 })}
+                                  className="w-[80px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-denial-rate"
+                                />
+                                <span className="text-[16px] text-[#6B7280] ml-1">%</span>
+                              </div>
+                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: 5% | Industry average: 5-10%</p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Footer Actions */}
+                    <div className="border-t border-[#E5E7EB] pt-6">
+                      <div className="flex justify-end gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowExpandProviders(false)}
+                          className="border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB]"
+                          data-testid="button-cancel-scenario"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            handleCalculateScenario();
+                            setShowExpandProviders(false);
+                            toast({
+                              title: "Scenario saved",
+                              description: scenarioForm.name || `Scenario ${scenarios.length + 1}`,
+                            });
+                          }}
+                          disabled={!scenarioForm.name && scenarioForm.providers === inputs.numberOfProviders}
+                          className="bg-[#E8532F] hover:bg-[#D4471F] text-white disabled:bg-[#E5E7EB] disabled:text-[#9CA3AF]"
+                          data-testid="button-save-scenario"
+                        >
+                          Save Scenario
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right column - Preview Panel (sticky on desktop) */}
+                  <div className="lg:w-[40%]">
+                    <div className="lg:sticky lg:top-6">
+                      {/* Mobile toggle for preview */}
+                      <button
+                        onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
+                        className="lg:hidden w-full mb-4 p-4 bg-white border border-[#E5E7EB] rounded-lg flex items-center justify-between"
+                        data-testid="button-toggle-preview"
+                      >
+                        <span className="text-[14px] text-[#111827]">
+                          Net Gain: <span className="font-bold text-[#059669]">{formatCurrency((() => {
+                            const scenarioResults = calculateScenarioResults(scenarioForm);
+                            return scenarioResults.netGain;
+                          })())}</span>
+                        </span>
+                        <ChevronDown className={`h-5 w-5 text-[#6B7280] transition-transform ${mobilePreviewOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      
+                      {/* Preview Panel Content */}
+                      <div className={`${mobilePreviewOpen ? "block" : "hidden"} lg:block`}>
+                        <div className="mb-2">
+                          <h3 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em]">Scenario Preview</h3>
+                          <p className="text-[13px] text-[#6B7280]">Updates in real-time</p>
+                        </div>
+                        
+                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-6">
+                          {/* Comparison table */}
+                          {(() => {
+                            const scenarioResults = calculateScenarioResults(scenarioForm);
+                            const baselineEligible = Math.round(inputs.annualOutpatientEncounters * inputs.abridgeUtilizationPct / 100);
+                            const scenarioEligible = Math.round(scenarioForm.encounters * scenarioForm.utilizationRate / 100);
+                            
+                            return (
+                              <>
+                                {/* Header row */}
+                                <div className="grid grid-cols-4 gap-2 mb-4 text-[12px] text-[#6B7280] uppercase">
+                                  <div></div>
+                                  <div className="text-right">Baseline</div>
+                                  <div className="text-right">Scenario</div>
+                                  <div className="text-right">Change</div>
+                                </div>
+                                
+                                {/* Deployment section */}
+                                <div className="mb-4">
+                                  <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Deployment</div>
+                                  <div className="space-y-2">
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Providers</div>
+                                      <div className="text-right text-[#111827]">{inputs.numberOfProviders}</div>
+                                      <div className="text-right font-bold text-[#111827]">{scenarioForm.providers}</div>
+                                      <div className={`text-right ${scenarioForm.providers >= inputs.numberOfProviders ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioForm.providers >= inputs.numberOfProviders ? "+" : ""}
+                                        {(((scenarioForm.providers - inputs.numberOfProviders) / Math.max(1, inputs.numberOfProviders)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Encounters</div>
+                                      <div className="text-right text-[#111827]">{inputs.annualOutpatientEncounters.toLocaleString()}</div>
+                                      <div className="text-right font-bold text-[#111827]">{scenarioForm.encounters.toLocaleString()}</div>
+                                      <div className={`text-right ${scenarioForm.encounters >= inputs.annualOutpatientEncounters ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioForm.encounters >= inputs.annualOutpatientEncounters ? "+" : ""}
+                                        {(((scenarioForm.encounters - inputs.annualOutpatientEncounters) / Math.max(1, inputs.annualOutpatientEncounters)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Utilization</div>
+                                      <div className="text-right text-[#111827]">{inputs.abridgeUtilizationPct}%</div>
+                                      <div className="text-right font-bold text-[#111827]">{scenarioForm.utilizationRate}%</div>
+                                      <div className={`text-right ${scenarioForm.utilizationRate >= inputs.abridgeUtilizationPct ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioForm.utilizationRate >= inputs.abridgeUtilizationPct ? "+" : ""}
+                                        {scenarioForm.utilizationRate - inputs.abridgeUtilizationPct} pts
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Eligible</div>
+                                      <div className="text-right text-[#111827]">{baselineEligible.toLocaleString()}</div>
+                                      <div className="text-right font-bold text-[#111827]">{scenarioEligible.toLocaleString()}</div>
+                                      <div className={`text-right ${scenarioEligible >= baselineEligible ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioEligible >= baselineEligible ? "+" : ""}
+                                        {(((scenarioEligible - baselineEligible) / Math.max(1, baselineEligible)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="border-t border-[#E5E7EB] my-4" />
+                                
+                                {/* Summary section */}
+                                <div>
+                                  <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Summary</div>
+                                  <div className="space-y-2">
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Total Benefit</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(totalAnnualBenefit)}</div>
+                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioResults.totalBenefit)}</div>
+                                      <div className={`text-right ${scenarioResults.totalBenefit >= totalAnnualBenefit ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioResults.totalBenefit >= totalAnnualBenefit ? "+" : ""}
+                                        {(((scenarioResults.totalBenefit - totalAnnualBenefit) / Math.max(1, totalAnnualBenefit)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Investment</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(totalInvestment)}</div>
+                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioResults.investment)}</div>
+                                      <div className={`text-right ${scenarioResults.investment >= totalInvestment ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioResults.investment >= totalInvestment ? "+" : ""}
+                                        {(((scenarioResults.investment - totalInvestment) / Math.max(1, totalInvestment)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[16px] bg-[#F9FAFB] -mx-6 px-6 py-2">
+                                      <div className="font-bold text-[#111827]">Net Gain</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(netAnnualGain)}</div>
+                                      <div className="text-right font-bold text-[#059669]">{formatCurrency(scenarioResults.netGain)}</div>
+                                      <div className={`text-right font-bold ${scenarioResults.netGain >= netAnnualGain ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioResults.netGain >= netAnnualGain ? "+" : ""}
+                                        {(((scenarioResults.netGain - netAnnualGain) / Math.max(1, netAnnualGain)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">ROI</div>
+                                      <div className="text-right text-[#111827]">{roiMultiple.toFixed(1)}x</div>
+                                      <div className="text-right font-bold text-[#111827]">{scenarioResults.roiMultiple.toFixed(1)}x</div>
+                                      <div className={`text-right ${scenarioResults.roiMultiple >= roiMultiple ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioResults.roiMultiple >= roiMultiple ? "+" : ""}
+                                        {(((scenarioResults.roiMultiple - roiMultiple) / Math.max(0.1, roiMultiple)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="border-t border-[#E5E7EB] my-4" />
+                                
+                                {/* 3-Year Projection */}
+                                <div>
+                                  <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">3-Year Projection</div>
+                                  <div className="space-y-2">
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Total Value</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(totalAnnualBenefit * 3)}</div>
+                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioResults.totalBenefit * 3)}</div>
+                                      <div className={`text-right ${scenarioResults.totalBenefit >= totalAnnualBenefit ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioResults.totalBenefit >= totalAnnualBenefit ? "+" : ""}
+                                        {(((scenarioResults.totalBenefit - totalAnnualBenefit) / Math.max(1, totalAnnualBenefit)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Net 3-Year</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(netAnnualGain * 3)}</div>
+                                      <div className="text-right font-bold text-[#059669]">{formatCurrency(scenarioResults.netGain * 3)}</div>
+                                      <div className={`text-right ${scenarioResults.netGain >= netAnnualGain ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioResults.netGain >= netAnnualGain ? "+" : ""}
+                                        {(((scenarioResults.netGain - netAnnualGain) / Math.max(1, netAnnualGain)) * 100).toFixed(0)}%
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                        
+                        {/* Key Insight */}
+                        <div className="mt-4 p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="h-4 w-4 text-[#1E40AF] mt-0.5 shrink-0" />
+                            <div>
+                              <p className="text-[13px] font-bold text-[#1E40AF] mb-1">Key Insight</p>
+                              <p className="text-[14px] text-[#1E40AF]">
+                                {(() => {
+                                  const scenarioResults = calculateScenarioResults(scenarioForm);
+                                  const additionalValue = scenarioResults.netGain - netAnnualGain;
+                                  const percentChange = netAnnualGain > 0 ? ((additionalValue / netAnnualGain) * 100).toFixed(0) : 0;
+                                  return `Expanding to ${scenarioForm.providers} providers would generate an additional ${formatCurrency(additionalValue)} in annual value (${additionalValue >= 0 ? "+" : ""}${percentChange}% over your current model).`;
+                                })()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+            <>
             {/* Header */}
             <div>
               <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
@@ -1959,7 +2616,9 @@ export default function RoiCalculator({
                   onClick={() => {
                     initScenarioForm();
                     setCurrentScenarioType("expand");
-                    setShowScenarioForm(true);
+                    setExpandProvidersMode("quick");
+                    setEncounterScalingMode("proportional");
+                    setShowExpandProviders(true);
                   }}
                   className="group bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
                   data-testid="card-expand-providers"
@@ -2712,6 +3371,8 @@ export default function RoiCalculator({
                   </Button>
                 </div>
               </div>
+            )}
+            </>
             )}
           </div>
         )}

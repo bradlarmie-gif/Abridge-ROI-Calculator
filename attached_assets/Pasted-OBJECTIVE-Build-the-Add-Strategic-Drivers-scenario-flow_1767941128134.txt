@@ -1,0 +1,613 @@
+OBJECTIVE:
+Build the "Add Strategic Drivers" scenario flow. User clicks "Add Strategic Drivers" from the scenario type cards and can enable additional value streams (HCC Capture, Denial Reduction, Overtime Cost) without adding more users. Shows the impact of activating new drivers on their existing deployment.
+
+CRITICAL RULES:
+- Match existing brand colors and typography exactly
+- Only show drivers NOT already active in baseline model
+- Real-time preview updates as user selects/deselects drivers
+- Show calculation methodology preview for each driver
+- Use same card styling as Strategic Priorities page
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: FLOW ENTRY
+
+When user clicks "Add Strategic Drivers" card from main Scenario Builder page:
+- Open as a full-page view (not modal)
+- Show back navigation to return to Scenario Builder
+- Pre-populate with current active drivers shown as "locked"
+- Show available (inactive) drivers as selectable options
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: PAGE HEADER
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ← Back to Scenario Builder                                      │
+│                                                                 │
+│ ADD STRATEGIC DRIVERS                                           │
+│ Enable additional value streams without adding users            │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 Your baseline: 50 providers | 3 active drivers |        │ │
+│ │    $391,802 net gain | 6.4x ROI                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💡 Adding drivers increases value without increasing       │ │
+│ │    investment. This often dramatically improves ROI.       │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Back link:
+- "← Back to Scenario Builder"
+- Font: 14px, #E8532F (orange)
+- Hover: Underline
+- Margin-bottom: 24px
+
+Page title:
+- "ADD STRATEGIC DRIVERS": 14px, #E8532F (orange), uppercase, letter-spacing 0.05em, bold
+- Subtitle: 16px, #6B7280 (gray)
+- Margin-bottom: 16px
+
+Baseline reference box:
+- Background: #F9FAFB (light gray)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 16px
+- Font: 14px, #6B7280 (gray)
+- Icon: 📊
+
+Insight box:
+- Background: #EFF6FF (light blue)
+- Border: 1px solid #BFDBFE
+- Border-radius: 8px
+- Padding: 16px
+- Font: 14px, #1E40AF (blue text)
+- Icon: 💡
+- Margin-top: 12px
+- Margin-bottom: 32px
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: SCENARIO NAME INPUT
+
+┌─────────────────────────────────────────────────────────────────┐
+│ SCENARIO NAME                                                   │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ Add HCC + Denial Drivers                                    │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│ Give this scenario a descriptive name                          │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+- Same as Phase 2 input styling
+- Auto-suggest name based on selected drivers
+- Example: "Add HCC Capture" or "Add HCC + Denial + Overtime"
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: CURRENTLY ACTIVE DRIVERS (LOCKED)
+
+Show drivers already in baseline model:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ CURRENTLY ACTIVE                                                │
+│ These drivers are in your baseline model                       │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ✓ Patient Access                              $173,333      │ │
+│ │   Time returned → visit capacity                 [Locked]   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ✓ Accurate Level of Service                   $182,000      │ │
+│ │   wRVU capture from complete documentation       [Locked]   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ✓ Clinician Retention                         $100,000      │ │
+│ │   Reduced turnover from lower admin burden       [Locked]   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ Current total: $455,333 annually                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "CURRENTLY ACTIVE": 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Subtitle: 14px, #6B7280 (gray)
+- Margin-bottom: 16px
+
+Active driver cards:
+- Background: #F9FAFB (light gray) - muted to show they're locked
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 16px
+- Margin-bottom: 12px
+- Opacity: 0.9 (slightly muted)
+
+Card content:
+- Checkmark: ✓ in #059669 (green)
+- Driver name: 16px, #111827 (black), bold
+- Value: 16px, #059669 (green), right-aligned
+- Description: 14px, #6B7280 (gray)
+- [Locked] badge:
+  - Background: #E5E7EB
+  - Text: 11px, #6B7280 (gray), uppercase
+  - Padding: 2px 8px
+  - Border-radius: 4px
+  - Right-aligned
+
+Current total:
+- Font: 14px, #111827 (black), bold
+- Margin-top: 16px
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: AVAILABLE DRIVERS TO ADD (SELECTABLE)
+
+Show drivers NOT in baseline that can be added:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ AVAILABLE TO ADD                                                │
+│ Select drivers to include in this scenario                     │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ □ HCC & Chronic Condition Capture              +$337,000    │ │
+│ │                                                             │ │
+│ │   Improve risk adjustment through complete clinical        │ │
+│ │   documentation of chronic conditions.                     │ │
+│ │                                                             │ │
+│ │   ─────────────────────────────────────────────────────── │ │
+│ │                                                             │ │
+│ │   💡 RELEVANCE CHECK                                       │ │
+│ │   This driver is valuable if you have Medicare Advantage  │ │
+│ │   patients. Higher MA population = higher impact.          │ │
+│ │                                                             │ │
+│ │   Your MA population: 15% (can adjust below)              │ │
+│ │                                                             │ │
+│ │   ─────────────────────────────────────────────────────── │ │
+│ │                                                             │ │
+│ │   [▸ View calculation methodology]                         │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ □ Denial Reduction                             +$103,000    │ │
+│ │                                                             │ │
+│ │   Prevent documentation-related claim denials that are    │ │
+│ │   often unrecoverable.                                     │ │
+│ │                                                             │ │
+│ │   ─────────────────────────────────────────────────────── │ │
+│ │                                                             │ │
+│ │   💡 RELEVANCE CHECK                                       │ │
+│ │   This driver is valuable if you experience claim denials │ │
+│ │   due to incomplete or unclear documentation.              │ │
+│ │                                                             │ │
+│ │   Your denial rate: 5% (can adjust below)                 │ │
+│ │                                                             │ │
+│ │   ─────────────────────────────────────────────────────── │ │
+│ │                                                             │ │
+│ │   [▸ View calculation methodology]                         │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ □ Overtime & Locum Cost Avoidance              +$78,590     │ │
+│ │                                                             │ │
+│ │   Reduce premium labor costs from after-hours             │ │
+│ │   documentation work.                                      │ │
+│ │                                                             │ │
+│ │   ─────────────────────────────────────────────────────── │ │
+│ │                                                             │ │
+│ │   💡 RELEVANCE CHECK                                       │ │
+│ │   This driver is valuable if providers document after     │ │
+│ │   hours or you use locum coverage.                         │ │
+│ │                                                             │ │
+│ │   Premium rate: $145/hr (can adjust below)                │ │
+│ │                                                             │ │
+│ │   ─────────────────────────────────────────────────────── │ │
+│ │                                                             │ │
+│ │   [▸ View calculation methodology]                         │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "AVAILABLE TO ADD": 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Subtitle: 14px, #6B7280 (gray)
+- Margin-bottom: 16px
+
+Available driver cards:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Margin-bottom: 16px
+- Cursor: pointer
+
+Checkbox:
+- Size: 22px
+- Position: Top-left
+- Unchecked: Border 2px solid #E5E7EB
+- Checked: Background #E8532F (orange), white checkmark
+
+Driver name + value row:
+- Name: 16px, #111827 (black), bold
+- Value: 18px, #059669 (green), right-aligned
+- "+" prefix on value
+
+Description:
+- Font: 14px, #6B7280 (gray)
+- Line-height: 1.6
+- Margin-top: 8px
+
+Divider:
+- 1px solid #E5E7EB
+- Margin: 16px 0
+
+Relevance check section:
+- Header: 13px, #1E40AF (blue), bold, with 💡 icon
+- Body: 14px, #6B7280 (gray)
+- Current value: 14px, #111827 (black)
+- Background: None (same as card)
+
+"View calculation methodology" link:
+- Font: 14px, #E8532F (orange)
+- Icon: ▸ (collapsed) or ▾ (expanded)
+- Hover: Underline
+- Margin-top: 16px
+
+Card hover state:
+- Border: 1px solid #E8532F (orange)
+- Shadow: 0 4px 12px rgba(0, 0, 0, 0.08)
+- Transition: 200ms ease-out
+
+Card selected state:
+- Border: 2px solid #E8532F (orange)
+- Background: rgba(232, 83, 47, 0.02) (very subtle orange tint)
+- Left accent: 4px solid #E8532F
+
+═══════════════════════════════════════════════════════════════
+
+PART 6: EXPANDABLE CALCULATION METHODOLOGY
+
+When user clicks "View calculation methodology":
+
+┌─────────────────────────────────────────────────────────────────┐
+│ □ HCC & Chronic Condition Capture                +$337,000     │
+│                                                                 │
+│   [Description...]                                              │
+│                                                                 │
+│   [▾ Hide calculation methodology]                              │
+│                                                                 │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │ HOW WE CALCULATE THIS                                   │  │
+│   │                                                         │  │
+│   │ STEP 1: IDENTIFY MA PATIENT POPULATION                 │  │
+│   │                                                         │  │
+│   │ Total annual encounters              65,000            │  │
+│   │ Average visits per unique patient    2.5 visits/year   │  │
+│   │ Total unique patients                26,000            │  │
+│   │ % Medicare Advantage                 15%               │  │
+│   │ Unique MA patients                   3,900 patients    │  │
+│   │                                                         │  │
+│   │ STEP 2: DOCUMENTATION GAP                              │  │
+│   │                                                         │  │
+│   │ Chronic conditions per MA patient    2.5               │  │
+│   │ Expected HCC-eligible conditions     9,750             │  │
+│   │ Current capture rate                 70%               │  │
+│   │ Documentation gap                    30%               │  │
+│   │ Conditions missed annually           2,925             │  │
+│   │                                                         │  │
+│   │ STEP 3: ABRIDGE RECAPTURE                              │  │
+│   │                                                         │  │
+│   │ Conditions missed annually           2,925             │  │
+│   │ Abridge recapture rate               50%               │  │
+│   │ New conditions documented            1,463 conditions  │  │
+│   │                                                         │  │
+│   │ STEP 4: RAF SCORE IMPACT                               │  │
+│   │                                                         │  │
+│   │ New conditions documented            1,463             │  │
+│   │ Average RAF weight per condition     0.25              │  │
+│   │ Total RAF points added               365.75 points     │  │
+│   │ Average RAF increase per patient     0.09              │  │
+│   │                                                         │  │
+│   │ STEP 5: REVENUE IMPACT                                 │  │
+│   │                                                         │  │
+│   │ Unique MA patients                   3,900             │  │
+│   │ RAF increase per patient             0.09              │  │
+│   │ Benchmark PMPM                       $1,000            │  │
+│   │ Incremental revenue/patient/year     $1,080            │  │
+│   │ Annual value                         $337,000          │  │
+│   │                                                         │  │
+│   └─────────────────────────────────────────────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Calculation methodology container:
+- Background: #F9FAFB (light gray)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Margin-top: 16px
+- Animation: Slide down 300ms ease-out
+
+Match Value Blueprint calculation styling exactly:
+- Step headers: 13px, #6B7280, uppercase, letter-spacing
+- Row labels: 14px, #6B7280 (gray), left-aligned
+- Row values: 14px, #111827 (black), right-aligned, tabular numbers
+- Final values in each step: #E8532F (orange)
+- Spacing between steps: 20px
+
+═══════════════════════════════════════════════════════════════
+
+PART 7: DRIVER-SPECIFIC ADJUSTMENTS
+
+When a driver is selected, show adjustable inputs below:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ☑ HCC & Chronic Condition Capture                +$337,000     │
+│                                                                 │
+│   [Card content...]                                             │
+│                                                                 │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │ ADJUST FOR YOUR ORGANIZATION                            │  │
+│   │                                                         │  │
+│   │ Medicare Advantage population                           │  │
+│   │ ├────────●───────────────────────────────────┤ 22%     │  │
+│   │ Baseline: 15% | Your region may differ                 │  │
+│   │                                                         │  │
+│   │ Benchmark PMPM (your county)                           │  │
+│   │ $ [1,150____]                                          │  │
+│   │ Find yours at cms.gov/medicare-health-plans            │  │
+│   │ Baseline: $1,000                                       │  │
+│   │                                                         │  │
+│   │ Recapture rate                                         │  │
+│   │ ├──────────────●───────────────────────────┤ 50%       │  │
+│   │ Typical range: 40-60%                                  │  │
+│   │                                                         │  │
+│   │ Updated value: $478,500 (+$141,500 from baseline)      │  │
+│   │                                                         │  │
+│   └─────────────────────────────────────────────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Adjustment section:
+- Background: #FFFBF5 (very subtle cream - shows it's editable)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Margin-top: 16px
+- Only shows when driver is selected
+
+Section header:
+- "ADJUST FOR YOUR ORGANIZATION": 13px, #6B7280 (gray), uppercase, bold
+
+Sliders and inputs:
+- Same styling as Fine-Tune section
+- Show baseline and typical range
+- Live update the driver value as inputs change
+
+Updated value display:
+- Font: 14px, #059669 (green), bold
+- Show delta from baseline calculation
+
+═══════════════════════════════════════════════════════════════
+
+PART 8: REAL-TIME PREVIEW PANEL
+
+Show live calculation preview (similar to Phase 2):
+
+┌─────────────────────────────────────────────────────────────────┐
+│ SCENARIO PREVIEW                                                │
+│ Updates in real-time                                            │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │              BASELINE         SCENARIO        CHANGE        │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ DEPLOYMENT (unchanged)                                      │ │
+│ │ Providers        50              50              —          │ │
+│ │ Encounters       65,000          65,000          —          │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ ACTIVE DRIVERS                                              │ │
+│ │ Patient Access   $173,333        $173,333        —          │ │
+│ │ Level of Service $182,000        $182,000        —          │ │
+│ │ Retention        $100,000        $100,000        —          │ │
+│ │ HCC Capture      —               $337,000        NEW        │ │
+│ │ Denial Reduction —               $103,000        NEW        │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ SUMMARY                                                     │ │
+│ │ Total Benefit    $455,333        $895,333        +97%       │ │
+│ │ Investment       $72,000         $72,000         —          │ │
+│ │ Net Annual Gain  $383,333        $823,333        +115%      │ │
+│ │ ROI              5.3x            11.4x           +115%      │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ 3-YEAR PROJECTION                                           │ │
+│ │ Total Value      $1,150,000      $2,470,000      +115%      │ │
+│ │ Total Investment $216,000        $216,000        —          │ │
+│ │ Net 3-Year Gain  $934,000        $2,254,000      +141%      │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💡 KEY INSIGHT                                              │ │
+│ │                                                             │ │
+│ │ Adding these 2 drivers increases your ROI from 5.3x to     │ │
+│ │ 11.4x without any additional investment. This is because   │ │
+│ │ you're capturing more value from your existing deployment. │ │
+│ │                                                             │ │
+│ │ HCC Capture alone adds $337,000 (74% of new value).        │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Same as Phase 2 preview panel with these differences:
+
+- "DEPLOYMENT (unchanged)" section shows all dashes for CHANGE column
+- "ACTIVE DRIVERS" section shows:
+  - Existing drivers with "—" in CHANGE
+  - New drivers with "NEW" badge in green (#059669)
+- Investment row shows "—" (no change)
+- ROI improvement should be prominent (often dramatic with this scenario type)
+
+"NEW" badge styling:
+- Background: #ECFDF5 (light green)
+- Text: 12px, #059669 (green), bold, uppercase
+- Padding: 2px 8px
+- Border-radius: 4px
+
+═══════════════════════════════════════════════════════════════
+
+PART 9: LAYOUT - TWO COLUMN ON DESKTOP
+
+Same layout as Phase 2:
+- Left column (60%): Input form (scenario name, active drivers, available drivers)
+- Right column (40%): Preview panel (sticky)
+- Gap: 48px
+
+Mobile:
+- Single column
+- Preview as collapsible or fixed bottom bar
+
+═══════════════════════════════════════════════════════════════
+
+PART 10: FOOTER ACTIONS
+
+Same as Phase 2:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│                   [Cancel]        [Save Scenario]              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Save validation:
+- Scenario name required
+- At least ONE new driver must be selected
+- Show validation message: "Select at least one driver to add"
+
+═══════════════════════════════════════════════════════════════
+
+PART 11: CALCULATION LOGIC
+
+For each selected driver, calculate value using baseline model inputs:
+- Use same formulas as Detailed Breakdown
+- Use baseline encounters, utilization, etc.
+- Apply any user adjustments from "ADJUST FOR YOUR ORGANIZATION"
+
+Real-time update behavior:
+- When driver checkbox changes: Recalculate totals
+- When adjustment slider changes: Recalculate that driver + totals
+- Debounce by 300ms
+- Highlight changed values in preview (200ms fade)
+
+Driver calculation formulas (reference):
+
+HCC Capture:
+- unique_patients = eligible_encounters / 2.5
+- ma_patients = unique_patients × ma_population %
+- conditions_missed = ma_patients × 2.5 × 0.30
+- conditions_recaptured = conditions_missed × recapture_rate
+- raf_increase = conditions_recaptured × 0.25 / ma_patients
+- value = ma_patients × benchmark_pmpm × 12 × raf_increase
+
+Denial Reduction:
+- total_revenue = eligible_encounters × revenue_per_visit
+- revenue_denied = total_revenue × denial_rate
+- doc_denials = revenue_denied × 0.30
+- value = doc_denials × prevention_rate
+
+Overtime Cost:
+- total_hours = (minutes_saved × eligible_encounters) / 60
+- premium_hours = total_hours × after_hours_reduction %
+- value = premium_hours × blended_premium_rate
+
+═══════════════════════════════════════════════════════════════
+
+PART 12: SAVE BEHAVIOR
+
+When user clicks "Save Scenario":
+
+1. Validate inputs:
+   - Scenario name required
+   - At least one driver selected
+
+2. Save to state:
+   - Scenario ID (generated)
+   - Scenario name
+   - Scenario type: "add_drivers"
+   - Created timestamp
+   - Selected drivers array
+   - Custom adjustments for each driver
+   - Calculated results
+
+3. Navigate back to Scenario Builder main page
+
+4. Show success toast:
+   "✓ Scenario saved: [Scenario Name]"
+
+5. New scenario appears in "YOUR SCENARIOS" list with 🎯 icon
+
+═══════════════════════════════════════════════════════════════
+
+PART 13: EDGE CASES
+
+If ALL drivers already active in baseline:
+- Show message: "All value drivers are already active in your baseline model."
+- Suggest: "Try 'Expand Providers' to model growth, or adjust assumptions in Detailed Breakdown."
+- Disable "Save Scenario" button
+
+If no drivers selected:
+- Preview shows baseline values
+- "Save Scenario" disabled
+- Subtle prompt: "Select at least one driver above"
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Scenario Builder main page structure (from Phase 1)
+- Expand Providers flow (from Phase 2)
+- Any other tabs or pages
+- Brand colors or typography
+- Core calculation formulas
+
+ONLY BUILD:
+- Add Strategic Drivers flow
+- Driver selection cards with methodology preview
+- Driver-specific adjustment inputs
+- Real-time preview panel
+- Save functionality
+
+═══════════════════════════════════════════════════════════════
+
+RESULT:
+User can create "Add Strategic Drivers" scenarios that show the impact of enabling additional value streams. Each driver shows relevance context, expandable calculation methodology, and adjustable inputs. Preview updates in real-time showing dramatic ROI improvement (since investment stays flat). Saved scenarios appear on main Scenario Builder page.
