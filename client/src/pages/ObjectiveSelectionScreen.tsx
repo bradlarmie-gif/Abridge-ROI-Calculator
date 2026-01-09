@@ -1794,7 +1794,8 @@ export default function ObjectiveSelectionScreen({
               src={geometricPattern}
               alt=""
               aria-hidden="true"
-              className="fixed top-[-10%] right-[-10%] w-[700px] md:w-[1000px] lg:w-[1200px] pointer-events-none z-0 opacity-[0.08]"
+              className="fixed top-[-5%] right-[-5%] w-[700px] md:w-[1000px] lg:w-[1200px] pointer-events-none opacity-[0.15]"
+              style={{ zIndex: -1 }}
             />
             
             {/* Geometric pattern - bottom left corner */}
@@ -1802,7 +1803,8 @@ export default function ObjectiveSelectionScreen({
               src={geometricPattern}
               alt=""
               aria-hidden="true"
-              className="fixed bottom-[-10%] left-[-10%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none z-0 opacity-[0.06] rotate-180"
+              className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.12] rotate-180"
+              style={{ zIndex: -1 }}
             />
 
             <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28 relative z-10">
