@@ -771,6 +771,9 @@ export default function ObjectiveSelectionScreen({
   const [valuePosture, setValuePosture] = useState<ValuePosture | null>(null);
   const [editingAssumption, setEditingAssumption] = useState<string | null>(null);
   
+  // Track the last non-custom posture for comparison purposes
+  const [lastNonCustomPosture, setLastNonCustomPosture] = useState<"conservative" | "typical" | "aggressive">("typical");
+  
   // Reset all confirmation modal state
   const [showResetAllModal, setShowResetAllModal] = useState(false);
 
@@ -814,6 +817,7 @@ export default function ObjectiveSelectionScreen({
     setFtOvertimeAfterHoursReduction(extraPreset.overtimeReduction);
     
     setValuePosture(posture);
+    setLastNonCustomPosture(posture); // Track for customization comparisons
     setEditingAssumption(null);
   };
 
@@ -825,11 +829,10 @@ export default function ObjectiveSelectionScreen({
   };
 
   // Track customizations from current posture defaults
-  // When posture is "custom" or null, compare against "typical" as baseline
+  // Uses lastNonCustomPosture to track what the user originally selected
   const customizations = useMemo(() => {
-    const basePosture = valuePosture && valuePosture !== "custom" ? valuePosture : "typical";
-    const preset = POSTURE_PRESETS[basePosture];
-    const extraPreset = FINE_TUNE_EXTRA_POSTURE_VALUES[basePosture];
+    const preset = POSTURE_PRESETS[lastNonCustomPosture];
+    const extraPreset = FINE_TUNE_EXTRA_POSTURE_VALUES[lastNonCustomPosture];
     
     const changes: { driver: string; input: string; oldValue: string; newValue: string }[] = [];
     
@@ -996,7 +999,7 @@ export default function ObjectiveSelectionScreen({
     
     return changes;
   }, [
-    valuePosture, customMinutes, minutesSaved, timeRealizationRate, wrvuSensitivity,
+    lastNonCustomPosture, customMinutes, minutesSaved, timeRealizationRate, wrvuSensitivity,
     ftPatientAccessVisitDuration, ftPatientAccessRevenuePerVisit, ftWrvuBaseline, ftWrvuRevenuePerUnit,
     ftRetentionTurnoverRate, ftRetentionReplacementCost, ftHccMedicareAdvantage, ftHccRecaptureRate,
     ftHccBenchmarkPmpm, ftDenialBaselineRate, ftDenialPreventionRate, ftOvertimeAfterHoursReduction,
@@ -2750,7 +2753,7 @@ export default function ObjectiveSelectionScreen({
                           {customizations.length > 0 && (
                             <div className="bg-[#FEF3C7] border border-[#F59E0B] rounded-lg p-4 mb-6">
                               <p className="text-sm font-bold text-[#92400E]">
-                                Your customizations: <span className="text-[#E8532F]">{customizations.length} change{customizations.length > 1 ? "s" : ""}</span> from {(valuePosture && valuePosture !== "custom" ? valuePosture : "typical").charAt(0).toUpperCase() + (valuePosture && valuePosture !== "custom" ? valuePosture : "typical").slice(1)} posture
+                                Your customizations: <span className="text-[#E8532F]">{customizations.length} change{customizations.length > 1 ? "s" : ""}</span> from {lastNonCustomPosture.charAt(0).toUpperCase() + lastNonCustomPosture.slice(1)} posture
                               </p>
                               <div className="mt-2 space-y-1">
                                 {customizations.map((change, idx) => (
