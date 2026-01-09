@@ -2470,7 +2470,7 @@ export default function ObjectiveSelectionScreen({
                     </div>
 
                     {/* Posture Preview Card */}
-                    {detectedPosture && detectedPosture !== "custom" && (
+                    {detectedPosture && (
                       <div className="border border-neutral-200 rounded-xl p-5 mb-6 bg-neutral-50/50" data-testid="posture-preview-card">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
@@ -2481,9 +2481,13 @@ export default function ObjectiveSelectionScreen({
                           {detectedPosture === "conservative" && "Best for: Risk-averse modeling, board presentation"}
                           {detectedPosture === "typical" && "Best for: Initial business case, balanced approach"}
                           {detectedPosture === "aggressive" && "Best for: Aspirational planning, optimal adoption"}
+                          {detectedPosture === "custom" && "Custom assumptions based on your fine-tuned inputs"}
                         </p>
                         <p className="text-[13px] text-[#6B7280] mb-4">
-                          Based on: Median performance from 200+ health system partners
+                          {detectedPosture === "custom" 
+                            ? `Customized from ${lastNonCustomPosture.charAt(0).toUpperCase() + lastNonCustomPosture.slice(1)} posture`
+                            : "Based on: Median performance from 200+ health system partners"
+                          }
                         </p>
                         
                         {/* Dynamic driver values */}
