@@ -1,0 +1,426 @@
+OBJECTIVE:
+Completely redesign the Scenario Builder page with proper visual hierarchy, clear structure, and three distinct scenario type options. This is the foundation that all future phases will build on. Must match the professional aesthetic of Summary View, Value Blueprint, and other polished pages.
+
+CRITICAL RULES:
+- Match existing brand colors and typography exactly
+- Use same card styling, shadows, and spacing as rest of app
+- Keep existing calculation logic intact (just restructure the UI)
+- Make it feel like a strategic planning tool, not a basic form
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: PAGE HEADER
+
+Replace current header with more impactful design:
+
+CURRENT:
+SCENARIO BUILDER
+Model what different deployment configurations could look like
+
+NEW:
+┌─────────────────────────────────────────────────────────────────┐
+│ SCENARIO BUILDER                                                │
+│ Model expansion opportunities and see the financial impact      │
+│                                                                 │
+│ 💡 Use scenarios to explore "what if" questions without        │
+│    changing your baseline model. Compare options side-by-side.  │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+- "SCENARIO BUILDER": 14px, #E8532F (orange), uppercase, letter-spacing 0.05em, bold
+- Main subtitle: 16px, #6B7280 (gray), regular
+- Info box below:
+  - Background: #F9FAFB (light gray)
+  - Border: 1px solid #E5E7EB
+  - Border-radius: 8px
+  - Padding: 16px
+  - Font: 14px, #6B7280 (gray)
+  - Lightbulb icon: 💡
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: BASELINE MODEL CARD (LOCKED)
+
+Show the current model as a "locked" baseline for comparison:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ YOUR CURRENT MODEL                                              │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ ✓ Outpatient                               [Baseline]       │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ 📊 DEPLOYMENT                                               │ │
+│ │ 50 providers  |  65,000 encounters  |  65% utilization     │ │
+│ │                                                             │ │
+│ │ 🎯 VALUE DRIVERS                                            │ │
+│ │ Patient Access  •  Level of Service  •  Clinician Retention│ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ Net Annual Gain                               $391,802      │ │
+│ │ Return on Investment                          6.4x          │ │
+│ │ 3-Year Total Value                            $1,175,406    │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ [View Full Breakdown →]                                    │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header "YOUR CURRENT MODEL":
+- Font: 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-bottom: 16px
+
+Card container:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+
+Care setting + badge row:
+- "✓ Outpatient": 18px, #111827 (black), bold
+- Checkmark: #059669 (green)
+- [Baseline] badge:
+  - Background: #F3F4F6 (light gray)
+  - Text: 12px, #6B7280 (gray), uppercase
+  - Padding: 4px 8px
+  - Border-radius: 4px
+  - Position: Right-aligned
+
+Divider lines:
+- 1px solid #E5E7EB
+- Margin: 16px vertical
+
+Section labels (📊 DEPLOYMENT, 🎯 VALUE DRIVERS):
+- Font: 12px, #6B7280 (gray), uppercase, letter-spacing 0.05em
+- Icon: 14px
+- Margin-bottom: 8px
+
+Deployment metrics row:
+- Font: 14px, #111827 (black)
+- Pipe separators: #E5E7EB (gray)
+- Format: "50 providers  |  65,000 encounters  |  65% utilization"
+
+Value drivers row:
+- Font: 14px, #111827 (black)
+- Bullet separators: •
+- List all active drivers
+
+Results section:
+- Labels: 14px, #6B7280 (gray), left-aligned
+- Values: 18px, #111827 (black), right-aligned, bold, tabular numbers
+- Net Annual Gain value: #059669 (green)
+- Spacing: 8px between rows
+
+"View Full Breakdown" link:
+- Font: 14px, #E8532F (orange)
+- Arrow: →
+- Hover: Underline
+- Links to Summary View
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: SCENARIO TYPE SELECTION
+
+Three clear options for what kind of scenario to build:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ BUILD AN EXPANSION SCENARIO                                     │
+│ What would you like to model?                                   │
+│                                                                 │
+│ ┌───────────────────┐ ┌───────────────────┐ ┌───────────────────┐│
+│ │                   │ │                   │ │                   ││
+│ │       📈         │ │        🎯         │ │        🏥         ││
+│ │                   │ │                   │ │                   ││
+│ │    Expand         │ │   Add Strategic   │ │   New Care        ││
+│ │    Providers      │ │   Drivers         │ │   Setting         ││
+│ │                   │ │                   │ │                   ││
+│ │ ─────────────────│ │ ─────────────────│ │ ─────────────────││
+│ │                   │ │                   │ │                   ││
+│ │ Add more users    │ │ Enable new value  │ │ Deploy in ED,     ││
+│ │ to your current   │ │ streams without   │ │ Nursing, or       ││
+│ │ deployment        │ │ adding users      │ │ Inpatient         ││
+│ │                   │ │                   │ │                   ││
+│ │ [Start →]         │ │ [Start →]         │ │ [Start →]         ││
+│ │                   │ │                   │ │                   ││
+│ └───────────────────┘ └───────────────────┘ └───────────────────┘│
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "BUILD AN EXPANSION SCENARIO": 16px, #111827 (black), bold
+- "What would you like to model?": 14px, #6B7280 (gray)
+- Margin-top: 48px
+- Margin-bottom: 24px
+
+Scenario type cards (3 columns):
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+- Width: Equal (flex: 1 or 33% minus gaps)
+- Gap between cards: 16px
+
+Card content:
+- Icon: 32px, centered, margin-bottom 16px
+  - Expand Providers: 📈
+  - Add Strategic Drivers: 🎯
+  - New Care Setting: 🏥
+- Title: 16px, #111827 (black), bold, centered
+- Divider: 1px solid #E5E7EB, margin 16px vertical
+- Description: 14px, #6B7280 (gray), centered, line-height 1.6
+- "Start →" button:
+  - Font: 14px, #E8532F (orange)
+  - Background: transparent
+  - Hover: Underline
+  - Margin-top: 16px
+  - Centered
+
+Hover state for cards:
+- Border: 1px solid #E8532F (orange)
+- Shadow: 0 4px 12px rgba(0, 0, 0, 0.08)
+- Scale: 1.01
+- Transition: all 200ms ease-out
+- Cursor: pointer
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: YOUR SCENARIOS LIST
+
+Show created scenarios with actions:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ YOUR SCENARIOS                                                  │
+│                                                                 │
+│ [If no scenarios exist - Empty State:]                         │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ 📋 No scenarios yet                                         │ │
+│ │                                                             │ │
+│ │ Create your first scenario above to explore expansion       │ │
+│ │ opportunities. Scenarios let you model "what if" questions  │ │
+│ │ without changing your baseline model.                       │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ [If scenarios exist:]                                          │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📈 Expand to 100 Providers                                  │ │
+│ │    Created: Dec 15, 2024                                    │ │
+│ │                                                             │ │
+│ │    100 providers  |  130,000 encounters  |  75% utilization│ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │    Net Annual Gain        $783,604          +100% vs baseline│
+│ │    ROI                    6.4x                              │ │
+│ │                                                             │ │
+│ │    [View Details]  [Edit]  [Compare]  [Delete]             │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 🎯 Add HCC + Denial Drivers                                 │ │
+│ │    Created: Dec 14, 2024                                    │ │
+│ │                                                             │ │
+│ │    50 providers  |  65,000 encounters  |  +2 drivers       │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │    Net Annual Gain        $612,500          +56% vs baseline │
+│ │    ROI                    8.5x                              │ │
+│ │                                                             │ │
+│ │    [View Details]  [Edit]  [Compare]  [Delete]             │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ [Compare Selected Scenarios]                                   │
+│ Select 2-3 scenarios above to compare side-by-side            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header "YOUR SCENARIOS":
+- Font: 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-top: 48px
+- Margin-bottom: 16px
+
+Empty state:
+- Background: #F9FAFB (light gray)
+- Border: 1px dashed #E5E7EB
+- Border-radius: 8px
+- Padding: 32px
+- Text: 14px, #6B7280 (gray), centered
+- Icon: 📋, 24px
+
+Scenario cards:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+- Margin-bottom: 16px
+
+Card header:
+- Icon: Match scenario type (📈, 🎯, 🏥)
+- Title: 16px, #111827 (black), bold
+- "Created: date": 13px, #9CA3AF (light gray)
+
+Metrics row:
+- Font: 14px, #6B7280 (gray)
+- Pipe separators
+
+Results row:
+- "Net Annual Gain" label: 14px, #6B7280 (gray)
+- Value: 18px, #059669 (green), bold
+- "vs baseline" comparison: 14px, #059669 (green) if positive, #DC2626 (red) if negative
+- "ROI" and value: Same styling
+
+Action buttons row:
+- [View Details]: 13px, #E8532F (orange), hover underline
+- [Edit]: 13px, #6B7280 (gray), hover underline
+- [Compare]: 13px, #6B7280 (gray), hover underline
+- [Delete]: 13px, #DC2626 (red), hover underline
+- Spacing: 16px between buttons
+
+Compare section at bottom:
+- "Compare Selected Scenarios" button:
+  - Background: #111827 (black)
+  - Text: White, 14px
+  - Padding: 12px 24px
+  - Border-radius: 6px
+  - Hover: Background #E8532F (orange)
+  - Disabled state if < 2 scenarios selected
+- Subtitle: 13px, #6B7280 (gray)
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: SCENARIO CARD SELECTION (FOR COMPARISON)
+
+Add checkbox selection to scenario cards for comparison feature:
+
+When in comparison mode, each scenario card gets a checkbox:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ [✓] 📈 Expand to 100 Providers                                 │
+│     Created: Dec 15, 2024                                       │
+│     ...                                                         │
+└─────────────────────────────────────────────────────────────────┘
+
+Checkbox styling:
+- Size: 20px
+- Position: Top-left corner of card
+- Unchecked: Border 2px solid #E5E7EB
+- Checked: Background #E8532F (orange), white checkmark
+- Transition: 150ms
+
+When selected:
+- Card border: 1px solid #E8532F (orange)
+- Subtle background tint: rgba(232, 83, 47, 0.02)
+
+Limit selection to 3 scenarios max. Show message:
+"Maximum 3 scenarios for comparison. Deselect one to choose another."
+
+═══════════════════════════════════════════════════════════════
+
+PART 6: MOBILE RESPONSIVENESS
+
+Desktop (>1024px):
+- 3 scenario type cards in row
+- Baseline card full width
+- Scenario list cards full width
+
+Tablet (768px - 1024px):
+- 3 scenario type cards in row (smaller)
+- Everything else same
+
+Mobile (<768px):
+- Scenario type cards stack vertically (1 column)
+- All cards full width
+- Comparison button: Fixed bottom bar when scenarios selected
+  ┌─────────────────────────────────────────────────┐
+  │ 2 scenarios selected        [Compare Now]       │
+  └─────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+
+PART 7: INTERACTION BEHAVIOR
+
+Clicking scenario type cards:
+- "Expand Providers" → Opens expand providers modal/page (Phase 2)
+- "Add Strategic Drivers" → Opens add drivers modal/page (Phase 3)
+- "New Care Setting" → Opens care setting selection modal/page (Phase 4)
+
+For now (Phase 1), clicking these cards should:
+- Show a placeholder message: "Coming soon - this feature is being built"
+- OR open a basic modal with placeholder content
+- We'll replace with full functionality in later phases
+
+Clicking scenario card actions:
+- [View Details] → Expands card to show full calculation breakdown
+- [Edit] → Opens scenario in edit mode
+- [Compare] → Adds to comparison selection
+- [Delete] → Shows confirmation dialog, then removes scenario
+
+═══════════════════════════════════════════════════════════════
+
+PART 8: DATA FLOW
+
+The baseline card should pull LIVE data from:
+- Current model's care setting
+- Current model's provider count, encounters, utilization
+- Current model's active value drivers
+- Current model's calculated results (net gain, ROI, 3-year value)
+
+Scenario cards should store:
+- Scenario name
+- Scenario type (expand, drivers, setting)
+- Creation date
+- Configuration inputs
+- Calculated results
+- Comparison to baseline (%)
+
+Store scenarios in app state and localStorage for persistence.
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Any calculation logic
+- Other tabs in Results Dashboard (Summary View, Detailed Breakdown, Export)
+- Any other pages in the application
+- Brand colors or typography
+
+ONLY CHANGE:
+- Scenario Builder page structure and visual design
+- Add scenario type selection cards
+- Improve baseline model display
+- Add scenario list with actions
+- Add comparison selection functionality
+
+═══════════════════════════════════════════════════════════════
+
+RESULT:
+Scenario Builder now has clear visual hierarchy with:
+1. Informative header explaining purpose
+2. Baseline model card showing current state (locked)
+3. Three clear scenario type options (Expand Providers, Add Drivers, New Care Setting)
+4. List of created scenarios with comparison vs baseline
+5. Ability to select and compare multiple scenarios
+
+The page matches the professional aesthetic of Summary View and Value Blueprint. It feels like a strategic planning tool that CFOs and partner teams would trust and use.
