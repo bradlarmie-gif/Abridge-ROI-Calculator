@@ -1789,30 +1789,26 @@ export default function ObjectiveSelectionScreen({
         {currentPage === "orientation" && (
           <div className="relative min-h-full">
             {/* Geometric pattern - top right */}
-            <svg 
-              className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] md:w-[600px] md:h-[600px] pointer-events-none z-0 opacity-[0.03]"
-              viewBox="0 0 400 400" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="100" cy="100" r="80" fill="#E8D5C8" />
-              <rect x="200" y="50" width="150" height="150" rx="24" fill="#E8D5C8" />
-              <path d="M50 280 Q150 220 250 280" stroke="#E8D5C8" strokeWidth="40" fill="none" strokeLinecap="round" />
-              <circle cx="320" cy="320" r="60" fill="#E8D5C8" />
-              <rect x="40" y="200" width="80" height="80" rx="16" fill="#E8D5C8" />
-            </svg>
+            <div 
+              className="fixed top-[-5%] right-[-5%] w-[400px] h-[300px] md:w-[600px] md:h-[450px] pointer-events-none z-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `url('/attached_assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png')`,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+              }}
+            />
             
             {/* Geometric pattern - bottom left */}
-            <svg 
-              className="fixed bottom-[-10%] left-[-10%] w-[400px] h-[400px] md:w-[500px] md:h-[500px] pointer-events-none z-0 opacity-[0.025] rotate-180"
-              viewBox="0 0 400 400" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="100" cy="100" r="80" fill="#E8D5C8" />
-              <rect x="200" y="50" width="150" height="150" rx="24" fill="#E8D5C8" />
-              <path d="M50 280 Q150 220 250 280" stroke="#E8D5C8" strokeWidth="40" fill="none" strokeLinecap="round" />
-              <circle cx="320" cy="320" r="60" fill="#E8D5C8" />
-              <rect x="40" y="200" width="80" height="80" rx="16" fill="#E8D5C8" />
-            </svg>
+            <div 
+              className="fixed bottom-[-5%] left-[-5%] w-[350px] h-[260px] md:w-[500px] md:h-[375px] pointer-events-none z-0 opacity-[0.025] rotate-180"
+              style={{
+                backgroundImage: `url('/attached_assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png')`,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+              }}
+            />
 
             <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28 relative z-10">
               <div className="w-full max-w-3xl text-center">
