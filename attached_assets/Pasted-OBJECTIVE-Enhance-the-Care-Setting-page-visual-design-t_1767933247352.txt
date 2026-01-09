@@ -1,0 +1,217 @@
+OBJECTIVE:
+Enhance the Care Setting page visual design to match the polish level of later pages (Live Receipt, Value Blueprint, Summary View). Add subtle depth, better hierarchy, and more context without changing the core structure or tone.
+
+CRITICAL RULES:
+- Keep the existing layout structure
+- Don't add fluff or marketing copy
+- Use only existing color palette
+- Maintain professional, data-forward tone
+- All changes should feel like "this was always here"
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: ADD INTRO CONTEXT BOX
+
+After "Select a care setting" headline and before the existing description, add:
+
+┌─────────────────────────────────────────────────────────┐
+│ Build a model for your organization                    │
+│                                                         │
+│ Each care setting has unique documentation workflows,  │
+│ encounter patterns, and value drivers. Your selection  │
+│ determines the baseline assumptions throughout this    │
+│ calculator.                                            │
+└─────────────────────────────────────────────────────────┘
+
+STYLING:
+- Background: #F9FAFB (light gray - same as Live Receipt tier 1)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Margin-bottom: 24px
+
+Text:
+- Headline: 16px, #111827 (black), medium weight
+- Body: 14px, #6B7280 (gray), line-height 1.6
+- Spacing: 8px between headline and body
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: ENHANCE "WHY THIS MATTERS" SECTION
+
+Keep the section header and checkmarks, but add explanatory sub-text to each bullet:
+
+WHY THIS MATTERS
+
+✓  Workflows differ by setting—so ROI drivers differ too.
+   Example: Emergency departments prioritize throughput; 
+   outpatient prioritizes patient access.
+
+✓  This sets the assumptions used throughout the model.
+   Baseline wRVUs, typical encounter lengths, and documentation 
+   patterns vary by care environment.
+
+✓  You'll get a tailored output you can share.
+   Your final model reflects setting-specific benchmarks from 
+   200+ health system partners.
+
+STYLING:
+- Keep existing checkmark styling (orange #E8532F)
+- Primary line: Keep existing (14px, #111827)
+- NEW - Secondary explanation line:
+  - Font: 13px, #6B7280 (gray)
+  - Line-height: 1.6
+  - Indent: 24px from left (aligns with text after checkmark)
+  - Margin-top: 4px (between primary and secondary)
+- Spacing between items: 16px (increased from current)
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: ENHANCE CARE SETTING CARDS
+
+Add subtle depth and more context to each card:
+
+VISUAL ENHANCEMENTS:
+
+Default state:
+- Add shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+- Keep existing border, radius, padding
+
+Hover state:
+- Shadow increases: 0 4px 12px rgba(0, 0, 0, 0.08)
+- Scale: 1.01
+- Border color: #E8532F (Abridge orange)
+- Transition: 200ms ease-out
+
+Selected state:
+- Left border accent: 4px solid #E8532F
+- Background: #FEF3C7 at 20% opacity (very subtle orange tint)
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+- Checkmark appears in top-right
+
+CONTENT ADDITIONS:
+
+Add "Typical drivers" list to each card below the description:
+
+OUTPATIENT:
+┌─────────────────────────────────────────┐
+│ 🏥  Outpatient                       ✓  │
+│                                         │
+│ Primary care, specialty visits, clinics│
+│                                         │
+│ Typical drivers:                       │
+│ • Patient access expansion             │
+│ • Level of service improvements        │
+│ • Clinician retention                  │
+└─────────────────────────────────────────┘
+
+EMERGENCY DEPARTMENT:
+┌─────────────────────────────────────────┐
+│ 🚑  Emergency Department                │
+│                                         │
+│ High-volume, fast-paced encounters     │
+│                                         │
+│ Typical drivers:                       │
+│ • Patient throughput                   │
+│ • Level of service accuracy            │
+│ • Denial reduction                     │
+└─────────────────────────────────────────┘
+
+NURSING:
+┌─────────────────────────────────────────┐
+│ 💊  Nursing                             │
+│                                         │
+│ Bedside documentation, care coordination│
+│                                         │
+│ Typical drivers:                       │
+│ • Time savings                         │
+│ • Overtime reduction                   │
+│ • Documentation quality                │
+└─────────────────────────────────────────┘
+
+INPATIENT (disabled):
+┌─────────────────────────────────────────┐
+│ 🏥  Inpatient                           │
+│                                         │
+│ Hospital admissions, rounding          │
+│                                         │
+│ In development                         │
+└─────────────────────────────────────────┘
+
+DRIVER LIST STYLING:
+- "Typical drivers:" label: 13px, #6B7280 (gray), medium weight
+- Bullet items: 13px, #6B7280 (gray)
+- Bullet character: • (not actual list)
+- Line-height: 1.6
+- Spacing: 4px between bullets
+- Margin-top from description: 12px
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: INPATIENT CARD IMPROVEMENTS
+
+Instead of just "Coming soon" text:
+
+CONTENT:
+- Keep icon and "Inpatient" label
+- Description: "Hospital admissions, rounding"
+- Status: "In development" (instead of "Coming soon")
+- NO button, NO clickable behavior
+- On hover: Tooltip appears
+
+Tooltip on hover:
+"Inpatient calculator in development"
+- Background: #111827 (dark)
+- Text: #FFFFFF (white), 13px
+- Padding: 8px 12px
+- Border-radius: 6px
+- Appears above card, fade in 150ms
+
+STYLING:
+- Entire card: Opacity 0.6 (more muted than active cards)
+- Border: 1px dashed #E5E7EB (shows it's different)
+- Cursor: not-allowed
+- No hover effects (no scale, no border color change)
+
+"In development" text:
+- Font: 13px, #9CA3AF (lighter gray), italic
+- Positioned where driver list would be on other cards
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: SPACING & LAYOUT REFINEMENTS
+
+Adjust spacing for better visual rhythm:
+
+Page layout:
+- Headline to intro box: 16px
+- Intro box to description: 24px
+- Description to "WHY THIS MATTERS": 40px
+- "WHY THIS MATTERS" to card section: 48px
+
+Card grid (right side):
+- Spacing between cards: 16px
+- Card padding: 20px (increase from current if needed)
+- Icon to title: 12px
+- Title to description: 8px
+- Description to driver list: 12px
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Overall page layout (two-column structure)
+- Card selection logic
+- Continue button behavior
+- Navigation breadcrumbs
+- Any other pages
+- Brand colors (use existing palette only)
+
+DO NOT ADD:
+- Multiple scenario copy
+- "What you'll build" numbered list
+- Early access modal or email capture
+- Any marketing language
+- Flashy animations
+
+RESULT:
+The Care Setting page now matches the visual polish of later pages. It has more presence as the entry point, better context for decision-making, and clearer differentiation between active and unavailable options. Still minimal and professional, but no longer flat.

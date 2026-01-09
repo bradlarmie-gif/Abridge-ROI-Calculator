@@ -48,6 +48,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export interface SelectedLever {
   settingId: CareSettingType;
@@ -466,70 +471,122 @@ function Stepper({ currentPage }: { currentPage: Page }) {
   );
 }
 
+const SETTING_DESCRIPTIONS: Record<string, string> = {
+  outpatient: "Primary care, specialty visits, clinics",
+  ed: "High-volume, fast-paced encounters",
+  nursing: "Bedside documentation, care coordination",
+  inpatient: "Hospital admissions, rounding",
+};
+
+const SETTING_DRIVERS: Record<string, string[]> = {
+  outpatient: ["Patient access expansion", "Level of service improvements", "Clinician retention"],
+  ed: ["Patient throughput", "Level of service accuracy", "Denial reduction"],
+  nursing: ["Time savings", "Overtime reduction", "Documentation quality"],
+  inpatient: [],
+};
+
 function CareSettingRow({
   icon: Icon,
   label,
+  settingKey,
   selected,
   disabled,
   onClick,
 }: {
   icon: typeof Stethoscope;
   label: string;
+  settingKey: string;
   selected: boolean;
   disabled: boolean;
   onClick: () => void;
 }) {
-  return (
+  const description = SETTING_DESCRIPTIONS[settingKey] || "";
+  const drivers = SETTING_DRIVERS[settingKey] || [];
+
+  const buttonContent = (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative w-full flex items-center gap-4 px-5 py-4 transition-all duration-200 ${
+      className={`group relative w-full text-left px-5 py-5 transition-all duration-200 ease-out ${
         disabled
-          ? "cursor-not-allowed opacity-40"
+          ? "cursor-not-allowed opacity-60 border border-dashed border-[#E5E7EB]"
           : selected
-            ? "bg-[#FFF5F3]"
-            : "hover:bg-neutral-50 cursor-pointer"
+            ? "bg-[#FEF3C7]/20 border-l-4 border-l-[#E8532F] border-t border-r border-b border-transparent shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+            : "shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] border border-transparent hover:border-[#E8532F] cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
       {selected && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#F03319]" />
+        <div className="absolute right-4 top-4">
+          <Check className="w-5 h-5 text-[#F03319]" />
+        </div>
       )}
-      <div
-        className={`flex items-center justify-center w-10 h-10 rounded transition-colors flex-shrink-0 ${
-          selected
-            ? "bg-[#F03319]/10"
-            : disabled
-              ? "bg-neutral-100"
-              : "bg-neutral-100 group-hover:bg-neutral-200"
-        }`}
-      >
-        <Icon
-          className={`w-5 h-5 ${selected ? "text-[#F03319]" : disabled ? "text-neutral-400" : "text-neutral-600"}`}
-        />
+      <div className="flex items-start gap-4">
+        <div
+          className={`flex items-center justify-center w-10 h-10 rounded transition-colors flex-shrink-0 ${
+            selected
+              ? "bg-[#F03319]/10"
+              : disabled
+                ? "bg-neutral-100"
+                : "bg-neutral-100 group-hover:bg-neutral-200"
+          }`}
+        >
+          <Icon
+            className={`w-5 h-5 ${selected ? "text-[#F03319]" : disabled ? "text-neutral-400" : "text-neutral-600"}`}
+          />
+        </div>
+        <div className="flex-1 min-w-0 pr-8">
+          <span
+            className={`text-base font-medium ${
+              selected
+                ? "text-neutral-900"
+                : disabled
+                  ? "text-neutral-400"
+                  : "text-neutral-800"
+            }`}
+          >
+            {label}
+          </span>
+          <p className={`text-sm mt-1 ${disabled ? "text-neutral-400" : "text-[#6B7280]"}`}>
+            {description}
+          </p>
+          {disabled ? (
+            <p className="text-[13px] text-[#9CA3AF] italic mt-3">In development</p>
+          ) : drivers.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[13px] font-medium text-[#6B7280]">Typical drivers:</p>
+              <div className="mt-1 space-y-1">
+                {drivers.map((driver, idx) => (
+                  <p key={idx} className="text-[13px] text-[#6B7280] leading-relaxed">• {driver}</p>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-      <span
-        className={`flex-1 text-left text-base font-medium ${
-          selected
-            ? "text-neutral-900"
-            : disabled
-              ? "text-neutral-400"
-              : "text-neutral-800"
-        }`}
-      >
-        {label}
-      </span>
-      {disabled && (
-        <span className="text-xs px-2.5 py-1 rounded-full bg-neutral-200/60 text-neutral-500 font-medium">
-          Coming soon
-        </span>
-      )}
-      {!disabled && selected && (
-        <Check className="w-5 h-5 text-[#F03319] flex-shrink-0" />
-      )}
     </button>
   );
+
+  if (disabled) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="pointer-events-auto cursor-not-allowed">
+            {buttonContent}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent 
+          side="top" 
+          className="bg-[#111827] text-white text-[13px] px-3 py-2 rounded-md border-0"
+        >
+          Inpatient calculator in development
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return buttonContent;
 }
 
 function PriorityCard({
@@ -1678,32 +1735,52 @@ export default function ObjectiveSelectionScreen({
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-16 md:py-20">
             <div className="grid lg:grid-cols-[1fr_520px] gap-12 lg:gap-16">
               <div className="max-w-xl">
-                <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-6">
+                <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
                   Select a care setting
                 </h2>
+                
+                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 mb-6">
+                  <p className="text-base font-medium text-[#111827] mb-2">Build a model for your organization</p>
+                  <p className="text-sm text-[#6B7280] leading-relaxed">
+                    Each care setting has unique documentation workflows, encounter patterns, and value drivers. Your selection determines the baseline assumptions throughout this calculator.
+                  </p>
+                </div>
+
                 <p className="text-lg text-neutral-600 leading-relaxed mb-10">
                   This sets baseline documentation patterns and default assumptions.
                 </p>
+                
                 <div className="space-y-4 mb-8">
                   <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                     Why this matters
                   </h3>
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-3 text-base text-neutral-700">
-                      <Check className="w-5 h-5 text-[#F03319] flex-shrink-0 mt-0.5" />
-                      <span>
-                        Workflows differ by setting—so ROI drivers differ too.
-                      </span>
+                  <ul className="space-y-4">
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-[#E8532F] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-sm text-[#111827]">Workflows differ by setting—so ROI drivers differ too.</span>
+                        <p className="text-[13px] text-[#6B7280] leading-relaxed mt-1 ml-0">
+                          Example: Emergency departments prioritize throughput; outpatient prioritizes patient access.
+                        </p>
+                      </div>
                     </li>
-                    <li className="flex items-start gap-3 text-base text-neutral-700">
-                      <Check className="w-5 h-5 text-[#F03319] flex-shrink-0 mt-0.5" />
-                      <span>
-                        This sets the assumptions used throughout the model.
-                      </span>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-[#E8532F] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-sm text-[#111827]">This sets the assumptions used throughout the model.</span>
+                        <p className="text-[13px] text-[#6B7280] leading-relaxed mt-1 ml-0">
+                          Baseline wRVUs, typical encounter lengths, and documentation patterns vary by care environment.
+                        </p>
+                      </div>
                     </li>
-                    <li className="flex items-start gap-3 text-base text-neutral-700">
-                      <Check className="w-5 h-5 text-[#F03319] flex-shrink-0 mt-0.5" />
-                      <span>You'll get a tailored output you can share.</span>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-[#E8532F] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-sm text-[#111827]">You'll get a tailored output you can share.</span>
+                        <p className="text-[13px] text-[#6B7280] leading-relaxed mt-1 ml-0">
+                          Your final model reflects setting-specific benchmarks from 200+ health system partners.
+                        </p>
+                      </div>
                     </li>
                   </ul>
                 </div>
@@ -1726,6 +1803,7 @@ export default function ObjectiveSelectionScreen({
                         key={setting}
                         icon={SETTING_ICONS[setting]}
                         label={CARE_SETTING_LABELS[setting]}
+                        settingKey={setting}
                         selected={selectedSetting === setting}
                         disabled={isInpatient}
                         onClick={() => handleSettingSelect(setting)}
