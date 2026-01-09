@@ -2011,6 +2011,23 @@ export default function ObjectiveSelectionScreen({
               </p>
             </div>
 
+            <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg px-5 py-4 mb-8 flex items-start gap-3">
+              <Lightbulb className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-semibold text-[#1E40AF] mb-2">Selecting your priorities</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium text-[#1E40AF]">Most organizations select 3-4 drivers.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium text-[#1E40AF]">You'll see detailed calculations for each selected driver in the next step.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
               <div>
                 {leversByCategory && (
@@ -2023,19 +2040,6 @@ export default function ObjectiveSelectionScreen({
                     )}
                   </div>
                 )}
-                
-                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 mt-8">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Lightbulb className="w-4 h-4 text-[#111827]" />
-                    <h3 className="text-sm font-medium text-[#111827]">Selecting your priorities</h3>
-                  </div>
-                  <p className="text-sm text-[#6B7280] leading-relaxed">
-                    Most organizations select 3-4 drivers. Fewer creates a focused model that's easier to present; more provides comprehensive analysis across multiple value streams.
-                  </p>
-                  <p className="text-sm text-[#6B7280] leading-relaxed mt-3">
-                    You'll see detailed calculations for each selected driver in the next step.
-                  </p>
-                </div>
               </div>
               
               <div className="hidden lg:block">
