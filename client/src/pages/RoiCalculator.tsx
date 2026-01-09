@@ -248,7 +248,7 @@ export default function RoiCalculator({
     encounterMode: "calculated" as "calculated" | "custom",
     utilizationRate: 70,
   });
-  const [careSettingDrivers, setCareSettingDrivers] = useState<Set<LeverId>>(new Set(["patientAccess", "wrvu", "denials"]));
+  const [careSettingDrivers, setCareSettingDrivers] = useState<Set<LeverId>>(new Set<LeverId>(["patientAccess", "wrvu", "denials"]));
   const [careSettingDriverAdjustments, setCareSettingDriverAdjustments] = useState<Record<LeverId, Record<string, number>>>({
     patientAccess: { minutesSaved: 12 },
     wrvu: { baselineWrvu: 2.8, qualityLift: 6, revenuePerWrvu: 45 },
@@ -258,6 +258,9 @@ export default function RoiCalculator({
     workforce: {},
   });
   const [expandedCareSettingDriver, setExpandedCareSettingDriver] = useState<LeverId | null>(null);
+
+  // Scenario Comparison View state
+  const [showScenarioComparison, setShowScenarioComparison] = useState(false);
 
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {
@@ -439,9 +442,9 @@ export default function RoiCalculator({
     
     // Apply pricing - ED uses same as Outpatient, Nursing uses placeholder
     if (selectedNewCareSetting === "nursing") {
-      careSettingInputs.abridgeCostPerProviderPerMonth = 100; // Placeholder nursing pricing
+      careSettingInputs.monthlyCostPerProvider = 100; // Placeholder nursing pricing
     } else {
-      careSettingInputs.abridgeCostPerProviderPerMonth = inputs.abridgeCostPerProviderPerMonth;
+      careSettingInputs.monthlyCostPerProvider = inputs.monthlyCostPerProvider;
     }
     
     // Enable selected drivers
@@ -488,7 +491,7 @@ export default function RoiCalculator({
       driverValues: newDriverValues,
       encounters,
     };
-  }, [selectedNewCareSetting, careSettingConfig, careSettingDrivers, careSettingDriverAdjustments, inputs.abridgeCostPerProviderPerMonth]);
+  }, [selectedNewCareSetting, careSettingConfig, careSettingDrivers, careSettingDriverAdjustments, inputs.monthlyCostPerProvider]);
 
   // Helper: get local value or fallback to model
   const getLocalOrModel = (key: string, modelValue: number): number | string => {
@@ -563,7 +566,7 @@ export default function RoiCalculator({
     updateFn: (prev: RoiInputs) => RoiInputs
   ) => {
     setInputs(updateFn);
-    setCustomizedValues((prev) => new Set([...prev, fieldKey]));
+    setCustomizedValues((prev) => new Set<string>([...Array.from(prev), fieldKey]));
     toast({
       title: `${driverName} updated`,
       description: `Value saved successfully`,
@@ -3389,7 +3392,7 @@ export default function RoiCalculator({
                               customEncounters: 100000,
                               utilizationRate: 70,
                             }));
-                            setCareSettingDrivers(new Set(["patientAccess", "wrvu", "denials"]));
+                            setCareSettingDrivers(new Set<LeverId>(["patientAccess", "wrvu", "denials"]));
                           }}
                           className={`p-6 bg-white border rounded-lg cursor-pointer transition-all duration-200 ${
                             selectedNewCareSetting === "ed"
@@ -3439,7 +3442,7 @@ export default function RoiCalculator({
                               </div>
                               
                               <p className="text-[14px] text-[#6B7280]">
-                                Pricing: <span className="font-bold">Same as Outpatient</span> ({formatCurrency(inputs.abridgeCostPerProviderPerMonth)}/provider/month)
+                                Pricing: <span className="font-bold">Same as Outpatient</span> ({formatCurrency(inputs.monthlyCostPerProvider)}/provider/month)
                               </p>
                             </div>
                           </div>
@@ -3456,7 +3459,7 @@ export default function RoiCalculator({
                               customEncounters: 75000,
                               utilizationRate: 60,
                             }));
-                            setCareSettingDrivers(new Set(["patientAccess", "overtime"]));
+                            setCareSettingDrivers(new Set<LeverId>(["patientAccess", "overtime"]));
                           }}
                           className={`p-6 bg-white border rounded-lg cursor-pointer transition-all duration-200 ${
                             selectedNewCareSetting === "nursing"
@@ -4182,6 +4185,525 @@ export default function RoiCalculator({
                   </div>
                 </div>
               </div>
+            ) : showScenarioComparison ? (
+              /* SCENARIO COMPARISON VIEW */
+              <div className="space-y-6">
+                {/* Back navigation */}
+                <button
+                  onClick={() => setShowScenarioComparison(false)}
+                  className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                  data-testid="button-back-from-comparison"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Scenario Builder
+                </button>
+                
+                {/* Page header */}
+                <div>
+                  <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
+                    Compare Scenarios
+                  </h2>
+                  <p className="text-[16px] text-[#6B7280] mb-4">
+                    Side-by-side analysis of your expansion options
+                  </p>
+                  
+                  {/* Info box */}
+                  <div className="p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg flex items-start gap-3">
+                    <Lightbulb className="h-4 w-4 text-[#1E40AF] mt-0.5 shrink-0" />
+                    <p className="text-[14px] text-[#1E40AF]">
+                      Compare up to 3 scenarios to evaluate trade-offs. Your baseline model is shown for reference.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Scenario Selector */}
+                <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                  <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-1">
+                    Select Scenarios to Compare
+                  </h3>
+                  <p className="text-[14px] text-[#6B7280] mb-4">
+                    Choose 1-3 scenarios (baseline always included)
+                  </p>
+                  
+                  {/* Baseline card (always selected) */}
+                  <div className="p-4 bg-white border-2 border-[#E8532F] rounded-lg mb-3 bg-[rgba(232,83,47,0.02)]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded bg-[#E8532F] flex items-center justify-center">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[14px] font-bold text-[#111827]">Current Model (Baseline)</span>
+                          <span className="px-2 py-0.5 bg-[#F3F4F6] text-[11px] text-[#6B7280] uppercase rounded">Required</span>
+                        </div>
+                        <p className="text-[13px] text-[#6B7280] mt-1">
+                          {inputs.numberOfProviders} providers | {formatCurrency(netAnnualGain)} net gain | {roiMultiple.toFixed(1)}x ROI
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Scenario cards */}
+                  {scenarios.map((scenario) => {
+                    const isSelected = selectedScenariosForCompare.has(scenario.id);
+                    const maxReached = selectedScenariosForCompare.size >= 3 && !isSelected;
+                    const ScenarioIcon = getScenarioTypeIcon(scenario.type);
+                    
+                    return (
+                      <div
+                        key={scenario.id}
+                        onClick={() => !maxReached && toggleScenarioSelection(scenario.id)}
+                        className={`p-4 bg-white border rounded-lg mb-3 cursor-pointer transition-all ${
+                          isSelected 
+                            ? "border-2 border-[#E8532F] bg-[rgba(232,83,47,0.02)]" 
+                            : maxReached 
+                              ? "border-[#E5E7EB] opacity-60 cursor-not-allowed"
+                              : "border-[#E5E7EB] hover:border-[#E8532F]"
+                        }`}
+                        data-testid={`compare-selector-${scenario.id}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded flex items-center justify-center border-2 ${
+                            isSelected ? "bg-[#E8532F] border-[#E8532F]" : "border-[#E5E7EB]"
+                          }`}>
+                            {isSelected && <Check className="h-3 w-3 text-white" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <ScenarioIcon className="h-4 w-4 text-[#6B7280]" />
+                              <span className="text-[14px] font-bold text-[#111827]">{scenario.name}</span>
+                            </div>
+                            <p className="text-[13px] text-[#6B7280] mt-1">
+                              {scenario.providers} providers | {formatCurrency(scenario.netGain)} net gain | {scenario.roiMultiple.toFixed(1)}x ROI
+                            </p>
+                            {maxReached && (
+                              <p className="text-[13px] text-[#6B7280] italic mt-1">
+                                Maximum 3 scenarios - deselect one to add this
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  <p className="text-[13px] text-[#6B7280] mt-4">
+                    {selectedScenariosForCompare.size} of 3 selected
+                  </p>
+                </div>
+                
+                {/* Detailed Comparison Table */}
+                {selectedScenariosForCompare.size >= 1 && (() => {
+                  const selectedScenarios = scenarios.filter(s => selectedScenariosForCompare.has(s.id));
+                  const baselineNetGain = netAnnualGain;
+                  const baselineRoi = roiMultiple;
+                  const baselineBenefit = totalAnnualBenefit;
+                  const baselineInvestment = annualInvestment;
+                  
+                  // Helper for safe percentage calculation
+                  const safePercentChange = (newVal: number, baseVal: number): string | null => {
+                    if (baseVal === 0 || !isFinite(baseVal)) return null;
+                    const change = ((newVal - baseVal) / Math.abs(baseVal)) * 100;
+                    if (!isFinite(change)) return null;
+                    return `${change > 0 ? "+" : ""}${change.toFixed(0)}%`;
+                  };
+                  
+                  // Find best values with safe guards
+                  const allNetGains = [baselineNetGain, ...selectedScenarios.map(s => s.netGain)].filter(v => isFinite(v));
+                  const allRois = [baselineRoi, ...selectedScenarios.map(s => s.roiMultiple)].filter(v => isFinite(v));
+                  const maxNetGain = allNetGains.length > 0 ? Math.max(...allNetGains) : 1;
+                  const maxRoi = allRois.length > 0 ? Math.max(...allRois) : 1;
+                  
+                  // Safe chart width calculation using absolute values for proper scaling
+                  const safeChartWidth = (value: number, maxValue: number): number => {
+                    if (!isFinite(maxValue) || !isFinite(value)) return 0;
+                    // Use absolute values for scaling to handle negative scenarios
+                    const absMax = Math.max(Math.abs(maxValue), ...allNetGains.map(Math.abs), ...allRois.map(Math.abs));
+                    if (absMax === 0) return 50; // Equal widths when all values are 0
+                    return Math.min(100, Math.max(5, (Math.abs(value) / absMax) * 100));
+                  };
+                  
+                  return (
+                    <>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                        <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
+                          Detailed Comparison
+                        </h3>
+                        
+                        <div className="overflow-x-auto">
+                          <table className="w-full min-w-[600px]">
+                            <thead>
+                              <tr className="border-b-2 border-[#E5E7EB]">
+                                <th className="text-left py-3 pr-4 text-[14px] font-bold text-[#6B7280]"></th>
+                                <th className="text-right py-3 px-4 text-[14px] font-bold text-[#111827] uppercase bg-[rgba(0,0,0,0.02)]">
+                                  Baseline
+                                </th>
+                                {selectedScenarios.map((s, i) => (
+                                  <th key={s.id} className="text-right py-3 px-4 text-[14px] font-bold text-[#111827] uppercase">
+                                    {s.name.length > 20 ? s.name.substring(0, 20) + "..." : s.name}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Deployment Section */}
+                              <tr>
+                                <td colSpan={2 + selectedScenarios.length} className="pt-6 pb-2">
+                                  <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-[0.05em]">Deployment</span>
+                                </td>
+                              </tr>
+                              <tr className="border-t border-[#E5E7EB]">
+                                <td className="py-2 pr-4 text-[14px] text-[#6B7280]">Providers</td>
+                                <td className="py-2 px-4 text-[14px] text-[#111827] text-right tabular-nums bg-[rgba(0,0,0,0.02)]">
+                                  {inputs.numberOfProviders}
+                                </td>
+                                {selectedScenarios.map(s => {
+                                  const pctChange = safePercentChange(s.providers, inputs.numberOfProviders);
+                                  return (
+                                    <td key={s.id} className="py-2 px-4 text-[14px] text-[#111827] text-right tabular-nums">
+                                      {s.providers}
+                                      {pctChange && (
+                                        <span className={`ml-2 text-[12px] ${s.providers > inputs.numberOfProviders ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                          {pctChange}
+                                        </span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              <tr className="border-t border-[#E5E7EB]">
+                                <td className="py-2 pr-4 text-[14px] text-[#6B7280]">Encounters</td>
+                                <td className="py-2 px-4 text-[14px] text-[#111827] text-right tabular-nums bg-[rgba(0,0,0,0.02)]">
+                                  {inputs.annualOutpatientEncounters.toLocaleString()}
+                                </td>
+                                {selectedScenarios.map(s => (
+                                  <td key={s.id} className="py-2 px-4 text-[14px] text-[#111827] text-right tabular-nums">
+                                    {s.encounters.toLocaleString()}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr className="border-t border-[#E5E7EB]">
+                                <td className="py-2 pr-4 text-[14px] text-[#6B7280]">Utilization</td>
+                                <td className="py-2 px-4 text-[14px] text-[#111827] text-right tabular-nums bg-[rgba(0,0,0,0.02)]">
+                                  {inputs.abridgeUtilizationPct}%
+                                </td>
+                                {selectedScenarios.map(s => (
+                                  <td key={s.id} className="py-2 px-4 text-[14px] text-[#111827] text-right tabular-nums">
+                                    {s.utilizationRate}%
+                                  </td>
+                                ))}
+                              </tr>
+                              
+                              {/* Active Drivers Section */}
+                              <tr>
+                                <td colSpan={2 + selectedScenarios.length} className="pt-6 pb-2">
+                                  <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-[0.05em]">Active Drivers</span>
+                                </td>
+                              </tr>
+                              {(["patientAccess", "wrvu", "workforce", "hcc", "denials", "overtime"] as LeverId[]).map(driverId => (
+                                <tr key={driverId} className="border-t border-[#E5E7EB]">
+                                  <td className="py-2 pr-4 text-[14px] text-[#6B7280]">{leverLabels[driverId]}</td>
+                                  <td className="py-2 px-4 text-[14px] text-right bg-[rgba(0,0,0,0.02)]">
+                                    {inputs.levers[driverId] ? (
+                                      <Check className="h-4 w-4 text-[#059669] inline" />
+                                    ) : (
+                                      <span className="text-[#9CA3AF]">—</span>
+                                    )}
+                                  </td>
+                                  {selectedScenarios.map(s => (
+                                    <td key={s.id} className="py-2 px-4 text-[14px] text-right">
+                                      {(s.driverValues[driverId] || 0) > 0 ? (
+                                        <Check className="h-4 w-4 text-[#059669] inline" />
+                                      ) : (
+                                        <span className="text-[#9CA3AF]">—</span>
+                                      )}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                              
+                              {/* Financial Summary Section */}
+                              <tr>
+                                <td colSpan={2 + selectedScenarios.length} className="pt-6 pb-2">
+                                  <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-[0.05em]">Financial Summary</span>
+                                </td>
+                              </tr>
+                              <tr className="border-t-2 border-[#E5E7EB] bg-[#F9FAFB]">
+                                <td className="py-3 pr-4 text-[14px] font-bold text-[#111827]">Total Benefit</td>
+                                <td className="py-3 px-4 text-[14px] font-bold text-[#111827] text-right tabular-nums bg-[rgba(0,0,0,0.04)]">
+                                  {formatCurrency(baselineBenefit)}
+                                </td>
+                                {selectedScenarios.map(s => {
+                                  const pctChange = safePercentChange(s.totalBenefit, baselineBenefit);
+                                  return (
+                                    <td key={s.id} className="py-3 px-4 text-[14px] font-bold text-[#111827] text-right tabular-nums">
+                                      {formatCurrency(s.totalBenefit)}
+                                      {pctChange && (
+                                        <span className={`block text-[12px] ${s.totalBenefit > baselineBenefit ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                          {pctChange}
+                                        </span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              <tr className="border-t border-[#E5E7EB] bg-[#F9FAFB]">
+                                <td className="py-3 pr-4 text-[14px] font-bold text-[#111827]">Investment</td>
+                                <td className="py-3 px-4 text-[14px] font-bold text-[#111827] text-right tabular-nums bg-[rgba(0,0,0,0.04)]">
+                                  {formatCurrency(baselineInvestment)}
+                                </td>
+                                {selectedScenarios.map(s => {
+                                  const pctChange = safePercentChange(s.investment, baselineInvestment);
+                                  return (
+                                    <td key={s.id} className="py-3 px-4 text-[14px] font-bold text-[#111827] text-right tabular-nums">
+                                      {formatCurrency(s.investment)}
+                                      {pctChange && (
+                                        <span className={`block text-[12px] ${s.investment > baselineInvestment ? "text-[#DC2626]" : "text-[#059669]"}`}>
+                                          {pctChange}
+                                        </span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              <tr className="border-t border-[#E5E7EB] bg-[#F9FAFB]">
+                                <td className="py-3 pr-4 text-[14px] font-bold text-[#111827]">Net Annual Gain</td>
+                                <td className={`py-3 px-4 text-[14px] font-bold text-right tabular-nums bg-[rgba(0,0,0,0.04)] ${baselineNetGain === maxNetGain ? "text-[#059669]" : "text-[#111827]"}`}>
+                                  {formatCurrency(baselineNetGain)}
+                                </td>
+                                {selectedScenarios.map(s => {
+                                  const pctChange = safePercentChange(s.netGain, baselineNetGain);
+                                  const isBest = s.netGain === maxNetGain;
+                                  return (
+                                    <td key={s.id} className={`py-3 px-4 text-[14px] font-bold text-right tabular-nums ${isBest ? "text-[#059669] bg-[rgba(5,150,105,0.08)]" : "text-[#111827]"}`}>
+                                      {formatCurrency(s.netGain)}
+                                      {pctChange && (
+                                        <span className={`block text-[12px] ${s.netGain > baselineNetGain ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                          {pctChange}
+                                        </span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              <tr className="border-t border-[#E5E7EB] bg-[#F9FAFB]">
+                                <td className="py-3 pr-4 text-[14px] font-bold text-[#111827]">ROI</td>
+                                <td className={`py-3 px-4 text-[14px] font-bold text-right tabular-nums bg-[rgba(0,0,0,0.04)] ${baselineRoi === maxRoi ? "text-[#059669]" : "text-[#111827]"}`}>
+                                  {baselineRoi.toFixed(1)}x
+                                </td>
+                                {selectedScenarios.map(s => {
+                                  const pctChange = safePercentChange(s.roiMultiple, baselineRoi);
+                                  const isBest = s.roiMultiple === maxRoi;
+                                  return (
+                                    <td key={s.id} className={`py-3 px-4 text-[14px] font-bold text-right tabular-nums ${isBest ? "text-[#059669] bg-[rgba(5,150,105,0.08)]" : "text-[#111827]"}`}>
+                                      {s.roiMultiple.toFixed(1)}x
+                                      {pctChange && (
+                                        <span className={`block text-[12px] ${s.roiMultiple > baselineRoi ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                          {pctChange}
+                                        </span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              
+                              {/* 3-Year Projection */}
+                              <tr>
+                                <td colSpan={2 + selectedScenarios.length} className="pt-6 pb-2">
+                                  <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-[0.05em]">3-Year Projection</span>
+                                </td>
+                              </tr>
+                              <tr className="border-t border-[#E5E7EB]">
+                                <td className="py-2 pr-4 text-[14px] text-[#6B7280]">Total Value</td>
+                                <td className="py-2 px-4 text-[14px] text-[#111827] text-right tabular-nums bg-[rgba(0,0,0,0.02)]">
+                                  {formatCurrency(baselineBenefit * 3)}
+                                </td>
+                                {selectedScenarios.map(s => (
+                                  <td key={s.id} className="py-2 px-4 text-[14px] text-[#111827] text-right tabular-nums">
+                                    {formatCurrency(s.totalBenefit * 3)}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr className="border-t border-[#E5E7EB]">
+                                <td className="py-2 pr-4 text-[14px] text-[#6B7280]">Net 3-Year Gain</td>
+                                <td className="py-2 px-4 text-[14px] font-bold text-[#059669] text-right tabular-nums bg-[rgba(0,0,0,0.02)]">
+                                  {formatCurrency(baselineNetGain * 3)}
+                                </td>
+                                {selectedScenarios.map(s => (
+                                  <td key={s.id} className="py-2 px-4 text-[14px] font-bold text-[#059669] text-right tabular-nums">
+                                    {formatCurrency(s.netGain * 3)}
+                                  </td>
+                                ))}
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      
+                      {/* Visual Comparison Charts */}
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                        <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
+                          Visual Comparison
+                        </h3>
+                        
+                        {/* Net Annual Gain Chart */}
+                        <div className="mb-8">
+                          <h4 className="text-[14px] font-bold text-[#111827] mb-4">Net Annual Gain</h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-4">
+                              <span className="text-[14px] text-[#111827] w-32 truncate">Baseline</span>
+                              <div className="flex-1 h-6 bg-[#E5E7EB] rounded overflow-hidden">
+                                <div 
+                                  className={`h-full rounded transition-all duration-300 ${baselineNetGain === maxNetGain ? "bg-[#059669]" : "bg-[#E8532F]"}`}
+                                  style={{ width: `${safeChartWidth(baselineNetGain, maxNetGain)}%` }}
+                                />
+                              </div>
+                              <span className="text-[16px] font-bold text-[#111827] w-28 text-right">{formatCurrency(baselineNetGain)}</span>
+                            </div>
+                            {selectedScenarios.map(s => (
+                              <div key={s.id} className="flex items-center gap-4">
+                                <span className="text-[14px] text-[#111827] w-32 truncate">{s.name.length > 15 ? s.name.substring(0, 15) + "..." : s.name}</span>
+                                <div className="flex-1 h-6 bg-[#E5E7EB] rounded overflow-hidden">
+                                  <div 
+                                    className={`h-full rounded transition-all duration-300 ${s.netGain === maxNetGain ? "bg-[#059669]" : "bg-[#E8532F]"}`}
+                                    style={{ width: `${safeChartWidth(s.netGain, maxNetGain)}%` }}
+                                  />
+                                </div>
+                                <span className="text-[16px] font-bold text-[#111827] w-28 text-right">{formatCurrency(s.netGain)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* ROI Chart */}
+                        <div>
+                          <h4 className="text-[14px] font-bold text-[#111827] mb-4">Return on Investment</h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-4">
+                              <span className="text-[14px] text-[#111827] w-32 truncate">Baseline</span>
+                              <div className="flex-1 h-6 bg-[#E5E7EB] rounded overflow-hidden">
+                                <div 
+                                  className={`h-full rounded transition-all duration-300 ${baselineRoi === maxRoi ? "bg-[#059669]" : "bg-[#E8532F]"}`}
+                                  style={{ width: `${safeChartWidth(baselineRoi, maxRoi)}%` }}
+                                />
+                              </div>
+                              <span className="text-[16px] font-bold text-[#111827] w-16 text-right">{baselineRoi.toFixed(1)}x</span>
+                            </div>
+                            {selectedScenarios.map(s => (
+                              <div key={s.id} className="flex items-center gap-4">
+                                <span className="text-[14px] text-[#111827] w-32 truncate">{s.name.length > 15 ? s.name.substring(0, 15) + "..." : s.name}</span>
+                                <div className="flex-1 h-6 bg-[#E5E7EB] rounded overflow-hidden">
+                                  <div 
+                                    className={`h-full rounded transition-all duration-300 ${s.roiMultiple === maxRoi ? "bg-[#059669]" : "bg-[#E8532F]"}`}
+                                    style={{ width: `${safeChartWidth(s.roiMultiple, maxRoi)}%` }}
+                                  />
+                                </div>
+                                <span className="text-[16px] font-bold text-[#111827] w-16 text-right">{s.roiMultiple.toFixed(1)}x</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Key Insights */}
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                        <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
+                          Key Insights
+                        </h3>
+                        
+                        <div className="space-y-4">
+                          {/* Highest Value Insight */}
+                          {(() => {
+                            const highestGain = selectedScenarios.reduce((max, s) => s.netGain > max.netGain ? s : max, selectedScenarios[0]);
+                            if (!highestGain || highestGain.netGain <= baselineNetGain) return null;
+                            const changeVsBaseline = safePercentChange(highestGain.netGain, baselineNetGain);
+                            return (
+                              <div className="p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
+                                <div className="flex items-start gap-3">
+                                  <TrendingUp className="h-5 w-5 text-[#059669] mt-0.5 shrink-0" />
+                                  <div>
+                                    <p className="text-[13px] font-bold text-[#059669] mb-1">Highest Value</p>
+                                    <p className="text-[14px] text-[#166534]">
+                                      "{highestGain.name}" delivers the highest absolute value at {formatCurrency(highestGain.netGain)} net annual gain{changeVsBaseline ? ` (${changeVsBaseline} over baseline)` : ""}.
+                                      {highestGain.investment > baselineInvestment && ` This requires ${formatCurrency(highestGain.investment - baselineInvestment)} additional investment.`}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                          
+                          {/* Best ROI Insight */}
+                          {(() => {
+                            const bestRoi = selectedScenarios.reduce((max, s) => s.roiMultiple > max.roiMultiple ? s : max, selectedScenarios[0]);
+                            if (!bestRoi || bestRoi.roiMultiple <= baselineRoi) return null;
+                            const roiImprovement = safePercentChange(bestRoi.roiMultiple, baselineRoi);
+                            return (
+                              <div className="p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
+                                <div className="flex items-start gap-3">
+                                  <BarChart3 className="h-5 w-5 text-[#1E40AF] mt-0.5 shrink-0" />
+                                  <div>
+                                    <p className="text-[13px] font-bold text-[#1E40AF] mb-1">Best ROI</p>
+                                    <p className="text-[14px] text-[#1E40AF]">
+                                      "{bestRoi.name}" has the best ROI at {bestRoi.roiMultiple.toFixed(1)}x{roiImprovement ? ` (${roiImprovement} improvement)` : ""}.
+                                      {bestRoi.investment === baselineInvestment && " This adds value with zero additional investment."}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                          
+                          {/* Recommendation */}
+                          <div className="p-4 bg-[#FFFBF5] border border-[#FDE68A] rounded-lg">
+                            <div className="flex items-start gap-3">
+                              <Lightbulb className="h-5 w-5 text-[#92400E] mt-0.5 shrink-0" />
+                              <div>
+                                <p className="text-[13px] font-bold text-[#92400E] mb-1">Recommendation</p>
+                                <p className="text-[14px] text-[#92400E]">
+                                  {selectedScenarios.length === 1 
+                                    ? (() => {
+                                        const improvementPct = safePercentChange(selectedScenarios[0].netGain, baselineNetGain);
+                                        return improvementPct 
+                                          ? `"${selectedScenarios[0].name}" shows a ${improvementPct} change in net gain. Consider adding more scenarios to compare alternatives.`
+                                          : `"${selectedScenarios[0].name}" shows a change in net gain. Consider adding more scenarios to compare alternatives.`;
+                                      })()
+                                    : `Compare the trade-offs between maximizing absolute value vs. ROI efficiency. Higher ROI scenarios often require less investment but may yield lower total value.`
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Footer Actions */}
+                      <div className="flex items-center justify-between pt-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowScenarioComparison(false)}
+                          data-testid="button-done-comparison"
+                        >
+                          Done
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            toast({
+                              title: "Export feature coming soon",
+                              description: "PDF export will be available in a future update",
+                            });
+                          }}
+                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          data-testid="button-export-comparison"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Export for Presentation
+                        </Button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
             ) : (
             <>
             {/* Header */}
@@ -4356,7 +4878,7 @@ export default function RoiCalculator({
                       encounterMode: "calculated",
                       utilizationRate: 70,
                     });
-                    setCareSettingDrivers(new Set(["patientAccess", "wrvu", "denials"]));
+                    setCareSettingDrivers(new Set<LeverId>(["patientAccess", "wrvu", "denials"]));
                     setExpandedCareSettingDriver(null);
                     setShowNewCareSetting(true);
                   }}
@@ -4516,12 +5038,11 @@ export default function RoiCalculator({
                   <div className="flex items-center gap-4">
                     <Button
                       onClick={() => {
-                        if (selectedScenariosForCompare.size >= 2) {
-                          const firstId = Array.from(selectedScenariosForCompare)[0];
-                          setShowComparison(firstId);
+                        if (selectedScenariosForCompare.size >= 1) {
+                          setShowScenarioComparison(true);
                         }
                       }}
-                      disabled={selectedScenariosForCompare.size < 2}
+                      disabled={selectedScenariosForCompare.size < 1}
                       className="bg-[#111827] hover:bg-[#E8532F] text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       data-testid="button-compare-selected"
                     >
@@ -5064,12 +5585,11 @@ export default function RoiCalculator({
                   </span>
                   <Button
                     onClick={() => {
-                      if (selectedScenariosForCompare.size >= 2) {
-                        const firstId = Array.from(selectedScenariosForCompare)[0];
-                        setShowComparison(firstId);
+                      if (selectedScenariosForCompare.size >= 1) {
+                        setShowScenarioComparison(true);
                       }
                     }}
-                    disabled={selectedScenariosForCompare.size < 2}
+                    disabled={selectedScenariosForCompare.size < 1}
                     className="bg-[#111827] hover:bg-[#E8532F] text-white disabled:opacity-50"
                     data-testid="button-compare-mobile"
                   >
