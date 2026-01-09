@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { pdf } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,9 +14,24 @@ import {
 import { FileText, Loader2, Check, Download, X } from "lucide-react";
 import type { RoiInputs, LeverId } from "@/lib/roi-types";
 import { calculateRoi } from "@/lib/roi-calculator";
-import { createPdfGenerator, type ExportOptions, type ScenarioData } from "@/lib/pdf-generator";
+import { 
+  createPdfDocument, 
+  generateFilename,
+  type ModelSnapshot, 
+  type ScenarioSnapshot,
+  type ExportConfig 
+} from "@/lib/pdf";
 
 export type ExportType = 'baseline' | 'scenario' | 'comparison';
+
+export interface ScenarioData {
+  id: string;
+  name: string;
+  type: 'expand_providers' | 'add_drivers' | 'new_care_setting';
+  description: string;
+  inputs: RoiInputs;
+  results: ReturnType<typeof calculateRoi>;
+}
 
 interface ExportModalProps {
   open: boolean;
@@ -46,6 +62,7 @@ export function ExportModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [organizationName, setOrganizationName] = useState("");
   const [preparedFor, setPreparedFor] = useState("");
+  const [preparedBy, setPreparedBy] = useState("");
   const [includeSections, setIncludeSections] = useState({
     executiveSummary: true,
     valueBreakdown: true,
@@ -54,56 +71,109 @@ export function ExportModal({
   });
   const [includeBaselineComparison, setIncludeBaselineComparison] = useState(true);
 
+  const createModelSnapshot = (): ModelSnapshot => ({
+    inputs,
+    results,
+    enabledDrivers,
+    driverValues,
+    careSettingLabel,
+    organizationName: organizationName || undefined,
+    preparedFor: preparedFor || undefined,
+    preparedBy: preparedBy || undefined,
+    generatedDate: new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }),
+  });
+
+  const createScenarioSnapshot = (scenarioData: ScenarioData): ScenarioSnapshot => {
+    const scenarioDriverValues: Record<LeverId, number> = {} as Record<LeverId, number>;
+    const scenarioEnabledDrivers: LeverId[] = [];
+    
+    scenarioData.results.levers.forEach(lever => {
+      scenarioDriverValues[lever.id] = lever.value;
+      if (lever.enabled) {
+        scenarioEnabledDrivers.push(lever.id);
+      }
+    });
+    
+    return {
+      id: scenarioData.id,
+      name: scenarioData.name,
+      type: scenarioData.type,
+      description: scenarioData.description,
+      inputs: scenarioData.inputs,
+      results: scenarioData.results,
+      enabledDrivers: scenarioEnabledDrivers,
+      driverValues: scenarioDriverValues,
+      careSettingLabel,
+      organizationName: organizationName || undefined,
+      preparedFor: preparedFor || undefined,
+      preparedBy: preparedBy || undefined,
+      generatedDate: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+    };
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     setIsSuccess(false);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const generator = createPdfGenerator();
-      const options: ExportOptions = {
-        organizationName: organizationName || undefined,
-        preparedFor: preparedFor || undefined,
-        includeSections: {
-          executiveSummary: includeSections.executiveSummary,
-          valueBreakdown: includeSections.valueBreakdown,
-          detailedCalculations: includeSections.detailedCalculations,
-          methodology: includeSections.methodology,
-        },
+      const model = createModelSnapshot();
+      
+      const config: ExportConfig = {
+        exportType,
+        includeSections,
         includeBaselineComparison,
+        scenario: scenario ? createScenarioSnapshot(scenario) : undefined,
+        scenarios: scenarios.map(s => createScenarioSnapshot(s)),
       };
 
+      let pdfDocument: JSX.Element;
+      let filename: string;
+
       if (exportType === 'baseline') {
-        generator.generateBaselineExport(
-          inputs,
-          results,
-          enabledDrivers,
-          driverValues,
-          careSettingLabel,
-          options
-        );
+        pdfDocument = createPdfDocument(model, config);
+        filename = generateFilename('baseline', organizationName);
       } else if (exportType === 'scenario' && scenario) {
-        generator.generateScenarioExport(
-          inputs,
-          results,
-          scenario,
-          enabledDrivers,
-          driverValues,
-          careSettingLabel,
-          options
+        const scenarioSnapshot = createScenarioSnapshot(scenario);
+        pdfDocument = createPdfDocument(
+          scenarioSnapshot, 
+          config, 
+          scenarioSnapshot, 
+          undefined, 
+          includeBaselineComparison ? model : undefined
         );
+        filename = generateFilename('scenario', organizationName, scenario.name);
       } else if (exportType === 'comparison' && scenarios.length > 0) {
-        generator.generateComparisonExport(
-          inputs,
-          results,
-          scenarios,
-          enabledDrivers,
-          driverValues,
-          careSettingLabel,
-          options
+        const scenarioSnapshots = scenarios.map(s => createScenarioSnapshot(s));
+        pdfDocument = createPdfDocument(
+          model, 
+          config, 
+          undefined, 
+          scenarioSnapshots, 
+          model
         );
+        filename = generateFilename('comparison', organizationName);
+      } else {
+        throw new Error('Invalid export configuration');
       }
+
+      const blob = await pdf(pdfDocument).toBlob();
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       setIsSuccess(true);
     } catch (error) {
@@ -135,7 +205,7 @@ export function ExportModal({
   const getExportDescription = () => {
     switch (exportType) {
       case 'baseline':
-        return 'Generate a professional multi-page PDF of your current ROI model.';
+        return 'Generate a professional multi-page PDF with detailed analysis and explanations.';
       case 'scenario':
         return 'Generate a PDF comparing this scenario to your baseline model.';
       case 'comparison':
@@ -224,7 +294,7 @@ export function ExportModal({
                     data-testid="checkbox-detailed-calc"
                   />
                   <Label htmlFor="detailed-calc" className="text-sm font-normal cursor-pointer">
-                    Detailed Calculations (step-by-step math)
+                    Detailed Calculations (step-by-step math for each driver)
                   </Label>
                 </div>
                 
@@ -273,6 +343,19 @@ export function ExportModal({
                   data-testid="input-prepared-for"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="prepared-by" className="text-sm font-medium">
+                  Prepared by (optional)
+                </Label>
+                <Input
+                  id="prepared-by"
+                  placeholder="e.g., Finance Team"
+                  value={preparedBy}
+                  onChange={(e) => setPreparedBy(e.target.value)}
+                  data-testid="input-prepared-by"
+                />
+              </div>
             </div>
 
             {exportType === 'scenario' && (
@@ -316,7 +399,7 @@ export function ExportModal({
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
+                    Generating PDF...
                   </>
                 ) : (
                   <>
