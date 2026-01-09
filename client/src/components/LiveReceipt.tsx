@@ -377,7 +377,7 @@ export function LiveReceipt({
               </div>
             )}
 
-            <div className="p-5 bg-[#FEF3C7]/30 border-t-2 border-neutral-200">
+            <div className="p-5 bg-[#FFF1EB] border-t-2 border-neutral-200">
               <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase mb-3">
                 Projected Annual Value
               </div>
@@ -559,7 +559,7 @@ export function LiveReceipt({
                 </div>
               )}
 
-              <div className="bg-[#FEF3C7]/30 rounded-lg p-4 border border-[#F03319]/10">
+              <div className="bg-[#FFF1EB] rounded-lg p-4 border border-[#F03319]/10">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-neutral-700">Total Benefit</span>
                   <span className="text-base font-semibold text-[#F03319] tabular-nums">
