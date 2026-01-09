@@ -1789,20 +1789,16 @@ export default function ObjectiveSelectionScreen({
         {/* PAGE 0 — ORIENTATION */}
         {currentPage === "orientation" && (
           <div className="relative min-h-full">
-            {/* Geometric pattern - top right */}
-            <img 
-              src={geometricPattern}
-              alt=""
+            {/* Geometric pattern - tiled backdrop */}
+            <div 
+              className="fixed inset-0 pointer-events-none z-0 opacity-[0.04]"
+              style={{
+                backgroundImage: `url(${geometricPattern})`,
+                backgroundSize: '400px auto',
+                backgroundRepeat: 'repeat',
+                backgroundPosition: 'center',
+              }}
               aria-hidden="true"
-              className="fixed top-[-5%] right-[-5%] w-[400px] md:w-[600px] pointer-events-none z-0 opacity-[0.35]"
-            />
-            
-            {/* Geometric pattern - bottom left */}
-            <img 
-              src={geometricPattern}
-              alt=""
-              aria-hidden="true"
-              className="fixed bottom-[-5%] left-[-5%] w-[350px] md:w-[500px] pointer-events-none z-0 opacity-[0.3] rotate-180"
             />
 
             <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28 relative z-10">
