@@ -2475,7 +2475,7 @@ export default function ObjectiveSelectionScreen({
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                       data-testid="input-ft-minutes-saved"
                                     />
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 1.5-4 min | Blueprint reference: 2.5 min</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 1.5-4 min | Blueprint reference: 2.5 min</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Capacity realization factor</label>
@@ -2498,7 +2498,11 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 10-35% | Blueprint reference: 20%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 10-35% | Blueprint reference: 20%</p>
+                                    <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                                      <Info className="w-3 h-3" />
+                                      Portion of time saved that converts to new visits
+                                    </p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Average visit duration</label>
@@ -2521,7 +2525,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">min</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 20-45 min | Blueprint reference: 30 min</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 20-45 min | Blueprint reference: 30 min</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Revenue per visit</label>
@@ -2544,7 +2548,7 @@ export default function ObjectiveSelectionScreen({
                                         data-testid="input-ft-revenue-per-visit"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: $150-350 | Blueprint reference: $200</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $150-350 | Blueprint reference: $200</p>
                                   </div>
                                 </div>
                                 <button 
@@ -2587,7 +2591,7 @@ export default function ObjectiveSelectionScreen({
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                       data-testid="input-ft-baseline-wrvu"
                                     />
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 1.3-3.4 | Blueprint reference: 1.75</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 1.3-3.4 | Blueprint reference: 1.75</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Documentation quality lift</label>
@@ -2610,7 +2614,11 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 2-8% | Blueprint reference: 5%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 2-8% | Blueprint reference: 5%</p>
+                                    <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                                      <Info className="w-3 h-3" />
+                                      wRVU improvement from complete documentation
+                                    </p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Revenue per wRVU</label>
@@ -2633,7 +2641,7 @@ export default function ObjectiveSelectionScreen({
                                         data-testid="input-ft-revenue-wrvu"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: $25-75 | Blueprint reference: $34 (Medicare CF)</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $25-75 | Blueprint reference: $34 (Medicare CF)</p>
                                   </div>
                                 </div>
                                 <button 
@@ -2677,7 +2685,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 4-8% | Blueprint reference: 5%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 4-8% | Blueprint reference: 5%</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Replacement cost per provider</label>
@@ -2700,16 +2708,29 @@ export default function ObjectiveSelectionScreen({
                                         data-testid="input-ft-replacement-cost"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: $200k-350k | Blueprint reference: $250,000</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $200k-350k | Blueprint reference: $250,000</p>
                                   </div>
                                 </div>
-                                <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                                  <p className="text-xs text-blue-800">
-                                    <Info className="w-3 h-3 inline mr-1" />
-                                    Abridge prevention effectiveness is set by your posture selection:
-                                    Conservative: 30% | Typical: 40% | Aggressive: 50%
+                                <div>
+                                  <label className="text-sm font-medium text-neutral-600">Abridge prevention effectiveness</label>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <input
+                                      type="text"
+                                      inputMode="numeric"
+                                      value={getRetentionPreventionPct()}
+                                      disabled
+                                      className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500"
+                                      data-testid="input-ft-prevention-effectiveness"
+                                    />
+                                    <span className="text-sm text-neutral-500">%</span>
+                                  </div>
+                                  <p className="text-xs text-neutral-500 mt-1">Typical range: 30-50% | Blueprint reference: 40%</p>
+                                  <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                                    <Info className="w-3 h-3" />
+                                    % of burnout-driven turnover prevented (set by posture)
                                   </p>
                                 </div>
+                                <p className="text-xs text-neutral-400 italic mt-2">Hidden assumption: 40% of turnover is burnout-related</p>
                                 <button 
                                   type="button" 
                                   onClick={() => {
@@ -2750,10 +2771,10 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 10-40% | Blueprint reference: 15%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 5-40% | Blueprint reference: 15%</p>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium text-neutral-600">Recapture rate</label>
+                                    <label className="text-sm font-medium text-neutral-600">Condition recapture rate</label>
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="text"
@@ -2773,7 +2794,11 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 40-70% | Blueprint reference: 50%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 40-60% | Blueprint reference: 50%</p>
+                                    <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                                      <Info className="w-3 h-3" />
+                                      % of missed HCC conditions documented with Abridge
+                                    </p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Benchmark PMPM</label>
@@ -2796,9 +2821,14 @@ export default function ObjectiveSelectionScreen({
                                         data-testid="input-ft-benchmark-pmpm"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: $900-1,400 | Blueprint reference: $1,000</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $800-1,500 | Blueprint reference: $1,000</p>
+                                    <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                                      <Info className="w-3 h-3" />
+                                      County-specific MA capitated payment
+                                    </p>
                                   </div>
                                 </div>
+                                <p className="text-xs text-neutral-400 italic mt-2">Hidden assumptions: 2.5 visits/patient/year, 2.5 conditions/patient, 30% documentation gap, 0.25 RAF weight per condition</p>
                                 <button 
                                   type="button" 
                                   onClick={() => {
@@ -2840,7 +2870,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 3-10% | Blueprint reference: 5%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 3-8% | Blueprint reference: 5%</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Prevention rate</label>
@@ -2863,9 +2893,22 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 50-80% | Blueprint reference: 66%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 50-80% | Blueprint reference: 66%</p>
+                                    <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                                      <Info className="w-3 h-3" />
+                                      % of doc-related denials prevented with complete notes
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Revenue per visit</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="text-sm text-neutral-500">$</span>
+                                      <span className="px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500 w-28">{ftPatientAccessRevenuePerVisit}</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-400 mt-1 italic">(Inherited from Patient Access)</p>
                                   </div>
                                 </div>
+                                <p className="text-xs text-neutral-400 italic mt-2">Hidden assumption: 30% of denials are documentation-related</p>
                                 <button 
                                   type="button" 
                                   onClick={() => {
@@ -2906,7 +2949,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: 15-30% | Blueprint reference: 20%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 15-30% | Blueprint reference: 20%</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Blended premium labor rate</label>
@@ -2930,7 +2973,14 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">/hr</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Range: $100-250/hr | Blueprint reference: $145</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $100-250/hr | Blueprint reference: $145</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500 w-28">{effectiveMinutesSaved ?? 2.5} min</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-400 mt-1 italic">(Inherited from Patient Access)</p>
                                   </div>
                                 </div>
                                 <button 

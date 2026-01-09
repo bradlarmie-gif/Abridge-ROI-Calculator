@@ -1,0 +1,170 @@
+OBJECTIVE:
+Fix the Value Realization page (Tab 2 of Model Setup) to include ALL 6 value drivers with complete inputs, remove the two-column split, and update "Range" to "Typical range" throughout.
+
+CRITICAL RULES:
+- Do NOT change any other pages or components
+- Do NOT modify branding, colors, spacing, or typography
+- Do NOT change the tab structure or navigation
+- Keep the existing blue info box, posture selector, and Fine-Tune collapsible section exactly as they are
+- Only modify the CONTENT inside the Fine-Tune section when expanded
+
+WHAT TO CHANGE:
+
+1. REMOVE the two-column split ("OPERATIONAL VALUE" / "DOCUMENTATION VALUE")
+
+2. REPLACE with a sequential list that shows ONLY the drivers the user selected on the Strategic Priorities page
+
+3. For EACH selected driver, show ALL relevant inputs (not just one):
+
+──────────────────────────────────────────────────────────────
+PATIENT ACCESS
+──────────────────────────────────────────────────────────────
+
+Minutes saved per encounter                              Edit
+2.5 min
+Typical range: 1.5-4 min | Blueprint reference: 2.5 min
+
+Capacity realization factor                              Edit
+20%
+Typical range: 10-35% | Blueprint reference: 20%
+ⓘ Portion of time saved that converts to new visits
+
+Average visit duration                                   Edit
+30 min
+Typical range: 20-45 min | Blueprint reference: 30 min
+
+Revenue per visit                                        Edit
+$200
+Typical range: $150-350 | Blueprint reference: $200
+
+[Reset to Typical Defaults]
+
+──────────────────────────────────────────────────────────────
+CLINICIAN RETENTION
+──────────────────────────────────────────────────────────────
+
+Annual turnover rate                                     Edit
+5%
+Typical range: 4-8% | Blueprint reference: 5%
+
+Replacement cost per provider                            Edit
+$250,000
+Typical range: $200k-350k | Blueprint reference: $250,000
+
+Abridge prevention effectiveness                         Edit
+40%
+Typical range: 30-50% | Blueprint reference: 40% (typical)
+ⓘ % of burnout-driven turnover prevented
+
+Hidden assumption: 40% of turnover is burnout-related
+
+[Reset to Typical Defaults]
+
+──────────────────────────────────────────────────────────────
+ACCURATE LEVEL OF SERVICE
+──────────────────────────────────────────────────────────────
+
+Baseline wRVU per encounter                              Edit
+1.75
+Typical range: 1.3-3.4 | Blueprint reference: 1.75
+
+Documentation quality lift                               Edit
+5%
+Typical range: 2-8% | Blueprint reference: 5% (typical)
+ⓘ wRVU improvement from complete documentation
+
+Revenue per wRVU                                         Edit
+$50
+Typical range: $30-80 | Blueprint reference: $50
+
+[Reset to Typical Defaults]
+
+──────────────────────────────────────────────────────────────
+HCC & CHRONIC CONDITION CAPTURE
+──────────────────────────────────────────────────────────────
+
+Medicare Advantage population                            Edit
+15%
+Typical range: 5-40% | Blueprint reference: 15%
+
+Benchmark PMPM                                           Edit
+$1,000
+Typical range: $800-1,500 | Blueprint reference: $1,000
+ⓘ County-specific MA capitated payment
+
+Condition recapture rate                                 Edit
+50%
+Typical range: 40-60% | Blueprint reference: 50% (typical)
+ⓘ % of missed HCC conditions documented with Abridge
+
+Hidden assumptions: 2.5 visits/patient/year, 2.5 conditions/patient, 
+30% documentation gap, 0.25 RAF weight per condition
+
+[Reset to Typical Defaults]
+
+──────────────────────────────────────────────────────────────
+DENIAL REDUCTION
+──────────────────────────────────────────────────────────────
+
+Baseline denial rate                                     Edit
+5%
+Typical range: 3-8% | Blueprint reference: 5%
+
+Prevention rate                                          Edit
+66%
+Typical range: 50-80% | Blueprint reference: 66% (typical)
+ⓘ % of doc-related denials prevented with complete notes
+
+Revenue per visit                                        Edit
+$200
+(Inherited from Patient Access)
+
+Hidden assumption: 30% of denials are documentation-related
+
+[Reset to Typical Defaults]
+
+──────────────────────────────────────────────────────────────
+OVERTIME & LOCUM COST AVOIDANCE
+──────────────────────────────────────────────────────────────
+
+After-hours documentation reduction                      Edit
+20%
+Typical range: 15-30% | Blueprint reference: 20% (typical)
+
+Blended premium labor rate                               Edit
+$145/hr
+Typical range: $100-250/hr | Blueprint reference: $145
+
+Minutes saved per encounter                              Edit
+2.5 min
+(Inherited from Patient Access)
+
+[Reset to Typical Defaults]
+
+4. STYLING:
+- Use the exact same card styling, spacing, and typography as the existing Fine-Tune section
+- Each input should have: label, value, "Edit" link (right-aligned), typical range + blueprint reference on next line
+- Use ⓘ icon for tooltips/explanations (same style as existing)
+- "Hidden assumption:" in small gray italic text
+- "(Inherited from...)" in small gray text for inherited values
+- Divider lines between drivers (same as current)
+- "Reset to Typical Defaults" button at bottom of each driver section (Abridge orange #E8532F, underlined)
+
+5. DYNAMIC RENDERING:
+- Only show drivers that were selected on Strategic Priorities page
+- If HCC not selected → don't show HCC section
+- If Denial not selected → don't show Denial section
+- etc.
+
+6. CHANGE ALL instances of "Range:" to "Typical range:" throughout the entire Fine-Tune section
+
+WHAT NOT TO CHANGE:
+- Blue info box at top
+- Posture selector (Conservative/Typical/Aggressive)
+- Fine-Tune collapsible header
+- Tab navigation
+- Any other page in the app
+- Any colors, fonts, spacing values
+
+RESULT:
+The Fine-Tune section should now show ALL inputs for ALL selected drivers, not just one input per driver. It should feel like a comprehensive financial model where every assumption is transparent and editable, not a sales tool with pre-cooked outputs.
