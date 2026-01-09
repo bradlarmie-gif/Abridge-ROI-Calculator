@@ -1007,33 +1007,94 @@ export default function RoiCalculator({
                         {driverId === "patientAccess" && (
                           <>
                             {/* Section 1: How We Calculated This */}
-                            <div>
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-4">
+                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
+                              <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
-                              <div className="space-y-3 font-mono text-sm bg-neutral-50 rounded-lg p-4">
-                                <div>
-                                  <span className="text-neutral-500">Step 1: Time Returned</span>
-                                  <div className="text-neutral-700">
-                                    {inputs.minutesSavedPerEncounter} min × {encountersWithAbridge.toLocaleString()} encounters = <span className="text-[#F03319] font-semibold">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours</span>
+                              
+                              {/* Step 1: Time Returned */}
+                              <div className="mb-6">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 1: Time Returned
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Minutes saved per encounter</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.minutesSavedPerEncounter} min</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Annual Abridge-documented encounters</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Total hours returned</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 2: Realized Capacity</span>
-                                  <div className="text-neutral-700">
-                                    {totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × {inputs.patientAccess.pctTimeToNewVisits}% realization = <span className="text-[#F03319] font-semibold">{(totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} usable hours</span>
+                              </div>
+
+                              {/* Step 2: Realized Capacity */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 2: Realized Capacity
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Total hours returned</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Realization factor</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.patientAccess.pctTimeToNewVisits}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Usable hours</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 3: New Visit Capacity</span>
-                                  <div className="text-neutral-700">
-                                    {(totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} hours ÷ {inputs.patientAccess.avgVisitDurationMinutes} min per visit = <span className="text-[#F03319] font-semibold">{((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (inputs.patientAccess.avgVisitDurationMinutes / 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} new visits</span>
+                                <p className="text-[13px] text-[#6B7280] italic mt-3">
+                                  Not all time converts to new visits due to scheduling, staffing, and demand constraints.
+                                </p>
+                              </div>
+
+                              {/* Step 3: New Visit Capacity */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 3: New Visit Capacity
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Usable hours</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Average visit duration</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.patientAccess.avgVisitDurationMinutes} min</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Additional visits possible</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (inputs.patientAccess.avgVisitDurationMinutes / 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} visits</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 4: Revenue Impact</span>
-                                  <div className="text-neutral-700">
-                                    {((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (inputs.patientAccess.avgVisitDurationMinutes / 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} visits × ${inputs.patientAccess.avgNetRevenuePerVisit} = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
+                              </div>
+
+                              {/* Step 4: Revenue Impact */}
+                              <div className="pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 4: Revenue Impact
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Additional visits</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (inputs.patientAccess.avgVisitDurationMinutes / 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Net revenue per visit</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.patientAccess.avgNetRevenuePerVisit}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
+                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1161,35 +1222,88 @@ export default function RoiCalculator({
                         {driverId === "wrvu" && (
                           <>
                             {/* Section 1: How We Calculated This */}
-                            <div>
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-4">
+                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
+                              <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
-                              <div className="space-y-3 font-mono text-sm bg-neutral-50 rounded-lg p-4">
-                                <div>
-                                  <span className="text-neutral-500">Step 1: Baseline wRVU Performance</span>
-                                  <div className="text-neutral-700">
-                                    {encountersWithAbridge.toLocaleString()} encounters × {inputs.baselineWrvuPerEncounter} wRVU = <span className="text-[#F03319] font-semibold">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter).toLocaleString(undefined, { maximumFractionDigits: 0 })} current wRVUs</span>
+                              
+                              {/* Step 1: Baseline wRVU Performance */}
+                              <div className="mb-6">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 1: Baseline wRVU Performance
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Annual Abridge-documented encounters</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Baseline wRVU per encounter</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.baselineWrvuPerEncounter}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Current annual wRVUs</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter).toLocaleString(undefined, { maximumFractionDigits: 0 })} wRVUs</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 2: Documentation Quality Lift</span>
-                                  <div className="text-neutral-700">
-                                    <span className="text-[#F03319] font-semibold">{inputs.wrvu.pctIncreaseWrvuPerEncounter}% improvement</span> (typical)
+                              </div>
+
+                              {/* Step 2: Documentation Quality Lift */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 2: Documentation Quality Lift
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">wRVU improvement with better documentation</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{inputs.wrvu.pctIncreaseWrvuPerEncounter}%</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 3: Additional wRVUs</span>
-                                  <div className="text-neutral-700">
-                                    {(encountersWithAbridge * inputs.baselineWrvuPerEncounter).toLocaleString(undefined, { maximumFractionDigits: 0 })} × {inputs.wrvu.pctIncreaseWrvuPerEncounter}% = <span className="text-[#F03319] font-semibold">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter * inputs.wrvu.pctIncreaseWrvuPerEncounter / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} additional wRVUs</span>
+                              </div>
+
+                              {/* Step 3: Additional wRVUs Captured */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 3: Additional wRVUs Captured
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Current annual wRVUs</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">× Documentation lift</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.wrvu.pctIncreaseWrvuPerEncounter}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Additional wRVUs captured</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter * inputs.wrvu.pctIncreaseWrvuPerEncounter / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} wRVUs</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 4: Revenue Impact</span>
-                                  <div className="text-neutral-700">
-                                    {(encountersWithAbridge * inputs.baselineWrvuPerEncounter * inputs.wrvu.pctIncreaseWrvuPerEncounter / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} wRVUs × ${inputs.wrvu.wrvuConversionFactor} = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
+                              </div>
+
+                              {/* Step 4: Revenue Impact */}
+                              <div className="pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 4: Revenue Impact
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Additional wRVUs captured</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter * inputs.wrvu.pctIncreaseWrvuPerEncounter / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Average revenue per wRVU</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.wrvu.wrvuConversionFactor}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
+                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
                                   </div>
                                 </div>
+                                <p className="text-[13px] text-[#6B7280] italic mt-3">
+                                  Actual reimbursement varies by payer mix and contracted rates.
+                                </p>
                               </div>
                             </div>
 
@@ -1314,29 +1428,79 @@ export default function RoiCalculator({
                         {driverId === "workforce" && (
                           <>
                             {/* Section 1: How We Calculated This */}
-                            <div>
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-4">
+                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
+                              <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
-                              <div className="space-y-3 font-mono text-sm bg-neutral-50 rounded-lg p-4">
-                                <div>
-                                  <span className="text-neutral-500">Step 1: Baseline Turnover</span>
-                                  <div className="text-neutral-700">
-                                    {inputs.workforce.providerCount} providers × {inputs.workforce.baselineAttritionRate}% turnover = <span className="text-[#F03319] font-semibold">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100).toFixed(1)} expected departures/year</span>
+                              
+                              {/* Step 1: Baseline Turnover */}
+                              <div className="mb-6">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 1: Baseline Turnover
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Total providers</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.workforce.providerCount}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Annual turnover rate</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.workforce.baselineAttritionRate}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Expected departures</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100).toFixed(1)} providers/year</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 2: Abridge Impact</span>
-                                  <div className="text-neutral-700">
-                                    {(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100).toFixed(1)} departures × {inputs.workforce.pctAttritionLinkedToBurnout}% burnout-linked × {inputs.workforce.pctBurnoutExitsAvoided}% preventable = <span className="text-[#F03319] font-semibold">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100 * inputs.workforce.pctAttritionLinkedToBurnout / 100 * inputs.workforce.pctBurnoutExitsAvoided / 100).toFixed(2)} departures avoided</span>
+                              </div>
+
+                              {/* Step 2: Abridge Impact */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 2: Abridge Impact
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Expected departures</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100).toFixed(1)}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">% due to burnout/workload</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.workforce.pctAttritionLinkedToBurnout}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">% preventable with Abridge</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.workforce.pctBurnoutExitsAvoided}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Departures avoided</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100 * inputs.workforce.pctAttritionLinkedToBurnout / 100 * inputs.workforce.pctBurnoutExitsAvoided / 100).toFixed(2)} per year</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 3: Cost Savings</span>
-                                  <div className="text-neutral-700">
-                                    {(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100 * inputs.workforce.pctAttritionLinkedToBurnout / 100 * inputs.workforce.pctBurnoutExitsAvoided / 100).toFixed(2)} avoided × ${inputs.workforce.costPerDeparture.toLocaleString()} = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
+                              </div>
+
+                              {/* Step 3: Cost Savings */}
+                              <div className="pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 3: Cost Savings
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Departures avoided</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100 * inputs.workforce.pctAttritionLinkedToBurnout / 100 * inputs.workforce.pctBurnoutExitsAvoided / 100).toFixed(2)}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Replacement cost per provider</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.workforce.costPerDeparture.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
+                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
                                   </div>
                                 </div>
+                                <p className="text-[13px] text-[#6B7280] italic mt-3">
+                                  Impact timeline: Retention improvements typically measurable at 12+ months as turnover is an annual metric.
+                                </p>
                               </div>
                             </div>
 
@@ -1469,39 +1633,120 @@ export default function RoiCalculator({
                           return (
                           <>
                             {/* Section 1: How We Calculated This */}
-                            <div>
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-4">
+                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
+                              <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
-                              <div className="space-y-3 font-mono text-sm bg-neutral-50 rounded-lg p-4">
-                                <div>
-                                  <span className="text-neutral-500">Step 1: Derive MA Population</span>
-                                  <div className="text-neutral-700">
-                                    {encountersWithAbridge.toLocaleString()} encounters / 2.5 = {uniquePatients.toLocaleString()} unique patients × {inputs.hcc.pctMedicareAdvantage}% MA = <span className="text-[#F03319] font-semibold">{impactedMaPatients.toLocaleString()} MA patients</span>
+                              
+                              {/* Step 1: Identify MA Patient Population */}
+                              <div className="mb-6">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 1: Identify MA Patient Population
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Total annual encounters</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Average visits per unique patient</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">2.5 visits/year</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Total unique patients</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{uniquePatients.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">% Medicare Advantage</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.pctMedicareAdvantage}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Unique MA patients</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{impactedMaPatients.toLocaleString()} patients</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 2: Diagnostic Gap</span>
-                                  <div className="text-neutral-700">
-                                    {impactedMaPatients.toLocaleString()} × {inputs.hcc.avgConditionsPerMember} conditions × {inputs.hcc.pctConditionsMissed}% gap = <span className="text-[#F03319] font-semibold">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} conditions missed</span>
+                              </div>
+
+                              {/* Step 2: Diagnostic Documentation Gap */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 2: Diagnostic Documentation Gap
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Chronic conditions per MA patient</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.avgConditionsPerMember}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Expected total HCC-eligible conditions</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Documentation gap</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.pctConditionsMissed}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Conditions missed annually</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 3: Abridge Recapture</span>
-                                  <div className="text-neutral-700">
-                                    {(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} missed × {inputs.hcc.pctMissedConditionsRecaptured}% recapture = <span className="text-[#F03319] font-semibold">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100 * inputs.hcc.pctMissedConditionsRecaptured / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} documented</span>
+                              </div>
+
+                              {/* Step 3: Abridge Recapture */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 3: Abridge Recapture
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Conditions missed annually</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Abridge recapture rate</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.pctMissedConditionsRecaptured}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">New conditions documented</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100 * inputs.hcc.pctMissedConditionsRecaptured / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} conditions</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 4: RAF Score Impact</span>
-                                  <div className="text-neutral-700">
-                                    Conditions × {inputs.hcc.rafGainPerCondition} RAF weight × {100 - inputs.hcc.rafRealizationHaircut}% realization
+                              </div>
+
+                              {/* Step 4: RAF Score Impact */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 4: RAF Score Impact
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Average RAF weight per condition</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.rafGainPerCondition}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Realization factor</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{100 - inputs.hcc.rafRealizationHaircut}%</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 5: Revenue Impact</span>
-                                  <div className="text-neutral-700">
-                                    RAF impact × ${inputs.hcc.pmpmBenchmark}/PMPM × 12 months = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
+                              </div>
+
+                              {/* Step 5: Revenue Impact */}
+                              <div className="pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 5: Revenue Impact
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Unique MA patients</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{impactedMaPatients.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Benchmark PMPM</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.hcc.pmpmBenchmark}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
+                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1645,33 +1890,81 @@ export default function RoiCalculator({
                           return (
                           <>
                             {/* Section 1: How We Calculated This */}
-                            <div>
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-4">
+                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
+                              <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
-                              <div className="space-y-3 font-mono text-sm bg-neutral-50 rounded-lg p-4">
-                                <div>
-                                  <span className="text-neutral-500">Step 1: Derive Revenue Base</span>
-                                  <div className="text-neutral-700">
-                                    {encountersWithAbridge.toLocaleString()} encounters × ${inputs.denials.avgRevenuePerEncounter}/visit = <span className="text-[#F03319] font-semibold">{formatCurrency(netCollectibleRevenue)} revenue</span>
+                              
+                              {/* Step 1: Baseline Denials */}
+                              <div className="mb-6">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 1: Baseline Denials
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Abridge-documented encounters</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Average revenue per encounter</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.denials.avgRevenuePerEncounter}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Total annual revenue</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue)}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Baseline denial rate</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.denials.baselineDenialRate}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Revenue denied annually</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)}</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 2: Baseline Denials</span>
-                                  <div className="text-neutral-700">
-                                    {formatCurrency(netCollectibleRevenue)} × {inputs.denials.baselineDenialRate}% denial rate = <span className="text-[#F03319] font-semibold">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)} denied annually</span>
+                              </div>
+
+                              {/* Step 2: Documentation-Related */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 2: Documentation-Related
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Revenue denied annually</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">% documentation-related</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.denials.pctDenialsFromDocumentation}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Documentation-driven denials</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)}</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 3: Documentation-Related Denials</span>
-                                  <div className="text-neutral-700">
-                                    {formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)} × {inputs.denials.pctDenialsFromDocumentation}% doc-related = <span className="text-[#F03319] font-semibold">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)}</span>
+                                <p className="text-[13px] text-[#6B7280] italic mt-3">
+                                  These are denials attributed to insufficient or unclear documentation—often unrecoverable due to lack of medical necessity support.
+                                </p>
+                              </div>
+
+                              {/* Step 3: Abridge Prevention */}
+                              <div className="pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 3: Abridge Prevention
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Documentation-driven denials</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)}</span>
                                   </div>
-                                </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 4: Abridge Prevention</span>
-                                  <div className="text-neutral-700">
-                                    {formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)} × {inputs.denials.pctDocDenialsRecovered}% preventable = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">% preventable with real-time docs</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.denials.pctDocDenialsRecovered}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
+                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1809,33 +2102,74 @@ export default function RoiCalculator({
                           return (
                           <>
                             {/* Section 1: How We Calculated This */}
-                            <div>
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-4">
+                            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
+                              <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
-                              <div className="space-y-3 font-mono text-sm bg-neutral-50 rounded-lg p-4">
-                                <div>
-                                  <span className="text-neutral-500">Step 1: Hours Reclaimed</span>
-                                  <div className="text-neutral-700">
-                                    {inputs.minutesSavedPerEncounter} min × {encountersWithAbridge.toLocaleString()} encounters = <span className="text-[#F03319] font-semibold">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours</span>
+                              
+                              {/* Step 1: Hours Returned */}
+                              <div className="mb-6">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 1: Hours Returned
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Minutes saved per encounter</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.minutesSavedPerEncounter} min</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Documented encounters</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Total hours returned</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 2: After-Hours Portion</span>
-                                  <div className="text-neutral-700">
-                                    {totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × {inputs.overtime.pctAfterHours}% after-hours = <span className="text-[#F03319] font-semibold">{afterHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} after-hours reclaimed</span>
+                              </div>
+
+                              {/* Step 2: After-Hours Reduction */}
+                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 2: After-Hours Reduction
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Total hours returned</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">% after-hours documentation</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.overtime.pctAfterHours}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">% converted to OT avoidance</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.overtime.pctOvertimeReduced}%</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280]">Premium labor hours avoided</span>
+                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 3: Overtime Reduction</span>
-                                  <div className="text-neutral-700">
-                                    {afterHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × {inputs.overtime.pctOvertimeReduced}% converted = <span className="text-[#F03319] font-semibold">{overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })} OT hours avoided</span>
+                              </div>
+
+                              {/* Step 3: Cost Savings */}
+                              <div className="pt-6 border-t border-[#E5E7EB]">
+                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                  Step 3: Cost Savings
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Premium hours avoided</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                   </div>
-                                </div>
-                                <div>
-                                  <span className="text-neutral-500">Step 4: Cost Savings</span>
-                                  <div className="text-neutral-700">
-                                    {overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })} hours × ${inputs.overtime.blendedOvertimeRate}/hr = <span className="text-[#F03319] font-semibold">{formatCurrency(driverValue)}</span>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-[14px] text-[#6B7280]">Blended premium rate</span>
+                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.overtime.blendedOvertimeRate}/hr</span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
+                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
                                   </div>
                                 </div>
                               </div>
