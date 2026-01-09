@@ -1,0 +1,101 @@
+CRITICAL FIXES NEEDED:
+
+PROBLEM 1: The old two-column "OPERATIONAL VALUE" / "DOCUMENTATION VALUE" section is still showing at the bottom. This needs to be COMPLETELY REMOVED.
+
+PROBLEM 2: When a posture (Conservative/Typical/Aggressive) is selected, the value preview card appears correctly. But the Fine-Tune section is not showing the actual input fields with values - just dashes (—).
+
+FIXES TO MAKE:
+
+1. REMOVE ENTIRELY:
+   - The two-column section with "OPERATIONAL VALUE" and "DOCUMENTATION VALUE" headers
+   - Any cards showing "Minutes returned per encounter", "Realization factor", "Level-of-service alignment"
+   - This entire section should NOT exist anymore
+
+2. FIX THE FINE-TUNE SECTION:
+   When Fine-Tune is expanded (or by default), it should show actual values in the input fields, NOT dashes.
+
+   Currently showing:
+   Minutes returned per encounter    Edit
+   —
+
+   Should show:
+   Minutes saved per encounter       Edit
+   2.5 min
+   Typical range: 1.5-4 min | Blueprint reference: 2.5 min
+
+3. POPULATE VALUES FROM POSTURE SELECTION:
+   When user selects a posture (Conservative/Typical/Aggressive), ALL the input fields in Fine-Tune should immediately populate with the corresponding default values:
+
+   TYPICAL POSTURE DEFAULTS:
+   - Minutes saved per encounter: 2.5 min
+   - Capacity realization factor: 20%
+   - Average visit duration: 30 min
+   - Revenue per visit: $200
+   - Annual turnover rate: 5%
+   - Replacement cost: $250,000
+   - Abridge prevention effectiveness: 40%
+   - Baseline wRVU per encounter: 1.75
+   - Documentation quality lift: 5%
+   - Revenue per wRVU: $50
+   - MA population: 15%
+   - Benchmark PMPM: $1,000
+   - Condition recapture rate: 50%
+   - Baseline denial rate: 5%
+   - Denial prevention rate: 66%
+   - After-hours reduction: 20%
+   - Blended premium rate: $145/hr
+
+   CONSERVATIVE POSTURE DEFAULTS:
+   - Minutes saved: 1.5 min
+   - Realization factor: 10%
+   - Prevention effectiveness: 30%
+   - Doc quality lift: 2%
+   - Recapture rate: 40%
+   - Denial prevention: 50%
+   - After-hours reduction: 15%
+   (Org-specific values stay the same)
+
+   AGGRESSIVE POSTURE DEFAULTS:
+   - Minutes saved: 3.5 min
+   - Realization factor: 35%
+   - Prevention effectiveness: 50%
+   - Doc quality lift: 8%
+   - Recapture rate: 60%
+   - Denial prevention: 80%
+   - After-hours reduction: 30%
+   (Org-specific values stay the same)
+
+4. STRUCTURE FOR EACH INPUT:
+   Each input field should display as:
+
+   [Input Label]                                        Edit
+   [Current Value with unit]
+   Typical range: [min-max] | Blueprint reference: [value]
+   [Optional tooltip/explanation if needed]
+
+5. THE FINE-TUNE SECTION SHOULD CONTAIN:
+   - Only the drivers selected on Strategic Priorities page
+   - All relevant inputs for each driver (as specified in previous prompt)
+   - Actual populated values, not dashes
+   - "Edit" links that allow inline editing
+   - "Reset to Typical Defaults" button at bottom of each driver section
+
+6. DYNAMIC BEHAVIOR:
+   - When posture changes → update all posture-driven values
+   - When user clicks "Edit" → allow inline value editing
+   - When user types custom value → that specific field becomes custom
+   - "Reset to Typical Defaults" → revert all values for that driver to Typical posture defaults
+
+WHAT SHOULD BE VISIBLE ON VALUE REALIZATION PAGE:
+✅ Blue info box at top
+✅ Value posture selector (Conservative/Typical/Aggressive)
+✅ Posture preview card showing total value (when posture selected)
+✅ Fine-Tune section (collapsible, with populated input fields)
+✅ Back button and "Next: Investment" button
+
+WHAT SHOULD NOT BE VISIBLE:
+❌ Two-column "Operational Value" / "Documentation Value" section
+❌ Old cards with just dashes
+❌ Any UI that doesn't match the new structure from previous prompt
+
+CRITICAL: The Fine-Tune section should be the ONLY place where input customization happens. All inputs should show actual values based on the selected posture, not empty/dash placeholders.

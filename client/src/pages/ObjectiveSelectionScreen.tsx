@@ -2458,11 +2458,11 @@ export default function ObjectiveSelectionScreen({
                                     <input
                                       type="number"
                                       step="0.1"
-                                      value={minutesSaved ?? ""}
+                                      value={effectiveMinutesSaved ?? POSTURE_PRESETS.typical.minutes}
                                       onChange={(e) => {
                                         const val = e.target.value;
                                         if (val === "") {
-                                          setMinutesSaved(null);
+                                          setMinutesSaved(POSTURE_PRESETS.typical.minutes);
                                           setCustomMinutes(null);
                                         } else {
                                           const num = parseFloat(val);
@@ -2483,11 +2483,11 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={timeRealizationRate ?? ""}
+                                        value={timeRealizationRate ?? POSTURE_PRESETS.typical.realization}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setTimeRealizationRate(null);
+                                            setTimeRealizationRate(POSTURE_PRESETS.typical.realization);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setTimeRealizationRate(num);
@@ -2578,7 +2578,7 @@ export default function ObjectiveSelectionScreen({
                                     <input
                                       type="number"
                                       step="0.01"
-                                      value={ftWrvuBaseline || ""}
+                                      value={ftWrvuBaseline ?? 1.75}
                                       onChange={(e) => {
                                         const val = e.target.value;
                                         if (val === "") {
@@ -2599,11 +2599,11 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={wrvuSensitivity ?? ""}
+                                        value={wrvuSensitivity ?? POSTURE_PRESETS.typical.wrvu}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setWrvuSensitivity(null);
+                                            setWrvuSensitivity(POSTURE_PRESETS.typical.wrvu);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setWrvuSensitivity(num);
@@ -2627,11 +2627,11 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftWrvuRevenuePerUnit || ""}
+                                        value={ftWrvuRevenuePerUnit ?? 50}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtWrvuRevenuePerUnit(40);
+                                            setFtWrvuRevenuePerUnit(50);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtWrvuRevenuePerUnit(num);
@@ -2641,7 +2641,7 @@ export default function ObjectiveSelectionScreen({
                                         data-testid="input-ft-revenue-wrvu"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $25-75 | Blueprint reference: $34 (Medicare CF)</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $25-75 | Blueprint reference: $50</p>
                                   </div>
                                 </div>
                                 <button 
@@ -2670,7 +2670,7 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="number"
                                         step="0.1"
-                                        value={ftRetentionTurnoverRate || ""}
+                                        value={ftRetentionTurnoverRate ?? 5}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
@@ -2694,7 +2694,7 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftRetentionReplacementCost || ""}
+                                        value={ftRetentionReplacementCost ?? 250000}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
@@ -2756,7 +2756,7 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftHccMedicareAdvantage || ""}
+                                        value={ftHccMedicareAdvantage ?? 15}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
@@ -2779,11 +2779,11 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftHccRecaptureRate ?? ""}
+                                        value={ftHccRecaptureRate ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtHccRecaptureRate(null);
+                                            setFtHccRecaptureRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtHccRecaptureRate(num);
@@ -2807,7 +2807,7 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftHccBenchmarkPmpm || ""}
+                                        value={ftHccBenchmarkPmpm ?? 1000}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
@@ -2855,7 +2855,7 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="decimal"
-                                        value={ftDenialBaselineRate || ""}
+                                        value={ftDenialBaselineRate ?? 5}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
@@ -2878,11 +2878,11 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftDenialPreventionRate ?? ""}
+                                        value={ftDenialPreventionRate ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtDenialPreventionRate(null);
+                                            setFtDenialPreventionRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtDenialPreventionRate(num);
@@ -2934,11 +2934,11 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftOvertimeAfterHoursReduction ?? ""}
+                                        value={ftOvertimeAfterHoursReduction ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtOvertimeAfterHoursReduction(null);
+                                            setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtOvertimeAfterHoursReduction(num);
@@ -2958,7 +2958,7 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftOvertimePremiumRate || ""}
+                                        value={ftOvertimePremiumRate ?? 145}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
@@ -2999,464 +2999,6 @@ export default function ObjectiveSelectionScreen({
                           </div>
                         </div>
                       )}
-                    </div>
-
-                    {/* Two columns grid */}
-                    <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-                      {/* Operational Value Column */}
-                      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5 md:p-6">
-                        <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase mb-1">
-                          Operational Value
-                        </div>
-                        <p className="text-xs text-neutral-500 mb-5">
-                          Time returned to clinicians that can be redeployed to capacity or reduced after-hours work.
-                        </p>
-
-                        {/* Minutes returned row */}
-                        <div className="space-y-4">
-                          <div className="border-b border-neutral-200 pb-4">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="text-sm font-medium text-neutral-900">
-                                  Minutes returned per encounter
-                                </div>
-                                <div className="mt-1.5 flex items-center gap-2">
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
-                                    {effectiveMinutesSaved !== null ? `${effectiveMinutesSaved} min` : "—"}
-                                  </span>
-                                </div>
-                                <p className="mt-1.5 text-xs text-neutral-500">
-                                  Based on observed ambient documentation time reduction.
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setEditingAssumption(editingAssumption === "minutes" ? null : "minutes")}
-                                className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
-                                data-testid="edit-minutes"
-                              >
-                                {editingAssumption === "minutes" ? "Done" : "Edit"}
-                              </button>
-                            </div>
-
-                            {/* Inline edit accordion */}
-                            {editingAssumption === "minutes" && (
-                              <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setMinutesSaved(2);
-                                      setCustomMinutes(null);
-                                      setShowCustomMinutesInput(false);
-                                    }}
-                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                      minutesSaved === 2 && customMinutes === null
-                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                    }`}
-                                    data-testid="chip-minutes-2"
-                                  >
-                                    Conservative (2 min)
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setMinutesSaved(4);
-                                      setCustomMinutes(null);
-                                      setShowCustomMinutesInput(false);
-                                    }}
-                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                      minutesSaved === 4 && customMinutes === null
-                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                    }`}
-                                    data-testid="chip-minutes-4"
-                                  >
-                                    Typical (4 min)
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setMinutesSaved(6);
-                                      setCustomMinutes(null);
-                                      setShowCustomMinutesInput(false);
-                                    }}
-                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                      minutesSaved === 6 && customMinutes === null
-                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                    }`}
-                                    data-testid="chip-minutes-6"
-                                  >
-                                    Aggressive (6 min)
-                                  </button>
-                                  {!showCustomMinutesInput ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => setShowCustomMinutesInput(true)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        customMinutes !== null
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-minutes-custom"
-                                    >
-                                      {customMinutes !== null ? `Custom (${customMinutes} min)` : "Custom"}
-                                    </button>
-                                  ) : (
-                                    <div className="flex items-center gap-2">
-                                      <input
-                                        ref={customMinutesInputRef}
-                                        type="text"
-                                        inputMode="numeric"
-                                        placeholder="Custom"
-                                        value={customMinutes ?? ""}
-                                        onChange={(e) => {
-                                          const val = parseFormattedNumber(e.target.value);
-                                          if (val > 0) {
-                                            setCustomMinutes(val);
-                                            setMinutesSaved(val);
-                                          } else if (e.target.value === "") {
-                                            setCustomMinutes(null);
-                                          }
-                                        }}
-                                        onBlur={() => {
-                                          if (customMinutes === null) {
-                                            setShowCustomMinutesInput(false);
-                                          }
-                                        }}
-                                        className="w-20 px-3 py-1.5 border border-neutral-300 rounded-full text-sm focus:ring-2 focus:ring-neutral-900/20 focus:border-neutral-900 font-mono"
-                                        data-testid="input-custom-minutes"
-                                      />
-                                      <span className="text-sm text-neutral-500">min</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Realization factor row */}
-                          <div>
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="text-sm font-medium text-neutral-900">
-                                  Realization factor
-                                </div>
-                                <div className="mt-1.5 flex items-center gap-2">
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
-                                    {timeRealizationRate !== null ? `${timeRealizationRate}% usable` : "—"}
-                                  </span>
-                                </div>
-                                <p className="mt-1.5 text-xs text-neutral-500">
-                                  Portion of returned time that converts into usable capacity (scheduling, staffing, demand).
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setEditingAssumption(editingAssumption === "realization" ? null : "realization")}
-                                className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
-                                data-testid="edit-realization"
-                              >
-                                {editingAssumption === "realization" ? "Done" : "Edit"}
-                              </button>
-                            </div>
-
-                            {/* Inline edit accordion */}
-                            {editingAssumption === "realization" && (
-                              <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setTimeRealizationRate(45)}
-                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                      timeRealizationRate === 45
-                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                    }`}
-                                    data-testid="chip-realization-45"
-                                  >
-                                    Conservative (45%)
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setTimeRealizationRate(55)}
-                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                      timeRealizationRate === 55
-                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                    }`}
-                                    data-testid="chip-realization-55"
-                                  >
-                                    Typical (55%)
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setTimeRealizationRate(65)}
-                                    className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                      timeRealizationRate === 65
-                                        ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                    }`}
-                                    data-testid="chip-realization-65"
-                                  >
-                                    Aggressive (65%)
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </section>
-
-                      {/* Documentation Value Column */}
-                      <section className="rounded-2xl border border-neutral-200 bg-neutral-50/40 p-5 md:p-6">
-                        <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase mb-1">
-                          Documentation Value
-                        </div>
-                        <p className="text-xs text-neutral-500 mb-5">
-                          Documentation more accurately reflects care delivered, supporting correct coding and fewer avoidable issues.
-                        </p>
-
-                        <div className="space-y-4">
-                          {/* Level of Service row */}
-                          {hasWrvuSelected && (
-                            <div className="border-b border-neutral-200 pb-4">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <div className="text-sm font-medium text-neutral-900">
-                                    Level-of-service alignment
-                                  </div>
-                                  <div className="mt-1.5 flex items-center gap-2">
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
-                                      {wrvuSensitivity !== null ? `${wrvuSensitivity}% alignment lift` : "—"}
-                                    </span>
-                                  </div>
-                                  <p className="mt-1.5 text-xs text-neutral-500">
-                                    Percent of visits billed at the level that matches documented care delivered.
-                                  </p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingAssumption(editingAssumption === "wrvu" ? null : "wrvu")}
-                                  className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
-                                  data-testid="edit-wrvu"
-                                >
-                                  {editingAssumption === "wrvu" ? "Done" : "Edit"}
-                                </button>
-                              </div>
-
-                              {/* Inline edit accordion */}
-                              {editingAssumption === "wrvu" && (
-                                <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
-                                  <div className="flex flex-wrap gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => setWrvuSensitivity(3)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        wrvuSensitivity === 3
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-wrvu-3"
-                                    >
-                                      Conservative (3%)
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setWrvuSensitivity(5)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        wrvuSensitivity === 5
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-wrvu-5"
-                                    >
-                                      Typical (5%)
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setWrvuSensitivity(7)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        wrvuSensitivity === 7
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-wrvu-7"
-                                    >
-                                      Aggressive (7%)
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* HCC / RAF Lift row */}
-                          {hasHccSelected && (
-                            <div className={hasWrvuSelected ? "" : "border-b border-neutral-200 pb-4"}>
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <div className="text-sm font-medium text-neutral-900">
-                                    HCC / RAF lift
-                                  </div>
-                                  <div className="mt-1.5 flex items-center gap-2">
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
-                                      {hccSensitivity !== null ? `${hccSensitivity}% RAF improvement` : "—"}
-                                    </span>
-                                  </div>
-                                  <p className="mt-1.5 text-xs text-neutral-500">
-                                    Relative RAF score improvement from better chronic condition capture.
-                                  </p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingAssumption(editingAssumption === "hcc" ? null : "hcc")}
-                                  className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
-                                  data-testid="edit-hcc"
-                                >
-                                  {editingAssumption === "hcc" ? "Done" : "Edit"}
-                                </button>
-                              </div>
-
-                              {editingAssumption === "hcc" && (
-                                <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
-                                  <div className="flex flex-wrap gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => setHccSensitivity(0.3)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        hccSensitivity === 0.3
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-hcc-03"
-                                    >
-                                      Conservative (0.3%)
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setHccSensitivity(0.7)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        hccSensitivity === 0.7
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-hcc-07"
-                                    >
-                                      Typical (0.7%)
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setHccSensitivity(1.2)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        hccSensitivity === 1.2
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-hcc-12"
-                                    >
-                                      Aggressive (1.2%)
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Denial Reduction row */}
-                          {hasDenialsSelected && (
-                            <div>
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <div className="text-sm font-medium text-neutral-900">
-                                    Denial rate reduction
-                                  </div>
-                                  <div className="mt-1.5 flex items-center gap-2">
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-neutral-200 text-sm font-mono font-medium text-neutral-900">
-                                      {denialsSensitivity !== null ? `${denialsSensitivity}% reduction` : "—"}
-                                    </span>
-                                  </div>
-                                  <p className="mt-1.5 text-xs text-neutral-500">
-                                    Reduction in documentation-related denials.
-                                  </p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingAssumption(editingAssumption === "denials" ? null : "denials")}
-                                  className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline underline-offset-4 shrink-0"
-                                  data-testid="edit-denials"
-                                >
-                                  {editingAssumption === "denials" ? "Done" : "Edit"}
-                                </button>
-                              </div>
-
-                              {editingAssumption === "denials" && (
-                                <div className="mt-4 pt-4 border-t border-neutral-200 bg-white rounded-lg p-4 -mx-1">
-                                  <div className="flex flex-wrap gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => setDenialsSensitivity(2)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        denialsSensitivity === 2
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-denials-2"
-                                    >
-                                      Conservative (2%)
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setDenialsSensitivity(5)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        denialsSensitivity === 5
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-denials-5"
-                                    >
-                                      Typical (5%)
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setDenialsSensitivity(8)}
-                                      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition border ${
-                                        denialsSensitivity === 8
-                                          ? "border-neutral-400 bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                          : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                                      }`}
-                                      data-testid="chip-denials-8"
-                                    >
-                                      Aggressive (8%)
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Placeholder when no documentation drivers selected */}
-                          {!hasAnyDocumentationLever && (
-                            <div className="rounded-xl border border-dashed border-neutral-200 bg-white p-4">
-                              <div className="text-xs font-semibold text-neutral-600">
-                                No documentation drivers selected
-                              </div>
-                              <div className="mt-1 text-xs text-neutral-500">
-                                Enable documentation drivers on the Strategic Priorities page to configure these assumptions.
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Tip about additional assumptions */}
-                        {hasAnyDocumentationLever && (
-                          <p className="mt-6 text-xs text-neutral-500 italic">
-                            Additional assumptions can be added in the ROI model summary.
-                          </p>
-                        )}
-                      </section>
                     </div>
 
                     {/* Footer actions */}

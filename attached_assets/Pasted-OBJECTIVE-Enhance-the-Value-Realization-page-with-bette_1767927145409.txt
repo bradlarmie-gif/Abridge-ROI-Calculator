@@ -1,0 +1,331 @@
+OBJECTIVE:
+Enhance the Value Realization page with better visual hierarchy, contextual information, and cohesion with the rest of the calculator. These changes build trust and transparency without changing core functionality.
+
+CRITICAL RULES:
+- Do NOT break existing functionality
+- Do NOT change branding, core colors, or typography scale
+- Do NOT add bouncy/playful animations (keep it 150-200ms ease-out)
+- Maintain all existing calculations and state management
+
+═══════════════════════════════════════════════════════════════
+
+IMPROVEMENT 1: ENHANCED POSTURE PREVIEW CARD
+
+When a posture is selected (Conservative/Typical/Aggressive), the preview card should show MORE context:
+
+CURRENT:
+TYPICAL POSTURE
+Your value drivers:
+✓ Patient Access - $173,333
+✓ Clinician Retention - $100,000
+✓ Accurate Level of Service - $182,000
+
+TOTAL PROJECTED VALUE: $455,333
+
+NEW VERSION:
+┌─────────────────────────────────────────────────────────┐
+│ TYPICAL POSTURE                                         │
+│ Best for: Initial business case, balanced approach     │
+│ Based on: Median performance from 200+ health system   │
+│           partners                                      │
+│                                                         │
+│ Your value drivers:                                     │
+│                                                         │
+│ ✓ Patient Access                           $173,333    │
+│   Minutes saved: 2.5 per encounter                     │
+│                                                         │
+│ ✓ Clinician Retention                      $100,000    │
+│   Turnover reduction via burnout relief                │
+│                                                         │
+│ ✓ Accurate Level of Service                $182,000    │
+│   Documentation lift: 5%                               │
+│                                                         │
+│ TOTAL PROJECTED VALUE:                     $455,333    │
+│ (Before investment costs)                              │
+│                                                         │
+│ 💡 Calculated from your inputs and posture settings.   │
+│                                                         │
+│ › Compare All Postures                                 │
+└─────────────────────────────────────────────────────────┘
+
+- Add "Best for:" description for each posture
+  - Conservative: "CFO review, risk-averse modeling"
+  - Typical: "Initial business case, balanced approach"
+  - Aggressive: "Aspirational planning, optimal adoption"
+
+- Add "Based on:" with "200+ health system partners" context
+
+- Show key metric for each driver (the primary posture-driven variable)
+
+- Add "(Before investment costs)" clarification
+
+- Add lightbulb info line at bottom
+
+- Add "Compare All Postures" expandable link
+
+═══════════════════════════════════════════════════════════════
+
+IMPROVEMENT 2: COMPARE ALL POSTURES (EXPANDABLE)
+
+When user clicks "› Compare All Postures" in the preview card, expand to show:
+
+┌─────────────────────────────────────────────────────────┐
+│ ∨ Compare All Postures                                  │
+│                                                         │
+│                 Conservative    Typical    Aggressive   │
+│ ─────────────────────────────────────────────────────── │
+│ Patient Access      $80,000    $173,333    $260,000    │
+│ Clinician Retention $60,000    $100,000    $125,000    │
+│ Level of Service    $91,000    $182,000    $364,000    │
+│ [Other drivers...]                                      │
+│ ─────────────────────────────────────────────────────── │
+│ TOTAL              $231,000    $455,333    $749,000    │
+│                                                         │
+│ Key assumption differences:                            │
+│ • Minutes saved:       1.5 min    2.5 min    3.5 min   │
+│ • Realization factor:     10%        20%        35%    │
+│ • Doc quality lift:        2%         5%         8%    │
+│ • Prevention rate:        30%        40%        50%    │
+│ • Recapture rate:         40%        50%        60%    │
+│ • Denial prevention:      50%        66%        80%    │
+│ • After-hours reduction:  15%        20%        30%    │
+└─────────────────────────────────────────────────────────┘
+
+- Table shows all selected drivers with values for each posture
+- Highlight the currently selected posture column (subtle background)
+- Show key posture-driven assumptions at bottom
+- Collapsible/expandable behavior (click to toggle)
+
+═══════════════════════════════════════════════════════════════
+
+IMPROVEMENT 3: FINE-TUNE SECTION - CATEGORY GROUPINGS
+
+Replace the flat list structure with clear category groupings that match Summary View:
+
+CURRENT: Sequential flat list
+NEW: Grouped by category
+
+┌─────────────────────────────────────────────────────────┐
+│ 🎚️ FINE-TUNE ASSUMPTIONS  Optional                 ›  │
+│ Want more control? Adjust the key assumptions that     │
+│ drive your selected value drivers.                     │
+└─────────────────────────────────────────────────────────┘
+
+[When expanded:]
+
+┌─────────────────────────────────────────────────────────┐
+│ ⚠️ Note: Changing these values overrides your posture  │
+│    selection and creates a custom model.               │
+└─────────────────────────────────────────────────────────┘
+
+CAPACITY & LABOR ─────────────────────────────────────────
+
+┌─ Patient Access ──────────────────────────────────────┐
+│                                                        │
+│ Minutes saved per encounter                    Edit   │
+│ 2.5 min                                               │
+│ Typical range: 1.5-4 min | Blueprint reference: 2.5  │
+│                                                        │
+│ Capacity realization factor                    Edit   │
+│ 20%                                                   │
+│ Typical range: 10-35% | Blueprint reference: 20%     │
+│ ⓘ Portion of time saved converting to new visits     │
+│                                                        │
+│ [... all other Patient Access inputs]                │
+│                                                        │
+│ [Reset to Typical Defaults]                           │
+└───────────────────────────────────────────────────────┘
+
+┌─ Clinician Retention ─────────────────────────────────┐
+│ [... all inputs]                                      │
+└───────────────────────────────────────────────────────┘
+
+┌─ Overtime & Locum Cost Avoidance ─────────────────────┐
+│ [... all inputs]                                      │
+└───────────────────────────────────────────────────────┘
+
+
+REVENUE & RISK ───────────────────────────────────────────
+
+┌─ Accurate Level of Service ───────────────────────────┐
+│ [... all inputs]                                      │
+└───────────────────────────────────────────────────────┘
+
+┌─ HCC & Chronic Condition Capture ─────────────────────┐
+│ [... all inputs]                                      │
+└───────────────────────────────────────────────────────┘
+
+┌─ Denial Reduction ────────────────────────────────────┐
+│ [... all inputs]                                      │
+└───────────────────────────────────────────────────────┘
+
+STYLING:
+- Category headers: 14px uppercase, #6B7280, letter-spacing: 0.05em, with horizontal rule
+- Driver cards: same white background, border, 8px radius as existing
+- Spacing: 24px between categories, 16px between driver cards within category
+- Only show categories that have selected drivers
+
+═══════════════════════════════════════════════════════════════
+
+IMPROVEMENT 4: INLINE EDITING WITH IMPACT PREVIEW
+
+When user clicks "Edit" next to any input, show inline editor with real-time impact:
+
+BEFORE EDIT:
+Minutes saved per encounter                        Edit
+2.5 min
+Typical range: 1.5-4 min | Blueprint reference: 2.5 min
+
+DURING EDIT:
+Minutes saved per encounter                    [Editing]
+[ 2.5 ] min  ← editable input field
+Typical range: 1.5-4 min | Blueprint reference: 2.5 min
+
+💡 Impact: Changing to 3.0 min would increase 
+   Patient Access value by $34,666 (+20%)
+
+[Cancel]  [Save Changes]
+
+AFTER SAVE:
+Minutes saved per encounter                        Edit
+3.0 min  ← shows updated value
+Typical range: 1.5-4 min | Blueprint reference: 2.5 min
+
+- Show impact preview as user types (debounced, 300ms delay)
+- Calculate delta from current value
+- Show both absolute ($34,666) and percentage (+20%) change
+- Highlight the affected driver value in the posture preview card (brief 300ms highlight animation)
+- "Cancel" reverts to previous value
+- "Save Changes" commits the new value
+
+═══════════════════════════════════════════════════════════════
+
+IMPROVEMENT 6: INHERITED VALUES - CLEARER LINKING
+
+For inputs that inherit from other drivers (e.g., Denial Reduction's "Revenue per visit" inherits from Patient Access):
+
+CURRENT:
+Revenue per visit                                  Edit
+$200
+(Inherited from Patient Access)
+
+NEW:
+Revenue per visit                          🔗 Linked
+$200
+Inherits from Patient Access settings
+Click to override and set custom value
+
+- Add 🔗 icon or "Linked" badge
+- Make it clear they can click to override
+- When they override, show: "⚠️ Now using custom value (no longer linked to Patient Access)"
+- Add "Relink to Patient Access" option if they override
+
+═══════════════════════════════════════════════════════════════
+
+IMPROVEMENT 7: SUBTLE MICRO-ANIMATIONS
+
+Add these subtle animations (NO bounce, elastic, or playful effects):
+
+1. POSTURE CHANGE:
+   - When switching Conservative/Typical/Aggressive
+   - All values in preview card transition smoothly (200ms ease-out)
+   - Brief highlight on changed values (fade from light orange #FEF3C7 to transparent, 300ms)
+
+2. FINE-TUNE EXPANSION:
+   - Smooth slide-down animation (300ms ease-out)
+   - Slight fade-in for content (200ms)
+
+3. INPUT SAVE:
+   - When "Save Changes" clicked on an edited input
+   - Brief highlight of the input (200ms)
+   - If it affects the posture preview card, highlight that driver's value (300ms)
+
+4. RESET TO DEFAULTS:
+   - When "Reset to Typical Defaults" clicked
+   - All inputs in that driver section flash subtle orange (#FEF3C7) then fade (400ms)
+   - Values transition smoothly to default values (200ms ease-out)
+
+ALL ANIMATIONS:
+- Use ease-out timing function
+- Max duration 300ms
+- Colors: Only use Abridge orange (#E8532F) at low opacity or warning yellow (#FEF3C7)
+- No movement animations (no slide, bounce, or scale)
+- Only opacity/color transitions
+
+═══════════════════════════════════════════════════════════════
+
+IMPROVEMENT 9: CUSTOMIZATION TRACKING
+
+At the top of Fine-Tune section when expanded AND user has made changes:
+
+┌─────────────────────────────────────────────────────────┐
+│ 🎚️ FINE-TUNE ASSUMPTIONS                               │
+│                                                         │
+│ Your customizations: 3 changes from Typical posture    │
+│                                                         │
+│ • Patient Access: Minutes saved (2.5 → 3.0 min)       │
+│ • Clinician Retention: Turnover rate (5% → 6%)        │
+│ • Level of Service: Revenue per wRVU ($50 → $45)      │
+│                                                         │
+│ [View Impact Summary] [Reset All to Typical]          │
+└─────────────────────────────────────────────────────────┘
+
+- Only show this section if user has made ANY customizations
+- List each customized value with before → after
+- "View Impact Summary" shows total value change from customizations
+- "Reset All to Typical" reverts ALL drivers to Typical posture defaults
+- Use orange text color (#E8532F) for the "X changes" count
+
+═══════════════════════════════════════════════════════════════
+
+IMPROVEMENT 10: TIME-TO-VALUE CONTEXT
+
+In the posture preview card, add context about value realization timeline:
+
+TOTAL PROJECTED VALUE:                     $455,333
+(Annual benefit, before investment costs)
+
+⏱️ Value timeline:
+- Immediate: Overtime savings, Patient Access
+- 6-12 months: Level of Service, Denial Reduction  
+- 12+ months: Clinician Retention, HCC Capture
+
+Next: Add investment costs to see ROI →
+
+TIMELINES BY DRIVER:
+- Patient Access: "Immediate" (can realize within weeks)
+- Overtime & Locum Cost: "Immediate" (can realize within weeks)
+- Level of Service: "6-12 months" (billing cycle + data validation)
+- Denial Reduction: "6-12 months" (billing cycle + denial trends)
+- HCC Capture: "12+ months" (annual RAF score reconciliation)
+- Clinician Retention: "12+ months" (turnover is an annual metric)
+
+- Use clock icon (⏱️) 
+- Group drivers by timeline category
+- Add arrow pointing to next step
+- Gray italic text for context
+
+═══════════════════════════════════════════════════════════════
+
+FINAL CHECKLIST:
+
+After all changes, the Value Realization page should have:
+✅ Enhanced posture preview card with context and key metrics
+✅ "Compare All Postures" expandable comparison table
+✅ Fine-Tune section organized by CAPACITY & LABOR / REVENUE & RISK categories
+✅ Inline editing with real-time impact preview
+✅ Clear "Linked" indicators for inherited values
+✅ Subtle animations (200-300ms, ease-out, no bounce)
+✅ Customization tracking summary (when changes exist)
+✅ Time-to-value context in preview card
+✅ Warning note about overriding posture when customizing
+✅ All 6 drivers properly categorized and showing all inputs
+
+DO NOT ADD:
+❌ Model confidence indicator
+❌ Validation warnings or out-of-range alerts
+❌ Bouncy or playful animations
+❌ Any changes to other pages
+
+RESULT:
+The Value Realization page should feel like a sophisticated financial modeling tool that CFOs trust, with transparency into every assumption, context about industry benchmarks, and clear understanding of what they're customizing.
