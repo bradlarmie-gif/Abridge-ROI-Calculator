@@ -337,15 +337,15 @@ export function generateExecutiveSummaryContent(model: ModelSnapshot): {
   recommendation: string;
 } {
   const { results, enabledDrivers, careSettingLabel } = model;
-  const roiMultiple = results.totalAnnualBenefit / results.annualInvestment;
-  const netGain = results.totalAnnualBenefit - results.annualInvestment;
+  const roiMultiple = results.roiMultiple;
+  const netGain = results.netValueCreated;
 
   return {
     headline: `Abridge implementation in ${careSettingLabel} is projected to generate ${formatCurrency(results.totalAnnualBenefit)} in annual value, representing a ${roiMultiple.toFixed(1)}x return on investment.`,
     context: `This analysis models the financial impact of deploying Abridge ambient documentation across ${model.inputs.numberOfProviders} providers with ${formatNumber(model.inputs.annualOutpatientEncounters)} annual encounters at ${model.inputs.abridgeUtilizationPct}% utilization rate.`,
     keyFindings: [
       `Total Annual Benefit: ${formatCurrency(results.totalAnnualBenefit)}`,
-      `Annual Investment: ${formatCurrency(results.annualInvestment)}`,
+      `Annual Investment: ${formatCurrency(results.annualAbridgeCost)}`,
       `Net Annual Value Created: ${formatCurrency(netGain)}`,
       `ROI Multiple: ${roiMultiple.toFixed(1)}x`,
       `Value Drivers Analyzed: ${enabledDrivers.length} (${enabledDrivers.map(d => leverLabels[d]).join(', ')})`,
