@@ -1,0 +1,387 @@
+f user selected:
+
+Patient Access
+Level of Service
+Clinician Retention
+
+Then show ONLY those 3 driver cards in Detailed Breakdown.
+═══════════════════════════════════════════════════════════════
+PART 2: CALCULATION DISPLAY STRUCTURE
+Each driver card has 3 states:
+STATE 1 - COLLAPSED (default):
+┌─────────────────────────────────────────────────────────┐
+│ ⏱️  Patient Access                      $216,667    ∨  │
+└─────────────────────────────────────────────────────────┘
+STATE 2 - EXPANDED (view calculations):
+┌─────────────────────────────────────────────────────────┐
+│ ⏱️  Patient Access                      $216,667    ∧  │
+│                                                         │
+│ HOW WE CALCULATED THIS                                  │
+│                                                         │
+│ [Full step-by-step calculation display]                │
+│                                                         │
+│ [Adjustable inputs section at bottom]                  │
+└─────────────────────────────────────────────────────────┘
+STATE 3 - EDITING (inline edit mode):
+User clicks [Edit] next to an input → that value becomes editable field with impact preview
+STYLING FOR STATES:
+Collapsed:
+
+Same as current Detailed Breakdown cards
+Icon, driver name, value, expand arrow
+
+Expanded:
+
+Background: #F9FAFB (light gray) for calculation section
+Border: 1px solid #E5E7EB
+Padding: 24px
+Match Value Blueprint calculation styling exactly
+
+═══════════════════════════════════════════════════════════════
+PART 3: CALCULATION DISPLAY LAYOUT (MATCH VALUE BLUEPRINT)
+Use the same clean table-like layout as Value Blueprint:
+STEP 1: TIME RETURNED
+Minutes saved per encounter            2.5 min    [Edit]
+Annual encounters                      65,000     [Edit]
+Total hours returned                   2,708 hrs
+STEP 2: REALIZED CAPACITY
+Total hours returned                   2,708 hrs
+Realization factor                     20%        [Edit]
+Usable hours                           542 hrs
+Not all time converts to new visits due to scheduling,
+staffing, and demand constraints.
+[Continue for all steps...]
+STYLING:
+
+Step headers: 13px, #6B7280, uppercase, letter-spacing 0.05em, bold
+Labels: 14px, #6B7280 (gray), left-aligned
+Values: 16px, #111827 (black), right-aligned, tabular numbers, bold
+Calculated results: 16px, #E8532F (orange), bold
+[Edit] button: 13px, #E8532F (orange), appears on hover or always visible on mobile
+
+LAYOUT:
+Use flex or grid to create two-column layout:
+
+Left: Label
+Right: Value + [Edit] button
+
+═══════════════════════════════════════════════════════════════
+PART 4: WHICH INPUTS GET [EDIT] BUTTONS
+Show [Edit] button ONLY for user-configurable inputs.
+EDITABLE INPUTS:
+Patient Access:
+✏️ Minutes saved per encounter (posture-driven, can override)
+✏️ Realization factor (posture-driven, can override)
+✏️ Average visit duration (org-specific)
+✏️ Revenue per visit (org-specific)
+Level of Service:
+✏️ Baseline wRVU per encounter (org-specific)
+✏️ Documentation quality lift % (posture-driven, can override)
+✏️ Revenue per wRVU (org-specific)
+Clinician Retention:
+✏️ Annual turnover rate (org-specific)
+✏️ Abridge prevention effectiveness (posture-driven, can override)
+✏️ Replacement cost per provider (org-specific)
+HCC Capture:
+✏️ MA population % (org-specific)
+✏️ Benchmark PMPM (org-specific)
+✏️ Recapture rate (posture-driven, can override)
+Denial Reduction:
+✏️ Baseline denial rate (org-specific)
+✏️ Prevention rate (posture-driven, can override)
+✏️ Revenue per visit (org-specific)
+Overtime Cost:
+✏️ After-hours reduction % (posture-driven, can override)
+✏️ Blended premium rate (org-specific)
+DO NOT ADD [Edit] to calculated/derived values:
+
+Total hours returned (calculated)
+Usable hours (calculated)
+Additional visits (calculated)
+Annual value (calculated)
+Etc.
+
+═══════════════════════════════════════════════════════════════
+PART 5: INLINE EDIT BEHAVIOR
+When user clicks [Edit] button:
+BEFORE EDIT:
+Realization factor                     20%        [Edit]
+AFTER CLICKING [Edit]:
+Realization factor                     [20] %     [Save] [Cancel]
+↓
+Typical range: 10-35% | Your current: 20% (Typical posture)
+💡 Impact: Changing to 25% would increase Patient Access
+value by $54,167 (+25%)
+INLINE INPUT FIELD STYLING:
+
+Width: 80px (or auto-size based on content)
+Height: 32px
+Border: 2px solid #E8532F (orange - active state)
+Border-radius: 4px
+Padding: 6px 12px
+Font: 16px, bold, tabular numbers
+Background: #FFFBF5 (very subtle cream)
+Focus state: Box-shadow 0 0 0 3px rgba(232, 83, 47, 0.1)
+
+CONTEXT LINE (below input):
+
+Font: 13px, #6B7280 (gray)
+Shows typical range and current value
+Format: "Typical range: X-Y | Your current: Z (Posture name)"
+
+IMPACT PREVIEW BOX:
+
+Background: #EFF6FF (light blue)
+Border: 1px solid #BFDBFE
+Border-radius: 6px
+Padding: 12px
+Margin-top: 12px
+Font: 13px, #1E40AF (blue text)
+Lightbulb icon: 💡
+Format: "Impact: Changing to X would [increase/decrease] [driver name] value by $Y (+Z%)"
+
+BUTTONS:
+[Save]:
+
+Background: #E8532F (orange)
+Text: White, 13px
+Padding: 6px 16px
+Border-radius: 4px
+Hover: Darken slightly
+
+[Cancel]:
+
+Background: transparent
+Text: #6B7280 (gray), 13px
+Border: 1px solid #E5E7EB
+Padding: 6px 16px
+Border-radius: 4px
+Hover: Background #F9FAFB
+
+═══════════════════════════════════════════════════════════════
+PART 6: REAL-TIME IMPACT CALCULATION
+As user types in the input field:
+
+DEBOUNCE INPUT (300ms delay)
+CALCULATE NEW VALUE:
+
+Take current driver inputs
+Replace edited field with preview value
+Recalculate driver value
+Calculate delta from current value
+
+
+UPDATE IMPACT PREVIEW:
+
+Show dollar amount difference
+Show percentage change
+Update in real-time as they type
+
+
+HIGHLIGHT AFFECTED VALUES:
+
+Find all downstream calculated values in the display
+Apply temporary highlight animation
+Background: #FEF3C7 (light orange)
+Fade from 100% → 0% over 400ms
+Shows cascade effect
+
+
+
+Example:
+User changes realization factor from 20% to 25%
+Affected values (highlight with fade animation):
+
+Usable hours: 542 → 678
+Additional visits: 1,083 → 1,356
+Annual value: $216,667 → $271,200
+
+═══════════════════════════════════════════════════════════════
+PART 7: SAVE BEHAVIOR
+When user clicks [Save]:
+
+COMMIT CHANGES:
+
+Update driver inputs in app state
+Mark field as "customized" (no longer using posture default)
+
+
+RECALCULATE EVERYWHERE:
+
+Update Live Receipt
+Update Summary View
+Update any other connected displays
+
+
+SHOW CONFIRMATION:
+
+Toast notification: "✓ Patient Access updated"
+Duration: 3 seconds
+Position: Top-right
+Background: #059669 (green)
+Text: White
+
+
+RETURN TO VIEW MODE:
+
+Input field becomes static value again
+[Edit] button reappears
+Impact preview disappears
+
+
+PERSIST CHANGES:
+
+Store in state/localStorage
+Changes persist across tab navigation
+
+
+
+═══════════════════════════════════════════════════════════════
+PART 8: CANCEL BEHAVIOR
+When user clicks [Cancel]:
+
+REVERT VALUE:
+
+Discard preview value
+Return to previous/current value
+
+
+RETURN TO VIEW MODE:
+
+Input field becomes static value
+[Edit] button reappears
+Impact preview disappears
+
+
+NO STATE CHANGES:
+
+Do not trigger recalculation
+Do not update other views
+
+
+
+═══════════════════════════════════════════════════════════════
+PART 9: MOBILE OPTIMIZATION
+DESKTOP (>768px):
+
+Inline editing as described above
+Impact preview below input field
+Side-by-side layout for labels and values
+
+MOBILE (<768px):
+
+Clicking [Edit] opens BOTTOM SHEET MODAL instead of inline
+Larger input field (easier to tap)
+More prominent impact preview
+Full-width buttons at bottom
+
+MOBILE BOTTOM SHEET STRUCTURE:
+┌─────────────────────────────────────────────────┐
+│ Edit Realization Factor                     ×  │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│ Current value:                                  │
+│ [    20    ] %                                  │
+│                                                 │
+│ Typical range: 10-35%                           │
+│ Your posture default: 20%                       │
+│                                                 │
+│ ─────────────────────────────────────────────  │
+│                                                 │
+│ 💡 Impact Preview                               │
+│                                                 │
+│ Changing to 25% would increase Patient Access  │
+│ value by $54,167 (+25%)                        │
+│                                                 │
+│ Affected values:                               │
+│ • Usable hours: 542 → 678                      │
+│ • Additional visits: 1,083 → 1,356             │
+│ • Annual value: $216,667 → $271,200            │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│ [Cancel]                    [Save Changes]     │
+└─────────────────────────────────────────────────┘
+Modal styling:
+
+Fixed position, bottom: 0
+Max-height: 80vh
+Scrollable if content overflows
+Backdrop: rgba(0, 0, 0, 0.5) with blur
+Slide-up animation (300ms ease-out)
+Drag handle at top for closing
+
+═══════════════════════════════════════════════════════════════
+PART 10: CONNECTION TO FINE-TUNE SECTION
+The inputs in Detailed Breakdown are THE SAME as Fine-Tune inputs.
+SHARED STATE:
+
+Both sections pull from same state object
+Editing in Detailed Breakdown = editing in Fine-Tune
+Changes in Fine-Tune reflect in Detailed Breakdown
+Single source of truth for all driver inputs
+
+VISUAL INDICATOR:
+If user has customized a value (different from posture default):
+Realization factor                     25% ⚙️     [Edit]
+↑
+(Customized from Typical: 20%)
+Show gear icon (⚙️) or "Custom" badge next to customized values
+═══════════════════════════════════════════════════════════════
+PART 11: VALIDATION & ERROR HANDLING
+INPUT VALIDATION:
+Numeric inputs:
+
+Must be valid number
+Must be within reasonable bounds (not negative, not absurdly high)
+Show error if out of "typical range" but allow override
+
+Example:
+User enters "150%" for realization factor (way above typical 35%)
+⚠️ Warning: This is significantly above typical range (10-35%).
+Are you sure this is accurate?
+[Yes, Continue]  [Revert to 35%]
+ERROR STATES:
+
+Invalid input (not a number): Red border, error message
+Out of bounds: Warning message, but allow save
+Network error (if saving fails): Toast with retry option
+
+═══════════════════════════════════════════════════════════════
+PART 12: ACCESSIBILITY
+Keyboard navigation:
+
+Tab through [Edit] buttons
+Enter to activate edit mode
+Tab between input field, [Save], [Cancel]
+Enter to save, Escape to cancel
+
+Screen readers:
+
+Announce when entering edit mode
+Announce impact preview changes
+Announce when save is successful
+
+Focus management:
+
+When entering edit mode, focus input field
+After save/cancel, return focus to [Edit] button
+
+═══════════════════════════════════════════════════════════════
+DO NOT CHANGE:
+
+Summary View page
+Value Blueprint page
+Any other pages
+Overall navigation structure
+Brand colors or typography
+
+ONLY CHANGE:
+
+Detailed Breakdown page structure
+Add inline editing capability
+Improve calculation display to match Value Blueprint
+Make it dynamic based on selected drivers
+
+═══════════════════════════════════════════════════════════════
+RESULT:
+Detailed Breakdown becomes a powerful, interactive tool where users can see step-by-step math with THEIR numbers, adjust any input inline with real-time impact preview, and have changes propagate across the entire app. Only shows drivers they selected. Matches Value Blueprint's visual quality while adding editing capability. Works seamlessly on desktop and mobile.
