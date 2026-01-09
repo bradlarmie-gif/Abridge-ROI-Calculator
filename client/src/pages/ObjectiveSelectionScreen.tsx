@@ -1453,13 +1453,16 @@ export default function ObjectiveSelectionScreen({
         return Math.round(docDenials * (pv.denialPrevention / 100));
       };
       
-      // OVERTIME & LOCUM COST AVOIDANCE CALCULATION (per user spec)
-      // Formula: total_hours × after_hours_reduction% × premium_rate
+      // OVERTIME & LOCUM COST AVOIDANCE CALCULATION (matches roi-calculator.ts)
+      // Formula: total_hours × pctAfterHours% × overtime_reduction% × premium_rate
       const calcOvertime = () => {
         const totalMinutes = pv.minutesSaved * eligibleEncounters;
         const totalHours = totalMinutes / 60;
-        // Apply after-hours reduction directly per spec
-        const premiumHoursAvoided = totalHours * (pv.overtimeReduction / 100);
+        // Only after-hours time contributes to overtime savings (default 25%)
+        const pctAfterHours = 25;
+        const afterHoursReclaimed = totalHours * (pctAfterHours / 100);
+        // Apply overtime reduction percentage
+        const premiumHoursAvoided = afterHoursReclaimed * (pv.overtimeReduction / 100);
         return Math.round(premiumHoursAvoided * ftOvertimePremiumRate);
       };
       
