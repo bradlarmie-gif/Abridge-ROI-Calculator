@@ -1862,21 +1862,11 @@ export default function ObjectiveSelectionScreen({
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <div>
-                      <span className="text-sm font-medium text-[#1E40AF]">This sets the assumptions used throughout the model.</span>
-                      <p className="text-sm text-[#3B82F6] leading-relaxed mt-0.5">
-                        Baseline wRVUs, typical encounter lengths, and documentation patterns vary by care environment.
-                      </p>
-                    </div>
+                    <span className="text-sm font-medium text-[#1E40AF]">This sets the assumptions used throughout the model.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <div>
-                      <span className="text-sm font-medium text-[#1E40AF]">You'll get a tailored output you can share.</span>
-                      <p className="text-sm text-[#3B82F6] leading-relaxed mt-0.5">
-                        Your final model reflects setting-specific benchmarks from 200+ health system partners.
-                      </p>
-                    </div>
+                    <span className="text-sm font-medium text-[#1E40AF]">You'll get a tailored output you can share.</span>
                   </li>
                 </ul>
               </div>
