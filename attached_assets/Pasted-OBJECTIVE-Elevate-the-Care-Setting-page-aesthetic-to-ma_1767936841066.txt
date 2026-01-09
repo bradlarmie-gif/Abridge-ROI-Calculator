@@ -1,0 +1,297 @@
+OBJECTIVE:
+Elevate the Care Setting page aesthetic to match the visual quality and information hierarchy of the Value Blueprint page. It should feel like an important data-driven decision point, not a basic form. Must work on both desktop and mobile.
+
+CRITICAL RULES:
+- Match Value Blueprint's use of visual hierarchy, section dividers, info boxes
+- Keep existing functionality (card selection, continue button)
+- Use only existing brand colors
+- Maintain professional, Bloomberg Terminal aesthetic
+- Mobile-responsive (stack on mobile, two-column on desktop)
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: ENHANCE INTRO BOX (MATCH "REFERENCE SCENARIO" STYLE)
+
+Replace the current plain intro box with a more prominent, data-forward design:
+
+┌─────────────────────────────────────────────────────────┐
+│ Build a model for your organization                    │
+│                                                         │
+│ Each care setting has unique documentation workflows,  │
+│ encounter patterns, and value drivers. Your selection  │
+│ determines the baseline assumptions throughout this    │
+│ calculator.                                            │
+│                                                         │
+│ 📊 Based on data from 200+ health system partners      │
+└─────────────────────────────────────────────────────────┘
+
+STYLING:
+- Background: #F9FAFB (light gray)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px (increased from 20px)
+- Margin-bottom: 32px
+
+Text:
+- Headline: 18px, #111827 (black), bold (increased from 16px)
+- Body: 14px, #6B7280 (gray), line-height 1.6
+- Data source line: 13px, #6B7280 (gray), with 📊 icon, margin-top 16px
+
+Place this RIGHT AFTER "Select a care setting" headline and BEFORE the old description text (which should be removed).
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: ADD SECTION HEADER BEFORE CARDS
+
+Before the care setting cards appear, add a section header:
+
+AVAILABLE CARE SETTINGS
+Choose the environment that matches your organization
+
+STYLING:
+- Header: 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, medium weight
+- Subtitle: 14px, #6B7280 (gray), normal case, regular weight
+- Margin-top: 40px (from intro box)
+- Margin-bottom: 24px (before first card)
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: ENHANCE CARE SETTING CARDS
+
+Add visual hierarchy and context footers to match Value Blueprint's card style:
+
+STRUCTURE FOR EACH CARD:
+
+┌─────────────────────────────────────────────┐
+│ [Icon - 48px, prominent]                    │
+│                                             │
+│ Outpatient                               ✓  │
+│ Primary care, specialty visits, clinics    │
+│                                             │
+│ ─────────────────────────────────────────  │
+│                                             │
+│ Typical drivers:                           │
+│ • Patient access expansion                 │
+│ • Level of service improvements            │
+│ • Clinician retention                      │
+│                                             │
+│ 📈 Most common for initial ROI modeling    │
+└─────────────────────────────────────────────┘
+
+CONTENT BY SETTING:
+
+Outpatient:
+- Icon: 🏥 (48px)
+- Title: Outpatient
+- Description: Primary care, specialty visits, clinics
+- Drivers: (keep existing)
+- Footer: 📈 Most common for initial ROI modeling
+
+Emergency Department:
+- Icon: 🚑 (48px)
+- Title: Emergency Department
+- Description: High-volume, fast-paced encounters
+- Drivers: (keep existing)
+- Footer: ⚡ High-impact documentation workflows
+
+Nursing:
+- Icon: 💊 (48px)
+- Title: Nursing
+- Description: Bedside documentation, care coordination
+- Drivers: (keep existing)
+- Footer: 💪 Workforce-focused value drivers
+
+Inpatient:
+- Icon: 🏥 (48px, muted)
+- Title: Inpatient
+- Description: Hospital admissions, rounding
+- Footer: In development
+
+VISUAL ENHANCEMENTS:
+
+Icon:
+- Size: 48px (increased from current)
+- Position: Top of card, left-aligned with 8px margin from edge
+- Margin-bottom: 16px
+
+Title area:
+- Font: 18px (increased), #111827, bold
+- Checkmark (when selected): Top-right corner
+
+Description:
+- Keep existing styling
+
+Divider line:
+- Insert BEFORE "Typical drivers:" section
+- Style: 1px solid #E5E7EB
+- Margin: 16px vertical
+
+"Typical drivers:" section:
+- Keep existing styling
+
+Context footer:
+- Icon + text: 13px, #6B7280 (gray)
+- Icon size: 16px
+- Margin-top: 16px
+- Background: None (just text at bottom of card)
+
+Card padding:
+- Increase to 24px (from 20px)
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: ENHANCE "WHY THIS MATTERS" SECTION
+
+Transform from plain bullets into an info box (match Value Blueprint's info box style):
+
+Option A - Light gray box (recommended):
+
+┌─────────────────────────────────────────────────────────┐
+│ 💡 Why care setting matters                            │
+│                                                         │
+│ ✓ Workflows differ by setting—so ROI drivers differ    │
+│   too.                                                  │
+│                                                         │
+│   Example: Emergency departments prioritize            │
+│   throughput; outpatient prioritizes patient access.   │
+│                                                         │
+│ ✓ This sets the assumptions used throughout the model. │
+│                                                         │
+│   Baseline wRVUs, typical encounter lengths, and       │
+│   documentation patterns vary by care environment.     │
+│                                                         │
+│ ✓ You'll get a tailored output you can share.         │
+│                                                         │
+│   Your final model reflects setting-specific           │
+│   benchmarks from 200+ health system partners.         │
+└─────────────────────────────────────────────────────────┘
+
+STYLING:
+- Background: #F9FAFB (light gray)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Margin-top: 32px
+- Margin-bottom: 32px
+
+Header:
+- "💡 Why care setting matters": 16px, #111827 (black), medium weight
+- Margin-bottom: 16px
+
+Bullets:
+- Checkmark: #E8532F (orange)
+- Primary line: 14px, #111827 (black), medium weight
+- Secondary explanation: 14px, #6B7280 (gray), line-height 1.6
+- Indent secondary text: 24px from left
+- Spacing between bullets: 20px
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: ENHANCE RIGHT SIDEBAR
+
+Transform from plain selection box to structured summary (match Value Blueprint's "Combined Impact" style):
+
+┌─────────────────────────────────────────────┐
+│ YOUR SELECTION                              │
+│                                             │
+│ ─────────────────────────────────────────  │
+│                                             │
+│ CARE SETTING                                │
+│ Outpatient                               ✓  │
+│                                             │
+│ This determines:                           │
+│ • Baseline wRVU assumptions                │
+│ • Typical encounter patterns               │
+│ • Documentation workflows                  │
+│                                             │
+│ ─────────────────────────────────────────  │
+│                                             │
+│ [Continue →]                               │
+└─────────────────────────────────────────────┘
+
+STYLING:
+
+Divider lines:
+- 1px solid #E5E7EB
+- Margin: 16px vertical
+
+"YOUR SELECTION" header:
+- Keep existing styling
+
+"CARE SETTING" label:
+- 12px, #6B7280, uppercase, letter-spacing 0.05em
+
+Selected setting:
+- 16px, #111827 (black), medium weight
+- Checkmark: #E8532F (orange), right-aligned
+
+"This determines:" section:
+- Label: 14px, #6B7280 (gray), margin-top 12px
+- Bullets: 13px, #6B7280 (gray)
+- Line-height: 1.6
+- Spacing: 4px between bullets
+
+Only show "This determines" section when a setting is selected.
+
+Continue button:
+- Keep existing styling
+- Position after second divider line
+
+═══════════════════════════════════════════════════════════════
+
+PART 6: MOBILE RESPONSIVE BEHAVIOR
+
+DESKTOP (>768px):
+- Keep two-column layout
+- Left: Content (intro box, cards, why this matters)
+- Right: Sidebar (sticky at top: 24px)
+- Max content width: 1200px, centered
+
+MOBILE (<768px):
+- Stack vertically
+- Order:
+  1. Intro box (full width)
+  2. Section header
+  3. Care setting cards (full width, stack vertically)
+  4. "Why This Matters" box (collapsible - collapsed by default on mobile)
+  5. Sticky bottom bar showing selection + Continue button
+
+Sticky bottom bar on mobile:
+┌─────────────────────────────────────────────┐
+│ Outpatient selected              Continue › │
+└─────────────────────────────────────────────┘
+- Fixed position bottom: 0
+- Background: White
+- Shadow: 0 -2px 8px rgba(0,0,0,0.1)
+- Padding: 16px
+- Shows selected setting name + Continue button
+- Tapping selection name scrolls back to cards
+
+═══════════════════════════════════════════════════════════════
+
+PART 7: SPACING & LAYOUT REFINEMENTS
+
+Desktop spacing:
+- Page margin: 48px top, 32px sides
+- Headline to intro box: 24px
+- Intro box to section header: 40px
+- Section header to first card: 24px
+- Between cards: 16px
+- Cards to "Why This Matters": 48px
+- "Why This Matters" to footer: 48px
+
+Mobile spacing:
+- Page margin: 24px top, 16px sides
+- Reduce all vertical spacing by 25%
+- Card spacing: 12px
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Card selection functionality
+- Continue button routing
+- Any other pages
+- Brand color palette
+
+RESULT:
+Care Setting page now matches Value Blueprint's visual quality with clear hierarchy, data-forward design, structured info boxes, and context footers. Feels like an important decision point, not a basic form. Works seamlessly on both desktop and mobile.

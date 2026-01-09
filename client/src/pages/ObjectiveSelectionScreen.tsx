@@ -36,6 +36,7 @@ import {
   BarChart3,
   ArrowRight,
   Sliders,
+  Zap,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -485,6 +486,13 @@ const SETTING_DRIVERS: Record<string, string[]> = {
   inpatient: [],
 };
 
+const SETTING_FOOTERS: Record<string, { iconType: "trending" | "zap" | "users" | null; text: string }> = {
+  outpatient: { iconType: "trending", text: "Most common for initial ROI modeling" },
+  ed: { iconType: "zap", text: "High-impact documentation workflows" },
+  nursing: { iconType: "users", text: "Workforce-focused value drivers" },
+  inpatient: { iconType: null, text: "" },
+};
+
 function CareSettingRow({
   icon: Icon,
   label,
@@ -502,69 +510,85 @@ function CareSettingRow({
 }) {
   const description = SETTING_DESCRIPTIONS[settingKey] || "";
   const drivers = SETTING_DRIVERS[settingKey] || [];
+  const footer = SETTING_FOOTERS[settingKey];
 
   const buttonContent = (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative w-full text-left px-5 py-5 transition-all duration-200 ease-out ${
+      className={`group relative w-full text-left p-6 transition-all duration-200 ease-out ${
         disabled
           ? "cursor-not-allowed opacity-60 border border-dashed border-[#E5E7EB]"
           : selected
-            ? "bg-[#FEF3C7]/20 border-l-4 border-l-[#E8532F] border-t border-r border-b border-transparent shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
-            : "shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] border border-transparent hover:border-[#E8532F] cursor-pointer"
+            ? "bg-[#FFF7F5] border border-[#E8532F]/30 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+            : "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#E8532F] cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
       {selected && (
-        <div className="absolute right-4 top-4">
+        <div className="absolute right-5 top-5">
           <Check className="w-5 h-5 text-[#F03319]" />
         </div>
       )}
-      <div className="flex items-start gap-4">
-        <div
-          className={`flex items-center justify-center w-10 h-10 rounded transition-colors flex-shrink-0 ${
+      
+      <div
+        className={`flex items-center justify-center w-12 h-12 rounded-lg mb-4 ${
+          selected
+            ? "bg-[#F03319]/10"
+            : disabled
+              ? "bg-neutral-100"
+              : "bg-neutral-100 group-hover:bg-neutral-200"
+        }`}
+      >
+        <Icon
+          className={`w-6 h-6 ${selected ? "text-[#F03319]" : disabled ? "text-neutral-400" : "text-neutral-600"}`}
+        />
+      </div>
+      
+      <div className="pr-8">
+        <span
+          className={`text-lg font-semibold block ${
             selected
-              ? "bg-[#F03319]/10"
+              ? "text-[#111827]"
               : disabled
-                ? "bg-neutral-100"
-                : "bg-neutral-100 group-hover:bg-neutral-200"
+                ? "text-neutral-400"
+                : "text-[#111827]"
           }`}
         >
-          <Icon
-            className={`w-5 h-5 ${selected ? "text-[#F03319]" : disabled ? "text-neutral-400" : "text-neutral-600"}`}
-          />
-        </div>
-        <div className="flex-1 min-w-0 pr-8">
-          <span
-            className={`text-base font-medium ${
-              selected
-                ? "text-neutral-900"
-                : disabled
-                  ? "text-neutral-400"
-                  : "text-neutral-800"
-            }`}
-          >
-            {label}
-          </span>
-          <p className={`text-sm mt-1 ${disabled ? "text-neutral-400" : "text-[#6B7280]"}`}>
-            {description}
-          </p>
-          {disabled ? (
-            <p className="text-[13px] text-[#9CA3AF] italic mt-3">In development</p>
-          ) : drivers.length > 0 && (
-            <div className="mt-3">
-              <p className="text-[13px] font-medium text-[#6B7280]">Typical drivers:</p>
-              <div className="mt-1 space-y-1">
-                {drivers.map((driver, idx) => (
-                  <p key={idx} className="text-[13px] text-[#6B7280] leading-relaxed">• {driver}</p>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          {label}
+        </span>
+        <p className={`text-sm mt-1 ${disabled ? "text-neutral-400" : "text-[#6B7280]"}`}>
+          {description}
+        </p>
       </div>
+      
+      {!disabled && drivers.length > 0 && (
+        <>
+          <div className="border-t border-[#E5E7EB] my-4" />
+          <div>
+            <p className="text-[13px] font-medium text-[#6B7280] mb-2">Typical drivers:</p>
+            <div className="space-y-1">
+              {drivers.map((driver, idx) => (
+                <p key={idx} className="text-[13px] text-[#6B7280] leading-relaxed">• {driver}</p>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+      
+      {disabled && (
+        <p className="text-[13px] text-[#9CA3AF] italic mt-4">In development</p>
+      )}
+      
+      {!disabled && footer && footer.text && (
+        <p className="text-[13px] text-[#6B7280] mt-4 flex items-center gap-1.5">
+          {footer.iconType === "trending" && <TrendingUp className="w-3.5 h-3.5" />}
+          {footer.iconType === "zap" && <Zap className="w-3.5 h-3.5" />}
+          {footer.iconType === "users" && <Users className="w-3.5 h-3.5" />}
+          {footer.text}
+        </p>
+      )}
     </button>
   );
 
@@ -1732,70 +1756,33 @@ export default function ObjectiveSelectionScreen({
 
         {/* PAGE 1 — CARE SETTING */}
         {currentPage === "setting" && (
-          <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-16 md:py-20">
-            <div className="grid lg:grid-cols-[1fr_520px] gap-12 lg:gap-16">
-              <div className="max-w-xl">
-                <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
-                  Select a care setting
-                </h2>
-                
-                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 mb-6">
-                  <p className="text-base font-medium text-[#111827] mb-2">Build a model for your organization</p>
-                  <p className="text-sm text-[#6B7280] leading-relaxed">
-                    Each care setting has unique documentation workflows, encounter patterns, and value drivers. Your selection determines the baseline assumptions throughout this calculator.
+          <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-8 md:py-12">
+            <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-6">
+              Select a care setting
+            </h2>
+            
+            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
+              <p className="text-lg font-semibold text-[#111827] mb-2">Build a model for your organization</p>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
+                Each care setting has unique documentation workflows, encounter patterns, and value drivers. Your selection determines the baseline assumptions throughout this calculator.
+              </p>
+              <p className="text-[13px] text-[#6B7280] mt-4 flex items-center gap-1.5">
+                <BarChart3 className="w-3.5 h-3.5" /> Based on data from 200+ health system partners
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12">
+              <div>
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-1">
+                    Available Care Settings
+                  </h3>
+                  <p className="text-sm text-[#6B7280]">
+                    Choose the environment that matches your organization
                   </p>
                 </div>
-
-                <p className="text-lg text-neutral-600 leading-relaxed mb-10">
-                  This sets baseline documentation patterns and default assumptions.
-                </p>
                 
-                <div className="space-y-4 mb-8">
-                  <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                    Why this matters
-                  </h3>
-                  <ul className="space-y-4">
-                    <li className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-[#E8532F] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-sm text-[#111827]">Workflows differ by setting—so ROI drivers differ too.</span>
-                        <p className="text-[13px] text-[#6B7280] leading-relaxed mt-1 ml-0">
-                          Example: Emergency departments prioritize throughput; outpatient prioritizes patient access.
-                        </p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-[#E8532F] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-sm text-[#111827]">This sets the assumptions used throughout the model.</span>
-                        <p className="text-[13px] text-[#6B7280] leading-relaxed mt-1 ml-0">
-                          Baseline wRVUs, typical encounter lengths, and documentation patterns vary by care environment.
-                        </p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-[#E8532F] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-sm text-[#111827]">You'll get a tailored output you can share.</span>
-                        <p className="text-[13px] text-[#6B7280] leading-relaxed mt-1 ml-0">
-                          Your final model reflects setting-specific benchmarks from 200+ health system partners.
-                        </p>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-neutral-100 bg-neutral-50/50">
-                  <h3 className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">
-                    Care setting
-                  </h3>
-                  <p className="text-sm text-neutral-500 mt-1.5">
-                    Choose one to set assumptions
-                  </p>
-                </div>
-                <div className="divide-y divide-neutral-100/80">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {ALL_SETTINGS.map((setting) => {
                     const isInpatient = setting === "inpatient";
                     return (
@@ -1811,22 +1798,123 @@ export default function ObjectiveSelectionScreen({
                     );
                   })}
                 </div>
-                <div className="border-t border-neutral-200 bg-neutral-50/50 px-6 py-5">
-                  <button
-                    type="button"
-                    disabled={!canContinuePage1}
-                    onClick={handleContinueToPage2}
-                    className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                      canContinuePage1
-                        ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm hover:shadow"
-                        : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
-                    }`}
-                    data-testid="button-continue-to-priorities"
-                  >
-                    Continue
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
+                
+                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mt-8 lg:mt-12">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Lightbulb className="w-4 h-4 text-[#111827]" />
+                    <h3 className="text-base font-medium text-[#111827]">Why care setting matters</h3>
+                  </div>
+                  <ul className="space-y-5">
+                    <li className="flex items-start gap-3">
+                      <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-sm font-medium text-[#111827]">Workflows differ by setting—so ROI drivers differ too.</span>
+                        <p className="text-sm text-[#6B7280] leading-relaxed mt-1 pl-0">
+                          Example: Emergency departments prioritize throughput; outpatient prioritizes patient access.
+                        </p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-sm font-medium text-[#111827]">This sets the assumptions used throughout the model.</span>
+                        <p className="text-sm text-[#6B7280] leading-relaxed mt-1 pl-0">
+                          Baseline wRVUs, typical encounter lengths, and documentation patterns vary by care environment.
+                        </p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-sm font-medium text-[#111827]">You'll get a tailored output you can share.</span>
+                        <p className="text-sm text-[#6B7280] leading-relaxed mt-1 pl-0">
+                          Your final model reflects setting-specific benchmarks from 200+ health system partners.
+                        </p>
+                      </div>
+                    </li>
+                  </ul>
                 </div>
+              </div>
+
+              <div className="hidden lg:block">
+                <div className="sticky top-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-[#E5E7EB]">
+                    <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
+                      Your Selection
+                    </h3>
+                  </div>
+                  
+                  <div className="p-6">
+                    <p className="text-xs font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-2">
+                      Care Setting
+                    </p>
+                    {selectedSetting ? (
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-medium text-[#111827]">
+                          {CARE_SETTING_LABELS[selectedSetting]}
+                        </span>
+                        <Check className="w-5 h-5 text-[#E8532F]" />
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[#9CA3AF] italic">No setting selected</p>
+                    )}
+                    
+                    {selectedSetting && (
+                      <div className="mt-4">
+                        <p className="text-sm text-[#6B7280] mb-2">This determines:</p>
+                        <ul className="space-y-1 text-[13px] text-[#6B7280] leading-relaxed">
+                          <li>• Baseline wRVU assumptions</li>
+                          <li>• Typical encounter patterns</li>
+                          <li>• Documentation workflows</li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="border-t border-[#E5E7EB] px-6 py-5">
+                    <button
+                      type="button"
+                      disabled={!canContinuePage1}
+                      onClick={handleContinueToPage2}
+                      className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                        canContinuePage1
+                          ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm hover:shadow"
+                          : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
+                      }`}
+                      data-testid="button-continue-to-priorities"
+                    >
+                      Continue
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Mobile sticky bottom bar */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-2px_8px_rgba(0,0,0,0.1)] px-4 py-4 z-50">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm text-[#6B7280]">
+                  {selectedSetting ? (
+                    <span className="text-[#111827] font-medium">{CARE_SETTING_LABELS[selectedSetting]} selected</span>
+                  ) : (
+                    "Select a care setting"
+                  )}
+                </span>
+                <button
+                  type="button"
+                  disabled={!canContinuePage1}
+                  onClick={handleContinueToPage2}
+                  className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                    canContinuePage1
+                      ? "bg-neutral-900 text-white hover:bg-neutral-800"
+                      : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
+                  }`}
+                  data-testid="button-continue-to-priorities-mobile"
+                >
+                  Continue
+                  <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
