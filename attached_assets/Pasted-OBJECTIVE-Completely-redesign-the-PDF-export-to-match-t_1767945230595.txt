@@ -1,0 +1,565 @@
+OBJECTIVE:
+Completely redesign the PDF export to match the quality and professionalism of the in-app experience. Transform it from a data dump into an executive-ready business case document. Support both baseline model export AND scenario comparison export.
+
+CRITICAL RULES:
+- Match Abridge brand colors and typography
+- Professional multi-page layout (not cramped single page)
+- Clear visual hierarchy with generous white space
+- Support THREE export types: Baseline, Single Scenario, Scenario Comparison
+- Include step-by-step math for transparency
+- Print-optimized (grayscale-friendly, proper margins)
+- Generate filename dynamically based on content
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: THREE EXPORT TYPES
+
+TYPE 1: BASELINE MODEL EXPORT
+Triggered from: Summary View → Export tab
+Content: Current baseline model only
+Use case: Initial proposal, board presentation
+
+TYPE 2: SINGLE SCENARIO EXPORT
+Triggered from: Scenario card → [Export] action
+Content: Scenario details + comparison to baseline
+Use case: Specific expansion proposal (e.g., "Add ED")
+
+TYPE 3: SCENARIO COMPARISON EXPORT
+Triggered from: Comparison View → [Export Comparison]
+Content: Side-by-side comparison of 2-3 scenarios
+Use case: Decision support, evaluating options
+
+Each type has different layout but consistent styling.
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: BASELINE MODEL EXPORT STRUCTURE (7 pages)
+
+PAGE 1: COVER PAGE
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  [Subtle Abridge geometric pattern background - 2% opacity]│
+│                                                             │
+│                                                             │
+│                   ABRIDGE ROI MODEL                         │
+│                   [Organization Name]                       │
+│                                                             │
+│                                                             │
+│                   Outpatient Deployment                     │
+│                   50 Providers | 65,000 Encounters         │
+│                                                             │
+│                                                             │
+│                   Net Annual Gain: $391,802                 │
+│                   Return on Investment: 6.4x                │
+│                                                             │
+│                                                             │
+│                                                             │
+│                                                             │
+│                   Generated: December 15, 2024              │
+│                   abridge.com/roi                           │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+STYLING:
+- Centered layout
+- "ABRIDGE ROI MODEL": 32px, #111827 (black), bold, uppercase
+- Organization name: 24px, #6B7280 (gray)
+- Deployment details: 16px, #6B7280 (gray)
+- Key metrics: 20px, #111827 (black), bold
+- Net Annual Gain: #059669 (green)
+- Date/URL: 12px, #9CA3AF (light gray), bottom
+- Abridge geometric pattern: Very subtle background texture
+- No logo needed (pattern provides brand presence)
+
+PAGE 2: EXECUTIVE SUMMARY
+┌─────────────────────────────────────────────────────────────┐
+│ EXECUTIVE SUMMARY                                           │
+│                                                             │
+│ MODEL OVERVIEW                                              │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ This model evaluates the financial impact of deploying     │
+│ Abridge's ambient documentation solution across 50         │
+│ providers in an outpatient setting.                        │
+│                                                             │
+│ The analysis captures three strategic value drivers:       │
+│ patient access expansion, accurate level of service        │
+│ capture, and clinician retention.                          │
+│                                                             │
+│                                                             │
+│ KEY FINDINGS                                                │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ ┌───────────────────────────────────────────────────────┐  │
+│ │                                                       │  │
+│ │  ANNUAL FINANCIAL IMPACT                              │  │
+│ │                                                       │  │
+│ │  Total Annual Benefit          $455,333               │  │
+│ │  Annual Investment             $72,000                │  │
+│ │  Net Annual Gain               $391,802               │  │
+│ │                                                       │  │
+│ │  Return on Investment          6.4x                   │  │
+│ │                                                       │  │
+│ └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│ ┌───────────────────────────────────────────────────────┐  │
+│ │                                                       │  │
+│ │  3-YEAR PROJECTION                                    │  │
+│ │                                                       │  │
+│ │  Total Value (3 years)         $1,365,999            │  │
+│ │  Total Investment              $216,000               │  │
+│ │  Net 3-Year Gain               $1,149,999            │  │
+│ │                                                       │  │
+│ └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│                                                             │
+│ DEPLOYMENT DETAILS                                          │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ Care Setting               Outpatient                      │
+│ Providers in Scope         50                              │
+│ Annual Encounters          65,000                          │
+│ Expected Utilization       65%                             │
+│ Eligible Encounters        42,250                          │
+│                                                             │
+│ Active Value Drivers       3 of 6                          │
+│                                                             │
+│ • Patient Access - Time returned → visit capacity         │
+│ • Accurate Level of Service - wRVU capture                │
+│ • Clinician Retention - Reduced turnover                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+STYLING:
+- Page header: 14px, #E8532F (orange), uppercase, letter-spacing
+- Section headers: 16px, #111827 (black), bold, uppercase
+- Body text: 12px, #6B7280 (gray), line-height 1.6
+- Financial cards: Light gray background (#F9FAFB), 16px padding
+- Labels: 12px, #6B7280 (gray)
+- Values: 14px, #111827 (black), bold, right-aligned
+- Net Annual Gain: #059669 (green)
+- Deployment details: 12px, table-like layout
+- Generous margins: 1 inch all sides
+- Page numbers: Bottom right, 10px, #9CA3AF
+
+PAGE 3: VALUE BREAKDOWN
+┌─────────────────────────────────────────────────────────────┐
+│ VALUE BREAKDOWN                                             │
+│                                                             │
+│ CAPACITY & LABOR                                            │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ ┌───────────────────────────────────────────────────────┐  │
+│ │ Patient Access                            $173,333    │  │
+│ │                                                       │  │
+│ │ 1,500 incremental visits × $200/visit                │  │
+│ │ Time savings enable additional patient capacity       │  │
+│ └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│ ┌───────────────────────────────────────────────────────┐  │
+│ │ Clinician Retention                       $100,000    │  │
+│ │                                                       │  │
+│ │ 0.4 departures avoided × $250,000 replacement cost   │  │
+│ │ Reduced burnout from lower administrative burden     │  │
+│ └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│                                                             │
+│ REVENUE & RISK                                              │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ ┌───────────────────────────────────────────────────────┐  │
+│ │ Accurate Level of Service                 $182,000    │  │
+│ │                                                       │  │
+│ │ 4,550 additional wRVUs × $40/wRVU                     │  │
+│ │ Visits billed at appropriate E/M levels               │  │
+│ └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│                                                             │
+│ TOTAL ANNUAL BENEFIT                                        │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ ┌───────────────────────────────────────────────────────┐  │
+│ │                                                       │  │
+│ │  Capacity & Labor              $273,333               │  │
+│ │  Revenue & Risk                $182,000               │  │
+│ │  ───────────────────────────────────────            │  │
+│ │  Total Benefit                 $455,333               │  │
+│ │                                                       │  │
+│ │  Annual Investment             $72,000                │  │
+│ │  ═══════════════════════════════════════            │  │
+│ │  Net Annual Gain               $391,802               │  │
+│ │                                                       │  │
+│ └───────────────────────────────────────────────────────┘  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+STYLING:
+- Category headers: 14px, #111827 (black), bold, uppercase
+- Driver cards: White with subtle border, 12px padding
+- Driver name + value: 14px, bold
+- Calculation line: 11px, #6B7280 (gray)
+- Description: 11px, #6B7280 (gray), italic
+- Total summary: Light gray background, larger font (14px)
+- Net Annual Gain: #059669 (green), bold
+
+PAGE 4: PATIENT ACCESS (Detailed Calculation)
+┌─────────────────────────────────────────────────────────────┐
+│ DETAILED CALCULATION: PATIENT ACCESS                        │
+│                                                             │
+│ HOW WE CALCULATED THIS                                      │
+│                                                             │
+│ STEP 1: TIME RETURNED                                       │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ Minutes saved per encounter                    2.5 min     │
+│ Annual Abridge-documented encounters           42,250      │
+│ Total hours returned                           1,760 hrs   │
+│                                                             │
+│ Formula: (2.5 min × 42,250 encounters) ÷ 60               │
+│                                                             │
+│                                                             │
+│ STEP 2: REALIZED CAPACITY                                   │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ Total hours returned                           1,760 hrs   │
+│ Capacity realization factor                    20%         │
+│ Usable hours                                   352 hrs     │
+│                                                             │
+│ Not all time converts to new visits due to scheduling,     │
+│ staffing constraints, and patient demand.                  │
+│                                                             │
+│                                                             │
+│ STEP 3: NEW VISIT CAPACITY                                  │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ Usable hours (in minutes)                      21,120 min  │
+│ Average visit duration                         30 min      │
+│ Additional visits possible                     704 visits  │
+│                                                             │
+│                                                             │
+│ STEP 4: REVENUE IMPACT                                      │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ Additional visits                              704         │
+│ Revenue per visit                              $200        │
+│ Annual value                                   $140,800    │
+│                                                             │
+│                                                             │
+│ ⚠️ IMPORTANT ASSUMPTIONS                                    │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ • Assumes sufficient patient demand to fill new capacity  │
+│ • Revenue per visit based on net collectible amount       │
+│ • Realization factor accounts for real-world constraints  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+STYLING:
+- Page title: 14px, #E8532F (orange), uppercase
+- Section "HOW WE CALCULATED THIS": 12px, #111827, uppercase
+- Step headers: 12px, #6B7280 (gray), uppercase, letter-spacing
+- Calculation rows: Two-column layout
+  - Labels: 11px, #6B7280 (gray), left-aligned
+  - Values: 12px, #111827 (black), right-aligned, bold
+- Step result (final line): #E8532F (orange), bold
+- Formula line: 10px, #9CA3AF (light gray), italic
+- Explanatory text: 10px, #6B7280 (gray), line-height 1.6
+- Assumptions box: Light yellow background (#FEF3C7), 10px text
+- Dividers between steps: 1px solid #E5E7EB
+
+PAGE 5 & 6: Other Drivers (Same Layout)
+- Level of Service detailed calculation
+- Clinician Retention detailed calculation
+- Same styling as Page 4
+
+PAGE 7: ASSUMPTIONS & METHODOLOGY
+┌─────────────────────────────────────────────────────────────┐
+│ ASSUMPTIONS & METHODOLOGY                                   │
+│                                                             │
+│ DEPLOYMENT ASSUMPTIONS                                      │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ • 50 providers deployed across outpatient setting          │
+│ • 65,000 total annual encounters                           │
+│ • 65% utilization rate (42,250 eligible encounters)        │
+│ • Typical posture selected (median performance benchmarks) │
+│                                                             │
+│                                                             │
+│ FINANCIAL PARAMETERS                                        │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ • Revenue per visit: $200 (net collectible)               │
+│ • Revenue per wRVU: $40 (blended rate)                     │
+│ • Provider replacement cost: $250,000                      │
+│ • Cost per provider/month: $120                            │
+│                                                             │
+│                                                             │
+│ VALUE POSTURE                                               │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ Typical (Recommended)                                       │
+│                                                             │
+│ This posture uses median performance benchmarks from       │
+│ 200+ health system partners. Conservative and Aggressive   │
+│ postures are available for sensitivity analysis.           │
+│                                                             │
+│                                                             │
+│ DATA SOURCES                                                │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ • Encounter volume: Organization-provided                  │
+│ • Benchmark data: Abridge customer base (200+ partners)    │
+│ • Financial parameters: Organization-specific or typical   │
+│   industry averages                                        │
+│                                                             │
+│                                                             │
+│ IMPORTANT LIMITATIONS                                       │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ This model provides estimates based on typical performance │
+│ and your organization's inputs. Actual results may vary    │
+│ based on:                                                  │
+│                                                             │
+│ • Adoption rates and user engagement                       │
+│ • Payer mix and contracted rates                           │
+│ • Available patient demand (for capacity drivers)          │
+│ • Organization-specific workflows and constraints          │
+│                                                             │
+│ Long-term value drivers (retention, HCC capture) require   │
+│ 12+ months to fully materialize.                           │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+STYLING:
+- Same consistent styling as previous pages
+- Bullet points: • character
+- Section headers with divider lines
+- Limitations box: Subtle background, important context
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: SINGLE SCENARIO EXPORT STRUCTURE (8-9 pages)
+
+Similar to baseline but with comparison:
+
+PAGE 1: COVER PAGE
+[Similar to baseline, but shows scenario name]
+
+ABRIDGE ROI MODEL - SCENARIO ANALYSIS
+Add Emergency Department
+[Organization Name]
+
+Combined Deployment: 70 Providers (50 Outpatient + 20 ED)
+
+Net Annual Gain: $909,533 (+137% vs baseline)
+Combined ROI: 10.0x
+
+PAGE 2: SCENARIO SUMMARY
+┌─────────────────────────────────────────────────────────────┐
+│ SCENARIO SUMMARY                                            │
+│                                                             │
+│ SCENARIO OVERVIEW                                           │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ This scenario models expansion into the Emergency           │
+│ Department, adding 20 ED providers to your existing        │
+│ 50-provider outpatient deployment.                         │
+│                                                             │
+│ ED configuration: 20 providers, 100,000 annual encounters, │
+│ 70% utilization, with Patient Throughput, Level of Service,│
+│ and Denial Reduction value drivers.                        │
+│                                                             │
+│                                                             │
+│ COMPARISON TO BASELINE                                      │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ ┌───────────────────────────────────────────────────────┐  │
+│ │                    BASELINE      THIS SCENARIO        │  │
+│ │ ─────────────────────────────────────────────────────│  │
+│ │                                                       │  │
+│ │ Providers          50             70                  │  │
+│ │ Encounters         65,000         165,000             │  │
+│ │                                                       │  │
+│ │ Total Benefit      $455,333       $1,010,333         │  │
+│ │ Investment         $72,000        $100,800            │  │
+│ │ Net Annual Gain    $391,802       $909,533           │  │
+│ │ ROI                6.4x           10.0x               │  │
+│ │                                                       │  │
+│ │ CHANGE                            +137%               │  │
+│ │                                                       │  │
+│ └───────────────────────────────────────────────────────┘  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+Continue with:
+- PAGE 3: Combined Value Breakdown
+- PAGE 4-5: Outpatient value (reference)
+- PAGE 6-7: ED value (detailed calculations)
+- PAGE 8: Assumptions & Implementation Notes
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: SCENARIO COMPARISON EXPORT (10-12 pages)
+
+For comparing multiple scenarios:
+
+PAGE 1: COVER PAGE
+[Similar format]
+
+ABRIDGE ROI SCENARIO COMPARISON
+[Organization Name]
+
+Evaluating 3 Expansion Options
+
+PAGE 2: EXECUTIVE SUMMARY WITH COMPARISON TABLE
+[Full side-by-side comparison from Comparison View]
+
+PAGE 3: VISUAL COMPARISON
+[Bar charts showing Net Gain, ROI, Investment]
+
+PAGE 4: KEY INSIGHTS & RECOMMENDATIONS
+[AI-generated insights from Comparison View]
+
+PAGE 5-7: Scenario 1 Details
+PAGE 8-10: Scenario 2 Details
+PAGE 11-12: Scenario 3 Details
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: TECHNICAL IMPLEMENTATION
+
+PDF Generation Library:
+Use react-pdf or jsPDF with proper styling support
+
+Page Structure:
+- Page size: Letter (8.5" × 11")
+- Margins: 1 inch all sides
+- Print-safe colors (test grayscale rendering)
+- Page numbers bottom right
+- Header on each page (small, gray)
+
+Typography:
+- Use system fonts for reliability: -apple-system, BlinkMacSystemFont, "Segoe UI"
+- Or embed: Inter, Open Sans (if supported by PDF library)
+- Font sizes: 10px-32px scale
+- Line-height: 1.4-1.6 for readability
+- Generous spacing between sections
+
+Colors:
+- Keep consistent with app:
+  - #E8532F (Abridge orange)
+  - #111827 (black text)
+  - #6B7280 (gray text)
+  - #059669 (green for values)
+  - #F9FAFB (light gray backgrounds)
+- Ensure grayscale-friendly (no reliance on color alone)
+
+Branding:
+- Abridge geometric pattern on cover (2-3% opacity)
+- NO logo needed (pattern provides brand)
+- abridge.com/roi footer on each page
+- Professional, not corporate
+
+Generated Filenames:
+- Baseline: "Abridge_ROI_Model_[OrgName]_[Date].pdf"
+- Scenario: "Abridge_ROI_[ScenarioName]_[OrgName]_[Date].pdf"
+- Comparison: "Abridge_ROI_Comparison_[OrgName]_[Date].pdf"
+
+Export Triggers:
+1. Summary View → Export tab → "Generate PDF" button
+2. Scenario card → [Export] action → Generate scenario PDF
+3. Comparison View → "Export Comparison" button → Generate comparison PDF
+
+═══════════════════════════════════════════════════════════════
+
+PART 6: UI FOR PDF EXPORT
+
+Before generating PDF, show options modal:
+
+┌─────────────────────────────────────────────────────────────┐
+│ GENERATE PDF EXPORT                                         │
+│                                                             │
+│ What would you like to include in this PDF?                │
+│                                                             │
+│ ☑ Executive Summary                                        │
+│ ☑ Value Breakdown                                          │
+│ ☑ Detailed Calculations (step-by-step math)               │
+│ ☑ Assumptions & Methodology                                │
+│                                                             │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ Organization name (optional)                               │
+│ [_______________________________________]                  │
+│                                                             │
+│ Prepared for (optional)                                    │
+│ [_______________________________________]                  │
+│ e.g., "CFO Review" or "Board Presentation"                 │
+│                                                             │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│ [FOR SCENARIOS: Include baseline comparison?]              │
+│ ☑ Yes, show side-by-side with baseline                    │
+│                                                             │
+│ ─────────────────────────────────────────────────────────  │
+│                                                             │
+│             [Cancel]         [Generate PDF →]              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+After clicking Generate:
+1. Show loading indicator: "Generating PDF... 🔄"
+2. Generate PDF (client-side or server-side)
+3. Auto-download file
+4. Show success toast: "✓ PDF downloaded"
+5. Keep modal open with: [Download Again] [Close]
+
+═══════════════════════════════════════════════════════════════
+
+PART 7: LOADING & ERROR STATES
+
+Loading:
+- Spinner icon
+- "Generating your PDF..."
+- "This may take 10-15 seconds for detailed reports"
+
+Success:
+- Checkmark icon
+- "PDF generated successfully"
+- "Check your downloads folder"
+- [Open PDF] button (if browser supports)
+
+Error:
+- "PDF generation failed. Please try again."
+- "If issue persists, try exporting with fewer details"
+- [Retry] button
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Any existing pages or functionality
+- In-app calculation logic
+- Summary View, Detailed Breakdown, or Scenario Builder
+- Brand colors or typography (match exactly)
+
+ONLY BUILD:
+- Redesigned PDF export system
+- Multi-page professional layout
+- Three export types (Baseline, Scenario, Comparison)
+- Export options modal
+- PDF generation with proper styling
+- Dynamic filename generation
+
+═══════════════════════════════════════════════════════════════
+
+RESULT:
+PDF exports are now executive-ready business case documents with:
+- Professional multi-page layout (7-12 pages depending on content)
+- Clear visual hierarchy and generous white space
+- Step-by-step transparent calculations
+- Support for baseline, scenarios, and comparisons
+- Subtle Abridge branding (geometric pattern, not logo)
+- Print-optimized and grayscale-friendly
+- Proper margins, page numbers, and formatting
+- Looks like McKinsey/BCG deck quality for healthcare ROI
+
+CFOs and finance teams can confidently present these PDFs to boards and leadership without additional formatting.

@@ -30,8 +30,9 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { jsPDF } from "jspdf";
 import { useToast } from "@/hooks/use-toast";
+import { ExportModal, type ExportType } from "@/components/ExportModal";
+import type { ScenarioData } from "@/lib/pdf-generator";
 import { EditableCalcRow, CalcRow, CalcStep } from "@/components/EditableCalcRow";
 import {
   ArrowLeft,
@@ -193,6 +194,12 @@ export default function RoiCalculator({
   const [driverSectionExpanded, setDriverSectionExpanded] = useState(false);
   const [scenarioSectionExpanded, setScenarioSectionExpanded] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  
+  // New Export Modal state
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportType, setExportType] = useState<ExportType>('baseline');
+  const [exportScenario, setExportScenario] = useState<ScenarioData | undefined>(undefined);
+  const [exportScenarios, setExportScenarios] = useState<ScenarioData[]>([]);
   
   // Scenario comparison selection
   const [selectedScenariosForCompare, setSelectedScenariosForCompare] = useState<Set<string>>(new Set());
@@ -357,6 +364,46 @@ export default function RoiCalculator({
   useEffect(() => {
     setExportScenarioSelections(new Set(scenariosForExport.map((s) => s.id)));
   }, [scenariosForExport]);
+
+  // Helper: Convert internal Scenario to ScenarioData for PDF export
+  const convertScenarioToExportData = useCallback((scenario: Scenario): ScenarioData => {
+    const scenarioInputs: RoiInputs = JSON.parse(JSON.stringify(inputs));
+    scenarioInputs.numberOfProviders = scenario.providers;
+    scenarioInputs.annualOutpatientEncounters = scenario.encounters;
+    scenarioInputs.abridgeUtilizationPct = scenario.utilizationRate;
+    const scenarioResults = calculateRoi(scenarioInputs);
+    return {
+      id: scenario.id,
+      name: scenario.name,
+      type: scenario.type === 'expand' ? 'expand_providers' : 
+            scenario.type === 'drivers' ? 'add_drivers' : 'new_care_setting',
+      description: `${scenario.providers} providers, ${scenario.encounters.toLocaleString()} encounters, ${scenario.utilizationRate}% utilization`,
+      inputs: scenarioInputs,
+      results: scenarioResults,
+    };
+  }, [inputs]);
+
+  // Export handlers
+  const openBaselineExport = useCallback(() => {
+    setExportType('baseline');
+    setExportScenario(undefined);
+    setExportScenarios([]);
+    setExportModalOpen(true);
+  }, []);
+
+  const openScenarioExport = useCallback((scenario: Scenario) => {
+    setExportType('scenario');
+    setExportScenario(convertScenarioToExportData(scenario));
+    setExportScenarios([]);
+    setExportModalOpen(true);
+  }, [convertScenarioToExportData]);
+
+  const openComparisonExport = useCallback((scenarioList: Scenario[]) => {
+    setExportType('comparison');
+    setExportScenario(undefined);
+    setExportScenarios(scenarioList.map(convertScenarioToExportData));
+    setExportModalOpen(true);
+  }, [convertScenarioToExportData]);
 
   // Handle adding new drivers - update inputs.levers so calculateRoi recomputes
   const handleAddDrivers = () => {
@@ -6059,703 +6106,13 @@ export default function RoiCalculator({
               <div className="mt-8 space-y-4">
                 <Button
                   size="lg"
-                  onClick={async () => {
-                    setIsGeneratingPdf(true);
-                    setPdfSuccess(false);
-                    
-                    try {
-                      // Generate PDF
-                      const doc = new jsPDF();
-                      const pageWidth = doc.internal.pageSize.getWidth();
-                      const pageHeight = doc.internal.pageSize.getHeight();
-                      const margin = 25;
-                      const contentWidth = pageWidth - 2 * margin;
-                      let y = margin;
-                      
-                      const docTitle = exportForm.documentTitle || `Abridge ROI Analysis - ${careSettingLabel} Deployment`;
-                      const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                      
-                      // Helper function for adding page footer
-                      const addFooter = (pageNum: number) => {
-                        doc.setFontSize(8);
-                        doc.setTextColor(150);
-                        doc.text(`Abridge ROI Analysis | ${currentDate}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-                        doc.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
-                      };
-
-                      // Helper for subtle geometric pattern (Abridge brand element)
-                      const addGeometricPattern = (isCover = false) => {
-                        // Abridge red color (#F03319 = RGB 240, 51, 25)
-                        // Use very light version for subtle pattern (3-4% opacity effect via light color blend)
-                        // Since jsPDF doesn't support stroke opacity directly, we blend the color toward white
-                        // 3.5% opacity of #F03319 on white ≈ RGB(253, 248, 247)
-                        doc.setDrawColor(240, 51, 25); // Abridge red
-                        doc.setLineWidth(0.2);
-                        
-                        // Create a GState for transparency (2% opacity - very subtle)
-                        const gState = new (doc as any).GState({ "stroke-opacity": 0.02 });
-                        doc.setGState(gState);
-                        
-                        if (isCover) {
-                          // Cover page: larger, more prominent pattern in top-right corner
-                          const startX = pageWidth - 80;
-                          const startY = 15;
-                          const size = 6;
-                          const gap = 10;
-                          
-                          for (let row = 0; row < 8; row++) {
-                            for (let col = 0; col < 8; col++) {
-                              const x = startX + col * gap;
-                              const yPos = startY + row * gap;
-                              // Alternate between circles and squares
-                              if ((row + col) % 2 === 0) {
-                                doc.circle(x, yPos, size / 3, 'S');
-                              } else {
-                                doc.rect(x - size / 4, yPos - size / 4, size / 2, size / 2, 'S');
-                              }
-                            }
-                          }
-                          
-                          // Bottom-left decorative element
-                          const bottomX = 15;
-                          const bottomY = pageHeight - 60;
-                          for (let row = 0; row < 4; row++) {
-                            for (let col = 0; col < 4; col++) {
-                              const x = bottomX + col * gap;
-                              const yPos = bottomY + row * gap;
-                              if ((row + col) % 2 === 0) {
-                                doc.circle(x, yPos, size / 3, 'S');
-                              }
-                            }
-                          }
-                        } else {
-                          // Regular pages: subtle corner accent only
-                          const cornerX = pageWidth - 25;
-                          const cornerY = 15;
-                          const smallSize = 4;
-                          const smallGap = 6;
-                          
-                          for (let row = 0; row < 3; row++) {
-                            for (let col = 0; col < 3; col++) {
-                              const x = cornerX + col * smallGap;
-                              const yPos = cornerY + row * smallGap;
-                              if ((row + col) % 2 === 0) {
-                                doc.circle(x, yPos, smallSize / 4, 'S');
-                              }
-                            }
-                          }
-                        }
-                        
-                        // Reset to full opacity and neutral color
-                        const resetState = new (doc as any).GState({ "stroke-opacity": 1.0 });
-                        doc.setGState(resetState);
-                        doc.setDrawColor(200);
-                      };
-
-                      // Helper for new page with optional pattern
-                      let pageNumber = 1;
-                      const newPage = (addPattern = true) => {
-                        addFooter(pageNumber);
-                        doc.addPage();
-                        pageNumber++;
-                        y = margin;
-                        if (addPattern) {
-                          addGeometricPattern(false);
-                        }
-                      };
-
-                      // PAGE 1: Cover Page
-                      addGeometricPattern(true);
-                      y = pageHeight / 3;
-                      doc.setFontSize(24);
-                      doc.setTextColor(0);
-                      doc.setFont("helvetica", "bold");
-                      const titleLines = doc.splitTextToSize(docTitle, contentWidth);
-                      doc.text(titleLines, pageWidth / 2, y, { align: 'center' });
-                      y += titleLines.length * 10 + 10;
-                      
-                      doc.setFontSize(14);
-                      doc.setFont("helvetica", "normal");
-                      doc.setTextColor(100);
-                      doc.text(`${careSettingLabel} Deployment Model`, pageWidth / 2, y, { align: 'center' });
-                      y += 20;
-
-                      if (exportForm.organizationName) {
-                        doc.setFontSize(12);
-                        doc.text(exportForm.organizationName, pageWidth / 2, y, { align: 'center' });
-                        y += 8;
-                      }
-                      
-                      doc.text(currentDate, pageWidth / 2, y, { align: 'center' });
-                      y += 8;
-
-                      if (exportForm.preparedBy) {
-                        doc.text(`Prepared by: ${exportForm.preparedBy}`, pageWidth / 2, y, { align: 'center' });
-                      }
-
-                      // Footer text at bottom
-                      doc.setFontSize(10);
-                      doc.setTextColor(150);
-                      doc.text("Prepared using Abridge ROI Calculator", pageWidth / 2, pageHeight - 30, { align: 'center' });
-                      addFooter(pageNumber);
-
-                      // PAGE 2: Executive Summary
-                      newPage();
-                      doc.setFontSize(18);
-                      doc.setTextColor(0);
-                      doc.setFont("helvetica", "bold");
-                      doc.text("EXECUTIVE SUMMARY", margin, y);
-                      y += 15;
-
-                      // Model Overview
-                      doc.setFontSize(11);
-                      doc.setFont("helvetica", "bold");
-                      doc.text("Model Overview", margin, y);
-                      y += 7;
-                      doc.setFont("helvetica", "normal");
-                      doc.setFontSize(10);
-                      doc.text(`${inputs.numberOfProviders} providers | ${abridgeDocumentedEncounters.toLocaleString()} Abridge-documented encounters/year`, margin, y);
-                      y += 5;
-                      doc.text(`${careSettingLabel} care setting | ${inputs.abridgeUtilizationPct}% utilization`, margin, y);
-                      y += 12;
-
-                      // Financial Results Box
-                      doc.setFontSize(11);
-                      doc.setFont("helvetica", "bold");
-                      doc.text("Financial Results", margin, y);
-                      y += 8;
-                      
-                      doc.setDrawColor(200);
-                      doc.setFillColor(250, 250, 248);
-                      doc.roundedRect(margin, y, contentWidth, 45, 3, 3, 'FD');
-                      y += 10;
-                      
-                      doc.setFontSize(10);
-                      doc.setFont("helvetica", "normal");
-                      doc.text(`Total Annual Benefit:`, margin + 5, y);
-                      doc.setFont("helvetica", "bold");
-                      doc.text(formatCurrency(totalAnnualBenefit), margin + contentWidth - 5, y, { align: 'right' });
-                      y += 7;
-                      
-                      doc.setFont("helvetica", "normal");
-                      doc.text(`Annual Investment:`, margin + 5, y);
-                      doc.text(formatCurrency(annualInvestment), margin + contentWidth - 5, y, { align: 'right' });
-                      y += 10;
-                      
-                      doc.setDrawColor(150);
-                      doc.line(margin + 5, y - 3, margin + contentWidth - 5, y - 3);
-                      
-                      doc.setFont("helvetica", "bold");
-                      doc.text(`NET ANNUAL GAIN:`, margin + 5, y + 4);
-                      doc.setTextColor(14, 159, 110);
-                      doc.text(formatCurrency(netAnnualGain), margin + contentWidth - 5, y + 4, { align: 'right' });
-                      y += 11;
-                      
-                      doc.setTextColor(0);
-                      doc.text(`RETURN ON INVESTMENT:`, margin + 5, y);
-                      doc.text(`${roiMultiple.toFixed(1)}x`, margin + contentWidth - 5, y, { align: 'right' });
-                      y += 20;
-
-                      // Value Breakdown - shows all enabled drivers (complete picture for totals)
-                      doc.setFontSize(11);
-                      doc.text("Value Breakdown", margin, y);
-                      y += 8;
-                      
-                      doc.setFontSize(10);
-                      doc.setFont("helvetica", "normal");
-                      enabledDriverIds.forEach((id) => {
-                        const value = driverValues[id];
-                        const pct = totalAnnualBenefit > 0 ? ((value / totalAnnualBenefit) * 100).toFixed(0) : 0;
-                        doc.text(`${leverLabels[id]}: ${formatCurrency(value)} (${pct}%)`, margin, y);
-                        y += 6;
-                      });
-                      y += 8;
-
-                      // Custom Notes
-                      if (exportForm.customNotes) {
-                        doc.setFontSize(11);
-                        doc.setFont("helvetica", "bold");
-                        doc.text("Notes", margin, y);
-                        y += 7;
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
-                        const noteLines = doc.splitTextToSize(exportForm.customNotes, contentWidth);
-                        doc.text(noteLines, margin, y);
-                      }
-                      addFooter(pageNumber);
-
-                      // VALUE DRIVER DETAILS
-                      if (exportContentSelections.valueDriverDetails) {
-                        // Helper function for step-by-step calculations for each driver
-                        const getDriverCalculationSteps = (driverId: LeverId): string[] => {
-                          const encountersWithAbridge = Math.round(inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100));
-                          const totalHoursReclaimed = (inputs.minutesSavedPerEncounter * encountersWithAbridge) / 60;
-                          
-                          switch (driverId) {
-                            case "patientAccess": {
-                              const minutesSaved = inputs.minutesSavedPerEncounter;
-                              const totalMinutes = minutesSaved * encountersWithAbridge;
-                              const hoursReturned = totalMinutes / 60;
-                              const realizationPct = inputs.patientAccess.pctTimeToNewVisits;
-                              const usableHours = hoursReturned * (realizationPct / 100);
-                              const usableMinutes = usableHours * 60;
-                              const visitDuration = inputs.patientAccess.avgVisitDurationMinutes;
-                              const additionalVisits = usableMinutes / visitDuration;
-                              const revenuePerVisit = inputs.patientAccess.avgNetRevenuePerVisit;
-                              const value = additionalVisits * revenuePerVisit;
-                              
-                              return [
-                                `Step 1: Time Returned`,
-                                `${minutesSaved} min saved per encounter x ${encountersWithAbridge.toLocaleString()} encounters = ${totalMinutes.toLocaleString()} minutes`,
-                                `${totalMinutes.toLocaleString()} minutes / 60 = ${hoursReturned.toLocaleString(undefined, {maximumFractionDigits: 0})} hours returned annually`,
-                                ``,
-                                `Step 2: Realized Capacity`,
-                                `${hoursReturned.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x ${realizationPct}% realization = ${usableHours.toLocaleString(undefined, {maximumFractionDigits: 0})} usable hours`,
-                                `(Not all time becomes visits - some goes to admin, rest, quality improvement)`,
-                                ``,
-                                `Step 3: New Visit Capacity`,
-                                `${usableHours.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x 60 min = ${usableMinutes.toLocaleString(undefined, {maximumFractionDigits: 0})} minutes`,
-                                `${usableMinutes.toLocaleString(undefined, {maximumFractionDigits: 0})} min / ${visitDuration} min per visit = ${additionalVisits.toLocaleString(undefined, {maximumFractionDigits: 0})} additional visits`,
-                                ``,
-                                `Step 4: Revenue Impact`,
-                                `${additionalVisits.toLocaleString(undefined, {maximumFractionDigits: 0})} visits x $${revenuePerVisit} per visit = ${formatCurrency(value)}`,
-                                ``,
-                                `Key Assumptions:`,
-                                `- Minutes saved: ${minutesSaved} min per encounter`,
-                                `- Capacity realization: ${realizationPct}%`,
-                                `- Visit duration: ${visitDuration} minutes`,
-                                `- Revenue per visit: $${revenuePerVisit} (net collectible)`,
-                              ];
-                            }
-                            case "workforce": {
-                              const providers = inputs.workforce.providerCount;
-                              const turnoverRate = inputs.workforce.baselineAttritionRate;
-                              const expectedDepartures = providers * (turnoverRate / 100);
-                              const burnoutAttribution = inputs.workforce.pctAttritionLinkedToBurnout;
-                              const burnoutDepartures = expectedDepartures * (burnoutAttribution / 100);
-                              const abridgePrevention = inputs.workforce.pctBurnoutExitsAvoided;
-                              const departuresAvoided = burnoutDepartures * (abridgePrevention / 100);
-                              const costPerDeparture = inputs.workforce.costPerDeparture;
-                              const value = departuresAvoided * costPerDeparture;
-                              
-                              return [
-                                `Step 1: Baseline Turnover`,
-                                `${providers} providers x ${turnoverRate}% turnover rate = ${expectedDepartures.toFixed(1)} expected departures/year`,
-                                ``,
-                                `Step 2: Abridge Impact`,
-                                `${expectedDepartures.toFixed(1)} departures x ${burnoutAttribution}% burnout-related = ${burnoutDepartures.toFixed(2)} burnout-driven departures`,
-                                `${burnoutDepartures.toFixed(2)} x ${abridgePrevention}% preventable = ${departuresAvoided.toFixed(2)} departures avoided`,
-                                ``,
-                                `Step 3: Cost Savings`,
-                                `${departuresAvoided.toFixed(2)} departures avoided x $${costPerDeparture.toLocaleString()} = ${formatCurrency(value)}`,
-                                ``,
-                                `Key Assumptions:`,
-                                `- Turnover rate: ${turnoverRate}% (typical for outpatient providers)`,
-                                `- Burnout attribution: ${burnoutAttribution}% (per JAMA physician workforce studies)`,
-                                `- Abridge prevention: ${abridgePrevention}% (documentation is major driver)`,
-                                `- Replacement cost: $${costPerDeparture.toLocaleString()} (recruiting, onboarding, coverage)`,
-                              ];
-                            }
-                            case "wrvu": {
-                              const baselineWrvu = inputs.baselineWrvuPerEncounter;
-                              const currentWrvus = encountersWithAbridge * baselineWrvu;
-                              const improvementPct = inputs.wrvu.pctIncreaseWrvuPerEncounter;
-                              const additionalWrvus = currentWrvus * (improvementPct / 100);
-                              const revenuePerWrvu = inputs.wrvu.wrvuConversionFactor;
-                              const value = additionalWrvus * revenuePerWrvu;
-                              
-                              return [
-                                `Step 1: Baseline wRVU Performance`,
-                                `${encountersWithAbridge.toLocaleString()} encounters x ${baselineWrvu.toFixed(2)} wRVU = ${currentWrvus.toLocaleString(undefined, {maximumFractionDigits: 0})} current wRVUs`,
-                                ``,
-                                `Step 2: Documentation Quality Lift`,
-                                `${improvementPct}% improvement in wRVU capture`,
-                                ``,
-                                `Step 3: Additional wRVUs Captured`,
-                                `${currentWrvus.toLocaleString(undefined, {maximumFractionDigits: 0})} wRVUs x ${improvementPct}% = ${additionalWrvus.toLocaleString(undefined, {maximumFractionDigits: 0})} additional wRVUs`,
-                                ``,
-                                `Step 4: Revenue Impact`,
-                                `${additionalWrvus.toLocaleString(undefined, {maximumFractionDigits: 0})} wRVUs x $${revenuePerWrvu} per wRVU = ${formatCurrency(value)}`,
-                                ``,
-                                `Key Assumptions:`,
-                                `- Baseline wRVU: ${baselineWrvu.toFixed(2)} per encounter`,
-                                `- Documentation lift: ${improvementPct}% (better real-time capture)`,
-                                `- Revenue per wRVU: $${revenuePerWrvu} (blended average)`,
-                              ];
-                            }
-                            case "hcc": {
-                              const uniquePatients = Math.round(encountersWithAbridge / 2.5);
-                              const maPct = inputs.hcc.pctMedicareAdvantage;
-                              const maPatients = Math.round(uniquePatients * (maPct / 100));
-                              const conditionsPerMember = inputs.hcc.avgConditionsPerMember;
-                              const totalConditions = maPatients * conditionsPerMember;
-                              const missedPct = inputs.hcc.pctConditionsMissed;
-                              const missedConditions = totalConditions * (missedPct / 100);
-                              const recapturePct = inputs.hcc.pctMissedConditionsRecaptured;
-                              const recaptured = missedConditions * (recapturePct / 100);
-                              const rafGain = inputs.hcc.rafGainPerCondition;
-                              const pmpm = inputs.hcc.pmpmBenchmark;
-                              
-                              return [
-                                `Step 1: Derive MA Population`,
-                                `${encountersWithAbridge.toLocaleString()} encounters / 2.5 = ${uniquePatients.toLocaleString()} unique patients`,
-                                `${uniquePatients.toLocaleString()} x ${maPct}% MA = ${maPatients.toLocaleString()} MA patients`,
-                                ``,
-                                `Step 2: Diagnostic Gap`,
-                                `${maPatients.toLocaleString()} patients x ${conditionsPerMember} conditions = ${totalConditions.toLocaleString(undefined, {maximumFractionDigits: 0})} total`,
-                                `${totalConditions.toLocaleString(undefined, {maximumFractionDigits: 0})} x ${missedPct}% gap = ${missedConditions.toLocaleString(undefined, {maximumFractionDigits: 0})} conditions missed`,
-                                ``,
-                                `Step 3: Abridge Recapture`,
-                                `${missedConditions.toLocaleString(undefined, {maximumFractionDigits: 0})} missed x ${recapturePct}% recapture = ${recaptured.toLocaleString(undefined, {maximumFractionDigits: 0})} documented`,
-                                ``,
-                                `Step 4: Revenue Impact`,
-                                `RAF gain x $${pmpm}/PMPM x 12 months = ${formatCurrency(driverValues[driverId])}`,
-                                ``,
-                                `Key Assumptions:`,
-                                `- MA population: ${maPct}% of patients`,
-                                `- Avg conditions: ${conditionsPerMember} per member`,
-                                `- Gap rate: ${missedPct}% undocumented`,
-                                `- PMPM benchmark: $${pmpm}`,
-                              ];
-                            }
-                            case "denials": {
-                              const avgRevenue = inputs.denials.avgRevenuePerEncounter;
-                              const totalRevenue = encountersWithAbridge * avgRevenue;
-                              const denialRate = inputs.denials.baselineDenialRate;
-                              const deniedAmount = totalRevenue * (denialRate / 100);
-                              const docPct = inputs.denials.pctDenialsFromDocumentation;
-                              const docDenials = deniedAmount * (docPct / 100);
-                              const preventPct = inputs.denials.pctDocDenialsRecovered;
-                              const prevented = docDenials * (preventPct / 100);
-                              
-                              return [
-                                `Step 1: Derive Revenue Base`,
-                                `${encountersWithAbridge.toLocaleString()} encounters x $${avgRevenue}/visit = ${formatCurrency(totalRevenue)}`,
-                                ``,
-                                `Step 2: Baseline Denials`,
-                                `${formatCurrency(totalRevenue)} x ${denialRate}% denial rate = ${formatCurrency(deniedAmount)} denied`,
-                                ``,
-                                `Step 3: Documentation-Related Denials`,
-                                `${formatCurrency(deniedAmount)} x ${docPct}% doc-related = ${formatCurrency(docDenials)}`,
-                                ``,
-                                `Step 4: Abridge Prevention`,
-                                `${formatCurrency(docDenials)} x ${preventPct}% preventable = ${formatCurrency(prevented)}`,
-                                ``,
-                                `Key Assumptions:`,
-                                `- Revenue per encounter: $${avgRevenue}`,
-                                `- Baseline denial rate: ${denialRate}%`,
-                                `- Doc-related denials: ${docPct}%`,
-                                `- Preventable: ${preventPct}%`,
-                              ];
-                            }
-                            case "overtime": {
-                              const afterHoursPct = inputs.overtime.pctAfterHours;
-                              const afterHours = totalHoursReclaimed * (afterHoursPct / 100);
-                              const otReductionPct = inputs.overtime.pctOvertimeReduced;
-                              const otAvoided = afterHours * (otReductionPct / 100);
-                              const otRate = inputs.overtime.blendedOvertimeRate;
-                              const value = otAvoided * otRate;
-                              
-                              return [
-                                `Step 1: Hours Reclaimed`,
-                                `${inputs.minutesSavedPerEncounter} min x ${encountersWithAbridge.toLocaleString()} encounters = ${totalHoursReclaimed.toLocaleString(undefined, {maximumFractionDigits: 0})} hours`,
-                                ``,
-                                `Step 2: After-Hours Portion`,
-                                `${totalHoursReclaimed.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x ${afterHoursPct}% after-hours = ${afterHours.toLocaleString(undefined, {maximumFractionDigits: 0})} hrs`,
-                                ``,
-                                `Step 3: Overtime Reduction`,
-                                `${afterHours.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x ${otReductionPct}% converted = ${otAvoided.toLocaleString(undefined, {maximumFractionDigits: 0})} OT hours avoided`,
-                                ``,
-                                `Step 4: Cost Savings`,
-                                `${otAvoided.toLocaleString(undefined, {maximumFractionDigits: 0})} hours x $${otRate}/hr = ${formatCurrency(value)}`,
-                                ``,
-                                `Key Assumptions:`,
-                                `- After-hours work: ${afterHoursPct}%`,
-                                `- OT reduction: ${otReductionPct}%`,
-                                `- OT rate: $${otRate}/hr`,
-                              ];
-                            }
-                            default:
-                              return [];
-                          }
-                        };
-                        
-                        // Uses global driversForExport (useMemo)
-                        driversForExport.forEach((id) => {
-                          newPage();
-                          doc.setFontSize(16);
-                          doc.setFont("helvetica", "bold");
-                          doc.setTextColor(0);
-                          doc.text(leverLabels[id].toUpperCase(), margin, y);
-                          y += 10;
-                          
-                          doc.setFontSize(12);
-                          doc.setTextColor(14, 159, 110);
-                          doc.text(`Annual Value: ${formatCurrency(driverValues[id])}`, margin, y);
-                          y += 15;
-                          
-                          doc.setTextColor(0);
-                          doc.setFontSize(11);
-                          doc.setFont("helvetica", "bold");
-                          doc.text("What This Driver Captures", margin, y);
-                          y += 7;
-                          doc.setFont("helvetica", "normal");
-                          doc.setFontSize(10);
-                          const descLines = doc.splitTextToSize(leverDescriptions[id], contentWidth);
-                          doc.text(descLines, margin, y);
-                          y += descLines.length * 5 + 10;
-
-                          doc.setFontSize(11);
-                          doc.setFont("helvetica", "bold");
-                          doc.text("How This Was Calculated", margin, y);
-                          y += 7;
-                          doc.setFont("helvetica", "normal");
-                          doc.setFontSize(9);
-                          
-                          const steps = getDriverCalculationSteps(id);
-                          steps.forEach((step) => {
-                            if (step === '') {
-                              y += 3;
-                            } else if (step.startsWith('Step ') || step.startsWith('Key ')) {
-                              doc.setFont("helvetica", "bold");
-                              doc.text(step, margin, y);
-                              doc.setFont("helvetica", "normal");
-                              y += 5;
-                            } else {
-                              doc.text(step, margin, y);
-                              y += 4;
-                            }
-                            
-                            // Check if we need a new page
-                            if (y > pageHeight - 30) {
-                              addFooter(pageNumber);
-                              doc.addPage();
-                              pageNumber++;
-                              y = margin;
-                            }
-                          });
-                          
-                          addFooter(pageNumber);
-                        });
-                      }
-
-                      // METHODOLOGY
-                      if (exportContentSelections.methodology) {
-                        newPage();
-                        doc.setFontSize(16);
-                        doc.setFont("helvetica", "bold");
-                        doc.text("METHODOLOGY & ASSUMPTIONS", margin, y);
-                        y += 15;
-
-                        doc.setFontSize(11);
-                        doc.text("About This Analysis", margin, y);
-                        y += 7;
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
-                        const aboutText = "This ROI model uses evidence-based assumptions from 200+ health system partners using Abridge ambient documentation. All calculations are transparent and adjustable to reflect your organization's specific characteristics.";
-                        const aboutLines = doc.splitTextToSize(aboutText, contentWidth);
-                        doc.text(aboutLines, margin, y);
-                        y += aboutLines.length * 5 + 10;
-
-                        doc.setFontSize(11);
-                        doc.setFont("helvetica", "bold");
-                        doc.text("Calculation Approach", margin, y);
-                        y += 7;
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
-                        doc.text("Each value driver follows a step-down calculation:", margin, y);
-                        y += 6;
-                        doc.text("1. Organizational inputs (providers, encounters, utilization)", margin + 5, y);
-                        y += 5;
-                        doc.text("2. Evidence-based operational impacts (time saved, quality improvements)", margin + 5, y);
-                        y += 5;
-                        doc.text("3. Financial translation (capacity value, revenue capture, cost avoidance)", margin + 5, y);
-                        y += 10;
-
-                        doc.setFontSize(11);
-                        doc.setFont("helvetica", "bold");
-                        doc.text("How to Use This Analysis", margin, y);
-                        y += 7;
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
-                        const useText = "This document is designed to support internal business case development, facilitate discussion with finance and clinical leadership, provide transparent calculations for validation, and model different deployment configurations.";
-                        const useLines = doc.splitTextToSize(useText, contentWidth);
-                        doc.text(useLines, margin, y);
-                        
-                        addFooter(pageNumber);
-                      }
-
-                      // MODEL INPUTS
-                      if (exportContentSelections.modelInputs) {
-                        newPage();
-                        doc.setFontSize(16);
-                        doc.setFont("helvetica", "bold");
-                        doc.text("MODEL INPUTS", margin, y);
-                        y += 15;
-
-                        doc.setFontSize(11);
-                        doc.text("Scope", margin, y);
-                        y += 7;
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
-                        doc.text(`Providers: ${inputs.numberOfProviders}`, margin, y);
-                        y += 5;
-                        doc.text(`Annual encounters: ${inputs.annualOutpatientEncounters.toLocaleString()}`, margin, y);
-                        y += 5;
-                        doc.text(`Care setting: ${careSettingLabel}`, margin, y);
-                        y += 5;
-                        doc.text(`Utilization rate: ${inputs.abridgeUtilizationPct}%`, margin, y);
-                        y += 5;
-                        doc.text(`Abridge-documented encounters: ${abridgeDocumentedEncounters.toLocaleString()}`, margin, y);
-                        y += 12;
-
-                        doc.setFontSize(11);
-                        doc.setFont("helvetica", "bold");
-                        doc.text("Value Drivers in Model", margin, y);
-                        y += 7;
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
-                        // Show all enabled drivers (these contribute to the totals)
-                        enabledDriverIds.forEach((id) => {
-                          doc.text(`- ${leverLabels[id]}`, margin, y);
-                          y += 5;
-                        });
-                        y += 8;
-
-                        doc.setFontSize(11);
-                        doc.setFont("helvetica", "bold");
-                        doc.text("Investment", margin, y);
-                        y += 7;
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
-                        doc.text(`Cost per provider: $${inputs.monthlyCostPerProvider}/month`, margin, y);
-                        y += 5;
-                        doc.text(`Total annual investment: ${formatCurrency(annualInvestment)}`, margin, y);
-                        
-                        addFooter(pageNumber);
-                      }
-
-                      // SCENARIO COMPARISONS
-                      if (exportContentSelections.scenarios && scenariosForExport.length > 0) {
-                        // Uses global scenariosForExport (useMemo)
-                        scenariosForExport.forEach((scenario) => {
-                          newPage();
-                          doc.setFontSize(16);
-                          doc.setFont("helvetica", "bold");
-                          doc.text(`SCENARIO: ${scenario.name}`, margin, y);
-                          y += 15;
-
-                          // Side by side comparison
-                          const colWidth = (contentWidth - 10) / 2;
-                          
-                          doc.setFontSize(10);
-                          doc.setFont("helvetica", "bold");
-                          doc.text("Current Model", margin, y);
-                          doc.text(scenario.name, margin + colWidth + 10, y);
-                          y += 8;
-
-                          doc.setFont("helvetica", "normal");
-                          doc.text(`${inputs.numberOfProviders} providers`, margin, y);
-                          doc.text(`${scenario.providers} providers`, margin + colWidth + 10, y);
-                          y += 5;
-                          doc.text(`${inputs.annualOutpatientEncounters.toLocaleString()} encounters`, margin, y);
-                          doc.text(`${scenario.encounters.toLocaleString()} encounters`, margin + colWidth + 10, y);
-                          y += 5;
-                          doc.text(`${inputs.abridgeUtilizationPct}% utilization`, margin, y);
-                          doc.text(`${scenario.utilizationRate}% utilization`, margin + colWidth + 10, y);
-                          y += 12;
-
-                          doc.setFont("helvetica", "bold");
-                          doc.text("Total Benefit", margin, y);
-                          doc.text("Total Benefit", margin + colWidth + 10, y);
-                          y += 6;
-                          doc.setFont("helvetica", "normal");
-                          doc.text(formatCurrency(totalAnnualBenefit), margin, y);
-                          doc.text(formatCurrency(scenario.totalBenefit), margin + colWidth + 10, y);
-                          y += 8;
-
-                          doc.setFont("helvetica", "bold");
-                          doc.text("Net Gain", margin, y);
-                          doc.text("Net Gain", margin + colWidth + 10, y);
-                          y += 6;
-                          doc.setFont("helvetica", "normal");
-                          doc.text(formatCurrency(netAnnualGain), margin, y);
-                          doc.text(formatCurrency(scenario.netGain), margin + colWidth + 10, y);
-                          y += 6;
-                          doc.text(`${roiMultiple.toFixed(1)}x ROI`, margin, y);
-                          doc.text(`${scenario.roiMultiple.toFixed(1)}x ROI`, margin + colWidth + 10, y);
-                          
-                          addFooter(pageNumber);
-                        });
-                      }
-
-                      // APPENDIX
-                      if (exportContentSelections.appendix) {
-                        const disabledDrivers = allDriverIds.filter((id) => !inputs.levers[id]);
-                        if (disabledDrivers.length > 0) {
-                          newPage();
-                          doc.setFontSize(16);
-                          doc.setFont("helvetica", "bold");
-                          doc.text("APPENDIX: Additional Value Drivers", margin, y);
-                          y += 15;
-
-                          doc.setFontSize(10);
-                          doc.setFont("helvetica", "normal");
-                          doc.text("The following drivers were not selected for this model but may be relevant:", margin, y);
-                          y += 10;
-
-                          disabledDrivers.forEach((id) => {
-                            doc.setFontSize(11);
-                            doc.setFont("helvetica", "bold");
-                            doc.text(leverLabels[id], margin, y);
-                            y += 6;
-                            doc.setFont("helvetica", "normal");
-                            doc.setFontSize(10);
-                            const descLines = doc.splitTextToSize(leverDescriptions[id], contentWidth);
-                            doc.text(descLines, margin, y);
-                            y += descLines.length * 5 + 8;
-                          });
-                          
-                          addFooter(pageNumber);
-                        }
-                      }
-
-                      // Save PDF
-                      const fileName = `Abridge_ROI_Analysis_${currentDate.replace(/,?\s+/g, '_')}.pdf`;
-                      doc.save(fileName);
-                      
-                      setPdfSuccess(true);
-                      setTimeout(() => setPdfSuccess(false), 5000);
-                    } catch (error) {
-                      console.error('PDF generation failed:', error);
-                      alert('PDF generation failed. Please try again.');
-                    } finally {
-                      setIsGeneratingPdf(false);
-                    }
-                  }}
-                  disabled={isGeneratingPdf}
+                  onClick={() => openBaselineExport()}
                   className="w-full bg-[#F03319] hover:bg-[#D92D16] text-white gap-2"
                   data-testid="button-download-pdf"
                 >
-                  {isGeneratingPdf ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Generating PDF...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="h-5 w-5" />
-                      Download PDF
-                    </>
-                  )}
+                  <Download className="h-5 w-5" />
+                  Generate PDF
                 </Button>
-
-                {pdfSuccess && (
-                  <div className="flex items-center gap-2 justify-center text-green-600">
-                    <Check className="h-4 w-4" />
-                    <span className="text-sm font-medium">PDF downloaded successfully</span>
-                  </div>
-                )}
 
                 {/* Email button (coming soon) */}
                 <Button
@@ -6883,6 +6240,20 @@ export default function RoiCalculator({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Export Modal */}
+      <ExportModal
+        open={exportModalOpen}
+        onOpenChange={setExportModalOpen}
+        exportType={exportType}
+        inputs={inputs}
+        results={results}
+        enabledDrivers={enabledDriverIds}
+        driverValues={driverValues}
+        careSettingLabel={careSettingLabel}
+        scenario={exportScenario}
+        scenarios={exportScenarios}
+      />
     </div>
   );
 }

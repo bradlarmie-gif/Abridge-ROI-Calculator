@@ -1,0 +1,168 @@
+OBJECTIVE:
+Implement the information-dense, explanatory PDF export system described above. Generate professional, multi-page PDFs that don't just show numbers but explain the story behind them.
+
+CRITICAL IMPLEMENTATION DETAILS:
+
+1. PDF LIBRARY:
+Use @react-pdf/renderer (recommended) or jsPDF with custom layout
+
+2. COMPONENT STRUCTURE:
+Create separate components for each page type:
+- CoverPage.jsx
+- ExecutiveSummary.jsx  
+- ValueBreakdown.jsx
+- DriverDetail.jsx (reusable for each driver)
+- TotalImpact.jsx
+- Assumptions.jsx
+
+3. STYLING SYSTEM:
+Create a PDF stylesheet that matches brand:
+
+```javascript
+import { StyleSheet } from '@react-pdf/renderer';
+
+const styles = StyleSheet.create({
+  // Page setup
+  page: {
+    paddingTop: 72,     // 1 inch
+    paddingBottom: 72,
+    paddingLeft: 72,
+    paddingRight: 72,
+    fontSize: 11,
+    fontFamily: 'Helvetica',
+    color: '#111827',
+  },
+  
+  // Headers
+  pageNumber: {
+    position: 'absolute',
+    fontSize: 10,
+    bottom: 30,
+    right: 72,
+    color: '#9CA3AF',
+  },
+  
+  sectionHeader: {
+    fontSize: 14,
+    color: '#E8532F',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  
+  subsectionHeader: {
+    fontSize: 12,
+    color: '#111827',
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  
+  // Text styles
+  bodyText: {
+    fontSize: 11,
+    color: '#6B7280',
+    lineHeight: 1.6,
+    marginBottom: 8,
+  },
+  
+  emphasis: {
+    color: '#111827',
+    fontWeight: 'bold',
+  },
+  
+  // Value boxes
+  valueCard: {
+    backgroundColor: '#F9FAFB',
+    border: '1px solid #E5E7EB',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  
+  valueCardHeader: {
+    fontSize: 14,
+    color: '#111827',
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  
+  valueAmount: {
+    fontSize: 18,
+    color: '#059669',
+    fontWeight: 'bold',
+  },
+  
+  // Driver detail cards
+  driverCard: {
+    border: '1px solid #E5E7EB',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  
+  driverIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  
+  mathSection: {
+    backgroundColor: '#FFFBF5',
+    padding: 12,
+    borderRadius: 4,
+    marginVertical: 12,
+  },
+  
+  mathStep: {
+    fontSize: 10,
+    fontFamily: 'Courier',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  
+  // Disclaimers
+  warningBox: {
+    backgroundColor: '#FEF3C7',
+    border: '1px solid #F59E0B',
+    borderRadius: 6,
+    padding: 12,
+    marginTop: 12,
+  },
+  
+  warningText: {
+    fontSize: 10,
+    color: '#92400E',
+  },
+  
+  // Tables
+  table: {
+    width: '100%',
+    marginVertical: 16,
+  },
+  
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingVertical: 8,
+  },
+  
+  tableCell: {
+    fontSize: 11,
+    padding: 4,
+  },
+  
+  // Dividers
+  divider: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    marginVertical: 16,
+  },
+  
+  heavyDivider: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#E5E7EB',
+    marginVertical: 20,
+  },
+});

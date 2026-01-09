@@ -1,0 +1,319 @@
+OBJECTIVE:
+Implement the information-dense, explanatory PDF export system described above. Generate professional, multi-page PDFs that don't just show numbers but explain the story behind them.
+
+CRITICAL IMPLEMENTATION DETAILS:
+
+1. PDF LIBRARY:
+Use @react-pdf/renderer (recommended) or jsPDF with custom layout
+
+2. COMPONENT STRUCTURE:
+Create separate components for each page type:
+- CoverPage.jsx
+- ExecutiveSummary.jsx  
+- ValueBreakdown.jsx
+- DriverDetail.jsx (reusable for each driver)
+- TotalImpact.jsx
+- Assumptions.jsx
+
+3. STYLING SYSTEM:
+Create a PDF stylesheet that matches brand:
+
+```javascript
+import { StyleSheet } from '@react-pdf/renderer';
+
+const styles = StyleSheet.create({
+  // Page setup
+  page: {
+    paddingTop: 72,     // 1 inch
+    paddingBottom: 72,
+    paddingLeft: 72,
+    paddingRight: 72,
+    fontSize: 11,
+    fontFamily: 'Helvetica',
+    color: '#111827',
+  },
+  
+  // Headers
+  pageNumber: {
+    position: 'absolute',
+    fontSize: 10,
+    bottom: 30,
+    right: 72,
+    color: '#9CA3AF',
+  },
+  
+  sectionHeader: {
+    fontSize: 14,
+    color: '#E8532F',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  
+  subsectionHeader: {
+    fontSize: 12,
+    color: '#111827',
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  
+  // Text styles
+  bodyText: {
+    fontSize: 11,
+    color: '#6B7280',
+    lineHeight: 1.6,
+    marginBottom: 8,
+  },
+  
+  emphasis: {
+    color: '#111827',
+    fontWeight: 'bold',
+  },
+  
+  // Value boxes
+  valueCard: {
+    backgroundColor: '#F9FAFB',
+    border: '1px solid #E5E7EB',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  
+  valueCardHeader: {
+    fontSize: 14,
+    color: '#111827',
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  
+  valueAmount: {
+    fontSize: 18,
+    color: '#059669',
+    fontWeight: 'bold',
+  },
+  
+  // Driver detail cards
+  driverCard: {
+    border: '1px solid #E5E7EB',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  
+  driverIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  
+  mathSection: {
+    backgroundColor: '#FFFBF5',
+    padding: 12,
+    borderRadius: 4,
+    marginVertical: 12,
+  },
+  
+  mathStep: {
+    fontSize: 10,
+    fontFamily: 'Courier',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  
+  // Disclaimers
+  warningBox: {
+    backgroundColor: '#FEF3C7',
+    border: '1px solid #F59E0B',
+    borderRadius: 6,
+    padding: 12,
+    marginTop: 12,
+  },
+  
+  warningText: {
+    fontSize: 10,
+    color: '#92400E',
+  },
+  
+  // Tables
+  table: {
+    width: '100%',
+    marginVertical: 16,
+  },
+  
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingVertical: 8,
+  },
+  
+  tableCell: {
+    fontSize: 11,
+    padding: 4,
+  },
+  
+  // Dividers
+  divider: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    marginVertical: 16,
+  },
+  
+  heavyDivider: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#E5E7EB',
+    marginVertical: 20,
+  },
+});
+
+CONTENT GENERATION FUNCTIONS:
+
+Create helper functions that generate explanatory text:
+javascriptCopy// Generate driver explanation
+function generateDriverExplanation(driver, inputs) {
+  const explanations = {
+    patientAccess: {
+      problem: "Documentation is one of healthcare's most persistent operational burdens...",
+      solution: "Abridge's ambient documentation returns time to clinical care...",
+      math: `${inputs.encounters} encounters × ${inputs.minutesSaved} min saved = ${calculateHours()} hours`,
+      meaning: "Your providers save an average of ${inputs.minutesSaved} minutes per encounter...",
+      why: "Every additional visit serves a patient who is currently waiting for care...",
+      assumptions: [
+        "Requires sufficient patient demand to fill capacity",
+        `Revenue per visit ($${inputs.revenuePerVisit}) based on your net collectible amount`,
+        `${inputs.realizationFactor}% realization factor accounts for real-world constraints`
+      ]
+    },
+    // ... other drivers
+  };
+  
+  return explanations[driver];
+}
+
+// Generate context for assumptions
+function generateAssumptionContext(parameter, value) {
+  const contexts = {
+    revenuePerVisit: {
+      value,
+      description: "Net collectible (after denials, adjustments)",
+      validation: "Review actual collections data from your practice management system",
+      ranges: {
+        primaryCare: "$150-250",
+        specialty: "$200-350",
+        ed: "$300-600"
+      }
+    },
+    // ... other parameters
+  };
+  
+  return contexts[parameter];
+}
+
+PAGE GENERATION LOGIC:
+
+javascriptCopyfunction generatePDF(modelData, options) {
+  const pages = [];
+  
+  // Always include
+  pages.push(<CoverPage data={modelData} />);
+  pages.push(<ExecutiveSummary data={modelData} />);
+  pages.push(<ValueBreakdown data={modelData} />);
+  
+  // Add driver detail pages for each active driver
+  modelData.activeDrivers.forEach(driver => {
+    pages.push(
+      <DriverDetail 
+        driver={driver}
+        calculations={modelData.calculations[driver]}
+        inputs={modelData.inputs}
+        showMath={options.includeDetailedCalculations}
+        showExplanations={true} // Always true for explanatory style
+      />
+    );
+  });
+  
+  pages.push(<TotalImpact data={modelData} />);
+  pages.push(<Assumptions data={modelData} />);
+  
+  return pages;
+}
+
+EXPORT FLOW:
+
+User clicks "Generate PDF" →
+Opens modal with options →
+User fills org name, prepared for, sections to include →
+Clicks Generate →
+Show loading ("Generating PDF... 10-15 seconds") →
+Generate PDF with react-pdf →
+Auto-download →
+Success toast
+
+FILENAME GENERATION:
+
+javascriptCopyfunction generateFilename(modelData, exportType) {
+  const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const orgName = modelData.organizationName || "Organization";
+  const sanitized = orgName.replace(/[^a-zA-Z0-9]/g, '_');
+  
+  if (exportType === 'baseline') {
+    return `Abridge_ROI_Model_${sanitized}_${date}.pdf`;
+  } else if (exportType === 'scenario') {
+    const scenarioName = modelData.scenarioName.replace(/[^a-zA-Z0-9]/g, '_');
+    return `Abridge_ROI_${scenarioName}_${sanitized}_${date}.pdf`;
+  } else if (exportType === 'comparison') {
+    return `Abridge_ROI_Comparison_${sanitized}_${date}.pdf`;
+  }
+}
+
+TESTING REQUIREMENTS:
+
+
+Test with different driver combinations (3, 4, 5, 6 drivers)
+Test with scenarios (ensure comparison pages work)
+Test print rendering (grayscale, margins)
+Test file size (should be < 5MB for reasonable performance)
+Test on different browsers/devices
+
+
+PERFORMANCE:
+
+
+Generate PDF client-side (no server needed)
+Show progress indicator for >5 second generation
+Cache generated PDFs briefly (don't regenerate on accidental double-click)
+
+
+ACCESSIBILITY:
+
+
+PDF should be text-selectable (not images)
+Use semantic structure (H1, H2, H3 tags in PDF)
+Include alt text for any icons/graphics
+Ensure sufficient color contrast (4.5 minimum)
+
+═══════════════════════════════════════════════════════════════
+DELIVERABLES:
+
+PDF generation system with three export types
+All page templates with explanatory content
+Export options modal
+Loading and success states
+Dynamic filename generation
+Print-optimized styling
+
+RESULT:
+Executive-ready PDF exports that tell the complete story - not just numbers, but the context, methodology, and strategic implications behind every calculation. Dense with information but scannable and professional. CFOs can take this to their board without additional editing.
+Copy
+---
+
+**This gives you:**
+- ✅ **Information-dense pages** (every page has substance)
+- ✅ **Explanatory tone** (not just "what" but "why")
+- ✅ **Transparent methodology** (every assumption explained)
+- ✅ **Strategic context** (helps them understand implications)
+- ✅ **Validation guidance** ("here's how to check this against your data")
+- ✅ **Professional design** (Bloomberg Terminal meets McKinsey deck)
+
+**Ship this and your PDFs become business case documents that CFOs actually present to boards. They're not just exporting data - they're exporting a complete strategic analysis.**
