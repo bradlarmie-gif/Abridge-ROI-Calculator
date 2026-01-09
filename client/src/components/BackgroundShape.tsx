@@ -13,17 +13,41 @@ export function BackgroundShape() {
         }}
       />
       
-      {/* Abridge pattern - repeating across entire background */}
+      {/* Abridge pattern - top right corner */}
       <div
-        className="absolute inset-0"
+        className="absolute top-0 right-0"
         style={{
-          backgroundImage: `url(${abridgePattern})`,
-          backgroundSize: "600px 600px",
-          backgroundRepeat: "repeat",
+          width: "600px",
+          height: "600px",
           opacity: 0.035,
           filter: "saturate(0.8)",
         }}
-      />
+      >
+        <img
+          src={abridgePattern}
+          alt=""
+          className="w-full h-full object-contain"
+          style={{ transform: "translate(15%, -15%)" }}
+        />
+      </div>
+      
+      {/* Abridge pattern - bottom left corner */}
+      <div
+        className="absolute bottom-0 left-0 hidden md:block"
+        style={{
+          width: "650px",
+          height: "650px",
+          opacity: 0.03,
+          filter: "saturate(0.75)",
+        }}
+      >
+        <img
+          src={abridgePattern}
+          alt=""
+          className="w-full h-full object-contain"
+          style={{ transform: "translate(-18%, 18%) rotate(180deg)" }}
+        />
+      </div>
     </div>
   );
 }
