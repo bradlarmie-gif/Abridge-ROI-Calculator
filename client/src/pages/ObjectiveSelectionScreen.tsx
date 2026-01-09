@@ -528,7 +528,7 @@ function CareSettingRow({
         disabled
           ? "cursor-not-allowed opacity-60 border border-dashed border-[#E5E7EB]"
           : selected
-            ? "bg-[#FEF3C7]/20 border-l-4 border-l-[#E8532F] border-t border-r border-b border-transparent shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+            ? "bg-[#FFF1EB] border-l-4 border-l-[#E8532F] border-t border-r border-b border-transparent shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
             : "shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] border border-transparent hover:border-[#E8532F] cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
@@ -1777,7 +1777,7 @@ export default function ObjectiveSelectionScreen({
                   Select a care setting
                 </h2>
                 
-                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 mb-6">
+                <div className="bg-[#FFF1EB] border border-[#E5E7EB] rounded-lg p-5 mb-6">
                   <p className="text-base font-medium text-[#111827] mb-2">Build a model for your organization</p>
                   <p className="text-sm text-[#6B7280] leading-relaxed">
                     Each care setting has unique documentation workflows, encounter patterns, and value drivers. Your selection determines the baseline assumptions throughout this calculator.
