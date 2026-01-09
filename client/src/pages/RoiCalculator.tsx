@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,8 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { jsPDF } from "jspdf";
+import { useToast } from "@/hooks/use-toast";
+import { EditableCalcRow, CalcRow, CalcStep } from "@/components/EditableCalcRow";
 import {
   ArrowLeft,
   Plus,
@@ -54,6 +56,7 @@ import {
   Loader2,
   Trash2,
   Sliders,
+  Settings,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -129,6 +132,12 @@ export default function RoiCalculator({
   const [localAdjustments, setLocalAdjustments] = useState<Record<string, number | string>>({});
   const [removedDriverToast, setRemovedDriverToast] = useState<string | null>(null);
   const removedToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Toast for inline edits
+  const { toast } = useToast();
+  
+  // Track customized values (different from posture defaults)
+  const [customizedValues, setCustomizedValues] = useState<Set<string>>(new Set());
 
   // Scenario Builder state
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
@@ -368,6 +377,113 @@ export default function RoiCalculator({
     });
     setLocalAdjustments({});
   };
+
+  // Helper: inline save for a single value - updates input and shows toast
+  const saveInlineValue = useCallback((
+    driverName: string, 
+    fieldKey: string, 
+    newValue: number, 
+    updateFn: (prev: RoiInputs) => RoiInputs
+  ) => {
+    setInputs(updateFn);
+    setCustomizedValues((prev) => new Set([...prev, fieldKey]));
+    toast({
+      title: `${driverName} updated`,
+      description: `Value saved successfully`,
+      duration: 3000,
+    });
+  }, [toast]);
+
+  // Impact calculation helpers for each driver
+  const calculatePatientAccessImpact = useCallback((field: string, newValue: number) => {
+    const testInputs = JSON.parse(JSON.stringify(inputs)) as RoiInputs;
+    if (field === "minutesSavedPerEncounter") testInputs.minutesSavedPerEncounter = newValue;
+    else if (field === "pctTimeToNewVisits") testInputs.patientAccess.pctTimeToNewVisits = newValue;
+    else if (field === "avgVisitDurationMinutes") testInputs.patientAccess.avgVisitDurationMinutes = newValue;
+    else if (field === "avgNetRevenuePerVisit") testInputs.patientAccess.avgNetRevenuePerVisit = newValue;
+    
+    const testResults = calculateRoi(testInputs);
+    const newTotal = testResults.levers.find(l => l.id === "patientAccess")?.value ?? 0;
+    const currentTotal = driverValues.patientAccess;
+    const delta = newTotal - currentTotal;
+    const percentChange = currentTotal > 0 ? (delta / currentTotal) * 100 : 0;
+    
+    return { newTotal, delta, percentChange };
+  }, [inputs, driverValues.patientAccess]);
+
+  const calculateWrvuImpact = useCallback((field: string, newValue: number) => {
+    const testInputs = JSON.parse(JSON.stringify(inputs)) as RoiInputs;
+    if (field === "baselineWrvuPerEncounter") testInputs.baselineWrvuPerEncounter = newValue;
+    else if (field === "pctIncreaseWrvuPerEncounter") testInputs.wrvu.pctIncreaseWrvuPerEncounter = newValue;
+    else if (field === "wrvuConversionFactor") testInputs.wrvu.wrvuConversionFactor = newValue;
+    
+    const testResults = calculateRoi(testInputs);
+    const newTotal = testResults.levers.find(l => l.id === "wrvu")?.value ?? 0;
+    const currentTotal = driverValues.wrvu;
+    const delta = newTotal - currentTotal;
+    const percentChange = currentTotal > 0 ? (delta / currentTotal) * 100 : 0;
+    
+    return { newTotal, delta, percentChange };
+  }, [inputs, driverValues.wrvu]);
+
+  const calculateWorkforceImpact = useCallback((field: string, newValue: number) => {
+    const testInputs = JSON.parse(JSON.stringify(inputs)) as RoiInputs;
+    if (field === "baselineAttritionRate") testInputs.workforce.baselineAttritionRate = newValue;
+    else if (field === "pctBurnoutExitsAvoided") testInputs.workforce.pctBurnoutExitsAvoided = newValue;
+    else if (field === "costPerDeparture") testInputs.workforce.costPerDeparture = newValue;
+    
+    const testResults = calculateRoi(testInputs);
+    const newTotal = testResults.levers.find(l => l.id === "workforce")?.value ?? 0;
+    const currentTotal = driverValues.workforce;
+    const delta = newTotal - currentTotal;
+    const percentChange = currentTotal > 0 ? (delta / currentTotal) * 100 : 0;
+    
+    return { newTotal, delta, percentChange };
+  }, [inputs, driverValues.workforce]);
+
+  const calculateHccImpact = useCallback((field: string, newValue: number) => {
+    const testInputs = JSON.parse(JSON.stringify(inputs)) as RoiInputs;
+    if (field === "pctMedicareAdvantage") testInputs.hcc.pctMedicareAdvantage = newValue;
+    else if (field === "pmpmBenchmark") testInputs.hcc.pmpmBenchmark = newValue;
+    else if (field === "pctMissedConditionsRecaptured") testInputs.hcc.pctMissedConditionsRecaptured = newValue;
+    
+    const testResults = calculateRoi(testInputs);
+    const newTotal = testResults.levers.find(l => l.id === "hcc")?.value ?? 0;
+    const currentTotal = driverValues.hcc;
+    const delta = newTotal - currentTotal;
+    const percentChange = currentTotal > 0 ? (delta / currentTotal) * 100 : 0;
+    
+    return { newTotal, delta, percentChange };
+  }, [inputs, driverValues.hcc]);
+
+  const calculateDenialsImpact = useCallback((field: string, newValue: number) => {
+    const testInputs = JSON.parse(JSON.stringify(inputs)) as RoiInputs;
+    if (field === "baselineDenialRate") testInputs.denials.baselineDenialRate = newValue;
+    else if (field === "pctDocDenialsRecovered") testInputs.denials.pctDocDenialsRecovered = newValue;
+    else if (field === "avgRevenuePerEncounter") testInputs.denials.avgRevenuePerEncounter = newValue;
+    
+    const testResults = calculateRoi(testInputs);
+    const newTotal = testResults.levers.find(l => l.id === "denials")?.value ?? 0;
+    const currentTotal = driverValues.denials;
+    const delta = newTotal - currentTotal;
+    const percentChange = currentTotal > 0 ? (delta / currentTotal) * 100 : 0;
+    
+    return { newTotal, delta, percentChange };
+  }, [inputs, driverValues.denials]);
+
+  const calculateOvertimeImpact = useCallback((field: string, newValue: number) => {
+    const testInputs = JSON.parse(JSON.stringify(inputs)) as RoiInputs;
+    if (field === "pctOvertimeReduced") testInputs.overtime.pctOvertimeReduced = newValue;
+    else if (field === "blendedOvertimeRate") testInputs.overtime.blendedOvertimeRate = newValue;
+    
+    const testResults = calculateRoi(testInputs);
+    const newTotal = testResults.levers.find(l => l.id === "overtime")?.value ?? 0;
+    const currentTotal = driverValues.overtime;
+    const delta = newTotal - currentTotal;
+    const percentChange = currentTotal > 0 ? (delta / currentTotal) * 100 : 0;
+    
+    return { newTotal, delta, percentChange };
+  }, [inputs, driverValues.overtime]);
 
   // Scenario Builder functions
   const initScenarioForm = (scenario?: Scenario) => {
@@ -1006,214 +1122,124 @@ export default function RoiCalculator({
                         {/* PATIENT ACCESS */}
                         {driverId === "patientAccess" && (
                           <>
-                            {/* Section 1: How We Calculated This */}
+                            {/* Section 1: How We Calculated This - with inline editing */}
                             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
                               <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
                               
                               {/* Step 1: Time Returned */}
-                              <div className="mb-6">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 1: Time Returned
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Minutes saved per encounter</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.minutesSavedPerEncounter} min</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Annual Abridge-documented encounters</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Total hours returned</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={1} title="Time Returned">
+                                <EditableCalcRow
+                                  label="Minutes saved per encounter"
+                                  value={inputs.minutesSavedPerEncounter}
+                                  unit="min"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("minutesSavedPerEncounter")}
+                                  typicalRange={{ min: 2, max: 4 }}
+                                  postureName="Typical"
+                                  driverName="Patient Access"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Patient Access", 
+                                    "minutesSavedPerEncounter", 
+                                    newValue,
+                                    (prev) => ({ ...prev, minutesSavedPerEncounter: newValue })
+                                  )}
+                                  calculateImpact={(newValue) => calculatePatientAccessImpact("minutesSavedPerEncounter", newValue)}
+                                />
+                                <CalcRow label="Annual Abridge-documented encounters" value={encountersWithAbridge.toLocaleString()} />
+                                <CalcRow label="Total hours returned" value={`${totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 2: Realized Capacity */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 2: Realized Capacity
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Total hours returned</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Realization factor</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.patientAccess.pctTimeToNewVisits}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Usable hours</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
-                                  </div>
-                                </div>
-                                <p className="text-[13px] text-[#6B7280] italic mt-3">
-                                  Not all time converts to new visits due to scheduling, staffing, and demand constraints.
-                                </p>
-                              </div>
+                              <CalcStep stepNumber={2} title="Realized Capacity" note="Not all time converts to new visits due to scheduling, staffing, and demand constraints.">
+                                <CalcRow label="Total hours returned" value={`${totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs`} />
+                                <EditableCalcRow
+                                  label="Realization factor"
+                                  value={inputs.patientAccess.pctTimeToNewVisits}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("pctTimeToNewVisits")}
+                                  typicalRange={{ min: 10, max: 35 }}
+                                  postureName="Typical"
+                                  driverName="Patient Access"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Patient Access", 
+                                    "pctTimeToNewVisits", 
+                                    newValue,
+                                    (prev) => ({ ...prev, patientAccess: { ...prev.patientAccess, pctTimeToNewVisits: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculatePatientAccessImpact("pctTimeToNewVisits", newValue)}
+                                />
+                                <CalcRow label="Usable hours" value={`${(totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 3: New Visit Capacity */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 3: New Visit Capacity
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Usable hours</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Average visit duration</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.patientAccess.avgVisitDurationMinutes} min</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Additional visits possible</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (inputs.patientAccess.avgVisitDurationMinutes / 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} visits</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={3} title="New Visit Capacity">
+                                <CalcRow label="Usable hours" value={(totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} />
+                                <EditableCalcRow
+                                  label="Average visit duration"
+                                  value={inputs.patientAccess.avgVisitDurationMinutes}
+                                  unit="min"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("avgVisitDurationMinutes")}
+                                  typicalRange={{ min: 20, max: 45 }}
+                                  postureName="Typical"
+                                  driverName="Patient Access"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Patient Access", 
+                                    "avgVisitDurationMinutes", 
+                                    newValue,
+                                    (prev) => ({ ...prev, patientAccess: { ...prev.patientAccess, avgVisitDurationMinutes: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculatePatientAccessImpact("avgVisitDurationMinutes", newValue)}
+                                />
+                                <CalcRow label="Additional visits possible" value={`${((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (inputs.patientAccess.avgVisitDurationMinutes / 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} visits`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 4: Revenue Impact */}
-                              <div className="pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 4: Revenue Impact
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Additional visits</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (inputs.patientAccess.avgVisitDurationMinutes / 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Net revenue per visit</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.patientAccess.avgNetRevenuePerVisit}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
-                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={4} title="Revenue Impact" isLast={true}>
+                                <CalcRow label="Additional visits" value={((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (inputs.patientAccess.avgVisitDurationMinutes / 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} />
+                                <EditableCalcRow
+                                  label="Net revenue per visit"
+                                  value={inputs.patientAccess.avgNetRevenuePerVisit}
+                                  prefix="$"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("avgNetRevenuePerVisit")}
+                                  typicalRange={{ min: 150, max: 350 }}
+                                  postureName="Typical"
+                                  driverName="Patient Access"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Patient Access", 
+                                    "avgNetRevenuePerVisit", 
+                                    newValue,
+                                    (prev) => ({ ...prev, patientAccess: { ...prev.patientAccess, avgNetRevenuePerVisit: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculatePatientAccessImpact("avgNetRevenuePerVisit", newValue)}
+                                />
+                                <CalcRow label="Annual value" value={formatCurrency(driverValue)} isResult={true} isFinal={true} />
+                              </CalcStep>
                             </div>
 
-                            {/* Section 2: Adjust For Your Organization */}
-                            <div className="border-t border-neutral-100 pt-6">
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-6">
-                                Adjust For Your Organization
-                              </h3>
-                              
-                              <div className="space-y-8">
-                                {/* Input 1: Average visit length */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Average visit length
-                                  </label>
-                                  <div className="flex items-center gap-4 mb-2">
-                                    <Slider
-                                      value={[getNumericValue("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes)]}
-                                      onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, avgVisitDurationMinutes: val }))}
-                                      min={20}
-                                      max={45}
-                                      step={1}
-                                      className="flex-1"
-                                      data-testid="slider-visit-length"
-                                    />
-                                    <span className="text-sm font-mono text-neutral-900 w-16 text-right">
-                                      {getLocalOrModel("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes)} min
-                                    </span>
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our visits are longer"</p>
-                                    <p>Impact: Longer visits means fewer new visit slots</p>
-                                    {localAdjustments.avgVisitDurationMinutes !== undefined && (
-                                      <p className="text-[#F03319] font-semibold">
-                                        New value: {formatCurrency(
-                                          ((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (getNumericValue("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes) / 60)) * getNumericValue("avgNetRevenuePerVisit", inputs.patientAccess.avgNetRevenuePerVisit)
-                                        )}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
+                            {/* Helper note */}
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                              <p className="text-xs text-amber-800">
+                                Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
+                              </p>
+                            </div>
 
-                                {/* Input 2: Revenue per visit */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Revenue per visit
-                                  </label>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-neutral-500">$</span>
-                                    <Input
-                                      type="number"
-                                      value={getLocalOrModel("avgNetRevenuePerVisit", inputs.patientAccess.avgNetRevenuePerVisit)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, avgNetRevenuePerVisit: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
-                                      className="w-32 font-mono"
-                                      data-testid="input-revenue-per-visit"
-                                    />
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our reimbursement is different"</p>
-                                    <p>What this is: Net collectible revenue per completed visit</p>
-                                    {localAdjustments.avgNetRevenuePerVisit !== undefined && (
-                                      <p className="text-[#F03319] font-semibold">
-                                        New value: {formatCurrency(
-                                          ((totalHoursReclaimed * inputs.patientAccess.pctTimeToNewVisits / 100) / (getNumericValue("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes) / 60)) * getNumericValue("avgNetRevenuePerVisit", inputs.patientAccess.avgNetRevenuePerVisit)
-                                        )}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Helper note */}
-                              <div className="flex items-start gap-2 mt-6 p-3 bg-amber-50 rounded-lg">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                                <p className="text-xs text-amber-800">
-                                  Why adjustable? These are organization-specific and leadership may have different assumptions
-                                </p>
-                              </div>
-
-                              {/* Buttons */}
-                              <div className="flex gap-3 mt-6">
-                                <Button
-                                  variant="outline"
-                                  onClick={resetLocalAdjustments}
-                                  className="gap-2"
-                                  data-testid="button-reset-patientAccess"
-                                >
-                                  <RotateCcw className="h-4 w-4" />
-                                  Reset to Model Setup
-                                </Button>
-                                <Button
-                                  onClick={() => applyAdjustments("patientAccess", {
-                                    patientAccess: {
-                                      ...inputs.patientAccess,
-                                      avgVisitDurationMinutes: getLocalOrModel("avgVisitDurationMinutes", inputs.patientAccess.avgVisitDurationMinutes),
-                                      avgNetRevenuePerVisit: getLocalOrModel("avgNetRevenuePerVisit", inputs.patientAccess.avgNetRevenuePerVisit),
-                                    },
-                                  })}
-                                  className="bg-[#F03319] hover:bg-[#D92D16] text-white"
-                                  data-testid="button-apply-patientAccess"
-                                >
-                                  Apply Changes
-                                </Button>
-                              </div>
-
-                              {/* Remove Driver */}
-                              <div className="border-t border-neutral-100 pt-6 mt-6">
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => removeDriver("patientAccess")}
-                                  className="gap-2 text-neutral-500 hover:text-red-600"
-                                  data-testid="button-remove-patientAccess"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Remove This Driver
-                                </Button>
-                              </div>
+                            {/* Remove Driver */}
+                            <div className="border-t border-neutral-100 pt-6 mt-6">
+                              <Button
+                                variant="ghost"
+                                onClick={() => removeDriver("patientAccess")}
+                                className="gap-2 text-neutral-500 hover:text-red-600"
+                                data-testid="button-remove-patientAccess"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Remove This Driver
+                              </Button>
                             </div>
                           </>
                         )}
@@ -1221,205 +1247,105 @@ export default function RoiCalculator({
                         {/* LEVEL OF SERVICE (wRVU) */}
                         {driverId === "wrvu" && (
                           <>
-                            {/* Section 1: How We Calculated This */}
+                            {/* Section 1: How We Calculated This - with inline editing */}
                             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
                               <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
                               
                               {/* Step 1: Baseline wRVU Performance */}
-                              <div className="mb-6">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 1: Baseline wRVU Performance
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Annual Abridge-documented encounters</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Baseline wRVU per encounter</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.baselineWrvuPerEncounter}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Current annual wRVUs</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter).toLocaleString(undefined, { maximumFractionDigits: 0 })} wRVUs</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={1} title="Baseline wRVU Performance">
+                                <CalcRow label="Annual Abridge-documented encounters" value={encountersWithAbridge.toLocaleString()} />
+                                <EditableCalcRow
+                                  label="Baseline wRVU per encounter"
+                                  value={inputs.baselineWrvuPerEncounter}
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("baselineWrvuPerEncounter")}
+                                  typicalRange={{ min: 1.0, max: 2.5 }}
+                                  postureName="Typical"
+                                  driverName="Level of Service"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Level of Service", 
+                                    "baselineWrvuPerEncounter", 
+                                    newValue,
+                                    (prev) => ({ ...prev, baselineWrvuPerEncounter: newValue })
+                                  )}
+                                  calculateImpact={(newValue) => calculateWrvuImpact("baselineWrvuPerEncounter", newValue)}
+                                />
+                                <CalcRow label="Current annual wRVUs" value={`${(encountersWithAbridge * inputs.baselineWrvuPerEncounter).toLocaleString(undefined, { maximumFractionDigits: 0 })} wRVUs`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 2: Documentation Quality Lift */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 2: Documentation Quality Lift
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">wRVU improvement with better documentation</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{inputs.wrvu.pctIncreaseWrvuPerEncounter}%</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={2} title="Documentation Quality Lift">
+                                <EditableCalcRow
+                                  label="wRVU improvement"
+                                  value={inputs.wrvu.pctIncreaseWrvuPerEncounter}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("pctIncreaseWrvuPerEncounter")}
+                                  typicalRange={{ min: 3, max: 7 }}
+                                  postureName="Typical"
+                                  driverName="Level of Service"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Level of Service", 
+                                    "pctIncreaseWrvuPerEncounter", 
+                                    newValue,
+                                    (prev) => ({ ...prev, wrvu: { ...prev.wrvu, pctIncreaseWrvuPerEncounter: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateWrvuImpact("pctIncreaseWrvuPerEncounter", newValue)}
+                                />
+                              </CalcStep>
 
                               {/* Step 3: Additional wRVUs Captured */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 3: Additional wRVUs Captured
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Current annual wRVUs</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">× Documentation lift</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.wrvu.pctIncreaseWrvuPerEncounter}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Additional wRVUs captured</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter * inputs.wrvu.pctIncreaseWrvuPerEncounter / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} wRVUs</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={3} title="Additional wRVUs Captured">
+                                <CalcRow label="Current annual wRVUs" value={(encountersWithAbridge * inputs.baselineWrvuPerEncounter).toLocaleString(undefined, { maximumFractionDigits: 0 })} />
+                                <CalcRow label="× Documentation lift" value={`${inputs.wrvu.pctIncreaseWrvuPerEncounter}%`} />
+                                <CalcRow label="Additional wRVUs captured" value={`${(encountersWithAbridge * inputs.baselineWrvuPerEncounter * inputs.wrvu.pctIncreaseWrvuPerEncounter / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} wRVUs`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 4: Revenue Impact */}
-                              <div className="pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 4: Revenue Impact
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Additional wRVUs captured</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(encountersWithAbridge * inputs.baselineWrvuPerEncounter * inputs.wrvu.pctIncreaseWrvuPerEncounter / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Average revenue per wRVU</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.wrvu.wrvuConversionFactor}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
-                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
-                                  </div>
-                                </div>
-                                <p className="text-[13px] text-[#6B7280] italic mt-3">
-                                  Actual reimbursement varies by payer mix and contracted rates.
-                                </p>
-                              </div>
+                              <CalcStep stepNumber={4} title="Revenue Impact" isLast={true} note="Actual reimbursement varies by payer mix and contracted rates.">
+                                <CalcRow label="Additional wRVUs captured" value={(encountersWithAbridge * inputs.baselineWrvuPerEncounter * inputs.wrvu.pctIncreaseWrvuPerEncounter / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} />
+                                <EditableCalcRow
+                                  label="Revenue per wRVU"
+                                  value={inputs.wrvu.wrvuConversionFactor}
+                                  prefix="$"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("wrvuConversionFactor")}
+                                  typicalRange={{ min: 36, max: 80 }}
+                                  postureName="Typical"
+                                  driverName="Level of Service"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Level of Service", 
+                                    "wrvuConversionFactor", 
+                                    newValue,
+                                    (prev) => ({ ...prev, wrvu: { ...prev.wrvu, wrvuConversionFactor: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateWrvuImpact("wrvuConversionFactor", newValue)}
+                                />
+                                <CalcRow label="Annual value" value={formatCurrency(driverValue)} isResult={true} isFinal={true} />
+                              </CalcStep>
                             </div>
 
-                            {/* Section 2: Adjust For Your Organization */}
-                            <div className="border-t border-neutral-100 pt-6">
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-6">
-                                Adjust For Your Organization
-                              </h3>
-                              
-                              <div className="space-y-8">
-                                {/* Input 1: Baseline wRVU per encounter */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Baseline wRVU per encounter
-                                  </label>
-                                  <Input
-                                    type="number"
-                                    step="0.1"
-                                    value={getLocalOrModel("baselineWrvuPerEncounter", inputs.baselineWrvuPerEncounter)}
-                                    onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, baselineWrvuPerEncounter: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
-                                    className="w-32 font-mono"
-                                    data-testid="input-baseline-wrvu"
-                                  />
-                                  <div className="text-xs text-neutral-500 space-y-1 mt-2">
-                                    <p>Common pushback: "Our complexity is different"</p>
-                                    <p>What this is: Current average work RVU per visit</p>
-                                    <p>Tip: Check your MGMA data or billing reports</p>
-                                  </div>
-                                </div>
+                            {/* Helper note */}
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                              <p className="text-xs text-amber-800">
+                                Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
+                              </p>
+                            </div>
 
-                                {/* Input 2: Revenue per wRVU */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Revenue per wRVU
-                                  </label>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-neutral-500">$</span>
-                                    <Input
-                                      type="number"
-                                      value={getLocalOrModel("wrvuConversionFactor", inputs.wrvu.wrvuConversionFactor)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, wrvuConversionFactor: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
-                                      className="w-32 font-mono"
-                                      data-testid="input-wrvu-conversion"
-                                    />
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our payer mix is different"</p>
-                                    <p>What this is: Blended average across all payers</p>
-                                    <p>Tip: Medicare is approx $36-40, Commercial is approx $50-80</p>
-                                  </div>
-                                </div>
-
-                                {/* Real-time preview */}
-                                {(localAdjustments.baselineWrvuPerEncounter !== undefined || localAdjustments.wrvuConversionFactor !== undefined) && (
-                                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                    <p className="text-sm font-semibold text-green-800">
-                                      New value: {formatCurrency(
-                                        encountersWithAbridge * 
-                                        getNumericValue("baselineWrvuPerEncounter", inputs.baselineWrvuPerEncounter) * 
-                                        (inputs.wrvu.pctIncreaseWrvuPerEncounter / 100) * 
-                                        getNumericValue("wrvuConversionFactor", inputs.wrvu.wrvuConversionFactor)
-                                      )}
-                                    </p>
-                                    <p className="text-xs text-green-600 mt-1">
-                                      vs. current: {formatCurrency(driverValue)}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Helper note */}
-                              <div className="flex items-start gap-2 mt-6 p-3 bg-amber-50 rounded-lg">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                                <p className="text-xs text-amber-800">
-                                  Why adjustable? Payer mix and case complexity vary
-                                </p>
-                              </div>
-
-                              {/* Buttons */}
-                              <div className="flex gap-3 mt-6">
-                                <Button
-                                  variant="outline"
-                                  onClick={resetLocalAdjustments}
-                                  className="gap-2"
-                                  data-testid="button-reset-wrvu"
-                                >
-                                  <RotateCcw className="h-4 w-4" />
-                                  Reset to Model Setup
-                                </Button>
-                                <Button
-                                  onClick={() => applyAdjustments("wrvu", {
-                                    baselineWrvuPerEncounter: getLocalOrModel("baselineWrvuPerEncounter", inputs.baselineWrvuPerEncounter),
-                                    wrvu: {
-                                      ...inputs.wrvu,
-                                      wrvuConversionFactor: getLocalOrModel("wrvuConversionFactor", inputs.wrvu.wrvuConversionFactor),
-                                    },
-                                  })}
-                                  className="bg-[#F03319] hover:bg-[#D92D16] text-white"
-                                  data-testid="button-apply-wrvu"
-                                >
-                                  Apply Changes
-                                </Button>
-                              </div>
-
-                              {/* Remove Driver */}
-                              <div className="border-t border-neutral-100 pt-6 mt-6">
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => removeDriver("wrvu")}
-                                  className="gap-2 text-neutral-500 hover:text-red-600"
-                                  data-testid="button-remove-wrvu"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Remove This Driver
-                                </Button>
-                              </div>
+                            {/* Remove Driver */}
+                            <div className="border-t border-neutral-100 pt-6 mt-6">
+                              <Button
+                                variant="ghost"
+                                onClick={() => removeDriver("wrvu")}
+                                className="gap-2 text-neutral-500 hover:text-red-600"
+                                data-testid="button-remove-wrvu"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Remove This Driver
+                              </Button>
                             </div>
                           </>
                         )}
@@ -1427,200 +1353,102 @@ export default function RoiCalculator({
                         {/* CLINICIAN RETENTION (workforce) */}
                         {driverId === "workforce" && (
                           <>
-                            {/* Section 1: How We Calculated This */}
+                            {/* Section 1: How We Calculated This - with inline editing */}
                             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
                               <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
                               
                               {/* Step 1: Baseline Turnover */}
-                              <div className="mb-6">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 1: Baseline Turnover
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Total providers</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.workforce.providerCount}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Annual turnover rate</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.workforce.baselineAttritionRate}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Expected departures</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100).toFixed(1)} providers/year</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={1} title="Baseline Turnover">
+                                <CalcRow label="Total providers" value={inputs.workforce.providerCount} />
+                                <EditableCalcRow
+                                  label="Annual turnover rate"
+                                  value={inputs.workforce.baselineAttritionRate}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("baselineAttritionRate")}
+                                  typicalRange={{ min: 5, max: 15 }}
+                                  postureName="Typical"
+                                  driverName="Clinician Retention"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Clinician Retention", 
+                                    "baselineAttritionRate", 
+                                    newValue,
+                                    (prev) => ({ ...prev, workforce: { ...prev.workforce, baselineAttritionRate: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateWorkforceImpact("baselineAttritionRate", newValue)}
+                                />
+                                <CalcRow label="Expected departures" value={`${(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100).toFixed(1)} providers/year`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 2: Abridge Impact */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 2: Abridge Impact
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Expected departures</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100).toFixed(1)}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">% due to burnout/workload</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.workforce.pctAttritionLinkedToBurnout}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">% preventable with Abridge</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.workforce.pctBurnoutExitsAvoided}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Departures avoided</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100 * inputs.workforce.pctAttritionLinkedToBurnout / 100 * inputs.workforce.pctBurnoutExitsAvoided / 100).toFixed(2)} per year</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={2} title="Abridge Impact">
+                                <CalcRow label="Expected departures" value={(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100).toFixed(1)} />
+                                <CalcRow label="% due to burnout/workload" value={`${inputs.workforce.pctAttritionLinkedToBurnout}%`} />
+                                <EditableCalcRow
+                                  label="% preventable with Abridge"
+                                  value={inputs.workforce.pctBurnoutExitsAvoided}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("pctBurnoutExitsAvoided")}
+                                  typicalRange={{ min: 10, max: 30 }}
+                                  postureName="Typical"
+                                  driverName="Clinician Retention"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Clinician Retention", 
+                                    "pctBurnoutExitsAvoided", 
+                                    newValue,
+                                    (prev) => ({ ...prev, workforce: { ...prev.workforce, pctBurnoutExitsAvoided: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateWorkforceImpact("pctBurnoutExitsAvoided", newValue)}
+                                />
+                                <CalcRow label="Departures avoided" value={`${(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100 * inputs.workforce.pctAttritionLinkedToBurnout / 100 * inputs.workforce.pctBurnoutExitsAvoided / 100).toFixed(2)} per year`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 3: Cost Savings */}
-                              <div className="pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 3: Cost Savings
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Departures avoided</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100 * inputs.workforce.pctAttritionLinkedToBurnout / 100 * inputs.workforce.pctBurnoutExitsAvoided / 100).toFixed(2)}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Replacement cost per provider</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.workforce.costPerDeparture.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
-                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
-                                  </div>
-                                </div>
-                                <p className="text-[13px] text-[#6B7280] italic mt-3">
-                                  Impact timeline: Retention improvements typically measurable at 12+ months as turnover is an annual metric.
-                                </p>
-                              </div>
+                              <CalcStep stepNumber={3} title="Cost Savings" isLast={true} note="Impact timeline: Retention improvements typically measurable at 12+ months as turnover is an annual metric.">
+                                <CalcRow label="Departures avoided" value={(inputs.workforce.providerCount * inputs.workforce.baselineAttritionRate / 100 * inputs.workforce.pctAttritionLinkedToBurnout / 100 * inputs.workforce.pctBurnoutExitsAvoided / 100).toFixed(2)} />
+                                <EditableCalcRow
+                                  label="Replacement cost per provider"
+                                  value={inputs.workforce.costPerDeparture}
+                                  prefix="$"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("costPerDeparture")}
+                                  typicalRange={{ min: 200000, max: 500000 }}
+                                  postureName="Typical"
+                                  driverName="Clinician Retention"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Clinician Retention", 
+                                    "costPerDeparture", 
+                                    newValue,
+                                    (prev) => ({ ...prev, workforce: { ...prev.workforce, costPerDeparture: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateWorkforceImpact("costPerDeparture", newValue)}
+                                />
+                                <CalcRow label="Annual value" value={formatCurrency(driverValue)} isResult={true} isFinal={true} />
+                              </CalcStep>
                             </div>
 
-                            {/* Section 2: Adjust For Your Organization */}
-                            <div className="border-t border-neutral-100 pt-6">
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-6">
-                                Adjust For Your Organization
-                              </h3>
-                              
-                              <div className="space-y-8">
-                                {/* Input 1: Annual turnover rate */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Annual turnover rate
-                                  </label>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Input
-                                      type="number"
-                                      value={getLocalOrModel("baselineAttritionRate", inputs.workforce.baselineAttritionRate)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, baselineAttritionRate: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
-                                      className="w-24 font-mono"
-                                      data-testid="input-turnover-rate"
-                                    />
-                                    <span className="text-neutral-500">%</span>
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our turnover is higher/lower"</p>
-                                    <p>What this is: Percentage of providers who leave annually</p>
-                                  </div>
-                                </div>
+                            {/* Helper note */}
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                              <p className="text-xs text-amber-800">
+                                Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
+                              </p>
+                            </div>
 
-                                {/* Input 2: Replacement cost per provider */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Replacement cost per provider
-                                  </label>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-neutral-500">$</span>
-                                    <Input
-                                      type="number"
-                                      value={getLocalOrModel("costPerDeparture", inputs.workforce.costPerDeparture)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, costPerDeparture: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
-                                      className="w-40 font-mono"
-                                      data-testid="input-replacement-cost"
-                                    />
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our replacement costs differ"</p>
-                                    <p>What this is: Total cost to recruit, onboard, and ramp a new provider</p>
-                                    <p>Tip: Includes recruiting, training, lost productivity, coverage costs</p>
-                                  </div>
-                                </div>
-
-                                {/* Real-time preview */}
-                                {(localAdjustments.baselineAttritionRate !== undefined || localAdjustments.costPerDeparture !== undefined) && (() => {
-                                  const attrRate = getNumericValue("baselineAttritionRate", inputs.workforce.baselineAttritionRate);
-                                  const cost = getNumericValue("costPerDeparture", inputs.workforce.costPerDeparture);
-                                  const departures = inputs.workforce.providerCount * (attrRate / 100);
-                                  const burnoutDep = departures * (inputs.workforce.pctAttritionLinkedToBurnout / 100);
-                                  const avoided = burnoutDep * (inputs.workforce.pctBurnoutExitsAvoided / 100);
-                                  const newValue = avoided * cost;
-                                  return (
-                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                      <p className="text-sm font-semibold text-green-800">
-                                        New value: {formatCurrency(newValue)}
-                                      </p>
-                                      <p className="text-xs text-green-600 mt-1">
-                                        vs. current: {formatCurrency(driverValue)}
-                                      </p>
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-
-                              {/* Helper note */}
-                              <div className="flex items-start gap-2 mt-6 p-3 bg-amber-50 rounded-lg">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                                <p className="text-xs text-amber-800">
-                                  Why adjustable? Turnover rates and replacement costs vary by organization and specialty
-                                </p>
-                              </div>
-
-                              {/* Buttons */}
-                              <div className="flex gap-3 mt-6">
-                                <Button
-                                  variant="outline"
-                                  onClick={resetLocalAdjustments}
-                                  className="gap-2"
-                                  data-testid="button-reset-workforce"
-                                >
-                                  <RotateCcw className="h-4 w-4" />
-                                  Reset to Model Setup
-                                </Button>
-                                <Button
-                                  onClick={() => applyAdjustments("workforce", {
-                                    workforce: {
-                                      ...inputs.workforce,
-                                      baselineAttritionRate: getLocalOrModel("baselineAttritionRate", inputs.workforce.baselineAttritionRate),
-                                      costPerDeparture: getLocalOrModel("costPerDeparture", inputs.workforce.costPerDeparture),
-                                    },
-                                  })}
-                                  className="bg-[#F03319] hover:bg-[#D92D16] text-white"
-                                  data-testid="button-apply-workforce"
-                                >
-                                  Apply Changes
-                                </Button>
-                              </div>
-
-                              {/* Remove Driver */}
-                              <div className="border-t border-neutral-100 pt-6 mt-6">
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => removeDriver("workforce")}
-                                  className="gap-2 text-neutral-500 hover:text-red-600"
-                                  data-testid="button-remove-workforce"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Remove This Driver
-                                </Button>
-                              </div>
+                            {/* Remove Driver */}
+                            <div className="border-t border-neutral-100 pt-6 mt-6">
+                              <Button
+                                variant="ghost"
+                                onClick={() => removeDriver("workforce")}
+                                className="gap-2 text-neutral-500 hover:text-red-600"
+                                data-testid="button-remove-workforce"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Remove This Driver
+                              </Button>
                             </div>
                           </>
                         )}
@@ -1632,253 +1460,117 @@ export default function RoiCalculator({
                           const impactedMaPatients = Math.round(uniquePatients * (inputs.hcc.pctMedicareAdvantage / 100));
                           return (
                           <>
-                            {/* Section 1: How We Calculated This */}
+                            {/* Section 1: How We Calculated This - with inline editing */}
                             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
                               <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
                               
                               {/* Step 1: Identify MA Patient Population */}
-                              <div className="mb-6">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 1: Identify MA Patient Population
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Total annual encounters</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Average visits per unique patient</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">2.5 visits/year</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Total unique patients</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{uniquePatients.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">% Medicare Advantage</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.pctMedicareAdvantage}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Unique MA patients</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{impactedMaPatients.toLocaleString()} patients</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={1} title="Identify MA Patient Population">
+                                <CalcRow label="Total annual encounters" value={encountersWithAbridge.toLocaleString()} />
+                                <CalcRow label="Average visits per unique patient" value="2.5 visits/year" />
+                                <CalcRow label="Total unique patients" value={uniquePatients.toLocaleString()} />
+                                <EditableCalcRow
+                                  label="% Medicare Advantage"
+                                  value={inputs.hcc.pctMedicareAdvantage}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("pctMedicareAdvantage")}
+                                  typicalRange={{ min: 10, max: 50 }}
+                                  postureName="Typical"
+                                  driverName="HCC Capture"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "HCC Capture", 
+                                    "pctMedicareAdvantage", 
+                                    newValue,
+                                    (prev) => ({ ...prev, hcc: { ...prev.hcc, pctMedicareAdvantage: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateHccImpact("pctMedicareAdvantage", newValue)}
+                                />
+                                <CalcRow label="Unique MA patients" value={`${impactedMaPatients.toLocaleString()} patients`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 2: Diagnostic Documentation Gap */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 2: Diagnostic Documentation Gap
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Chronic conditions per MA patient</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.avgConditionsPerMember}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Expected total HCC-eligible conditions</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Documentation gap</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.pctConditionsMissed}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Conditions missed annually</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={2} title="Diagnostic Documentation Gap">
+                                <CalcRow label="Chronic conditions per MA patient" value={inputs.hcc.avgConditionsPerMember} />
+                                <CalcRow label="Expected total HCC-eligible conditions" value={(impactedMaPatients * inputs.hcc.avgConditionsPerMember).toLocaleString(undefined, { maximumFractionDigits: 0 })} />
+                                <CalcRow label="Documentation gap" value={`${inputs.hcc.pctConditionsMissed}%`} />
+                                <CalcRow label="Conditions missed annually" value={(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 3: Abridge Recapture */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 3: Abridge Recapture
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Conditions missed annually</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Abridge recapture rate</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.pctMissedConditionsRecaptured}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">New conditions documented</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100 * inputs.hcc.pctMissedConditionsRecaptured / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} conditions</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={3} title="Abridge Recapture">
+                                <CalcRow label="Conditions missed annually" value={(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} />
+                                <EditableCalcRow
+                                  label="Abridge recapture rate"
+                                  value={inputs.hcc.pctMissedConditionsRecaptured}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("pctMissedConditionsRecaptured")}
+                                  typicalRange={{ min: 20, max: 50 }}
+                                  postureName="Typical"
+                                  driverName="HCC Capture"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "HCC Capture", 
+                                    "pctMissedConditionsRecaptured", 
+                                    newValue,
+                                    (prev) => ({ ...prev, hcc: { ...prev.hcc, pctMissedConditionsRecaptured: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateHccImpact("pctMissedConditionsRecaptured", newValue)}
+                                />
+                                <CalcRow label="New conditions documented" value={`${(impactedMaPatients * inputs.hcc.avgConditionsPerMember * inputs.hcc.pctConditionsMissed / 100 * inputs.hcc.pctMissedConditionsRecaptured / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} conditions`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 4: RAF Score Impact */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 4: RAF Score Impact
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Average RAF weight per condition</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.hcc.rafGainPerCondition}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Realization factor</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{100 - inputs.hcc.rafRealizationHaircut}%</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={4} title="RAF Score Impact">
+                                <CalcRow label="Average RAF weight per condition" value={inputs.hcc.rafGainPerCondition} />
+                                <CalcRow label="Realization factor" value={`${100 - inputs.hcc.rafRealizationHaircut}%`} />
+                              </CalcStep>
 
                               {/* Step 5: Revenue Impact */}
-                              <div className="pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 5: Revenue Impact
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Unique MA patients</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{impactedMaPatients.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Benchmark PMPM</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.hcc.pmpmBenchmark}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
-                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={5} title="Revenue Impact" isLast={true}>
+                                <CalcRow label="Unique MA patients" value={impactedMaPatients.toLocaleString()} />
+                                <EditableCalcRow
+                                  label="Benchmark PMPM"
+                                  value={inputs.hcc.pmpmBenchmark}
+                                  prefix="$"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("pmpmBenchmark")}
+                                  typicalRange={{ min: 900, max: 1400 }}
+                                  postureName="Typical"
+                                  driverName="HCC Capture"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "HCC Capture", 
+                                    "pmpmBenchmark", 
+                                    newValue,
+                                    (prev) => ({ ...prev, hcc: { ...prev.hcc, pmpmBenchmark: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateHccImpact("pmpmBenchmark", newValue)}
+                                />
+                                <CalcRow label="Annual value" value={formatCurrency(driverValue)} isResult={true} isFinal={true} />
+                              </CalcStep>
                             </div>
 
-                            {/* Section 2: Adjust For Your Organization */}
-                            <div className="border-t border-neutral-100 pt-6">
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-6">
-                                Adjust For Your Organization
-                              </h3>
-                              
-                              <div className="space-y-8">
-                                {/* Input 1: MA percentage */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Medicare Advantage patient percentage
-                                  </label>
-                                  <div className="flex items-center gap-4 mb-2">
-                                    <Slider
-                                      value={[getNumericValue("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage)]}
-                                      onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, pctMedicareAdvantage: val }))}
-                                      min={5}
-                                      max={60}
-                                      step={1}
-                                      className="flex-1"
-                                      data-testid="slider-ma-pct"
-                                    />
-                                    <span className="text-sm font-mono text-neutral-900 w-12 text-right">
-                                      {getLocalOrModel("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage)}%
-                                    </span>
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1 mt-2">
-                                    <p>Common pushback: "Our MA population is different"</p>
-                                    <p>What this is: Percentage of patients in Medicare Advantage plans</p>
-                                  </div>
-                                </div>
+                            {/* Helper note */}
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                              <p className="text-xs text-amber-800">
+                                Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
+                              </p>
+                            </div>
 
-                                {/* Input 2: Benchmark PMPM */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Benchmark PMPM rate
-                                  </label>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-neutral-500">$</span>
-                                    <Input
-                                      type="number"
-                                      value={getLocalOrModel("pmpmBenchmark", inputs.hcc.pmpmBenchmark)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, pmpmBenchmark: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
-                                      className="w-32 font-mono"
-                                      data-testid="input-pmpm"
-                                    />
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our capitation rates differ"</p>
-                                    <p>What this is: Average per-member-per-month payment rate</p>
-                                    <p>Tip: This is county/region-specific, typically $900-$1,400</p>
-                                  </div>
-                                </div>
-
-                                {/* Real-time preview */}
-                                {(localAdjustments.pctMedicareAdvantage !== undefined || localAdjustments.pmpmBenchmark !== undefined) && (() => {
-                                  const maPct = getNumericValue("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage);
-                                  const pmpm = getNumericValue("pmpmBenchmark", inputs.hcc.pmpmBenchmark);
-                                  const maPats = Math.round(uniquePatients * (maPct / 100));
-                                  const totalConditions = maPats * inputs.hcc.avgConditionsPerMember;
-                                  const missedConditions = totalConditions * (inputs.hcc.pctConditionsMissed / 100);
-                                  const recaptured = missedConditions * (inputs.hcc.pctMissedConditionsRecaptured / 100);
-                                  const newConditions = totalConditions * (inputs.hcc.pctNewConditionsIdentified / 100);
-                                  const totalImproved = recaptured + newConditions;
-                                  const rawRafPoints = totalImproved * inputs.hcc.rafGainPerCondition;
-                                  const rawRafChange = maPats > 0 ? rawRafPoints / maPats : 0;
-                                  const adjustedRafChange = rawRafChange * (1 - inputs.hcc.rafRealizationHaircut / 100);
-                                  const newValue = maPats * adjustedRafChange * pmpm * 12;
-                                  return (
-                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                      <p className="text-sm font-semibold text-green-800">
-                                        New value: {formatCurrency(newValue)}
-                                      </p>
-                                      <p className="text-xs text-green-600 mt-1">
-                                        vs. current: {formatCurrency(driverValue)}
-                                      </p>
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-
-                              {/* Helper note */}
-                              <div className="flex items-start gap-2 mt-6 p-3 bg-amber-50 rounded-lg">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                                <p className="text-xs text-amber-800">
-                                  Why adjustable? MA population and regional payment rates vary significantly
-                                </p>
-                              </div>
-
-                              {/* Buttons */}
-                              <div className="flex gap-3 mt-6">
-                                <Button
-                                  variant="outline"
-                                  onClick={resetLocalAdjustments}
-                                  className="gap-2"
-                                  data-testid="button-reset-hcc"
-                                >
-                                  <RotateCcw className="h-4 w-4" />
-                                  Reset to Model Setup
-                                </Button>
-                                <Button
-                                  onClick={() => applyAdjustments("hcc", {
-                                    hcc: {
-                                      ...inputs.hcc,
-                                      pctMedicareAdvantage: getLocalOrModel("pctMedicareAdvantage", inputs.hcc.pctMedicareAdvantage),
-                                      pmpmBenchmark: getLocalOrModel("pmpmBenchmark", inputs.hcc.pmpmBenchmark),
-                                    },
-                                  })}
-                                  className="bg-[#F03319] hover:bg-[#D92D16] text-white"
-                                  data-testid="button-apply-hcc"
-                                >
-                                  Apply Changes
-                                </Button>
-                              </div>
-
-                              {/* Remove Driver */}
-                              <div className="border-t border-neutral-100 pt-6 mt-6">
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => removeDriver("hcc")}
-                                  className="gap-2 text-neutral-500 hover:text-red-600"
-                                  data-testid="button-remove-hcc"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Remove This Driver
-                                </Button>
-                              </div>
+                            {/* Remove Driver */}
+                            <div className="border-t border-neutral-100 pt-6 mt-6">
+                              <Button
+                                variant="ghost"
+                                onClick={() => removeDriver("hcc")}
+                                className="gap-2 text-neutral-500 hover:text-red-600"
+                                data-testid="button-remove-hcc"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Remove This Driver
+                              </Button>
                             </div>
                           </>
                         );})()}
@@ -1889,207 +1581,103 @@ export default function RoiCalculator({
                           const netCollectibleRevenue = encountersWithAbridge * inputs.denials.avgRevenuePerEncounter;
                           return (
                           <>
-                            {/* Section 1: How We Calculated This */}
+                            {/* Section 1: How We Calculated This - with inline editing */}
                             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
                               <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
                               
                               {/* Step 1: Baseline Denials */}
-                              <div className="mb-6">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 1: Baseline Denials
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Abridge-documented encounters</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Average revenue per encounter</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.denials.avgRevenuePerEncounter}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Total annual revenue</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue)}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Baseline denial rate</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.denials.baselineDenialRate}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Revenue denied annually</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)}</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={1} title="Baseline Denials">
+                                <CalcRow label="Abridge-documented encounters" value={encountersWithAbridge.toLocaleString()} />
+                                <EditableCalcRow
+                                  label="Average revenue per encounter"
+                                  value={inputs.denials.avgRevenuePerEncounter}
+                                  prefix="$"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("avgRevenuePerEncounter")}
+                                  typicalRange={{ min: 150, max: 400 }}
+                                  postureName="Typical"
+                                  driverName="Denial Reduction"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Denial Reduction", 
+                                    "avgRevenuePerEncounter", 
+                                    newValue,
+                                    (prev) => ({ ...prev, denials: { ...prev.denials, avgRevenuePerEncounter: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateDenialsImpact("avgRevenuePerEncounter", newValue)}
+                                />
+                                <CalcRow label="Total annual revenue" value={formatCurrency(netCollectibleRevenue)} />
+                                <EditableCalcRow
+                                  label="Baseline denial rate"
+                                  value={inputs.denials.baselineDenialRate}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("baselineDenialRate")}
+                                  typicalRange={{ min: 3, max: 12 }}
+                                  postureName="Typical"
+                                  driverName="Denial Reduction"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Denial Reduction", 
+                                    "baselineDenialRate", 
+                                    newValue,
+                                    (prev) => ({ ...prev, denials: { ...prev.denials, baselineDenialRate: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateDenialsImpact("baselineDenialRate", newValue)}
+                                />
+                                <CalcRow label="Revenue denied annually" value={formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 2: Documentation-Related */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 2: Documentation-Related
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Revenue denied annually</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">% documentation-related</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.denials.pctDenialsFromDocumentation}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Documentation-driven denials</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)}</span>
-                                  </div>
-                                </div>
-                                <p className="text-[13px] text-[#6B7280] italic mt-3">
-                                  These are denials attributed to insufficient or unclear documentation—often unrecoverable due to lack of medical necessity support.
-                                </p>
-                              </div>
+                              <CalcStep stepNumber={2} title="Documentation-Related" note="These are denials attributed to insufficient or unclear documentation—often unrecoverable due to lack of medical necessity support.">
+                                <CalcRow label="Revenue denied annually" value={formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100)} />
+                                <CalcRow label="% documentation-related" value={`${inputs.denials.pctDenialsFromDocumentation}%`} />
+                                <CalcRow label="Documentation-driven denials" value={formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 3: Abridge Prevention */}
-                              <div className="pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 3: Abridge Prevention
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Documentation-driven denials</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">% preventable with real-time docs</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.denials.pctDocDenialsRecovered}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
-                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={3} title="Abridge Prevention" isLast={true}>
+                                <CalcRow label="Documentation-driven denials" value={formatCurrency(netCollectibleRevenue * inputs.denials.baselineDenialRate / 100 * inputs.denials.pctDenialsFromDocumentation / 100)} />
+                                <EditableCalcRow
+                                  label="% preventable with real-time docs"
+                                  value={inputs.denials.pctDocDenialsRecovered}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("pctDocDenialsRecovered")}
+                                  typicalRange={{ min: 30, max: 60 }}
+                                  postureName="Typical"
+                                  driverName="Denial Reduction"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Denial Reduction", 
+                                    "pctDocDenialsRecovered", 
+                                    newValue,
+                                    (prev) => ({ ...prev, denials: { ...prev.denials, pctDocDenialsRecovered: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateDenialsImpact("pctDocDenialsRecovered", newValue)}
+                                />
+                                <CalcRow label="Annual value" value={formatCurrency(driverValue)} isResult={true} isFinal={true} />
+                              </CalcStep>
                             </div>
 
-                            {/* Section 2: Adjust For Your Organization */}
-                            <div className="border-t border-neutral-100 pt-6">
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-6">
-                                Adjust For Your Organization
-                              </h3>
-                              
-                              <div className="space-y-8">
-                                {/* Input 1: Baseline denial rate */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Baseline denial rate
-                                  </label>
-                                  <div className="flex items-center gap-4 mb-2">
-                                    <Slider
-                                      value={[getNumericValue("baselineDenialRate", inputs.denials.baselineDenialRate)]}
-                                      onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, baselineDenialRate: val }))}
-                                      min={3}
-                                      max={12}
-                                      step={0.5}
-                                      className="flex-1"
-                                      data-testid="slider-denial-rate"
-                                    />
-                                    <span className="text-sm font-mono text-neutral-900 w-12 text-right">
-                                      {getLocalOrModel("baselineDenialRate", inputs.denials.baselineDenialRate)}%
-                                    </span>
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our denial rate is different"</p>
-                                    <p>What this is: Percentage of submitted claims initially denied</p>
-                                  </div>
-                                </div>
+                            {/* Helper note */}
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                              <p className="text-xs text-amber-800">
+                                Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
+                              </p>
+                            </div>
 
-                                {/* Input 2: Avg revenue per encounter */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Average revenue per encounter
-                                  </label>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-neutral-500">$</span>
-                                    <Input
-                                      type="number"
-                                      value={getLocalOrModel("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, avgRevenuePerEncounter: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
-                                      className="w-32 font-mono"
-                                      data-testid="input-avg-revenue"
-                                    />
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our reimbursement is different"</p>
-                                    <p>What this is: Average net collectible revenue per visit</p>
-                                  </div>
-                                </div>
-
-                                {/* Real-time preview */}
-                                {(localAdjustments.baselineDenialRate !== undefined || localAdjustments.avgRevenuePerEncounter !== undefined) && (() => {
-                                  const avgRev = getNumericValue("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter);
-                                  const revenue = encountersWithAbridge * avgRev;
-                                  const denialRate = getNumericValue("baselineDenialRate", inputs.denials.baselineDenialRate);
-                                  const baselineDenied = revenue * (denialRate / 100);
-                                  const docDenied = baselineDenied * (inputs.denials.pctDenialsFromDocumentation / 100);
-                                  const newValue = docDenied * (inputs.denials.pctDocDenialsRecovered / 100);
-                                  return (
-                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                      <p className="text-sm font-semibold text-green-800">
-                                        New value: {formatCurrency(newValue)}
-                                      </p>
-                                      <p className="text-xs text-green-600 mt-1">
-                                        vs. current: {formatCurrency(driverValue)}
-                                      </p>
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-
-                              {/* Helper note */}
-                              <div className="flex items-start gap-2 mt-6 p-3 bg-amber-50 rounded-lg">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                                <p className="text-xs text-amber-800">
-                                  Why adjustable? Denial rates vary by specialty and payer mix
-                                </p>
-                              </div>
-
-                              {/* Buttons */}
-                              <div className="flex gap-3 mt-6">
-                                <Button
-                                  variant="outline"
-                                  onClick={resetLocalAdjustments}
-                                  className="gap-2"
-                                  data-testid="button-reset-denials"
-                                >
-                                  <RotateCcw className="h-4 w-4" />
-                                  Reset to Model Setup
-                                </Button>
-                                <Button
-                                  onClick={() => applyAdjustments("denials", {
-                                    denials: {
-                                      ...inputs.denials,
-                                      baselineDenialRate: getLocalOrModel("baselineDenialRate", inputs.denials.baselineDenialRate),
-                                      avgRevenuePerEncounter: getLocalOrModel("avgRevenuePerEncounter", inputs.denials.avgRevenuePerEncounter),
-                                    },
-                                  })}
-                                  className="bg-[#F03319] hover:bg-[#D92D16] text-white"
-                                  data-testid="button-apply-denials"
-                                >
-                                  Apply Changes
-                                </Button>
-                              </div>
-
-                              {/* Remove Driver */}
-                              <div className="border-t border-neutral-100 pt-6 mt-6">
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => removeDriver("denials")}
-                                  className="gap-2 text-neutral-500 hover:text-red-600"
-                                  data-testid="button-remove-denials"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Remove This Driver
-                                </Button>
-                              </div>
+                            {/* Remove Driver */}
+                            <div className="border-t border-neutral-100 pt-6 mt-6">
+                              <Button
+                                variant="ghost"
+                                onClick={() => removeDriver("denials")}
+                                className="gap-2 text-neutral-500 hover:text-red-600"
+                                data-testid="button-remove-denials"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Remove This Driver
+                              </Button>
                             </div>
                           </>
                         );})()}
@@ -2101,199 +1689,87 @@ export default function RoiCalculator({
                           const overtimeHoursReduced = afterHoursReclaimed * (inputs.overtime.pctOvertimeReduced / 100);
                           return (
                           <>
-                            {/* Section 1: How We Calculated This */}
+                            {/* Section 1: How We Calculated This - with inline editing */}
                             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
                               <h3 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                                 How We Calculated This
                               </h3>
                               
                               {/* Step 1: Hours Returned */}
-                              <div className="mb-6">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 1: Hours Returned
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Minutes saved per encounter</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.minutesSavedPerEncounter} min</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Documented encounters</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{encountersWithAbridge.toLocaleString()}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Total hours returned</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={1} title="Hours Returned">
+                                <CalcRow label="Minutes saved per encounter" value={`${inputs.minutesSavedPerEncounter} min`} />
+                                <CalcRow label="Documented encounters" value={encountersWithAbridge.toLocaleString()} />
+                                <CalcRow label="Total hours returned" value={`${totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 2: After-Hours Reduction */}
-                              <div className="mb-6 pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 2: After-Hours Reduction
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Total hours returned</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">% after-hours documentation</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.overtime.pctAfterHours}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">% converted to OT avoidance</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{inputs.overtime.pctOvertimeReduced}%</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280]">Premium labor hours avoided</span>
-                                    <span className="text-[16px] text-[#E8532F] font-semibold tabular-nums">{overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={2} title="After-Hours Reduction">
+                                <CalcRow label="Total hours returned" value={`${totalHoursReclaimed.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs`} />
+                                <CalcRow label="% after-hours documentation" value={`${inputs.overtime.pctAfterHours}%`} />
+                                <EditableCalcRow
+                                  label="% converted to OT avoidance"
+                                  value={inputs.overtime.pctOvertimeReduced}
+                                  unit="%"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("pctOvertimeReduced")}
+                                  typicalRange={{ min: 10, max: 50 }}
+                                  postureName="Typical"
+                                  driverName="Overtime Savings"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Overtime Savings", 
+                                    "pctOvertimeReduced", 
+                                    newValue,
+                                    (prev) => ({ ...prev, overtime: { ...prev.overtime, pctOvertimeReduced: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateOvertimeImpact("pctOvertimeReduced", newValue)}
+                                />
+                                <CalcRow label="Premium labor hours avoided" value={`${overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })} hrs`} isResult={true} />
+                              </CalcStep>
 
                               {/* Step 3: Cost Savings */}
-                              <div className="pt-6 border-t border-[#E5E7EB]">
-                                <h4 className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                                  Step 3: Cost Savings
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Premium hours avoided</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">{overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline">
-                                    <span className="text-[14px] text-[#6B7280]">Blended premium rate</span>
-                                    <span className="text-[16px] text-[#111827] font-semibold tabular-nums">${inputs.overtime.blendedOvertimeRate}/hr</span>
-                                  </div>
-                                  <div className="flex justify-between items-baseline pt-2 border-t border-[#E5E7EB]">
-                                    <span className="text-[14px] text-[#6B7280] font-semibold">Annual value</span>
-                                    <span className="text-[16px] text-[#E8532F] font-bold tabular-nums">{formatCurrency(driverValue)}</span>
-                                  </div>
-                                </div>
-                              </div>
+                              <CalcStep stepNumber={3} title="Cost Savings" isLast={true}>
+                                <CalcRow label="Premium hours avoided" value={overtimeHoursReduced.toLocaleString(undefined, { maximumFractionDigits: 0 })} />
+                                <EditableCalcRow
+                                  label="Blended premium rate"
+                                  value={inputs.overtime.blendedOvertimeRate}
+                                  prefix="$"
+                                  unit="/hr"
+                                  isEditable={true}
+                                  isCustomized={customizedValues.has("blendedOvertimeRate")}
+                                  typicalRange={{ min: 75, max: 150 }}
+                                  postureName="Typical"
+                                  driverName="Overtime Savings"
+                                  onSave={(newValue) => saveInlineValue(
+                                    "Overtime Savings", 
+                                    "blendedOvertimeRate", 
+                                    newValue,
+                                    (prev) => ({ ...prev, overtime: { ...prev.overtime, blendedOvertimeRate: newValue } })
+                                  )}
+                                  calculateImpact={(newValue) => calculateOvertimeImpact("blendedOvertimeRate", newValue)}
+                                />
+                                <CalcRow label="Annual value" value={formatCurrency(driverValue)} isResult={true} isFinal={true} />
+                              </CalcStep>
                             </div>
 
-                            {/* Section 2: Adjust For Your Organization */}
-                            <div className="border-t border-neutral-100 pt-6">
-                              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-6">
-                                Adjust For Your Organization
-                              </h3>
-                              
-                              <div className="space-y-8">
-                                {/* Input 1: Overtime reduction percentage */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Percent of time converted to OT avoidance
-                                  </label>
-                                  <div className="flex items-center gap-4 mb-2">
-                                    <Slider
-                                      value={[getNumericValue("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced)]}
-                                      onValueChange={([val]) => setLocalAdjustments((prev) => ({ ...prev, pctOvertimeReduced: val }))}
-                                      min={5}
-                                      max={50}
-                                      step={5}
-                                      className="flex-1"
-                                      data-testid="slider-ot-pct"
-                                    />
-                                    <span className="text-sm font-mono text-neutral-900 w-12 text-right">
-                                      {getLocalOrModel("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced)}%
-                                    </span>
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "We don't have much overtime"</p>
-                                    <p>What this is: Share of reclaimed time that reduces premium labor</p>
-                                  </div>
-                                </div>
+                            {/* Helper note */}
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                              <p className="text-xs text-amber-800">
+                                Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
+                              </p>
+                            </div>
 
-                                {/* Input 2: Blended overtime rate */}
-                                <div>
-                                  <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                                    Blended overtime rate
-                                  </label>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-neutral-500">$</span>
-                                    <Input
-                                      type="number"
-                                      value={getLocalOrModel("blendedOvertimeRate", inputs.overtime.blendedOvertimeRate)}
-                                      onChange={(e) => setLocalAdjustments((prev) => ({ ...prev, blendedOvertimeRate: e.target.value === '' ? '' : parseFloat(e.target.value) }))}
-                                      className="w-32 font-mono"
-                                      data-testid="input-ot-rate"
-                                    />
-                                    <span className="text-neutral-500">/hr</span>
-                                  </div>
-                                  <div className="text-xs text-neutral-500 space-y-1">
-                                    <p>Common pushback: "Our rates are different"</p>
-                                    <p>What this is: Average loaded cost of premium labor hours</p>
-                                  </div>
-                                </div>
-
-                                {/* Real-time preview */}
-                                {(localAdjustments.pctOvertimeReduced !== undefined || localAdjustments.blendedOvertimeRate !== undefined) && (() => {
-                                  const otPct = getNumericValue("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced);
-                                  const otRate = getNumericValue("blendedOvertimeRate", inputs.overtime.blendedOvertimeRate);
-                                  const otHoursAvoided = afterHoursReclaimed * (otPct / 100);
-                                  const newValue = otHoursAvoided * otRate;
-                                  return (
-                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                      <p className="text-sm font-semibold text-green-800">
-                                        New value: {formatCurrency(newValue)}
-                                      </p>
-                                      <p className="text-xs text-green-600 mt-1">
-                                        vs. current: {formatCurrency(driverValue)}
-                                      </p>
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-
-                              {/* Helper note */}
-                              <div className="flex items-start gap-2 mt-6 p-3 bg-amber-50 rounded-lg">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                                <p className="text-xs text-amber-800">
-                                  Why adjustable? Overtime patterns vary by organization and specialty
-                                </p>
-                              </div>
-
-                              {/* Buttons */}
-                              <div className="flex gap-3 mt-6">
-                                <Button
-                                  variant="outline"
-                                  onClick={resetLocalAdjustments}
-                                  className="gap-2"
-                                  data-testid="button-reset-overtime"
-                                >
-                                  <RotateCcw className="h-4 w-4" />
-                                  Reset to Model Setup
-                                </Button>
-                                <Button
-                                  onClick={() => applyAdjustments("overtime", {
-                                    overtime: {
-                                      ...inputs.overtime,
-                                      pctOvertimeReduced: getLocalOrModel("pctOvertimeReduced", inputs.overtime.pctOvertimeReduced),
-                                      blendedOvertimeRate: getLocalOrModel("blendedOvertimeRate", inputs.overtime.blendedOvertimeRate),
-                                    },
-                                  })}
-                                  className="bg-[#F03319] hover:bg-[#D92D16] text-white"
-                                  data-testid="button-apply-overtime"
-                                >
-                                  Apply Changes
-                                </Button>
-                              </div>
-
-                              {/* Remove Driver */}
-                              <div className="border-t border-neutral-100 pt-6 mt-6">
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => removeDriver("overtime")}
-                                  className="gap-2 text-neutral-500 hover:text-red-600"
-                                  data-testid="button-remove-overtime"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Remove This Driver
-                                </Button>
-                              </div>
+                            {/* Remove Driver */}
+                            <div className="border-t border-neutral-100 pt-6 mt-6">
+                              <Button
+                                variant="ghost"
+                                onClick={() => removeDriver("overtime")}
+                                className="gap-2 text-neutral-500 hover:text-red-600"
+                                data-testid="button-remove-overtime"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Remove This Driver
+                              </Button>
                             </div>
                           </>
                         );})()}
