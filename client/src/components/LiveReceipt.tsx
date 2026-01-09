@@ -32,13 +32,13 @@ interface LiveReceiptProps {
 
 const DRIVER_LABELS: Record<string, string> = {
   patientAccess: "Patient Access",
-  wrvu: "Level of Service",
+  wrvu: "Accurate Level of Service",
   workforce: "Clinician Retention",
-  hccCapture: "HCC Capture",
-  hcc: "HCC Capture",
-  denialReduction: "Denial Reduction",
-  denials: "Denial Reduction",
-  overtime: "Overtime Savings",
+  hccCapture: "HCC & Chronic Condition Capture",
+  hcc: "HCC & Chronic Condition Capture",
+  denialReduction: "Documentation Related Denials",
+  denials: "Documentation Related Denials",
+  overtime: "Overtime & Locum Cost Savings",
 };
 
 function formatCurrency(value: number | null | undefined, showSign = false): string {
