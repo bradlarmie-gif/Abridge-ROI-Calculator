@@ -1251,14 +1251,14 @@ export default function RoiCalculator({
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Card 1: Deep Dive */}
+                {/* Card 1: Deep Dive - Purple/Indigo for analysis */}
                 <button
                   onClick={() => setActiveTab("detailed")}
-                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
+                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#7C3AED] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-deep-dive"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
-                    <Search className="h-5 w-5 text-[#2563EB]" />
+                  <div className="w-10 h-10 rounded-full bg-[#EDE9FE] flex items-center justify-center mb-3 group-hover:bg-[#DDD6FE] transition-colors">
+                    <Search className="h-5 w-5 text-[#7C3AED]" />
                   </div>
                   <h3 className="text-base font-semibold text-neutral-900 mb-1">
                     Deep Dive
@@ -1268,14 +1268,14 @@ export default function RoiCalculator({
                   </p>
                 </button>
 
-                {/* Card 2: Model Scenarios */}
+                {/* Card 2: Model Scenarios - Teal/Emerald for growth */}
                 <button
                   onClick={() => setActiveTab("scenarios")}
-                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
+                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#059669] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-scenarios"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
-                    <TrendingUp className="h-5 w-5 text-[#2563EB]" />
+                  <div className="w-10 h-10 rounded-full bg-[#D1FAE5] flex items-center justify-center mb-3 group-hover:bg-[#A7F3D0] transition-colors">
+                    <TrendingUp className="h-5 w-5 text-[#059669]" />
                   </div>
                   <h3 className="text-base font-semibold text-neutral-900 mb-1">
                     Model Scenarios
@@ -1285,14 +1285,14 @@ export default function RoiCalculator({
                   </p>
                 </button>
 
-                {/* Card 3: Export PDF */}
+                {/* Card 3: Export PDF - Abridge Red for action */}
                 <button
                   onClick={() => setActiveTab("export")}
-                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
+                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#F03319] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-export"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
-                    <Download className="h-5 w-5 text-[#2563EB]" />
+                  <div className="w-10 h-10 rounded-full bg-[#FEE2E2] flex items-center justify-center mb-3 group-hover:bg-[#FECACA] transition-colors">
+                    <Download className="h-5 w-5 text-[#F03319]" />
                   </div>
                   <h3 className="text-base font-semibold text-neutral-900 mb-1">
                     Export PDF
