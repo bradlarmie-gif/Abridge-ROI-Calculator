@@ -85,6 +85,53 @@ const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
   documentation: FileText,
 };
 
+const CATEGORY_SUBTITLES: Record<LeverCategory, string> = {
+  time: "Workforce efficiency and utilization",
+  documentation: "Clinical and financial accuracy",
+};
+
+const LEVER_ICONS: Record<string, typeof Users> = {
+  patientAccess: Users,
+  overtime: Clock,
+  workforce: Users,
+  retention: HeartPulse,
+  wrvu: BarChart3,
+  hcc: Building2,
+  denials: AlertTriangle,
+  hccCapture: Building2,
+  denialReduction: AlertTriangle,
+  edThroughput: Zap,
+  edStaffingEfficiency: Clock,
+  edRetention: HeartPulse,
+  edLevelOfService: BarChart3,
+  edDocCompliance: FileText,
+  rnDocTime: Clock,
+  rnCommunication: Users,
+  rnSafetyReduction: AlertTriangle,
+  rnDiagnosisSeverity: Building2,
+};
+
+const LEVER_KEY_METRICS: Record<string, string> = {
+  patientAccess: "New visits enabled",
+  overtime: "Premium labor hours avoided",
+  workforce: "Staff hours reclaimed",
+  retention: "Provider departures avoided",
+  wrvu: "wRVU capture improvement",
+  hcc: "RAF score lift",
+  denials: "Documentation-related denials prevented",
+  hccCapture: "RAF score lift",
+  denialReduction: "Documentation-related denials prevented",
+  edThroughput: "Additional patients per day",
+  edStaffingEfficiency: "Staff hours saved",
+  edRetention: "Staff departures avoided",
+  edLevelOfService: "Level accuracy improvement",
+  edDocCompliance: "Documentation compliance rate",
+  rnDocTime: "Documentation time saved",
+  rnCommunication: "Handoff efficiency improvement",
+  rnSafetyReduction: "Safety events prevented",
+  rnDiagnosisSeverity: "DRG accuracy improvement",
+};
+
 const ALL_SETTINGS: AllSettingType[] = [
   "outpatient",
   "ed",
@@ -622,6 +669,9 @@ function PriorityCard({
   isSelected: boolean;
   onToggle: () => void;
 }) {
+  const LeverIcon = LEVER_ICONS[lever.id] || FileText;
+  const keyMetric = LEVER_KEY_METRICS[lever.id];
+
   return (
     <div
       role="button"
@@ -633,34 +683,45 @@ function PriorityCard({
           onToggle();
         }
       }}
-      className={`group relative w-full text-left cursor-pointer rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#F03319]/25 ${
+      className={`group relative w-full text-left cursor-pointer rounded-lg transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#E8532F]/25 ${
         isSelected
-          ? "bg-[#FFF7F5] ring-1 ring-[#F03319]/20 shadow-sm"
-          : "bg-white/80 hover:bg-white border border-neutral-200/50 hover:border-neutral-200"
+          ? "bg-white border border-[#E8532F] shadow-[0_2px_4px_rgba(0,0,0,0.08)]"
+          : "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F]"
       }`}
       data-testid={`priority-card-${lever.id}`}
     >
       {isSelected && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#F03319] rounded-l-2xl" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#E8532F] rounded-l-lg" />
       )}
 
-      <div className="px-6 py-4">
-        <div className="flex items-start gap-3">
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className={`flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0 ${
+              isSelected ? "bg-[#E8532F]/10" : "bg-neutral-100"
+            }`}>
+              <LeverIcon className={`w-5 h-5 ${isSelected ? "text-[#E8532F]" : "text-neutral-600"}`} />
+            </div>
+            <div className="flex-1 min-w-0 pt-0.5">
+              <h4 className="text-base font-medium text-[#111827] leading-snug">
+                {lever.label}
+              </h4>
+              <p className="mt-2 text-sm text-[#6B7280] leading-relaxed">
+                {lever.description}
+              </p>
+              {keyMetric && (
+                <p className="mt-2 text-[13px] text-[#6B7280] italic">
+                  Key metric: {keyMetric}
+                </p>
+              )}
+            </div>
+          </div>
           <Checkbox
             checked={isSelected}
             onCheckedChange={onToggle}
-            className="mt-0.5 flex-shrink-0"
+            className={`flex-shrink-0 mt-1 ${isSelected ? "border-[#E8532F] data-[state=checked]:bg-[#E8532F]" : ""}`}
             data-testid={`checkbox-${lever.id}`}
           />
-
-          <div className="flex-1 min-w-0">
-            <h4 className="text-base font-medium text-neutral-900 leading-snug">
-              {lever.label}
-            </h4>
-            <p className="mt-1 text-sm text-neutral-500 leading-relaxed line-clamp-1">
-              {lever.description}
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -1660,16 +1721,19 @@ export default function ObjectiveSelectionScreen({
     const CategoryIcon = CATEGORY_ICONS[category];
     const categoryLabel =
       category === "time" ? "Capacity & Labor" : "Revenue & Risk";
+    const categorySubtitle = CATEGORY_SUBTITLES[category];
 
     return (
-      <div key={category} className={isFirst ? "" : "mt-8"}>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200/60">
-            <CategoryIcon className="h-3.5 w-3.5 text-neutral-600" />
-            <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+      <div key={category} className={isFirst ? "mt-8" : "mt-12"}>
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-1">
+            <CategoryIcon className="h-4 w-4 text-[#111827]" />
+            <span className="text-sm font-semibold text-[#111827] uppercase tracking-[0.05em]">
               {categoryLabel}
             </span>
           </div>
+          <p className="text-sm text-[#6B7280] italic">{categorySubtitle}</p>
+          <div className="border-b border-[#E5E7EB] mt-3" />
         </div>
         <div className="space-y-3">
           {levers.map((lever) => (
@@ -1922,29 +1986,32 @@ export default function ObjectiveSelectionScreen({
 
         {/* PAGE 2 — STRATEGIC PRIORITIES */}
         {currentPage === "priorities" && selectedSetting && (
-          <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-10 md:py-14">
+          <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-8 md:py-12">
+            <button
+              onClick={handleBackToPage1}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70 mb-6"
+              data-testid="button-back-to-setting"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+
+            <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-6">
+              Strategic Priorities
+            </h2>
+            
+            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
+              <p className="text-lg font-semibold text-[#111827] mb-2">What outcomes matter most right now?</p>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
+                Select 2-6 strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
+              </p>
+              <p className="text-[13px] text-[#6B7280] mt-4 flex items-center gap-1.5">
+                <BarChart3 className="w-3.5 h-3.5" /> Based on proven methodologies from 200+ health system partners
+              </p>
+            </div>
+
             <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
               <div>
-                <div className="mb-10">
-                  <button
-                    onClick={handleBackToPage1}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
-                    data-testid="button-back-to-setting"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </button>
-
-                  <div className="mt-4">
-                    <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight">
-                      Strategic Priorities
-                    </h2>
-                    <p className="mt-2 text-lg text-neutral-600 leading-relaxed">
-                      What outcomes matter most right now?
-                    </p>
-                  </div>
-                </div>
-
                 {leversByCategory && (
                   <div>
                     {renderCategorySection("time", leversByCategory.time, true)}
@@ -1955,25 +2022,119 @@ export default function ObjectiveSelectionScreen({
                     )}
                   </div>
                 )}
+                
+                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 mt-8">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Lightbulb className="w-4 h-4 text-[#111827]" />
+                    <h3 className="text-sm font-medium text-[#111827]">Selecting your priorities</h3>
+                  </div>
+                  <p className="text-sm text-[#6B7280] leading-relaxed">
+                    Most organizations select 3-4 drivers. Fewer creates a focused model that's easier to present; more provides comprehensive analysis across multiple value streams.
+                  </p>
+                  <p className="text-sm text-[#6B7280] leading-relaxed mt-3">
+                    You'll see detailed calculations for each selected driver in the next step.
+                  </p>
+                </div>
               </div>
+              
               <div className="hidden lg:block">
-                <div className="sticky top-8">
-                  <ModelSummaryPanel
-                    selectedSetting={selectedSetting}
-                    selectedLeverIds={selectedLeverIds}
-                    onContinue={handleContinueToPage3}
-                    canContinue={canContinuePage2}
-                    showCta={true}
-                  />
+                <div className="sticky top-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-[#E5E7EB]">
+                    <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
+                      Your Selections
+                    </h3>
+                  </div>
+                  
+                  <div className="p-6">
+                    <div className="mb-5 pb-5 border-b border-[#E5E7EB]">
+                      <p className="text-xs font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-2">
+                        Care Setting
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-medium text-[#111827]">
+                          {CARE_SETTING_LABELS[selectedSetting]}
+                        </span>
+                        <Check className="w-4 h-4 text-[#E8532F]" />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-xs font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-1">
+                        Strategic Priorities
+                      </p>
+                      <p className="text-[13px] text-[#6B7280] mb-4">Select 2-6 drivers</p>
+                      
+                      {selectedLeverIds.size < 2 ? (
+                        <p className="text-sm text-[#6B7280] leading-relaxed">
+                          Choose at least 2 drivers to continue
+                        </p>
+                      ) : (
+                        <>
+                          <ul className="space-y-2 mb-4">
+                            {Array.from(selectedLeverIds).map((leverId) => {
+                              const lever = SETTING_CONFIG[selectedSetting]?.find((l: LeverConfig) => l.id === leverId);
+                              if (!lever) return null;
+                              return (
+                                <li key={leverId} className="flex items-center gap-2 text-sm text-[#111827]">
+                                  <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0" />
+                                  <span>{lever.label}</span>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                          <p className="text-[13px] text-[#6B7280]">
+                            {selectedLeverIds.size} of 6 selected
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-[#E5E7EB] px-6 py-5">
+                    <button
+                      type="button"
+                      disabled={!canContinuePage2}
+                      onClick={handleContinueToPage3}
+                      className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                        canContinuePage2
+                          ? "bg-[#111827] text-white hover:bg-[#E8532F]"
+                          : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
+                      }`}
+                      data-testid="button-continue-to-blueprint"
+                    >
+                      Continue
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="lg:hidden mt-8">
-              <ModelSummaryPanel
-                selectedSetting={selectedSetting}
-                selectedLeverIds={selectedLeverIds}
-                showCta={false}
-              />
+            
+            {/* Mobile sticky bottom bar */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-2px_8px_rgba(0,0,0,0.1)] px-4 py-4 z-50">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm text-[#6B7280]">
+                  {selectedLeverIds.size > 0 ? (
+                    <span className="text-[#111827] font-medium">{selectedLeverIds.size} driver{selectedLeverIds.size !== 1 ? 's' : ''} selected</span>
+                  ) : (
+                    "Select at least 2 drivers"
+                  )}
+                </span>
+                <button
+                  type="button"
+                  disabled={!canContinuePage2}
+                  onClick={handleContinueToPage3}
+                  className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                    canContinuePage2
+                      ? "bg-[#111827] text-white hover:bg-[#E8532F]"
+                      : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
+                  }`}
+                  data-testid="button-continue-to-blueprint-mobile"
+                >
+                  Continue
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         )}
