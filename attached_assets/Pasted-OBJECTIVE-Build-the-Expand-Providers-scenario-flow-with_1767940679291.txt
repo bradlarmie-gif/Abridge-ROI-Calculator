@@ -1,0 +1,625 @@
+OBJECTIVE:
+Build the "Expand Providers" scenario flow with both Quick Mode (simple, fast) and Advanced Mode (organization-specific, CFO-defensible). User clicks "Expand Providers" from the scenario type cards and enters this flow.
+
+CRITICAL RULES:
+- Match existing brand colors and typography exactly
+- Use same input styling as Adoption page and Fine-Tune section
+- Real-time preview updates as user changes inputs
+- Quick Mode by default, Advanced Mode optional
+- All calculations must be live and accurate
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: FLOW ENTRY
+
+When user clicks "Expand Providers" card from main Scenario Builder page:
+- Open as a full-page view (not modal)
+- Show back navigation to return to Scenario Builder
+- Pre-populate with current baseline values
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: PAGE HEADER
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ← Back to Scenario Builder                                      │
+│                                                                 │
+│ EXPAND PROVIDERS                                                │
+│ Model what happens when you add more users to your deployment   │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 Your baseline: 50 providers | 65,000 encounters |       │ │
+│ │    $391,802 net gain                                        │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Back link:
+- "← Back to Scenario Builder"
+- Font: 14px, #E8532F (orange)
+- Hover: Underline
+- Margin-bottom: 24px
+
+Page title:
+- "EXPAND PROVIDERS": 14px, #E8532F (orange), uppercase, letter-spacing 0.05em, bold
+- Subtitle: 16px, #6B7280 (gray)
+- Margin-bottom: 16px
+
+Baseline reference box:
+- Background: #F9FAFB (light gray)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 16px
+- Font: 14px, #6B7280 (gray)
+- Icon: 📊
+- Margin-bottom: 32px
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: MODE TOGGLE
+
+Allow switching between Quick and Advanced modes:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│ ● Quick Mode                    ○ Advanced Mode                 │
+│   Fast estimate with             Organization-specific          │
+│   typical assumptions            inputs for precision           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Mode toggle container:
+- Display: Flex, two options side by side
+- Background: #F9FAFB (light gray)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 4px
+- Margin-bottom: 32px
+
+Mode option (unselected):
+- Background: Transparent
+- Padding: 16px 24px
+- Border-radius: 6px
+- Cursor: pointer
+
+Mode option (selected):
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+
+Mode label:
+- Font: 14px, #111827 (black), bold
+- Selected: Add orange dot (●) before text
+
+Mode description:
+- Font: 13px, #6B7280 (gray)
+- Margin-top: 4px
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: QUICK MODE INTERFACE
+
+Default view - simple inputs:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│ SCENARIO NAME                                                   │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ Expand to 100 providers                                     │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│ Give this scenario a descriptive name                          │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ DEPLOYMENT SIZE                                                 │
+│                                                                 │
+│ Providers in scope                                              │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 100                                                         │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│ Currently: 50 providers (+100% increase)                       │
+│                                                                 │
+│                                                                 │
+│ Annual encounters                                               │
+│                                                                 │
+│ ● Scale proportionally from baseline                           │
+│   100 providers × 1,300 encounters/provider = 130,000          │
+│                                                                 │
+│ ○ Enter custom volume                                          │
+│   ┌───────────────────────────────────────────────────────────┐│
+│   │ [disabled until selected]                                 ││
+│   └───────────────────────────────────────────────────────────┘│
+│   Use if you have specific volume projections                  │
+│                                                                 │
+│                                                                 │
+│ UTILIZATION PROJECTION                                          │
+│                                                                 │
+│ Expected utilization rate                                       │
+│ ├─────────────────────●─────────────────────────┤              │
+│                                                        75%      │
+│                                                                 │
+│ 65% (current) → 75% (projected)                                │
+│                                                                 │
+│ 💡 Utilization typically increases as teams mature:            │
+│    • Pilot (0-3 mo): 40-50%                                    │
+│    • Early (3-6 mo): 50-65%                                    │
+│    • Mature (6-12 mo): 65-80%                                  │
+│    • Optimized (12+ mo): 75-90%                                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section headers (SCENARIO NAME, DEPLOYMENT SIZE, etc.):
+- Font: 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-bottom: 12px
+- Margin-top: 32px (except first)
+
+Input fields:
+- Height: 44px
+- Border: 1px solid #E5E7EB
+- Border-radius: 6px
+- Padding: 12px
+- Font: 16px, #111827 (black)
+- Focus: Border #E8532F, shadow 0 0 0 3px rgba(232, 83, 47, 0.1)
+- Width: 100% for scenario name, 200px for numeric inputs
+
+Input helper text:
+- Font: 13px, #6B7280 (gray)
+- Margin-top: 6px
+
+Change indicator ("+100% increase"):
+- Font: 13px, #059669 (green)
+
+Radio options:
+- Circle: 18px
+- Selected: #E8532F fill (orange)
+- Unselected: Border 2px solid #E5E7EB
+- Label: 14px, #111827 (black)
+- Description: 13px, #6B7280 (gray)
+- Spacing: 12px between options
+
+Calculated value display:
+- "100 providers × 1,300 encounters/provider = 130,000"
+- Font: 14px, #111827 (black)
+- "130,000" in bold
+
+Slider (utilization):
+- Track: 4px height, #E5E7EB background
+- Filled track: #E8532F (orange)
+- Thumb: 20px circle, white fill, 2px #E8532F border, shadow
+- Value display: 18px, #111827 (black), bold, right-aligned
+
+Info box (utilization tips):
+- Background: #EFF6FF (light blue)
+- Border: 1px solid #BFDBFE
+- Border-radius: 8px
+- Padding: 16px
+- Font: 13px, #1E40AF (blue text)
+- Icon: 💡
+- Margin-top: 12px
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: ADVANCED MODE INTERFACE
+
+When user switches to Advanced Mode, show additional inputs:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│ [All Quick Mode inputs above, PLUS:]                           │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│ PROVIDER BREAKDOWN                                              │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ Break down by provider type for more accurate calculations     │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ Primary Care Physicians                                     │ │
+│ │ Count: [40____]                                             │ │
+│ │ Avg encounters/year: 1,800 | Avg wRVU: 1.2                 │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ Specialists                                                 │ │
+│ │ Count: [35____]                                             │ │
+│ │ Avg encounters/year: 1,200 | Avg wRVU: 2.1                 │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ NPs / PAs                                                   │ │
+│ │ Count: [25____]                                             │ │
+│ │ Avg encounters/year: 1,500 | Avg wRVU: 0.85                │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ [+ Add Provider Type]                                       │ │
+│ │                                                             │ │
+│ │ ═════════════════════════════════════════════════════════  │ │
+│ │ Total: 100 providers                                        │ │
+│ │ Calculated encounters: 148,500                              │ │
+│ │ Blended wRVU: 1.42                                         │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│ ADOPTION TIMELINE                                               │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ When would this expansion go live?                              │
+│                                                                 │
+│ ○ Q1 2025 (in ~3 months)                                       │
+│ ○ Q2 2025 (in ~6 months)                                       │
+│ ● Q3 2025 (in ~9 months)                                       │
+│ ○ Q4 2025 (in ~12 months)                                      │
+│ ○ Custom date: [__________]                                    │
+│                                                                 │
+│ ⚠️ This affects Year 1 calculations (partial year)             │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│ FINANCIAL PARAMETERS                                            │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ Override with your organization's actual values:               │
+│                                                                 │
+│ Revenue per visit                                               │
+│ $ [185______]                                                   │
+│ Your net collectible per completed visit                       │
+│ Baseline: $200 | Typical range: $150-350                       │
+│                                                                 │
+│ Revenue per wRVU                                                │
+│ $ [42_______]                                                   │
+│ Your organization's conversion factor                          │
+│ Baseline: $40 | Typical range: $30-80                          │
+│                                                                 │
+│ Provider replacement cost                                       │
+│ $ [275,000__]                                                   │
+│ Recruiting + onboarding + lost productivity                    │
+│ Baseline: $250,000 | Typical range: $200k-400k                 │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│ PAYER MIX                                                       │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ Medicare Advantage population                                   │
+│ ├───────●───────────────────────────────────────┤ 22%          │
+│ Affects HCC Capture calculations                               │
+│ Baseline: 15% | Your region may differ                         │
+│                                                                 │
+│ Benchmark PMPM (your county)                                    │
+│ $ [1,150____]                                                   │
+│ Find yours at cms.gov/medicare-health-plans                    │
+│ Baseline: $1,000                                               │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│ CURRENT PERFORMANCE                                             │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ Your actual turnover rate                                       │
+│ [7____] %                                                       │
+│ Baseline: 5% | National average: 6-8%                          │
+│                                                                 │
+│ Your actual denial rate                                         │
+│ [6____] %                                                       │
+│ Baseline: 5% | Industry average: 5-10%                         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Advanced section headers:
+- All caps, #6B7280, letter-spacing, with horizontal rule below
+- Same style as Fine-Tune section in Value Realization
+
+Provider breakdown card:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+
+Provider type rows:
+- Label: 14px, #111827 (black), bold
+- Count input: 80px width
+- Metrics line: 13px, #6B7280 (gray)
+- Divider between types: 1px solid #E5E7EB
+
+"+ Add Provider Type" button:
+- Font: 14px, #E8532F (orange)
+- Icon: +
+- Hover: Underline
+
+Calculated totals:
+- Background: #F9FAFB (light gray)
+- Padding: 12px
+- Border-radius: 6px
+- Font: 14px, #111827 (black)
+- Bold values
+
+Timeline radio options:
+- Same styling as encounter volume options
+- Warning note (⚠️): 13px, #D97706 (amber text)
+
+Financial input fields:
+- Same styling as other inputs
+- "$" prefix inside field or outside
+- Helper text below with baseline and range
+
+═══════════════════════════════════════════════════════════════
+
+PART 6: REAL-TIME PREVIEW PANEL
+
+Show live calculation preview that updates as user types:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ SCENARIO PREVIEW                                                │
+│ Updates in real-time                                            │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │              BASELINE         SCENARIO        CHANGE        │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ DEPLOYMENT                                                  │ │
+│ │ Providers        50              100            +100%       │ │
+│ │ Encounters       65,000          130,000        +100%       │ │
+│ │ Utilization      65%             75%            +10 pts     │ │
+│ │ Eligible         42,250          97,500         +131%       │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ VALUE BREAKDOWN                                             │ │
+│ │ Patient Access   $173,333        $400,000       +131%       │ │
+│ │ Level of Service $182,000        $420,000       +131%       │ │
+│ │ Retention        $100,000        $200,000       +100%       │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ SUMMARY                                                     │ │
+│ │ Total Benefit    $455,333        $1,020,000     +124%       │ │
+│ │ Investment       $72,000         $144,000       +100%       │ │
+│ │ Net Annual Gain  $383,333        $876,000       +129%       │ │
+│ │ ROI              5.3x            7.1x           +34%        │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ 3-YEAR PROJECTION                                           │ │
+│ │ Total Value      $1,150,000      $2,628,000     +129%       │ │
+│ │ Total Investment $216,000        $432,000       +100%       │ │
+│ │ Net 3-Year Gain  $934,000        $2,196,000     +135%       │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💡 KEY INSIGHT                                              │ │
+│ │                                                             │ │
+│ │ Expanding to 100 providers would generate an additional    │ │
+│ │ $492,667 in annual value (+129% over your current model).  │ │
+│ │                                                             │ │
+│ │ The higher utilization rate (75% vs 65%) contributes       │ │
+│ │ $54,000 of incremental value beyond pure provider growth.  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Preview panel header:
+- "SCENARIO PREVIEW": 14px, #E8532F (orange), uppercase, bold
+- "Updates in real-time": 13px, #6B7280 (gray)
+
+Comparison table:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+
+Column headers (BASELINE, SCENARIO, CHANGE):
+- Font: 12px, #6B7280 (gray), uppercase
+- Text-align: Right for SCENARIO and CHANGE
+
+Section labels (DEPLOYMENT, VALUE BREAKDOWN, etc.):
+- Font: 12px, #6B7280 (gray), uppercase, bold
+- Margin-top: 16px, margin-bottom: 8px
+
+Row labels:
+- Font: 14px, #6B7280 (gray)
+- Text-align: Left
+
+Baseline values:
+- Font: 14px, #111827 (black)
+- Text-align: Right
+
+Scenario values:
+- Font: 14px, #111827 (black), bold
+- Text-align: Right
+
+Change values:
+- Font: 14px
+- Positive: #059669 (green)
+- Negative: #DC2626 (red)
+- Neutral: #6B7280 (gray)
+- Text-align: Right
+- Format: +X% or -X% or +X pts
+
+Summary row styling (Net Annual Gain, ROI):
+- Background: #F9FAFB (light gray) for the row
+- Font: 16px, bold
+- Net Annual Gain value in scenario: #059669 (green)
+
+Key insight box:
+- Background: #EFF6FF (light blue)
+- Border: 1px solid #BFDBFE
+- Border-radius: 8px
+- Padding: 16px
+- "KEY INSIGHT" header: 13px, #1E40AF (blue), bold
+- Body: 14px, #1E40AF (blue)
+- Icon: 💡
+
+═══════════════════════════════════════════════════════════════
+
+PART 7: LAYOUT - TWO COLUMN ON DESKTOP
+
+Desktop layout (>1024px):
+- Left column (60%): Input form
+- Right column (40%): Preview panel (sticky)
+- Gap: 48px
+
+┌─────────────────────────────────────────────────────────────────┐
+│ [Header]                                                        │
+│                                                                 │
+│ ┌─────────────────────────────┐ ┌─────────────────────────────┐ │
+│ │                             │ │                             │ │
+│ │   INPUT FORM                │ │   PREVIEW PANEL             │ │
+│ │                             │ │   (sticky)                  │ │
+│ │   Mode toggle               │ │                             │ │
+│ │   Scenario name             │ │   Comparison table          │ │
+│ │   Providers                 │ │   Key insight               │ │
+│ │   Encounters                │ │                             │ │
+│ │   Utilization               │ │                             │ │
+│ │                             │ │                             │ │
+│ │   [Advanced inputs...]      │ │                             │ │
+│ │                             │ │                             │ │
+│ └─────────────────────────────┘ └─────────────────────────────┘ │
+│                                                                 │
+│ [Footer buttons]                                                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Mobile layout (<1024px):
+- Single column, preview collapses to bottom
+- Preview shown as collapsible panel:
+  "View Scenario Preview ∨" expands to show table
+- Or: Fixed bottom bar showing key number:
+  ┌─────────────────────────────────────────────────┐
+  │ Net Gain: $876,000 (+129%)      [See Details]   │
+  └─────────────────────────────────────────────────┘
+
+Preview panel sticky behavior:
+- Position: sticky
+- Top: 24px
+- Max-height: calc(100vh - 48px)
+- Overflow-y: auto (if content exceeds)
+
+═══════════════════════════════════════════════════════════════
+
+PART 8: FOOTER ACTIONS
+
+Fixed footer with actions:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│                   [Cancel]        [Save Scenario]              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Divider:
+- 1px solid #E5E7EB
+- Margin-bottom: 24px
+
+Cancel button:
+- Background: Transparent
+- Border: 1px solid #E5E7EB
+- Text: 14px, #6B7280 (gray)
+- Padding: 12px 24px
+- Border-radius: 6px
+- Hover: Background #F9FAFB
+
+Save Scenario button:
+- Background: #E8532F (orange)
+- Text: 14px, #FFFFFF (white), bold
+- Padding: 12px 24px
+- Border-radius: 6px
+- Hover: Background #D4471F (darker orange)
+- Disabled: Background #E5E7EB, text #9CA3AF
+
+Button alignment:
+- Right-aligned
+- Gap: 12px between buttons
+
+Save validation:
+- Scenario name required
+- At least one input different from baseline
+- Show validation message if trying to save without changes
+
+═══════════════════════════════════════════════════════════════
+
+PART 9: CALCULATION LOGIC
+
+Quick Mode calculations:
+- Providers: User input
+- Encounters: (providers × encounters_per_provider_baseline) OR custom
+- Utilization: User input via slider
+- Eligible encounters: encounters × utilization
+- All driver values: Scale proportionally based on eligible encounters
+- Retention: Scales with provider count
+- Investment: providers × cost_per_provider × 12
+
+Advanced Mode additional calculations:
+- If provider breakdown provided: Use weighted averages for encounters and wRVUs
+- If custom financial parameters: Override baseline assumptions
+- If timeline selected: Prorate Year 1 value based on months remaining
+
+Real-time update behavior:
+- Debounce inputs by 300ms
+- Update preview table on every change
+- Highlight changed values briefly (200ms fade)
+- Recalculate all downstream values
+
+═══════════════════════════════════════════════════════════════
+
+PART 10: SAVE BEHAVIOR
+
+When user clicks "Save Scenario":
+
+1. Validate inputs:
+   - Scenario name required
+   - At least one change from baseline
+
+2. Save to state:
+   - Scenario ID (generated)
+   - Scenario name
+   - Scenario type: "expand_providers"
+   - Created timestamp
+   - Mode used: "quick" or "advanced"
+   - All input values
+   - Calculated results
+
+3. Navigate back to Scenario Builder main page
+
+4. Show success toast:
+   "✓ Scenario saved: [Scenario Name]"
+
+5. New scenario appears in "YOUR SCENARIOS" list
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Scenario Builder main page structure (from Phase 1)
+- Any other tabs or pages
+- Brand colors or typography
+- Core calculation formulas
+
+ONLY BUILD:
+- Expand Providers flow (Quick Mode)
+- Expand Providers flow (Advanced Mode)
+- Real-time preview panel
+- Save functionality
+
+═══════════════════════════════════════════════════════════════
+
+RESULT:
+User can create "Expand Providers" scenarios in two modes:
+- Quick Mode: Fast estimate with providers, encounters, utilization
+- Advanced Mode: Organization-specific breakdown for CFO-defensible numbers
+
+Preview updates in real-time showing exact impact vs baseline. Saved scenarios appear on main Scenario Builder page for comparison.

@@ -57,6 +57,12 @@ import {
   Trash2,
   Sliders,
   Settings,
+  Target,
+  Building2,
+  ClipboardList,
+  LayoutGrid,
+  ArrowRight,
+  ExternalLink,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -69,9 +75,13 @@ interface RoiCalculatorProps {
 type TabId = "summary" | "detailed" | "scenarios" | "export";
 
 // Scenario type definition
+type ScenarioType = "expand" | "drivers" | "setting";
+
 interface Scenario {
   id: string;
   name: string;
+  type: ScenarioType;
+  createdAt: Date;
   providers: number;
   encounters: number;
   utilizationRate: number;
@@ -179,6 +189,11 @@ export default function RoiCalculator({
   const [driverSectionExpanded, setDriverSectionExpanded] = useState(false);
   const [scenarioSectionExpanded, setScenarioSectionExpanded] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  
+  // Scenario comparison selection
+  const [selectedScenariosForCompare, setSelectedScenariosForCompare] = useState<Set<string>>(new Set());
+  const [scenarioTypeModal, setScenarioTypeModal] = useState<ScenarioType | null>(null);
+  const [currentScenarioType, setCurrentScenarioType] = useState<ScenarioType>("expand");
   const [pdfSuccess, setPdfSuccess] = useState(false);
 
   // Initialize inputs from seed with a setter for dynamic updates
@@ -584,9 +599,14 @@ export default function RoiCalculator({
     const name = scenarioForm.name.trim() || `Scenario ${scenarios.length + 1}`;
     const results = calculateScenarioResults(scenarioForm);
     
+    // Find existing scenario for createdAt preservation
+    const existingScenario = editingScenarioId ? scenarios.find(s => s.id === editingScenarioId) : null;
+    
     const newScenario: Scenario = {
       id: editingScenarioId || Date.now().toString(),
       name,
+      type: existingScenario?.type || currentScenarioType,
+      createdAt: existingScenario?.createdAt || new Date(),
       providers: scenarioForm.providers,
       encounters: scenarioForm.encounters,
       utilizationRate: scenarioForm.utilizationRate,
@@ -607,6 +627,29 @@ export default function RoiCalculator({
     setShowScenarioForm(false);
     setShowComparison(newScenario.id);
     setEditingScenarioId(null);
+  };
+  
+  // Toggle scenario selection for comparison
+  const toggleScenarioSelection = (scenarioId: string) => {
+    setSelectedScenariosForCompare((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(scenarioId)) {
+        newSet.delete(scenarioId);
+      } else if (newSet.size < 3) {
+        newSet.add(scenarioId);
+      }
+      return newSet;
+    });
+  };
+  
+  // Get scenario type icon
+  const getScenarioTypeIcon = (type: ScenarioType) => {
+    switch (type) {
+      case "expand": return TrendingUp;
+      case "drivers": return Target;
+      case "setting": return Building2;
+      default: return TrendingUp;
+    }
   };
 
   const handleDeleteScenario = (id: string) => {
@@ -1799,12 +1842,341 @@ export default function RoiCalculator({
           <div className="space-y-6">
             {/* Header */}
             <div>
-              <h2 className="text-sm font-bold text-[#F03319] uppercase tracking-wide mb-1">
+              <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
                 Scenario Builder
               </h2>
-              <p className="text-neutral-500 text-sm">
-                Model what different deployment configurations could look like
+              <p className="text-[16px] text-[#6B7280]">
+                Model expansion opportunities and see the financial impact
               </p>
+              
+              {/* Info box */}
+              <div className="mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-start gap-3">
+                <Lightbulb className="h-4 w-4 text-[#6B7280] mt-0.5 shrink-0" />
+                <p className="text-[14px] text-[#6B7280]">
+                  Use scenarios to explore "what if" questions without changing your baseline model. Compare options side-by-side.
+                </p>
+              </div>
+            </div>
+
+            {/* YOUR CURRENT MODEL (Baseline Card) */}
+            <div>
+              <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                Your Current Model
+              </h3>
+              
+              <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                {/* Care setting + baseline badge */}
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-[#059669]" />
+                    <span className="text-[18px] font-bold text-[#111827]">{careSettingLabel}</span>
+                  </div>
+                  <span className="px-2 py-1 bg-[#F3F4F6] text-[12px] font-medium text-[#6B7280] uppercase rounded">
+                    Baseline
+                  </span>
+                </div>
+                
+                {/* Divider */}
+                <div className="border-t border-[#E5E7EB] my-4" />
+                
+                {/* Deployment section */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <LayoutGrid className="h-3.5 w-3.5 text-[#6B7280]" />
+                    <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-[0.05em]">Deployment</span>
+                  </div>
+                  <p className="text-[14px] text-[#111827]">
+                    {inputs.numberOfProviders} providers
+                    <span className="mx-2 text-[#E5E7EB]">|</span>
+                    {inputs.annualOutpatientEncounters.toLocaleString()} encounters
+                    <span className="mx-2 text-[#E5E7EB]">|</span>
+                    {inputs.abridgeUtilizationPct}% utilization
+                  </p>
+                </div>
+                
+                {/* Value Drivers section */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="h-3.5 w-3.5 text-[#6B7280]" />
+                    <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-[0.05em]">Value Drivers</span>
+                  </div>
+                  <p className="text-[14px] text-[#111827]">
+                    {enabledDriverIds.map((id, idx) => (
+                      <span key={id}>
+                        {leverLabels[id]}
+                        {idx < enabledDriverIds.length - 1 && <span className="mx-2">•</span>}
+                      </span>
+                    ))}
+                  </p>
+                </div>
+                
+                {/* Divider */}
+                <div className="border-t border-[#E5E7EB] my-4" />
+                
+                {/* Results */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] text-[#6B7280]">Net Annual Gain</span>
+                    <span className="text-[18px] font-bold text-[#059669] tabular-nums">{formatCurrency(netAnnualGain)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] text-[#6B7280]">Return on Investment</span>
+                    <span className="text-[18px] font-bold text-[#111827] tabular-nums">{roiMultiple.toFixed(1)}x</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] text-[#6B7280]">3-Year Total Value</span>
+                    <span className="text-[18px] font-bold text-[#111827] tabular-nums">{formatCurrency(netAnnualGain * 3)}</span>
+                  </div>
+                </div>
+                
+                {/* Divider */}
+                <div className="border-t border-[#E5E7EB] my-4" />
+                
+                {/* View Full Breakdown link */}
+                <button
+                  onClick={() => setActiveTab("summary")}
+                  className="flex items-center gap-1 text-[14px] text-[#E8532F] hover:underline"
+                  data-testid="link-view-breakdown"
+                >
+                  View Full Breakdown
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* BUILD AN EXPANSION SCENARIO */}
+            <div className="mt-12">
+              <h3 className="text-[16px] font-bold text-[#111827] mb-1">
+                Build an Expansion Scenario
+              </h3>
+              <p className="text-[14px] text-[#6B7280] mb-6">
+                What would you like to model?
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Expand Providers Card */}
+                <button
+                  onClick={() => {
+                    initScenarioForm();
+                    setCurrentScenarioType("expand");
+                    setShowScenarioForm(true);
+                  }}
+                  className="group bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  data-testid="card-expand-providers"
+                >
+                  <TrendingUp className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
+                  <h4 className="text-[16px] font-bold text-[#111827] mb-4">Expand Providers</h4>
+                  <div className="border-t border-[#E5E7EB] my-4" />
+                  <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
+                    Add more users to your current deployment
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
+                    Start <ArrowRight className="h-4 w-4" />
+                  </span>
+                </button>
+                
+                {/* Add Strategic Drivers Card */}
+                <button
+                  onClick={() => setScenarioTypeModal("drivers")}
+                  className="group bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  data-testid="card-add-drivers"
+                >
+                  <Target className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
+                  <h4 className="text-[16px] font-bold text-[#111827] mb-4">Add Strategic Drivers</h4>
+                  <div className="border-t border-[#E5E7EB] my-4" />
+                  <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
+                    Enable new value streams without adding users
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
+                    Start <ArrowRight className="h-4 w-4" />
+                  </span>
+                </button>
+                
+                {/* New Care Setting Card */}
+                <button
+                  onClick={() => setScenarioTypeModal("setting")}
+                  className="group bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  data-testid="card-new-setting"
+                >
+                  <Building2 className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
+                  <h4 className="text-[16px] font-bold text-[#111827] mb-4">New Care Setting</h4>
+                  <div className="border-t border-[#E5E7EB] my-4" />
+                  <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
+                    Deploy in ED, Nursing, or Inpatient
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
+                    Start <ArrowRight className="h-4 w-4" />
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Coming Soon Modal */}
+            <Dialog open={scenarioTypeModal !== null} onOpenChange={(open) => !open && setScenarioTypeModal(null)}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>
+                    {scenarioTypeModal === "drivers" ? "Add Strategic Drivers" : "New Care Setting"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    This feature is coming soon. For now, you can use "Expand Providers" to model different deployment configurations.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button onClick={() => setScenarioTypeModal(null)} data-testid="button-close-modal">
+                    Got it
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* YOUR SCENARIOS */}
+            <div className="mt-12">
+              <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                Your Scenarios
+              </h3>
+              
+              {/* Empty state */}
+              {scenarios.length === 0 && !showScenarioForm && (
+                <div className="bg-[#F9FAFB] border border-dashed border-[#E5E7EB] rounded-lg p-8 text-center">
+                  <ClipboardList className="h-6 w-6 text-[#6B7280] mx-auto mb-3" />
+                  <h4 className="text-[14px] font-semibold text-[#6B7280] mb-2">No scenarios yet</h4>
+                  <p className="text-[14px] text-[#6B7280] max-w-md mx-auto">
+                    Create your first scenario above to explore expansion opportunities. Scenarios let you model "what if" questions without changing your baseline model.
+                  </p>
+                </div>
+              )}
+              
+              {/* Scenario Cards */}
+              {scenarios.map((scenario) => {
+                const ScenarioIcon = getScenarioTypeIcon(scenario.type);
+                const baselineChange = netAnnualGain > 0 ? ((scenario.netGain - netAnnualGain) / netAnnualGain) * 100 : 0;
+                const isSelected = selectedScenariosForCompare.has(scenario.id);
+                
+                return (
+                  <div
+                    key={scenario.id}
+                    className={`bg-white border rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] mb-4 ${
+                      isSelected ? "border-[#E8532F] bg-[rgba(232,83,47,0.02)]" : "border-[#E5E7EB]"
+                    }`}
+                  >
+                    {/* Header row with checkbox */}
+                    <div className="flex items-start gap-3 mb-3">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleScenarioSelection(scenario.id)}
+                        className="mt-1"
+                        data-testid={`checkbox-scenario-${scenario.id}`}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ScenarioIcon className="h-4 w-4 text-[#6B7280]" />
+                          <span className="text-[16px] font-bold text-[#111827]">{scenario.name}</span>
+                        </div>
+                        <p className="text-[13px] text-[#9CA3AF]">
+                          Created: {scenario.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Metrics row */}
+                    <p className="text-[14px] text-[#6B7280] mb-3">
+                      {scenario.providers} providers
+                      <span className="mx-2 text-[#E5E7EB]">|</span>
+                      {scenario.encounters.toLocaleString()} encounters
+                      <span className="mx-2 text-[#E5E7EB]">|</span>
+                      {scenario.utilizationRate}% utilization
+                    </p>
+                    
+                    {/* Divider */}
+                    <div className="border-t border-[#E5E7EB] my-3" />
+                    
+                    {/* Results row */}
+                    <div className="flex items-center gap-6 mb-3">
+                      <div>
+                        <span className="text-[14px] text-[#6B7280]">Net Annual Gain</span>
+                        <span className="ml-2 text-[18px] font-bold text-[#059669]">{formatCurrency(scenario.netGain)}</span>
+                        <span className={`ml-2 text-[14px] ${baselineChange >= 0 ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                          {baselineChange >= 0 ? "+" : ""}{baselineChange.toFixed(0)}% vs baseline
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[14px] text-[#6B7280]">ROI</span>
+                        <span className="ml-2 text-[18px] font-bold text-[#111827]">{scenario.roiMultiple.toFixed(1)}x</span>
+                      </div>
+                    </div>
+                    
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => setShowComparison(scenario.id)}
+                        className="text-[13px] text-[#E8532F] hover:underline"
+                        data-testid={`button-view-${scenario.id}`}
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => {
+                          initScenarioForm(scenario);
+                          setCurrentScenarioType(scenario.type);
+                          setShowScenarioForm(true);
+                        }}
+                        className="text-[13px] text-[#6B7280] hover:underline"
+                        data-testid={`button-edit-${scenario.id}`}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => toggleScenarioSelection(scenario.id)}
+                        className="text-[13px] text-[#6B7280] hover:underline"
+                        data-testid={`button-compare-${scenario.id}`}
+                      >
+                        Compare
+                      </button>
+                      <button
+                        onClick={() => handleDeleteScenario(scenario.id)}
+                        className="text-[13px] text-[#DC2626] hover:underline"
+                        data-testid={`button-delete-${scenario.id}`}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Compare button section */}
+              {scenarios.length >= 2 && (
+                <div className="border-t border-[#E5E7EB] pt-6 mt-6">
+                  <div className="flex items-center gap-4">
+                    <Button
+                      onClick={() => {
+                        if (selectedScenariosForCompare.size >= 2) {
+                          const firstId = Array.from(selectedScenariosForCompare)[0];
+                          setShowComparison(firstId);
+                        }
+                      }}
+                      disabled={selectedScenariosForCompare.size < 2}
+                      className="bg-[#111827] hover:bg-[#E8532F] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      data-testid="button-compare-selected"
+                    >
+                      Compare Selected Scenarios
+                    </Button>
+                    <p className="text-[13px] text-[#6B7280]">
+                      {selectedScenariosForCompare.size === 0
+                        ? "Select 2-3 scenarios above to compare side-by-side"
+                        : selectedScenariosForCompare.size === 1
+                        ? "Select 1 more scenario to compare"
+                        : `${selectedScenariosForCompare.size} scenarios selected`}
+                    </p>
+                  </div>
+                  {selectedScenariosForCompare.size >= 3 && (
+                    <p className="text-[13px] text-amber-600 mt-2">
+                      Maximum 3 scenarios for comparison. Deselect one to choose another.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Comparison View (if showing) */}
@@ -1985,6 +2357,7 @@ export default function RoiCalculator({
                       variant="outline"
                       onClick={() => {
                         initScenarioForm();
+                        setCurrentScenarioType("expand");
                         setShowScenarioForm(true);
                         setShowComparison(null);
                       }}
@@ -1996,146 +2369,6 @@ export default function RoiCalculator({
                 </div>
               );
             })()}
-
-            {/* Your Scenarios Section */}
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
-              <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-4">
-                Your Scenarios
-              </h3>
-
-              {/* Baseline Card (always present) */}
-              <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-200 mb-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="h-6 w-6 rounded-full bg-neutral-200 flex items-center justify-center">
-                    <Check className="h-3.5 w-3.5 text-neutral-600" />
-                  </div>
-                  <span className="text-sm font-bold text-neutral-900">Current Model (Baseline)</span>
-                  <Badge variant="secondary" className="text-xs">Locked</Badge>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-neutral-600 mb-3">
-                  <span>{inputs.numberOfProviders} providers</span>
-                  <span className="text-neutral-300">|</span>
-                  <span className="text-green-600 font-medium">{formatCurrency(netAnnualGain)} net gain</span>
-                  <span className="text-neutral-300">|</span>
-                  <span className="font-medium">{roiMultiple.toFixed(1)}x ROI</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowBaselineDetails(!showBaselineDetails)}
-                  className="text-xs gap-1"
-                  data-testid="button-view-baseline"
-                >
-                  {showBaselineDetails ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                  View Details
-                </Button>
-                
-                {/* Baseline Details */}
-                {showBaselineDetails && (
-                  <div className="mt-4 pt-4 border-t border-neutral-200">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {enabledDriverIds.map((id) => (
-                        <div key={id} className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-neutral-500">{leverLabels[id]}</span>
-                          <span className="text-xs font-mono">{formatCurrency(driverValues[id])}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Saved Scenarios */}
-              {scenarios.map((scenario) => (
-                <div key={scenario.id} className="bg-white rounded-xl p-4 border border-neutral-200 mb-4">
-                  <div className="flex items-center justify-between gap-4 mb-2">
-                    <span className="text-sm font-bold text-neutral-900">{scenario.name}</span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-neutral-600 mb-3">
-                    <span>{scenario.providers} providers</span>
-                    <span className="text-neutral-300">|</span>
-                    <span className="text-green-600 font-medium">{formatCurrency(scenario.netGain)} net gain</span>
-                    <span className="text-neutral-300">|</span>
-                    <span className="font-medium">{scenario.roiMultiple.toFixed(1)}x ROI</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowComparison(scenario.id)}
-                      className="text-xs"
-                      data-testid={`button-compare-${scenario.id}`}
-                    >
-                      View Comparison
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        initScenarioForm(scenario);
-                        setShowScenarioForm(true);
-                      }}
-                      className="text-xs"
-                      data-testid={`button-edit-${scenario.id}`}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteScenario(scenario.id)}
-                      className="text-xs text-red-600 hover:text-red-700"
-                      data-testid={`button-delete-${scenario.id}`}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              {/* Empty state guidance */}
-              {scenarios.length === 0 && (
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200 mb-4">
-                  <h4 className="text-sm font-semibold text-blue-800 mb-2">
-                    Create Your First Scenario
-                  </h4>
-                  <p className="text-sm text-blue-700 mb-2">
-                    Model different deployment configurations to explore:
-                  </p>
-                  <ul className="text-sm text-blue-600 space-y-1 mb-2">
-                    <li>Expanding to more providers</li>
-                    <li>Higher utilization as teams mature</li>
-                    <li>Different specialty or payer mixes</li>
-                  </ul>
-                  <p className="text-xs text-blue-500">
-                    Use scenarios to explore "what if" questions without changing your baseline model.
-                  </p>
-                </div>
-              )}
-
-              {/* Create New Scenario Button */}
-              {!showScenarioForm && scenarios.length < 5 && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => {
-                    initScenarioForm();
-                    setShowScenarioForm(true);
-                  }}
-                  className="w-full gap-2 mt-2"
-                  data-testid="button-create-scenario"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create New Scenario
-                </Button>
-              )}
-              
-              {scenarios.length >= 5 && (
-                <p className="text-sm text-neutral-500 text-center mt-2">
-                  Maximum 5 scenarios. Delete one to create another.
-                </p>
-              )}
-            </div>
 
             {/* Scenario Form */}
             {showScenarioForm && (
@@ -2452,6 +2685,30 @@ export default function RoiCalculator({
                     data-testid="button-calculate-scenario"
                   >
                     Calculate Scenario
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Mobile fixed bottom comparison bar */}
+            {selectedScenariosForCompare.size >= 1 && (
+              <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.1)] z-50">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-[14px] text-[#6B7280]">
+                    {selectedScenariosForCompare.size} scenario{selectedScenariosForCompare.size > 1 ? "s" : ""} selected
+                  </span>
+                  <Button
+                    onClick={() => {
+                      if (selectedScenariosForCompare.size >= 2) {
+                        const firstId = Array.from(selectedScenariosForCompare)[0];
+                        setShowComparison(firstId);
+                      }
+                    }}
+                    disabled={selectedScenariosForCompare.size < 2}
+                    className="bg-[#111827] hover:bg-[#E8532F] text-white disabled:opacity-50"
+                    data-testid="button-compare-mobile"
+                  >
+                    Compare Now
                   </Button>
                 </div>
               </div>
