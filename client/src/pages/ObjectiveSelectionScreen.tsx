@@ -2733,13 +2733,13 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
                                     <input
-                                      type="number"
-                                      step="0.1"
-                                      value={effectiveMinutesSaved ?? POSTURE_PRESETS.typical.minutes}
+                                      type="text"
+                                      inputMode="decimal"
+                                      value={customMinutes !== null ? customMinutes : (minutesSaved ?? "")}
                                       onChange={(e) => {
                                         const val = e.target.value;
                                         if (val === "") {
-                                          setMinutesSaved(POSTURE_PRESETS.typical.minutes);
+                                          setMinutesSaved(null as any);
                                           setCustomMinutes(null);
                                         } else {
                                           const num = parseFloat(val);
@@ -2747,6 +2747,12 @@ export default function ObjectiveSelectionScreen({
                                             setMinutesSaved(num);
                                             setCustomMinutes(num);
                                           }
+                                        }
+                                      }}
+                                      onBlur={(e) => {
+                                        if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
+                                          setMinutesSaved(POSTURE_PRESETS.typical.minutes);
+                                          setCustomMinutes(POSTURE_PRESETS.typical.minutes);
                                         }
                                       }}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -2760,14 +2766,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={timeRealizationRate ?? POSTURE_PRESETS.typical.realization}
+                                        value={timeRealizationRate ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setTimeRealizationRate(POSTURE_PRESETS.typical.realization);
+                                            setTimeRealizationRate(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setTimeRealizationRate(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setTimeRealizationRate(POSTURE_PRESETS.typical.realization);
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -2787,14 +2798,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftPatientAccessVisitDuration === 30 ? "30" : ftPatientAccessVisitDuration || ""}
+                                        value={ftPatientAccessVisitDuration ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtPatientAccessVisitDuration(30);
+                                            setFtPatientAccessVisitDuration(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtPatientAccessVisitDuration(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setFtPatientAccessVisitDuration(30);
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -2811,14 +2827,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftPatientAccessRevenuePerVisit || ""}
+                                        value={ftPatientAccessRevenuePerVisit ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtPatientAccessRevenuePerVisit(200);
+                                            setFtPatientAccessRevenuePerVisit(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtPatientAccessRevenuePerVisit(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setFtPatientAccessRevenuePerVisit(200);
                                           }
                                         }}
                                         className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -2854,16 +2875,21 @@ export default function ObjectiveSelectionScreen({
                                           <label className="text-sm font-medium text-neutral-600">Annual turnover rate</label>
                                           <div className="flex items-center gap-2 mt-1">
                                             <input
-                                              type="number"
-                                              step="0.1"
-                                              value={ftRetentionTurnoverRate ?? 5}
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={ftRetentionTurnoverRate ?? ""}
                                               onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === "") {
-                                                  setFtRetentionTurnoverRate(5);
+                                                  setFtRetentionTurnoverRate(null as any);
                                                 } else {
                                                   const num = parseFloat(val);
                                                   if (!isNaN(num)) setFtRetentionTurnoverRate(num);
+                                                }
+                                              }}
+                                              onBlur={(e) => {
+                                                if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
+                                                  setFtRetentionTurnoverRate(5);
                                                 }
                                               }}
                                               className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -2880,14 +2906,19 @@ export default function ObjectiveSelectionScreen({
                                             <input
                                               type="text"
                                               inputMode="numeric"
-                                              value={ftRetentionReplacementCost ?? 250000}
+                                              value={ftRetentionReplacementCost ?? ""}
                                               onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === "") {
-                                                  setFtRetentionReplacementCost(250000);
+                                                  setFtRetentionReplacementCost(null as any);
                                                 } else {
                                                   const num = parseInt(val.replace(/,/g, ""));
                                                   if (!isNaN(num)) setFtRetentionReplacementCost(num);
+                                                }
+                                              }}
+                                              onBlur={(e) => {
+                                                if (e.target.value === "" || isNaN(parseInt(e.target.value.replace(/,/g, "")))) {
+                                                  setFtRetentionReplacementCost(250000);
                                                 }
                                               }}
                                               className="w-36 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -2942,14 +2973,19 @@ export default function ObjectiveSelectionScreen({
                                             <input
                                               type="text"
                                               inputMode="numeric"
-                                              value={ftOvertimeAfterHoursReduction ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction}
+                                              value={ftOvertimeAfterHoursReduction ?? ""}
                                               onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === "") {
-                                                  setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
+                                                  setFtOvertimeAfterHoursReduction(null as any);
                                                 } else {
                                                   const num = parseInt(val);
                                                   if (!isNaN(num)) setFtOvertimeAfterHoursReduction(num);
+                                                }
+                                              }}
+                                              onBlur={(e) => {
+                                                if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                                  setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
                                                 }
                                               }}
                                               className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -2966,14 +3002,19 @@ export default function ObjectiveSelectionScreen({
                                             <input
                                               type="text"
                                               inputMode="numeric"
-                                              value={ftOvertimePremiumRate ?? 145}
+                                              value={ftOvertimePremiumRate ?? ""}
                                               onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === "") {
-                                                  setFtOvertimePremiumRate(145);
+                                                  setFtOvertimePremiumRate(null as any);
                                                 } else {
                                                   const num = parseInt(val);
                                                   if (!isNaN(num)) setFtOvertimePremiumRate(num);
+                                                }
+                                              }}
+                                              onBlur={(e) => {
+                                                if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                                  setFtOvertimePremiumRate(145);
                                                 }
                                               }}
                                               className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3024,16 +3065,21 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Baseline wRVU per encounter</label>
                                     <input
-                                      type="number"
-                                      step="0.01"
-                                      value={ftWrvuBaseline ?? 1.75}
+                                      type="text"
+                                      inputMode="decimal"
+                                      value={ftWrvuBaseline ?? ""}
                                       onChange={(e) => {
                                         const val = e.target.value;
                                         if (val === "") {
-                                          setFtWrvuBaseline(1.75);
+                                          setFtWrvuBaseline(null as any);
                                         } else {
                                           const num = parseFloat(val);
                                           if (!isNaN(num)) setFtWrvuBaseline(num);
+                                        }
+                                      }}
+                                      onBlur={(e) => {
+                                        if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
+                                          setFtWrvuBaseline(1.75);
                                         }
                                       }}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3047,14 +3093,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={wrvuSensitivity ?? POSTURE_PRESETS.typical.wrvu}
+                                        value={wrvuSensitivity ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setWrvuSensitivity(POSTURE_PRESETS.typical.wrvu);
+                                            setWrvuSensitivity(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setWrvuSensitivity(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setWrvuSensitivity(POSTURE_PRESETS.typical.wrvu);
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3075,14 +3126,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftWrvuRevenuePerUnit ?? 50}
+                                        value={ftWrvuRevenuePerUnit ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtWrvuRevenuePerUnit(50);
+                                            setFtWrvuRevenuePerUnit(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtWrvuRevenuePerUnit(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setFtWrvuRevenuePerUnit(50);
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3118,14 +3174,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftHccMedicareAdvantage ?? 15}
+                                        value={ftHccMedicareAdvantage ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtHccMedicareAdvantage(15);
+                                            setFtHccMedicareAdvantage(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtHccMedicareAdvantage(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setFtHccMedicareAdvantage(15);
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3141,14 +3202,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftHccRecaptureRate ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate}
+                                        value={ftHccRecaptureRate ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtHccRecaptureRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate);
+                                            setFtHccRecaptureRate(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtHccRecaptureRate(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setFtHccRecaptureRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate);
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3169,14 +3235,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftHccBenchmarkPmpm ?? 1000}
+                                        value={ftHccBenchmarkPmpm ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtHccBenchmarkPmpm(1000);
+                                            setFtHccBenchmarkPmpm(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtHccBenchmarkPmpm(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setFtHccBenchmarkPmpm(1000);
                                           }
                                         }}
                                         className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3217,14 +3288,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="decimal"
-                                        value={ftDenialBaselineRate ?? 5}
+                                        value={ftDenialBaselineRate ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtDenialBaselineRate(5);
+                                            setFtDenialBaselineRate(null as any);
                                           } else {
                                             const num = parseFloat(val);
                                             if (!isNaN(num)) setFtDenialBaselineRate(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
+                                            setFtDenialBaselineRate(5);
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3240,14 +3316,19 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="numeric"
-                                        value={ftDenialPreventionRate ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate}
+                                        value={ftDenialPreventionRate ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
-                                            setFtDenialPreventionRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate);
+                                            setFtDenialPreventionRate(null as any);
                                           } else {
                                             const num = parseInt(val);
                                             if (!isNaN(num)) setFtDenialPreventionRate(num);
+                                          }
+                                        }}
+                                        onBlur={(e) => {
+                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                            setFtDenialPreventionRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate);
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
