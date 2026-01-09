@@ -529,7 +529,7 @@ const SETTING_DESCRIPTIONS: Record<string, string> = {
 
 const SETTING_DRIVERS: Record<string, string[]> = {
   outpatient: ["Patient access expansion", "Level of service accuracy", "Clinician retention"],
-  ed: ["Patient throughput", "Patient Capture", "Denial reduction"],
+  ed: ["Patient throughput", "Patient capture", "Denial reduction"],
   nursing: ["Time savings", "Overtime reduction", "Documentation quality"],
   inpatient: [],
 };
@@ -2315,7 +2315,7 @@ export default function ObjectiveSelectionScreen({
                                             <span className="text-neutral-600">{s.label}</span>
                                             <span className="font-mono text-neutral-900">
                                               {s.value}
-                                              {s.note && <span className="text-neutral-400 text-xs ml-1">({s.note})</span>}
+                                              {s.note && <span className="text-[#F03319]/70 text-xs ml-1">{s.note}</span>}
                                             </span>
                                           </div>
                                         );
