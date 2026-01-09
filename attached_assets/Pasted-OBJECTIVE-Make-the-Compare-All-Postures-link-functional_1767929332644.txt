@@ -1,0 +1,97 @@
+OBJECTIVE:
+Make the "› Compare All Postures" link functional - when clicked, it expands to show a side-by-side comparison table of all three postures. Small, focused addition to the posture preview card.
+
+LOCATION:
+Value Realization tab (Tab 2 of Model Setup) - inside the posture preview card, activated by clicking "› Compare All Postures"
+
+CURRENT STATE:
+"› Compare All Postures" link exists but doesn't do anything yet
+
+NEW STATE:
+Clicking the link expands an inline comparison table, clicking again collapses it
+
+BEHAVIOR:
+
+COLLAPSED (default):
+› Compare All Postures
+
+EXPANDED (after click):
+∨ Compare All Postures
+
+┌─────────────────────────────────────────────────────────────┐
+│                 Conservative    Typical    Aggressive        │
+│ ─────────────────────────────────────────────────────────── │
+│ Patient Access      $80,000    $173,333    $260,000         │
+│ Clinician Retention $60,000    $100,000    $125,000         │
+│ Level of Service    $91,000    $182,000    $364,000         │
+│ HCC Capture         $75,000    $125,000    $187,500         │
+│ Denial Reduction    $51,500    $103,000    $123,600         │
+│ Overtime Cost       $27,750     $45,000     $67,500         │
+│ ─────────────────────────────────────────────────────────── │
+│ TOTAL              $385,250    $728,333  $1,127,600         │
+│                                                              │
+│ Key assumption differences:                                 │
+│ • Minutes saved:       1.5 min    2.5 min    3.5 min        │
+│ • Realization factor:     10%        20%        35%         │
+│ • Doc quality lift:        2%         5%         8%         │
+│ • Prevention rate:        30%        40%        50%         │
+│ • Recapture rate:         40%        50%        60%         │
+│ • Denial prevention:      50%        66%        80%         │
+│ • After-hours reduction:  15%        20%        30%         │
+└─────────────────────────────────────────────────────────────┘
+
+IMPLEMENTATION:
+
+1. CLICK BEHAVIOR:
+   - Toggle between collapsed/expanded state
+   - Arrow changes: › to ∨
+   - Smooth height animation (300ms ease-out)
+   - Content fades in/out (200ms)
+
+2. TABLE STRUCTURE:
+   - Show ALL selected drivers (only drivers user chose on Strategic Priorities)
+   - Three columns: Conservative | Typical | Aggressive
+   - Highlight current posture column with subtle background (#F9FAFB)
+   - Right-align all dollar values with tabular numbers
+   - Comma formatting on all numbers
+
+3. DRIVER VALUES BY POSTURE:
+   Calculate each driver for all three postures using the posture-specific assumptions:
+   
+   Conservative assumptions: 1.5 min saved, 10% realization, 30% prevention, etc.
+   Typical assumptions: 2.5 min saved, 20% realization, 40% prevention, etc.
+   Aggressive assumptions: 3.5 min saved, 35% realization, 50% prevention, etc.
+
+4. KEY ASSUMPTIONS SECTION:
+   Show the main posture-driven variables at bottom
+   - Only show variables relevant to selected drivers
+   - Use bullet points
+   - Keep formatting compact (13px font)
+
+STYLING:
+- Table background: White
+- Padding: 16px
+- Column headers: 14px, #6B7280 (gray), centered
+- Driver names: 14px, #111827 (black), left-aligned
+- Values: 14px, #111827 (black), right-aligned, tabular numbers
+- Current posture column background: #F9FAFB (very light gray)
+- Divider lines: 1px solid #E5E7EB
+- Total row: Bold, slightly larger (15px)
+- Key assumptions: 13px, #6B7280 (gray)
+- Spacing between rows: 8px
+
+ANIMATION:
+- Expansion/collapse: 300ms ease-out
+- Max-height transition (not height, for smoother animation)
+- Fade-in content: opacity 0 to 1, 200ms, delay 100ms on expand
+
+DO NOT CHANGE:
+- The rest of the posture preview card structure
+- Fine-Tune section
+- Posture selector buttons
+- Any other page
+- Live Receipt
+- Any calculations
+
+RESULT:
+Users can quickly compare what their model would look like under all three postures without leaving the Value Realization page. The currently selected posture is visually highlighted so they understand where they are.

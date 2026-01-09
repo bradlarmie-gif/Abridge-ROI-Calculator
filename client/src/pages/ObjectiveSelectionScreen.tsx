@@ -2324,90 +2324,118 @@ export default function ObjectiveSelectionScreen({
                         <button
                           type="button"
                           onClick={() => setComparePosturesExpanded(!comparePosturesExpanded)}
-                          className="mt-4 text-sm font-medium text-[#E8532F] hover:text-[#d14a28] flex items-center gap-1"
+                          className="mt-4 text-sm font-medium text-[#E8532F] hover:text-[#d14a28] flex items-center gap-1 transition-all"
                           data-testid="button-compare-postures"
                         >
-                          <span className="text-[#E8532F]">›</span>
+                          <span className={`text-[#E8532F] transition-transform duration-200 ${comparePosturesExpanded ? "rotate-90" : ""}`}>›</span>
                           Compare All Postures
                         </button>
 
                         {/* Compare Postures Table */}
-                        {comparePosturesExpanded && (
-                          <div className="mt-4 overflow-x-auto">
+                        <div 
+                          className={`overflow-hidden transition-all duration-300 ease-out ${
+                            comparePosturesExpanded ? "max-h-[800px] opacity-100 mt-4" : "max-h-0 opacity-0"
+                          }`}
+                        >
+                          <div className="bg-white rounded-lg border border-[#E5E7EB] p-4">
                             <table className="w-full text-sm">
                               <thead>
-                                <tr className="border-b border-neutral-200">
-                                  <th className="text-left py-2 pr-4 font-medium text-neutral-600">Driver</th>
-                                  <th className={`text-right py-2 px-2 ${detectedPosture === "conservative" ? "font-bold text-neutral-900 bg-emerald-50" : "font-medium text-neutral-600"}`}>Conservative</th>
-                                  <th className={`text-right py-2 px-2 ${detectedPosture === "typical" ? "font-bold text-neutral-900 bg-emerald-50" : "font-medium text-neutral-600"}`}>Typical</th>
-                                  <th className={`text-right py-2 px-2 ${detectedPosture === "aggressive" ? "font-bold text-neutral-900 bg-emerald-50" : "font-medium text-neutral-600"}`}>Aggressive</th>
+                                <tr className="border-b border-[#E5E7EB]">
+                                  <th className="text-left py-2 pr-4 text-sm font-medium text-[#6B7280]">Driver</th>
+                                  <th className={`text-right py-2 px-3 text-sm font-medium ${detectedPosture === "conservative" ? "text-[#111827] bg-[#F9FAFB]" : "text-[#6B7280]"}`}>Conservative</th>
+                                  <th className={`text-right py-2 px-3 text-sm font-medium ${detectedPosture === "typical" ? "text-[#111827] bg-[#F9FAFB]" : "text-[#6B7280]"}`}>Typical</th>
+                                  <th className={`text-right py-2 px-3 text-sm font-medium ${detectedPosture === "aggressive" ? "text-[#111827] bg-[#F9FAFB]" : "text-[#6B7280]"}`}>Aggressive</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {Array.from(selectedLeverIds).map((leverId, idx) => {
+                                {Array.from(selectedLeverIds).map((leverId) => {
                                   const content = DRIVER_CONTENT[leverId];
                                   if (!content) return null;
                                   return (
-                                    <tr key={leverId} className={idx % 2 === 0 ? "bg-neutral-50/50" : ""}>
-                                      <td className="py-2 pr-4 font-medium text-neutral-800">{content.label}</td>
-                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(getDriverValueForPosture(leverId, "conservative"))}</td>
-                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(getDriverValueForPosture(leverId, "typical"))}</td>
-                                      <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50 text-neutral-800 font-medium" : "text-neutral-600"}`}>${formatNumber(getDriverValueForPosture(leverId, "aggressive"))}</td>
+                                    <tr key={leverId}>
+                                      <td className="py-2 pr-4 text-sm font-medium text-[#111827]">{content.label}</td>
+                                      <td className={`py-2 px-3 text-right text-sm tabular-nums ${detectedPosture === "conservative" ? "bg-[#F9FAFB] text-[#111827] font-medium" : "text-[#111827]"}`}>${formatNumber(getDriverValueForPosture(leverId, "conservative"))}</td>
+                                      <td className={`py-2 px-3 text-right text-sm tabular-nums ${detectedPosture === "typical" ? "bg-[#F9FAFB] text-[#111827] font-medium" : "text-[#111827]"}`}>${formatNumber(getDriverValueForPosture(leverId, "typical"))}</td>
+                                      <td className={`py-2 px-3 text-right text-sm tabular-nums ${detectedPosture === "aggressive" ? "bg-[#F9FAFB] text-[#111827] font-medium" : "text-[#111827]"}`}>${formatNumber(getDriverValueForPosture(leverId, "aggressive"))}</td>
                                     </tr>
                                   );
                                 })}
-                                <tr className="border-t-2 border-neutral-300 font-bold">
-                                  <td className="py-2 pr-4 text-neutral-900">TOTAL</td>
-                                  <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "conservative" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
+                                <tr className="border-t border-[#E5E7EB]">
+                                  <td className="py-2 pr-4 text-[15px] font-bold text-[#111827]">TOTAL</td>
+                                  <td className={`py-2 px-3 text-right text-[15px] font-bold tabular-nums ${detectedPosture === "conservative" ? "bg-[#F9FAFB] text-emerald-700" : "text-[#111827]"}`}>
                                     ${formatNumber(getTotalForPosture("conservative"))}
                                   </td>
-                                  <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "typical" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
+                                  <td className={`py-2 px-3 text-right text-[15px] font-bold tabular-nums ${detectedPosture === "typical" ? "bg-[#F9FAFB] text-emerald-700" : "text-[#111827]"}`}>
                                     ${formatNumber(getTotalForPosture("typical"))}
                                   </td>
-                                  <td className={`py-2 px-2 text-right font-mono ${detectedPosture === "aggressive" ? "bg-emerald-50/50 text-emerald-700" : "text-neutral-700"}`}>
+                                  <td className={`py-2 px-3 text-right text-[15px] font-bold tabular-nums ${detectedPosture === "aggressive" ? "bg-[#F9FAFB] text-emerald-700" : "text-[#111827]"}`}>
                                     ${formatNumber(getTotalForPosture("aggressive"))}
                                   </td>
                                 </tr>
                               </tbody>
                             </table>
                             
-                            <div className="flex flex-wrap gap-2 mt-4">
-                              <button
-                                type="button"
-                                onClick={() => applyPosture("conservative")}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                  detectedPosture === "conservative"
-                                    ? "bg-neutral-800 text-white"
-                                    : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100"
-                                }`}
-                              >
-                                Select Conservative {detectedPosture === "conservative" && <Check className="w-3 h-3 inline ml-1" />}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => applyPosture("typical")}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                  detectedPosture === "typical"
-                                    ? "bg-neutral-800 text-white"
-                                    : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100"
-                                }`}
-                              >
-                                Keep Typical {detectedPosture === "typical" && <Check className="w-3 h-3 inline ml-1" />}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => applyPosture("aggressive")}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                  detectedPosture === "aggressive"
-                                    ? "bg-neutral-800 text-white"
-                                    : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100"
-                                }`}
-                              >
-                                Select Aggressive {detectedPosture === "aggressive" && <Check className="w-3 h-3 inline ml-1" />}
-                              </button>
+                            {/* Key Assumption Differences */}
+                            <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
+                              <p className="text-[13px] font-medium text-[#6B7280] mb-2">Key assumption differences:</p>
+                              <div className="grid grid-cols-4 gap-2 text-[13px] text-[#6B7280]">
+                                <div></div>
+                                <div className={`text-right ${detectedPosture === "conservative" ? "font-medium text-[#111827]" : ""}`}>Conservative</div>
+                                <div className={`text-right ${detectedPosture === "typical" ? "font-medium text-[#111827]" : ""}`}>Typical</div>
+                                <div className={`text-right ${detectedPosture === "aggressive" ? "font-medium text-[#111827]" : ""}`}>Aggressive</div>
+                                
+                                {selectedLeverIds.has("patientAccess") && (
+                                  <>
+                                    <div>• Minutes saved</div>
+                                    <div className="text-right tabular-nums">2.0 min</div>
+                                    <div className="text-right tabular-nums">2.5 min</div>
+                                    <div className="text-right tabular-nums">4.0 min</div>
+                                  </>
+                                )}
+                                {(selectedLeverIds.has("patientAccess") || selectedLeverIds.has("overtime")) && (
+                                  <>
+                                    <div>• Realization factor</div>
+                                    <div className="text-right tabular-nums">10%</div>
+                                    <div className="text-right tabular-nums">20%</div>
+                                    <div className="text-right tabular-nums">30%</div>
+                                  </>
+                                )}
+                                {selectedLeverIds.has("wrvu") && (
+                                  <>
+                                    <div>• Doc quality lift</div>
+                                    <div className="text-right tabular-nums">3%</div>
+                                    <div className="text-right tabular-nums">5%</div>
+                                    <div className="text-right tabular-nums">7%</div>
+                                  </>
+                                )}
+                                {selectedLeverIds.has("hcc") && (
+                                  <>
+                                    <div>• Recapture rate</div>
+                                    <div className="text-right tabular-nums">40%</div>
+                                    <div className="text-right tabular-nums">50%</div>
+                                    <div className="text-right tabular-nums">60%</div>
+                                  </>
+                                )}
+                                {selectedLeverIds.has("denials") && (
+                                  <>
+                                    <div>• Denial prevention</div>
+                                    <div className="text-right tabular-nums">50%</div>
+                                    <div className="text-right tabular-nums">66%</div>
+                                    <div className="text-right tabular-nums">80%</div>
+                                  </>
+                                )}
+                                {selectedLeverIds.has("overtime") && (
+                                  <>
+                                    <div>• After-hours reduction</div>
+                                    <div className="text-right tabular-nums">15%</div>
+                                    <div className="text-right tabular-nums">20%</div>
+                                    <div className="text-right tabular-nums">30%</div>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     )}
 
