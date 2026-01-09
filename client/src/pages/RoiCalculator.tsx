@@ -974,7 +974,7 @@ export default function RoiCalculator({
           <div className="space-y-8">
             {/* YOUR ROI MODEL - Headline Results */}
             <section
-              className="bg-white rounded-2xl border border-neutral-200 p-8 shadow-sm"
+              className="bg-white rounded-2xl border border-neutral-200/60 p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
               data-testid="section-roi-headline"
             >
               <div className="mb-6">
@@ -1042,7 +1042,7 @@ export default function RoiCalculator({
 
             {/* WHERE YOUR VALUE COMES FROM */}
             <section
-              className="bg-white rounded-2xl border border-neutral-200 p-8 shadow-sm"
+              className="bg-white rounded-2xl border border-neutral-200/60 p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
               data-testid="section-value-breakdown"
             >
               <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-6">
@@ -1303,7 +1303,7 @@ export default function RoiCalculator({
         {activeTab === "detailed" && (
           <div className="space-y-6">
             {/* Header */}
-            <div className="bg-white rounded-2xl border border-neutral-200 p-8 shadow-sm">
+            <div className="bg-white rounded-2xl border border-neutral-200/60 p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-2">
@@ -2053,7 +2053,7 @@ export default function RoiCalculator({
 
             {/* Empty state if no drivers */}
             {enabledDriverIds.length === 0 && (
-              <div className="bg-white rounded-2xl border border-neutral-200 p-8 shadow-sm text-center">
+              <div className="bg-white rounded-2xl border border-neutral-200/60 p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center">
                 <Search className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-neutral-900 mb-2">
                   No Drivers Selected
@@ -2310,7 +2310,7 @@ export default function RoiCalculator({
                           </h3>
                           <p className="text-[13px] text-[#6B7280] mb-4">Break down by provider type for more accurate calculations</p>
                           
-                          <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+                          <div className="bg-white border border-neutral-200/60 rounded-lg p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                             {providerBreakdown.map((provider, index) => (
                               <div key={index}>
                                 {index > 0 && <div className="border-t border-[#E5E7EB] my-4" />}
@@ -2541,7 +2541,7 @@ export default function RoiCalculator({
                           <p className="text-[13px] text-[#6B7280]">Updates in real-time</p>
                         </div>
                         
-                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-6">
+                        <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                           {/* Comparison table */}
                           {(() => {
                             const scenarioResults = calculateScenarioResults(scenarioForm);
@@ -3219,7 +3219,7 @@ export default function RoiCalculator({
                       </div>
                       
                       <div className={`${mobilePreviewOpen ? "block" : "hidden"} lg:block`}>
-                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                        <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                           <div className="mb-4">
                             <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-1">
                               Scenario Preview
@@ -4107,7 +4107,7 @@ export default function RoiCalculator({
                       </div>
                       
                       <div className={`${mobilePreviewOpen ? "block" : "hidden"} lg:block`}>
-                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                        <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                           <div className="mb-4">
                             <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-1">
                               Combined Preview
@@ -4280,7 +4280,7 @@ export default function RoiCalculator({
                 </div>
                 
                 {/* Scenario Selector */}
-                <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                   <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-1">
                     Select Scenarios to Compare
                   </h3>
@@ -4388,7 +4388,7 @@ export default function RoiCalculator({
                   
                   return (
                     <>
-                      <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                      <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                         <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                           Detailed Comparison
                         </h3>
@@ -4604,7 +4604,7 @@ export default function RoiCalculator({
                       </div>
                       
                       {/* Visual Comparison Charts */}
-                      <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                      <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                         <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                           Visual Comparison
                         </h3>
@@ -4669,7 +4669,7 @@ export default function RoiCalculator({
                       </div>
                       
                       {/* Key Insights */}
-                      <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                      <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                         <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-6">
                           Key Insights
                         </h3>
@@ -4793,7 +4793,7 @@ export default function RoiCalculator({
                 Your Current Model
               </h3>
               
-              <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+              <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                 {/* Care setting + baseline badge */}
                 <div className="flex items-center justify-between gap-4 mb-4">
                   <div className="flex items-center gap-2">
@@ -4892,7 +4892,7 @@ export default function RoiCalculator({
                     setEncounterScalingMode("proportional");
                     setShowExpandProviders(true);
                   }}
-                  className="group bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
                   data-testid="card-expand-providers"
                 >
                   <TrendingUp className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
@@ -4915,7 +4915,7 @@ export default function RoiCalculator({
                     setCurrentScenarioType("drivers");
                     setShowAddDrivers(true);
                   }}
-                  className="group bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
                   data-testid="card-add-drivers"
                 >
                   <Target className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
@@ -4945,7 +4945,7 @@ export default function RoiCalculator({
                     setExpandedCareSettingDriver(null);
                     setShowNewCareSetting(true);
                   }}
-                  className="group bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
                   data-testid="card-new-setting"
                 >
                   <Building2 className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
@@ -5138,7 +5138,7 @@ export default function RoiCalculator({
               const benefitChange = ((scenario.totalBenefit - totalAnnualBenefit) / totalAnnualBenefit) * 100;
               
               return (
-                <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+                <div className="bg-white rounded-2xl border border-neutral-200/60 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                   <div className="flex items-center justify-between gap-4 mb-6">
                     <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
                       Scenario Comparison
@@ -5321,7 +5321,7 @@ export default function RoiCalculator({
 
             {/* Scenario Form */}
             {showScenarioForm && (
-              <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+              <div className="bg-white rounded-2xl border border-neutral-200/60 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                 <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-2">
                   {editingScenarioId ? "Edit Scenario" : "New Scenario"}
                 </h3>
@@ -5669,7 +5669,7 @@ export default function RoiCalculator({
         {activeTab === "export" && (
           <div className="space-y-8">
             {/* Header */}
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+            <div className="bg-white rounded-2xl border border-neutral-200/60 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
               <h2 className="text-sm font-bold text-[#F03319] uppercase tracking-wide mb-1">
                 EXECUTIVE SUMMARY EXPORT
               </h2>
@@ -5679,7 +5679,7 @@ export default function RoiCalculator({
             </div>
 
             {/* Section 1: Document Settings */}
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+            <div className="bg-white rounded-2xl border border-neutral-200/60 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
               <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-6">
                 Document Details
               </h3>
@@ -5745,7 +5745,7 @@ export default function RoiCalculator({
             </div>
 
             {/* Section 2: Content Selection */}
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+            <div className="bg-white rounded-2xl border border-neutral-200/60 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
               <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-2">
                 What to Include
               </h3>
@@ -5965,7 +5965,7 @@ export default function RoiCalculator({
             </div>
 
             {/* Section 3: Custom Notes */}
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+            <div className="bg-white rounded-2xl border border-neutral-200/60 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
               <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-2">
                 Custom Notes <span className="font-normal text-neutral-400">(Optional)</span>
               </h3>
@@ -6002,7 +6002,7 @@ export default function RoiCalculator({
             </div>
 
             {/* Section 4: Preview & Download */}
-            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+            <div className="bg-white rounded-2xl border border-neutral-200/60 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
               <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-2">
                 Preview
               </h3>
