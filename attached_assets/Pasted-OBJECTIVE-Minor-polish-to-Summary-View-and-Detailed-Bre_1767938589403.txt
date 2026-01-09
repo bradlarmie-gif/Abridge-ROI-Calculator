@@ -1,0 +1,74 @@
+OBJECTIVE:
+Minor polish to Summary View and Detailed Breakdown pages to add subtle interactivity and depth. These pages are already excellent - this is just final 5% refinement.
+
+CRITICAL: Do NOT change layout, content, or core design. Only add subtle hover states and shadows.
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: SUMMARY VIEW - ENHANCE "EXPLORE YOUR MODEL" CARDS
+
+The three cards at the bottom (Deep Dive, Model Scenarios, Export PDF) need subtle hover states.
+
+CURRENT: Static cards with icons
+
+ADD HOVER STATE:
+- Scale: 1.01
+- Shadow: 0 4px 12px rgba(0, 0, 0, 0.08) (increased from current)
+- Border: 1px solid #E8532F (orange)
+- Transition: all 200ms ease-out
+- Cursor: pointer
+
+DEFAULT STATE:
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+- Border: 1px solid #E5E7EB (gray)
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: SUMMARY VIEW - MAKE CALCULATION SUMMARIES MORE READABLE
+
+The small calculation lines under each driver (e.g., "1,500 incremental visits × $200/visit") are slightly too small.
+
+CURRENT: ~13px, light gray
+
+ADJUST:
+- Font-size: 14px (increased from 13px)
+- Color: Keep as #9CA3AF (gray)
+- Line-height: 1.5
+
+This makes the "how we got this number" context easier to read without being loud.
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: DETAILED BREAKDOWN - ADD DEPTH TO DRIVER CARDS
+
+The driver cards (Patient Access, Overtime & Locum, Level of Service) feel flat.
+
+ADD SUBTLE SHADOW:
+
+Default state:
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+- Border: 1px solid #E5E7EB (keep current)
+
+Hover state:
+- Shadow: 0 4px 12px rgba(0, 0, 0, 0.08)
+- Border: 1px solid #E8532F (orange)
+- Scale: 1.01
+- Transition: all 200ms ease-out
+- Cursor: pointer
+
+This makes it clear they're clickable and adds just a bit more polish.
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Layout or spacing
+- Colors (except hover states)
+- Typography (except calculation summary size)
+- Any content or copy
+- Icons
+- Value formatting
+- Category groupings
+- Any other pages
+
+RESULT:
+Summary View and Detailed Breakdown pages feel 5% more polished with subtle interactivity. Cards feel clickable, calculation context is more readable, everything has appropriate depth.

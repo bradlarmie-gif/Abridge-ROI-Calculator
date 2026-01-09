@@ -1,0 +1,354 @@
+OBJECTIVE:
+Completely redesign the "HOW WE CALCULATED THIS" section in Detailed Breakdown to match the professional, clear calculation display from the Value Blueprint page. The current format looks like code output - it needs to look like a financial model.
+
+CRITICAL: This is a significant visual upgrade. Follow the Value Blueprint calculation style EXACTLY.
+
+═══════════════════════════════════════════════════════════════
+
+CURRENT PROBLEM:
+
+The calculation section looks like this (BAD):
+
+Step 1: Time Returned
+2.5 min × 65,000 encounters = 2,708 hours
+
+Step 2: Realized Capacity
+2,708 hours × 20% realization = 542 usable hours
+
+This is hard to scan, poor hierarchy, looks like code.
+
+═══════════════════════════════════════════════════════════════
+
+NEW DESIGN - MATCH VALUE BLUEPRINT STYLE:
+
+Transform to this structure (GOOD):
+
+┌─────────────────────────────────────────────────────────┐
+│ HOW WE CALCULATED THIS                                  │
+│                                                         │
+│ STEP 1: TIME RETURNED                                   │
+│                                                         │
+│ Minutes saved per encounter                 2.5 min    │
+│ Annual Abridge-documented encounters        65,000     │
+│ Total hours returned                        2,708 hrs  │
+│                                                         │
+│                                                         │
+│ STEP 2: REALIZED CAPACITY                               │
+│                                                         │
+│ Total hours returned                        2,708 hrs  │
+│ Realization factor                          20%        │
+│ Usable hours                                542 hrs    │
+│                                                         │
+│ Not all time converts to new visits due to scheduling, │
+│ staffing, and demand constraints.                      │
+│                                                         │
+│                                                         │
+│ STEP 3: NEW VISIT CAPACITY                              │
+│                                                         │
+│ Usable hours                                542        │
+│ Average visit duration                      30 min     │
+│ Additional visits possible                  1,083 visits│
+│                                                         │
+│                                                         │
+│ STEP 4: REVENUE IMPACT                                  │
+│                                                         │
+│ Additional visits                           1,083      │
+│ Net revenue per visit                       $200       │
+│ Annual value                                $216,667   │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+
+STYLING SPECIFICATIONS:
+
+Section container:
+- Background: #F9FAFB (light gray - same as Value Blueprint)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Margin-bottom: 32px
+
+Step headers (STEP 1: TIME RETURNED):
+- Font: 13px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-bottom: 16px
+- Margin-top: 24px (except first step: 0)
+
+Calculation rows:
+- Display as two-column layout (label left, value right)
+- Label: 14px, #6B7280 (gray), left-aligned
+- Value: 16px, #111827 (black), right-aligned, tabular numbers, bold
+- Spacing: 8px between rows
+- Use a subtle table-like structure for alignment
+
+Calculated results (the "answer" for each step):
+- Value: 16px, #E8532F (Abridge orange), right-aligned, bold
+- Examples: "2,708 hrs", "542 hrs", "1,083 visits", "$216,667"
+
+Explanatory text (context lines):
+- Font: 13px, #6B7280 (gray), italic
+- Margin-top: 12px
+- Example: "Not all time converts to new visits due to scheduling, staffing, and demand constraints."
+
+Spacing between steps:
+- 32px vertical spacing
+- Optional: Add 1px solid #E5E7EB divider line between steps
+
+═══════════════════════════════════════════════════════════════
+
+EXAMPLE FOR EACH DRIVER:
+
+PATIENT ACCESS:
+
+STEP 1: TIME RETURNED
+
+Minutes saved per encounter                 2.5 min
+Annual Abridge-documented encounters        65,000
+Total hours returned                        2,708 hrs
+
+STEP 2: REALIZED CAPACITY
+
+Total hours returned                        2,708 hrs
+Realization factor                          20%
+Usable hours                                542 hrs
+
+Not all time converts to new visits due to scheduling, 
+staffing, and demand constraints.
+
+STEP 3: NEW VISIT CAPACITY
+
+Usable hours                                542
+Average visit duration                      30 min
+Additional visits possible                  1,083 visits
+
+STEP 4: REVENUE IMPACT
+
+Additional visits                           1,083
+Net revenue per visit                       $200
+Annual value                                $216,667
+
+---
+
+LEVEL OF SERVICE:
+
+STEP 1: BASELINE WRVU PERFORMANCE
+
+Annual Abridge-documented encounters        65,000
+Baseline wRVU per encounter                 1.75
+Current annual wRVUs                        113,750 wRVUs
+
+STEP 2: DOCUMENTATION QUALITY LIFT
+
+wRVU improvement with better documentation  5%
+
+STEP 3: ADDITIONAL WRVUS CAPTURED
+
+Current annual wRVUs                        113,750
+× Documentation lift                        5%
+Additional wRVUs captured                   5,688 wRVUs
+
+STEP 4: REVENUE IMPACT
+
+Additional wRVUs captured                   5,688
+Average revenue per wRVU                    $40
+Annual value                                $227,500
+
+⚠️ Actual reimbursement varies by payer mix and contracted rates.
+
+---
+
+CLINICIAN RETENTION:
+
+STEP 1: BASELINE TURNOVER
+
+Total providers                             94
+Annual turnover rate                        5%
+Expected departures                         4.7 providers/year
+
+STEP 2: ABRIDGE IMPACT
+
+Expected departures                         4.7
+% due to burnout/workload                   40%
+% preventable with Abridge                  40%
+Departures avoided                          0.75 per year
+
+STEP 3: COST SAVINGS
+
+Departures avoided                          0.75
+Replacement cost per provider               $250,000
+Annual value                                $187,500
+
+ℹ️ Impact timeline: Retention improvements typically measurable 
+   at 12+ months as turnover is an annual metric.
+
+---
+
+OVERTIME & LOCUM COST AVOIDANCE:
+
+STEP 1: HOURS RETURNED
+
+Minutes saved per encounter                 2.5 min
+Documented encounters                       65,000
+Total hours returned                        2,708 hrs
+
+STEP 2: AFTER-HOURS REDUCTION
+
+Total hours returned                        2,708 hrs
+% after-hours documentation                 20%
+Premium labor hours avoided                 542 hrs
+
+STEP 3: COST SAVINGS
+
+Premium hours avoided                       542
+Blended premium rate                        $145/hr
+Annual value                                $78,590
+
+---
+
+HCC CAPTURE:
+
+STEP 1: IDENTIFY MA PATIENT POPULATION
+
+Total annual encounters                     65,000
+Average visits per unique patient           2.5 visits/year
+Total unique patients                       26,000
+% Medicare Advantage                        15%
+Unique MA patients                          3,900 patients
+
+STEP 2: BASELINE RAF SCORE
+
+Average MA member RAF score                 1.0
+
+STEP 3: DIAGNOSTIC DOCUMENTATION GAP
+
+Chronic conditions per MA patient           2.5
+Expected total HCC-eligible conditions      9,750
+Current documentation capture rate          70%
+Conditions currently documented             6,825
+Documentation gap                           30%
+Conditions missed annually                  2,925
+
+STEP 4: ABRIDGE RECAPTURE
+
+Conditions missed annually                  2,925
+Abridge recapture rate                      50%
+New conditions documented                   1,463 conditions
+
+STEP 5: RAF SCORE IMPACT
+
+New conditions documented                   1,463
+Average RAF weight per condition            0.25
+Total RAF points added                      365.75 points
+Average RAF increase per patient            0.09
+
+STEP 6: REVENUE IMPACT
+
+Unique MA patients                          3,900
+Average RAF increase per patient            0.09
+Benchmark PMPM                              $1,000
+Incremental revenue per patient/year        $90
+Annual value                                $351,000
+
+---
+
+DENIAL REDUCTION:
+
+STEP 1: BASELINE DENIALS
+
+Total annual revenue                        $13,000,000
+Baseline denial rate                        5%
+Revenue denied annually                     $650,000
+
+STEP 2: DOCUMENTATION-RELATED
+
+Revenue denied annually                     $650,000
+% documentation-related                     30%
+Documentation-driven denials                $195,000
+
+These are denials attributed to insufficient or unclear 
+documentation—often unrecoverable due to lack of medical 
+necessity support.
+
+STEP 3: ABRIDGE PREVENTION
+
+Documentation-driven denials                $195,000
+% preventable with real-time docs           66%
+Annual value                                $128,700
+
+═══════════════════════════════════════════════════════════════
+
+LAYOUT STRUCTURE:
+
+Use a clean table-like layout for calculation rows:
+
+<div class="calculation-step">
+  <div class="step-header">STEP 1: TIME RETURNED</div>
+  
+  <div class="calculation-row">
+    <span class="calc-label">Minutes saved per encounter</span>
+    <span class="calc-value">2.5 min</span>
+  </div>
+  
+  <div class="calculation-row">
+    <span class="calc-label">Annual Abridge-documented encounters</span>
+    <span class="calc-value">65,000</span>
+  </div>
+  
+  <div class="calculation-row result">
+    <span class="calc-label">Total hours returned</span>
+    <span class="calc-value highlight">2,708 hrs</span>
+  </div>
+</div>
+
+CSS:
+.calculation-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calc-label {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.calc-value {
+  font-size: 16px;
+  color: #111827;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-value.highlight {
+  color: #E8532F;
+}
+
+═══════════════════════════════════════════════════════════════
+
+ADJUST FOR YOUR ORGANIZATION SECTION:
+
+Keep this section BELOW the calculations (after "HOW WE CALCULATED THIS").
+
+Current styling is fine, but ensure:
+- Clear visual separation from calculations (32px margin-top)
+- "ADJUST FOR YOUR ORGANIZATION" header matches style
+- Sliders and inputs remain functional
+- "Apply Changes" button stays Abridge orange
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- The expandable/collapsible behavior of driver cards
+- The "ADJUST FOR YOUR ORGANIZATION" functionality
+- Input validation or calculation logic
+- Any other sections of Detailed Breakdown
+- Any other pages
+
+ONLY CHANGE:
+- The visual presentation of "HOW WE CALCULATED THIS"
+- Transform from code-like format to professional financial model format
+- Match Value Blueprint's calculation display quality
+
+═══════════════════════════════════════════════════════════════
+
+RESULT:
+Detailed Breakdown now matches Value Blueprint's professional calculation display. Clear hierarchy, scannable layout, proper use of color for emphasis, looks like a financial model not debug output. Each step is easy to follow and audit.

@@ -733,7 +733,7 @@ export default function RoiCalculator({
                                       <div className="text-sm text-neutral-500 mt-0.5">
                                         {descriptions[id]}
                                       </div>
-                                      <div className="text-xs text-neutral-400 mt-1 font-mono">
+                                      <div className="text-sm text-[#9CA3AF] mt-1 font-mono" style={{ lineHeight: 1.5 }}>
                                         {calcSnippet}
                                       </div>
                                     </div>
@@ -827,7 +827,7 @@ export default function RoiCalculator({
                                       <div className="text-sm text-neutral-500 mt-0.5">
                                         {descriptions[id]}
                                       </div>
-                                      <div className="text-xs text-neutral-400 mt-1 font-mono">
+                                      <div className="text-sm text-[#9CA3AF] mt-1 font-mono" style={{ lineHeight: 1.5 }}>
                                         {calcSnippet}
                                       </div>
                                     </div>
@@ -861,7 +861,7 @@ export default function RoiCalculator({
                 {/* Card 1: Deep Dive */}
                 <button
                   onClick={() => setActiveTab("detailed")}
-                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
+                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-deep-dive"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
@@ -878,7 +878,7 @@ export default function RoiCalculator({
                 {/* Card 2: Model Scenarios */}
                 <button
                   onClick={() => setActiveTab("scenarios")}
-                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
+                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-scenarios"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
@@ -895,7 +895,7 @@ export default function RoiCalculator({
                 {/* Card 3: Export PDF */}
                 <button
                   onClick={() => setActiveTab("export")}
-                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left hover:shadow-md transition-all"
+                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-export"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
@@ -965,13 +965,13 @@ export default function RoiCalculator({
                 return (
                   <div
                     key={driverId}
-                    className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden transition-all duration-300"
+                    className="group bg-white rounded-xl border border-neutral-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] overflow-hidden transition-all duration-200 ease-out cursor-pointer"
                     data-testid={`driver-card-${driverId}`}
                   >
                     {/* Collapsed Header (always visible) */}
                     <button
                       onClick={() => toggleDriverExpansion(driverId)}
-                      className="w-full flex items-center justify-between p-6 hover:bg-neutral-50 transition-colors"
+                      className="w-full flex items-center justify-between p-6 group-hover:bg-neutral-50/50 transition-colors"
                       data-testid={`button-expand-${driverId}`}
                     >
                       <div className="flex items-center gap-4">
