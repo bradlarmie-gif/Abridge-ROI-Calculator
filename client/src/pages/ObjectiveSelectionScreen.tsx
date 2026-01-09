@@ -1853,12 +1853,7 @@ export default function ObjectiveSelectionScreen({
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <div>
-                      <span className="text-sm font-medium text-[#1E40AF]">Workflows differ by setting—so ROI drivers differ too.</span>
-                      <p className="text-sm text-[#3B82F6] leading-relaxed mt-0.5">
-                        Example: Emergency departments prioritize throughput; outpatient prioritizes patient access.
-                      </p>
-                    </div>
+                    <span className="text-sm font-medium text-[#1E40AF]">Workflows differ by setting—so ROI drivers differ too. Example: Emergency departments prioritize throughput; outpatient prioritizes patient access.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
