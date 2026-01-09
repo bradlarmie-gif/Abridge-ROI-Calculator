@@ -2370,42 +2370,6 @@ export default function ObjectiveSelectionScreen({
                               </tbody>
                             </table>
                             
-                            {/* Key assumption differences */}
-                            <div className="mt-4 pt-4 border-t border-neutral-200">
-                              <div className="text-xs font-medium text-neutral-600 mb-2">Key assumption differences:</div>
-                              <div className="grid grid-cols-4 gap-1 text-xs">
-                                <div className="text-neutral-500">Minutes saved:</div>
-                                <div className={`text-right font-mono ${detectedPosture === "conservative" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>2 min</div>
-                                <div className={`text-right font-mono ${detectedPosture === "typical" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>2.5 min</div>
-                                <div className={`text-right font-mono ${detectedPosture === "aggressive" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>4 min</div>
-                                
-                                <div className="text-neutral-500">Realization factor:</div>
-                                <div className={`text-right font-mono ${detectedPosture === "conservative" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>10%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "typical" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>20%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "aggressive" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>30%</div>
-                                
-                                <div className="text-neutral-500">Doc quality lift:</div>
-                                <div className={`text-right font-mono ${detectedPosture === "conservative" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>3%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "typical" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>5%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "aggressive" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>7%</div>
-                                
-                                <div className="text-neutral-500">Recapture rate:</div>
-                                <div className={`text-right font-mono ${detectedPosture === "conservative" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>40%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "typical" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>50%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "aggressive" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>60%</div>
-                                
-                                <div className="text-neutral-500">Denial prevention:</div>
-                                <div className={`text-right font-mono ${detectedPosture === "conservative" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>50%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "typical" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>66%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "aggressive" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>80%</div>
-                                
-                                <div className="text-neutral-500">After-hours reduction:</div>
-                                <div className={`text-right font-mono ${detectedPosture === "conservative" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>15%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "typical" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>20%</div>
-                                <div className={`text-right font-mono ${detectedPosture === "aggressive" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>30%</div>
-                              </div>
-                            </div>
-
                             <div className="flex flex-wrap gap-2 mt-4">
                               <button
                                 type="button"
@@ -2482,19 +2446,10 @@ export default function ObjectiveSelectionScreen({
                             </div>
                           </div>
 
-                          {/* Fine-tune inputs - organized by category */}
-                          <div className="space-y-6">
-                            
-                            {/* CAPACITY & LABOR Category */}
-                            {(selectedLeverIds.has("patientAccess") || selectedLeverIds.has("workforce") || selectedLeverIds.has("overtime")) && (
-                              <div>
-                                <div className="flex items-center gap-2 mb-4">
-                                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Capacity & Labor</span>
-                                  <div className="flex-1 h-px bg-neutral-200" />
-                                </div>
-                                <div className="space-y-4">
-                                  {/* Patient Access Fine-tune */}
-                                  {selectedLeverIds.has("patientAccess") && (
+                          {/* Fine-tune inputs - showing selected drivers only */}
+                          <div className="space-y-4">
+                            {/* Patient Access Fine-tune */}
+                            {selectedLeverIds.has("patientAccess") && (
                               <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-patientAccess">
                                 <div className="text-sm font-semibold text-neutral-900 mb-3">Patient Access</div>
                                 <div className="space-y-3">
