@@ -906,18 +906,18 @@ export default function RoiCalculator({
         src={geometricPattern}
         alt=""
         aria-hidden="true"
-        className="fixed top-[-5%] right-[-5%] w-[700px] md:w-[1000px] lg:w-[1200px] pointer-events-none opacity-[0.18]"
+        className="fixed top-[-5%] right-[-5%] w-[700px] md:w-[1000px] lg:w-[1200px] pointer-events-none opacity-[0.015]"
         style={{ zIndex: 0 }}
       />
       <img 
         src={geometricPattern}
         alt=""
         aria-hidden="true"
-        className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.18] rotate-180"
+        className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.01] rotate-180"
         style={{ zIndex: 0 }}
       />
       {/* Header */}
-      <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
+      <header className="relative z-20 bg-white border-b border-neutral-200">
         <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button

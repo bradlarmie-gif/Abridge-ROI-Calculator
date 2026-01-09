@@ -1,0 +1,236 @@
+ART 3: IDENTIFY AFFECTED COMPONENTS
+Apply the opaque background fix to these specific components:
+SUMMARY VIEW:
+cssCopy/* Main ROI card */
+.roi-summary-card {
+  background: #FFFFFF;
+}
+
+/* Value driver cards */
+.value-driver-card {
+  background: #FFFFFF;
+}
+
+/* "Explore Your Model" cards */
+.explore-card {
+  background: #FFFFFF;
+}
+EXPORT SUMMARY:
+cssCopy/* Export form card */
+.export-form-card {
+  background: #FFFFFF;
+}
+
+/* Section cards */
+.export-section-card {
+  background: #FFFFFF;
+}
+SCENARIO BUILDER:
+cssCopy/* Baseline model card */
+.baseline-card {
+  background: #FFFFFF;
+}
+
+/* Scenario type cards */
+.scenario-type-card {
+  background: #FFFFFF;
+}
+
+/* Scenario list cards */
+.scenario-list-card {
+  background: #FFFFFF;
+}
+DETAILED BREAKDOWN:
+cssCopy/* Driver detail cards */
+.driver-detail-card {
+  background: #FFFFFF;
+}
+
+/* Calculation cards */
+.calculation-card {
+  background: #FFFFFF;
+}
+═══════════════════════════════════════════════════════════════
+PART 4: PAGE-SPECIFIC BACKGROUND ADJUSTMENTS
+For pages with many cards (like Results Dashboard), you can also slightly adjust the page background:
+CURRENT:
+cssCopy.results-page {
+  background: #FEFEFE; /* Very slightly off-white */
+}
+OPTION - Make background slightly less pure white:
+cssCopy.results-page {
+  background: #FAFAFA; /* Slightly warmer gray-white */
+}
+This creates more contrast between background + pattern and the white cards.
+═══════════════════════════════════════════════════════════════
+PART 5: SPECIFIC FIX FOR CARDS WITH LIGHT BACKGROUNDS
+Some cards use light gray backgrounds (#F9FAFB) which show pattern even more:
+cssCopy/* Info boxes, calculation sections, etc. */
+.info-box,
+.calculation-section,
+.adjustment-section {
+  background: #F9FAFB; /* Light gray */
+  position: relative;
+  z-index: 1; /* Ensure above pattern */
+}
+
+/* If still showing through, add subtle backdrop */
+.info-box,
+.calculation-section,
+.adjustment-section {
+  background: rgba(249, 250, 251, 0.98);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+═══════════════════════════════════════════════════════════════
+PART 6: ENSURE PATTERNS STAY ON ALL PAGES
+Make sure geometric patterns are rendered on every page:
+jsxCopy// In your main layout or each page component
+<div className="page-container">
+  {/* Geometric patterns - on every page */}
+  <div className="geometric-pattern geometric-pattern-top-right"></div>
+  <div className="geometric-pattern geometric-pattern-bottom-left"></div>
+  
+  {/* Page content */}
+  <div className="page-content">
+    {/* Cards and content here */}
+  </div>
+</div>
+Pattern styling (apply globally):
+cssCopy.geometric-pattern {
+  position: fixed; /* Fixed to viewport */
+  pointer-events: none;
+  z-index: 0; /* Behind all content */
+  opacity: 0.015; /* 1.5% - very subtle */
+}
+
+.geometric-pattern-top-right {
+  top: -10%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background-image: url('/abridge-pattern.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.geometric-pattern-bottom-left {
+  bottom: -10%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background-image: url('/abridge-pattern.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: rotate(180deg);
+  opacity: 0.01; /* Even lighter for variety */
+}
+═══════════════════════════════════════════════════════════════
+PART 7: LANDING PAGE - KEEP AS IS
+The landing page works fine, don't change it:
+cssCopy/* Landing page specific override - keep current opacity */
+.landing-page .geometric-pattern {
+  opacity: 0.03; /* 3% - works fine here because card is solid */
+}
+
+/* Landing page card is already opaque */
+.landing-card {
+  background: #FFFFFF; /* Already solid */
+}
+═══════════════════════════════════════════════════════════════
+PART 8: TEXT CONTRAST INSURANCE
+Ensure all text has proper z-index and contrast:
+cssCopy/* All text content should be above pattern */
+.card-content,
+.card-header,
+.card-body,
+.card-text,
+.value-amount,
+.driver-name,
+.calculation-step {
+  position: relative;
+  z-index: 2; /* Above pattern layer */
+}
+═══════════════════════════════════════════════════════════════
+PART 9: MOBILE ADJUSTMENTS
+On mobile, make patterns even more subtle:
+cssCopy@media (max-width: 768px) {
+  .geometric-pattern {
+    opacity: 0.01; /* 1% on mobile */
+  }
+  
+  .geometric-pattern-top-right {
+    width: 400px;
+    height: 400px;
+  }
+  
+  .geometric-pattern-bottom-left {
+    width: 350px;
+    height: 350px;
+    opacity: 0.008; /* Even lighter */
+  }
+}
+═══════════════════════════════════════════════════════════════
+PART 10: QUALITY CHECK
+After implementing, verify readability on:
+✓ Summary View - main ROI card, driver cards
+✓ Detailed Breakdown - calculation cards, expandable sections
+✓ Scenario Builder - baseline card, scenario type cards, scenario list
+✓ Export Summary - form inputs, section cards
+✓ Landing Page - should remain unchanged
+Test with:
+
+Different screen sizes
+Different zoom levels (browser zoom)
+Light/dark mode (if applicable)
+
+═══════════════════════════════════════════════════════════════
+SUMMARY OF CHANGES:
+
+REDUCE pattern opacity globally:
+
+From ~3% to 1.5% (top-right)
+From ~2.5% to 1% (bottom-left)
+
+
+MAKE cards fully opaque:
+
+All white cards: background #FFFFFF (no transparency)
+Remove any rgba with alpha < 1.0
+
+
+ADD subtle shadows if needed:
+
+Helps cards "lift" off pattern background
+0 1px 3px rgba(0, 0, 0, 0.06)
+
+
+ENSURE z-index hierarchy:
+
+Pattern: z-index 0
+Cards: z-index 1
+Text content: z-index 2
+
+
+KEEP patterns on all pages (don't remove)
+DON'T change landing page (already works)
+
+═══════════════════════════════════════════════════════════════
+DO NOT CHANGE:
+
+Landing page pattern opacity or card styling
+Any calculation logic
+Any page layouts or navigation
+Brand colors
+Typography
+
+ONLY CHANGE:
+
+Geometric pattern opacity (reduce to 1-1.5%)
+White card backgrounds (make fully opaque)
+Z-index stacking if needed
+Apply patterns to all pages if missing
+
+═══════════════════════════════════════════════════════════════
+RESULT:
+Geometric patterns remain on all pages (brand texture) but are much more subtle (1-1.5% opacity instead of 3%). White cards are fully opaque, making all text perfectly readable. Landing page remains unchanged since it already works. The result is subtle brand presence without compromising readability anywhere.
