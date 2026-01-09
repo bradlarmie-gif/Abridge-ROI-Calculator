@@ -151,7 +151,7 @@ const POSTURE_PRESETS: Record<Exclude<ValuePosture, "custom">, { minutes: number
   aggressive: { minutes: 4, realization: 30, wrvu: 7 },
 };
 
-// Reference scenario defaults for Value Blueprint
+// Reference scenario defaults for Value Methodology
 const REFERENCE_SCENARIO = {
   providers: 40,
   annualVisits: 80000,
@@ -505,7 +505,7 @@ function Stepper({ currentPage }: { currentPage: Page }) {
       <div className="w-8 h-px bg-neutral-300" />
       <StepIndicator
         stepNumber={3}
-        label="Value Blueprint"
+        label="Value Methodology"
         isActive={step3Active}
         isCompleted={step3Completed}
       />
@@ -843,7 +843,7 @@ export default function ObjectiveSelectionScreen({
   });
 
   // ============================================
-  // Value Blueprint State
+  // Value Methodology State
   // ============================================
   const [expandedDrivers, setExpandedDrivers] = useState<Set<string>>(new Set());
 
@@ -2159,7 +2159,7 @@ export default function ObjectiveSelectionScreen({
 
               <div className="mb-10">
                 <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
-                  Value Blueprint
+                  Value Methodology
                 </h2>
                 <p className="text-lg text-neutral-600 leading-relaxed">
                   See how each driver creates value using typical assumptions from 200+ health system partners.
@@ -4200,7 +4200,7 @@ export default function ObjectiveSelectionScreen({
         </div>
       )}
 
-      {/* Sticky Bottom Bar — Page 3 (Value Blueprint) */}
+      {/* Sticky Bottom Bar — Page 3 (Value Methodology) */}
       {currentPage === "value-blueprint" && (
         <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-neutral-200/60 shadow-lg">
           <div className="max-w-[1200px] mx-auto px-6 py-4">
