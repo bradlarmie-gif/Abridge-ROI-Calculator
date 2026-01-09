@@ -1846,6 +1846,42 @@ export default function ObjectiveSelectionScreen({
               </p>
             </div>
 
+            <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg px-5 py-4 mb-8 flex items-start gap-3">
+              <Lightbulb className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-semibold text-[#1E40AF] mb-3">Why care setting matters</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-sm font-medium text-[#1E40AF]">Workflows differ by setting—so ROI drivers differ too.</span>
+                      <p className="text-sm text-[#3B82F6] leading-relaxed mt-0.5">
+                        Example: Emergency departments prioritize throughput; outpatient prioritizes patient access.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-sm font-medium text-[#1E40AF]">This sets the assumptions used throughout the model.</span>
+                      <p className="text-sm text-[#3B82F6] leading-relaxed mt-0.5">
+                        Baseline wRVUs, typical encounter lengths, and documentation patterns vary by care environment.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-sm font-medium text-[#1E40AF]">You'll get a tailored output you can share.</span>
+                      <p className="text-sm text-[#3B82F6] leading-relaxed mt-0.5">
+                        Your final model reflects setting-specific benchmarks from 200+ health system partners.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12">
               <div>
                 <div className="mb-6">
@@ -1872,42 +1908,6 @@ export default function ObjectiveSelectionScreen({
                       />
                     );
                   })}
-                </div>
-                
-                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mt-8 lg:mt-12">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Lightbulb className="w-4 h-4 text-[#111827]" />
-                    <h3 className="text-base font-medium text-[#111827]">Why care setting matters</h3>
-                  </div>
-                  <ul className="space-y-5">
-                    <li className="flex items-start gap-3">
-                      <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-sm font-medium text-[#111827]">Workflows differ by setting—so ROI drivers differ too.</span>
-                        <p className="text-sm text-[#6B7280] leading-relaxed mt-1 pl-0">
-                          Example: Emergency departments prioritize throughput; outpatient prioritizes patient access.
-                        </p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-sm font-medium text-[#111827]">This sets the assumptions used throughout the model.</span>
-                        <p className="text-sm text-[#6B7280] leading-relaxed mt-1 pl-0">
-                          Baseline wRVUs, typical encounter lengths, and documentation patterns vary by care environment.
-                        </p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-sm font-medium text-[#111827]">You'll get a tailored output you can share.</span>
-                        <p className="text-sm text-[#6B7280] leading-relaxed mt-1 pl-0">
-                          Your final model reflects setting-specific benchmarks from 200+ health system partners.
-                        </p>
-                      </div>
-                    </li>
-                  </ul>
                 </div>
               </div>
 
