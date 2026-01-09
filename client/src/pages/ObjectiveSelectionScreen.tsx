@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import { LiveReceipt } from "@/components/LiveReceipt";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import {
   CARE_SETTING_LABELS,
   getLeversByCategory,
@@ -1789,25 +1790,19 @@ export default function ObjectiveSelectionScreen({
         {currentPage === "orientation" && (
           <div className="relative min-h-full">
             {/* Geometric pattern - top right */}
-            <div 
-              className="fixed top-[-5%] right-[-5%] w-[400px] h-[300px] md:w-[600px] md:h-[450px] pointer-events-none z-0 opacity-[0.03]"
-              style={{
-                backgroundImage: `url('/attached_assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png')`,
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-              }}
+            <img 
+              src={geometricPattern}
+              alt=""
+              aria-hidden="true"
+              className="fixed top-[-5%] right-[-5%] w-[400px] md:w-[600px] pointer-events-none z-0 opacity-[0.35]"
             />
             
             {/* Geometric pattern - bottom left */}
-            <div 
-              className="fixed bottom-[-5%] left-[-5%] w-[350px] h-[260px] md:w-[500px] md:h-[375px] pointer-events-none z-0 opacity-[0.025] rotate-180"
-              style={{
-                backgroundImage: `url('/attached_assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png')`,
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-              }}
+            <img 
+              src={geometricPattern}
+              alt=""
+              aria-hidden="true"
+              className="fixed bottom-[-5%] left-[-5%] w-[350px] md:w-[500px] pointer-events-none z-0 opacity-[0.3] rotate-180"
             />
 
             <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28 relative z-10">
