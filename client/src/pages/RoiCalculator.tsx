@@ -329,14 +329,20 @@ export default function RoiCalculator({
     inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100)
   );
 
-  // All available driver IDs
-  const allDriverIds: LeverId[] = ["patientAccess", "workforce", "overtime", "wrvu", "denials", "hcc"];
+  // All available driver IDs (constant, never changes)
+  const allDriverIds: LeverId[] = useMemo(() => ["patientAccess", "workforce", "overtime", "wrvu", "denials", "hcc"], []);
   
-  // Enabled drivers (from inputs.levers)
-  const enabledDriverIds = allDriverIds.filter((id) => inputs.levers[id]);
+  // Enabled drivers (from inputs.levers) - memoized to prevent infinite re-renders
+  const enabledDriverIds = useMemo(() => 
+    allDriverIds.filter((id) => inputs.levers[id]),
+    [allDriverIds, inputs.levers]
+  );
   
   // Drivers not yet enabled (for the modal)
-  const availableDrivers = allDriverIds.filter((id) => !inputs.levers[id]);
+  const availableDrivers = useMemo(() => 
+    allDriverIds.filter((id) => !inputs.levers[id]),
+    [allDriverIds, inputs.levers]
+  );
   
   // Capacity & Labor drivers
   const capacityLaborIds: LeverId[] = ["patientAccess", "workforce", "overtime"];

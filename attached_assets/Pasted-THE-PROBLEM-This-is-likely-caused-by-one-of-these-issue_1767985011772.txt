@@ -1,0 +1,372 @@
+THE PROBLEM
+This is likely caused by one of these issues:
+
+Different pages reading from different state (not synced)
+Investment page Live Receipt using different inputs (old cached values?)
+Calculation happening twice with different assumptions
+2-year vs 1-year view confusion (one showing annual, other showing 2-year average?)
+
+
+REPLIT PROMPT - FIX NUMBER DISCREPANCIES ACROSS PAGES
+CopyOBJECTIVE:
+Fix the critical issue where Live Receipt (Investment page) shows different ROI numbers than Summary View (Results page). These must be identical - they're viewing the same model with the same inputs. Investigate calculation sync issues and ensure single source of truth.
+
+CRITICAL RULES:
+- Numbers must match EXACTLY across all pages
+- Summary View is the source of truth (use its calculations)
+- Live Receipt must pull from the same state/calculations
+- All views of the model must show consistent numbers
+- If numbers differ, find the root cause and fix it
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: IDENTIFY THE DISCREPANCY
+
+Current issue:
+
+SUMMARY VIEW (Results page):
+- Net Annual Gain: $156,721
+- Total Benefit: $185,521
+- ROI: 6.44x
+
+LIVE RECEIPT (Investment page):
+- Net Annual Gain: $180,284
+- Total Benefit: $209,084
+- ROI: 7.3x
+
+Difference: ~$23,563 in Net Annual Gain (~15% discrepancy)
+
+This suggests either:
+- Different driver values being used
+- Different encounter counts
+- Different posture assumptions
+- Cached/stale state
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: ESTABLISH SINGLE SOURCE OF TRUTH
+
+All calculations should flow from a SINGLE state object:
+
+```javascript
+// Centralized calculation state
+const modelState = {
+  // Adoption inputs
+  adoption: {
+    providers: 20,
+    encounters: 26000,
+    utilization: 0.65,
+    eligibleEncounters: 16900 // calculated: 26000 × 0.65
+  },
+  
+  // Selected drivers
+  selectedDrivers: [
+    'patientAccess',
+    'overtimeReduction', 
+    'levelOfService'
+  ],
+  
+  // Posture + Fine-Tune inputs
+  inputs: {
+    patientAccess: {
+      minutesSaved: 2.5,
+      realizationFactor: 0.20,
+      visitDuration: 30,
+      revenuePerVisit: 200
+    },
+    // ... other drivers
+  },
+  
+  // Investment
+  investment: {
+    costPerProvider: 120,
+    contractTerm: 2
+  },
+  
+  // CALCULATED RESULTS (computed from above)
+  results: {
+    drivers: {
+      patientAccess: 86667,
+      overtimeReduction: 7854,
+      levelOfService: 91000
+    },
+    totals: {
+      totalBenefit: 185521,
+      annualInvestment: 28800,
+      netAnnualGain: 156721,
+      roi: 6.44
+    }
+  }
+};
+═══════════════════════════════════════════════════════════════
+PART 3: ENSURE LIVE RECEIPT USES SAME CALCULATIONS
+Live Receipt must pull from the SAME state as Summary View.
+BAD (different calculation):
+javascriptCopy// Live Receipt component
+function LiveReceipt() {
+  // Recalculating independently - WRONG
+  const benefit = calculateBenefit(localInputs);
+  const investment = providers × 120 × 12;
+  const netGain = benefit - investment;
+  
+  return <div>Net Gain: {netGain}</div>;
+}
+GOOD (shared state):
+javascriptCopy// Live Receipt component
+function LiveReceipt() {
+  // Pull from shared calculation state - RIGHT
+  const { totals } = useModelResults();
+  
+  return <div>Net Gain: {totals.netAnnualGain}</div>;
+}
+═══════════════════════════════════════════════════════════════
+PART 4: CREATE SHARED CALCULATION HOOK
+Implement a single calculation hook that ALL components use:
+javascriptCopy// hooks/useModelCalculations.js
+import { useMemo } from 'react';
+import { useModelState } from './useModelState';
+
+export function useModelCalculations() {
+  const { adoption, selectedDrivers, inputs, investment } = useModelState();
+  
+  return useMemo(() => {
+    // Calculate eligible encounters ONCE
+    const eligibleEncounters = adoption.encounters × adoption.utilization;
+    
+    // Calculate each driver value
+    const driverResults = {};
+    
+    if (selectedDrivers.includes('patientAccess')) {
+      driverResults.patientAccess = calculatePatientAccess(
+        eligibleEncounters,
+        inputs.patientAccess
+      );
+    }
+    
+    if (selectedDrivers.includes('levelOfService')) {
+      driverResults.levelOfService = calculateLevelOfService(
+        eligibleEncounters,
+        inputs.levelOfService
+      );
+    }
+    
+    // ... calculate other selected drivers
+    
+    // Calculate totals
+    const totalBenefit = Object.values(driverResults).reduce((sum, val) => sum + val, 0);
+    const annualInvestment = adoption.providers × investment.costPerProvider × 12;
+    const netAnnualGain = totalBenefit - annualInvestment;
+    const roi = totalBenefit / annualInvestment;
+    
+    return {
+      driverResults,
+      totals: {
+        totalBenefit,
+        annualInvestment,
+        netAnnualGain,
+        roi
+      },
+      multiYear: {
+        year1: { ... },
+        year2: { ... },
+        cumulative: { ... }
+      }
+    };
+  }, [adoption, selectedDrivers, inputs, investment]);
+}
+Then use EVERYWHERE:
+javascriptCopy// Summary View
+function SummaryView() {
+  const { totals, driverResults } = useModelCalculations();
+  return <div>Net Gain: {totals.netAnnualGain}</div>;
+}
+
+// Live Receipt
+function LiveReceipt() {
+  const { totals } = useModelCalculations();
+  return <div>Net Gain: {totals.netAnnualGain}</div>;
+}
+
+// Investment page
+function InvestmentPage() {
+  const { totals } = useModelCalculations();
+  return <div>ROI: {totals.roi}x</div>;
+}
+═══════════════════════════════════════════════════════════════
+PART 5: DEBUG CURRENT DISCREPANCY
+Add temporary logging to find where numbers diverge:
+javascriptCopy// In Summary View
+console.log('SUMMARY VIEW CALCULATIONS:', {
+  eligibleEncounters,
+  driverValues: { patientAccess, levelOfService, overtime },
+  totalBenefit,
+  investment,
+  netGain,
+  roi
+});
+
+// In Live Receipt
+console.log('LIVE RECEIPT CALCULATIONS:', {
+  eligibleEncounters,
+  driverValues: { patientAccess, levelOfService, overtime },
+  totalBenefit,
+  investment,
+  netGain,
+  roi
+});
+
+// Compare and find the first place they differ
+═══════════════════════════════════════════════════════════════
+PART 6: CHECK FOR STALE STATE ISSUES
+Ensure state updates propagate everywhere:
+javascriptCopy// When inputs change on any page, ALL calculations must update
+function updateAdoptionInput(field, value) {
+  setAdoption(prev => ({
+    ...prev,
+    [field]: value
+  }));
+  
+  // Trigger recalculation (if using manual recalc)
+  recalculateModel();
+}
+
+// OR use React state that auto-triggers recalc
+// (useMemo dependencies handle this automatically)
+═══════════════════════════════════════════════════════════════
+PART 7: FIX 2-YEAR VIEW CONFUSION
+Check if Live Receipt is showing 2-year cumulative instead of annual:
+Investment page shows:
+
+Net 2-Year Gain: $360,568
+But Live Receipt top shows: Net Annual Gain: $180,284
+
+$180,284 × 2 = $360,568 ✓ (this checks out)
+But Summary View shows: $156,721
+This suggests Live Receipt is using different driver values.
+Verify the driver calculations match:
+CopySummary: $86,667 + $7,854 + $91,000 = $185,521 benefit
+Live: $86,667 + $31,417 + $91,000 = $209,084 benefit
+
+The difference is Overtime: $7,854 vs $31,417
+FOUND IT: Overtime calculation is different!
+═══════════════════════════════════════════════════════════════
+PART 8: STANDARDIZE DRIVER CALCULATIONS
+Ensure identical calculation functions:
+javascriptCopy// calculations/drivers.js
+
+export function calculateOvertimeReduction(eligibleEncounters, inputs) {
+  const minutesSaved = inputs.minutesSaved || inputs.patientAccess.minutesSaved;
+  const afterHoursReduction = inputs.afterHoursReduction || 0.20;
+  const premiumRate = inputs.premiumRate || 145;
+  
+  const totalHours = (minutesSaved × eligibleEncounters) / 60;
+  const premiumHours = totalHours × afterHoursReduction;
+  const value = premiumHours × premiumRate;
+  
+  return Math.round(value);
+}
+
+// This SAME function must be used in:
+// - Summary View
+// - Live Receipt
+// - Detailed Breakdown
+// - Value Blueprint
+// - Export PDF
+═══════════════════════════════════════════════════════════════
+PART 9: ADD VALIDATION LAYER
+Add runtime checks to catch discrepancies:
+javascriptCopyfunction useModelCalculations() {
+  const results = calculateModel(...);
+  
+  // Validate totals match sum of drivers
+  const driverSum = Object.values(results.driverResults).reduce((s, v) => s + v, 0);
+  
+  if (Math.abs(driverSum - results.totals.totalBenefit) > 1) {
+    console.error('CALCULATION MISMATCH:', {
+      driverSum,
+      totalBenefit: results.totals.totalBenefit,
+      diff: driverSum - results.totals.totalBenefit
+    });
+  }
+  
+  return results;
+}
+═══════════════════════════════════════════════════════════════
+PART 10: USER-FACING FIX (IMMEDIATE)
+While you debug the root cause, add temporary visual indicator:
+jsxCopy// Live Receipt
+<div className="live-receipt">
+  <div className="receipt-header">
+    LIVE RECEIPT
+    <span className="sync-indicator">
+      {isSynced ? '✓ Synced' : '⟳ Updating...'}
+    </span>
+  </div>
+  
+  {/* If numbers don't match Summary, show warning */}
+  {!numbersMatch && (
+    <div className="sync-warning">
+      ⚠️ Recalculating... values may not match Results page temporarily
+    </div>
+  )}
+</div>
+But this is a band-aid - fix the root cause.
+═══════════════════════════════════════════════════════════════
+PART 11: TESTING CHECKLIST
+After fixes, verify:
+□ Summary View totals = Live Receipt totals
+□ Investment page 2-year view = Annual × 2
+□ Changing inputs on any page updates everywhere
+□ No stale/cached values
+□ All pages use same calculation functions
+□ Driver values sum to total benefit exactly
+□ ROI calculation consistent (benefit ÷ investment)
+═══════════════════════════════════════════════════════════════
+IMMEDIATE ACTION STEPS:
+
+Find the source of $180,284 vs $156,721 discrepancy:
+
+Add console.logs to both calculations
+Check which driver values differ
+Likely: Overtime showing $31,417 instead of $7,854
+
+
+Standardize calculation source:
+
+Create single useModelCalculations hook
+Both pages must call this hook
+Remove any duplicate calculation logic
+
+
+Fix Overtime calculation:
+
+Verify it's using same minutes saved
+Verify same after-hours reduction %
+Verify same premium rate
+
+
+Test sync:
+
+Change encounter count
+Verify both pages update to SAME number
+Verify within 1-2 seconds
+
+
+
+═══════════════════════════════════════════════════════════════
+RESULT:
+All pages show identical numbers. Summary View, Live Receipt, Investment view, Detailed Breakdown - every view of the model displays the exact same Net Annual Gain, Total Benefit, and ROI. No confusion for users. Single source of truth for all calculations.
+Copy
+---
+
+**My hypothesis on what's wrong:**
+
+Looking at the numbers:
+- Summary shows **Overtime Savings: $7,854** (small)
+- Live Receipt shows **Overtime Savings: $31,417** (4x larger)
+
+This is your **root cause**. The Overtime calculation is different between pages.
+
+**Likely culprit:** Live Receipt is using different assumptions (maybe 20 providers vs 50 providers? or different minutes saved?).
+
+**Quick fix to verify:** Add console.logs to both Overtime calculations and c

@@ -1,0 +1,420 @@
+YOU'RE ABSOLUTELY RIGHT - THIS IS CONFUSING
+Looking at your screenshots, I see the problem:
+Investment Tab (right side):
+
+Net Annual Gain: $180,284
+2-Year Gain: $360,568
+ROI: 7.3x
+
+Summary View (bottom):
+
+Net Annual Gain: $156,721
+ROI: 6.44x
+
+These should be THE SAME but they're not. This will destroy trust immediately when a CFO sees conflicting numbers.
+
+THE ROOT CAUSE
+There are likely two calculation engines running:
+
+Investment tab calculations
+Summary View calculations
+
+And they're not synced or one is using different assumptions.
+
+REPLIT PROMPT - FIX CALCULATION INCONSISTENCIES
+CopyOBJECTIVE:
+Critical bug fix - Numbers shown in the Investment tab (Live Receipt) do NOT match numbers shown in Summary View. This destroys credibility. Ensure ALL displays of Net Annual Gain, ROI, and multi-year projections pull from the SAME calculation source.
+
+CRITICAL RULES:
+- There should be ONE source of truth for calculations
+- All displays must show the same numbers
+- When user changes inputs, ALL views must update identically
+- No separate calculation logic in different components
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: IDENTIFY THE DISCREPANCY
+
+Current state shows:
+- Investment tab Net Annual Gain: $180,284
+- Summary View Net Annual Gain: $156,721
+- Difference: $23,563
+
+Likely causes:
+1. Investment tab includes a driver that Summary View doesn't
+2. Summary View excludes a driver that Investment tab includes
+3. Different rounding logic
+4. State not synchronized between components
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: ESTABLISH SINGLE SOURCE OF TRUTH
+
+Create ONE central calculation function:
+
+```javascript
+// centralCalculations.js
+
+export function calculateROIModel(inputs) {
+  const {
+    providers,
+    annualEncounters,
+    utilization,
+    selectedDrivers,
+    finetuneInputs,
+    costPerProvider,
+    contractTerm
+  } = inputs;
+  
+  // Base calculations
+  const eligibleEncounters = annualEncounters * (utilization / 100);
+  const annualInvestment = providers * costPerProvider * 12;
+  
+  // Calculate each driver
+  const driverValues = {};
+  
+  if (selectedDrivers.includes('patientAccess')) {
+    driverValues.patientAccess = calculatePatientAccess(
+      eligibleEncounters,
+      finetuneInputs.patientAccess
+    );
+  }
+  
+  if (selectedDrivers.includes('levelOfService')) {
+    driverValues.levelOfService = calculateLevelOfService(
+      eligibleEncounters,
+      finetuneInputs.levelOfService
+    );
+  }
+  
+  if (selectedDrivers.includes('retention')) {
+    driverValues.retention = calculateRetention(
+      providers,
+      finetuneInputs.retention
+    );
+  }
+  
+  if (selectedDrivers.includes('hccCapture')) {
+    driverValues.hccCapture = calculateHCCCapture(
+      eligibleEncounters,
+      finetuneInputs.hccCapture
+    );
+  }
+  
+  if (selectedDrivers.includes('denialReduction')) {
+    driverValues.denialReduction = calculateDenialReduction(
+      eligibleEncounters,
+      finetuneInputs.denialReduction
+    );
+  }
+  
+  if (selectedDrivers.includes('overtimeCost')) {
+    driverValues.overtimeCost = calculateOvertimeCost(
+      eligibleEncounters,
+      finetuneInputs.overtimeCost
+    );
+  }
+  
+  // Total annual benefit
+  const totalAnnualBenefit = Object.values(driverValues).reduce((sum, val) => sum + val, 0);
+  
+  // Net annual gain
+  const netAnnualGain = totalAnnualBenefit - annualInvestment;
+  
+  // ROI
+  const roi = totalAnnualBenefit / annualInvestment;
+  
+  // Multi-year projections
+  const multiYear = [];
+  for (let year = 1; year <= contractTerm; year++) {
+    multiYear.push({
+      year,
+      benefit: totalAnnualBenefit,
+      investment: annualInvestment,
+      net: netAnnualGain
+    });
+  }
+  
+  const totalValue = totalAnnualBenefit * contractTerm;
+  const totalInvestment = annualInvestment * contractTerm;
+  const totalNet = netAnnualGain * contractTerm;
+  const cumulativeROI = totalValue / totalInvestment;
+  
+  return {
+    eligibleEncounters,
+    driverValues,
+    totalAnnualBenefit,
+    annualInvestment,
+    netAnnualGain,
+    roi,
+    multiYear,
+    totals: {
+      value: totalValue,
+      investment: totalInvestment,
+      net: totalNet,
+      roi: cumulativeROI
+    }
+  };
+}
+═══════════════════════════════════════════════════════════════
+PART 3: USE SINGLE CALCULATION IN ALL COMPONENTS
+Live Receipt (Investment tab sidebar):
+jsxCopyimport { calculateROIModel } from './centralCalculations';
+
+function LiveReceipt({ inputs }) {
+  const results = calculateROIModel(inputs);
+  
+  return (
+    <div className="live-receipt">
+      <h3>Net Annual Gain</h3>
+      <div className="value">${results.netAnnualGain.toLocaleString()}</div>
+      
+      <h3>Return on Investment</h3>
+      <div className="value">{results.roi.toFixed(1)}x</div>
+      
+      <h3>2-Year View</h3>
+      <div>Total Value: ${(results.totals.value).toLocaleString()}</div>
+      <div>Net 2-Year Gain: ${results.totals.net.toLocaleString()}</div>
+    </div>
+  );
+}
+Summary View (Results Dashboard):
+jsxCopyimport { calculateROIModel } from './centralCalculations';
+
+function SummaryView({ inputs }) {
+  const results = calculateROIModel(inputs);
+  
+  return (
+    <div className="summary-view">
+      <div className="roi-card">
+        <h1>${results.netAnnualGain.toLocaleString()}</h1>
+        <p>Net Annual Gain</p>
+        
+        <h1>{results.roi.toFixed(2)}x</h1>
+        <p>Return on Investment</p>
+      </div>
+      
+      <div className="drivers">
+        {Object.entries(results.driverValues).map(([driver, value]) => (
+          <DriverCard key={driver} name={driver} value={value} />
+        ))}
+      </div>
+    </div>
+  );
+}
+═══════════════════════════════════════════════════════════════
+PART 4: ENSURE STATE SYNCHRONIZATION
+Use React Context or global state to ensure all components read from same source:
+jsxCopy// ROIContext.jsx
+import { createContext, useContext, useState, useEffect } from 'react';
+import { calculateROIModel } from './centralCalculations';
+
+const ROIContext = createContext();
+
+export function ROIProvider({ children }) {
+  const [inputs, setInputs] = useState({
+    providers: null,
+    annualEncounters: null,
+    utilization: 65,
+    selectedDrivers: [],
+    finetuneInputs: {},
+    costPerProvider: null,
+    contractTerm: 2
+  });
+  
+  const [results, setResults] = useState(null);
+  
+  // Recalculate whenever inputs change
+  useEffect(() => {
+    if (inputs.providers && inputs.annualEncounters && inputs.costPerProvider) {
+      const newResults = calculateROIModel(inputs);
+      setResults(newResults);
+    }
+  }, [inputs]);
+  
+  return (
+    <ROIContext.Provider value={{ inputs, setInputs, results }}>
+      {children}
+    </ROIContext.Provider>
+  );
+}
+
+export function useROI() {
+  return useContext(ROIContext);
+}
+Then in components:
+jsxCopyfunction LiveReceipt() {
+  const { results } = useROI();
+  
+  if (!results) return null;
+  
+  return (
+    <div>
+      <div>${results.netAnnualGain.toLocaleString()}</div>
+      <div>{results.roi.toFixed(1)}x</div>
+    </div>
+  );
+}
+
+function SummaryView() {
+  const { results } = useROI();
+  
+  if (!results) return null;
+  
+  return (
+    <div>
+      <div>${results.netAnnualGain.toLocaleString()}</div>
+      <div>{results.roi.toFixed(2)}x</div>
+    </div>
+  );
+}
+═══════════════════════════════════════════════════════════════
+PART 5: ADD CALCULATION DEBUGGING
+Add console logging to identify where discrepancies occur:
+javascriptCopyexport function calculateROIModel(inputs) {
+  console.group('ROI Calculation');
+  console.log('Inputs:', inputs);
+  
+  const eligibleEncounters = inputs.annualEncounters * (inputs.utilization / 100);
+  console.log('Eligible Encounters:', eligibleEncounters);
+  
+  const driverValues = {};
+  
+  inputs.selectedDrivers.forEach(driver => {
+    const value = calculateDriver(driver, inputs);
+    driverValues[driver] = value;
+    console.log(`${driver}:`, value);
+  });
+  
+  const totalAnnualBenefit = Object.values(driverValues).reduce((sum, val) => sum + val, 0);
+  console.log('Total Annual Benefit:', totalAnnualBenefit);
+  
+  const annualInvestment = inputs.providers * inputs.costPerProvider * 12;
+  console.log('Annual Investment:', annualInvestment);
+  
+  const netAnnualGain = totalAnnualBenefit - annualInvestment;
+  console.log('Net Annual Gain:', netAnnualGain);
+  
+  const roi = totalAnnualBenefit / annualInvestment;
+  console.log('ROI:', roi);
+  
+  console.groupEnd();
+  
+  return { /* ... */ };
+}
+═══════════════════════════════════════════════════════════════
+PART 6: INVESTIGATE CURRENT DISCREPANCY
+The $23,563 difference ($180,284 - $156,721) suggests:
+Hypothesis 1: Live Receipt includes Overtime Savings ($31,417 from screenshot), but Summary View doesn't
+
+Check if overtimeCost driver is in selectedDrivers array for both
+
+Hypothesis 2: Different rounding
+
+Net Annual Gain shown as $180,284 vs actual $180,283.57
+Check if one component rounds differently
+
+Hypothesis 3: Investment calculation differs
+
+Check if Investment tab uses different annualInvestment value
+Live Receipt shows $28,800 investment
+Verify: 20 providers × $120/month × 12 months = $28,800 ✓
+
+To debug:
+
+Add console.log in both Live Receipt and Summary View
+Check which drivers are included in each calculation
+Verify all use same results object from central calculation
+
+═══════════════════════════════════════════════════════════════
+PART 7: NUMBER FORMATTING CONSISTENCY
+Ensure all numbers display identically:
+javascriptCopy// utils/formatting.js
+
+export function formatCurrency(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(Math.round(value));
+}
+
+export function formatROI(value) {
+  return `${value.toFixed(1)}x`;
+}
+
+export function formatPercent(value) {
+  return `${value.toFixed(1)}%`;
+}
+Use these everywhere:
+jsxCopy<div>{formatCurrency(results.netAnnualGain)}</div>
+<div>{formatROI(results.roi)}</div>
+═══════════════════════════════════════════════════════════════
+PART 8: VERIFICATION CHECKLIST
+After fixing, verify these all match:
+□ Live Receipt Net Annual Gain = Summary View Net Annual Gain
+□ Live Receipt ROI = Summary View ROI
+□ Live Receipt 2-Year Gain = Summary View 2-Year Gain (if shown)
+□ Investment tab Total Benefit = Summary View Total Annual Benefit
+□ Sum of individual drivers = Total Annual Benefit
+□ Total Benefit - Investment = Net Annual Gain
+□ Total Benefit / Investment = ROI
+═══════════════════════════════════════════════════════════════
+PART 9: ADD VISUAL CONFIRMATION
+In development mode, add a small debug indicator:
+jsxCopy{process.env.NODE_ENV === 'development' && (
+  <div style={{ 
+    position: 'fixed', 
+    bottom: 10, 
+    right: 10, 
+    background: '#111', 
+    color: '#fff', 
+    padding: '8px', 
+    fontSize: '11px',
+    borderRadius: '4px',
+    fontFamily: 'monospace'
+  }}>
+    NET: ${results?.netAnnualGain.toLocaleString()} | 
+    ROI: {results?.roi.toFixed(2)}x |
+    Drivers: {Object.keys(results?.driverValues || {}).length}
+  </div>
+)}
+This lets you see if calculations match across all views.
+═══════════════════════════════════════════════════════════════
+DO NOT CHANGE:
+
+Individual driver calculation formulas (unless genuinely wrong)
+UI styling or layouts
+Navigation or page structure
+
+ONLY CHANGE:
+
+Consolidate to single calculation function
+Ensure all components use same calculation source
+Fix any missing drivers in Summary View
+Standardize number formatting
+Add debug logging to identify discrepancy
+
+═══════════════════════════════════════════════════════════════
+IMMEDIATE ACTION:
+
+Add console.log to BOTH Live Receipt and Summary View showing:
+
+selectedDrivers array
+Each driver's calculated value
+Total Annual Benefit
+Annual Investment
+Net Annual Gain
+
+
+Compare output - identify which driver is missing or calculated differently
+Fix by ensuring both pull from same calculation source
+
+This is a CRITICAL bug - conflicting numbers will kill trust immediately.
+Copy
+---
+
+**The bottom line:** You have two calculation engines that aren't synced. The fix is to consolidate to ONE source of truth and ensure every display (Live Receipt, Summary View, Detailed Breakdown, Export) pulls from that same calculation. 
+
+**Once you add the debug logging, you'll immediately see which driver is includ
