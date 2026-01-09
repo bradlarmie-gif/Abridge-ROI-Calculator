@@ -1787,31 +1787,68 @@ export default function ObjectiveSelectionScreen({
       >
         {/* PAGE 0 — ORIENTATION */}
         {currentPage === "orientation" && (
-          <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28">
-            <div className="w-full max-w-3xl text-center">
-              <div className="w-full bg-white border border-neutral-200/70 rounded-3xl px-10 py-12 md:px-16 md:py-14 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
-                <h2 className="text-3xl md:text-4xl lg:text-[44px] font-medium text-neutral-900 tracking-tight">
-                  <span className="block leading-[1.15]">
-                    Model the impact of
-                  </span>
-                  <span className="block mt-2 leading-[1.15]">
-                    ambient documentation
-                  </span>
-                </h2>
-                <p className="mt-5 text-base md:text-lg text-neutral-500 leading-relaxed">
-                  Understand where the value actually comes from.
-                </p>
+          <div className="relative min-h-full">
+            {/* Geometric pattern - top right */}
+            <svg 
+              className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] md:w-[600px] md:h-[600px] pointer-events-none z-0 opacity-[0.03]"
+              viewBox="0 0 400 400" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="100" cy="100" r="80" fill="#E8D5C8" />
+              <rect x="200" y="50" width="150" height="150" rx="24" fill="#E8D5C8" />
+              <path d="M50 280 Q150 220 250 280" stroke="#E8D5C8" strokeWidth="40" fill="none" strokeLinecap="round" />
+              <circle cx="320" cy="320" r="60" fill="#E8D5C8" />
+              <rect x="40" y="200" width="80" height="80" rx="16" fill="#E8D5C8" />
+            </svg>
+            
+            {/* Geometric pattern - bottom left */}
+            <svg 
+              className="fixed bottom-[-10%] left-[-10%] w-[400px] h-[400px] md:w-[500px] md:h-[500px] pointer-events-none z-0 opacity-[0.025] rotate-180"
+              viewBox="0 0 400 400" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="100" cy="100" r="80" fill="#E8D5C8" />
+              <rect x="200" y="50" width="150" height="150" rx="24" fill="#E8D5C8" />
+              <path d="M50 280 Q150 220 250 280" stroke="#E8D5C8" strokeWidth="40" fill="none" strokeLinecap="round" />
+              <circle cx="320" cy="320" r="60" fill="#E8D5C8" />
+              <rect x="40" y="200" width="80" height="80" rx="16" fill="#E8D5C8" />
+            </svg>
 
-                <div className="mt-10 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={handleContinueToPage1}
-                    className="inline-flex items-center justify-center gap-3 px-8 py-3.5 rounded-lg font-medium text-base border-2 border-[#E8532F] text-[#E8532F] bg-transparent hover:bg-[#E8532F] hover:text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,83,47,0.25)] active:translate-y-0 active:shadow-[0_2px_8px_rgba(232,83,47,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8532F] focus-visible:ring-offset-2"
-                    data-testid="button-start"
-                  >
-                    Build ROI Model
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
+            <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28 relative z-10">
+              <div className="w-full max-w-3xl text-center">
+                <div className="landing-animate-card w-full bg-white border border-neutral-200/60 rounded-2xl md:rounded-3xl px-8 py-12 md:px-16 md:py-16 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                  <h2 className="landing-animate-headline text-[32px] md:text-[40px] lg:text-[48px] font-bold text-[#111827] tracking-[-0.02em]">
+                    <span className="block leading-[1.2]">
+                      Model the impact of
+                    </span>
+                    <span className="block mt-1 leading-[1.2]">
+                      ambient documentation
+                    </span>
+                  </h2>
+                  
+                  <p className="landing-animate-subtitle-1 mt-6 text-base md:text-lg text-[#6B7280] leading-relaxed max-w-[540px] mx-auto">
+                    Understand where the value actually comes from.
+                  </p>
+                  
+                  <p className="landing-animate-subtitle-2 mt-2 text-sm md:text-base text-[#9CA3AF] leading-relaxed max-w-[540px] mx-auto">
+                    Build defensible ROI models for healthcare leadership.
+                  </p>
+
+                  <div className="landing-animate-button mt-10 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleContinueToPage1}
+                      className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-semibold text-base border-2 border-[#E8532F] text-[#E8532F] bg-transparent hover:bg-[#E8532F] hover:text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,83,47,0.25)] active:translate-y-0 active:shadow-[0_2px_8px_rgba(232,83,47,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8532F] focus-visible:ring-offset-2"
+                      data-testid="button-start"
+                    >
+                      Build ROI Model
+                      <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+                    </button>
+                  </div>
+                  
+                  <p className="landing-animate-trust mt-8 text-[13px] text-[#9CA3AF] tracking-[0.02em]">
+                    Used by 200+ health system partners
+                  </p>
                 </div>
               </div>
             </div>

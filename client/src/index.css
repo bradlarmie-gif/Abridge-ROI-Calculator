@@ -326,3 +326,63 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Landing Page Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-animate-card {
+  animation: fadeInUp 600ms ease-out;
+  animation-fill-mode: both;
+}
+
+.landing-animate-headline {
+  animation: fadeInUp 600ms ease-out 100ms;
+  animation-fill-mode: both;
+}
+
+.landing-animate-subtitle-1 {
+  animation: fadeInUp 600ms ease-out 200ms;
+  animation-fill-mode: both;
+}
+
+.landing-animate-subtitle-2 {
+  animation: fadeInUp 600ms ease-out 300ms;
+  animation-fill-mode: both;
+}
+
+.landing-animate-button {
+  animation: fadeInUp 600ms ease-out 400ms;
+  animation-fill-mode: both;
+}
+
+.landing-animate-trust {
+  animation: fadeInUp 600ms ease-out 500ms;
+  animation-fill-mode: both;
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .landing-animate-card,
+  .landing-animate-headline,
+  .landing-animate-subtitle-1,
+  .landing-animate-subtitle-2,
+  .landing-animate-button,
+  .landing-animate-trust {
+    animation: none;
+  }
+}
+
+/* Selection color */
+::selection {
+  background: rgba(232, 83, 47, 0.2);
+  color: #111827;
+}

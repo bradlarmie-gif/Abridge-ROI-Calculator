@@ -1,0 +1,468 @@
+OBJECTIVE:
+Transform the landing page from basic/boring to iconic. Add the Abridge geometric pattern background, improve typography hierarchy, add subtle animation, and make it feel like the confident entry point to a Bloomberg Terminal-quality tool.
+
+CRITICAL RULES:
+- Add Abridge geometric pattern at 2-3% opacity (subtle texture)
+- Keep it minimal - elevate what's there, don't add clutter
+- Match the polish level of Care Setting and other refined pages
+- No bounce/playful animations - professional only
+- Must work on mobile and desktop
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: BACKGROUND - ADD GEOMETRIC PATTERN
+
+Current: Plain white background
+New: Off-white with Abridge geometric pattern overlay
+
+IMPLEMENTATION:
+
+Add the geometric pattern as a fixed background element:
+
+HTML/JSX Structure:
+```jsx
+<div className="landing-page">
+  <div className="geometric-pattern geometric-pattern-top-right"></div>
+  <div className="geometric-pattern geometric-pattern-bottom-left"></div>
+  
+  <div className="landing-content">
+    {/* Existing content */}
+  </div>
+</div>
+CSS/Styling:
+cssCopy.landing-page {
+  position: relative;
+  min-height: 100vh;
+  background: #FEFEFE; /* Very slightly off-white */
+  overflow: hidden;
+}
+
+.geometric-pattern {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03; /* VERY subtle - 2-3% */
+}
+
+.geometric-pattern-top-right {
+  top: -10%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background-image: url('/abridge-pattern.svg'); /* Your provided SVG */
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.geometric-pattern-bottom-left {
+  bottom: -10%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background-image: url('/abridge-pattern.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: rotate(180deg); /* Flip for variety */
+  opacity: 0.025; /* Slightly lighter than top-right */
+}
+
+.landing-content {
+  position: relative;
+  z-index: 1;
+  /* Existing content styling */
+}
+If you don't have the SVG as a file, create it inline:
+jsxCopy<svg className="geometric-pattern geometric-pattern-top-right" 
+     viewBox="0 0 400 400" 
+     xmlns="http://www.w3.org/2000/svg">
+  {/* Abridge geometric shapes - circles, rounded rectangles, arches */}
+  <circle cx="100" cy="100" r="80" fill="#F5F3F0" />
+  <rect x="200" y="50" width="150" height="150" rx="24" fill="#F5F3F0" />
+  <path d="M50 300 Q150 250 250 300" stroke="#F5F3F0" strokeWidth="40" fill="none" />
+  {/* Add more shapes as needed */}
+</svg>
+Color for pattern: #F5F3F0 (beige/cream that matches Abridge brand)
+═══════════════════════════════════════════════════════════════
+PART 2: IMPROVE TYPOGRAPHY HIERARCHY
+Current: Headline + subtitle + button (all similar weight)
+New: Stronger hierarchy with better spacing
+BEFORE:
+Model the impact of ambient documentation
+Understand where the value actually comes from.
+[Build ROI Model]
+AFTER:
+Model the impact of
+ambient documentation
+Understand where the value actually comes from.
+Build defensible ROI models for healthcare leadership.
+[Build ROI Model →]
+STYLING:
+Headline:
+cssCopy.landing-headline {
+  font-size: 48px; /* Increased from ~32px */
+  font-weight: 700; /* Bold */
+  color: #111827;
+  line-height: 1.2;
+  letter-spacing: -0.02em; /* Slight negative tracking */
+  margin-bottom: 24px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .landing-headline {
+    font-size: 36px;
+  }
+}
+Subtitle (primary):
+cssCopy.landing-subtitle-primary {
+  font-size: 18px;
+  color: #6B7280;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+Subtitle (secondary) - NEW:
+cssCopy.landing-subtitle-secondary {
+  font-size: 16px;
+  color: #9CA3AF; /* Lighter gray */
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+Button:
+cssCopy.landing-cta-button {
+  background: transparent;
+  border: 2px solid #E8532F; /* Abridge orange */
+  color: #E8532F;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 200ms ease-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.landing-cta-button:hover {
+  background: #E8532F;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(232, 83, 47, 0.25);
+}
+
+.landing-cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(232, 83, 47, 0.2);
+}
+
+/* Arrow icon */
+.landing-cta-button::after {
+  content: '→';
+  font-size: 18px;
+  transition: transform 200ms ease-out;
+}
+
+.landing-cta-button:hover::after {
+  transform: translateX(4px);
+}
+═══════════════════════════════════════════════════════════════
+PART 3: IMPROVE CARD DESIGN
+Current: White card with shadow
+New: Elevated card with better shadow, subtle border
+CARD STYLING:
+cssCopy.landing-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.06); /* Very subtle border */
+  border-radius: 16px; /* Larger radius for landing page */
+  padding: 64px 48px; /* More generous padding */
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.06); /* Layered shadow */
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .landing-card {
+    padding: 48px 32px;
+    border-radius: 12px;
+  }
+}
+═══════════════════════════════════════════════════════════════
+PART 4: ADD SUBTLE ENTRANCE ANIMATION
+When page loads, fade in content with slight upward motion:
+cssCopy@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-card {
+  animation: fadeInUp 600ms ease-out;
+  animation-fill-mode: both;
+}
+
+/* Stagger children for smooth entrance */
+.landing-headline {
+  animation: fadeInUp 600ms ease-out 100ms;
+  animation-fill-mode: both;
+}
+
+.landing-subtitle-primary {
+  animation: fadeInUp 600ms ease-out 200ms;
+  animation-fill-mode: both;
+}
+
+.landing-subtitle-secondary {
+  animation: fadeInUp 600ms ease-out 300ms;
+  animation-fill-mode: both;
+}
+
+.landing-cta-button {
+  animation: fadeInUp 600ms ease-out 400ms;
+  animation-fill-mode: both;
+}
+No bounce, no elastic - just smooth professional fade-in.
+═══════════════════════════════════════════════════════════════
+PART 5: ADD SUBTLE CONTEXT LINE (OPTIONAL)
+Below the button, add trust indicator:
+jsxCopy<button className="landing-cta-button">
+  Build ROI Model
+</button>
+
+<p className="landing-trust-line">
+  Used by 200+ health system partners
+</p>
+STYLING:
+cssCopy.landing-trust-line {
+  font-size: 13px;
+  color: #9CA3AF;
+  margin-top: 24px;
+  letter-spacing: 0.02em;
+}
+═══════════════════════════════════════════════════════════════
+PART 6: HEADER IMPROVEMENTS
+The "ABRIDGE / ROI Calculator" header could be more refined:
+CURRENT:
+ABRIDGE
+ROI Calculator
+NEW:
+jsxCopy<header className="landing-header">
+  <div className="landing-header-content">
+    <div className="landing-logo">
+      <span className="landing-logo-text">ABRIDGE</span>
+      <span className="landing-logo-divider">|</span>
+      <span className="landing-logo-subtitle">ROI Calculator</span>
+    </div>
+  </div>
+</header>
+STYLING:
+cssCopy.landing-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 32px 48px;
+  z-index: 10;
+}
+
+.landing-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #111827;
+}
+
+.landing-logo-divider {
+  font-size: 18px;
+  color: #E5E7EB;
+}
+
+.landing-logo-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B7280;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .landing-header {
+    padding: 24px 24px;
+  }
+  
+  .landing-logo-text {
+    font-size: 16px;
+  }
+  
+  .landing-logo-subtitle {
+    font-size: 13px;
+  }
+}
+═══════════════════════════════════════════════════════════════
+PART 7: COMPLETE PAGE LAYOUT
+Full structure:
+jsxCopy<div className="landing-page">
+  {/* Geometric patterns */}
+  <div className="geometric-pattern geometric-pattern-top-right"></div>
+  <div className="geometric-pattern geometric-pattern-bottom-left"></div>
+  
+  {/* Header */}
+  <header className="landing-header">
+    <div className="landing-logo">
+      <span className="landing-logo-text">ABRIDGE</span>
+      <span className="landing-logo-divider">|</span>
+      <span className="landing-logo-subtitle">ROI Calculator</span>
+    </div>
+  </header>
+  
+  {/* Main content */}
+  <main className="landing-main">
+    <div className="landing-card">
+      <h1 className="landing-headline">
+        Model the impact of<br />
+        ambient documentation
+      </h1>
+      
+      <p className="landing-subtitle-primary">
+        Understand where the value actually comes from.
+      </p>
+      
+      <p className="landing-subtitle-secondary">
+        Build defensible ROI models for healthcare leadership.
+      </p>
+      
+      <button 
+        className="landing-cta-button"
+        onClick={() => navigate('/care-setting')}
+      >
+        Build ROI Model
+      </button>
+      
+      <p className="landing-trust-line">
+        Used by 200+ health system partners
+      </p>
+    </div>
+  </main>
+</div>
+Main container styling:
+cssCopy.landing-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 48px 24px;
+}
+═══════════════════════════════════════════════════════════════
+PART 8: MOBILE OPTIMIZATIONS
+Ensure pattern doesn't overwhelm on mobile:
+cssCopy@media (max-width: 768px) {
+  .geometric-pattern-top-right {
+    width: 400px;
+    height: 400px;
+    top: -20%;
+    right: -20%;
+    opacity: 0.02; /* Even more subtle on mobile */
+  }
+  
+  .geometric-pattern-bottom-left {
+    width: 350px;
+    height: 350px;
+    bottom: -20%;
+    left: -20%;
+    opacity: 0.015;
+  }
+  
+  .landing-main {
+    padding: 32px 16px;
+  }
+}
+═══════════════════════════════════════════════════════════════
+PART 9: ACCESSIBILITY
+Ensure pattern doesn't interfere with readability:
+cssCopy/* Ensure all text has proper contrast */
+.landing-headline,
+.landing-subtitle-primary,
+.landing-subtitle-secondary,
+.landing-trust-line {
+  position: relative;
+  z-index: 2; /* Above pattern */
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .landing-card,
+  .landing-headline,
+  .landing-subtitle-primary,
+  .landing-subtitle-secondary,
+  .landing-cta-button {
+    animation: none;
+  }
+  
+  .landing-cta-button:hover::after {
+    transform: none;
+  }
+}
+═══════════════════════════════════════════════════════════════
+PART 10: FINAL POLISH
+Add subtle page-level refinements:
+cssCopy/* Smooth scrolling if navigating from anchor */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection color (when user highlights text) */
+::selection {
+  background: rgba(232, 83, 47, 0.2); /* Subtle orange */
+  color: #111827;
+}
+═══════════════════════════════════════════════════════════════
+DO NOT CHANGE:
+
+Navigation routing (button must still go to /care-setting)
+Any other pages in the application
+Brand colors or core typography scale
+Functionality of the button
+
+ONLY CHANGE:
+
+Landing page background (add geometric pattern)
+Typography sizing and hierarchy
+Card styling and shadows
+Button styling (transparent to orange on hover)
+Add entrance animations
+Improve header layout
+Mobile responsiveness
+
+═══════════════════════════════════════════════════════════════
+RESULT:
+Landing page now matches the quality of your other refined pages. Subtle Abridge geometric pattern adds brand texture without being loud. Typography hierarchy is stronger. Button interaction is more satisfying. Entrance animation is smooth and professional. The page feels like the confident entry point to a Bloomberg Terminal-quality product - minimal but clearly well-designed.
