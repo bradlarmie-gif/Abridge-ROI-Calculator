@@ -1877,14 +1877,6 @@ export default function ObjectiveSelectionScreen({
                       <p className="text-sm text-amber-800 mb-3">
                         These calculations use typical assumptions from 200+ health system partners.
                       </p>
-                      <p className="text-sm text-amber-800 mb-2">
-                        In the next step, you'll customize:
-                      </p>
-                      <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc mb-3">
-                        <li>Your organization size and volume</li>
-                        <li>Your financial metrics (revenue, costs)</li>
-                        <li>How conservatively to model outcomes</li>
-                      </ul>
                       <p className="text-sm text-amber-800 mb-2 font-medium">
                         Important limitations:
                       </p>
@@ -1892,7 +1884,7 @@ export default function ObjectiveSelectionScreen({
                         <li>We don't have access to your specific payer contracts, reimbursement rates, or financial systems</li>
                         <li>Revenue assumptions use blended averages—your actual rates may vary</li>
                         <li>Capacity value assumes patient demand exists to fill additional appointment slots</li>
-                        <li>Long-term metrics (retention) require 12+ months to measure</li>
+                        <li>Long-term metrics (retention) may require 12+ months to measure</li>
                       </ul>
                       <p className="text-sm text-amber-800 font-medium">
                         The formulas stay the same—only YOUR numbers change. Adjust assumptions to reflect your organization's reality.
