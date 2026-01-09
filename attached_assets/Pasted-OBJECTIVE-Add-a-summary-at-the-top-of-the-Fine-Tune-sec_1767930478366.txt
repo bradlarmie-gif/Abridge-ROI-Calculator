@@ -1,0 +1,152 @@
+OBJECTIVE:
+Add a summary at the top of the Fine-Tune section (when expanded) that shows users exactly what they've customized from the default posture settings. Only appears if they've actually changed something.
+
+LOCATION:
+Value Realization tab (Tab 2 of Model Setup) - inside the Fine-Tune Assumptions section, right after the warning note
+
+CURRENT STATE:
+When Fine-Tune expands, it goes straight to the driver inputs
+
+NEW STATE:
+If user has customized ANY values, show a summary of changes before the category sections
+
+WHEN TO SHOW:
+- Only display if user has made at least 1 customization
+- Don't show on initial page load (no customizations yet)
+- Update in real-time as they make changes
+- Persists as they navigate between tabs
+
+STRUCTURE:
+
+🎚️ FINE-TUNE ASSUMPTIONS  Optional                     ∨
+
+[When expanded AND user has made changes:]
+
+┌─────────────────────────────────────────────────────────────┐
+│ ⚠️ Note: Changing these values overrides your posture      │
+│    selection and creates a custom model.                   │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ Your customizations: 3 changes from Typical posture        │
+│                                                             │
+│ • Patient Access: Minutes saved (2.5 → 3.0 min)           │
+│ • Clinician Retention: Turnover rate (5% → 6%)            │
+│ • Level of Service: Revenue per wRVU ($50 → $45)          │
+│                                                             │
+│ [Reset All to Typical]                                     │
+└─────────────────────────────────────────────────────────────┘
+
+[Then show category sections as normal...]
+
+CAPACITY & LABOR ─────────────────────────────────────────────
+[... driver cards ...]
+
+CUSTOMIZATION SUMMARY DETAILS:
+
+Header:
+"Your customizations: X changes from [Posture name] posture"
+- X = count of modified inputs
+- Posture name = Conservative/Typical/Aggressive (whatever they selected)
+
+Change list format:
+"• [Driver name]: [Input label] ([old value] → [new value])"
+
+Examples:
+- Patient Access: Minutes saved (2.5 → 3.0 min)
+- Patient Access: Realization factor (20% → 15%)
+- Clinician Retention: Turnover rate (5% → 6.5%)
+- Level of Service: Baseline wRVU (1.75 → 2.0)
+- HCC Capture: MA population (15% → 22%)
+- Denial Reduction: Prevention rate (66% → 70%)
+- Overtime Cost: Premium rate ($145 → $160/hr)
+
+Value formatting:
+- Include units (min, %, $, /hr, etc.)
+- Use arrow: →
+- Show both old and new values
+- Format numbers consistently (commas for 1000+, decimals where appropriate)
+
+COMPARISON LOGIC:
+- Track default values for current posture selection
+- Compare current input values to posture defaults
+- Only count as "customization" if value differs from current posture default
+- If user changes posture AFTER customizing, recalculate what counts as "customized"
+
+RESET ALL BUTTON:
+[Reset All to Typical]
+
+Behavior:
+- Resets ALL inputs across ALL drivers to Typical posture defaults
+- Shows confirmation modal: "Reset all customizations to Typical posture defaults? This cannot be undone."
+- After reset, customization summary disappears (no changes to show)
+- All driver calculations update immediately
+
+STYLING:
+
+Customization box:
+- Background: #FEF3C7 (light yellow/orange - subtle warning color)
+- Border: 1px solid #F59E0B (slightly darker orange)
+- Border-radius: 8px
+- Padding: 16px
+- Margin-bottom: 24px (before category sections)
+
+Header line:
+- Font: 14px, #92400E (dark orange/brown), bold
+- "X changes" in color #E8532F (Abridge orange)
+
+Change bullets:
+- Font: 13px, #78350F (dark orange/brown)
+- Bullet: • 
+- Line-height: 1.6
+- Spacing: 4px between lines
+- Driver name in regular weight
+- Values in tabular numbers
+
+Reset button:
+- Font: 14px, #E8532F (Abridge orange)
+- Underline on hover
+- Margin-top: 12px
+- Cursor: pointer
+
+Confirmation modal:
+- Standard modal styling (if you have a modal component)
+- Headline: "Reset all customizations?"
+- Body: "This will reset all X inputs to Typical posture defaults. This cannot be undone."
+- Buttons: [Cancel] [Reset to Typical]
+- Cancel = gray, Reset = Abridge orange
+
+EDGE CASES:
+
+If user changes posture after customizing:
+- Recalculate what's "custom" based on new posture
+- Example: User customizes minutes saved to 3.0 on Typical (default 2.5)
+- Then switches to Aggressive (default 3.5)
+- Now 3.0 is BELOW the Aggressive default, so it's still custom
+- Update summary: "Your customizations: 1 change from Aggressive posture"
+
+If all customizations are reset individually:
+- Customization summary disappears
+- User is back to pure posture defaults
+
+If user customizes, then collapses Fine-Tune:
+- Customizations persist
+- When they re-expand, summary still shows
+
+STATE MANAGEMENT:
+- Track customizations in state/context
+- Structure: { driverName: { inputName: { default: value, current: value } } }
+- Compare on every input change
+- Persist across tab navigation
+
+DO NOT CHANGE:
+- Category groupings (just implemented)
+- Driver input cards
+- Individual "Reset to Typical Defaults" buttons per driver
+- Posture preview card
+- Live Receipt
+- Any calculations
+- Any other page
+
+RESULT:
+Users can see at a glance what they've changed from the standard posture assumptions. The summary builds confidence that the model is transparent and auditable. The "Reset All" button gives them an easy escape hatch if they want to start over. The subtle orange background creates visual distinction without being alarming.

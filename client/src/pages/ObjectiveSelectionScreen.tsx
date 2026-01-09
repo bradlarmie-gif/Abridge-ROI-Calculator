@@ -38,6 +38,16 @@ import {
   Sliders,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export interface SelectedLever {
   settingId: CareSettingType;
@@ -760,6 +770,9 @@ export default function ObjectiveSelectionScreen({
   // Value posture state and edit accordion tracking
   const [valuePosture, setValuePosture] = useState<ValuePosture | null>(null);
   const [editingAssumption, setEditingAssumption] = useState<string | null>(null);
+  
+  // Reset all confirmation modal state
+  const [showResetAllModal, setShowResetAllModal] = useState(false);
 
   // Extended posture presets for additional drivers (aligned with POSTURE_PRESETS)
   const FINE_TUNE_EXTRA_POSTURE_VALUES = {
@@ -809,6 +822,202 @@ export default function ObjectiveSelectionScreen({
     if (valuePosture === "conservative") return 30;
     if (valuePosture === "aggressive") return 50;
     return 40; // typical
+  };
+
+  // Track customizations from current posture defaults
+  // When posture is "custom" or null, compare against "typical" as baseline
+  const customizations = useMemo(() => {
+    const basePosture = valuePosture && valuePosture !== "custom" ? valuePosture : "typical";
+    const preset = POSTURE_PRESETS[basePosture];
+    const extraPreset = FINE_TUNE_EXTRA_POSTURE_VALUES[basePosture];
+    
+    const changes: { driver: string; input: string; oldValue: string; newValue: string }[] = [];
+    
+    // Patient Access: Minutes saved
+    const currentMinutes = customMinutes ?? minutesSaved;
+    if (currentMinutes !== null && currentMinutes !== preset.minutes) {
+      changes.push({
+        driver: "Patient Access",
+        input: "Minutes saved",
+        oldValue: `${preset.minutes} min`,
+        newValue: `${currentMinutes} min`
+      });
+    }
+    
+    // Patient Access: Realization factor
+    if (timeRealizationRate !== null && timeRealizationRate !== preset.realization) {
+      changes.push({
+        driver: "Patient Access",
+        input: "Realization factor",
+        oldValue: `${preset.realization}%`,
+        newValue: `${timeRealizationRate}%`
+      });
+    }
+    
+    // Patient Access: Visit duration (default 30)
+    if (ftPatientAccessVisitDuration !== 30) {
+      changes.push({
+        driver: "Patient Access",
+        input: "Visit duration",
+        oldValue: "30 min",
+        newValue: `${ftPatientAccessVisitDuration} min`
+      });
+    }
+    
+    // Patient Access: Revenue per visit (default 200)
+    if (ftPatientAccessRevenuePerVisit !== 200) {
+      changes.push({
+        driver: "Patient Access",
+        input: "Revenue per visit",
+        oldValue: "$200",
+        newValue: `$${ftPatientAccessRevenuePerVisit.toLocaleString()}`
+      });
+    }
+    
+    // Level of Service: wRVU lift
+    if (wrvuSensitivity !== null && wrvuSensitivity !== preset.wrvu) {
+      changes.push({
+        driver: "Level of Service",
+        input: "Documentation lift",
+        oldValue: `${preset.wrvu}%`,
+        newValue: `${wrvuSensitivity}%`
+      });
+    }
+    
+    // Level of Service: Baseline wRVU (default 1.75)
+    if (ftWrvuBaseline !== null && ftWrvuBaseline !== 1.75) {
+      changes.push({
+        driver: "Level of Service",
+        input: "Baseline wRVU",
+        oldValue: "1.75",
+        newValue: `${ftWrvuBaseline}`
+      });
+    }
+    
+    // Level of Service: Revenue per wRVU (default 40)
+    if (ftWrvuRevenuePerUnit !== 40) {
+      changes.push({
+        driver: "Level of Service",
+        input: "Revenue per wRVU",
+        oldValue: "$40",
+        newValue: `$${ftWrvuRevenuePerUnit}`
+      });
+    }
+    
+    // Clinician Retention: Turnover rate (default 5)
+    if (ftRetentionTurnoverRate !== 5) {
+      changes.push({
+        driver: "Clinician Retention",
+        input: "Turnover rate",
+        oldValue: "5%",
+        newValue: `${ftRetentionTurnoverRate}%`
+      });
+    }
+    
+    // Clinician Retention: Replacement cost (default 250000)
+    if (ftRetentionReplacementCost !== 250000) {
+      changes.push({
+        driver: "Clinician Retention",
+        input: "Replacement cost",
+        oldValue: "$250,000",
+        newValue: `$${ftRetentionReplacementCost.toLocaleString()}`
+      });
+    }
+    
+    // HCC Capture: MA population (default 15)
+    if (ftHccMedicareAdvantage !== 15) {
+      changes.push({
+        driver: "HCC Capture",
+        input: "MA population",
+        oldValue: "15%",
+        newValue: `${ftHccMedicareAdvantage}%`
+      });
+    }
+    
+    // HCC Capture: Recapture rate
+    if (ftHccRecaptureRate !== null && ftHccRecaptureRate !== extraPreset.hccRecaptureRate) {
+      changes.push({
+        driver: "HCC Capture",
+        input: "Recapture rate",
+        oldValue: `${extraPreset.hccRecaptureRate}%`,
+        newValue: `${ftHccRecaptureRate}%`
+      });
+    }
+    
+    // HCC Capture: Benchmark PMPM (default 1000)
+    if (ftHccBenchmarkPmpm !== 1000) {
+      changes.push({
+        driver: "HCC Capture",
+        input: "Benchmark PMPM",
+        oldValue: "$1,000",
+        newValue: `$${ftHccBenchmarkPmpm.toLocaleString()}`
+      });
+    }
+    
+    // Denial Reduction: Baseline rate (default 5)
+    if (ftDenialBaselineRate !== 5) {
+      changes.push({
+        driver: "Denial Reduction",
+        input: "Baseline rate",
+        oldValue: "5%",
+        newValue: `${ftDenialBaselineRate}%`
+      });
+    }
+    
+    // Denial Reduction: Prevention rate
+    if (ftDenialPreventionRate !== null && ftDenialPreventionRate !== extraPreset.denialPreventionRate) {
+      changes.push({
+        driver: "Denial Reduction",
+        input: "Prevention rate",
+        oldValue: `${extraPreset.denialPreventionRate}%`,
+        newValue: `${ftDenialPreventionRate}%`
+      });
+    }
+    
+    // Overtime: After-hours reduction
+    if (ftOvertimeAfterHoursReduction !== null && ftOvertimeAfterHoursReduction !== extraPreset.overtimeReduction) {
+      changes.push({
+        driver: "Overtime Cost",
+        input: "After-hours reduction",
+        oldValue: `${extraPreset.overtimeReduction}%`,
+        newValue: `${ftOvertimeAfterHoursReduction}%`
+      });
+    }
+    
+    // Overtime: Premium rate (default 145)
+    if (ftOvertimePremiumRate !== 145) {
+      changes.push({
+        driver: "Overtime Cost",
+        input: "Premium rate",
+        oldValue: "$145/hr",
+        newValue: `$${ftOvertimePremiumRate}/hr`
+      });
+    }
+    
+    return changes;
+  }, [
+    valuePosture, customMinutes, minutesSaved, timeRealizationRate, wrvuSensitivity,
+    ftPatientAccessVisitDuration, ftPatientAccessRevenuePerVisit, ftWrvuBaseline, ftWrvuRevenuePerUnit,
+    ftRetentionTurnoverRate, ftRetentionReplacementCost, ftHccMedicareAdvantage, ftHccRecaptureRate,
+    ftHccBenchmarkPmpm, ftDenialBaselineRate, ftDenialPreventionRate, ftOvertimeAfterHoursReduction,
+    ftOvertimePremiumRate, FINE_TUNE_EXTRA_POSTURE_VALUES
+  ]);
+
+  // Reset all to typical defaults
+  const handleResetAllToTypical = () => {
+    applyPosture("typical");
+    // Reset org-specific values to defaults
+    setFtPatientAccessVisitDuration(30);
+    setFtPatientAccessRevenuePerVisit(200);
+    setFtWrvuBaseline(1.75);
+    setFtWrvuRevenuePerUnit(40);
+    setFtRetentionTurnoverRate(5);
+    setFtRetentionReplacementCost(250000);
+    setFtHccMedicareAdvantage(15);
+    setFtHccBenchmarkPmpm(1000);
+    setFtDenialBaselineRate(5);
+    setFtOvertimePremiumRate(145);
+    setShowResetAllModal(false);
   };
 
   // Pricing step state
@@ -2537,7 +2746,31 @@ export default function ObjectiveSelectionScreen({
                             </div>
                           </div>
 
-                          {/* Fine-tune inputs - showing selected drivers only */}
+                          {/* Customization Summary - only show if there are changes */}
+                          {customizations.length > 0 && (
+                            <div className="bg-[#FEF3C7] border border-[#F59E0B] rounded-lg p-4 mb-6">
+                              <p className="text-sm font-bold text-[#92400E]">
+                                Your customizations: <span className="text-[#E8532F]">{customizations.length} change{customizations.length > 1 ? "s" : ""}</span> from {(valuePosture && valuePosture !== "custom" ? valuePosture : "typical").charAt(0).toUpperCase() + (valuePosture && valuePosture !== "custom" ? valuePosture : "typical").slice(1)} posture
+                              </p>
+                              <div className="mt-2 space-y-1">
+                                {customizations.map((change, idx) => (
+                                  <p key={idx} className="text-[13px] text-[#78350F] leading-relaxed tabular-nums">
+                                    • {change.driver}: {change.input} ({change.oldValue} → {change.newValue})
+                                  </p>
+                                ))}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setShowResetAllModal(true)}
+                                className="mt-3 text-sm text-[#E8532F] hover:underline cursor-pointer"
+                                data-testid="button-reset-all"
+                              >
+                                [Reset All to Typical]
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Fine-tune inputs - grouped by category */}
                           <div className="space-y-8">
                             {/* CAPACITY & LABOR Category */}
                             {(selectedLeverIds.has("patientAccess") || selectedLeverIds.has("workforce") || selectedLeverIds.has("overtime")) && (
@@ -3652,6 +3885,28 @@ export default function ObjectiveSelectionScreen({
           </div>
         </div>
       )}
+
+      {/* Reset All Confirmation Modal */}
+      <AlertDialog open={showResetAllModal} onOpenChange={setShowResetAllModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset all customizations?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will reset all {customizations.length} input{customizations.length !== 1 ? "s" : ""} to Typical posture defaults. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-reset-cancel">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetAllToTypical}
+              className="bg-[#E8532F] hover:bg-[#D14827] text-white"
+              data-testid="button-reset-confirm"
+            >
+              Reset to Typical
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   );
