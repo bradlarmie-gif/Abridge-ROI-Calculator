@@ -1,0 +1,652 @@
+OBJECTIVE:
+Build the Scenario Comparison View where users can select 2-3 scenarios and see them side-by-side with detailed analysis. This is the "board presentation" view that helps decision-makers compare options and understand trade-offs.
+
+CRITICAL RULES:
+- Match existing brand colors and typography exactly
+- Maximum 3 scenarios can be compared at once
+- Always include baseline as reference (can be toggled)
+- Show clear visual hierarchy for easy scanning
+- Generate actionable insights automatically
+- Exportable for presentations
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: ENTRY POINTS
+
+User can enter Comparison View from:
+1. Main Scenario Builder page → "Compare Selected Scenarios" button
+2. Individual scenario card → [Compare] action
+3. After saving a scenario → "Compare to Baseline" option
+
+When entering with scenarios pre-selected:
+- Show those scenarios already checked
+- Allow adding/removing scenarios
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: PAGE HEADER
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ← Back to Scenario Builder                                      │
+│                                                                 │
+│ COMPARE SCENARIOS                                               │
+│ Side-by-side analysis of your expansion options                │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💡 Compare up to 3 scenarios to evaluate trade-offs.       │ │
+│ │    Your baseline model is shown for reference.              │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Back link:
+- "← Back to Scenario Builder"
+- Font: 14px, #E8532F (orange)
+- Hover: Underline
+- Margin-bottom: 24px
+
+Page title:
+- "COMPARE SCENARIOS": 14px, #E8532F (orange), uppercase, letter-spacing 0.05em, bold
+- Subtitle: 16px, #6B7280 (gray)
+- Margin-bottom: 16px
+
+Info box:
+- Background: #EFF6FF (light blue)
+- Border: 1px solid #BFDBFE
+- Border-radius: 8px
+- Padding: 16px
+- Font: 14px, #1E40AF (blue text)
+- Icon: 💡
+- Margin-bottom: 32px
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: SCENARIO SELECTOR
+
+Allow users to select which scenarios to compare:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ SELECT SCENARIOS TO COMPARE                                     │
+│ Choose 2-3 scenarios (baseline always included)                │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ Current Model (Baseline)                      [Required]  │ │
+│ │   50 providers | $391,802 net gain | 6.4x ROI              │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ 📈 Expand to 100 Providers                                │ │
+│ │   100 providers | $783,604 net gain | 6.4x ROI             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ 🎯 Add HCC + Denial Drivers                               │ │
+│ │   50 providers | $612,500 net gain | 8.5x ROI              │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ □ 🏥 Add Emergency Department                                │ │
+│ │   70 combined | $909,533 net gain | 10.0x ROI              │ │
+│ │   [Maximum 3 scenarios - deselect one to add this]         │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ 3 of 3 selected                                                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "SELECT SCENARIOS TO COMPARE": 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Subtitle: 14px, #6B7280 (gray)
+- Margin-bottom: 16px
+
+Scenario selector cards:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 16px
+- Margin-bottom: 12px
+- Cursor: pointer
+
+Checkbox:
+- Size: 20px
+- Checked: #E8532F (orange) background, white checkmark
+- Unchecked: Border 2px solid #E5E7EB
+
+Baseline card:
+- Checkbox disabled (always selected)
+- [Required] badge:
+  - Background: #F3F4F6
+  - Text: 11px, #6B7280, uppercase
+  - Padding: 2px 8px
+  - Border-radius: 4px
+
+Scenario card content:
+- Icon + Name: 14px, #111827 (black), bold
+- Metrics: 13px, #6B7280 (gray)
+- Pipe separators
+
+Disabled card (when max reached):
+- Opacity: 0.6
+- Show helper text: 13px, #6B7280 (gray), italic
+
+Counter:
+- "3 of 3 selected": 13px, #6B7280 (gray)
+- Shows current selection count
+
+Selected card state:
+- Border: 2px solid #E8532F
+- Background: rgba(232, 83, 47, 0.02)
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: MAIN COMPARISON TABLE
+
+Full side-by-side comparison:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ DETAILED COMPARISON                                             │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │                  BASELINE      EXPAND        ADD DRIVERS    │ │
+│ │                               PROVIDERS                      │ │
+│ │ ═════════════════════════════════════════════════════════  │ │
+│ │                                                             │ │
+│ │ DEPLOYMENT                                                  │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │ Care Setting     Outpatient    Outpatient    Outpatient    │ │
+│ │ Providers        50            100           50            │ │
+│ │ Encounters       65,000        130,000       65,000        │ │
+│ │ Utilization      65%           75%           65%           │ │
+│ │ Eligible         42,250        97,500        42,250        │ │
+│ │                                                             │ │
+│ │ ACTIVE DRIVERS                                              │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │ Patient Access   ✓             ✓             ✓             │ │
+│ │ Level of Service ✓             ✓             ✓             │ │
+│ │ Retention        ✓             ✓             ✓             │ │
+│ │ HCC Capture      —             —             ✓             │ │
+│ │ Denial Reduction —             —             ✓             │ │
+│ │ Overtime Cost    —             —             —             │ │
+│ │ Driver Count     3             3             5             │ │
+│ │                                                             │ │
+│ │ VALUE BREAKDOWN                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │ Patient Access   $173,333      $400,000      $173,333      │ │
+│ │                                +131%         —             │ │
+│ │ Level of Service $182,000      $420,000      $182,000      │ │
+│ │                                +131%         —             │ │
+│ │ Retention        $100,000      $200,000      $100,000      │ │
+│ │                                +100%         —             │ │
+│ │ HCC Capture      —             —             $337,000      │ │
+│ │                                              NEW           │ │
+│ │ Denial Reduction —             —             $103,000      │ │
+│ │                                              NEW           │ │
+│ │                                                             │ │
+│ │ FINANCIAL SUMMARY                                           │ │
+│ │ ═════════════════════════════════════════════════════════  │ │
+│ │ Total Benefit    $455,333      $1,020,000    $895,333      │ │
+│ │                                +124%         +97%          │ │
+│ │ Investment       $72,000       $144,000      $72,000       │ │
+│ │                                +100%         —             │ │
+│ │ Net Annual Gain  $383,333      $876,000      $823,333      │ │
+│ │                                +129%         +115%         │ │
+│ │ ROI              5.3x          7.1x          11.4x         │ │
+│ │                                +34%          +115%         │ │
+│ │                                                             │ │
+│ │ 3-YEAR PROJECTION                                           │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │ Total Value      $1,150,000    $2,628,000    $2,470,000    │ │
+│ │                                +129%         +115%         │ │
+│ │ Total Investment $216,000      $432,000      $216,000      │ │
+│ │                                +100%         —             │ │
+│ │ Net 3-Year Gain  $934,000      $2,196,000    $2,254,000    │ │
+│ │                                +135%         +141%         │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "DETAILED COMPARISON": 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-bottom: 16px
+
+Comparison table container:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Overflow-x: auto (for mobile scrolling)
+
+Column headers:
+- Font: 14px, #111827 (black), bold, uppercase
+- Text-align: Center
+- Padding-bottom: 16px
+- "BASELINE" column: Background rgba(0,0,0,0.02) (very subtle gray)
+
+Major section headers (DEPLOYMENT, ACTIVE DRIVERS, etc.):
+- Font: 12px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-top: 24px
+- Margin-bottom: 8px
+
+Section dividers:
+- Double line (═══) for major sections: 2px solid #E5E7EB
+- Single line (───) for sub-sections: 1px solid #E5E7EB
+
+Row labels:
+- Font: 14px, #6B7280 (gray)
+- Text-align: Left
+- Padding: 8px 0
+
+Cell values:
+- Font: 14px, #111827 (black)
+- Text-align: Right
+- Tabular numbers
+
+Change percentages:
+- Font: 12px
+- Positive: #059669 (green)
+- Negative: #DC2626 (red)
+- Neutral (—): #9CA3AF (light gray)
+- "NEW" badge: #059669 (green), uppercase
+
+Checkmarks for active drivers:
+- ✓ in #059669 (green)
+- — in #9CA3AF (light gray)
+
+Financial summary rows (highlighted):
+- Background: #F9FAFB (light gray)
+- Font-weight: Bold for totals
+- Net Annual Gain values: #059669 (green) if positive
+
+Baseline column styling:
+- Subtle background: rgba(0,0,0,0.02)
+- Shows this is the reference point
+
+Best value highlighting:
+- Highest Net Annual Gain: Bold + subtle green background
+- Best ROI: Bold + subtle green background
+- Use: background rgba(5, 150, 105, 0.08)
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: VISUAL COMPARISON CHARTS
+
+Add visual representations below the table:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ VISUAL COMPARISON                                               │
+│                                                                 │
+│ Net Annual Gain                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ Baseline         ████████████████░░░░░░░░░░   $383,333     │ │
+│ │                                                             │ │
+│ │ Expand           ████████████████████████████████████████  │ │
+│ │ Providers                                      $876,000     │ │
+│ │                                                             │ │
+│ │ Add Drivers      ██████████████████████████████████████░░  │ │
+│ │                                                $823,333     │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ Return on Investment                                            │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ Baseline         ████████████░░░░░░░░░░░░░░░░    5.3x      │ │
+│ │                                                             │ │
+│ │ Expand           █████████████░░░░░░░░░░░░░░░    7.1x      │ │
+│ │ Providers                                                   │ │
+│ │                                                             │ │
+│ │ Add Drivers      ██████████████████████████████  11.4x     │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ Annual Investment Required                                      │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ Baseline         ████████████████░░░░░░░░░░░░    $72,000   │ │
+│ │                                                             │ │
+│ │ Expand           ████████████████████████████████████████  │ │
+│ │ Providers                                       $144,000    │ │
+│ │                                                             │ │
+│ │ Add Drivers      ████████████████░░░░░░░░░░░░    $72,000   │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "VISUAL COMPARISON": 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-top: 48px
+- Margin-bottom: 16px
+
+Chart containers:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Margin-bottom: 24px
+
+Chart title:
+- Font: 14px, #111827 (black), bold
+- Margin-bottom: 16px
+
+Bar chart styling:
+- Bar height: 24px
+- Bar background (empty): #E5E7EB
+- Bar fill: #E8532F (Abridge orange)
+- Best performer bar: #059669 (green)
+- Border-radius: 4px
+- Gap between bars: 12px
+
+Labels:
+- Scenario name: 14px, #111827 (black), left-aligned
+- Value: 16px, #111827 (black), bold, right-aligned
+
+Animation:
+- Bars animate in from left (300ms ease-out) on page load
+- No animation on subsequent interactions
+
+═══════════════════════════════════════════════════════════════
+
+PART 6: AI-GENERATED INSIGHTS
+
+Automatically generate insights based on comparison:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ KEY INSIGHTS                                                    │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 🏆 HIGHEST VALUE                                            │ │
+│ │                                                             │ │
+│ │ "Expand to 100 Providers" delivers the highest absolute    │ │
+│ │ value at $876,000 net annual gain (+129% over baseline).   │ │
+│ │ This requires doubling your investment to $144,000/year.   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📈 BEST ROI                                                 │ │
+│ │                                                             │ │
+│ │ "Add HCC + Denial Drivers" has the best ROI at 11.4x      │ │
+│ │ (+115% improvement). This adds $440,000 in value with      │ │
+│ │ zero additional investment.                                │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💡 RECOMMENDATION                                           │ │
+│ │                                                             │ │
+│ │ Consider a phased approach:                                │ │
+│ │                                                             │ │
+│ │ 1. FIRST: Add HCC + Denial drivers to your current        │ │
+│ │    deployment. This requires no additional investment     │ │
+│ │    and immediately improves ROI from 5.3x to 11.4x.       │ │
+│ │                                                             │ │
+│ │ 2. THEN: Expand to 100 providers WITH all 5 drivers       │ │
+│ │    enabled. This maximizes value capture per provider.    │ │
+│ │                                                             │ │
+│ │ Combined potential: $1,752,000 annual gain (4.6x baseline)│ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ⏱️ TIME TO VALUE                                            │ │
+│ │                                                             │ │
+│ │ • Adding drivers: Immediate (existing deployment)         │ │
+│ │ • Expanding providers: 3-6 months (rollout + adoption)    │ │
+│ │ • Combined approach: 6-9 months to full value             │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "KEY INSIGHTS": 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-top: 48px
+- Margin-bottom: 16px
+
+Insight cards:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Margin-bottom: 16px
+
+Card header with icon:
+- Font: 14px, #111827 (black), bold, uppercase
+- Icon: Relevant emoji (🏆, 📈, 💡, ⏱️)
+- Margin-bottom: 12px
+
+Card body:
+- Font: 14px, #6B7280 (gray)
+- Line-height: 1.6
+- Key numbers: #111827 (black), bold
+- Scenario names: #111827 (black), in quotes
+
+Recommendation card (special styling):
+- Background: #F0FDF4 (very light green)
+- Border: 1px solid #BBF7D0 (light green)
+- Numbered steps: Bold numbers
+- Combined potential: #059669 (green), bold
+
+Time to value card:
+- Bullet points: •
+- Timeline indicators: Bold
+
+═══════════════════════════════════════════════════════════════
+
+PART 7: INSIGHT GENERATION LOGIC
+
+Automatically generate insights based on data:
+
+HIGHEST VALUE INSIGHT:
+- Find scenario with highest Net Annual Gain
+- Calculate % increase over baseline
+- Note investment required
+
+BEST ROI INSIGHT:
+- Find scenario with highest ROI
+- Calculate % improvement over baseline
+- Note if investment changes
+
+RECOMMENDATION LOGIC:
+- If "Add Drivers" scenario exists AND has better ROI than expand:
+  → Recommend drivers first, then expand
+- If "New Care Setting" scenario exists:
+  → Note potential for multi-setting deployment
+- If only "Expand" scenarios:
+  → Recommend based on investment comfort level
+
+TIME TO VALUE:
+- Add Drivers: "Immediate"
+- Expand Providers: "3-6 months"
+- New Care Setting: "6-12 months"
+- Combined: Sum of phases
+
+═══════════════════════════════════════════════════════════════
+
+PART 8: QUICK ACTIONS
+
+Action buttons at bottom:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ NEXT STEPS                                                      │
+│                                                                 │
+│ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐    │
+│ │                 │ │                 │ │                 │    │
+│ │  📄 Export      │ │  🔗 Share       │ │  ➕ Create      │    │
+│ │  Comparison     │ │  Link           │ │  Combined       │    │
+│ │                 │ │                 │ │  Scenario       │    │
+│ │                 │ │                 │ │                 │    │
+│ └─────────────────┘ └─────────────────┘ └─────────────────┘    │
+│                                                                 │
+│ [← Back to Scenarios]                                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "NEXT STEPS": 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-top: 48px
+- Margin-bottom: 16px
+
+Action cards (3 columns):
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Text-align: Center
+- Cursor: pointer
+- Width: Equal (flex: 1 or 33%)
+- Gap: 16px
+
+Card content:
+- Icon: 24px, centered, margin-bottom 12px
+- Title: 14px, #111827 (black), bold
+- Centered
+
+Hover state:
+- Border: 1px solid #E8532F (orange)
+- Shadow: 0 4px 12px rgba(0, 0, 0, 0.08)
+- Transition: 200ms ease-out
+
+Action behaviors:
+- "Export Comparison" → Generate PDF with comparison
+- "Share Link" → Copy shareable link to clipboard
+- "Create Combined Scenario" → Create new scenario combining best elements
+
+Back link:
+- "[← Back to Scenarios]"
+- Font: 14px, #E8532F (orange)
+- Margin-top: 24px
+- Hover: Underline
+
+═══════════════════════════════════════════════════════════════
+
+PART 9: MOBILE RESPONSIVENESS
+
+Desktop (>1024px):
+- Full table with all columns visible
+- Visual charts side by side
+- Insight cards in grid
+
+Tablet (768px - 1024px):
+- Table scrollable horizontally
+- Charts stack vertically
+- Insight cards stack
+
+Mobile (<768px):
+- Scenario selector full width
+- Table with horizontal scroll indicator
+- Swipe hint: "← Swipe to see all scenarios →"
+- Charts simplified (horizontal bars only)
+- Insight cards full width, stacked
+- Sticky bottom bar with key action
+
+Mobile sticky bottom:
+┌─────────────────────────────────────────────────────┐
+│ Best option: Add Drivers (11.4x ROI)   [Export]    │
+└─────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+
+PART 10: EXPORT FUNCTIONALITY
+
+"Export Comparison" generates PDF:
+
+PDF Contents:
+1. Header with Abridge logo + "ROI Scenario Comparison"
+2. Executive summary (1 paragraph)
+3. Side-by-side comparison table
+4. Visual bar charts
+5. Key insights section
+6. Recommendation
+7. Footer with date + disclaimer
+
+PDF Styling:
+- Match brand colors
+- Clean, professional layout
+- Print-optimized (no interactive elements)
+- Include page numbers
+
+Filename format:
+"Abridge_ROI_Comparison_[Organization]_[Date].pdf"
+
+═══════════════════════════════════════════════════════════════
+
+PART 11: SHARE FUNCTIONALITY
+
+"Share Link" creates shareable URL:
+
+URL Structure:
+/roi-calculator/compare?scenarios=[id1,id2,id3]
+
+Behavior:
+1. Generate unique link
+2. Copy to clipboard
+3. Show toast: "✓ Link copied to clipboard"
+4. Link opens Comparison View with pre-selected scenarios
+
+Security note:
+- Links are read-only
+- Scenario data encoded in URL or referenced by ID
+- No authentication required to view (for easy sharing)
+
+═══════════════════════════════════════════════════════════════
+
+PART 12: CREATE COMBINED SCENARIO
+
+"Create Combined Scenario" logic:
+
+If comparing "Add Drivers" + "Expand Providers":
+- Create new scenario with expanded provider count
+- AND all additional drivers enabled
+- Calculate combined value
+- Save as new scenario: "Combined: Expand + Add Drivers"
+
+If comparing care settings:
+- Create multi-setting deployment scenario
+- Combine all configurations
+- Save as new scenario
+
+After creation:
+- Navigate to new scenario detail view
+- Show success toast
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Scenario Builder main page (Phase 1)
+- Expand Providers flow (Phase 2)
+- Add Strategic Drivers flow (Phase 3)
+- New Care Setting flow (Phase 4)
+- Any other tabs or pages
+- Brand colors or typography
+
+ONLY BUILD:
+- Comparison View page structure
+- Scenario selector
+- Comparison table
+- Visual bar charts
+- AI-generated insights
+- Export/Share/Combine actions
+- Mobile responsiveness
+
+═══════════════════════════════════════════════════════════════
+
+RESULT:
+User can compare 2-3 scenarios side-by-side with detailed metrics, visual charts, and AI-generated insights. The view helps decision-makers understand trade-offs, identifies the best option for their goals (highest value vs best ROI), and provides actionable recommendations. Exportable for board presentations and shareable via link. The perfect tool for expansion conversations and renewal discussions.
