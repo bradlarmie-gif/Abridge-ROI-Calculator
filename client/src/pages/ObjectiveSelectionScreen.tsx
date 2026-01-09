@@ -528,8 +528,8 @@ const SETTING_DESCRIPTIONS: Record<string, string> = {
 };
 
 const SETTING_DRIVERS: Record<string, string[]> = {
-  outpatient: ["Patient access expansion", "Level of service improvements", "Clinician retention"],
-  ed: ["Patient throughput", "Level of service accuracy", "Denial reduction"],
+  outpatient: ["Patient access expansion", "Level of service accuracy", "Clinician retention"],
+  ed: ["Patient throughput", "Patient Capture", "Denial reduction"],
   nursing: ["Time savings", "Overtime reduction", "Documentation quality"],
   inpatient: [],
 };
