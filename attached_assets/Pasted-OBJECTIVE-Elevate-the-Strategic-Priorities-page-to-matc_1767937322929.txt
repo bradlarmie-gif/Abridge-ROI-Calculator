@@ -1,0 +1,344 @@
+OBJECTIVE:
+Elevate the Strategic Priorities page to match the visual hierarchy and polish of the Care Setting and Value Blueprint pages. Add structured info boxes, better spacing, visual depth, and make it feel like an important strategic decision point, not a basic checkbox form.
+
+CRITICAL RULES:
+- Keep all existing functionality (checkbox selection, validation)
+- Match the aesthetic quality of Care Setting and Value Blueprint pages
+- Use only existing brand color palette
+- Maintain professional, data-forward tone
+- Mobile-responsive design
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: ADD INTRO CONTEXT BOX (MATCH CARE SETTING STYLE)
+
+After "Strategic Priorities" headline and "What outcomes matter most right now?" subheadline, add:
+
+┌─────────────────────────────────────────────────────────┐
+│ What outcomes matter most right now?                    │
+│                                                         │
+│ Select 2-6 strategic priorities. These will shape your │
+│ ROI model and determine which value drivers we analyze │
+│ in detail.                                             │
+│                                                         │
+│ 📊 Based on proven methodologies from 200+ health      │
+│    system partners                                     │
+└─────────────────────────────────────────────────────────┘
+
+STYLING:
+- Background: #F9FAFB (light gray - matches Care Setting)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Margin-bottom: 32px
+
+Text:
+- Headline: 18px, #111827 (black), bold
+- Body: 14px, #6B7280 (gray), line-height 1.6
+- Data source line: 13px, #6B7280 (gray), with 📊 icon
+- Spacing: 8px between headline and body, 16px before data line
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: ENHANCE CATEGORY HEADERS & SUBTITLES
+
+Current category headers need more presence:
+
+CAPACITY & LABOR
+⏱️  CAPACITY & LABOR
+Workforce efficiency and utilization
+
+REVENUE & RISK
+💰  REVENUE & RISK
+Clinical and financial accuracy
+
+STYLING:
+- Icon + Header: 14px, #111827 (black), uppercase, letter-spacing 0.05em, bold
+- Icon size: 18px, margin-right 8px
+- Subtitle: 14px, #6B7280 (gray), italic, normal case
+- Margin-top: 48px (first category: 32px from intro box)
+- Margin-bottom: 20px
+- Add subtle divider line UNDER subtitle: 1px solid #E5E7EB, margin-top 12px
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: ENHANCE DRIVER CARDS - ADD VISUAL DEPTH
+
+Transform from flat checkboxes to elevated cards with depth:
+
+VISUAL ENHANCEMENTS:
+
+Default state (unselected):
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB (neutral gray)
+- Border-radius: 8px
+- Padding: 20px
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+- Margin-bottom: 12px
+
+Hover state:
+- Shadow: 0 4px 12px rgba(0, 0, 0, 0.08)
+- Border: 1px solid #E8532F (Abridge orange)
+- Scale: 1.01
+- Transition: all 200ms ease-out
+- Cursor: pointer
+
+Selected state:
+- Background: #FFFFFF (white - NO background tint)
+- Border: 1px solid #E8532F (Abridge orange)
+- Left border accent: 4px solid #E8532F (orange bar)
+- Shadow: 0 2px 4px rgba(0, 0, 0, 0.08)
+- Checkbox: Filled with #E8532F (orange)
+
+CARD CONTENT STRUCTURE:
+
+Add icons and "Key metric" lines (operational, NOT financial):
+
+Patient Access:
+□ [👥 icon] Patient Access
+  Turn documentation efficiency into additional visit capacity.
+  
+  Key metric: New visits enabled
+
+Overtime & Locum Cost Avoidance:
+□ [⏰ icon] Overtime & Locum Cost Avoidance
+  Reduce overtime and locum reliance driven by after-hours documentation.
+  
+  Key metric: Premium labor hours avoided
+
+Clinician Retention:
+□ [❤️ icon] Clinician Retention
+  Lower burnout and turnover by reducing administrative burden.
+  
+  Key metric: Provider departures avoided
+
+Accurate Level of Service:
+□ [📊 icon] Accurate Level of Service
+  Ensure visits are billed at the level actually delivered.
+  
+  Key metric: wRVU capture improvement
+
+HCC & Chronic Condition Capture:
+□ [🏥 icon] HCC & Chronic Condition Capture
+  Improve risk adjustment through more complete clinical documentation.
+  
+  Key metric: RAF score lift
+
+Documentation Related Denials:
+□ [🚫 icon] Denial Reduction
+  Reduce preventable denials caused by incomplete or unclear documentation.
+  
+  Key metric: Documentation-related denials prevented
+
+STYLING DETAILS:
+
+Icon:
+- Position: Left of title, vertically centered with title
+- Size: 20px
+- Margin-right: 12px from title
+
+Title:
+- Font: 16px, #111827 (black), medium weight
+- Line-height: 1.4
+
+Description:
+- Font: 14px, #6B7280 (gray)
+- Line-height: 1.6
+- Margin-top: 8px
+
+"Key metric" line:
+- Font: 13px, #6B7280 (gray), italic
+- Margin-top: 8px
+- Indent: 32px (aligns with text, not icon)
+- DO NOT use green color
+- DO NOT show dollar amounts
+
+Checkbox:
+- Position: Right side of card, top-aligned with title
+- Size: 20px
+- Unchecked: Border 2px solid #E5E7EB
+- Checked: Background #E8532F, white checkmark
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: ENHANCE RIGHT SIDEBAR
+
+Transform sidebar to match Care Setting's structured summary style:
+
+┌─────────────────────────────────────────────┐
+│ YOUR SELECTIONS                             │
+│                                             │
+│ ─────────────────────────────────────────  │
+│                                             │
+│ CARE SETTING                                │
+│ Outpatient                               ✓  │
+│                                             │
+│ ─────────────────────────────────────────  │
+│                                             │
+│ STRATEGIC PRIORITIES                        │
+│ Select 2-6 drivers                          │
+│                                             │
+│ [If 0-1 selected:]                          │
+│ Choose at least 2 drivers to continue      │
+│                                             │
+│ [If 2+ selected:]                           │
+│ ✓ Patient Access                           │
+│ ✓ Clinician Retention                      │
+│ ✓ Accurate Level of Service                │
+│                                             │
+│ 3 of 6 selected                            │
+│                                             │
+│ ─────────────────────────────────────────  │
+│                                             │
+│ [Continue →]                               │
+└─────────────────────────────────────────────┘
+
+STYLING:
+
+Container:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Shadow: 0 1px 3px rgba(0, 0, 0, 0.06)
+- Sticky position on desktop (top: 24px)
+
+Divider lines:
+- 1px solid #E5E7EB
+- Margin: 20px vertical
+
+"YOUR SELECTIONS" header:
+- Font: 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-bottom: 20px
+
+"CARE SETTING" section:
+- Label: 12px, #6B7280 (gray), uppercase, letter-spacing 0.05em
+- Value: 16px, #111827 (black), medium weight
+- Checkmark: #E8532F (orange), right-aligned, 16px
+- Margin-bottom: 20px
+
+"STRATEGIC PRIORITIES" section:
+- Label: 12px, #6B7280 (gray), uppercase, letter-spacing 0.05em
+- "Select 2-6 drivers" subtitle: 13px, #6B7280 (gray)
+- Margin-bottom: 16px
+
+Empty state message (0-1 selected):
+- Font: 14px, #6B7280 (gray)
+- Line-height: 1.6
+
+Selected driver list (2+ selected):
+- Each item: 14px, #111827 (black)
+- Checkmark: #E8532F (orange), 14px, margin-right 8px
+- Spacing: 8px between items
+- Margin-bottom: 16px
+
+Counter ("3 of 6 selected"):
+- Font: 13px, #6B7280 (gray)
+- Margin-bottom: 20px
+
+Continue button:
+- Width: 100%
+- Height: 44px
+- Border-radius: 6px
+- Font: 14px, medium weight
+- Transition: 200ms ease-out
+
+DISABLED state (0-1 selected):
+- Background: #E5E7EB (gray)
+- Text: #9CA3AF (light gray)
+- Cursor: not-allowed
+
+ENABLED state (2+ selected):
+- Background: #111827 (black)
+- Text: #FFFFFF (white)
+- Hover: Background #E8532F (orange)
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: ADD BOTTOM GUIDANCE WITH INFO BOX
+
+Below all driver cards (after last category), add helpful context in an info box:
+
+┌─────────────────────────────────────────────────────────┐
+│ 💡 Selecting your priorities                            │
+│                                                         │
+│ Most organizations select 3-4 drivers. Fewer creates a │
+│ focused model that's easier to present; more provides  │
+│ comprehensive analysis across multiple value streams.  │
+│                                                         │
+│ You'll see detailed calculations for each selected     │
+│ driver in the next step.                               │
+└─────────────────────────────────────────────────────────┘
+
+STYLING:
+- Background: #F9FAFB (light gray)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Margin-top: 32px
+- Margin-bottom: 48px
+
+Text:
+- Headline: 14px, #111827 (black), medium weight, with 💡 icon
+- Body: 14px, #6B7280 (gray), line-height 1.6
+- Spacing: 12px between headline and body
+
+═══════════════════════════════════════════════════════════════
+
+PART 6: SPACING & LAYOUT REFINEMENTS
+
+Desktop spacing:
+- Page margin: 48px top, 32px horizontal
+- Headline to intro box: 24px
+- Intro box to first category: 32px
+- Between categories: 48px
+- Between driver cards within category: 12px
+- Last card to bottom guidance: 32px
+
+Two-column layout (desktop):
+- Left column: Max-width 720px
+- Right sidebar: Width 360px, sticky (top: 24px)
+- Gap between columns: 48px
+- Container max-width: 1200px, centered
+
+Mobile (<768px):
+- Stack vertically
+- Full width cards
+- Sidebar becomes sticky bottom sheet:
+  - Shows: "3 drivers selected | Continue →"
+  - Expands on tap to show full selection list
+  - Fixed bottom: 0, shadow, white background
+
+═══════════════════════════════════════════════════════════════
+
+PART 7: REMOVE PEACHY/SALMON COLORS (COLOR FIX)
+
+CRITICAL: Ensure NO peachy, salmon, pink, or warm-tinted background colors anywhere.
+
+Selected cards should have:
+- White background (#FFFFFF)
+- Orange border (1px solid #E8532F)
+- Orange left accent (4px solid #E8532F)
+- NO background color tint
+
+All backgrounds must be either:
+- #FFFFFF (white) for cards
+- #F9FAFB (light gray) for info boxes only
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Checkbox selection functionality
+- Driver names or core descriptions
+- Validation logic (2-6 drivers required)
+- Continue button routing
+- Any other pages
+
+DO NOT ADD:
+- Dollar amounts or value ranges
+- Financial figures
+- Detailed calculations (that's Value Blueprint's job)
+- Comparison tables
+
+RESULT:
+Strategic Priorities now matches the visual quality of Care Setting and Value Blueprint pages. Structured info boxes, clear visual hierarchy, elevated cards with depth, professional shadows and spacing. Feels like an important strategic decision point with Bloomberg Terminal-level polish. Works seamlessly on desktop and mobile.

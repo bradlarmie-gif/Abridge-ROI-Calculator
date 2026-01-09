@@ -1859,13 +1859,13 @@ export default function ObjectiveSelectionScreen({
                       <p className="text-sm text-[#9CA3AF] italic">No setting selected</p>
                     )}
                     
-                    {selectedSetting && (
+                    {selectedSetting && SETTING_DRIVERS[selectedSetting] && SETTING_DRIVERS[selectedSetting].length > 0 && (
                       <div className="mt-4">
-                        <p className="text-sm text-[#6B7280] mb-2">This determines:</p>
+                        <p className="text-sm text-[#6B7280] mb-2">Typical drivers:</p>
                         <ul className="space-y-1 text-[13px] text-[#6B7280] leading-relaxed">
-                          <li>• Baseline wRVU assumptions</li>
-                          <li>• Typical encounter patterns</li>
-                          <li>• Documentation workflows</li>
+                          {SETTING_DRIVERS[selectedSetting].map((driver, idx) => (
+                            <li key={idx}>• {driver}</li>
+                          ))}
                         </ul>
                       </div>
                     )}
