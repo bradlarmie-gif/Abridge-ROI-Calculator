@@ -220,6 +220,20 @@ export default function RoiCalculator({
     denialRate: 5,
   });
 
+  // Add Strategic Drivers full-page flow state
+  const [showAddDrivers, setShowAddDrivers] = useState(false);
+  const [scenarioDriverSelections, setScenarioDriverSelections] = useState<Set<LeverId>>(new Set());
+  const [expandedDriverMethodology, setExpandedDriverMethodology] = useState<LeverId | null>(null);
+  const [driverAdjustments, setDriverAdjustments] = useState<Record<LeverId, Record<string, number>>>({
+    hcc: { maPopulationPct: 15, benchmarkPmpm: 1000, recaptureRate: 50 },
+    denials: { denialRate: 5, preventionRate: 50 },
+    overtime: { afterHoursPct: 20, premiumRate: 145 },
+    patientAccess: {},
+    workforce: {},
+    wrvu: {},
+  });
+  const [driversScenarioName, setDriversScenarioName] = useState("");
+
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {
     const initial: RoiInputs = JSON.parse(JSON.stringify(defaultInputs));
@@ -351,6 +365,35 @@ export default function RoiCalculator({
       setLocalAdjustments({});
     }
   };
+
+  // Helper: Calculate driver value with adjustments applied
+  const calculateAdjustedDriverValue = useCallback((driverId: LeverId, adjustments: Record<LeverId, Record<string, number>>): number => {
+    // Create temp inputs with the driver enabled and adjustments applied
+    const tempInputs = JSON.parse(JSON.stringify(inputs));
+    tempInputs.levers[driverId] = true;
+    
+    // Apply adjustments based on driver type - use nullish coalescing to allow zero values
+    if (driverId === "hcc" && adjustments.hcc) {
+      tempInputs.hcc.pctMedicareAdvantage = adjustments.hcc.maPopulationPct ?? tempInputs.hcc.pctMedicareAdvantage;
+      tempInputs.hcc.pmpmBenchmark = adjustments.hcc.benchmarkPmpm ?? tempInputs.hcc.pmpmBenchmark;
+      if (adjustments.hcc.recaptureRate !== undefined) {
+        tempInputs.hcc.pctMissedConditionsRecaptured = adjustments.hcc.recaptureRate;
+      }
+    }
+    if (driverId === "denials" && adjustments.denials) {
+      tempInputs.denials.baselineDenialRate = adjustments.denials.denialRate ?? tempInputs.denials.baselineDenialRate;
+      if (adjustments.denials.preventionRate !== undefined) {
+        tempInputs.denials.pctDocDenialsRecovered = adjustments.denials.preventionRate;
+      }
+    }
+    if (driverId === "overtime" && adjustments.overtime) {
+      tempInputs.overtime.pctAfterHours = adjustments.overtime.afterHoursPct ?? tempInputs.overtime.pctAfterHours;
+      tempInputs.overtime.blendedOvertimeRate = adjustments.overtime.premiumRate ?? tempInputs.overtime.blendedOvertimeRate;
+    }
+    
+    const tempResults = calculateRoi(tempInputs);
+    return tempResults.levers.find(l => l.id === driverId)?.value || 0;
+  }, [inputs]);
 
   // Helper: get local value or fallback to model
   const getLocalOrModel = (key: string, modelValue: number): number | string => {
@@ -2414,11 +2457,11 @@ export default function RoiCalculator({
                                     </div>
                                     <div className="grid grid-cols-4 gap-2 text-[14px]">
                                       <div className="text-[#6B7280]">Investment</div>
-                                      <div className="text-right text-[#111827]">{formatCurrency(totalInvestment)}</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(annualInvestment)}</div>
                                       <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioResults.investment)}</div>
-                                      <div className={`text-right ${scenarioResults.investment >= totalInvestment ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioResults.investment >= totalInvestment ? "+" : ""}
-                                        {(((scenarioResults.investment - totalInvestment) / Math.max(1, totalInvestment)) * 100).toFixed(0)}%
+                                      <div className={`text-right ${scenarioResults.investment >= annualInvestment ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                        {scenarioResults.investment >= annualInvestment ? "+" : ""}
+                                        {(((scenarioResults.investment - annualInvestment) / Math.max(1, annualInvestment)) * 100).toFixed(0)}%
                                       </div>
                                     </div>
                                     <div className="grid grid-cols-4 gap-2 text-[16px] bg-[#F9FAFB] -mx-6 px-6 py-2">
@@ -2489,6 +2532,703 @@ export default function RoiCalculator({
                               </p>
                             </div>
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : showAddDrivers ? (
+              /* ADD STRATEGIC DRIVERS FULL-PAGE VIEW */
+              <div className="space-y-6">
+                {/* Back navigation */}
+                <button
+                  onClick={() => setShowAddDrivers(false)}
+                  className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                  data-testid="button-back-from-drivers"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Scenario Builder
+                </button>
+                
+                {/* Page header */}
+                <div>
+                  <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
+                    Add Strategic Drivers
+                  </h2>
+                  <p className="text-[16px] text-[#6B7280] mb-4">
+                    Enable additional value streams without adding users
+                  </p>
+                  
+                  {/* Baseline reference box */}
+                  <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-center gap-3">
+                    <BarChart3 className="h-5 w-5 text-[#6B7280]" />
+                    <span className="text-[14px] text-[#6B7280]">
+                      Your baseline: {inputs.numberOfProviders} providers | {enabledDriverIds.length} active drivers | {formatCurrency(netAnnualGain)} net gain | {roiMultiple.toFixed(1)}x ROI
+                    </span>
+                  </div>
+                  
+                  {/* Insight box */}
+                  <div className="mt-3 p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg flex items-start gap-3">
+                    <Lightbulb className="h-5 w-5 text-[#1E40AF] shrink-0" />
+                    <p className="text-[14px] text-[#1E40AF]">
+                      Adding drivers increases value without increasing investment. This often dramatically improves ROI.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Two-column layout for desktop */}
+                <div className="flex flex-col lg:flex-row gap-8">
+                  {/* Left column - Input form */}
+                  <div className="flex-1 lg:max-w-[60%] space-y-6">
+                    {/* Scenario Name */}
+                    <div>
+                      <label className="block text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">
+                        Scenario Name
+                      </label>
+                      <input
+                        type="text"
+                        value={driversScenarioName}
+                        onChange={(e) => setDriversScenarioName(e.target.value)}
+                        placeholder={scenarioDriverSelections.size > 0 ? `Add ${Array.from(scenarioDriverSelections).map(id => leverLabels[id].split(" ")[0]).join(" + ")}` : "Add new drivers..."}
+                        className="w-full p-4 text-[16px] border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#E8532F]/20 focus:border-[#E8532F]"
+                        data-testid="input-drivers-scenario-name"
+                      />
+                      <p className="text-[13px] text-[#6B7280] mt-2">Give this scenario a descriptive name</p>
+                    </div>
+                    
+                    {/* CURRENTLY ACTIVE DRIVERS (Locked) */}
+                    {enabledDriverIds.length > 0 && (
+                      <div>
+                        <div className="mb-4">
+                          <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-1">
+                            Currently Active
+                          </h3>
+                          <p className="text-[14px] text-[#6B7280]">These drivers are in your baseline model</p>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {enabledDriverIds.map((id) => {
+                            const DriverIcon = DRIVER_ICONS[id];
+                            return (
+                              <div
+                                key={id}
+                                className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg opacity-90"
+                              >
+                                <div className="flex items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3">
+                                    <Check className="h-5 w-5 text-[#059669]" />
+                                    <div>
+                                      <div className="text-[16px] font-bold text-[#111827]">{leverLabels[id]}</div>
+                                      <div className="text-[14px] text-[#6B7280]">{leverDescriptions[id]}</div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-[16px] font-bold text-[#059669]">{formatCurrency(driverValues[id])}</span>
+                                    <span className="px-2 py-1 bg-[#E5E7EB] text-[11px] font-medium text-[#6B7280] uppercase rounded">
+                                      Locked
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        <p className="text-[14px] font-bold text-[#111827] mt-4">
+                          Current total: {formatCurrency(totalAnnualBenefit)} annually
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* AVAILABLE TO ADD */}
+                    {availableDrivers.length > 0 ? (
+                      <div>
+                        <div className="mb-4">
+                          <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-1">
+                            Available to Add
+                          </h3>
+                          <p className="text-[14px] text-[#6B7280]">Select drivers to include in this scenario</p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          {availableDrivers.map((id) => {
+                            const DriverIcon = DRIVER_ICONS[id];
+                            const isSelected = scenarioDriverSelections.has(id);
+                            const isMethodologyExpanded = expandedDriverMethodology === id;
+                            
+                            // Calculate estimated value for this driver with adjustments
+                            const driverValue = calculateAdjustedDriverValue(id, driverAdjustments);
+                            
+                            // Get relevance info for each driver
+                            const getRelevanceInfo = (driverId: LeverId) => {
+                              switch(driverId) {
+                                case "hcc":
+                                  return {
+                                    text: "This driver is valuable if you have Medicare Advantage patients. Higher MA population = higher impact.",
+                                    currentValue: `Your MA population: ${inputs.hcc.pctMedicareAdvantage || 15}%`
+                                  };
+                                case "denials":
+                                  return {
+                                    text: "This driver is valuable if you experience claim denials due to incomplete or unclear documentation.",
+                                    currentValue: `Your denial rate: ${inputs.denials.baselineDenialRate || 5}%`
+                                  };
+                                case "overtime":
+                                  return {
+                                    text: "This driver is valuable if providers document after hours or you use locum coverage.",
+                                    currentValue: `Premium rate: $${inputs.overtime.blendedOvertimeRate || 145}/hr`
+                                  };
+                                default:
+                                  return { text: "Enable this driver to capture additional value.", currentValue: "" };
+                              }
+                            };
+                            
+                            const relevance = getRelevanceInfo(id);
+                            
+                            return (
+                              <div
+                                key={id}
+                                onClick={() => {
+                                  const newSet = new Set(scenarioDriverSelections);
+                                  if (newSet.has(id)) {
+                                    newSet.delete(id);
+                                  } else {
+                                    newSet.add(id);
+                                  }
+                                  setScenarioDriverSelections(newSet);
+                                }}
+                                className={`p-5 bg-white border rounded-lg cursor-pointer transition-all duration-200 ${
+                                  isSelected 
+                                    ? "border-2 border-[#E8532F] bg-[rgba(232,83,47,0.02)] shadow-[inset_4px_0_0_#E8532F]" 
+                                    : "border-[#E5E7EB] hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+                                }`}
+                                data-testid={`card-driver-${id}`}
+                              >
+                                {/* Header row */}
+                                <div className="flex items-start justify-between gap-4 mb-3">
+                                  <div className="flex items-start gap-3">
+                                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                                      isSelected ? "bg-[#E8532F] border-[#E8532F]" : "border-[#E5E7EB]"
+                                    }`}>
+                                      {isSelected && <Check className="h-4 w-4 text-white" />}
+                                    </div>
+                                    <div>
+                                      <div className="text-[16px] font-bold text-[#111827]">{leverLabels[id]}</div>
+                                    </div>
+                                  </div>
+                                  <span className="text-[18px] font-bold text-[#059669]">+{formatCurrency(driverValue)}</span>
+                                </div>
+                                
+                                {/* Description */}
+                                <p className="text-[14px] text-[#6B7280] leading-relaxed ml-9 mb-4">
+                                  {leverDescriptions[id]}
+                                </p>
+                                
+                                {/* Divider */}
+                                <div className="border-t border-[#E5E7EB] my-4 -mx-5 px-5" />
+                                
+                                {/* Relevance Check */}
+                                <div className="ml-9">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Lightbulb className="h-4 w-4 text-[#1E40AF]" />
+                                    <span className="text-[13px] font-bold text-[#1E40AF]">RELEVANCE CHECK</span>
+                                  </div>
+                                  <p className="text-[14px] text-[#6B7280] mb-1">{relevance.text}</p>
+                                  {relevance.currentValue && (
+                                    <p className="text-[14px] text-[#111827]">{relevance.currentValue} (can adjust below)</p>
+                                  )}
+                                </div>
+                                
+                                {/* Divider */}
+                                <div className="border-t border-[#E5E7EB] my-4 -mx-5 px-5" />
+                                
+                                {/* View calculation methodology */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedDriverMethodology(isMethodologyExpanded ? null : id);
+                                  }}
+                                  className="ml-9 text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                                  data-testid={`link-methodology-${id}`}
+                                >
+                                  {isMethodologyExpanded ? (
+                                    <>
+                                      <ChevronDown className="h-4 w-4" />
+                                      Hide calculation methodology
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ChevronRight className="h-4 w-4" />
+                                      View calculation methodology
+                                    </>
+                                  )}
+                                </button>
+                                
+                                {/* Expanded methodology */}
+                                {isMethodologyExpanded && (
+                                  <div 
+                                    className="mt-4 ml-9 p-5 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <p className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                      How We Calculate This
+                                    </p>
+                                    
+                                    {id === "hcc" && (
+                                      <div className="space-y-4 text-[14px]">
+                                        <div>
+                                          <p className="text-[13px] font-bold text-[#6B7280] uppercase mb-2">Step 1: Identify MA Patient Population</p>
+                                          <div className="space-y-1">
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Eligible encounters</span><span className="text-[#111827] tabular-nums">{abridgeDocumentedEncounters.toLocaleString()}</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Average visits per patient</span><span className="text-[#111827] tabular-nums">2.5</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Unique patients</span><span className="text-[#111827] tabular-nums">{Math.round(abridgeDocumentedEncounters / 2.5).toLocaleString()}</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">% Medicare Advantage</span><span className="text-[#111827] tabular-nums">{inputs.hcc.pctMedicareAdvantage || 15}%</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Unique MA patients</span><span className="text-[#E8532F] tabular-nums font-medium">{Math.round((abridgeDocumentedEncounters / 2.5) * ((inputs.hcc.pctMedicareAdvantage || 15) / 100)).toLocaleString()} patients</span></div>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <p className="text-[13px] font-bold text-[#6B7280] uppercase mb-2">Step 2: Revenue Impact</p>
+                                          <div className="space-y-1">
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">RAF improvement per patient</span><span className="text-[#111827] tabular-nums">0.09</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Benchmark PMPM</span><span className="text-[#111827] tabular-nums">{formatCurrency(inputs.hcc.pmpmBenchmark || 1000)}</span></div>
+                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E8532F] tabular-nums">{formatCurrency(driverValue)}</span></div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {id === "denials" && (
+                                      <div className="space-y-4 text-[14px]">
+                                        <div>
+                                          <p className="text-[13px] font-bold text-[#6B7280] uppercase mb-2">Step 1: Calculate At-Risk Revenue</p>
+                                          <div className="space-y-1">
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Eligible encounters</span><span className="text-[#111827] tabular-nums">{abridgeDocumentedEncounters.toLocaleString()}</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Revenue per visit</span><span className="text-[#111827] tabular-nums">{formatCurrency(inputs.denials.avgRevenuePerEncounter || 200)}</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Total revenue</span><span className="text-[#111827] tabular-nums">{formatCurrency(abridgeDocumentedEncounters * (inputs.denials.avgRevenuePerEncounter || 200))}</span></div>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <p className="text-[13px] font-bold text-[#6B7280] uppercase mb-2">Step 2: Calculate Savings</p>
+                                          <div className="space-y-1">
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Denial rate</span><span className="text-[#111827] tabular-nums">{inputs.denials.baselineDenialRate || 5}%</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">% documentation-related</span><span className="text-[#111827] tabular-nums">30%</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Prevention rate</span><span className="text-[#111827] tabular-nums">50%</span></div>
+                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E8532F] tabular-nums">{formatCurrency(driverValue)}</span></div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {id === "overtime" && (
+                                      <div className="space-y-4 text-[14px]">
+                                        <div>
+                                          <p className="text-[13px] font-bold text-[#6B7280] uppercase mb-2">Step 1: Calculate Time Saved</p>
+                                          <div className="space-y-1">
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Eligible encounters</span><span className="text-[#111827] tabular-nums">{abridgeDocumentedEncounters.toLocaleString()}</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Minutes saved per visit</span><span className="text-[#111827] tabular-nums">{inputs.minutesSavedPerEncounter || 8}</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Total hours saved</span><span className="text-[#111827] tabular-nums">{Math.round((abridgeDocumentedEncounters * (inputs.minutesSavedPerEncounter || 8)) / 60).toLocaleString()}</span></div>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <p className="text-[13px] font-bold text-[#6B7280] uppercase mb-2">Step 2: Calculate Premium Savings</p>
+                                          <div className="space-y-1">
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">% after-hours work</span><span className="text-[#111827] tabular-nums">{inputs.overtime.pctAfterHours || 20}%</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Premium rate</span><span className="text-[#111827] tabular-nums">{formatCurrency(inputs.overtime.blendedOvertimeRate || 145)}/hr</span></div>
+                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E8532F] tabular-nums">{formatCurrency(driverValue)}</span></div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {!["hcc", "denials", "overtime"].includes(id) && (
+                                      <p className="text-[14px] text-[#6B7280]">
+                                        Calculation methodology for {leverLabels[id]} is based on standard industry benchmarks and your organization's specific inputs.
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
+                                
+                                {/* Adjustment inputs when selected */}
+                                {isSelected && (
+                                  <div 
+                                    className="mt-4 ml-9 p-5 bg-[#FFFBF5] border border-[#E5E7EB] rounded-lg"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <p className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
+                                      Adjust for Your Organization
+                                    </p>
+                                    
+                                    {id === "hcc" && (
+                                      <div className="space-y-4">
+                                        <div>
+                                          <div className="flex justify-between mb-2">
+                                            <span className="text-[14px] text-[#111827]">Medicare Advantage population</span>
+                                            <span className="text-[14px] font-medium text-[#111827]">{driverAdjustments.hcc?.maPopulationPct || 15}%</span>
+                                          </div>
+                                          <Slider
+                                            value={[driverAdjustments.hcc?.maPopulationPct || 15]}
+                                            onValueChange={([val]) => setDriverAdjustments(prev => ({
+                                              ...prev,
+                                              hcc: { ...prev.hcc, maPopulationPct: val }
+                                            }))}
+                                            min={5}
+                                            max={60}
+                                            step={1}
+                                            className="w-full"
+                                          />
+                                          <p className="text-[13px] text-[#6B7280] mt-1">Baseline: 15% | Your region may differ</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-[14px] text-[#111827] block mb-2">Benchmark PMPM (your county)</label>
+                                          <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">$</span>
+                                            <input
+                                              type="number"
+                                              value={driverAdjustments.hcc?.benchmarkPmpm || 1000}
+                                              onChange={(e) => setDriverAdjustments(prev => ({
+                                                ...prev,
+                                                hcc: { ...prev.hcc, benchmarkPmpm: Number(e.target.value) }
+                                              }))}
+                                              className="w-full pl-7 p-3 border border-[#E5E7EB] rounded-lg"
+                                            />
+                                          </div>
+                                          <p className="text-[13px] text-[#6B7280] mt-1">Baseline: $1,000</p>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {id === "denials" && (
+                                      <div className="space-y-4">
+                                        <div>
+                                          <div className="flex justify-between mb-2">
+                                            <span className="text-[14px] text-[#111827]">Denial rate</span>
+                                            <span className="text-[14px] font-medium text-[#111827]">{driverAdjustments.denials?.denialRate || 5}%</span>
+                                          </div>
+                                          <Slider
+                                            value={[driverAdjustments.denials?.denialRate || 5]}
+                                            onValueChange={([val]) => setDriverAdjustments(prev => ({
+                                              ...prev,
+                                              denials: { ...prev.denials, denialRate: val }
+                                            }))}
+                                            min={1}
+                                            max={20}
+                                            step={0.5}
+                                            className="w-full"
+                                          />
+                                          <p className="text-[13px] text-[#6B7280] mt-1">Typical range: 3-10%</p>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {id === "overtime" && (
+                                      <div className="space-y-4">
+                                        <div>
+                                          <div className="flex justify-between mb-2">
+                                            <span className="text-[14px] text-[#111827]">After-hours documentation %</span>
+                                            <span className="text-[14px] font-medium text-[#111827]">{driverAdjustments.overtime?.afterHoursPct || 20}%</span>
+                                          </div>
+                                          <Slider
+                                            value={[driverAdjustments.overtime?.afterHoursPct || 20]}
+                                            onValueChange={([val]) => setDriverAdjustments(prev => ({
+                                              ...prev,
+                                              overtime: { ...prev.overtime, afterHoursPct: val }
+                                            }))}
+                                            min={5}
+                                            max={50}
+                                            step={1}
+                                            className="w-full"
+                                          />
+                                          <p className="text-[13px] text-[#6B7280] mt-1">Typical range: 15-30%</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-[14px] text-[#111827] block mb-2">Premium rate ($/hr)</label>
+                                          <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">$</span>
+                                            <input
+                                              type="number"
+                                              value={driverAdjustments.overtime?.premiumRate || 145}
+                                              onChange={(e) => setDriverAdjustments(prev => ({
+                                                ...prev,
+                                                overtime: { ...prev.overtime, premiumRate: Number(e.target.value) }
+                                              }))}
+                                              className="w-full pl-7 p-3 border border-[#E5E7EB] rounded-lg"
+                                            />
+                                          </div>
+                                          <p className="text-[13px] text-[#6B7280] mt-1">Baseline: $145/hr</p>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg text-center">
+                        <Check className="h-8 w-8 text-[#059669] mx-auto mb-3" />
+                        <p className="text-[16px] font-bold text-[#111827] mb-2">All value drivers are already active</p>
+                        <p className="text-[14px] text-[#6B7280]">
+                          Try "Expand Providers" to model growth, or adjust assumptions in Detailed Breakdown.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Footer actions */}
+                    <div className="border-t border-[#E5E7EB] pt-6 flex justify-end gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAddDrivers(false)}
+                        data-testid="button-cancel-drivers"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        disabled={scenarioDriverSelections.size === 0 || !driversScenarioName.trim()}
+                        onClick={() => {
+                          // Calculate total value with new drivers using adjustments
+                          let scenarioTotalBenefit = totalAnnualBenefit;
+                          const scenarioDriverValues: Record<LeverId, number> = { ...driverValues };
+                          
+                          scenarioDriverSelections.forEach(id => {
+                            const adjustedVal = calculateAdjustedDriverValue(id, driverAdjustments);
+                            scenarioDriverValues[id] = adjustedVal;
+                            scenarioTotalBenefit += adjustedVal;
+                          });
+                          
+                          const newScenario: Scenario = {
+                            id: Date.now().toString(),
+                            name: driversScenarioName.trim() || `Add ${Array.from(scenarioDriverSelections).map(id => leverLabels[id].split(" ")[0]).join(" + ")}`,
+                            type: "drivers",
+                            createdAt: new Date(),
+                            providers: inputs.numberOfProviders,
+                            encounters: inputs.annualOutpatientEncounters,
+                            utilizationRate: inputs.abridgeUtilizationPct,
+                            maPopulationPct: inputs.hcc.pctMedicareAdvantage || 15,
+                            driverValues: scenarioDriverValues,
+                            newPatientPct: 30,
+                            specialtyPct: 40,
+                            revenuePerVisitOverride: null,
+                            visitLengthOverride: null,
+                            totalBenefit: scenarioTotalBenefit,
+                            investment: annualInvestment,
+                            netGain: scenarioTotalBenefit - annualInvestment,
+                            roiMultiple: scenarioTotalBenefit / annualInvestment,
+                          };
+                          
+                          setScenarios(prev => [...prev, newScenario]);
+                          setShowAddDrivers(false);
+                          toast({
+                            title: "Scenario saved",
+                            description: `"${newScenario.name}" has been created`,
+                          });
+                        }}
+                        className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                        data-testid="button-save-drivers-scenario"
+                      >
+                        Save Scenario
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Right column - Preview Panel */}
+                  <div className="lg:w-[40%]">
+                    <div className="lg:sticky lg:top-6">
+                      {/* Mobile toggle */}
+                      <div className="lg:hidden mb-4">
+                        <button
+                          onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
+                          className="w-full p-4 bg-white border border-[#E5E7EB] rounded-lg flex items-center justify-between"
+                        >
+                          <span className="text-[14px] font-bold text-[#111827]">Preview</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[14px] font-bold text-[#059669]">
+                              +{formatCurrency((() => {
+                                let addedValue = 0;
+                                scenarioDriverSelections.forEach(id => {
+                                  addedValue += calculateAdjustedDriverValue(id, driverAdjustments);
+                                });
+                                return addedValue;
+                              })())}
+                            </span>
+                            <ChevronDown className={`h-4 w-4 text-[#6B7280] transition-transform ${mobilePreviewOpen ? "rotate-180" : ""}`} />
+                          </div>
+                        </button>
+                      </div>
+                      
+                      <div className={`${mobilePreviewOpen ? "block" : "hidden"} lg:block`}>
+                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                          <div className="mb-4">
+                            <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-1">
+                              Scenario Preview
+                            </h3>
+                            <p className="text-[13px] text-[#6B7280]">Updates in real-time</p>
+                          </div>
+                          
+                          {/* Comparison table header */}
+                          <div className="grid grid-cols-4 gap-2 text-[12px] font-bold text-[#6B7280] uppercase mb-3">
+                            <div></div>
+                            <div className="text-right">Baseline</div>
+                            <div className="text-right">Scenario</div>
+                            <div className="text-right">Change</div>
+                          </div>
+                          
+                          {/* Deployment (unchanged) */}
+                          <div className="mb-4">
+                            <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Deployment (unchanged)</div>
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                <div className="text-[#6B7280]">Providers</div>
+                                <div className="text-right text-[#111827]">{inputs.numberOfProviders}</div>
+                                <div className="text-right font-bold text-[#111827]">{inputs.numberOfProviders}</div>
+                                <div className="text-right text-[#6B7280]">—</div>
+                              </div>
+                              <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                <div className="text-[#6B7280]">Encounters</div>
+                                <div className="text-right text-[#111827]">{inputs.annualOutpatientEncounters.toLocaleString()}</div>
+                                <div className="text-right font-bold text-[#111827]">{inputs.annualOutpatientEncounters.toLocaleString()}</div>
+                                <div className="text-right text-[#6B7280]">—</div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-[#E5E7EB] my-4" />
+                          
+                          {/* Active Drivers */}
+                          <div className="mb-4">
+                            <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Active Drivers</div>
+                            <div className="space-y-2">
+                              {enabledDriverIds.map(id => (
+                                <div key={id} className="grid grid-cols-4 gap-2 text-[14px]">
+                                  <div className="text-[#6B7280] truncate">{leverLabels[id].split(" ")[0]}</div>
+                                  <div className="text-right text-[#111827]">{formatCurrency(driverValues[id])}</div>
+                                  <div className="text-right font-bold text-[#111827]">{formatCurrency(driverValues[id])}</div>
+                                  <div className="text-right text-[#6B7280]">—</div>
+                                </div>
+                              ))}
+                              {Array.from(scenarioDriverSelections).map(id => {
+                                const adjustedDriverValue = calculateAdjustedDriverValue(id, driverAdjustments);
+                                return (
+                                  <div key={id} className="grid grid-cols-4 gap-2 text-[14px]">
+                                    <div className="text-[#6B7280] truncate">{leverLabels[id].split(" ")[0]}</div>
+                                    <div className="text-right text-[#6B7280]">—</div>
+                                    <div className="text-right font-bold text-[#059669]">{formatCurrency(adjustedDriverValue)}</div>
+                                    <div className="text-right">
+                                      <span className="px-1.5 py-0.5 bg-[#ECFDF5] text-[12px] font-bold text-[#059669] uppercase rounded">
+                                        NEW
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-[#E5E7EB] my-4" />
+                          
+                          {/* Summary */}
+                          {(() => {
+                            let scenarioTotalBenefit = totalAnnualBenefit;
+                            scenarioDriverSelections.forEach(id => {
+                              scenarioTotalBenefit += calculateAdjustedDriverValue(id, driverAdjustments);
+                            });
+                            const scenarioNetGain = scenarioTotalBenefit - annualInvestment;
+                            const scenarioRoi = scenarioTotalBenefit / annualInvestment;
+                            
+                            return (
+                              <>
+                                <div className="mb-4">
+                                  <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Summary</div>
+                                  <div className="space-y-2">
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Total Benefit</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(totalAnnualBenefit)}</div>
+                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioTotalBenefit)}</div>
+                                      <div className={`text-right ${scenarioTotalBenefit > totalAnnualBenefit ? "text-[#059669]" : "text-[#6B7280]"}`}>
+                                        {scenarioTotalBenefit > totalAnnualBenefit ? `+${(((scenarioTotalBenefit - totalAnnualBenefit) / totalAnnualBenefit) * 100).toFixed(0)}%` : "—"}
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Investment</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(annualInvestment)}</div>
+                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(annualInvestment)}</div>
+                                      <div className="text-right text-[#6B7280]">—</div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[16px] bg-[#F9FAFB] -mx-6 px-6 py-2">
+                                      <div className="font-bold text-[#111827]">Net Gain</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(netAnnualGain)}</div>
+                                      <div className="text-right font-bold text-[#059669]">{formatCurrency(scenarioNetGain)}</div>
+                                      <div className={`text-right font-bold ${scenarioNetGain > netAnnualGain ? "text-[#059669]" : "text-[#6B7280]"}`}>
+                                        {scenarioNetGain > netAnnualGain ? `+${(((scenarioNetGain - netAnnualGain) / netAnnualGain) * 100).toFixed(0)}%` : "—"}
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">ROI</div>
+                                      <div className="text-right text-[#111827]">{roiMultiple.toFixed(1)}x</div>
+                                      <div className="text-right font-bold text-[#111827]">{scenarioRoi.toFixed(1)}x</div>
+                                      <div className={`text-right ${scenarioRoi > roiMultiple ? "text-[#059669]" : "text-[#6B7280]"}`}>
+                                        {scenarioRoi > roiMultiple ? `+${(((scenarioRoi - roiMultiple) / roiMultiple) * 100).toFixed(0)}%` : "—"}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="border-t border-[#E5E7EB] my-4" />
+                                
+                                {/* 3-Year Projection */}
+                                <div className="mb-4">
+                                  <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">3-Year Projection</div>
+                                  <div className="space-y-2">
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Total Value</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(totalAnnualBenefit * 3)}</div>
+                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioTotalBenefit * 3)}</div>
+                                      <div className={`text-right ${scenarioTotalBenefit > totalAnnualBenefit ? "text-[#059669]" : "text-[#6B7280]"}`}>
+                                        {scenarioTotalBenefit > totalAnnualBenefit ? `+${(((scenarioTotalBenefit - totalAnnualBenefit) / totalAnnualBenefit) * 100).toFixed(0)}%` : "—"}
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
+                                      <div className="text-[#6B7280]">Net 3-Year</div>
+                                      <div className="text-right text-[#111827]">{formatCurrency(netAnnualGain * 3)}</div>
+                                      <div className="text-right font-bold text-[#059669]">{formatCurrency(scenarioNetGain * 3)}</div>
+                                      <div className={`text-right font-bold ${scenarioNetGain > netAnnualGain ? "text-[#059669]" : "text-[#6B7280]"}`}>
+                                        {scenarioNetGain > netAnnualGain ? `+${(((scenarioNetGain - netAnnualGain) / netAnnualGain) * 100).toFixed(0)}%` : "—"}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Key Insight */}
+                                {scenarioDriverSelections.size > 0 && (
+                                  <div className="mt-4 p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
+                                    <div className="flex items-start gap-2">
+                                      <Lightbulb className="h-4 w-4 text-[#1E40AF] mt-0.5 shrink-0" />
+                                      <div>
+                                        <p className="text-[13px] font-bold text-[#1E40AF] mb-1">Key Insight</p>
+                                        <p className="text-[14px] text-[#1E40AF]">
+                                          Adding {scenarioDriverSelections.size === 1 ? "this driver" : `these ${scenarioDriverSelections.size} drivers`} increases your ROI from {roiMultiple.toFixed(1)}x to {scenarioRoi.toFixed(1)}x without any additional investment.
+                                          {scenarioDriverSelections.size > 0 && (() => {
+                                            let maxVal = 0;
+                                            let maxId: LeverId = "hcc";
+                                            scenarioDriverSelections.forEach(id => {
+                                              const val = calculateAdjustedDriverValue(id, driverAdjustments);
+                                              if (val > maxVal) {
+                                                maxVal = val;
+                                                maxId = id;
+                                              }
+                                            });
+                                            const addedValue = scenarioTotalBenefit - totalAnnualBenefit;
+                                            return scenarioDriverSelections.size > 1 ? ` ${leverLabels[maxId]} alone adds ${formatCurrency(maxVal)} (${((maxVal / addedValue) * 100).toFixed(0)}% of new value).` : "";
+                                          })()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -2636,7 +3376,13 @@ export default function RoiCalculator({
                 
                 {/* Add Strategic Drivers Card */}
                 <button
-                  onClick={() => setScenarioTypeModal("drivers")}
+                  onClick={() => {
+                    setScenarioDriverSelections(new Set());
+                    setExpandedDriverMethodology(null);
+                    setDriversScenarioName("");
+                    setCurrentScenarioType("drivers");
+                    setShowAddDrivers(true);
+                  }}
                   className="group bg-white border border-[#E5E7EB] rounded-lg p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
                   data-testid="card-add-drivers"
                 >

@@ -1,0 +1,679 @@
+OBJECTIVE:
+Build the "New Care Setting" scenario flow. User clicks "New Care Setting" from the scenario type cards and can model expansion into Emergency Department or Nursing. Shows combined deployment value across multiple care settings.
+
+CRITICAL RULES:
+- Match existing brand colors and typography exactly
+- ED uses same pricing as Outpatient
+- Nursing has different pricing (show "Contact for pricing" or placeholder)
+- Pre-select relevant drivers based on care setting
+- Show combined deployment preview (current + new setting)
+- Real-time calculations as user configures new setting
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: FLOW ENTRY
+
+When user clicks "New Care Setting" card from main Scenario Builder page:
+- Open as a full-page view (not modal)
+- Show back navigation to return to Scenario Builder
+- Show current deployment as context
+- Present available care settings to add
+
+═══════════════════════════════════════════════════════════════
+
+PART 2: PAGE HEADER
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ← Back to Scenario Builder                                      │
+│                                                                 │
+│ NEW CARE SETTING                                                │
+│ Model expansion into Emergency Department or Nursing            │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 Your current deployment                                  │ │
+│ │                                                             │ │
+│ │ Outpatient: 50 providers | $391,802 net gain | 6.4x ROI    │ │
+│ │                                                             │ │
+│ │ Adding a new care setting creates a combined deployment    │ │
+│ │ with separate configurations but unified ROI view.         │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Back link:
+- "← Back to Scenario Builder"
+- Font: 14px, #E8532F (orange)
+- Hover: Underline
+- Margin-bottom: 24px
+
+Page title:
+- "NEW CARE SETTING": 14px, #E8532F (orange), uppercase, letter-spacing 0.05em, bold
+- Subtitle: 16px, #6B7280 (gray)
+- Margin-bottom: 16px
+
+Current deployment box:
+- Background: #F9FAFB (light gray)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Icon: 📊
+- Margin-bottom: 32px
+
+Box content:
+- Header: 14px, #6B7280 (gray), bold
+- Deployment line: 14px, #111827 (black)
+- Explanation: 14px, #6B7280 (gray), margin-top 12px
+
+═══════════════════════════════════════════════════════════════
+
+PART 3: CARE SETTING SELECTION
+
+Show available care settings to add:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ SELECT CARE SETTING TO ADD                                      │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ ○ 🚑 Emergency Department                                   │ │
+│ │                                                             │ │
+│ │   High-volume, fast-paced encounters                       │ │
+│ │                                                             │ │
+│ │   ─────────────────────────────────────────────────────── │ │
+│ │                                                             │ │
+│ │   Typical ED characteristics:                              │ │
+│ │   • 3,000-8,000 encounters per provider per year          │ │
+│ │   • Average wRVU: 2.4-3.2 per encounter                   │ │
+│ │   • Higher denial risk due to time pressure               │ │
+│ │   • Significant after-hours documentation burden          │ │
+│ │                                                             │ │
+│ │   Recommended drivers:                                     │ │
+│ │   ✓ Patient Throughput                                    │ │
+│ │   ✓ Level of Service Accuracy                             │ │
+│ │   ✓ Denial Reduction                                      │ │
+│ │                                                             │ │
+│ │   Pricing: Same as Outpatient ($X/provider/month)         │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ ○ 💊 Nursing                                                │ │
+│ │                                                             │ │
+│ │   Bedside documentation, care coordination                 │ │
+│ │                                                             │ │
+│ │   ─────────────────────────────────────────────────────── │ │
+│ │                                                             │ │
+│ │   Typical Nursing characteristics:                         │ │
+│ │   • Different encounter patterns than physician settings  │ │
+│ │   • Focus on time savings and documentation quality       │ │
+│ │   • Significant overtime reduction opportunity            │ │
+│ │                                                             │ │
+│ │   Recommended drivers:                                     │ │
+│ │   ✓ Time Savings                                          │ │
+│ │   ✓ Overtime Reduction                                    │ │
+│ │   ✓ Documentation Quality                                 │ │
+│ │                                                             │ │
+│ │   Pricing: Different structure (contact for details)      │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │ ○ 🏥 Inpatient                               [Coming Soon]  │ │
+│ │                                                             │ │
+│ │   Hospital admissions, rounding, discharge                 │ │
+│ │                                                             │ │
+│ │   In development - not yet available for modeling         │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Section header:
+- "SELECT CARE SETTING TO ADD": 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-bottom: 16px
+
+Care setting cards:
+- Background: #FFFFFF (white)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 24px
+- Margin-bottom: 16px
+- Cursor: pointer
+
+Radio button:
+- Size: 20px
+- Position: Top-left, inline with title
+- Unselected: Border 2px solid #E5E7EB
+- Selected: #E8532F fill (orange)
+
+Icon + Title:
+- Icon: 24px
+- Title: 18px, #111827 (black), bold
+- Inline, with icon margin-right 12px
+
+Description:
+- Font: 14px, #6B7280 (gray)
+- Margin-top: 8px
+
+Divider:
+- 1px solid #E5E7EB
+- Margin: 16px 0
+
+Characteristics section:
+- "Typical ED characteristics:": 13px, #6B7280 (gray), bold
+- Bullet points: 14px, #6B7280 (gray)
+- Line-height: 1.8
+
+Recommended drivers:
+- "Recommended drivers:": 13px, #6B7280 (gray), bold
+- Driver items: 14px, #111827 (black)
+- Checkmark: ✓ in #059669 (green)
+
+Pricing line:
+- Font: 14px, #6B7280 (gray)
+- Bold the pricing info
+
+Card hover state:
+- Border: 1px solid #E8532F (orange)
+- Shadow: 0 4px 12px rgba(0, 0, 0, 0.08)
+- Transition: 200ms ease-out
+
+Card selected state:
+- Border: 2px solid #E8532F (orange)
+- Background: rgba(232, 83, 47, 0.02)
+- Left accent: 4px solid #E8532F
+
+Inpatient card (disabled):
+- Opacity: 0.6
+- Border: 1px dashed #E5E7EB
+- Cursor: not-allowed
+- [Coming Soon] badge:
+  - Background: #F3F4F6
+  - Text: 11px, #6B7280, uppercase
+  - Padding: 2px 8px
+  - Border-radius: 4px
+
+═══════════════════════════════════════════════════════════════
+
+PART 4: CONFIGURATION SECTION (After Selection)
+
+When user selects a care setting, show configuration:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ CONFIGURE EMERGENCY DEPARTMENT                                  │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ SCENARIO NAME                                                   │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ Add Emergency Department (20 providers)                     │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│ Auto-updates based on your configuration                       │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ DEPLOYMENT SIZE                                                 │
+│                                                                 │
+│ ED providers in scope                                          │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 20                                                          │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│ Number of ED physicians and APPs                               │
+│                                                                 │
+│                                                                 │
+│ Annual ED encounters                                            │
+│                                                                 │
+│ ● Calculate from provider count                                │
+│   20 providers × 5,000 encounters/provider = 100,000           │
+│                                                                 │
+│ ○ Enter custom volume                                          │
+│   ┌───────────────────────────────────────────────────────────┐│
+│   │ [disabled until selected]                                 ││
+│   └───────────────────────────────────────────────────────────┘│
+│                                                                 │
+│ 💡 ED providers typically see 3,000-8,000 encounters/year     │
+│    (higher than outpatient due to shift-based coverage)       │
+│                                                                 │
+│                                                                 │
+│ Expected utilization rate                                       │
+│ ├────────────────────●──────────────────────┤ 70%              │
+│                                                                 │
+│ ED adoption often starts higher due to standardized workflows │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ VALUE DRIVERS FOR ED                                            │
+│                                                                 │
+│ Pre-selected based on ED workflows (adjust if needed):         │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ Patient Throughput                          +$180,000     │ │
+│ │   Time returned enables faster patient flow                 │ │
+│ │   [Adjust assumptions ▸]                                   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ Accurate Level of Service                   +$280,000     │ │
+│ │   ED wRVU capture from complete documentation               │ │
+│ │   [Adjust assumptions ▸]                                   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ Denial Reduction                            +$95,000      │ │
+│ │   Prevent ED-specific documentation denials                 │ │
+│ │   [Adjust assumptions ▸]                                   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ □ Overtime & Locum Cost Avoidance             +$45,000      │ │
+│ │   Reduce after-hours documentation (optional)               │ │
+│ │   [Adjust assumptions ▸]                                   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Configuration header:
+- "CONFIGURE EMERGENCY DEPARTMENT": 16px, #111827 (black), bold
+- Margin-top: 32px
+- Margin-bottom: 16px
+
+Section headers (SCENARIO NAME, DEPLOYMENT SIZE, etc.):
+- Font: 14px, #6B7280 (gray), uppercase, letter-spacing 0.05em, bold
+- Margin-bottom: 12px
+- Margin-top: 32px
+
+All input styling:
+- Same as Phase 2 (Expand Providers)
+
+Info boxes:
+- Same light blue style (#EFF6FF)
+- Icon: 💡
+
+Driver cards (pre-selected):
+- Same styling as Phase 3 (Add Strategic Drivers)
+- Show value estimate for this care setting specifically
+- Checkboxes pre-selected based on care setting
+
+"Adjust assumptions" link:
+- Font: 13px, #E8532F (orange)
+- Icon: ▸
+- Expands inline to show driver-specific adjustments
+
+═══════════════════════════════════════════════════════════════
+
+PART 5: EXPANDABLE DRIVER ADJUSTMENTS
+
+When user clicks "Adjust assumptions":
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ☑ Accurate Level of Service                     +$280,000      │ │
+│   ED wRVU capture from complete documentation                   │ │
+│   [Adjust assumptions ▾]                                       │ │
+│                                                                 │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │ ED-SPECIFIC ASSUMPTIONS                                 │  │
+│   │                                                         │  │
+│   │ Baseline wRVU per ED encounter                         │  │
+│   │ [2.8______]                                            │  │
+│   │ ED typical range: 2.4-3.2 | Outpatient baseline: 1.75  │  │
+│   │                                                         │  │
+│   │ Documentation quality lift                             │  │
+│   │ ├────────────●───────────────────────────┤ 6%          │  │
+│   │ ED often sees higher lift due to time-pressured docs   │  │
+│   │ Typical range: 4-10%                                   │  │
+│   │                                                         │  │
+│   │ Revenue per wRVU                                       │  │
+│   │ $ [45_______]                                          │  │
+│   │ Use your organization's ED conversion factor           │  │
+│   │ Typical range: $35-60                                  │  │
+│   │                                                         │  │
+│   └─────────────────────────────────────────────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Adjustment section:
+- Background: #FFFBF5 (very subtle cream)
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 20px
+- Margin-top: 12px
+- Animation: Slide down 300ms ease-out
+
+Section header:
+- "ED-SPECIFIC ASSUMPTIONS": 13px, #6B7280 (gray), uppercase, bold
+
+Input styling:
+- Same as Fine-Tune section
+- Show ED-specific typical ranges (different from Outpatient)
+
+Contextual notes:
+- Font: 13px, #6B7280 (gray)
+- Explain ED vs Outpatient differences
+
+═══════════════════════════════════════════════════════════════
+
+PART 6: NURSING CONFIGURATION (Different from ED)
+
+When user selects Nursing:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ CONFIGURE NURSING                                               │
+│                                                                 │
+│ ⚠️ PRICING NOTE                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ Nursing has a different pricing structure than physician   │ │
+│ │ settings. This scenario will show estimated value only.    │ │
+│ │ Contact your Abridge representative for specific pricing.  │ │
+│ │                                                             │ │
+│ │ For this model, we'll use a placeholder rate of $X/user.  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ DEPLOYMENT SIZE                                                 │
+│                                                                 │
+│ Nursing staff in scope                                         │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 50                                                          │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│ Number of nurses using Abridge                                 │
+│                                                                 │
+│                                                                 │
+│ Estimated documentation events per nurse/day                   │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 15                                                          │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│ Typical range: 10-25 per shift                                 │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│ VALUE DRIVERS FOR NURSING                                       │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ Time Savings                                +$125,000     │ │
+│ │   Reduced documentation time per patient                    │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ Overtime Reduction                          +$85,000      │ │
+│ │   Less end-of-shift documentation catch-up                  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ☑ Documentation Quality                       +$40,000      │ │
+│ │   More complete nursing notes                               │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Pricing warning box:
+- Background: #FEF3C7 (light yellow/amber)
+- Border: 1px solid #F59E0B (amber)
+- Border-radius: 8px
+- Padding: 16px
+- Icon: ⚠️
+- Text: 14px, #92400E (dark amber)
+
+Rest of styling same as ED configuration.
+
+═══════════════════════════════════════════════════════════════
+
+PART 7: COMBINED DEPLOYMENT PREVIEW PANEL
+
+Show current + new setting combined:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ COMBINED DEPLOYMENT PREVIEW                                     │
+│ Updates in real-time                                            │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │                                                             │ │
+│ │              OUTPATIENT      ED (NEW)        COMBINED       │ │
+│ │              (current)                                      │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ DEPLOYMENT                                                  │ │
+│ │ Providers        50              20             70          │ │
+│ │ Encounters       65,000          100,000        165,000     │ │
+│ │ Utilization      65%             70%            —           │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ VALUE BY CARE SETTING                                       │ │
+│ │ Total Benefit    $455,333        $555,000       $1,010,333  │ │
+│ │ Investment       $72,000         $28,800        $100,800    │ │
+│ │ Net Gain         $383,333        $526,200       $909,533    │ │
+│ │ ROI              5.3x            18.3x          10.0x       │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ COMBINED VALUE BREAKDOWN                                    │ │
+│ │                                                             │ │
+│ │ Outpatient                                                  │ │
+│ │ • Patient Access              $173,333                     │ │
+│ │ • Level of Service            $182,000                     │ │
+│ │ • Clinician Retention         $100,000                     │ │
+│ │                                                             │ │
+│ │ Emergency Department (NEW)                                  │ │
+│ │ • Patient Throughput          $180,000                     │ │
+│ │ • Level of Service            $280,000                     │ │
+│ │ • Denial Reduction            $95,000                      │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ COMBINED SUMMARY                                            │ │
+│ │ Total Annual Benefit                         $1,010,333    │ │
+│ │ Total Annual Investment                      $100,800      │ │
+│ │ Net Annual Gain                              $909,533      │ │
+│ │ Combined ROI                                 10.0x         │ │
+│ │                                                             │ │
+│ │ ─────────────────────────────────────────────────────────  │ │
+│ │                                                             │ │
+│ │ 3-YEAR COMBINED PROJECTION                                  │ │
+│ │ Total Value                                  $2,728,599    │ │
+│ │ Total Investment                             $302,400      │ │
+│ │ Net 3-Year Gain                              $2,426,199    │ │
+│ │                                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💡 KEY INSIGHT                                              │ │
+│ │                                                             │ │
+│ │ Adding ED would more than double your annual value         │ │
+│ │ (+$526,200) with exceptional ROI (18.3x) due to ED's       │ │
+│ │ high encounter volume and wRVU capture opportunity.        │ │
+│ │                                                             │ │
+│ │ Combined deployment delivers $909,533 annually (10.0x ROI) │ │
+│ │ across 70 total providers.                                 │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STYLING:
+
+Preview panel header:
+- "COMBINED DEPLOYMENT PREVIEW": 14px, #E8532F (orange), uppercase, bold
+- "Updates in real-time": 13px, #6B7280 (gray)
+
+Three-column comparison:
+- Column headers: 12px, #6B7280 (gray), uppercase
+- "OUTPATIENT (current)": Regular
+- "ED (NEW)": Include "(NEW)" in green #059669
+- "COMBINED": Bold
+
+Section labels:
+- "DEPLOYMENT", "VALUE BY CARE SETTING", etc.
+- Font: 12px, #6B7280 (gray), uppercase, bold
+
+Row styling:
+- Labels: 14px, #6B7280 (gray)
+- Values: 14px, #111827 (black)
+- Combined column values: Bold
+- ROI values: Keep standard color unless exceptional (>10x could be highlighted)
+
+Value breakdown section:
+- Care setting sub-headers: 14px, #111827 (black), bold
+- "(NEW)" badge: Green text
+- Driver lines: 14px, #6B7280 (gray) for driver name, #111827 (black) for value
+- Bullet points: •
+
+Combined summary:
+- Background: #F9FAFB (light gray)
+- Padding: 16px
+- Border-radius: 6px
+- Labels: 14px, #6B7280 (gray)
+- Values: 18px, #111827 (black), bold
+- Net Annual Gain: #059669 (green)
+
+Key insight box:
+- Same as Phases 2 and 3 (light blue)
+
+═══════════════════════════════════════════════════════════════
+
+PART 8: LAYOUT - TWO COLUMN ON DESKTOP
+
+Same layout as Phase 2 and 3:
+- Left column (60%): Care setting selection + configuration form
+- Right column (40%): Combined deployment preview (sticky)
+- Gap: 48px
+
+Mobile:
+- Single column
+- Preview as collapsible or fixed bottom bar
+
+═══════════════════════════════════════════════════════════════
+
+PART 9: FOOTER ACTIONS
+
+Same as previous phases:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│                   [Cancel]        [Save Scenario]              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Save validation:
+- Care setting must be selected
+- Provider count required (>0)
+- At least one driver selected
+
+═══════════════════════════════════════════════════════════════
+
+PART 10: CALCULATION LOGIC
+
+ED-specific defaults:
+- Encounters per provider: 5,000 (vs 1,300 for outpatient)
+- Baseline wRVU: 2.8 (vs 1.75 for outpatient)
+- Default utilization: 70%
+- Pricing: Same as Outpatient ($X/provider/month)
+
+ED driver calculations:
+- Use ED-specific baselines
+- Same formulas as outpatient, different inputs
+
+Nursing-specific defaults:
+- Different calculation model (time-based, not wRVU)
+- Placeholder pricing until confirmed
+- Focus on time savings and overtime metrics
+
+Combined calculations:
+- Sum provider counts
+- Sum encounter counts
+- Calculate each setting's value independently
+- Sum for combined totals
+- Combined ROI = Combined Net Gain / Combined Investment
+
+Real-time update behavior:
+- Same debouncing as previous phases
+- Update both new setting values AND combined totals
+
+═══════════════════════════════════════════════════════════════
+
+PART 11: SAVE BEHAVIOR
+
+When user clicks "Save Scenario":
+
+1. Validate inputs:
+   - Care setting selected
+   - Provider count > 0
+   - At least one driver selected
+
+2. Save to state:
+   - Scenario ID (generated)
+   - Scenario name
+   - Scenario type: "new_care_setting"
+   - Care setting: "emergency_department" or "nursing"
+   - Created timestamp
+   - Configuration inputs
+   - Selected drivers with adjustments
+   - Calculated results (new setting only)
+   - Combined results (current + new)
+
+3. Navigate back to Scenario Builder main page
+
+4. Show success toast:
+   "✓ Scenario saved: [Scenario Name]"
+
+5. New scenario appears in "YOUR SCENARIOS" list with 🏥 icon
+
+═══════════════════════════════════════════════════════════════
+
+PART 12: SCENARIO CARD DISPLAY
+
+On main Scenario Builder page, care setting scenarios show:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🏥 Add Emergency Department                                     │
+│    Created: Dec 15, 2024                                        │
+│                                                                 │
+│    +20 ED providers | 100,000 encounters | Combined 70 providers│
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│    ED Net Gain            $526,200                             │
+│    Combined Net Gain      $909,533         +137% vs baseline    │
+│    Combined ROI           10.0x                                 │
+│                                                                 │
+│    [View Details]  [Edit]  [Compare]  [Delete]                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Show both the new setting value AND combined totals.
+
+═══════════════════════════════════════════════════════════════
+
+DO NOT CHANGE:
+- Scenario Builder main page structure (from Phase 1)
+- Expand Providers flow (from Phase 2)
+- Add Strategic Drivers flow (from Phase 3)
+- Any other tabs or pages
+- Brand colors or typography
+- Core calculation formulas
+
+ONLY BUILD:
+- New Care Setting flow
+- Care setting selection cards
+- ED configuration
+- Nursing configuration (with pricing disclaimer)
+- Combined deployment preview
+- Save functionality
+
+═══════════════════════════════════════════════════════════════
+
+RESULT:
+User can create "New Care Setting" scenarios that model expansion into ED or Nursing. Shows both the new setting's standalone value AND combined deployment totals. ED uses same pricing as Outpatient. Nursing shows pricing disclaimer. Pre-selects relevant drivers for each care setting. Saved scenarios appear on main Scenario Builder page with combined deployment metrics.
