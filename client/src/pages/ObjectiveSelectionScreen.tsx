@@ -831,7 +831,12 @@ export default function ObjectiveSelectionScreen({
   initialSelectedSettings = [],
   initialSelectedLevers = [],
 }: ObjectiveSelectionScreenProps) {
-  const [currentPage, setCurrentPage] = useState<Page>("orientation");
+  // If returning from calculator with existing selections, go directly to priorities page
+  const [currentPage, setCurrentPage] = useState<Page>(
+    initialSelectedSettings.length > 0 && initialSelectedLevers.length > 0
+      ? "priorities"
+      : "orientation"
+  );
   const [selectedSetting, setSelectedSetting] =
     useState<CareSettingType | null>(
       initialSelectedSettings.length > 0 ? initialSelectedSettings[0] : null,
