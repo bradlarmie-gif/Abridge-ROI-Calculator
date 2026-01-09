@@ -1099,7 +1099,7 @@ export default function RoiCalculator({
                             return (
                               <div
                                 key={id}
-                                className="bg-white border border-neutral-200 rounded-lg p-4"
+                                className="bg-white border border-neutral-200/60 rounded-lg p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
                                 data-testid={`driver-card-summary-${id}`}
                               >
                                 <div className="flex items-start justify-between gap-4">
@@ -1193,7 +1193,7 @@ export default function RoiCalculator({
                             return (
                               <div
                                 key={id}
-                                className="bg-white border border-neutral-200 rounded-lg p-4"
+                                className="bg-white border border-neutral-200/60 rounded-lg p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
                                 data-testid={`driver-card-summary-${id}`}
                               >
                                 <div className="flex items-start justify-between gap-4">
@@ -1248,7 +1248,7 @@ export default function RoiCalculator({
                 {/* Card 1: Deep Dive */}
                 <button
                   onClick={() => setActiveTab("detailed")}
-                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
+                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-deep-dive"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
@@ -1265,7 +1265,7 @@ export default function RoiCalculator({
                 {/* Card 2: Model Scenarios */}
                 <button
                   onClick={() => setActiveTab("scenarios")}
-                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
+                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-scenarios"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
@@ -1282,7 +1282,7 @@ export default function RoiCalculator({
                 {/* Card 3: Export PDF */}
                 <button
                   onClick={() => setActiveTab("export")}
-                  className="group bg-white rounded-lg border border-neutral-200 p-5 text-left shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
+                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-export"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center mb-3 group-hover:bg-[#BFDBFE] transition-colors">
@@ -1352,7 +1352,7 @@ export default function RoiCalculator({
                 return (
                   <div
                     key={driverId}
-                    className="group bg-white rounded-xl border border-neutral-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] overflow-hidden transition-all duration-200 ease-out cursor-pointer"
+                    className="group bg-white rounded-xl border border-neutral-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] overflow-hidden transition-all duration-200 ease-out cursor-pointer"
                     data-testid={`driver-card-${driverId}`}
                   >
                     {/* Collapsed Header (always visible) */}
@@ -2109,7 +2109,7 @@ export default function RoiCalculator({
                         onClick={() => setExpandProvidersMode("quick")}
                         className={`flex-1 p-4 rounded-md transition-all ${
                           expandProvidersMode === "quick"
-                            ? "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                            ? "bg-white border border-neutral-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
                             : "bg-transparent hover:bg-white/50"
                         }`}
                         data-testid="toggle-quick-mode"
@@ -2124,7 +2124,7 @@ export default function RoiCalculator({
                         onClick={() => setExpandProvidersMode("advanced")}
                         className={`flex-1 p-4 rounded-md transition-all ${
                           expandProvidersMode === "advanced"
-                            ? "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                            ? "bg-white border border-neutral-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
                             : "bg-transparent hover:bg-white/50"
                         }`}
                         data-testid="toggle-advanced-mode"
@@ -2522,7 +2522,7 @@ export default function RoiCalculator({
                       {/* Mobile toggle for preview */}
                       <button
                         onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
-                        className="lg:hidden w-full mb-4 p-4 bg-white border border-[#E5E7EB] rounded-lg flex items-center justify-between"
+                        className="lg:hidden w-full mb-4 p-4 bg-white border border-neutral-200/60 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] flex items-center justify-between"
                         data-testid="button-toggle-preview"
                       >
                         <span className="text-[14px] text-[#111827]">
