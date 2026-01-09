@@ -630,7 +630,7 @@ function PriorityCard({
       }}
       className={`group relative w-full text-left cursor-pointer rounded-xl transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#F03319]/25 overflow-hidden ${
         isSelected
-          ? "bg-[#FEF3C7]/15 border border-[#E8532F]/30 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+          ? "bg-[#FEF3C7]/40 border border-[#E8532F]/30 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
           : "bg-white border border-neutral-200/50 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] hover:border-[#E8532F]"
       }`}
       data-testid={`priority-card-${lever.id}`}
