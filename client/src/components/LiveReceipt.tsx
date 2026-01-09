@@ -318,7 +318,7 @@ export function LiveReceipt({
                         <div key={leverId} data-testid={`receipt-driver-${leverId}`}>
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-neutral-800">{label}</span>
-                            <span className="text-base font-semibold text-[#F03319] tabular-nums">
+                            <span className="text-base font-semibold text-emerald-600 tabular-nums">
                               {formatCurrency(value)}
                             </span>
                           </div>
@@ -377,7 +377,7 @@ export function LiveReceipt({
               </div>
             )}
 
-            <div className="p-5 bg-[#FFF1EB] border-t-2 border-neutral-200">
+            <div className="p-5 bg-emerald-50 border-t-2 border-neutral-200">
               <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase mb-3">
                 Projected Annual Value
               </div>
@@ -385,7 +385,7 @@ export function LiveReceipt({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-neutral-700">Total Benefit</span>
-                  <span className={`text-base font-semibold text-[#F03319] tabular-nums ${getHighlightClass("totalProjectedValue")}`}>
+                  <span className={`text-base font-semibold text-emerald-600 tabular-nums ${getHighlightClass("totalProjectedValue")}`}>
                     {formatCurrency(totalProjectedValue)}
                   </span>
                 </div>
@@ -402,7 +402,7 @@ export function LiveReceipt({
                 <div className="border-t border-neutral-300 pt-2 mt-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-neutral-900">Net Annual Gain</span>
-                    <span className={`text-xl font-bold text-[#F03319] tabular-nums receipt-major-value ${getHighlightClass("netAnnualGain")}`}>
+                    <span className={`text-xl font-bold text-emerald-600 tabular-nums receipt-major-value ${getHighlightClass("netAnnualGain")}`}>
                       {formatCurrency(netAnnualGain)}
                     </span>
                   </div>
@@ -410,7 +410,7 @@ export function LiveReceipt({
               </div>
               
               {threeYearBenefit !== null && contractYears !== null && contractYears > 1 && (
-                <div className="mt-4 pt-4 border-t border-[#F03319]/20">
+                <div className="mt-4 pt-4 border-t border-emerald-200">
                   <div className="text-xs text-neutral-500 mb-2">{contractYears}-Year View</div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
@@ -428,9 +428,9 @@ export function LiveReceipt({
                       </div>
                     )}
                     {threeYearNetGain !== null && (
-                      <div className="flex items-center justify-between pt-1 border-t border-[#F03319]/20">
+                      <div className="flex items-center justify-between pt-1 border-t border-emerald-200">
                         <span className="text-xs font-medium text-neutral-700">Net {contractYears}-Year Gain</span>
-                        <span className="text-sm font-bold text-[#F03319] tabular-nums">
+                        <span className="text-sm font-bold text-emerald-700 tabular-nums">
                           {formatCurrency(threeYearNetGain)}
                         </span>
                       </div>
@@ -440,7 +440,7 @@ export function LiveReceipt({
               )}
               
               {annualSubscriptionCost !== null && annualSubscriptionCost > 0 && (
-                <div className="mt-4 pt-3 border-t border-[#F03319]/20">
+                <div className="mt-4 pt-3 border-t border-emerald-200">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-neutral-900">Return on Investment</span>
                     <span className="text-xl font-bold text-neutral-900 tabular-nums">
@@ -469,7 +469,7 @@ export function LiveReceipt({
           >
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-neutral-900">Net Annual Gain:</span>
-              <span className="text-lg font-bold text-[#F03319] tabular-nums">
+              <span className="text-lg font-bold text-emerald-600 tabular-nums">
                 {formatCurrency(netAnnualGain)}
               </span>
             </div>
@@ -549,7 +549,7 @@ export function LiveReceipt({
                       return (
                         <div key={leverId} className="flex justify-between items-center">
                           <span className="text-sm text-neutral-700">{label}</span>
-                          <span className="text-sm font-semibold text-[#F03319] tabular-nums">
+                          <span className="text-sm font-semibold text-emerald-600 tabular-nums">
                             {formatCurrency(value)}
                           </span>
                         </div>
@@ -559,10 +559,10 @@ export function LiveReceipt({
                 </div>
               )}
 
-              <div className="bg-[#FFF1EB] rounded-lg p-4 border border-[#F03319]/10">
+              <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-neutral-700">Total Benefit</span>
-                  <span className="text-base font-semibold text-[#F03319] tabular-nums">
+                  <span className="text-base font-semibold text-emerald-600 tabular-nums">
                     {formatCurrency(totalProjectedValue)}
                   </span>
                 </div>
@@ -574,16 +574,16 @@ export function LiveReceipt({
                     </span>
                   </div>
                 )}
-                <div className="border-t border-[#F03319]/20 pt-2 mt-2">
+                <div className="border-t border-emerald-200 pt-2 mt-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-bold text-neutral-900">Net Annual Gain</span>
-                    <span className="text-xl font-bold text-[#F03319] tabular-nums">
+                    <span className="text-xl font-bold text-emerald-600 tabular-nums">
                       {formatCurrency(netAnnualGain)}
                     </span>
                   </div>
                 </div>
                 {roiMultiple > 0 && (
-                  <div className="flex justify-between items-center mt-3 pt-2 border-t border-[#F03319]/20">
+                  <div className="flex justify-between items-center mt-3 pt-2 border-t border-emerald-200">
                     <span className="text-sm font-bold text-neutral-900">ROI</span>
                     <span className="text-lg font-bold text-neutral-900 tabular-nums">{roiMultiple.toFixed(1)}x</span>
                   </div>
