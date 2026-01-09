@@ -2533,68 +2533,6 @@ export default function ObjectiveSelectionScreen({
                           </div>
                         </div>
 
-                        {/* Value Timeline Section */}
-                        <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-sm">⏱️</span>
-                            <span className="text-sm text-[#6B7280]">Value timeline:</span>
-                          </div>
-                          
-                          {/* IMMEDIATE (0-3 months) */}
-                          {selectedLeverIds.has("overtime") && (
-                            <div className="mt-2">
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-[13px] font-bold uppercase text-[#111827]">Immediate</span>
-                                <span className="text-xs text-[#6B7280]">(0-3 months)</span>
-                              </div>
-                              <div className="ml-4 mt-1 space-y-1">
-                                <p className="text-[13px] text-[#6B7280] leading-relaxed">• Overtime & locum cost savings</p>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* SHORT-TERM (3-6 months) */}
-                          {(selectedLeverIds.has("patientAccess") || selectedLeverIds.has("wrvu") || selectedLeverIds.has("denials") || selectedLeverIds.has("denialReduction")) && (
-                            <div className="mt-3">
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-[13px] font-bold uppercase text-[#111827]">Short-term</span>
-                                <span className="text-xs text-[#6B7280]">(3-6 months)</span>
-                              </div>
-                              <div className="ml-4 mt-1 space-y-1">
-                                {selectedLeverIds.has("patientAccess") && (
-                                  <p className="text-[13px] text-[#6B7280] leading-relaxed">• Patient access expansion</p>
-                                )}
-                                {selectedLeverIds.has("wrvu") && (
-                                  <p className="text-[13px] text-[#6B7280] leading-relaxed">• Level of service improvements</p>
-                                )}
-                                {(selectedLeverIds.has("denials") || selectedLeverIds.has("denialReduction")) && (
-                                  <p className="text-[13px] text-[#6B7280] leading-relaxed">• Denial reduction</p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* LONG-TERM (12+ months) */}
-                          {(selectedLeverIds.has("workforce") || selectedLeverIds.has("hcc") || selectedLeverIds.has("hccCapture")) && (
-                            <div className="mt-3">
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-[13px] font-bold uppercase text-[#111827]">Long-term</span>
-                                <span className="text-xs text-[#6B7280]">(12+ months)</span>
-                              </div>
-                              <div className="ml-4 mt-1 space-y-1">
-                                {selectedLeverIds.has("workforce") && (
-                                  <p className="text-[13px] text-[#6B7280] leading-relaxed">• Clinician retention</p>
-                                )}
-                                {(selectedLeverIds.has("hcc") || selectedLeverIds.has("hccCapture")) && (
-                                  <p className="text-[13px] text-[#6B7280] leading-relaxed">• HCC capture</p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                          
-                          <p className="text-[13px] text-[#6B7280] italic mt-3">Next: Add investment costs to see ROI →</p>
-                        </div>
-
                         <button
                           type="button"
                           onClick={() => setComparePosturesExpanded(!comparePosturesExpanded)}
