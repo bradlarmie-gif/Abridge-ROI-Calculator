@@ -1805,7 +1805,7 @@ export default function ObjectiveSelectionScreen({
                     Understand where the value actually comes from.
                   </p>
 
-                  <div className="landing-animate-button mt-10 flex justify-center">
+                  <div className="landing-animate-button mt-6 flex justify-center">
                     <button
                       type="button"
                       onClick={handleContinueToPage1}
@@ -1817,7 +1817,7 @@ export default function ObjectiveSelectionScreen({
                     </button>
                   </div>
                   
-                  <p className="landing-animate-trust mt-8 text-[13px] text-[#9CA3AF] tracking-[0.02em]">
+                  <p className="landing-animate-trust mt-5 text-[13px] text-[#9CA3AF] tracking-[0.02em]">
                     Used by 200+ health system partners
                   </p>
                 </div>
