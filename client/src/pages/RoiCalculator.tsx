@@ -906,14 +906,14 @@ export default function RoiCalculator({
         src={geometricPattern}
         alt=""
         aria-hidden="true"
-        className="fixed top-[-5%] right-[-5%] w-[700px] md:w-[1000px] lg:w-[1200px] pointer-events-none opacity-[0.20]"
+        className="fixed top-[-5%] right-[-5%] w-[700px] md:w-[1000px] lg:w-[1200px] pointer-events-none opacity-[0.18]"
         style={{ zIndex: 0 }}
       />
       <img 
         src={geometricPattern}
         alt=""
         aria-hidden="true"
-        className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.20] rotate-180"
+        className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.18] rotate-180"
         style={{ zIndex: 0 }}
       />
       {/* Header */}
