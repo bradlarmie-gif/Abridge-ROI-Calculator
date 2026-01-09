@@ -567,7 +567,7 @@ function CareSettingRow({
       disabled={disabled}
       className={`group relative w-full text-left p-6 transition-all duration-200 ease-out ${
         disabled
-          ? "cursor-not-allowed opacity-60 border border-dashed border-[#E5E7EB]"
+          ? "cursor-not-allowed opacity-90 border border-dashed border-[#E5E7EB]"
           : selected
             ? "bg-[#FFF7F5] border border-[#E8532F]/30 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
             : "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#E8532F] cursor-pointer"
