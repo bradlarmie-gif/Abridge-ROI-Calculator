@@ -1,0 +1,146 @@
+OBJECTIVE:
+Add time-to-value context to the posture preview card so users understand that not all value realizes at the same pace. Conservative, educational framing.
+
+LOCATION:
+Value Realization tab (Tab 2 of Model Setup) - at the bottom of the posture preview card, after "💡 Calculated from your inputs and posture settings."
+
+CURRENT STATE:
+Card shows total value but doesn't explain timing of realization
+
+NEW STATE:
+Add a timeline section that groups drivers by when value actually shows up
+
+CHANGES TO MAKE:
+
+Add this section at the bottom of the posture preview card (after the lightbulb line, before "Compare All Postures" link):
+
+─────────────────────────────────────────────
+
+⏱️ Value timeline:
+
+IMMEDIATE (0-3 months)
+- Overtime & locum cost savings
+
+SHORT-TERM (3-6 months)  
+- Patient access expansion
+- Level of service improvements
+- Denial reduction
+
+LONG-TERM (12+ months)
+- Clinician retention
+- HCC capture
+
+Next: Add investment costs to see ROI →
+
+TIMELINE LOGIC (only show drivers user selected):
+
+IMMEDIATE:
+- Overtime & Locum Cost Avoidance
+
+SHORT-TERM:
+- Patient Access
+- Accurate Level of Service  
+- Denial Reduction
+
+LONG-TERM:
+- Clinician Retention
+- HCC & Chronic Condition Capture
+
+RENDERING RULES:
+- Only show timeline categories that have selected drivers
+- If user didn't select any "Immediate" drivers, don't show that section
+- Use driver display names exactly as they appear elsewhere in the app
+- Don't show dollar values in timeline (just driver names)
+
+STYLING:
+
+Section divider:
+- 1px solid #E5E7EB, margin 16px top and bottom
+
+Clock icon + "Value timeline:":
+- 14px, #6B7280 (gray)
+- Clock emoji: ⏱️
+
+Timeline category headers (IMMEDIATE, SHORT-TERM, LONG-TERM):
+- 13px, #111827 (black), bold, uppercase
+- Margin-top: 12px (first one: 8px)
+
+Timeline subtext (0-3 months, etc.):
+- 12px, #6B7280 (gray), normal weight
+- Same line as category header, in parentheses
+
+Driver bullets:
+- 13px, #6B7280 (gray)
+- Bullet character: • (not actual list elements)
+- Indent: 16px from left
+- Line-height: 1.6 for readability
+- Spacing: 4px between bullets
+
+"Next: Add investment costs" line:
+- 13px, #6B7280 (gray), italic
+- Margin-top: 12px
+- Right arrow: → 
+- NOT a clickable link (just informational)
+
+EXAMPLE OUTPUTS:
+
+If user selected Patient Access, Level of Service, Clinician Retention:
+
+⏱️ Value timeline:
+
+SHORT-TERM (3-6 months)  
+- Patient access expansion
+- Level of service improvements
+
+LONG-TERM (12+ months)
+- Clinician retention
+
+Next: Add investment costs to see ROI →
+
+---
+
+If user selected all 6 drivers:
+
+⏱️ Value timeline:
+
+IMMEDIATE (0-3 months)
+- Overtime & locum cost savings
+
+SHORT-TERM (3-6 months)  
+- Patient access expansion
+- Level of service improvements
+- Denial reduction
+
+LONG-TERM (12+ months)
+- Clinician retention
+- HCC capture
+
+Next: Add investment costs to see ROI →
+
+---
+
+If user only selected Overtime and Patient Access:
+
+⏱️ Value timeline:
+
+IMMEDIATE (0-3 months)
+- Overtime & locum cost savings
+
+SHORT-TERM (3-6 months)  
+- Patient access expansion
+
+Next: Add investment costs to see ROI →
+
+PLACEMENT:
+Insert this section AFTER the "💡 Calculated from your inputs..." line and BEFORE the "› Compare All Postures" link
+
+DO NOT CHANGE:
+- Rest of posture preview card
+- Fine-Tune section
+- Posture selector
+- Live Receipt
+- Any calculations
+- Any other page
+
+RESULT:
+Users understand that value doesn't all hit at once. Conservative framing that sets realistic expectations about when they'll see results. Only shows timelines for drivers they actually selected.

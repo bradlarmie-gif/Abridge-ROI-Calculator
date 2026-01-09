@@ -2475,9 +2475,8 @@ export default function ObjectiveSelectionScreen({
                             </div>
                           </div>
 
-                          {/* Fine-tune inputs - grouped by category */}
-                          <div className="space-y-6">
-                            
+                          {/* Fine-tune inputs - showing selected drivers only */}
+                          <div className="space-y-8">
                             {/* CAPACITY & LABOR Category */}
                             {(selectedLeverIds.has("patientAccess") || selectedLeverIds.has("workforce") || selectedLeverIds.has("overtime")) && (
                               <div>
@@ -2486,7 +2485,6 @@ export default function ObjectiveSelectionScreen({
                                   <div className="flex-1 h-px bg-[#E5E7EB]" />
                                 </div>
                                 <div className="space-y-4">
-                            
                                   {/* Patient Access Fine-tune */}
                                   {selectedLeverIds.has("patientAccess") && (
                               <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-patientAccess">
@@ -2604,11 +2602,182 @@ export default function ObjectiveSelectionScreen({
                                 >
                                   [Reset to Typical Defaults]
                                 </button>
+                                  </div>
+                                  )}
+
+                                  {/* Clinician Retention Fine-tune - moved into Capacity & Labor */}
+                                  {selectedLeverIds.has("workforce") && (
+                                    <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-workforce">
+                                      <div className="text-sm font-semibold text-neutral-900 mb-3">Clinician Retention</div>
+                                      <div className="space-y-3">
+                                        <div>
+                                          <label className="text-sm font-medium text-neutral-600">Annual turnover rate</label>
+                                          <div className="flex items-center gap-2 mt-1">
+                                            <input
+                                              type="number"
+                                              step="0.1"
+                                              value={ftRetentionTurnoverRate ?? 5}
+                                              onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === "") {
+                                                  setFtRetentionTurnoverRate(5);
+                                                } else {
+                                                  const num = parseFloat(val);
+                                                  if (!isNaN(num)) setFtRetentionTurnoverRate(num);
+                                                }
+                                              }}
+                                              className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                              data-testid="input-ft-turnover-rate"
+                                            />
+                                            <span className="text-sm text-neutral-500">%</span>
+                                          </div>
+                                          <p className="text-xs text-neutral-500 mt-1">Typical range: 4-8% | Blueprint reference: 5%</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-sm font-medium text-neutral-600">Replacement cost per provider</label>
+                                          <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-sm text-neutral-500">$</span>
+                                            <input
+                                              type="text"
+                                              inputMode="numeric"
+                                              value={ftRetentionReplacementCost ?? 250000}
+                                              onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === "") {
+                                                  setFtRetentionReplacementCost(250000);
+                                                } else {
+                                                  const num = parseInt(val.replace(/,/g, ""));
+                                                  if (!isNaN(num)) setFtRetentionReplacementCost(num);
+                                                }
+                                              }}
+                                              className="w-36 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                              data-testid="input-ft-replacement-cost"
+                                            />
+                                          </div>
+                                          <p className="text-xs text-neutral-500 mt-1">Typical range: $200k-350k | Blueprint reference: $250,000</p>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <label className="text-sm font-medium text-neutral-600">Abridge prevention effectiveness</label>
+                                        <div className="flex items-center gap-2 mt-1">
+                                          <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={getRetentionPreventionPct()}
+                                            disabled
+                                            className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500"
+                                            data-testid="input-ft-prevention-effectiveness"
+                                          />
+                                          <span className="text-sm text-neutral-500">%</span>
+                                        </div>
+                                        <p className="text-xs text-neutral-500 mt-1">Typical range: 30-50% | Blueprint reference: 40%</p>
+                                        <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                                          <Info className="w-3 h-3" />
+                                          % of burnout-driven turnover prevented (set by posture)
+                                        </p>
+                                      </div>
+                                      <p className="text-xs text-neutral-400 italic mt-2">Hidden assumption: 40% of turnover is burnout-related</p>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => {
+                                          setFtRetentionTurnoverRate(5);
+                                          setFtRetentionReplacementCost(250000);
+                                        }}
+                                        className="mt-3 text-xs text-[#F03319] hover:underline"
+                                        data-testid="button-reset-workforce"
+                                      >
+                                        [Reset to Typical Defaults]
+                                      </button>
+                                    </div>
+                                  )}
+
+                                  {/* Overtime Cost Avoidance Fine-tune - moved into Capacity & Labor */}
+                                  {selectedLeverIds.has("overtime") && (
+                                    <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-overtime">
+                                      <div className="text-sm font-semibold text-neutral-900 mb-3">Overtime & Locum Cost Avoidance</div>
+                                      <div className="space-y-3">
+                                        <div>
+                                          <label className="text-sm font-medium text-neutral-600">After-hours documentation reduction</label>
+                                          <div className="flex items-center gap-2 mt-1">
+                                            <input
+                                              type="text"
+                                              inputMode="numeric"
+                                              value={ftOvertimeAfterHoursReduction ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction}
+                                              onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === "") {
+                                                  setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
+                                                } else {
+                                                  const num = parseInt(val);
+                                                  if (!isNaN(num)) setFtOvertimeAfterHoursReduction(num);
+                                                }
+                                              }}
+                                              className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                              data-testid="input-ft-overtime-reduction"
+                                            />
+                                            <span className="text-sm text-neutral-500">%</span>
+                                          </div>
+                                          <p className="text-xs text-neutral-500 mt-1">Typical range: 15-30% | Blueprint reference: 20%</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-sm font-medium text-neutral-600">Blended premium labor rate</label>
+                                          <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-sm text-neutral-500">$</span>
+                                            <input
+                                              type="text"
+                                              inputMode="numeric"
+                                              value={ftOvertimePremiumRate ?? 145}
+                                              onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === "") {
+                                                  setFtOvertimePremiumRate(145);
+                                                } else {
+                                                  const num = parseInt(val);
+                                                  if (!isNaN(num)) setFtOvertimePremiumRate(num);
+                                                }
+                                              }}
+                                              className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                              data-testid="input-ft-premium-rate"
+                                            />
+                                            <span className="text-sm text-neutral-500">/hr</span>
+                                          </div>
+                                          <p className="text-xs text-neutral-500 mt-1">Typical range: $100-250/hr | Blueprint reference: $145</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
+                                          <div className="flex items-center gap-2 mt-1">
+                                            <span className="px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500 w-28">{effectiveMinutesSaved ?? 2.5} min</span>
+                                          </div>
+                                          <p className="text-xs text-neutral-400 mt-1 italic">(Inherited from Patient Access)</p>
+                                        </div>
+                                      </div>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => {
+                                          setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
+                                          setFtOvertimePremiumRate(145);
+                                        }}
+                                        className="mt-3 text-xs text-[#F03319] hover:underline"
+                                        data-testid="button-reset-overtime"
+                                      >
+                                        [Reset to Typical Defaults]
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             )}
 
-                            {/* Level of Service Fine-tune */}
-                            {selectedLeverIds.has("wrvu") && (
+                            {/* REVENUE & RISK Category */}
+                            {(selectedLeverIds.has("wrvu") || selectedLeverIds.has("hcc") || selectedLeverIds.has("hccCapture") || selectedLeverIds.has("denials") || selectedLeverIds.has("denialReduction")) && (
+                              <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                  <span className="text-sm font-semibold uppercase tracking-wider text-[#6B7280]">Revenue & Risk</span>
+                                  <div className="flex-1 h-px bg-[#E5E7EB]" />
+                                </div>
+                                <div className="space-y-4">
+                                  {/* Level of Service Fine-tune */}
+                                  {selectedLeverIds.has("wrvu") && (
                               <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-wrvu">
                                 <div className="text-sm font-semibold text-neutral-900 mb-3">Accurate Level of Service</div>
                                 <div className="space-y-3">
@@ -2698,94 +2867,8 @@ export default function ObjectiveSelectionScreen({
                               </div>
                             )}
 
-                            {/* Clinician Retention Fine-tune */}
-                            {selectedLeverIds.has("workforce") && (
-                              <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-workforce">
-                                <div className="text-sm font-semibold text-neutral-900 mb-3">Clinician Retention</div>
-                                <div className="space-y-3">
-                                  <div>
-                                    <label className="text-sm font-medium text-neutral-600">Annual turnover rate</label>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <input
-                                        type="number"
-                                        step="0.1"
-                                        value={ftRetentionTurnoverRate ?? 5}
-                                        onChange={(e) => {
-                                          const val = e.target.value;
-                                          if (val === "") {
-                                            setFtRetentionTurnoverRate(5);
-                                          } else {
-                                            const num = parseFloat(val);
-                                            if (!isNaN(num)) setFtRetentionTurnoverRate(num);
-                                          }
-                                        }}
-                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                        data-testid="input-ft-turnover-rate"
-                                      />
-                                      <span className="text-sm text-neutral-500">%</span>
-                                    </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 4-8% | Blueprint reference: 5%</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-neutral-600">Replacement cost per provider</label>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className="text-sm text-neutral-500">$</span>
-                                      <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={ftRetentionReplacementCost ?? 250000}
-                                        onChange={(e) => {
-                                          const val = e.target.value;
-                                          if (val === "") {
-                                            setFtRetentionReplacementCost(250000);
-                                          } else {
-                                            const num = parseInt(val.replace(/,/g, ""));
-                                            if (!isNaN(num)) setFtRetentionReplacementCost(num);
-                                          }
-                                        }}
-                                        className="w-36 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                        data-testid="input-ft-replacement-cost"
-                                      />
-                                    </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $200k-350k | Blueprint reference: $250,000</p>
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-neutral-600">Abridge prevention effectiveness</label>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <input
-                                      type="text"
-                                      inputMode="numeric"
-                                      value={getRetentionPreventionPct()}
-                                      disabled
-                                      className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500"
-                                      data-testid="input-ft-prevention-effectiveness"
-                                    />
-                                    <span className="text-sm text-neutral-500">%</span>
-                                  </div>
-                                  <p className="text-xs text-neutral-500 mt-1">Typical range: 30-50% | Blueprint reference: 40%</p>
-                                  <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
-                                    <Info className="w-3 h-3" />
-                                    % of burnout-driven turnover prevented (set by posture)
-                                  </p>
-                                </div>
-                                <p className="text-xs text-neutral-400 italic mt-2">Hidden assumption: 40% of turnover is burnout-related</p>
-                                <button 
-                                  type="button" 
-                                  onClick={() => {
-                                    setFtRetentionTurnoverRate(5);
-                                    setFtRetentionReplacementCost(250000);
-                                  }}
-                                  className="mt-3 text-xs text-[#F03319] hover:underline"
-                                  data-testid="button-reset-workforce"
-                                >
-                                  [Reset to Typical Defaults]
-                                </button>
-                              </div>
-                            )}
-
-                            {/* HCC Capture Fine-tune */}
-                            {selectedLeverIds.has("hccCapture") && (
+                                  {/* HCC Capture Fine-tune */}
+                                  {(selectedLeverIds.has("hccCapture") || selectedLeverIds.has("hcc")) && (
                               <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-hccCapture">
                                 <div className="text-sm font-semibold text-neutral-900 mb-3">HCC & Chronic Condition Capture</div>
                                 <div className="space-y-3">
@@ -2883,8 +2966,8 @@ export default function ObjectiveSelectionScreen({
                               </div>
                             )}
 
-                            {/* Denial Reduction Fine-tune */}
-                            {selectedLeverIds.has("denialReduction") && (
+                                  {/* Denial Reduction Fine-tune */}
+                                  {(selectedLeverIds.has("denialReduction") || selectedLeverIds.has("denials")) && (
                               <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-denialReduction">
                                 <div className="text-sm font-semibold text-neutral-900 mb-3">Denial Reduction</div>
                                 <div className="space-y-3">
@@ -2958,81 +3041,10 @@ export default function ObjectiveSelectionScreen({
                                   data-testid="button-reset-denialReduction"
                                 >
                                   [Reset to Typical Defaults]
-                                </button>
-                              </div>
-                            )}
-
-                            {/* Overtime Cost Avoidance Fine-tune */}
-                            {selectedLeverIds.has("overtime") && (
-                              <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-overtime">
-                                <div className="text-sm font-semibold text-neutral-900 mb-3">Overtime & Locum Cost Avoidance</div>
-                                <div className="space-y-3">
-                                  <div>
-                                    <label className="text-sm font-medium text-neutral-600">After-hours documentation reduction</label>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={ftOvertimeAfterHoursReduction ?? FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction}
-                                        onChange={(e) => {
-                                          const val = e.target.value;
-                                          if (val === "") {
-                                            setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
-                                          } else {
-                                            const num = parseInt(val);
-                                            if (!isNaN(num)) setFtOvertimeAfterHoursReduction(num);
-                                          }
-                                        }}
-                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                        data-testid="input-ft-overtime-reduction"
-                                      />
-                                      <span className="text-sm text-neutral-500">%</span>
+                                      </button>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 15-30% | Blueprint reference: 20%</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-neutral-600">Blended premium labor rate</label>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className="text-sm text-neutral-500">$</span>
-                                      <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={ftOvertimePremiumRate ?? 145}
-                                        onChange={(e) => {
-                                          const val = e.target.value;
-                                          if (val === "") {
-                                            setFtOvertimePremiumRate(145);
-                                          } else {
-                                            const num = parseInt(val);
-                                            if (!isNaN(num)) setFtOvertimePremiumRate(num);
-                                          }
-                                        }}
-                                        className="w-28 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                                        data-testid="input-ft-premium-rate"
-                                      />
-                                      <span className="text-sm text-neutral-500">/hr</span>
-                                    </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $100-250/hr | Blueprint reference: $145</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className="px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500 w-28">{effectiveMinutesSaved ?? 2.5} min</span>
-                                    </div>
-                                    <p className="text-xs text-neutral-400 mt-1 italic">(Inherited from Patient Access)</p>
-                                  </div>
+                                  )}
                                 </div>
-                                <button 
-                                  type="button" 
-                                  onClick={() => {
-                                    setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
-                                    setFtOvertimePremiumRate(145);
-                                  }}
-                                  className="mt-3 text-xs text-[#F03319] hover:underline"
-                                  data-testid="button-reset-overtime"
-                                >
-                                  [Reset to Typical Defaults]
-                                </button>
                               </div>
                             )}
                           </div>
