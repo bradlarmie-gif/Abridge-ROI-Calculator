@@ -1791,12 +1791,12 @@ export default function ObjectiveSelectionScreen({
           <div className="relative min-h-full">
             {/* Geometric pattern - tiled backdrop */}
             <div 
-              className="fixed inset-0 pointer-events-none z-0 opacity-[0.04]"
+              className="fixed inset-0 pointer-events-none z-0 opacity-[0.25]"
               style={{
                 backgroundImage: `url(${geometricPattern})`,
-                backgroundSize: '400px auto',
+                backgroundSize: '350px auto',
                 backgroundRepeat: 'repeat',
-                backgroundPosition: 'center',
+                backgroundPosition: 'top left',
               }}
               aria-hidden="true"
             />
