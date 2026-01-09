@@ -2162,7 +2162,7 @@ export default function ObjectiveSelectionScreen({
                   Value Methodology
                 </h2>
                 <p className="text-lg text-neutral-600 leading-relaxed">
-                  See how each driver creates value using typical assumptions from 200+ health system partners.
+                  This reference scenario shows potential value for a typical mid-sized practice. Review how each driver creates value, then customize with your specific numbers in the next step.
                 </p>
               </div>
 
