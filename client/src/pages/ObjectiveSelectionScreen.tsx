@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import { LiveReceipt } from "@/components/LiveReceipt";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import {
   CARE_SETTING_LABELS,
   getLeversByCategory,

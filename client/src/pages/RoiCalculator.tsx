@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { BackgroundShape } from "@/components/BackgroundShape";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -900,8 +900,22 @@ export default function RoiCalculator({
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8]">
-      <BackgroundShape />
+    <div className="min-h-screen bg-[#FAFAF8] relative">
+      {/* Background patterns */}
+      <img 
+        src={geometricPattern}
+        alt=""
+        aria-hidden="true"
+        className="fixed top-[-5%] right-[-5%] w-[700px] md:w-[1000px] lg:w-[1200px] pointer-events-none opacity-[0.25]"
+        style={{ zIndex: 0 }}
+      />
+      <img 
+        src={geometricPattern}
+        alt=""
+        aria-hidden="true"
+        className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.22] rotate-180"
+        style={{ zIndex: 0 }}
+      />
       {/* Header */}
       <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
         <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
