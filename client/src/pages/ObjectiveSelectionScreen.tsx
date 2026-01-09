@@ -2,7 +2,6 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import { LiveReceipt } from "@/components/LiveReceipt";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
-import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import {
   CARE_SETTING_LABELS,
   getLeversByCategory,
@@ -1789,24 +1788,6 @@ export default function ObjectiveSelectionScreen({
         {/* PAGE 0 — ORIENTATION */}
         {currentPage === "orientation" && (
           <div className="relative min-h-full">
-            {/* Geometric pattern - top right corner */}
-            <img 
-              src={geometricPattern}
-              alt=""
-              aria-hidden="true"
-              className="fixed top-[-5%] right-[-5%] w-[700px] md:w-[1000px] lg:w-[1200px] pointer-events-none opacity-[0.25]"
-              style={{ zIndex: -1 }}
-            />
-            
-            {/* Geometric pattern - bottom left corner */}
-            <img 
-              src={geometricPattern}
-              alt=""
-              aria-hidden="true"
-              className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.22] rotate-180"
-              style={{ zIndex: -1 }}
-            />
-
             <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28 relative z-10">
               <div className="w-full max-w-3xl text-center">
                 <div className="landing-animate-card w-full bg-white border border-neutral-200/60 rounded-2xl md:rounded-3xl px-8 py-12 md:px-16 md:py-16 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
