@@ -1,0 +1,142 @@
+PART 2: FIX BUTTON STYLING (REMOVE PEACH COLOR)
+The "Build ROI Model" button currently has an off-brand peachy/salmon background. Fix this to match brand colors.
+CORRECT BUTTON STYLING:
+Default state:
+
+Background: transparent (or rgba(255, 251, 245, 0.3) - extremely subtle warm tint)
+Border: 2px solid #E8532F (Abridge orange)
+Text color: #E8532F (Abridge orange)
+Font: 16px, medium weight
+Padding: 14px 32px
+Border-radius: 8px
+Transition: all 200ms ease-out
+Cursor: pointer
+
+Hover state:
+
+Background: #E8532F (Abridge orange - solid fill)
+Border: 2px solid #E8532F
+Text color: #FFFFFF (white)
+Transform: translateY(-1px) (subtle 1px lift)
+Box-shadow: 0 4px 12px rgba(232, 83, 47, 0.25) (orange glow)
+Transition: all 200ms ease-out
+
+Active/pressed state:
+
+Transform: translateY(0) (returns to original position)
+Box-shadow: 0 2px 8px rgba(232, 83, 47, 0.2) (reduced shadow)
+
+Focus state (for accessibility):
+
+Outline: 2px solid #E8532F
+Outline-offset: 2px
+
+DO NOT USE:
+
+Peach colors (#FED7D7 or similar)
+Salmon colors
+Pink tints
+Any color not in the brand palette
+
+BRAND COLORS REFERENCE:
+
+Abridge orange: #E8532F
+White: #FFFFFF
+Off-white background: #FEFEFE
+Warm subtle tint (optional): rgba(255, 251, 245, 0.3)
+
+═══════════════════════════════════════════════════════════════
+PART 3: REFINE MAIN CARD SHADOW
+The white card containing the headline and button should have a more sophisticated, layered shadow.
+CARD IDENTIFICATION:
+The centered white card with:
+
+"Model the impact of ambient documentation"
+"Understand where the value actually comes from."
+"Build ROI Model" button
+
+SHADOW STYLING:
+Replace current shadow with layered shadow:
+cssCopybox-shadow: 
+  0 2px 8px rgba(0, 0, 0, 0.06),
+  0 8px 24px rgba(0, 0, 0, 0.04);
+This creates:
+
+Close shadow (0 2px 8px) for definition
+Far shadow (0 8px 24px) for depth
+Both very subtle (6% and 4% opacity)
+
+Keep existing card styling:
+
+Background: #FFFFFF (white)
+Border-radius: (keep current)
+Padding: (keep current)
+Only change the shadow property
+
+═══════════════════════════════════════════════════════════════
+SPACING & POSITIONING NOTES:
+Ensure geometric pattern doesn't interfere with content:
+
+Main content card should have z-index: 1 or higher
+Pattern should have z-index: 0
+Pattern opacity must be 2-3% (very subtle)
+If pattern feels too visible, reduce opacity further
+
+Mobile considerations:
+
+Pattern should scale appropriately on mobile
+Consider reducing pattern size to 300px on screens <768px
+Maintain same opacity
+
+═══════════════════════════════════════════════════════════════
+DO NOT CHANGE:
+
+Page layout or structure
+Headline text ("Model the impact of ambient documentation")
+Subtitle text ("Understand where the value actually comes from.")
+Button text ("Build ROI Model")
+Button routing/functionality
+Navigation elements
+Any other pages in the application
+
+ONLY CHANGE:
+
+Add geometric pattern background (2-3% opacity)
+Fix button colors (remove peach, use orange/transparent)
+Refine card shadow (layered, sophisticated)
+
+═══════════════════════════════════════════════════════════════
+VISUAL REFERENCE - BRAND COLORS:
+Primary:
+
+Abridge Orange: #E8532F (accent color, CTAs, highlights)
+Black: #111827 (primary text)
+White: #FFFFFF (backgrounds, light text)
+
+Neutrals:
+
+Light Gray: #F9FAFB (info boxes)
+Medium Gray: #6B7280 (secondary text)
+Border Gray: #E5E7EB (dividers, borders)
+
+Background:
+
+Off-white: #FEFEFE (warmer than pure white)
+Pattern color: Beige/cream from geometric pattern at 2-3% opacity
+
+DO NOT INTRODUCE:
+
+New colors outside this palette
+Bright or saturated colors
+Peach, salmon, pink tints
+Neon or vibrant accents
+
+═══════════════════════════════════════════════════════════════
+RESULT:
+Landing page maintains its clean, minimal design but feels more premium with:
+
+Subtle Abridge geometric pattern adding brand texture
+Professional button styling with proper brand colors
+Sophisticated layered shadow on main card
+
+The page should feel like Stripe or Linear's landing pages - minimal but clearly well-designed, with subtle brand elements that show attention to detail.

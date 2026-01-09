@@ -1,0 +1,70 @@
+OBJECTIVE:
+Minimal refinements to the landing page: add subtle Abridge geometric pattern background, fix button styling to match brand colors, and refine card shadow. Keep the page simple and clean.
+
+CRITICAL RULES:
+- Use ONLY existing Abridge brand colors
+- Pattern must be EXTREMELY subtle (2-3% opacity)
+- Do NOT change layout, headline, or core structure
+- Button must NOT have peachy/salmon background
+
+═══════════════════════════════════════════════════════════════
+
+PART 1: ADD ABRIDGE GEOMETRIC PATTERN BACKGROUND
+
+The Abridge geometric pattern image will be provided separately. Use it as a subtle background texture.
+
+BACKGROUND IMPLEMENTATION:
+
+Base background:
+- Color: #FEFEFE (very slightly off-white, warmer than pure white)
+
+Pattern overlay:
+- Use the provided Abridge geometric pattern image
+- Position: Two instances - top-right corner and bottom-left corner
+- Opacity: 2-3% (EXTREMELY subtle - barely visible, just adds texture)
+- Size: Scale pattern to ~500px width
+- Position adjustments:
+  - Top-right: position top: -10%, right: -10%
+  - Bottom-left: position bottom: -10%, left: -10%
+- Pattern should be FIXED (doesn't scroll with content)
+- Z-index: 0 (behind all content)
+- Pointer-events: none (doesn't interfere with clicks)
+
+CSS Implementation Pattern:
+```css
+.landing-page {
+  position: relative;
+  min-height: 100vh;
+  background: #FEFEFE;
+}
+
+.landing-page::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background-image: url('/path-to-abridge-pattern.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.landing-page::after {
+  content: '';
+  position: fixed;
+  bottom: -10%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background-image: url('/path-to-abridge-pattern.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 0;
+  transform: rotate(180deg); /* Flip the pattern for variety */
+}

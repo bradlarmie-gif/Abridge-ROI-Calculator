@@ -1789,7 +1789,7 @@ export default function ObjectiveSelectionScreen({
         {currentPage === "orientation" && (
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28">
             <div className="w-full max-w-3xl text-center">
-              <div className="w-full bg-white border border-neutral-200/70 rounded-3xl px-10 py-12 md:px-16 md:py-14 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.25)] ring-1 ring-black/5">
+              <div className="w-full bg-white border border-neutral-200/70 rounded-3xl px-10 py-12 md:px-16 md:py-14 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
                 <h2 className="text-3xl md:text-4xl lg:text-[44px] font-medium text-neutral-900 tracking-tight">
                   <span className="block leading-[1.15]">
                     Model the impact of
@@ -1806,7 +1806,7 @@ export default function ObjectiveSelectionScreen({
                   <button
                     type="button"
                     onClick={handleContinueToPage1}
-                    className="inline-flex items-center justify-center gap-3 px-16 py-5 rounded-2xl font-semibold text-base md:text-lg bg-[#FFF5F3] text-[#F03319] ring-1 ring-[#F03319]/20 hover:bg-[#FFEBE8] transition-all duration-200 shadow-sm hover:shadow"
+                    className="inline-flex items-center justify-center gap-3 px-8 py-3.5 rounded-lg font-medium text-base border-2 border-[#E8532F] text-[#E8532F] bg-transparent hover:bg-[#E8532F] hover:text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,83,47,0.25)] active:translate-y-0 active:shadow-[0_2px_8px_rgba(232,83,47,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8532F] focus-visible:ring-offset-2"
                     data-testid="button-start"
                   >
                     Build ROI Model
