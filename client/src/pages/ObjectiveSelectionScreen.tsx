@@ -84,6 +84,22 @@ const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
   documentation: FileText,
 };
 
+const CATEGORY_SUBTITLES: Record<LeverCategory, string> = {
+  time: "Workforce efficiency and utilization",
+  documentation: "Clinical and financial accuracy",
+};
+
+const LEVER_KEY_METRICS: Record<string, { icon: typeof Users; metric: string }> = {
+  patientAccess: { icon: Users, metric: "New visits enabled" },
+  overtime: { icon: Clock, metric: "Premium labor hours avoided" },
+  retention: { icon: HeartPulse, metric: "Provider departures avoided" },
+  wrvu: { icon: BarChart3, metric: "wRVU capture improvement" },
+  hcc: { icon: Building2, metric: "RAF score lift" },
+  hccCapture: { icon: Building2, metric: "RAF score lift" },
+  denials: { icon: AlertTriangle, metric: "Documentation-related denials prevented" },
+  denialReduction: { icon: AlertTriangle, metric: "Documentation-related denials prevented" },
+};
+
 const ALL_SETTINGS: AllSettingType[] = [
   "outpatient",
   "ed",
@@ -598,6 +614,9 @@ function PriorityCard({
   isSelected: boolean;
   onToggle: () => void;
 }) {
+  const keyMetricData = LEVER_KEY_METRICS[lever.id];
+  const LeverIcon = keyMetricData?.icon || FileText;
+
   return (
     <div
       role="button"
@@ -609,33 +628,41 @@ function PriorityCard({
           onToggle();
         }
       }}
-      className={`group relative w-full text-left cursor-pointer rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#F03319]/25 ${
+      className={`group relative w-full text-left cursor-pointer rounded-xl transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#F03319]/25 overflow-hidden ${
         isSelected
-          ? "bg-[#FFF7F5] ring-1 ring-[#F03319]/20 shadow-sm"
-          : "bg-white/80 hover:bg-white border border-neutral-200/50 hover:border-neutral-200"
+          ? "bg-[#FEF3C7]/15 border border-[#E8532F]/30 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+          : "bg-white border border-neutral-200/50 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] hover:border-[#E8532F]"
       }`}
       data-testid={`priority-card-${lever.id}`}
     >
       {isSelected && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#F03319] rounded-l-2xl" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#E8532F]" />
       )}
-
-      <div className="px-6 py-4">
+      <div className="px-5 py-5">
         <div className="flex items-start gap-3">
           <Checkbox
             checked={isSelected}
             onCheckedChange={onToggle}
-            className="mt-0.5 flex-shrink-0"
+            className={`mt-0.5 flex-shrink-0 ${isSelected ? "border-[#E8532F] data-[state=checked]:bg-[#E8532F] data-[state=checked]:border-[#E8532F]" : ""}`}
             data-testid={`checkbox-${lever.id}`}
           />
+
+          <div className="flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
+            <LeverIcon className={`w-5 h-5 ${isSelected ? "text-[#E8532F]" : "text-neutral-500"}`} />
+          </div>
 
           <div className="flex-1 min-w-0">
             <h4 className="text-base font-medium text-neutral-900 leading-snug">
               {lever.label}
             </h4>
-            <p className="mt-1 text-sm text-neutral-500 leading-relaxed line-clamp-1">
+            <p className="mt-2 text-sm text-neutral-500 leading-relaxed">
               {lever.description}
             </p>
+            {keyMetricData && (
+              <p className="mt-2 text-[13px] text-[#6B7280] italic">
+                Key metric: {keyMetricData.metric}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -664,52 +691,57 @@ function ModelSummaryPanel({
     );
   }, [selectedSetting, selectedLeverIds]);
 
+  const totalLevers = selectedSetting ? SETTING_CONFIG[selectedSetting].length : 0;
+
   return (
     <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
       <div className="p-6">
-        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-5">
+        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-6">
           Your Selections
         </h3>
 
         {!selectedSetting ? (
-          <p className="text-sm text-neutral-500 leading-relaxed">
+          <p className="text-[13px] text-[#6B7280] leading-relaxed">
             Your selections will appear here as you build your model.
           </p>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div>
-              <p className="text-[11px] text-neutral-500 uppercase tracking-wide mb-1.5 font-medium">
+              <p className="text-xs text-[#6B7280] uppercase tracking-wide mb-1.5 font-medium" style={{ letterSpacing: '0.05em' }}>
                 Care Setting
               </p>
-              <p className="text-sm font-semibold text-neutral-900">
+              <p className="text-sm font-medium text-[#111827]">
                 {CARE_SETTING_LABELS[selectedSetting]}
               </p>
             </div>
 
-            <div className="border-t border-neutral-100 pt-5">
-              <p className="text-[11px] text-neutral-500 uppercase tracking-wide mb-3 font-medium">
-                Selected Priorities
+            <div className="border-t border-neutral-100 pt-6">
+              <p className="text-xs text-[#6B7280] uppercase tracking-wide font-medium" style={{ letterSpacing: '0.05em' }}>
+                Strategic Priorities
               </p>
+              <p className="text-[13px] text-[#6B7280] mt-1 mb-3">
+                Select 2-6 drivers
+              </p>
+              
               {selectedLevers.length === 0 ? (
-                <p className="text-sm text-neutral-500 leading-relaxed">
-                  Choose the drivers that align with your priorities.
+                <p className="text-[13px] text-[#6B7280] leading-relaxed">
+                  Choose the priorities that align with your organizational goals
                 </p>
               ) : (
                 <>
-                  <ul className="space-y-2">
+                  <ul className="space-y-2 mb-4">
                     {selectedLevers.map((lever: LeverConfig) => (
                       <li
                         key={lever.id}
-                        className="flex items-start gap-2.5 text-sm text-neutral-800"
+                        className="flex items-start gap-2.5 text-sm text-[#111827]"
                       >
-                        <Check className="w-4 h-4 text-[#F03319] flex-shrink-0 mt-0.5" />
+                        <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0 mt-0.5" />
                         <span className="leading-snug">{lever.label}</span>
                       </li>
                     ))}
                   </ul>
-                  <p className="text-xs text-neutral-500 mt-4 pt-4 border-t border-neutral-100">
-                    {selectedLevers.length} of{" "}
-                    {SETTING_CONFIG[selectedSetting].length} included
+                  <p className="text-[13px] text-[#6B7280]">
+                    {selectedLevers.length} of {totalLevers} selected
                   </p>
                 </>
               )}
@@ -726,8 +758,8 @@ function ModelSummaryPanel({
             onClick={onContinue}
             className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
               canContinue
-                ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm hover:shadow"
-                : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
+                ? "bg-[#111827] text-white hover:bg-[#E8532F] shadow-sm hover:shadow"
+                : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
             }`}
             data-testid="button-continue-to-calculator-desktop"
           >
@@ -1636,16 +1668,22 @@ export default function ObjectiveSelectionScreen({
     const CategoryIcon = CATEGORY_ICONS[category];
     const categoryLabel =
       category === "time" ? "Capacity & Labor" : "Revenue & Risk";
+    const categorySubtitle = CATEGORY_SUBTITLES[category];
 
     return (
       <div key={category} className={isFirst ? "" : "mt-8"}>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200/60">
-            <CategoryIcon className="h-3.5 w-3.5 text-neutral-600" />
-            <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wide">
-              {categoryLabel}
-            </span>
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200/60">
+              <CategoryIcon className="h-3.5 w-3.5 text-neutral-600" />
+              <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wide">
+                {categoryLabel}
+              </span>
+            </div>
           </div>
+          <p className="mt-1 text-[13px] text-[#6B7280] italic ml-1">
+            {categorySubtitle}
+          </p>
         </div>
         <div className="space-y-3">
           {levers.map((lever) => (
@@ -1855,6 +1893,13 @@ export default function ObjectiveSelectionScreen({
                       What outcomes matter most right now?
                     </p>
                   </div>
+                  
+                  <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 mt-4 mb-8">
+                    <p className="text-base font-medium text-[#111827] mb-2">Build your ROI model</p>
+                    <p className="text-sm text-[#6B7280] leading-relaxed">
+                      Select 2-6 strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
+                    </p>
+                  </div>
                 </div>
 
                 {leversByCategory && (
@@ -1865,6 +1910,13 @@ export default function ObjectiveSelectionScreen({
                       leversByCategory.documentation,
                       false,
                     )}
+                    
+                    <div className="mt-6 flex items-start gap-2">
+                      <Lightbulb className="w-4 h-4 text-[#6B7280] flex-shrink-0 mt-0.5" />
+                      <p className="text-[13px] text-[#6B7280]">
+                        Most organizations select 3-4 drivers. Fewer creates a focused model; more provides comprehensive analysis.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
