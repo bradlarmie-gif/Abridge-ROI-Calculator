@@ -1804,10 +1804,6 @@ export default function ObjectiveSelectionScreen({
                   <p className="landing-animate-subtitle-1 mt-6 text-base md:text-lg text-[#6B7280] leading-relaxed max-w-[540px] mx-auto">
                     Understand where the value actually comes from.
                   </p>
-                  
-                  <p className="landing-animate-subtitle-2 mt-2 text-sm md:text-base text-[#9CA3AF] leading-relaxed max-w-[540px] mx-auto">
-                    Build defensible ROI models for healthcare leadership.
-                  </p>
 
                   <div className="landing-animate-button mt-10 flex justify-center">
                     <button
