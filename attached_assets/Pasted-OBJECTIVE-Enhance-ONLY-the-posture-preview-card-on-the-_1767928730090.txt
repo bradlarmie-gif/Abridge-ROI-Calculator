@@ -1,0 +1,88 @@
+OBJECTIVE:
+Enhance ONLY the posture preview card on the Value Realization page. Do not touch anything else. Small, focused changes.
+
+LOCATION:
+Value Realization tab (Tab 2 of Model Setup) - the card that appears when user selects Conservative/Typical/Aggressive
+
+CURRENT STATE:
+Shows basic list of drivers with values and total
+
+NEW STATE:
+Add more context to help users understand what the posture means
+
+CHANGES TO MAKE:
+
+1. ADD POSTURE DESCRIPTION at top of card:
+
+TYPICAL POSTURE
+Best for: Initial business case, balanced approach
+Based on: Median performance from 200+ health system partners
+
+Your value drivers:
+[... existing driver list ...]
+
+DESCRIPTIONS BY POSTURE:
+- Conservative: "Best for: Risk-averse modeling, board presentation"
+- Typical: "Best for: Initial business case, balanced approach"  
+- Aggressive: "Best for: Aspirational planning, optimal adoption"
+
+All show: "Based on: Median performance from 200+ health system partners"
+
+2. ADD KEY METRIC to each driver line:
+
+CURRENT:
+✓ Patient Access                           $173,333
+
+NEW:
+✓ Patient Access                           $173,333
+  Minutes saved: 2.5 per encounter
+
+✓ Clinician Retention                      $100,000
+  Turnover reduction via burnout relief
+
+✓ Accurate Level of Service                $182,000
+  Documentation lift: 5%
+
+✓ HCC & Chronic Condition Capture          $125,000
+  Recapture rate: 50%
+
+✓ Denial Reduction                         $103,000
+  Prevention rate: 66%
+
+✓ Overtime & Locum Cost Avoidance          $45,000
+  After-hours reduction: 20%
+
+(Show the primary posture-driven metric for each driver)
+
+3. ADD CLARIFICATION under total:
+
+TOTAL PROJECTED VALUE:                     $455,333
+(Before investment costs)
+
+4. ADD INFO LINE at bottom:
+
+💡 Calculated from your inputs and posture settings.
+
+5. ADD "COMPARE ALL POSTURES" link at bottom:
+
+› Compare All Postures
+
+(Make it clickable, but for now just make it a link - we'll implement the expansion in Phase 2B)
+
+STYLING:
+- "Best for:" in 14px, #6B7280 (gray)
+- "Based on:" in 13px, #6B7280 (gray)
+- Driver sub-metrics in 13px, #6B7280 (gray), indented 20px
+- "(Before investment costs)" in 13px, #6B7280 (gray), italic
+- Info line with lightbulb in 13px, #6B7280 (gray)
+- "Compare All Postures" link in 14px, #E8532F (Abridge orange), with › arrow
+
+DO NOT CHANGE:
+- Fine-Tune section
+- Posture selector buttons
+- Any other page
+- Live Receipt (keep exactly as is)
+- Any calculations
+
+RESULT:
+The posture preview card provides more context about what each posture means and shows the key assumptions driving each value, without overwhelming the user.

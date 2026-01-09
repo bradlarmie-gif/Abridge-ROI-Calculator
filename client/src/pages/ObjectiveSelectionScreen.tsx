@@ -2265,13 +2265,13 @@ export default function ObjectiveSelectionScreen({
                             {detectedPosture.toUpperCase()} POSTURE
                           </span>
                         </div>
-                        <p className="text-xs text-neutral-500 mb-4">
-                          {detectedPosture === "conservative" && "Best for: CFO/board review, pilot phase"}
+                        <p className="text-sm text-[#6B7280] mb-1">
+                          {detectedPosture === "conservative" && "Best for: Risk-averse modeling, board presentation"}
                           {detectedPosture === "typical" && "Best for: Initial business case, balanced approach"}
-                          {detectedPosture === "aggressive" && "Best for: Growth targets, high-confidence rollouts"}
+                          {detectedPosture === "aggressive" && "Best for: Aspirational planning, optimal adoption"}
                         </p>
-                        <p className="text-xs text-neutral-600 mb-3">
-                          Based on: {detectedPosture === "conservative" ? "Conservative" : detectedPosture === "typical" ? "Median" : "Optimistic"} performance from 200+ health system partners
+                        <p className="text-[13px] text-[#6B7280] mb-4">
+                          Based on: Median performance from 200+ health system partners
                         </p>
                         
                         {/* Dynamic driver values */}
@@ -2289,7 +2289,7 @@ export default function ObjectiveSelectionScreen({
                                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                                   <div>
                                     <div className="text-sm font-medium text-neutral-800">{driverContent.label}</div>
-                                    <div className="text-xs text-neutral-500 mt-0.5">
+                                    <div className="text-[13px] text-[#6B7280] mt-0.5 ml-5">
                                       {leverId === "patientAccess" && `Minutes saved: ${effectiveMinutesSaved || 2.5} per encounter`}
                                       {leverId === "wrvu" && `Documentation lift: ${wrvuSensitivity || 5}%`}
                                       {leverId === "overtime" && `After-hours reduction: ${ftOvertimeAfterHoursReduction || 20}%`}
@@ -2314,20 +2314,20 @@ export default function ObjectiveSelectionScreen({
                               ${formatNumber(totalProjectedValue)}
                             </span>
                           </div>
-                          <p className="text-xs text-neutral-500 mt-1">(Before investment costs)</p>
-                          <div className="flex items-start gap-1.5 mt-2">
-                            <Lightbulb className="w-3.5 h-3.5 text-neutral-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-xs text-neutral-500">Calculated from your inputs and posture settings.</p>
+                          <p className="text-[13px] text-[#6B7280] mt-1 italic">(Before investment costs)</p>
+                          <div className="flex items-start gap-1.5 mt-3">
+                            <Lightbulb className="w-3.5 h-3.5 text-[#6B7280] mt-0.5 flex-shrink-0" />
+                            <p className="text-[13px] text-[#6B7280]">Calculated from your inputs and posture settings.</p>
                           </div>
                         </div>
 
                         <button
                           type="button"
                           onClick={() => setComparePosturesExpanded(!comparePosturesExpanded)}
-                          className="mt-4 text-sm font-medium text-neutral-700 hover:text-neutral-900 flex items-center gap-1"
+                          className="mt-4 text-sm font-medium text-[#E8532F] hover:text-[#d14a28] flex items-center gap-1"
                           data-testid="button-compare-postures"
                         >
-                          <ChevronRight className={`w-4 h-4 transition-transform ${comparePosturesExpanded ? "rotate-90" : ""}`} />
+                          <span className="text-[#E8532F]">›</span>
                           Compare All Postures
                         </button>
 
