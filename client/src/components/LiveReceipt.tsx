@@ -453,7 +453,7 @@ export function LiveReceipt({
 
             <div className="px-5 py-3 bg-neutral-50 border-t border-neutral-100">
               <p className="text-xs text-neutral-500">
-                Tip: If a number looks high, open Results and use "Review inputs" to validate the driver math.
+                Tip: If a number looks high, view the ROI Model and click the Detailed Breakdown.
               </p>
             </div>
           </div>

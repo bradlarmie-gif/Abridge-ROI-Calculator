@@ -2751,13 +2751,13 @@ export default function ObjectiveSelectionScreen({
 
                           {/* Customization Summary - only show if there are changes */}
                           {customizations.length > 0 && (
-                            <div className="bg-[#FEF3C7] border border-[#F59E0B] rounded-lg p-4 mb-6">
-                              <p className="text-sm font-bold text-[#92400E]">
+                            <div className="bg-[#F5F3EF] border border-[#E8E4DB] rounded-lg p-4 mb-6">
+                              <p className="text-sm font-bold text-neutral-800">
                                 Your customizations: <span className="text-[#E8532F]">{customizations.length} change{customizations.length > 1 ? "s" : ""}</span> from {lastNonCustomPosture.charAt(0).toUpperCase() + lastNonCustomPosture.slice(1)} posture
                               </p>
                               <div className="mt-2 space-y-1">
                                 {customizations.map((change, idx) => (
-                                  <p key={idx} className="text-[13px] text-[#78350F] leading-relaxed tabular-nums">
+                                  <p key={idx} className="text-[13px] text-neutral-700 leading-relaxed tabular-nums">
                                     • {change.driver}: {change.input} ({change.oldValue} → {change.newValue})
                                   </p>
                                 ))}
