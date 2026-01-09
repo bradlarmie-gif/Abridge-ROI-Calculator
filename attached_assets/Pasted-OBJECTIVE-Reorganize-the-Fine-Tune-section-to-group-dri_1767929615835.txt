@@ -1,0 +1,205 @@
+OBJECTIVE:
+Reorganize the Fine-Tune section to group drivers by category (CAPACITY & LABOR / REVENUE & RISK) instead of showing them in a flat list. This matches the Summary View structure and creates better visual hierarchy.
+
+LOCATION:
+Value Realization tab (Tab 2 of Model Setup) - inside the Fine-Tune Assumptions expandable section
+
+CURRENT STATE:
+Flat sequential list of all selected drivers with their inputs
+
+NEW STATE:
+Drivers grouped under two category headers that match the Summary View
+
+STRUCTURE:
+
+🎚️ FINE-TUNE ASSUMPTIONS  Optional                     ›
+Want more control? Adjust the key assumptions that drive your selected value drivers.
+
+[When expanded:]
+
+┌─────────────────────────────────────────────────────────────┐
+│ ⚠️ Note: Changing these values overrides your posture      │
+│    selection and creates a custom model.                   │
+└─────────────────────────────────────────────────────────────┘
+
+
+CAPACITY & LABOR ─────────────────────────────────────────────
+
+[Only show drivers in this category that user selected]
+
+┌─ Patient Access ──────────────────────────────────────────┐
+│                                                            │
+│ Minutes saved per encounter                        Edit   │
+│ 2.5 min                                                   │
+│ Typical range: 1.5-4 min | Blueprint reference: 2.5 min  │
+│                                                            │
+│ Capacity realization factor                        Edit   │
+│ 20%                                                       │
+│ Typical range: 10-35% | Blueprint reference: 20%         │
+│ ⓘ Portion of time saved converting to new visits         │
+│                                                            │
+│ Average visit duration                             Edit   │
+│ 30 min                                                    │
+│ Typical range: 20-45 min | Blueprint reference: 30 min   │
+│                                                            │
+│ Revenue per visit                                  Edit   │
+│ $200                                                      │
+│ Typical range: $150-350 | Blueprint reference: $200      │
+│                                                            │
+│ [Reset to Typical Defaults]                              │
+└───────────────────────────────────────────────────────────┘
+
+┌─ Clinician Retention ─────────────────────────────────────┐
+│                                                            │
+│ Annual turnover rate                               Edit   │
+│ 5%                                                        │
+│ Typical range: 4-8% | Blueprint reference: 5%            │
+│                                                            │
+│ Replacement cost per provider                      Edit   │
+│ $250,000                                                  │
+│ Typical range: $200k-350k | Blueprint reference: $250k   │
+│                                                            │
+│ Abridge prevention effectiveness                   Edit   │
+│ 40%                                                       │
+│ Typical range: 30-50% | Blueprint reference: 40%         │
+│ ⓘ % of burnout-driven turnover prevented                 │
+│                                                            │
+│ Hidden assumption: 40% of turnover is burnout-related    │
+│                                                            │
+│ [Reset to Typical Defaults]                              │
+└───────────────────────────────────────────────────────────┘
+
+┌─ Overtime & Locum Cost Avoidance ─────────────────────────┐
+│                                                            │
+│ After-hours documentation reduction                Edit   │
+│ 20%                                                       │
+│ Typical range: 15-30% | Blueprint reference: 20%         │
+│                                                            │
+│ Blended premium labor rate                         Edit   │
+│ $145/hr                                                   │
+│ Typical range: $100-250/hr | Blueprint reference: $145   │
+│                                                            │
+│ Minutes saved per encounter                        Edit   │
+│ 2.5 min                                                   │
+│ (Inherited from Patient Access)                          │
+│                                                            │
+│ [Reset to Typical Defaults]                              │
+└───────────────────────────────────────────────────────────┘
+
+
+REVENUE & RISK ───────────────────────────────────────────────
+
+[Only show drivers in this category that user selected]
+
+┌─ Accurate Level of Service ───────────────────────────────┐
+│                                                            │
+│ Baseline wRVU per encounter                        Edit   │
+│ 1.75                                                      │
+│ Typical range: 1.3-3.4 | Blueprint reference: 1.75       │
+│                                                            │
+│ Documentation quality lift                         Edit   │
+│ 5%                                                        │
+│ Typical range: 2-8% | Blueprint reference: 5%            │
+│ ⓘ wRVU improvement from complete documentation           │
+│                                                            │
+│ Revenue per wRVU                                   Edit   │
+│ $50                                                       │
+│ Typical range: $30-80 | Blueprint reference: $50         │
+│                                                            │
+│ [Reset to Typical Defaults]                              │
+└───────────────────────────────────────────────────────────┘
+
+┌─ HCC & Chronic Condition Capture ─────────────────────────┐
+│                                                            │
+│ Medicare Advantage population                      Edit   │
+│ 15%                                                       │
+│ Typical range: 5-40% | Blueprint reference: 15%          │
+│                                                            │
+│ Benchmark PMPM                                     Edit   │
+│ $1,000                                                    │
+│ Typical range: $800-1,500 | Blueprint reference: $1,000  │
+│ ⓘ County-specific MA capitated payment                   │
+│                                                            │
+│ Condition recapture rate                           Edit   │
+│ 50%                                                       │
+│ Typical range: 40-60% | Blueprint reference: 50%         │
+│ ⓘ % of missed HCC conditions documented with Abridge     │
+│                                                            │
+│ Hidden assumptions: 2.5 visits/patient/year,             │
+│ 2.5 conditions/patient, 30% documentation gap,           │
+│ 0.25 RAF weight per condition                            │
+│                                                            │
+│ [Reset to Typical Defaults]                              │
+└───────────────────────────────────────────────────────────┘
+
+┌─ Denial Reduction ────────────────────────────────────────┐
+│                                                            │
+│ Baseline denial rate                               Edit   │
+│ 5%                                                        │
+│ Typical range: 3-8% | Blueprint reference: 5%            │
+│                                                            │
+│ Prevention rate                                    Edit   │
+│ 66%                                                       │
+│ Typical range: 50-80% | Blueprint reference: 66%         │
+│ ⓘ % of doc-related denials prevented                     │
+│                                                            │
+│ Revenue per visit                                  Edit   │
+│ $200                                                      │
+│ (Inherited from Patient Access)                          │
+│                                                            │
+│ Hidden assumption: 30% of denials are doc-related        │
+│                                                            │
+│ [Reset to Typical Defaults]                              │
+└───────────────────────────────────────────────────────────┘
+
+
+CATEGORY MAPPING (for rendering logic):
+
+CAPACITY & LABOR:
+- Patient Access
+- Clinician Retention
+- Overtime & Locum Cost Avoidance
+
+REVENUE & RISK:
+- Accurate Level of Service
+- HCC & Chronic Condition Capture
+- Denial Reduction
+
+RENDERING LOGIC:
+- Only show category header if at least one driver in that category is selected
+- If user only selected Revenue & Risk drivers, don't show "CAPACITY & LABOR" header
+- Maintain all existing input functionality (Edit, tooltips, Reset buttons)
+- Preserve all calculations and state management
+
+STYLING:
+
+Category Headers:
+- Font: 14px, uppercase, #6B7280 (gray)
+- Letter-spacing: 0.05em
+- Margin-top: 32px (first category: 16px)
+- Margin-bottom: 16px
+- Horizontal rule: 1px solid #E5E7EB extending full width after text
+
+Driver Cards:
+- Keep existing styling (white background, 1px border, 8px radius, 24px padding)
+- Spacing between cards: 16px
+- Spacing between categories: 32px
+
+Everything Else:
+- Keep all existing input styling
+- Keep all existing tooltip styling
+- Keep all existing "Edit" link styling
+- Keep "Reset to Typical Defaults" button styling (orange #E8532F, underlined)
+
+DO NOT CHANGE:
+- Posture preview card
+- Posture selector
+- Blue info box at top
+- Fine-Tune collapsible header
+- Any input functionality
+- Any calculations
+- Live Receipt
+- Any other page
+
+RESULT:
+The Fine-Tune section now has clear visual hierarchy that matches the Summary View, making it easier to scan and understand which drivers affect what type of value. Categories only appear if the user selected drivers in that category.

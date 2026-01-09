@@ -2475,10 +2475,20 @@ export default function ObjectiveSelectionScreen({
                             </div>
                           </div>
 
-                          {/* Fine-tune inputs - showing selected drivers only */}
-                          <div className="space-y-4">
-                            {/* Patient Access Fine-tune */}
-                            {selectedLeverIds.has("patientAccess") && (
+                          {/* Fine-tune inputs - grouped by category */}
+                          <div className="space-y-6">
+                            
+                            {/* CAPACITY & LABOR Category */}
+                            {(selectedLeverIds.has("patientAccess") || selectedLeverIds.has("workforce") || selectedLeverIds.has("overtime")) && (
+                              <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                  <span className="text-sm font-semibold uppercase tracking-wider text-[#6B7280]">Capacity & Labor</span>
+                                  <div className="flex-1 h-px bg-[#E5E7EB]" />
+                                </div>
+                                <div className="space-y-4">
+                            
+                                  {/* Patient Access Fine-tune */}
+                                  {selectedLeverIds.has("patientAccess") && (
                               <div className="border border-neutral-200 rounded-lg p-4 bg-white" data-testid="finetune-patientAccess">
                                 <div className="text-sm font-semibold text-neutral-900 mb-3">Patient Access</div>
                                 <div className="space-y-3">
