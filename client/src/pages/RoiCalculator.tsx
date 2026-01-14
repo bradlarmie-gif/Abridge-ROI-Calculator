@@ -264,11 +264,11 @@ export default function RoiCalculator({
   const [selectedNewCareSetting, setSelectedNewCareSetting] = useState<"ed" | "nursing" | null>(null);
   const [careSettingScenarioName, setCareSettingScenarioName] = useState("");
   const [careSettingConfig, setCareSettingConfig] = useState({
-    providers: 20,
-    encountersPerProvider: 5000,
-    customEncounters: 100000,
+    providers: 40,
+    encountersPerProvider: 2000,
+    customEncounters: 80000,
     encounterMode: "calculated" as "calculated" | "custom",
-    utilizationRate: 70,
+    utilizationRate: 65,
   });
   const [careSettingDrivers, setCareSettingDrivers] = useState<Set<LeverId>>(new Set<LeverId>(["patientAccess", "wrvu", "denials"]));
   const [careSettingDriverAdjustments, setCareSettingDriverAdjustments] = useState<Partial<Record<LeverId, Record<string, number>>>>({

@@ -21,8 +21,11 @@ function calculateEdRoi(inputs: RoiInputs): {
 
   let throughputValue = 0;
   if (inputs.levers.edThroughput) {
-    const lwbsImprovement = ed.baselineLwbsRate * (ed.lwbsImprovementPct / 100);
-    const additionalPatientsTreated = eligibleEncounters * (lwbsImprovement / 100);
+    // lwbsImprovementPct is the absolute percentage-point improvement (e.g., 0.5 means 0.5 ppt reduction)
+    // Example: Baseline 3.0% LWBS with 0.5 ppt improvement = 2.5% post-Abridge LWBS
+    // LWBS improvement applies to total ED volume (not just Abridge encounters) because faster documentation
+    // during shifts enables seeing more waiting patients regardless of which visits are documented with Abridge
+    const additionalPatientsTreated = ed.totalEdEncounters * (ed.lwbsImprovementPct / 100);
     const treatedAndReleased = additionalPatientsTreated * (ed.pctRecoveredTreatedAndReleased / 100);
     const admitted = additionalPatientsTreated * (ed.pctRecoveredAdmitted / 100);
     const regularContribution = treatedAndReleased * ed.contributionMarginPerEncounter;
