@@ -254,15 +254,15 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         title: "STEP 4: REVENUE IMPACT",
         steps: [
           { label: "Additional wRVUs captured", value: "4,550" },
-          { label: "Average revenue per wRVU", value: "$50", note: "(blended: Medicare ~$36-40, Commercial ~$50-80)" },
-          { label: "Annual value", value: "$227,500" },
+          { label: "Average revenue per wRVU", value: "$34", note: "(blended rate)" },
+          { label: "Annual value", value: "$154,700" },
           { label: "Actual reimbursement varies by payer mix and contracted rates. This uses a blended average.", value: "", note: "warning" },
         ],
       },
     ],
     keyVariables: ["Visit volume", "Baseline wRVU per encounter", "Documentation quality lift %", "Revenue per wRVU"],
-    rangeData: { conservative: "2% lift ($91,000)", typical: "5% lift ($227,500)", aggressive: "8% lift ($364,000)" },
-    referenceValue: 227500,
+    rangeData: { conservative: "2% lift ($62k)", typical: "5% lift ($155k)", aggressive: "8% lift ($248k)" },
+    referenceValue: 154700,
   },
   overtime: {
     id: "overtime",
@@ -3238,7 +3238,7 @@ export default function ObjectiveSelectionScreen({
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                       data-testid="input-ft-minutes-saved"
                                     />
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 1.5-4 min | Blueprint reference: 2.5 min</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 1.5-4 min</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Capacity realization factor</label>
@@ -3266,7 +3266,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 10-35% | Blueprint reference: 20%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 10-35%</p>
                                     <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
                                       <Info className="w-3 h-3" />
                                       Portion of time saved that converts to new visits
@@ -3298,7 +3298,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">min</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 20-45 min | Blueprint reference: 30 min</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 20-45 min</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Revenue per visit</label>
@@ -3326,7 +3326,7 @@ export default function ObjectiveSelectionScreen({
                                         data-testid="input-ft-revenue-per-visit"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $150-350 | Blueprint reference: $200</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $150-350</p>
                                   </div>
                                 </div>
                                 <button 
@@ -3377,7 +3377,7 @@ export default function ObjectiveSelectionScreen({
                                             />
                                             <span className="text-sm text-neutral-500">%</span>
                                           </div>
-                                          <p className="text-xs text-neutral-500 mt-1">Typical range: 4-8% | Blueprint reference: 5%</p>
+                                          <p className="text-xs text-neutral-500 mt-1">Typical range: 4-8%</p>
                                         </div>
                                         <div>
                                           <label className="text-sm font-medium text-neutral-600">Replacement cost per provider</label>
@@ -3405,7 +3405,7 @@ export default function ObjectiveSelectionScreen({
                                               data-testid="input-ft-replacement-cost"
                                             />
                                           </div>
-                                          <p className="text-xs text-neutral-500 mt-1">Typical range: $200k-350k | Blueprint reference: $250,000</p>
+                                          <p className="text-xs text-neutral-500 mt-1">Typical range: $200k-350k</p>
                                         </div>
                                       </div>
                                       <div>
@@ -3421,7 +3421,7 @@ export default function ObjectiveSelectionScreen({
                                           />
                                           <span className="text-sm text-neutral-500">%</span>
                                         </div>
-                                        <p className="text-xs text-neutral-500 mt-1">Typical range: 30-50% | Blueprint reference: 40%</p>
+                                        <p className="text-xs text-neutral-500 mt-1">Typical range: 30-50%</p>
                                         <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
                                           <Info className="w-3 h-3" />
                                           % of burnout-driven turnover prevented (set by posture)
@@ -3473,7 +3473,7 @@ export default function ObjectiveSelectionScreen({
                                             />
                                             <span className="text-sm text-neutral-500">%</span>
                                           </div>
-                                          <p className="text-xs text-neutral-500 mt-1">Typical range: 15-30% | Blueprint reference: 20%</p>
+                                          <p className="text-xs text-neutral-500 mt-1">Typical range: 15-30%</p>
                                         </div>
                                         <div>
                                           <label className="text-sm font-medium text-neutral-600">Blended premium labor rate</label>
@@ -3502,7 +3502,7 @@ export default function ObjectiveSelectionScreen({
                                             />
                                             <span className="text-sm text-neutral-500">/hr</span>
                                           </div>
-                                          <p className="text-xs text-neutral-500 mt-1">Typical range: $100-250/hr | Blueprint reference: $145</p>
+                                          <p className="text-xs text-neutral-500 mt-1">Typical range: $100-250/hr</p>
                                         </div>
                                         <div>
                                           <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
@@ -3565,7 +3565,7 @@ export default function ObjectiveSelectionScreen({
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                       data-testid="input-ft-baseline-wrvu"
                                     />
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 1.3-3.4 | Blueprint reference: 1.75</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 1.3-3.4</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Documentation quality lift</label>
@@ -3593,7 +3593,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 2-8% | Blueprint reference: 5%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 2-8%</p>
                                     <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
                                       <Info className="w-3 h-3" />
                                       wRVU improvement from complete documentation
@@ -3625,7 +3625,7 @@ export default function ObjectiveSelectionScreen({
                                         data-testid="input-ft-revenue-wrvu"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $25-75 | Blueprint reference: $50</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $25-75</p>
                                   </div>
                                 </div>
                                 <button 
@@ -3674,7 +3674,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 5-40% | Blueprint reference: 15%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 5-40%</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Condition recapture rate</label>
@@ -3702,7 +3702,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 40-60% | Blueprint reference: 50%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 40-60%</p>
                                     <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
                                       <Info className="w-3 h-3" />
                                       % of missed HCC conditions documented with Abridge
@@ -3734,7 +3734,7 @@ export default function ObjectiveSelectionScreen({
                                         data-testid="input-ft-benchmark-pmpm"
                                       />
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $800-1,500 | Blueprint reference: $1,000</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: $800-1,500</p>
                                     <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
                                       <Info className="w-3 h-3" />
                                       County-specific MA capitated payment
@@ -3788,7 +3788,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 3-8% | Blueprint reference: 5%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 3-8%</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-neutral-600">Prevention rate</label>
@@ -3816,7 +3816,7 @@ export default function ObjectiveSelectionScreen({
                                       />
                                       <span className="text-sm text-neutral-500">%</span>
                                     </div>
-                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 50-80% | Blueprint reference: 66%</p>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 50-80%</p>
                                     <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
                                       <Info className="w-3 h-3" />
                                       % of doc-related denials prevented with complete notes
