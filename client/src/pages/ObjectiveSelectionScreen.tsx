@@ -2849,15 +2849,6 @@ export default function ObjectiveSelectionScreen({
                     </div>
 
                     <div className="mt-8 flex items-center justify-between gap-4">
-                      {(effectiveClinicians === 0 || effectiveEncounters === 0) && (
-                        <p className="text-sm text-[#F03319]">
-                          {effectiveClinicians === 0 && effectiveEncounters === 0
-                            ? "Please enter number of providers and annual encounters"
-                            : effectiveClinicians === 0
-                            ? "Please enter number of providers"
-                            : "Please enter annual encounters"}
-                        </p>
-                      )}
                       <div className="ml-auto">
                         <button
                           onClick={() => setModelSetupStep(2)}
