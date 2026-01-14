@@ -1026,7 +1026,7 @@ export default function ObjectiveSelectionScreen({
   const [showCustomMinutesInput, setShowCustomMinutesInput] = useState(false);
   const customMinutesInputRef = useRef<HTMLInputElement>(null);
 
-  // Value Realization step state
+  // Value Posture step state
   const [timeRealizationRate, setTimeRealizationRate] = useState<number | null>(null); // No default - user must select
   
   // Documentation lever sensitivity states (only shown if lever is selected)
@@ -2642,7 +2642,7 @@ export default function ObjectiveSelectionScreen({
                           )}
                         </span>
                         {step === 1 && "Adoption"}
-                        {step === 2 && "Value Realization"}
+                        {step === 2 && "Value Posture"}
                         {step === 3 && "Investment"}
                       </button>
                     );
@@ -2865,7 +2865,7 @@ export default function ObjectiveSelectionScreen({
                           }`}
                           data-testid="button-step1-next"
                         >
-                          Next: Value Realization
+                          Next: Value Posture
                           <ChevronRight className="h-4 w-4" />
                         </button>
                       </div>
@@ -2873,7 +2873,7 @@ export default function ObjectiveSelectionScreen({
                   </div>
                 )}
 
-                {/* Step 2: Value Realization */}
+                {/* Step 2: Value Posture */}
                 {modelSetupStep === 2 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-8">
                     {/* Context Callout */}
