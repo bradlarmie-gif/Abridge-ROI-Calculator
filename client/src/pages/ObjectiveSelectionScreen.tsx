@@ -1765,13 +1765,11 @@ export default function ObjectiveSelectionScreen({
       {/* Header */}
       <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
         <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
-          <div className="flex flex-col gap-2 cursor-pointer" onClick={() => setCurrentPage("orientation")} data-testid="logo-home">
-            <img 
-              src={abridgeLogo} 
-              alt="Abridge" 
-              className="h-9 md:h-10 w-auto" 
-            />
-            <span className="text-[16px] md:text-[18px] font-semibold text-[#111827] tracking-tight leading-none">
+          <div className="flex flex-col gap-1 cursor-pointer" onClick={() => setCurrentPage("orientation")} data-testid="logo-home">
+            <span className="text-[18px] md:text-[20px] font-bold text-[#F03319] tracking-tight leading-none uppercase">
+              ABRIDGE
+            </span>
+            <span className="text-[14px] md:text-[15px] font-semibold text-[#F03319] tracking-tight leading-none">
               ROI Calculator
             </span>
           </div>
