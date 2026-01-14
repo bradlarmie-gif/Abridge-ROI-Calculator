@@ -214,7 +214,7 @@ export const leverLabels: Record<LeverId, string> = {
   denials: "Documentation Related Denials",
   hcc: "HCC & Chronic Condition Capture",
   edThroughput: "Patient Throughput (LWBS Reduction)",
-  edLevelOfService: "wRVU & Level-of-Service Alignment",
+  edLevelOfService: "Level-of-Service Accuracy",
   edDenialReduction: "Documentation-Related Denials",
   edRetention: "Workforce Retention",
   rnDocTime: "Documentation Time Reduction",
