@@ -1,0 +1,534 @@
+Feature Overview
+You want to add a "Competitor Comparison View" that allows prospects currently using other ambient solutions or human scribes to see the ROI of switching to Abridge.
+Implementation Instructions for Replit
+1. Add New Tab/Button in Scenario Builder
+Location: Bottom of the Scenario Builder page (alongside "Expand Providers", "Add Strategic Drivers", "New Care Setting")
+javascriptCopy// Add a new card in the "Build an Expansion Scenario" section
+<div className="comparison-card">
+  <div className="card-icon">
+    <svg><!-- comparison/switch icon --></svg>
+  </div>
+  <h3>Competitor Comparison</h3>
+  <p>Compare ROI vs. current solution or human scribes</p>
+  <button onClick={navigateToComparison}>Start →</button>
+</div>
+2. Create Competitor Selection Page
+New Component: CompetitorSelection.jsx
+javascriptCopy// Dropdown with logos for competitor selection
+const competitors = [
+  { 
+    name: 'DAX (Nuance)', 
+    logo: '/logos/dax.png',
+    type: 'ambient'
+  },
+  { 
+    name: 'Suki', 
+    logo: '/logos/suki.png',
+    type: 'ambient'
+  },
+  { 
+    name: 'Ambience Healthcare', 
+    logo: '/logos/ambience.png',
+    type: 'ambient'
+  },
+  { 
+    name: 'Nabla', 
+    logo: '/logos/nabla.png',
+    type: 'ambient'
+  },
+  { 
+    name: 'Human Scribe', 
+    logo: '/logos/human-scribe.png',
+    type: 'human'
+  },
+  { 
+    name: 'Other', 
+    logo: '/logos/other.png',
+    type: 'custom'
+  }
+];
+UI Structure:
+jsxCopy<div className="competitor-selection">
+  <h2>What solution are you currently using?</h2>
+  
+  <select onChange={handleCompetitorSelect}>
+    {competitors.map(comp => (
+      <option value={comp.name}>
+        <img src={comp.logo} alt={comp.name} />
+        {comp.name}
+      </option>
+    ))}
+  </select>
+  
+  {selectedCompetitor && renderCompetitorInputs()}
+</div>
+3. Conditional Input Forms
+For Human Scribe Selection:
+jsxCopy{selectedCompetitor.type === 'human' && (
+  <div className="human-scribe-inputs">
+    <label>Number of Human Scribes</label>
+    <input 
+      type="number" 
+      value={numScribes}
+      onChange={e => setNumScribes(e.target.value)}
+      placeholder="e.g., 5"
+    />
+    
+    <label>Average Hourly Rate</label>
+    <input 
+      type="number" 
+      value={hourlyRate}
+      onChange={e => setHourlyRate(e.target.value)}
+      placeholder="e.g., $25"
+    />
+    
+    <label>Hours per Week (per scribe)</label>
+    <input 
+      type="number" 
+      value={hoursPerWeek}
+      onChange={e => setHoursPerWeek(e.target.value)}
+      placeholder="e.g., 40"
+    />
+    
+    <label>Expected Reduction in Scribe Hours with Abridge</label>
+    <input 
+      type="range" 
+      min="0" 
+      max="100" 
+      value={reductionPercent}
+      onChange={e => setReductionPercent(e.target.value)}
+    />
+    <span>{reductionPercent}%</span>
+    
+    <div className="calculation-preview">
+      <p>Current Annual Cost: ${calculateCurrentCost()}</p>
+      <p>Projected Savings: ${calculateSavings()}</p>
+    </div>
+  </div>
+)}
+For Ambient Competitors:
+jsxCopy{selectedCompetitor.type === 'ambient' && (
+  <div className="ambient-competitor-inputs">
+    <label>Current Monthly Cost per Provider</label>
+    <input 
+      type="number" 
+      value={competitorCost}
+      onChange={e => setCompetitorCost(e.target.value)}
+      placeholder="e.g., $150"
+    />
+    
+    <label>Number of Providers Using {selectedCompetitor.name}</label>
+    <input 
+      type="number" 
+      value={numProviders}
+      onChange={e => setNumProviders(e.target.value)}
+    />
+    
+    <label>Current Utilization Rate</label>
+    <input 
+      type="range" 
+      min="0" 
+      max="100" 
+      value={currentUtilization}
+      onChange={e => setCurrentUtilization(e.target.value)}
+    />
+    <span>{currentUtilization}%</span>
+  </div>
+)}
+4. Link to Existing Abridge Data
+Pull from your existing baseline:
+javascriptCopy// Import current model data
+const abridgeBaseline = {
+  providers: baselineData.providers, // From your existing model
+  utilization: baselineData.utilization,
+  strategicPriorities: baselineData.selectedDrivers,
+  costPerProvider: 120, // Your Abridge pricing
+  encounters: baselineData.encounters
+};
+5. Comparison Chart Component
+New Component: ComparisonChart.jsx
+jsxCopy<div className="comparison-view">
+  <h2>ROI Comparison: {selectedCompetitor.name} vs. Abridge</h2>
+  
+  <div className="comparison-grid">
+    {/* Current Solution Column */}
+    <div className="competitor-column">
+      <div className="column-header">
+        <img src={selectedCompetitor.logo} alt={selectedCompetitor.name} />
+        <h3>Current: {selectedCompetitor.name}</h3>
+      </div>
+      
+      <div className="metrics">
+        <div className="metric-row">
+          <span>Annual Cost</span>
+          <span className="value">${competitorAnnualCost}</span>
+        </div>
+        
+        <div className="metric-row">
+          <span>Time Saved per Encounter</span>
+          <span className="value">{competitorTimeSaved} min</span>
+          <input 
+            type="number" 
+            placeholder="Enter your actual"
+            onChange={e => setCompetitorTimeSaved(e.target.value)}
+          />
+        </div>
+        
+        <div className="metric-row">
+          <span>Utilization Rate</span>
+          <span className="value">{competitorUtilization}%</span>
+          <input 
+            type="number" 
+            placeholder="Enter your actual"
+            onChange={e => setCompetitorUtilization(e.target.value)}
+          />
+        </div>
+        
+        {/* Strategic Priorities - Editable */}
+        {selectedStrategicPriorities.map(priority => (
+          <div className="metric-row" key={priority.name}>
+            <span>{priority.name}</span>
+            <span className="value">${competitorValues[priority.name]}</span>
+            <input 
+              type="number" 
+              placeholder="Your actual value"
+              onChange={e => updateCompetitorValue(priority.name, e.target.value)}
+            />
+          </div>
+        ))}
+        
+        <div className="total-roi">
+          <span>Total Annual Benefit</span>
+          <span className="value highlight">${competitorTotalBenefit}</span>
+        </div>
+        
+        <div className="roi-metric">
+          <span>ROI</span>
+          <span className="value">{competitorROI}x</span>
+        </div>
+      </div>
+    </div>
+    
+    {/* Abridge Column */}
+    <div className="abridge-column">
+      <div className="column-header abridge-brand">
+        <img src="/logos/abridge.png" alt="Abridge" />
+        <h3>Switch to: Abridge</h3>
+      </div>
+      
+      <div className="metrics">
+        <div className="metric-row">
+          <span>Annual Cost</span>
+          <span className="value">${abridgeAnnualCost}</span>
+          {abridgeAnnualCost < competitorAnnualCost && (
+            <span className="badge savings">
+              Save ${competitorAnnualCost - abridgeAnnualCost}
+            </span>
+          )}
+        </div>
+        
+        <div className="metric-row highlight">
+          <span>Time Saved per Encounter</span>
+          <span className="value-range">
+            {abridgeTimeSavedRange.min}-{abridgeTimeSavedRange.max} min
+          </span>
+          <span className="typical-badge">Typical: 2.5 min</span>
+        </div>
+        
+        <div className="metric-row highlight">
+          <span>Utilization Rate</span>
+          <span className="value-range">
+            {abridgeUtilizationRange.min}-{abridgeUtilizationRange.max}%
+          </span>
+          <span className="typical-badge">Mature: 75-90%</span>
+        </div>
+        
+        {/* Strategic Priorities - Abridge Ranges */}
+        {selectedStrategicPriorities.map(priority => (
+          <div className="metric-row highlight" key={priority.name}>
+            <span>{priority.name}</span>
+            <span className="value-range">
+              ${abridgeRanges[priority.name].min.toLocaleString()} - 
+              ${abridgeRanges[priority.name].max.toLocaleString()}
+            </span>
+            <button onClick={() => showMethodology(priority.name)}>
+              View methodology
+            </button>
+          </div>
+        ))}
+        
+        <div className="total-roi abridge-highlight">
+          <span>Total Annual Benefit</span>
+          <span className="value-range">
+            ${abridgeTotalBenefitMin} - ${abridgeTotalBenefitMax}
+          </span>
+        </div>
+        
+        <div className="roi-metric">
+          <span>ROI Range</span>
+          <span className="value">{abridgeROIMin}x - {abridgeROIMax}x</span>
+        </div>
+      </div>
+    </div>
+    
+    {/* Delta/Difference Column */}
+    <div className="delta-column">
+      <div className="column-header">
+        <h3>Improvement</h3>
+      </div>
+      
+      <div className="metrics">
+        <div className="metric-row">
+          <span>Cost Difference</span>
+          <span className={costDelta < 0 ? 'positive' : 'negative'}>
+            {costDelta < 0 ? '↓' : '↑'} ${Math.abs(costDelta)}
+          </span>
+        </div>
+        
+        <div className="metric-row">
+          <span>Additional Time Saved</span>
+          <span className="positive">
+            ↑ {timeSavedDelta} min/encounter
+          </span>
+        </div>
+        
+        <div className="metric-row">
+          <span>Utilization Improvement</span>
+          <span className="positive">
+            ↑ {utilizationDelta}%
+          </span>
+        </div>
+        
+        {selectedStrategicPriorities.map(priority => (
+          <div className="metric-row" key={priority.name}>
+            <span>{priority.name} Δ</span>
+            <span className="positive">
+              ↑ ${calculateDelta(priority.name)}
+            </span>
+          </div>
+        ))}
+        
+        <div className="total-roi">
+          <span>Additional Annual Value</span>
+          <span className="value positive">
+            +${totalBenefitDelta}
+          </span>
+        </div>
+        
+        <div className="roi-metric">
+          <span>ROI Improvement</span>
+          <span className="value positive">
+            +{roiDelta}x
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {/* Interactive Section */}
+  <div className="what-if-section">
+    <h3>What if you achieved Abridge's typical results?</h3>
+    <p>See how your ROI would change using Abridge's proven benchmarks</p>
+    
+    <button onClick={applyAbridgeBenchmarks} className="primary-cta">
+      Apply Abridge Benchmarks →
+    </button>
+    
+    <div className="benchmark-preview">
+      <div className="before-after">
+        <div className="before">
+          <h4>Your Current State</h4>
+          <div className="roi-circle">{currentROI}x</div>
+          <p>${currentAnnualBenefit} annual benefit</p>
+        </div>
+        
+        <div className="arrow">→</div>
+        
+        <div className="after highlight">
+          <h4>With Abridge Benchmarks</h4>
+          <div className="roi-circle large">{projectedROI}x</div>
+          <p>${projectedAnnualBenefit} annual benefit</p>
+          <span className="improvement-badge">
+            +${improvementAmount} (+{improvementPercent}%)
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {/* Data Sources */}
+  <div className="data-sources">
+    <p className="small-text">
+      Abridge ranges based on 200+ health system partners. 
+      Actual results vary by organization size, specialty mix, and implementation maturity.
+    </p>
+  </div>
+</div>
+6. Calculation Logic
+javascriptCopy// calculations.js
+
+// Human Scribe Calculations
+export const calculateScribeCost = (numScribes, hourlyRate, hoursPerWeek) => {
+  const weeklyPayroll = numScribes * hourlyRate * hoursPerWeek;
+  const annualPayroll = weeklyPayroll * 52;
+  const fullyLoadedCost = annualPayroll * 1.3; // Benefits, taxes, etc.
+  return fullyLoadedCost;
+};
+
+export const calculateScribeSavings = (scribeCost, reductionPercent, abridgeCost) => {
+  const savings = (scribeCost * (reductionPercent / 100)) - abridgeCost;
+  return savings;
+};
+
+// Abridge Benchmark Ranges (based on your strategic priorities)
+export const abridgeBenchmarks = {
+  patientAccess: {
+    min: 100000,
+    max: 200000,
+    typical: 130000,
+    description: "Additional revenue from new visit capacity"
+  },
+  clinicianRetention: {
+    min: 50000,
+    max: 100000,
+    typical: 60000,
+    description: "Reduced turnover and replacement costs"
+  },
+  accurateService: {
+    min: 100000,
+    max: 180000,
+    typical: 136500,
+    description: "Improved wRVU capture and coding accuracy"
+  },
+  overtimeSavings: {
+    min: 5000,
+    max: 15000,
+    typical: 9425,
+    description: "Reduced premium labor hours"
+  },
+  denialReduction: {
+    min: 30000,
+    max: 80000,
+    typical: 58500,
+    description: "Fewer documentation-related denials"
+  }
+};
+
+// Compare competitor to Abridge
+export const calculateComparison = (competitorData, abridgeData) => {
+  return {
+    costDelta: abridgeData.annualCost - competitorData.annualCost,
+    benefitDelta: abridgeData.totalBenefit - competitorData.totalBenefit,
+    roiDelta: abridgeData.roi - competitorData.roi,
+    netValueDelta: (abridgeData.totalBenefit - abridgeData.annualCost) - 
+                   (competitorData.totalBenefit - competitorData.annualCost)
+  };
+};
+7. Strategic Priority Integration
+javascriptCopy// Pull from existing baseline data
+const mapStrategicPriorities = (selectedDrivers) => {
+  return selectedDrivers.map(driver => ({
+    name: driver.name,
+    abridgeRange: abridgeBenchmarks[driver.key],
+    competitorValue: null, // User inputs this
+    calculation: driver.calculationMethod
+  }));
+};
+8. UI/UX Enhancements
+Add visual indicators:
+jsxCopy// Range slider for competitor values
+<div className="value-input-with-context">
+  <label>Time saved per encounter with {selectedCompetitor.name}</label>
+  <input 
+    type="range" 
+    min="0" 
+    max="5" 
+    step="0.1"
+    value={competitorTimeSaved}
+    onChange={handleChange}
+  />
+  <div className="benchmark-markers">
+    <span className="marker competitor">You: {competitorTimeSaved} min</span>
+    <span className="marker abridge">Abridge typical: 2.5 min</span>
+  </div>
+</div>
+Highlight improvements:
+cssCopy.positive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.improvement-badge {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.value-range {
+  color: #6366f1;
+  font-weight: 600;
+}
+9. Navigation Flow
+javascriptCopy// Add to Scenario Builder
+<button 
+  className="comparison-cta"
+  onClick={() => navigate('/comparison', {
+    state: {
+      baselineData: currentBaseline,
+      selectedDrivers: strategicPriorities,
+      deploymentConfig: deploymentSettings
+    }
+  })}
+>
+  Compare to Current Solution →
+</button>
+10. Export/Share Functionality
+javascriptCopy// Add to comparison view
+<div className="comparison-actions">
+  <button onClick={exportComparisonPDF}>
+    Export Comparison Report
+  </button>
+  <button onClick={saveToScenarios}>
+    Save as Scenario
+  </button>
+  <button onClick={shareWithTeam}>
+    Share with Team
+  </button>
+</div>
+Key Features Summary
+
+Competitor Selection: Dropdown with logos for DAX, Suki, Ambience, Nabla, Human Scribe, Other
+Dynamic Inputs:
+
+Human Scribes: # of scribes, hourly rate, hours/week, % reduction
+Ambient Tools: cost per provider, # providers, utilization
+
+
+Abridge Benchmark Ranges: Show min-max-typical for each strategic priority
+Editable Competitor Values: Let users input their actual numbers
+Side-by-Side Comparison: Three columns (Competitor | Abridge | Delta)
+"What If" Scenario: Button to apply Abridge benchmarks to their data
+Visual Improvements: Green arrows, badges showing improvements
+Integration: Pulls from existing baseline and strategic priorities
+
+File Structure
+Copy/components
+  /comparison
+    CompetitorSelection.jsx
+    ComparisonChart.jsx
+    CompetitorInputs.jsx
+    BenchmarkRanges.jsx
+    WhatIfScenario.jsx
+/utils
+  comparisonCalculations.js
+  benchmarkData.js
+/assets
+  /logos
+    dax.png
+    suki.png
+    ambience.png
+    nabla.png
+    human-scribe.png
+This creates an irrefutable, easy-to-understand comparison that shows the value of switching to Abridge while maintaining your existing calculator's sophistication and data-driven approach.

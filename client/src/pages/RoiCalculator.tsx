@@ -71,6 +71,8 @@ import {
   ChevronUp,
   Zap,
   HeartPulse,
+  GitCompareArrows,
+  Scale,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -287,6 +289,27 @@ export default function RoiCalculator({
 
   // Scenario Comparison View state
   const [showScenarioComparison, setShowScenarioComparison] = useState(false);
+
+  // Competitor Comparison state
+  const [showCompetitorComparison, setShowCompetitorComparison] = useState(false);
+  const [competitorStep, setCompetitorStep] = useState<1 | 2>(1); // 1=selection, 2=comparison
+  const [selectedCompetitor, setSelectedCompetitor] = useState<{
+    name: string;
+    type: "ambient" | "human" | "custom";
+  } | null>(null);
+  // Human scribe inputs
+  const [scribeCount, setScribeCount] = useState<number>(5);
+  const [scribeHourlyRate, setScribeHourlyRate] = useState<number>(25);
+  const [scribeHoursPerWeek, setScribeHoursPerWeek] = useState<number>(40);
+  const [scribeReductionPercent, setScribeReductionPercent] = useState<number>(75);
+  // Ambient competitor inputs
+  const [competitorCostPerProvider, setCompetitorCostPerProvider] = useState<number>(150);
+  const [competitorProviderCount, setCompetitorProviderCount] = useState<number | "">(inputs.providers);
+  const [competitorUtilization, setCompetitorUtilization] = useState<number>(50);
+  const [competitorTimeSaved, setCompetitorTimeSaved] = useState<number>(1.5);
+  // Competitor driver values (user's current results with competitor)
+  const [competitorDriverValues, setCompetitorDriverValues] = useState<Record<string, number>>({});
+  const [competitorScenarioName, setCompetitorScenarioName] = useState("");
 
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {
@@ -4865,6 +4888,492 @@ export default function RoiCalculator({
                   );
                 })()}
               </div>
+            ) : showCompetitorComparison ? (
+              <div className="space-y-6">
+                {/* Back navigation */}
+                <button
+                  onClick={() => setShowCompetitorComparison(false)}
+                  className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                  data-testid="button-back-competitor"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Scenario Builder
+                </button>
+                
+                {/* Page header */}
+                <div>
+                  <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
+                    Competitor Comparison
+                  </h2>
+                  <p className="text-[16px] text-[#6B7280] mb-4">
+                    Compare ROI of switching from your current solution to Abridge
+                  </p>
+                  
+                  {/* Baseline reference box */}
+                  <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-center gap-3">
+                    <BarChart3 className="h-5 w-5 text-[#6B7280]" />
+                    <span className="text-[14px] text-[#6B7280]">
+                      Your Abridge baseline: {inputs.numberOfProviders} providers | {inputs.annualOutpatientEncounters.toLocaleString()} encounters | {formatCurrency(netAnnualGain)} net gain
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Step 1: Competitor Selection */}
+                {competitorStep === 1 && (
+                  <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                    <h3 className="text-[18px] font-bold text-[#111827] mb-4">
+                      What solution are you currently using?
+                    </h3>
+                    
+                    {/* Competitor Options */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                      {[
+                        { name: "DAX (Nuance)", type: "ambient" as const, icon: "🎙️" },
+                        { name: "Suki", type: "ambient" as const, icon: "🤖" },
+                        { name: "Ambience Healthcare", type: "ambient" as const, icon: "💡" },
+                        { name: "Nabla", type: "ambient" as const, icon: "📝" },
+                        { name: "Human Scribe", type: "human" as const, icon: "👤" },
+                        { name: "Other AI Solution", type: "custom" as const, icon: "⚙️" },
+                      ].map((competitor) => (
+                        <button
+                          key={competitor.name}
+                          onClick={() => setSelectedCompetitor({ name: competitor.name, type: competitor.type })}
+                          className={`p-4 border rounded-lg text-left transition-all ${
+                            selectedCompetitor?.name === competitor.name
+                              ? "border-[#E8532F] bg-[#E8532F]/5 ring-2 ring-[#E8532F]/20"
+                              : "border-[#E5E7EB] hover:border-[#E8532F]/50"
+                          }`}
+                          data-testid={`button-competitor-${competitor.name.toLowerCase().replace(/\s+/g, '-')}`}
+                        >
+                          <div className="text-2xl mb-2">{competitor.icon}</div>
+                          <div className="font-semibold text-[#111827]">{competitor.name}</div>
+                          <div className="text-[13px] text-[#6B7280]">
+                            {competitor.type === "human" ? "In-person documentation" : "Ambient AI"}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {/* Conditional Input Forms based on competitor type */}
+                    {selectedCompetitor && (
+                      <div className="border-t border-[#E5E7EB] pt-6">
+                        <h4 className="text-[16px] font-bold text-[#111827] mb-4">
+                          Tell us about your current {selectedCompetitor.name} usage
+                        </h4>
+                        
+                        {/* Human Scribe Inputs */}
+                        {selectedCompetitor.type === "human" && (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Number of Scribes</label>
+                                <input
+                                  type="number"
+                                  value={scribeCount}
+                                  onChange={(e) => setScribeCount(parseInt(e.target.value) || 0)}
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-scribe-count"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Average Hourly Rate ($)</label>
+                                <input
+                                  type="number"
+                                  value={scribeHourlyRate}
+                                  onChange={(e) => setScribeHourlyRate(parseInt(e.target.value) || 0)}
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-scribe-hourly-rate"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Hours per Week (per scribe)</label>
+                                <input
+                                  type="number"
+                                  value={scribeHoursPerWeek}
+                                  onChange={(e) => setScribeHoursPerWeek(parseInt(e.target.value) || 0)}
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-scribe-hours"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Expected Reduction with Abridge (%)</label>
+                                <div className="flex items-center gap-3">
+                                  <Slider
+                                    value={[scribeReductionPercent]}
+                                    onValueChange={([val]) => setScribeReductionPercent(val)}
+                                    min={0}
+                                    max={100}
+                                    step={5}
+                                    className="flex-1"
+                                    data-testid="slider-scribe-reduction"
+                                  />
+                                  <span className="text-[16px] font-mono w-12 text-right">{scribeReductionPercent}%</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Scribe cost calculation preview */}
+                            <div className="mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <div className="text-[13px] text-[#6B7280]">Current Annual Scribe Cost</div>
+                                  <div className="text-[20px] font-bold text-[#111827] font-mono">
+                                    {formatCurrency(scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3)}
+                                  </div>
+                                  <div className="text-[12px] text-[#9CA3AF]">Includes 30% burden rate</div>
+                                </div>
+                                <div>
+                                  <div className="text-[13px] text-[#6B7280]">Projected Savings with Abridge</div>
+                                  <div className="text-[20px] font-bold text-[#059669] font-mono">
+                                    {formatCurrency((scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3) * (scribeReductionPercent / 100))}
+                                  </div>
+                                  <div className="text-[12px] text-[#9CA3AF]">Based on {scribeReductionPercent}% reduction</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Ambient AI Competitor Inputs */}
+                        {(selectedCompetitor.type === "ambient" || selectedCompetitor.type === "custom") && (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Monthly Cost per Provider ($)</label>
+                                <input
+                                  type="number"
+                                  value={competitorCostPerProvider}
+                                  onChange={(e) => setCompetitorCostPerProvider(parseInt(e.target.value) || 0)}
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-competitor-cost"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Providers Using {selectedCompetitor.name}</label>
+                                <input
+                                  type="number"
+                                  value={competitorProviderCount === "" ? "" : competitorProviderCount}
+                                  onChange={(e) => setCompetitorProviderCount(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-competitor-providers"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Current Utilization Rate (%)</label>
+                                <div className="flex items-center gap-3">
+                                  <Slider
+                                    value={[competitorUtilization]}
+                                    onValueChange={([val]) => setCompetitorUtilization(val)}
+                                    min={0}
+                                    max={100}
+                                    step={5}
+                                    className="flex-1"
+                                    data-testid="slider-competitor-utilization"
+                                  />
+                                  <span className="text-[16px] font-mono w-12 text-right">{competitorUtilization}%</span>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Time Saved per Encounter (min)</label>
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  value={competitorTimeSaved}
+                                  onChange={(e) => setCompetitorTimeSaved(parseFloat(e.target.value) || 0)}
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-competitor-time-saved"
+                                />
+                              </div>
+                            </div>
+                            
+                            {/* Competitor cost calculation preview */}
+                            <div className="mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <div className="text-[13px] text-[#6B7280]">Current Annual {selectedCompetitor.name} Cost</div>
+                                  <div className="text-[20px] font-bold text-[#111827] font-mono">
+                                    {formatCurrency(competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12)}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-[13px] text-[#6B7280]">Current Utilization</div>
+                                  <div className="text-[20px] font-bold text-[#111827] font-mono">
+                                    {competitorUtilization}%
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Continue Button */}
+                    <div className="flex justify-end pt-6 border-t border-[#E5E7EB] mt-6">
+                      <Button
+                        onClick={() => setCompetitorStep(2)}
+                        disabled={!selectedCompetitor}
+                        className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                        data-testid="button-continue-comparison"
+                      >
+                        Continue to Comparison
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Step 2: Side-by-Side Comparison */}
+                {competitorStep === 2 && selectedCompetitor && (
+                  <div className="space-y-6">
+                    {/* Scenario Name */}
+                    <div>
+                      <label className="block text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">
+                        Scenario Name
+                      </label>
+                      <input
+                        type="text"
+                        value={competitorScenarioName}
+                        onChange={(e) => setCompetitorScenarioName(e.target.value)}
+                        placeholder={`Switch from ${selectedCompetitor.name} to Abridge`}
+                        className="w-full max-w-md h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                        data-testid="input-competitor-scenario-name"
+                      />
+                    </div>
+                    
+                    {/* Comparison Grid - 3 columns */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Current Solution Column */}
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg overflow-hidden">
+                        <div className="p-4 bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                          <div className="flex items-center gap-2">
+                            <Scale className="h-5 w-5 text-[#6B7280]" />
+                            <h4 className="text-[16px] font-bold text-[#111827]">Current: {selectedCompetitor.name}</h4>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-4">
+                          <div>
+                            <div className="text-[13px] text-[#6B7280]">Annual Cost</div>
+                            <div className="text-[18px] font-bold text-[#111827] font-mono">
+                              {selectedCompetitor.type === "human" 
+                                ? formatCurrency(scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3)
+                                : formatCurrency(competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12)
+                              }
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[13px] text-[#6B7280]">Time Saved / Encounter</div>
+                            <div className="text-[18px] font-bold text-[#111827] font-mono">
+                              {selectedCompetitor.type === "human" ? "N/A" : `${competitorTimeSaved} min`}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[13px] text-[#6B7280]">Utilization Rate</div>
+                            <div className="text-[18px] font-bold text-[#111827] font-mono">
+                              {selectedCompetitor.type === "human" ? "N/A" : `${competitorUtilization}%`}
+                            </div>
+                          </div>
+                          <div className="pt-4 border-t border-[#E5E7EB]">
+                            <div className="text-[13px] text-[#6B7280]">Estimated Annual Benefit</div>
+                            <div className="text-[18px] font-bold text-[#9CA3AF] font-mono">
+                              {selectedCompetitor.type === "human" ? "Manual process" : "User-reported"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Abridge Column */}
+                      <div className="bg-white border-2 border-[#E8532F] rounded-lg overflow-hidden">
+                        <div className="p-4 bg-[#E8532F]/5 border-b border-[#E8532F]/20">
+                          <div className="flex items-center gap-2">
+                            <img src={abridgeLogo} alt="Abridge" className="h-5" />
+                            <h4 className="text-[16px] font-bold text-[#E8532F]">Switch to: Abridge</h4>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-4">
+                          <div>
+                            <div className="text-[13px] text-[#6B7280]">Annual Investment</div>
+                            <div className="text-[18px] font-bold text-[#111827] font-mono">
+                              {formatCurrency(results.totalInvestment)}
+                            </div>
+                            {(() => {
+                              const competitorCost = selectedCompetitor.type === "human"
+                                ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
+                                : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
+                              const diff = competitorCost - results.totalInvestment;
+                              if (diff > 0) {
+                                return (
+                                  <span className="inline-flex items-center gap-1 text-[12px] text-[#059669] bg-[#059669]/10 px-2 py-0.5 rounded">
+                                    Save {formatCurrency(diff)}/year
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </div>
+                          <div>
+                            <div className="text-[13px] text-[#6B7280]">Time Saved / Encounter</div>
+                            <div className="text-[18px] font-bold text-[#111827] font-mono">
+                              {inputs.minutesSavedPerEncounter} min
+                            </div>
+                            <span className="text-[12px] text-[#6B7280]">Typical: 2-4 min</span>
+                          </div>
+                          <div>
+                            <div className="text-[13px] text-[#6B7280]">Utilization Rate</div>
+                            <div className="text-[18px] font-bold text-[#111827] font-mono">
+                              {inputs.utilizationPercent}%
+                            </div>
+                            <span className="text-[12px] text-[#6B7280]">Mature: 75-90%</span>
+                          </div>
+                          <div className="pt-4 border-t border-[#E5E7EB]">
+                            <div className="text-[13px] text-[#6B7280]">Total Annual Benefit</div>
+                            <div className="text-[24px] font-bold text-[#059669] font-mono">
+                              {formatCurrency(results.totalBenefits)}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[13px] text-[#6B7280]">ROI</div>
+                            <div className="text-[24px] font-bold text-[#E8532F] font-mono">
+                              {results.roiMultiple.toFixed(1)}x
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Improvement Delta Column */}
+                      <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg overflow-hidden">
+                        <div className="p-4 bg-[#059669]/10 border-b border-[#059669]/20">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-[#059669]" />
+                            <h4 className="text-[16px] font-bold text-[#059669]">Net Improvement</h4>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-4">
+                          {(() => {
+                            const competitorCost = selectedCompetitor.type === "human"
+                              ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
+                              : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
+                            const costDiff = competitorCost - results.totalInvestment;
+                            const scribeSavings = selectedCompetitor.type === "human"
+                              ? competitorCost * (scribeReductionPercent / 100)
+                              : 0;
+                            
+                            return (
+                              <>
+                                <div>
+                                  <div className="text-[13px] text-[#6B7280]">Cost Difference</div>
+                                  <div className={`text-[18px] font-bold font-mono ${costDiff >= 0 ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                    {costDiff >= 0 ? "↓" : "↑"} {formatCurrency(Math.abs(costDiff))}
+                                  </div>
+                                </div>
+                                {selectedCompetitor.type === "human" && (
+                                  <div>
+                                    <div className="text-[13px] text-[#6B7280]">Scribe Cost Savings</div>
+                                    <div className="text-[18px] font-bold text-[#059669] font-mono">
+                                      + {formatCurrency(scribeSavings)}
+                                    </div>
+                                  </div>
+                                )}
+                                <div>
+                                  <div className="text-[13px] text-[#6B7280]">Abridge Value Creation</div>
+                                  <div className="text-[18px] font-bold text-[#059669] font-mono">
+                                    + {formatCurrency(results.totalBenefits)}
+                                  </div>
+                                </div>
+                                <div className="pt-4 border-t border-[#E5E7EB]">
+                                  <div className="text-[13px] text-[#6B7280]">Total Annual Improvement</div>
+                                  <div className="text-[24px] font-bold text-[#059669] font-mono">
+                                    {formatCurrency(results.totalBenefits + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0))}
+                                  </div>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Value Drivers Breakdown */}
+                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                      <h4 className="text-[16px] font-bold text-[#111827] mb-4">Abridge Value Drivers</h4>
+                      <div className="space-y-3">
+                        {results.levers.filter(l => l.enabled).map((lever) => (
+                          <div key={lever.id} className="flex items-center justify-between py-2 border-b border-[#F3F4F6] last:border-0">
+                            <span className="text-[14px] text-[#6B7280]">{lever.label}</span>
+                            <span className="text-[16px] font-bold text-[#111827] font-mono">{formatCurrency(lever.value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Data Sources Note */}
+                    <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                      <p className="text-[13px] text-[#6B7280]">
+                        Abridge ranges based on 200+ health system partners. Actual results vary by organization size, specialty mix, and implementation maturity.
+                      </p>
+                    </div>
+                    
+                    {/* Footer Actions */}
+                    <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCompetitorStep(1)}
+                        data-testid="button-back-to-selection"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Selection
+                      </Button>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowCompetitorComparison(false)}
+                          data-testid="button-cancel-competitor"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            // Create scenario from competitor comparison
+                            const competitorCost = selectedCompetitor.type === "human"
+                              ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
+                              : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
+                            const scribeSavings = selectedCompetitor.type === "human"
+                              ? competitorCost * (scribeReductionPercent / 100)
+                              : 0;
+                            const costDiff = competitorCost - results.totalInvestment;
+                            const totalImprovement = results.totalBenefits + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0);
+                            
+                            const newScenario: Scenario = {
+                              id: `competitor-${Date.now()}`,
+                              name: competitorScenarioName || `Switch from ${selectedCompetitor.name}`,
+                              type: "expand",
+                              providers: inputs.numberOfProviders,
+                              encounters: inputs.annualOutpatientEncounters,
+                              utilizationPct: inputs.utilizationPercent,
+                              investment: results.totalInvestment,
+                              totalBenefit: results.totalBenefits,
+                              netGain: results.netAnnualGain,
+                              roi: results.roiMultiple,
+                              notes: `Switching from ${selectedCompetitor.name}. Prior annual cost: ${formatCurrency(competitorCost)}. Total improvement: ${formatCurrency(totalImprovement)}.`,
+                            };
+                            setScenarios([...scenarios, newScenario]);
+                            setShowCompetitorComparison(false);
+                            toast({
+                              title: "Scenario created",
+                              description: `"${newScenario.name}" has been added to your scenarios.`,
+                            });
+                          }}
+                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          data-testid="button-save-competitor-scenario"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Save as Scenario
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
             <>
             {/* Header */}
@@ -4980,7 +5489,7 @@ export default function RoiCalculator({
                 What would you like to model?
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Expand Providers Card */}
                 <button
                   onClick={() => {
@@ -5051,6 +5560,30 @@ export default function RoiCalculator({
                   <div className="border-t border-[#E5E7EB] my-4" />
                   <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
                     Deploy in ED, Nursing, or Inpatient
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
+                    Start <ArrowRight className="h-4 w-4" />
+                  </span>
+                </button>
+                
+                {/* Competitor Comparison Card */}
+                <button
+                  onClick={() => {
+                    setSelectedCompetitor(null);
+                    setCompetitorStep(1);
+                    setCompetitorScenarioName("");
+                    setCompetitorDriverValues({});
+                    setCompetitorProviderCount(inputs.providers);
+                    setShowCompetitorComparison(true);
+                  }}
+                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  data-testid="card-competitor-comparison"
+                >
+                  <GitCompareArrows className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
+                  <h4 className="text-[16px] font-bold text-[#111827] mb-4">Competitor Comparison</h4>
+                  <div className="border-t border-[#E5E7EB] my-4" />
+                  <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
+                    Compare ROI vs. current solution
                   </p>
                   <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
                     Start <ArrowRight className="h-4 w-4" />
