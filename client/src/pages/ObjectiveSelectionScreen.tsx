@@ -3236,19 +3236,19 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={timeRealizationRate ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setTimeRealizationRate(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setTimeRealizationRate(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setTimeRealizationRate(POSTURE_PRESETS.typical.realization);
                                           }
                                         }}
@@ -3268,19 +3268,19 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={ftPatientAccessVisitDuration ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setFtPatientAccessVisitDuration(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setFtPatientAccessVisitDuration(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setFtPatientAccessVisitDuration(30);
                                           }
                                         }}
@@ -3297,19 +3297,19 @@ export default function ObjectiveSelectionScreen({
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={ftPatientAccessRevenuePerVisit ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setFtPatientAccessRevenuePerVisit(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setFtPatientAccessRevenuePerVisit(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setFtPatientAccessRevenuePerVisit(200);
                                           }
                                         }}
@@ -3443,19 +3443,19 @@ export default function ObjectiveSelectionScreen({
                                           <div className="flex items-center gap-2 mt-1">
                                             <input
                                               type="text"
-                                              inputMode="numeric"
+                                              inputMode="decimal"
                                               value={ftOvertimeAfterHoursReduction ?? ""}
                                               onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === "") {
                                                   setFtOvertimeAfterHoursReduction(null as any);
                                                 } else {
-                                                  const num = parseInt(val);
+                                                  const num = parseFloat(val);
                                                   if (!isNaN(num)) setFtOvertimeAfterHoursReduction(num);
                                                 }
                                               }}
                                               onBlur={(e) => {
-                                                if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                                if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                                   setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
                                                 }
                                               }}
@@ -3472,19 +3472,19 @@ export default function ObjectiveSelectionScreen({
                                             <span className="text-sm text-neutral-500">$</span>
                                             <input
                                               type="text"
-                                              inputMode="numeric"
+                                              inputMode="decimal"
                                               value={ftOvertimePremiumRate ?? ""}
                                               onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === "") {
                                                   setFtOvertimePremiumRate(null as any);
                                                 } else {
-                                                  const num = parseInt(val);
+                                                  const num = parseFloat(val);
                                                   if (!isNaN(num)) setFtOvertimePremiumRate(num);
                                                 }
                                               }}
                                               onBlur={(e) => {
-                                                if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                                if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                                   setFtOvertimePremiumRate(145);
                                                 }
                                               }}
@@ -3563,19 +3563,19 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={wrvuSensitivity ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setWrvuSensitivity(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setWrvuSensitivity(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setWrvuSensitivity(POSTURE_PRESETS.typical.wrvu);
                                           }
                                         }}
@@ -3596,19 +3596,19 @@ export default function ObjectiveSelectionScreen({
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={ftWrvuRevenuePerUnit ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setFtWrvuRevenuePerUnit(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setFtWrvuRevenuePerUnit(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setFtWrvuRevenuePerUnit(50);
                                           }
                                         }}
@@ -3644,19 +3644,19 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={ftHccMedicareAdvantage ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setFtHccMedicareAdvantage(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setFtHccMedicareAdvantage(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setFtHccMedicareAdvantage(15);
                                           }
                                         }}
@@ -3672,19 +3672,19 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={ftHccRecaptureRate ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setFtHccRecaptureRate(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setFtHccRecaptureRate(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setFtHccRecaptureRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate);
                                           }
                                         }}
@@ -3705,19 +3705,19 @@ export default function ObjectiveSelectionScreen({
                                       <span className="text-sm text-neutral-500">$</span>
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={ftHccBenchmarkPmpm ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setFtHccBenchmarkPmpm(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setFtHccBenchmarkPmpm(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setFtHccBenchmarkPmpm(1000);
                                           }
                                         }}
@@ -3786,19 +3786,19 @@ export default function ObjectiveSelectionScreen({
                                     <div className="flex items-center gap-2 mt-1">
                                       <input
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         value={ftDenialPreventionRate ?? ""}
                                         onChange={(e) => {
                                           const val = e.target.value;
                                           if (val === "") {
                                             setFtDenialPreventionRate(null as any);
                                           } else {
-                                            const num = parseInt(val);
+                                            const num = parseFloat(val);
                                             if (!isNaN(num)) setFtDenialPreventionRate(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseInt(e.target.value))) {
+                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
                                             setFtDenialPreventionRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate);
                                           }
                                         }}
