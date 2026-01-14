@@ -68,6 +68,7 @@ import {
   BarChart3,
   Stethoscope,
   AlertCircle,
+  AlertTriangle,
   ChevronUp,
   Zap,
   HeartPulse,
@@ -307,9 +308,22 @@ export default function RoiCalculator({
   const [competitorProviderCount, setCompetitorProviderCount] = useState<number | "">(100);
   const [competitorUtilization, setCompetitorUtilization] = useState<number>(50);
   const [competitorTimeSaved, setCompetitorTimeSaved] = useState<number>(1.5);
-  // Competitor driver values (user's current results with competitor)
-  const [competitorDriverValues, setCompetitorDriverValues] = useState<Record<string, number>>({});
+  // Competitor scenario name
   const [competitorScenarioName, setCompetitorScenarioName] = useState("");
+  // Competitor value drivers state
+  const [competitorDrivers, setCompetitorDrivers] = useState<{
+    patientAccess: { enabled: boolean; value: number; metric: "visits" | "direct" };
+    accurateService: { enabled: boolean; wrvuUplift: number; wrvuRate: number };
+    clinicianRetention: { enabled: boolean; departuresPrevented: number; replacementCost: number };
+    overtimeSavings: { enabled: boolean; hoursReduced: number; premiumRate: number };
+    denialReduction: { enabled: boolean; denialsPrevented: number; avgDenialValue: number };
+  }>({
+    patientAccess: { enabled: false, value: 0, metric: "visits" },
+    accurateService: { enabled: false, wrvuUplift: 0, wrvuRate: 40 },
+    clinicianRetention: { enabled: false, departuresPrevented: 0, replacementCost: 250000 },
+    overtimeSavings: { enabled: false, hoursReduced: 0, premiumRate: 145 },
+    denialReduction: { enabled: false, denialsPrevented: 0, avgDenialValue: 500 },
+  });
 
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {
@@ -5086,6 +5100,60 @@ export default function RoiCalculator({
                               </div>
                             </div>
                             
+                            {/* Value Metrics Section */}
+                            <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
+                              <h4 className="text-[14px] font-bold text-[#111827] mb-2">Value Metrics</h4>
+                              <p className="text-[13px] text-[#6B7280] mb-4">Help us understand the value you're currently getting</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-[14px] text-[#6B7280] mb-2">wRVU Uplift per Provider (annual)</label>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[14px] text-[#6B7280]">+</span>
+                                    <input
+                                      type="number"
+                                      value={competitorDrivers.accurateService.wrvuUplift || ""}
+                                      onChange={(e) => setCompetitorDrivers(prev => ({
+                                        ...prev,
+                                        accurateService: { ...prev.accurateService, enabled: true, wrvuUplift: parseFloat(e.target.value) || 0 }
+                                      }))}
+                                      placeholder="e.g., 125"
+                                      className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                      data-testid="input-competitor-wrvu-uplift"
+                                    />
+                                    <span className="text-[14px] text-[#6B7280] whitespace-nowrap">wRVUs</span>
+                                  </div>
+                                  <p className="text-[12px] text-[#9CA3AF] mt-1">Typical range: 50-200 wRVUs/provider/year</p>
+                                </div>
+                                <div>
+                                  <label className="block text-[14px] text-[#6B7280] mb-2">Your wRVU Rate ($)</label>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[14px] text-[#6B7280]">$</span>
+                                    <input
+                                      type="number"
+                                      value={competitorDrivers.accurateService.wrvuRate || ""}
+                                      onChange={(e) => setCompetitorDrivers(prev => ({
+                                        ...prev,
+                                        accurateService: { ...prev.accurateService, enabled: true, wrvuRate: parseFloat(e.target.value) || 0 }
+                                      }))}
+                                      placeholder="e.g., 40"
+                                      className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                      data-testid="input-competitor-wrvu-rate"
+                                    />
+                                    <span className="text-[14px] text-[#6B7280] whitespace-nowrap">/wRVU</span>
+                                  </div>
+                                  <p className="text-[12px] text-[#9CA3AF] mt-1">Typical range: $35-$65/wRVU</p>
+                                </div>
+                              </div>
+                              {competitorDrivers.accurateService.wrvuUplift > 0 && competitorDrivers.accurateService.wrvuRate > 0 && (
+                                <div className="mt-3 p-3 bg-[#F9FAFB] rounded-lg flex items-center justify-between">
+                                  <span className="text-[13px] text-[#6B7280]">Annual wRVU Value:</span>
+                                  <span className="text-[16px] font-bold text-[#111827] font-mono">
+                                    {formatCurrency(competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1))}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
                             {/* Competitor cost calculation preview */}
                             <div className="mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
                               <div className="grid grid-cols-2 gap-4">
@@ -5175,9 +5243,42 @@ export default function RoiCalculator({
                           </div>
                           <div className="pt-4 border-t border-[#E5E7EB]">
                             <div className="text-[13px] text-[#6B7280]">Estimated Annual Benefit</div>
-                            <div className="text-[18px] font-bold text-[#9CA3AF] font-mono">
-                              {selectedCompetitor.type === "human" ? "Manual process" : "User-reported"}
-                            </div>
+                            {(() => {
+                              const competitorTotalValue = 
+                                (competitorDrivers.patientAccess.enabled 
+                                  ? (competitorDrivers.patientAccess.metric === "direct" 
+                                    ? competitorDrivers.patientAccess.value 
+                                    : competitorDrivers.patientAccess.value * 200)
+                                  : 0) +
+                                (competitorDrivers.accurateService.enabled 
+                                  ? competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1)
+                                  : 0) +
+                                (competitorDrivers.clinicianRetention.enabled 
+                                  ? competitorDrivers.clinicianRetention.departuresPrevented * competitorDrivers.clinicianRetention.replacementCost
+                                  : 0) +
+                                (competitorDrivers.overtimeSavings.enabled 
+                                  ? competitorDrivers.overtimeSavings.hoursReduced * competitorDrivers.overtimeSavings.premiumRate
+                                  : 0) +
+                                (competitorDrivers.denialReduction.enabled 
+                                  ? competitorDrivers.denialReduction.denialsPrevented * competitorDrivers.denialReduction.avgDenialValue
+                                  : 0);
+                              
+                              if (competitorTotalValue > 0) {
+                                return (
+                                  <div className="text-[18px] font-bold text-[#111827] font-mono">
+                                    {formatCurrency(competitorTotalValue)}
+                                  </div>
+                                );
+                              }
+                              return (
+                                <>
+                                  <div className="text-[18px] font-bold text-[#9CA3AF] font-mono">
+                                    {selectedCompetitor.type === "human" ? "Not tracked" : "Enter below"}
+                                  </div>
+                                  <p className="text-[11px] text-[#9CA3AF]">Enable value drivers to compare</p>
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -5258,6 +5359,30 @@ export default function RoiCalculator({
                               ? competitorCost * (scribeReductionPercent / 100)
                               : 0;
                             
+                            // Calculate competitor's total value from value drivers
+                            const competitorTotalValue = 
+                              (competitorDrivers.patientAccess.enabled 
+                                ? (competitorDrivers.patientAccess.metric === "direct" 
+                                  ? competitorDrivers.patientAccess.value 
+                                  : competitorDrivers.patientAccess.value * 200)
+                                : 0) +
+                              (competitorDrivers.accurateService.enabled 
+                                ? competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1)
+                                : 0) +
+                              (competitorDrivers.clinicianRetention.enabled 
+                                ? competitorDrivers.clinicianRetention.departuresPrevented * competitorDrivers.clinicianRetention.replacementCost
+                                : 0) +
+                              (competitorDrivers.overtimeSavings.enabled 
+                                ? competitorDrivers.overtimeSavings.hoursReduced * competitorDrivers.overtimeSavings.premiumRate
+                                : 0) +
+                              (competitorDrivers.denialReduction.enabled 
+                                ? competitorDrivers.denialReduction.denialsPrevented * competitorDrivers.denialReduction.avgDenialValue
+                                : 0);
+                            
+                            // Net value improvement = Abridge value - competitor value + cost savings
+                            const valueImprovement = results.totalAnnualBenefit - competitorTotalValue;
+                            const totalImprovement = valueImprovement + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0);
+                            
                             return (
                               <>
                                 <div>
@@ -5280,11 +5405,22 @@ export default function RoiCalculator({
                                     + {formatCurrency(results.totalAnnualBenefit)}
                                   </div>
                                 </div>
-                                <div className="pt-4 border-t border-[#E5E7EB]">
-                                  <div className="text-[13px] text-[#6B7280]">Total Annual Improvement</div>
-                                  <div className="text-[24px] font-bold text-[#059669] font-mono">
-                                    {formatCurrency(results.totalAnnualBenefit + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0))}
+                                {competitorTotalValue > 0 && (
+                                  <div>
+                                    <div className="text-[13px] text-[#6B7280]">Less: Current {selectedCompetitor.name} Value</div>
+                                    <div className="text-[18px] font-bold text-[#DC2626] font-mono">
+                                      - {formatCurrency(competitorTotalValue)}
+                                    </div>
                                   </div>
+                                )}
+                                <div className="pt-4 border-t border-[#E5E7EB]">
+                                  <div className="text-[13px] text-[#6B7280]">Net Annual Improvement</div>
+                                  <div className={`text-[24px] font-bold font-mono ${totalImprovement >= 0 ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                    {totalImprovement >= 0 ? "" : "-"}{formatCurrency(Math.abs(totalImprovement))}
+                                  </div>
+                                  {competitorTotalValue > 0 && (
+                                    <p className="text-[11px] text-[#9CA3AF] mt-1">After accounting for {selectedCompetitor.name}'s current value</p>
+                                  )}
                                 </div>
                               </>
                             );
@@ -5293,16 +5429,419 @@ export default function RoiCalculator({
                       </div>
                     </div>
                     
-                    {/* Value Drivers Breakdown */}
+                    {/* Value Drivers Comparison */}
                     <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                      <h4 className="text-[16px] font-bold text-[#111827] mb-4">Abridge Value Drivers</h4>
-                      <div className="space-y-3">
-                        {results.levers.filter(l => l.enabled).map((lever) => (
-                          <div key={lever.id} className="flex items-center justify-between py-2 border-b border-[#F3F4F6] last:border-0">
-                            <span className="text-[14px] text-[#6B7280]">{lever.label}</span>
-                            <span className="text-[16px] font-bold text-[#111827] font-mono">{formatCurrency(lever.value)}</span>
+                      <h4 className="text-[16px] font-bold text-[#111827] mb-2">Value Drivers Comparison</h4>
+                      <p className="text-[13px] text-[#6B7280] mb-6">Enter the value you're getting from {selectedCompetitor.name} to compare</p>
+                      
+                      {/* Value Driver Cards */}
+                      <div className="space-y-4">
+                        {/* Patient Access */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <Checkbox
+                                checked={competitorDrivers.patientAccess.enabled}
+                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
+                                  ...prev,
+                                  patientAccess: { ...prev.patientAccess, enabled: !!checked }
+                                }))}
+                              />
+                              <div>
+                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-[#6B7280]" />
+                                  Patient Access
+                                </div>
+                                <p className="text-[12px] text-[#6B7280]">Time returned → visit capacity</p>
+                              </div>
+                            </label>
+                            <div className="text-right">
+                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
+                              <div className="text-[16px] font-bold text-[#111827] font-mono">
+                                {formatCurrency(competitorDrivers.patientAccess.enabled 
+                                  ? (competitorDrivers.patientAccess.metric === "direct" 
+                                    ? competitorDrivers.patientAccess.value 
+                                    : competitorDrivers.patientAccess.value * 200)
+                                  : 0)}
+                              </div>
+                            </div>
                           </div>
-                        ))}
+                          {competitorDrivers.patientAccess.enabled && (
+                            <div className="p-4 border-t border-[#E5E7EB]">
+                              <div className="flex gap-2 mb-3">
+                                <Button
+                                  size="sm"
+                                  variant={competitorDrivers.patientAccess.metric === "visits" ? "default" : "outline"}
+                                  onClick={() => setCompetitorDrivers(prev => ({
+                                    ...prev,
+                                    patientAccess: { ...prev.patientAccess, metric: "visits" }
+                                  }))}
+                                  className={competitorDrivers.patientAccess.metric === "visits" ? "bg-[#E8532F] hover:bg-[#D14729]" : ""}
+                                >
+                                  Calculate from visits
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={competitorDrivers.patientAccess.metric === "direct" ? "default" : "outline"}
+                                  onClick={() => setCompetitorDrivers(prev => ({
+                                    ...prev,
+                                    patientAccess: { ...prev.patientAccess, metric: "direct" }
+                                  }))}
+                                  className={competitorDrivers.patientAccess.metric === "direct" ? "bg-[#E8532F] hover:bg-[#D14729]" : ""}
+                                >
+                                  Enter direct value
+                                </Button>
+                              </div>
+                              {competitorDrivers.patientAccess.metric === "visits" ? (
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Additional visits per year</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.patientAccess.value || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      patientAccess: { ...prev.patientAccess, value: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 650"
+                                    className="w-full max-w-xs h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                  <p className="text-[12px] text-[#9CA3AF] mt-1">{competitorDrivers.patientAccess.value} visits x $200/visit</p>
+                                </div>
+                              ) : (
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Annual value ($)</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.patientAccess.value || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      patientAccess: { ...prev.patientAccess, value: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 130000"
+                                    className="w-full max-w-xs h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                              )}
+                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
+                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
+                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.patientAccess || 130000)}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Accurate Level of Service (wRVU) */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <Checkbox
+                                checked={competitorDrivers.accurateService.enabled}
+                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
+                                  ...prev,
+                                  accurateService: { ...prev.accurateService, enabled: !!checked }
+                                }))}
+                              />
+                              <div>
+                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
+                                  <TrendingUp className="h-4 w-4 text-[#6B7280]" />
+                                  Accurate Level of Service
+                                </div>
+                                <p className="text-[12px] text-[#6B7280]">wRVU capture from better documentation</p>
+                              </div>
+                            </label>
+                            <div className="text-right">
+                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
+                              <div className="text-[16px] font-bold text-[#111827] font-mono">
+                                {formatCurrency(competitorDrivers.accurateService.enabled 
+                                  ? competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1)
+                                  : 0)}
+                              </div>
+                            </div>
+                          </div>
+                          {competitorDrivers.accurateService.enabled && (
+                            <div className="p-4 border-t border-[#E5E7EB]">
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">wRVU uplift/provider/year</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.accurateService.wrvuUplift || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      accurateService: { ...prev.accurateService, wrvuUplift: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 125"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">wRVU rate ($/wRVU)</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.accurateService.wrvuRate || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      accurateService: { ...prev.accurateService, wrvuRate: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 40"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                              <p className="text-[12px] text-[#9CA3AF] mt-2">
+                                {competitorDrivers.accurateService.wrvuUplift} wRVUs x ${competitorDrivers.accurateService.wrvuRate}/wRVU x {typeof competitorProviderCount === "number" ? competitorProviderCount : 1} providers
+                              </p>
+                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
+                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
+                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.wrvu || 136500)}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Clinician Retention */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <Checkbox
+                                checked={competitorDrivers.clinicianRetention.enabled}
+                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
+                                  ...prev,
+                                  clinicianRetention: { ...prev.clinicianRetention, enabled: !!checked }
+                                }))}
+                              />
+                              <div>
+                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
+                                  <Heart className="h-4 w-4 text-[#6B7280]" />
+                                  Clinician Retention
+                                </div>
+                                <p className="text-[12px] text-[#6B7280]">Reduced turnover from lower admin burden</p>
+                              </div>
+                            </label>
+                            <div className="text-right">
+                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
+                              <div className="text-[16px] font-bold text-[#111827] font-mono">
+                                {formatCurrency(competitorDrivers.clinicianRetention.enabled 
+                                  ? competitorDrivers.clinicianRetention.departuresPrevented * competitorDrivers.clinicianRetention.replacementCost
+                                  : 0)}
+                              </div>
+                            </div>
+                          </div>
+                          {competitorDrivers.clinicianRetention.enabled && (
+                            <div className="p-4 border-t border-[#E5E7EB]">
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Departures prevented/year</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={competitorDrivers.clinicianRetention.departuresPrevented || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      clinicianRetention: { ...prev.clinicianRetention, departuresPrevented: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 0.24"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Replacement cost ($)</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.clinicianRetention.replacementCost || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      clinicianRetention: { ...prev.clinicianRetention, replacementCost: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 250000"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                              <p className="text-[12px] text-[#9CA3AF] mt-2">
+                                {competitorDrivers.clinicianRetention.departuresPrevented} departures x {formatCurrency(competitorDrivers.clinicianRetention.replacementCost)}
+                              </p>
+                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
+                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
+                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.workforce || 60000)}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Overtime Savings */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <Checkbox
+                                checked={competitorDrivers.overtimeSavings.enabled}
+                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
+                                  ...prev,
+                                  overtimeSavings: { ...prev.overtimeSavings, enabled: !!checked }
+                                }))}
+                              />
+                              <div>
+                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-[#6B7280]" />
+                                  Overtime & Locum Savings
+                                </div>
+                                <p className="text-[12px] text-[#6B7280]">Reduced premium labor hours</p>
+                              </div>
+                            </label>
+                            <div className="text-right">
+                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
+                              <div className="text-[16px] font-bold text-[#111827] font-mono">
+                                {formatCurrency(competitorDrivers.overtimeSavings.enabled 
+                                  ? competitorDrivers.overtimeSavings.hoursReduced * competitorDrivers.overtimeSavings.premiumRate
+                                  : 0)}
+                              </div>
+                            </div>
+                          </div>
+                          {competitorDrivers.overtimeSavings.enabled && (
+                            <div className="p-4 border-t border-[#E5E7EB]">
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Premium hours reduced/year</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.overtimeSavings.hoursReduced || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      overtimeSavings: { ...prev.overtimeSavings, hoursReduced: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 65"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Premium rate ($/hour)</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.overtimeSavings.premiumRate || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      overtimeSavings: { ...prev.overtimeSavings, premiumRate: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 145"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                              <p className="text-[12px] text-[#9CA3AF] mt-2">
+                                {competitorDrivers.overtimeSavings.hoursReduced} hours x ${competitorDrivers.overtimeSavings.premiumRate}/hour
+                              </p>
+                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
+                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
+                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.overtime || 9425)}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Denial Reduction */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <Checkbox
+                                checked={competitorDrivers.denialReduction.enabled}
+                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
+                                  ...prev,
+                                  denialReduction: { ...prev.denialReduction, enabled: !!checked }
+                                }))}
+                              />
+                              <div>
+                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
+                                  <AlertTriangle className="h-4 w-4 text-[#6B7280]" />
+                                  Documentation Related Denials
+                                </div>
+                                <p className="text-[12px] text-[#6B7280]">Reduced denials from better documentation</p>
+                              </div>
+                            </label>
+                            <div className="text-right">
+                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
+                              <div className="text-[16px] font-bold text-[#111827] font-mono">
+                                {formatCurrency(competitorDrivers.denialReduction.enabled 
+                                  ? competitorDrivers.denialReduction.denialsPrevented * competitorDrivers.denialReduction.avgDenialValue
+                                  : 0)}
+                              </div>
+                            </div>
+                          </div>
+                          {competitorDrivers.denialReduction.enabled && (
+                            <div className="p-4 border-t border-[#E5E7EB]">
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Denials prevented/year</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.denialReduction.denialsPrevented || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      denialReduction: { ...prev.denialReduction, denialsPrevented: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 117"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Average denial value ($)</label>
+                                  <input
+                                    type="number"
+                                    value={competitorDrivers.denialReduction.avgDenialValue || ""}
+                                    onChange={(e) => setCompetitorDrivers(prev => ({
+                                      ...prev,
+                                      denialReduction: { ...prev.denialReduction, avgDenialValue: parseFloat(e.target.value) || 0 }
+                                    }))}
+                                    placeholder="e.g., 500"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                              <p className="text-[12px] text-[#9CA3AF] mt-2">
+                                {competitorDrivers.denialReduction.denialsPrevented} denials x {formatCurrency(competitorDrivers.denialReduction.avgDenialValue)}
+                              </p>
+                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
+                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
+                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.denials || 58500)}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Totals Comparison */}
+                      <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="p-4 bg-[#F9FAFB] rounded-lg">
+                            <div className="text-[13px] text-[#6B7280] mb-1">{selectedCompetitor.name} Total Value</div>
+                            <div className="text-[24px] font-bold text-[#111827] font-mono">
+                              {formatCurrency(
+                                (competitorDrivers.patientAccess.enabled 
+                                  ? (competitorDrivers.patientAccess.metric === "direct" 
+                                    ? competitorDrivers.patientAccess.value 
+                                    : competitorDrivers.patientAccess.value * 200)
+                                  : 0) +
+                                (competitorDrivers.accurateService.enabled 
+                                  ? competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1)
+                                  : 0) +
+                                (competitorDrivers.clinicianRetention.enabled 
+                                  ? competitorDrivers.clinicianRetention.departuresPrevented * competitorDrivers.clinicianRetention.replacementCost
+                                  : 0) +
+                                (competitorDrivers.overtimeSavings.enabled 
+                                  ? competitorDrivers.overtimeSavings.hoursReduced * competitorDrivers.overtimeSavings.premiumRate
+                                  : 0) +
+                                (competitorDrivers.denialReduction.enabled 
+                                  ? competitorDrivers.denialReduction.denialsPrevented * competitorDrivers.denialReduction.avgDenialValue
+                                  : 0)
+                              )}
+                            </div>
+                          </div>
+                          <div className="p-4 bg-[#059669]/10 rounded-lg">
+                            <div className="text-[13px] text-[#059669] mb-1">Abridge Total Value</div>
+                            <div className="text-[24px] font-bold text-[#059669] font-mono">
+                              {formatCurrency(results.totalAnnualBenefit)}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     
@@ -5578,7 +6117,13 @@ export default function RoiCalculator({
                     setSelectedCompetitor(null);
                     setCompetitorStep(1);
                     setCompetitorScenarioName("");
-                    setCompetitorDriverValues({});
+                    setCompetitorDrivers({
+                      patientAccess: { enabled: false, value: 0, metric: "visits" },
+                      accurateService: { enabled: false, wrvuUplift: 0, wrvuRate: 40 },
+                      clinicianRetention: { enabled: false, departuresPrevented: 0, replacementCost: 250000 },
+                      overtimeSavings: { enabled: false, hoursReduced: 0, premiumRate: 145 },
+                      denialReduction: { enabled: false, denialsPrevented: 0, avgDenialValue: 500 },
+                    });
                     setCompetitorProviderCount(inputs.numberOfProviders);
                     setShowCompetitorComparison(true);
                   }}
