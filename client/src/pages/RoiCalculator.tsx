@@ -1108,7 +1108,7 @@ export default function RoiCalculator({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 {/* Net Annual Gain */}
                 <div className="text-center md:text-left">
-                  <div className="text-4xl md:text-5xl font-bold text-[#F03319] font-mono tracking-tight" data-testid="metric-net-gain">
+                  <div className="text-4xl md:text-5xl font-bold text-[#0E9F6E] font-mono tracking-tight" data-testid="metric-net-gain">
                     {formatCurrency(netAnnualGain)}
                   </div>
                   <div className="text-sm text-neutral-500 mt-2">
