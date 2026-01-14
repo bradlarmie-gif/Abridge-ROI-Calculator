@@ -4093,13 +4093,6 @@ export default function ObjectiveSelectionScreen({
                                 </table>
                               </div>
                               
-                              <div className="mt-4 p-4 bg-neutral-50 rounded-xl" data-testid="roi-summary">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-neutral-600">Cumulative ROI:</span>
-                                  <span className="text-lg font-bold font-mono text-neutral-900">{cumulativeRoi.toFixed(1)}x</span>
-                                </div>
-                              </div>
-                              
                               <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100" data-testid="time-to-value">
                                 <h4 className="text-sm font-semibold text-neutral-800 mb-3">Time to value</h4>
                                 <p className="text-sm text-neutral-600 mb-2">Impact timeline varies by driver:</p>
