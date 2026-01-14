@@ -304,7 +304,7 @@ export default function RoiCalculator({
   const [scribeReductionPercent, setScribeReductionPercent] = useState<number>(75);
   // Ambient competitor inputs
   const [competitorCostPerProvider, setCompetitorCostPerProvider] = useState<number>(150);
-  const [competitorProviderCount, setCompetitorProviderCount] = useState<number | "">(inputs.providers);
+  const [competitorProviderCount, setCompetitorProviderCount] = useState<number | "">(100);
   const [competitorUtilization, setCompetitorUtilization] = useState<number>(50);
   const [competitorTimeSaved, setCompetitorTimeSaved] = useState<number>(1.5);
   // Competitor driver values (user's current results with competitor)
@@ -5194,13 +5194,13 @@ export default function RoiCalculator({
                           <div>
                             <div className="text-[13px] text-[#6B7280]">Annual Investment</div>
                             <div className="text-[18px] font-bold text-[#111827] font-mono">
-                              {formatCurrency(results.totalInvestment)}
+                              {formatCurrency(results.annualAbridgeCost)}
                             </div>
                             {(() => {
                               const competitorCost = selectedCompetitor.type === "human"
                                 ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
                                 : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
-                              const diff = competitorCost - results.totalInvestment;
+                              const diff = competitorCost - results.annualAbridgeCost;
                               if (diff > 0) {
                                 return (
                                   <span className="inline-flex items-center gap-1 text-[12px] text-[#059669] bg-[#059669]/10 px-2 py-0.5 rounded">
@@ -5221,14 +5221,14 @@ export default function RoiCalculator({
                           <div>
                             <div className="text-[13px] text-[#6B7280]">Utilization Rate</div>
                             <div className="text-[18px] font-bold text-[#111827] font-mono">
-                              {inputs.utilizationPercent}%
+                              {inputs.abridgeUtilizationPct}%
                             </div>
                             <span className="text-[12px] text-[#6B7280]">Mature: 75-90%</span>
                           </div>
                           <div className="pt-4 border-t border-[#E5E7EB]">
                             <div className="text-[13px] text-[#6B7280]">Total Annual Benefit</div>
                             <div className="text-[24px] font-bold text-[#059669] font-mono">
-                              {formatCurrency(results.totalBenefits)}
+                              {formatCurrency(results.totalAnnualBenefit)}
                             </div>
                           </div>
                           <div>
@@ -5253,7 +5253,7 @@ export default function RoiCalculator({
                             const competitorCost = selectedCompetitor.type === "human"
                               ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
                               : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
-                            const costDiff = competitorCost - results.totalInvestment;
+                            const costDiff = competitorCost - results.annualAbridgeCost;
                             const scribeSavings = selectedCompetitor.type === "human"
                               ? competitorCost * (scribeReductionPercent / 100)
                               : 0;
@@ -5277,13 +5277,13 @@ export default function RoiCalculator({
                                 <div>
                                   <div className="text-[13px] text-[#6B7280]">Abridge Value Creation</div>
                                   <div className="text-[18px] font-bold text-[#059669] font-mono">
-                                    + {formatCurrency(results.totalBenefits)}
+                                    + {formatCurrency(results.totalAnnualBenefit)}
                                   </div>
                                 </div>
                                 <div className="pt-4 border-t border-[#E5E7EB]">
                                   <div className="text-[13px] text-[#6B7280]">Total Annual Improvement</div>
                                   <div className="text-[24px] font-bold text-[#059669] font-mono">
-                                    {formatCurrency(results.totalBenefits + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0))}
+                                    {formatCurrency(results.totalAnnualBenefit + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0))}
                                   </div>
                                 </div>
                               </>
@@ -5340,21 +5340,27 @@ export default function RoiCalculator({
                             const scribeSavings = selectedCompetitor.type === "human"
                               ? competitorCost * (scribeReductionPercent / 100)
                               : 0;
-                            const costDiff = competitorCost - results.totalInvestment;
-                            const totalImprovement = results.totalBenefits + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0);
+                            const costDiff = competitorCost - results.annualAbridgeCost;
+                            const totalImprovement = results.totalAnnualBenefit + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0);
                             
                             const newScenario: Scenario = {
                               id: `competitor-${Date.now()}`,
                               name: competitorScenarioName || `Switch from ${selectedCompetitor.name}`,
                               type: "expand",
+                              createdAt: new Date(),
                               providers: inputs.numberOfProviders,
                               encounters: inputs.annualOutpatientEncounters,
-                              utilizationPct: inputs.utilizationPercent,
-                              investment: results.totalInvestment,
-                              totalBenefit: results.totalBenefits,
-                              netGain: results.netAnnualGain,
-                              roi: results.roiMultiple,
-                              notes: `Switching from ${selectedCompetitor.name}. Prior annual cost: ${formatCurrency(competitorCost)}. Total improvement: ${formatCurrency(totalImprovement)}.`,
+                              utilizationRate: inputs.abridgeUtilizationPct,
+                              maPopulationPct: inputs.hcc.pctMedicareAdvantage,
+                              newPatientPct: 20,
+                              specialtyPct: 100,
+                              revenuePerVisitOverride: null,
+                              visitLengthOverride: null,
+                              investment: results.annualAbridgeCost,
+                              totalBenefit: results.totalAnnualBenefit,
+                              netGain: results.netValueCreated,
+                              roiMultiple: results.roiMultiple,
+                              driverValues: Object.fromEntries(results.levers.map(l => [l.id, l.value])) as Record<LeverId, number>,
                             };
                             setScenarios([...scenarios, newScenario]);
                             setShowCompetitorComparison(false);
@@ -5573,7 +5579,7 @@ export default function RoiCalculator({
                     setCompetitorStep(1);
                     setCompetitorScenarioName("");
                     setCompetitorDriverValues({});
-                    setCompetitorProviderCount(inputs.providers);
+                    setCompetitorProviderCount(inputs.numberOfProviders);
                     setShowCompetitorComparison(true);
                   }}
                   className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
