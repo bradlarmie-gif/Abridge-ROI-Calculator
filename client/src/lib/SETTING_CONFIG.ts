@@ -67,32 +67,32 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "Patient Throughput (LWBS Reduction)",
       category: "time",
       description:
-        "Reduce Left Without Being Seen (LWBS) rates and missed admissions by completing documentation faster during shift.",
-      driverSummary: "additional patients treated, LWBS reduction, recovered visits/admissions.",
+        "See more patients by completing documentation faster during shifts.",
+      driverSummary: "Additional patients per day",
     },
     {
       id: "edRetention",
       label: "Workforce Retention",
       category: "time",
       description:
-        "Lower ED clinician burnout and turnover by reducing after-shift documentation burden.",
-      driverSummary: "ED clinician departures avoided, schedule stability.",
+        "Reduce clinician burnout by eliminating after-shift documentation.",
+      driverSummary: "Staff departures avoided",
     },
     {
       id: "edLevelOfService",
-      label: "wRVU & Level-of-Service Alignment",
+      label: "Level-of-Service Accuracy",
       category: "documentation",
       description:
-        "Improve E/M accuracy and documentation completeness for better wRVU capture in time-pressured ED environment.",
-      driverSummary: "wRVU capture improvement, acuity-aligned coding.",
+        "Capture accurate visit levels with complete documentation in real-time.",
+      driverSummary: "wRVU capture improvement",
     },
     {
       id: "edDenialReduction",
       label: "Documentation-Related Denials",
       category: "documentation",
       description:
-        "Reduce denials caused by incomplete or unclear ED documentation under time pressure.",
-      driverSummary: "documentation-related denials prevented, higher net collections.",
+        "Prevent denials with complete, clear documentation captured during visits.",
+      driverSummary: "Denials prevented",
     },
   ],
   nursing: [

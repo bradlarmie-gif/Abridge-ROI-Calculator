@@ -126,7 +126,7 @@ const LEVER_KEY_METRICS: Record<string, string> = {
   edThroughput: "Additional patients per day",
   edStaffingEfficiency: "Staff hours saved",
   edRetention: "Staff departures avoided",
-  edLevelOfService: "Level accuracy improvement",
+  edLevelOfService: "wRVU capture improvement",
   edDocCompliance: "Documentation compliance rate",
   rnDocTime: "Documentation time saved",
   rnCommunication: "Handoff efficiency improvement",
@@ -481,7 +481,7 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
   },
   edLevelOfService: {
     id: "edLevelOfService",
-    label: "wRVU & Level-of-Service Alignment",
+    label: "Level-of-Service Accuracy",
     icon: BarChart3,
     theory: "Time pressure in the ED often results in under-documentation and lost wRVUs. Real-time ambient documentation captures clinical complexity without adding post-shift burden, improving E/M level accuracy and wRVU capture despite the fast-paced environment.",
     calculationSteps: [
@@ -2166,7 +2166,7 @@ export default function ObjectiveSelectionScreen({
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium text-[#1E40AF]">Most organizations select 3-4 drivers.</span>
+                    <span className="text-sm font-medium text-[#1E40AF]">Most organizations select 2-3 drivers.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
