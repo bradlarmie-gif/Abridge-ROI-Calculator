@@ -4,7 +4,15 @@ export type LeverId =
   | "workforce"
   | "wrvu"
   | "denials"
-  | "hcc";
+  | "hcc"
+  | "edThroughput"
+  | "edLevelOfService"
+  | "edDenialReduction"
+  | "edRetention"
+  | "rnDocTime"
+  | "rnCommunication"
+  | "rnSafetyReduction"
+  | "rnDiagnosisSeverity";
 
 export type LeverCategory = "time" | "documentation";
 
@@ -69,6 +77,32 @@ export interface RoiInputs {
     rafRealizationHaircut: number;
     pmpmBenchmark: number;
   };
+  ed?: EdInputs;
+}
+
+export interface EdInputs {
+  totalClinicians: number;
+  shiftsPerClinicianPerYear: number;
+  baselineDocMinutesPerShift: number;
+  minutesSavedPerShift: number;
+  totalEdEncounters: number;
+  baselineLwbsRate: number;
+  lwbsImprovementPct: number;
+  pctRecoveredTreatedAndReleased: number;
+  pctRecoveredAdmitted: number;
+  contributionMarginPerEncounter: number;
+  contributionMarginPerAdmission: number;
+  baselineWrvuPerVisit: number;
+  wrvuConversionFactor: number;
+  wrvuImprovementPct: number;
+  netCollectibleRevenue: number;
+  baselineDenialRate: number;
+  pctDenialsFromDocumentation: number;
+  pctDocDenialsRecovered: number;
+  baselineAttritionRate: number;
+  pctTurnoverFromBurnout: number;
+  pctBurnoutReduction: number;
+  costPerDeparture: number;
 }
 
 export interface RoiResults {
@@ -102,6 +136,14 @@ export const defaultInputs: RoiInputs = {
     wrvu: true,
     denials: true,
     hcc: true,
+    edThroughput: false,
+    edLevelOfService: false,
+    edDenialReduction: false,
+    edRetention: false,
+    rnDocTime: false,
+    rnCommunication: false,
+    rnSafetyReduction: false,
+    rnDiagnosisSeverity: false,
   },
   patientAccess: {
     pctTimeToNewVisits: 10,
@@ -154,6 +196,14 @@ export const leverDescriptions: Record<LeverId, string> = {
   denials:
     "Many denials originate from thin documentation rather than clinical disagreement. Strengthening the narrative closes those gaps and reduces avoidable reimbursement friction.",
   hcc: "Care teams often know patients' chronic conditions, but documentation doesn't always carry those details forward. Capturing the full clinical picture leads to more accurate risk modeling and resource planning.",
+  edThroughput: "Reduce LWBS rate and treat more patients by completing documentation faster during shift.",
+  edLevelOfService: "Capture accurate E/M levels and wRVUs despite time-pressured environment.",
+  edDenialReduction: "Prevent denials from incomplete ED documentation.",
+  edRetention: "Reduce ED clinician burnout and turnover.",
+  rnDocTime: "Reduce time spent documenting during and after shifts.",
+  rnCommunication: "Reduce repetitive manual documentation across handoffs and care coordination.",
+  rnSafetyReduction: "Improve documentation timeliness to surface clinical changes and reduce safety events.",
+  rnDiagnosisSeverity: "Ensure nursing assessments capture clinical severity that supports CC/MCC documentation.",
 };
 
 export const leverLabels: Record<LeverId, string> = {
@@ -163,4 +213,12 @@ export const leverLabels: Record<LeverId, string> = {
   wrvu: "Accurate Level of Service",
   denials: "Documentation Related Denials",
   hcc: "HCC & Chronic Condition Capture",
+  edThroughput: "Patient Throughput (LWBS Reduction)",
+  edLevelOfService: "wRVU & Level-of-Service Alignment",
+  edDenialReduction: "Documentation-Related Denials",
+  edRetention: "Workforce Retention",
+  rnDocTime: "Documentation Time Reduction",
+  rnCommunication: "Communication Efficiency",
+  rnSafetyReduction: "Risk & Safety Event Reduction",
+  rnDiagnosisSeverity: "Diagnosis Severity (CC/MCC Support)",
 };

@@ -69,6 +69,8 @@ import {
   Stethoscope,
   AlertCircle,
   ChevronUp,
+  Zap,
+  HeartPulse,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -106,31 +108,43 @@ interface Scenario {
 }
 
 // Driver icons mapping
-const DRIVER_ICONS: Record<LeverId, typeof Clock> = {
+const DRIVER_ICONS: Partial<Record<LeverId, typeof Clock>> = {
   patientAccess: Clock,
   wrvu: DollarSign,
   workforce: UserMinus,
   hcc: Heart,
   denials: FileX,
   overtime: Calendar,
+  edThroughput: Zap,
+  edLevelOfService: BarChart3,
+  edDenialReduction: FileX,
+  edRetention: HeartPulse,
 };
 
-const DRIVER_COLORS: Record<LeverId, string> = {
+const DRIVER_COLORS: Partial<Record<LeverId, string>> = {
   patientAccess: "#3B82F6", // Blue
   wrvu: "#8B5CF6", // Purple
   workforce: "#10B981", // Green
   hcc: "#F97316", // Orange
   denials: "#14B8A6", // Teal
   overtime: "#EF4444", // Red
+  edThroughput: "#6366F1", // Indigo
+  edLevelOfService: "#8B5CF6", // Purple
+  edDenialReduction: "#14B8A6", // Teal
+  edRetention: "#10B981", // Green
 };
 
-const DRIVER_ESTIMATES: Record<LeverId, { min: number; max: number; subtitle: string }> = {
+const DRIVER_ESTIMATES: Partial<Record<LeverId, { min: number; max: number; subtitle: string }>> = {
   patientAccess: { min: 150000, max: 200000, subtitle: "Returns visit-time documentation minutes back to patient capacity" },
   wrvu: { min: 200000, max: 260000, subtitle: "Improves coding support by capturing clinical reasoning" },
   workforce: { min: 50000, max: 120000, subtitle: "Lower burnout and turnover by reducing admin burden" },
   overtime: { min: 100000, max: 180000, subtitle: "Reduce premium labor costs from documentation backlog" },
   hcc: { min: 180000, max: 400000, subtitle: "Improve RAF scores through complete documentation" },
   denials: { min: 70000, max: 150000, subtitle: "Reduce claims denied due to documentation issues" },
+  edThroughput: { min: 200000, max: 350000, subtitle: "Reduce LWBS rates by completing documentation faster during shift" },
+  edLevelOfService: { min: 200000, max: 400000, subtitle: "Capture accurate E/M levels despite time-pressured environment" },
+  edDenialReduction: { min: 250000, max: 500000, subtitle: "Prevent denials from incomplete ED documentation" },
+  edRetention: { min: 800000, max: 1500000, subtitle: "Reduce ED clinician burnout and turnover" },
 };
 
 export default function RoiCalculator({
@@ -235,7 +249,7 @@ export default function RoiCalculator({
   const [showAddDrivers, setShowAddDrivers] = useState(false);
   const [scenarioDriverSelections, setScenarioDriverSelections] = useState<Set<LeverId>>(new Set());
   const [expandedDriverMethodology, setExpandedDriverMethodology] = useState<LeverId | null>(null);
-  const [driverAdjustments, setDriverAdjustments] = useState<Record<LeverId, Record<string, number>>>({
+  const [driverAdjustments, setDriverAdjustments] = useState<Partial<Record<LeverId, Record<string, number>>>>({
     hcc: { maPopulationPct: 15, benchmarkPmpm: 1000, recaptureRate: 50 },
     denials: { denialRate: 5, preventionRate: 50 },
     overtime: { afterHoursPct: 20, premiumRate: 145 },
@@ -257,13 +271,17 @@ export default function RoiCalculator({
     utilizationRate: 70,
   });
   const [careSettingDrivers, setCareSettingDrivers] = useState<Set<LeverId>>(new Set<LeverId>(["patientAccess", "wrvu", "denials"]));
-  const [careSettingDriverAdjustments, setCareSettingDriverAdjustments] = useState<Record<LeverId, Record<string, number>>>({
+  const [careSettingDriverAdjustments, setCareSettingDriverAdjustments] = useState<Partial<Record<LeverId, Record<string, number>>>>({
     patientAccess: { minutesSaved: 12 },
     wrvu: { baselineWrvu: 2.8, qualityLift: 6, revenuePerWrvu: 45 },
     denials: { denialRate: 6, preventionRate: 55 },
     overtime: { afterHoursPct: 30, premiumRate: 160 },
     hcc: {},
     workforce: {},
+    edThroughput: { minutesSaved: 20, lwbsImprovement: 0.5 },
+    edLevelOfService: { baselineWrvu: 2.6, qualityLift: 5, revenuePerWrvu: 34 },
+    edDenialReduction: { denialRate: 12, preventionRate: 40 },
+    edRetention: { burnoutReduction: 45, costPerDeparture: 350000 },
   });
   const [expandedCareSettingDriver, setExpandedCareSettingDriver] = useState<LeverId | null>(null);
 
@@ -299,6 +317,14 @@ export default function RoiCalculator({
       wrvu: 0,
       denials: 0,
       hcc: 0,
+      edThroughput: 0,
+      edLevelOfService: 0,
+      edDenialReduction: 0,
+      edRetention: 0,
+      rnDocTime: 0,
+      rnCommunication: 0,
+      rnSafetyReduction: 0,
+      rnDiagnosisSeverity: 0,
     };
     results.levers.forEach((lever) => {
       // Only include if the lever is enabled in inputs
@@ -449,7 +475,7 @@ export default function RoiCalculator({
   };
 
   // Helper: Calculate driver value with adjustments applied
-  const calculateAdjustedDriverValue = useCallback((driverId: LeverId, adjustments: Record<LeverId, Record<string, number>>): number => {
+  const calculateAdjustedDriverValue = useCallback((driverId: LeverId, adjustments: Partial<Record<LeverId, Record<string, number>>>): number => {
     // Create temp inputs with the driver enabled and adjustments applied
     const tempInputs = JSON.parse(JSON.stringify(inputs));
     tempInputs.levers[driverId] = true;
@@ -506,7 +532,59 @@ export default function RoiCalculator({
       careSettingInputs.levers[key as LeverId] = careSettingDrivers.has(key as LeverId);
     });
     
-    // Apply driver-specific adjustments
+    // Handle ED-specific calculations
+    if (selectedNewCareSetting === "ed") {
+      careSettingInputs.ed = {
+        totalClinicians: careSettingConfig.providers,
+        shiftsPerClinicianPerYear: 200,
+        baselineDocMinutesPerShift: 75,
+        minutesSavedPerShift: careSettingDriverAdjustments.edThroughput?.minutesSaved ?? 20,
+        totalEdEncounters: encounters,
+        baselineLwbsRate: 3.0,
+        lwbsImprovementPct: careSettingDriverAdjustments.edThroughput?.lwbsImprovement ?? 0.5,
+        pctRecoveredTreatedAndReleased: 81,
+        pctRecoveredAdmitted: 19,
+        contributionMarginPerEncounter: 250,
+        contributionMarginPerAdmission: 2000,
+        baselineWrvuPerVisit: careSettingDriverAdjustments.edLevelOfService?.baselineWrvu ?? 2.6,
+        wrvuConversionFactor: careSettingDriverAdjustments.edLevelOfService?.revenuePerWrvu ?? 34,
+        wrvuImprovementPct: careSettingDriverAdjustments.edLevelOfService?.qualityLift ?? 5,
+        netCollectibleRevenue: encounters * 250,
+        baselineDenialRate: careSettingDriverAdjustments.edDenialReduction?.denialRate ?? 12,
+        pctDenialsFromDocumentation: 32,
+        pctDocDenialsRecovered: careSettingDriverAdjustments.edDenialReduction?.preventionRate ?? 40,
+        baselineAttritionRate: 5,
+        pctTurnoverFromBurnout: 31,
+        pctBurnoutReduction: careSettingDriverAdjustments.edRetention?.burnoutReduction ?? 45,
+        costPerDeparture: careSettingDriverAdjustments.edRetention?.costPerDeparture ?? 350000,
+      };
+      
+      // Call calculateRoi with ED setting
+      const careSettingResults = calculateRoi(careSettingInputs, "ed");
+      
+      // Extract ED driver values
+      const newDriverValues: Record<LeverId, number> = {
+        patientAccess: 0, overtime: 0, workforce: 0, wrvu: 0, denials: 0, hcc: 0,
+        edThroughput: 0, edLevelOfService: 0, edDenialReduction: 0, edRetention: 0,
+        rnDocTime: 0, rnCommunication: 0, rnSafetyReduction: 0, rnDiagnosisSeverity: 0,
+      };
+      careSettingResults.levers.forEach(lever => {
+        if (lever.enabled) {
+          newDriverValues[lever.id] = lever.value;
+        }
+      });
+      
+      return {
+        totalBenefit: careSettingResults.totalAnnualBenefit,
+        investment: careSettingResults.annualAbridgeCost,
+        netGain: careSettingResults.netValueCreated,
+        roi: careSettingResults.roiMultiple,
+        driverValues: newDriverValues,
+        encounters,
+      };
+    }
+    
+    // Apply driver-specific adjustments for outpatient/nursing
     if (careSettingDrivers.has("wrvu") && careSettingDriverAdjustments.wrvu) {
       careSettingInputs.wrvu.pctIncreaseWrvuPerEncounter = careSettingDriverAdjustments.wrvu.qualityLift ?? 6;
       careSettingInputs.wrvu.wrvuConversionFactor = careSettingDriverAdjustments.wrvu.revenuePerWrvu ?? 45;
@@ -529,7 +607,9 @@ export default function RoiCalculator({
     
     // Extract driver values
     const newDriverValues: Record<LeverId, number> = {
-      patientAccess: 0, overtime: 0, workforce: 0, wrvu: 0, denials: 0, hcc: 0
+      patientAccess: 0, overtime: 0, workforce: 0, wrvu: 0, denials: 0, hcc: 0,
+      edThroughput: 0, edLevelOfService: 0, edDenialReduction: 0, edRetention: 0,
+      rnDocTime: 0, rnCommunication: 0, rnSafetyReduction: 0, rnDiagnosisSeverity: 0,
     };
     careSettingResults.levers.forEach(lever => {
       if (lever.enabled) {
@@ -800,6 +880,14 @@ export default function RoiCalculator({
       hcc: 0,
       denials: 0,
       overtime: 0,
+      edThroughput: 0,
+      edLevelOfService: 0,
+      edDenialReduction: 0,
+      edRetention: 0,
+      rnDocTime: 0,
+      rnCommunication: 0,
+      rnSafetyReduction: 0,
+      rnDiagnosisSeverity: 0,
     };
     scenarioResults.levers.forEach((lever) => {
       scenarioDriverValues[lever.id as LeverId] = lever.value;
@@ -1091,7 +1179,7 @@ export default function RoiCalculator({
                             }
                             
                             // One-line description
-                            const descriptions: Record<LeverId, string> = {
+                            const descriptions: Partial<Record<LeverId, string>> = {
                               patientAccess: "Time returned → visit capacity",
                               workforce: "Reduced turnover from lower admin burden",
                               overtime: "Reduced premium labor from documentation backlog",
@@ -1112,10 +1200,12 @@ export default function RoiCalculator({
                                       className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                                       style={{ backgroundColor: `${DRIVER_COLORS[id]}15` }}
                                     >
-                                      <DriverIcon
-                                        className="h-4 w-4"
-                                        style={{ color: DRIVER_COLORS[id] }}
-                                      />
+                                      {DriverIcon && (
+                                        <DriverIcon
+                                          className="h-4 w-4"
+                                          style={{ color: DRIVER_COLORS[id] }}
+                                        />
+                                      )}
                                     </div>
                                     <div>
                                       <div className="text-base font-semibold text-neutral-900">
@@ -1185,7 +1275,7 @@ export default function RoiCalculator({
                             }
                             
                             // One-line description
-                            const descriptions: Record<LeverId, string> = {
+                            const descriptions: Partial<Record<LeverId, string>> = {
                               patientAccess: "Time returned → visit capacity",
                               workforce: "Reduced turnover from lower admin burden",
                               overtime: "Reduced premium labor from documentation backlog",
@@ -1206,10 +1296,12 @@ export default function RoiCalculator({
                                       className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                                       style={{ backgroundColor: `${DRIVER_COLORS[id]}15` }}
                                     >
-                                      <DriverIcon
-                                        className="h-4 w-4"
-                                        style={{ color: DRIVER_COLORS[id] }}
-                                      />
+                                      {DriverIcon && (
+                                        <DriverIcon
+                                          className="h-4 w-4"
+                                          style={{ color: DRIVER_COLORS[id] }}
+                                        />
+                                      )}
                                     </div>
                                     <div>
                                       <div className="text-base font-semibold text-neutral-900">
@@ -1370,10 +1462,12 @@ export default function RoiCalculator({
                           className="w-10 h-10 rounded-lg flex items-center justify-center"
                           style={{ backgroundColor: `${DRIVER_COLORS[driverId]}15` }}
                         >
-                          <DriverIcon
-                            className="h-5 w-5"
-                            style={{ color: DRIVER_COLORS[driverId] }}
-                          />
+                          {DriverIcon && (
+                            <DriverIcon
+                              className="h-5 w-5"
+                              style={{ color: DRIVER_COLORS[driverId] }}
+                            />
+                          )}
                         </div>
                         <span className="text-base font-semibold text-neutral-900">
                           {leverLabels[driverId]}
@@ -6188,10 +6282,10 @@ export default function RoiCalculator({
                             {leverLabels[id]}
                           </div>
                           <div className="text-sm text-neutral-500 mt-0.5">
-                            {DRIVER_ESTIMATES[id].subtitle}
+                            {DRIVER_ESTIMATES[id]?.subtitle}
                           </div>
                           <div className="text-sm text-neutral-400 mt-1">
-                            Est. value: {formatCurrency(DRIVER_ESTIMATES[id].min)}-{formatCurrency(DRIVER_ESTIMATES[id].max)} ({inputs.numberOfProviders} providers)
+                            Est. value: {formatCurrency(DRIVER_ESTIMATES[id]?.min ?? 0)}-{formatCurrency(DRIVER_ESTIMATES[id]?.max ?? 0)} ({inputs.numberOfProviders} providers)
                           </div>
                         </div>
                       </label>
@@ -6225,10 +6319,10 @@ export default function RoiCalculator({
                             {leverLabels[id]}
                           </div>
                           <div className="text-sm text-neutral-500 mt-0.5">
-                            {DRIVER_ESTIMATES[id].subtitle}
+                            {DRIVER_ESTIMATES[id]?.subtitle}
                           </div>
                           <div className="text-sm text-neutral-400 mt-1">
-                            Est. value: {formatCurrency(DRIVER_ESTIMATES[id].min)}-{formatCurrency(DRIVER_ESTIMATES[id].max)}
+                            Est. value: {formatCurrency(DRIVER_ESTIMATES[id]?.min ?? 0)}-{formatCurrency(DRIVER_ESTIMATES[id]?.max ?? 0)}
                           </div>
                         </div>
                       </label>

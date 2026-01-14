@@ -1,0 +1,119 @@
+STEP 3: Add to src/lib/roi-calculator.ts
+
+Add this function BEFORE the main calculateRoi function:
+
+/**
+ * Calculate ED-specific ROI using shift-based model
+ * Formulas match ED ROI spreadsheet exactly
+ */
+function calculateEdRoi(inputs: RoiInputs): {
+  levers: Array<{ id: LeverId; label: string; value: number; enabled: boolean }>;
+  totalAnnualBenefit: number;
+} {
+  if (!inputs.ed) throw new Error('ED inputs required for ED calculation');
+  
+  const ed = inputs.ed;
+  const eligibleEncounters = ed.totalEdEncounters * (inputs.abridgeUtilizationPct / 100);
+  const levers: Array<{ id: LeverId; label: string; value: number; enabled: boolean }> = [];
+  
+  // 1. Patient Throughput (LWBS Reduction)
+  let throughputValue = 0;
+  if (inputs.levers.edThroughput) {
+    // LWBS improvement calculation
+    const lwbsImprovement = ed.baselineLwbsRate * (ed.lwbsImprovementPct / 100);
+    const additionalPatientsTreated = eligibleEncounters * (lwbsImprovement / 100);
+    
+    // Split by outcome type
+    const treatedAndReleased = additionalPatientsTreated * (ed.pctRecoveredTreatedAndReleased / 100);
+    const admitted = additionalPatientsTreated * (ed.pctRecoveredAdmitted / 100);
+    
+    // Calculate contribution margin
+    const regularContribution = treatedAndReleased * ed.contributionMarginPerEncounter;
+    const admissionContribution = admitted * ed.contributionMarginPerAdmission;
+    
+    throughputValue = regularContribution + admissionContribution;
+    
+    levers.push({
+      id: 'edThroughput',
+      label: 'Patient Throughput (LWBS Reduction)',
+      value: throughputValue,
+      enabled: true,
+    });
+  }
+  
+  // 2. wRVU & Level of Service
+  let wrvuValue = 0;
+  if (inputs.levers.edLevelOfService) {
+    const wrvuChangePerVisit = ed.baselineWrvuPerVisit * (ed.wrvuImprovementPct / 100);
+    const totalAddedWrvus = wrvuChangePerVisit * eligibleEncounters;
+    wrvuValue = totalAddedWrvus * ed.wrvuConversionFactor;
+    
+    levers.push({
+      id: 'edLevelOfService',
+      label: 'wRVU & Level-of-Service Alignment',
+      value: wrvuValue,
+      enabled: true,
+    });
+  }
+  
+  // 3. Documentation-Related Denials
+  let denialsValue = 0;
+  if (inputs.levers.edDenialReduction) {
+    const baselineDeniedRevenue = ed.netCollectibleRevenue * (ed.baselineDenialRate / 100);
+    const docRelatedDenials = baselineDeniedRevenue * (ed.pctDenialsFromDocumentation / 100);
+    denialsValue = docRelatedDenials * (ed.pctDocDenialsRecovered / 100);
+    
+    levers.push({
+      id: 'edDenialReduction',
+      label: 'Documentation-Related Denials',
+      value: denialsValue,
+      enabled: true,
+    });
+  }
+  
+  // 4. Workforce Retention
+  let retentionValue = 0;
+  if (inputs.levers.edRetention) {
+    const totalDepartures = ed.totalClinicians * (ed.baselineAttritionRate / 100);
+    const burnoutDepartures = totalDepartures * (ed.pctTurnoverFromBurnout / 100);
+    const departuresAvoided = burnoutDepartures * (ed.pctBurnoutReduction / 100);
+    retentionValue = departuresAvoided * ed.costPerDeparture;
+    
+    levers.push({
+      id: 'edRetention',
+      label: 'Workforce Retention',
+      value: retentionValue,
+      enabled: true,
+    });
+  }
+  
+  const totalAnnualBenefit = levers.reduce((sum, lever) => sum + lever.value, 0);
+  
+  return { levers, totalAnnualBenefit };
+}
+
+// Update main calculateRoi function signature and routing:
+
+export function calculateRoi(
+  inputs: RoiInputs, 
+  careSetting: 'outpatient' | 'ed' | 'nursing' = 'outpatient'
+): RoiResults {
+  
+  // Route to ED calculator
+  if (careSetting === 'ed' && inputs.ed) {
+    const edResults = calculateEdRoi(inputs);
+    const annualCost = inputs.numberOfProviders * inputs.monthlyCostPerProvider * 12;
+    
+    return {
+      levers: edResults.levers,
+      totalAnnualBenefit: edResults.totalAnnualBenefit,
+      annualAbridgeCost: annualCost,
+      netValueCreated: edResults.totalAnnualBenefit - annualCost,
+      roiMultiple: annualCost > 0 ? edResults.totalAnnualBenefit / annualCost : 0,
+      threeYearTotalValue: edResults.totalAnnualBenefit * 3,
+      threeYearNetGain: (edResults.totalAnnualBenefit - annualCost) * 3,
+    };
+  }
+  
+  // ... existing outpatient logic continues unchanged
+}

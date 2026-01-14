@@ -38,6 +38,7 @@ import {
   ArrowRight,
   Sliders,
   Zap,
+  FileX,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -435,6 +436,155 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
     keyVariables: ["Annual revenue", "Baseline denial rate", "% documentation-related", "Prevention rate"],
     rangeData: { conservative: "$70k-100k (5-6%)", typical: "$100k-150k (8-10% high-complexity)" },
     referenceValue: 103000,
+  },
+  edThroughput: {
+    id: "edThroughput",
+    label: "Patient Throughput (LWBS Reduction)",
+    icon: Zap,
+    theory: "In the ED, faster documentation during shift enables clinicians to see waiting patients instead of catching up on charts. This reduces Left Without Being Seen (LWBS) rates and captures patients who would otherwise leave. Each prevented LWBS represents both revenue capture and quality improvement.",
+    calculationSteps: [
+      {
+        title: "STEP 1: TIME SAVED",
+        steps: [
+          { label: "ED Clinicians", value: "500" },
+          { label: "Shifts per clinician/year", value: "200" },
+          { label: "Minutes saved per shift", value: "20 min" },
+          { label: "Annual hours reclaimed", value: "33,333 hrs" },
+        ],
+      },
+      {
+        title: "STEP 2: LWBS IMPROVEMENT",
+        steps: [
+          { label: "Total ED encounters", value: "100,000" },
+          { label: "Baseline LWBS rate", value: "3.0%" },
+          { label: "LWBS improvement", value: "0.5%" },
+          { label: "Post-Abridge LWBS rate", value: "2.5%" },
+          { label: "Additional patients treated", value: "526 patients" },
+        ],
+      },
+      {
+        title: "STEP 3: REVENUE IMPACT",
+        steps: [
+          { label: "Patients treated and released (81%)", value: "426" },
+          { label: "Contribution margin per encounter", value: "$250" },
+          { label: "Regular encounter value", value: "$106,575" },
+          { label: "Patients admitted (19%)", value: "100" },
+          { label: "Contribution margin per admission", value: "$2,000" },
+          { label: "Admission value", value: "$199,993" },
+          { label: "Total annual value", value: "$306,569" },
+        ],
+      },
+    ],
+    keyVariables: ["Shifts per year", "Minutes saved per shift", "LWBS improvement %", "Contribution margins"],
+    rangeData: { conservative: "$200k-250k", typical: "$250k-350k", aggressive: "$350k-450k" },
+    referenceValue: 306569,
+  },
+  edLevelOfService: {
+    id: "edLevelOfService",
+    label: "wRVU & Level-of-Service Alignment",
+    icon: BarChart3,
+    theory: "Time pressure in the ED often results in under-documentation and lost wRVUs. Real-time ambient documentation captures clinical complexity without adding post-shift burden, improving E/M level accuracy and wRVU capture despite the fast-paced environment.",
+    calculationSteps: [
+      {
+        title: "STEP 1: BASELINE PERFORMANCE",
+        steps: [
+          { label: "Annual ED visits (Abridge-documented)", value: "65,000" },
+          { label: "Baseline wRVU per visit", value: "2.60" },
+          { label: "Current annual wRVUs", value: "169,000 wRVUs" },
+        ],
+      },
+      {
+        title: "STEP 2: DOCUMENTATION QUALITY LIFT",
+        steps: [
+          { label: "wRVU improvement from complete docs", value: "5%" },
+          { label: "Additional wRVUs captured", value: "8,450 wRVUs" },
+        ],
+      },
+      {
+        title: "STEP 3: REVENUE IMPACT",
+        steps: [
+          { label: "Additional wRVUs", value: "8,450" },
+          { label: "ED wRVU conversion factor", value: "$34" },
+          { label: "Annual value", value: "$287,300" },
+        ],
+      },
+    ],
+    keyVariables: ["Baseline ED wRVU", "Quality lift %", "wRVU conversion factor"],
+    rangeData: { conservative: "$200k-300k", typical: "$250k-400k", aggressive: "$400k-550k" },
+    referenceValue: 287300,
+  },
+  edDenialReduction: {
+    id: "edDenialReduction",
+    label: "Documentation-Related Denials",
+    icon: FileX,
+    theory: "ED documentation under time pressure is a leading cause of denials. Complete, real-time documentation reduces denials for medical necessity, level of service, and insufficient supporting details—claims that are often unrecoverable once denied.",
+    calculationSteps: [
+      {
+        title: "STEP 1: BASELINE DENIALS",
+        steps: [
+          { label: "Net collectible ED revenue", value: "$25M" },
+          { label: "Baseline denial rate", value: "12%" },
+          { label: "Revenue denied annually", value: "$3.0M" },
+        ],
+      },
+      {
+        title: "STEP 2: DOCUMENTATION-RELATED",
+        steps: [
+          { label: "% denials from documentation", value: "32%" },
+          { label: "Documentation-driven denials", value: "$960,000" },
+        ],
+      },
+      {
+        title: "STEP 3: RECOVERY POTENTIAL",
+        steps: [
+          { label: "% recoverable with better docs", value: "40%" },
+          { label: "Annual value", value: "$384,000" },
+        ],
+      },
+    ],
+    keyVariables: ["ED revenue", "Denial rate", "% doc-related", "Recovery rate"],
+    rangeData: { conservative: "$250k-350k", typical: "$350k-500k", aggressive: "$500k-700k" },
+    referenceValue: 384000,
+  },
+  edRetention: {
+    id: "edRetention",
+    label: "Workforce Retention",
+    icon: HeartPulse,
+    theory: "ED clinicians face extreme burnout from shift work plus after-shift charting burden. Reducing documentation time during and after shifts directly addresses a major burnout driver, reducing turnover and recruitment costs.",
+    calculationSteps: [
+      {
+        title: "STEP 1: BASELINE TURNOVER",
+        steps: [
+          { label: "Total ED clinicians", value: "500" },
+          { label: "Annual attrition rate", value: "5%" },
+          { label: "Expected departures", value: "25/year" },
+        ],
+      },
+      {
+        title: "STEP 2: BURNOUT ATTRIBUTION",
+        steps: [
+          { label: "% turnover from burnout", value: "31%" },
+          { label: "Burnout-driven departures", value: "8/year" },
+        ],
+      },
+      {
+        title: "STEP 3: ABRIDGE IMPACT",
+        steps: [
+          { label: "% burnout reduction", value: "45%" },
+          { label: "Departures avoided", value: "3.5/year" },
+        ],
+      },
+      {
+        title: "STEP 4: COST SAVINGS",
+        steps: [
+          { label: "Cost per ED departure", value: "$350,000" },
+          { label: "Annual value", value: "$1,225,000" },
+        ],
+      },
+    ],
+    keyVariables: ["Clinician count", "Attrition rate", "Burnout %", "Replacement cost"],
+    rangeData: { conservative: "$800k-1.0M", typical: "$1.0M-1.5M", aggressive: "$1.5M-2.0M" },
+    referenceValue: 1225000,
   },
 };
 

@@ -2,11 +2,109 @@ import {
   type RoiInputs,
   type RoiResults,
   type Lever,
+  type LeverId,
   leverDescriptions,
   leverLabels,
 } from "./roi-types";
 
-export function calculateRoi(inputs: RoiInputs): RoiResults {
+export type CareSettingCalculationType = "outpatient" | "ed" | "nursing";
+
+function calculateEdRoi(inputs: RoiInputs): {
+  levers: Array<{ id: LeverId; label: string; value: number; enabled: boolean }>;
+  totalAnnualBenefit: number;
+} {
+  if (!inputs.ed) throw new Error("ED inputs required for ED calculation");
+
+  const ed = inputs.ed;
+  const eligibleEncounters = ed.totalEdEncounters * (inputs.abridgeUtilizationPct / 100);
+  const levers: Array<{ id: LeverId; label: string; value: number; enabled: boolean }> = [];
+
+  let throughputValue = 0;
+  if (inputs.levers.edThroughput) {
+    const lwbsImprovement = ed.baselineLwbsRate * (ed.lwbsImprovementPct / 100);
+    const additionalPatientsTreated = eligibleEncounters * (lwbsImprovement / 100);
+    const treatedAndReleased = additionalPatientsTreated * (ed.pctRecoveredTreatedAndReleased / 100);
+    const admitted = additionalPatientsTreated * (ed.pctRecoveredAdmitted / 100);
+    const regularContribution = treatedAndReleased * ed.contributionMarginPerEncounter;
+    const admissionContribution = admitted * ed.contributionMarginPerAdmission;
+    throughputValue = regularContribution + admissionContribution;
+    levers.push({
+      id: "edThroughput",
+      label: leverLabels.edThroughput,
+      value: throughputValue,
+      enabled: true,
+    });
+  }
+
+  let wrvuValue = 0;
+  if (inputs.levers.edLevelOfService) {
+    const wrvuChangePerVisit = ed.baselineWrvuPerVisit * (ed.wrvuImprovementPct / 100);
+    const totalAddedWrvus = wrvuChangePerVisit * eligibleEncounters;
+    wrvuValue = totalAddedWrvus * ed.wrvuConversionFactor;
+    levers.push({
+      id: "edLevelOfService",
+      label: leverLabels.edLevelOfService,
+      value: wrvuValue,
+      enabled: true,
+    });
+  }
+
+  let denialsValue = 0;
+  if (inputs.levers.edDenialReduction) {
+    const baselineDeniedRevenue = ed.netCollectibleRevenue * (ed.baselineDenialRate / 100);
+    const docRelatedDenials = baselineDeniedRevenue * (ed.pctDenialsFromDocumentation / 100);
+    denialsValue = docRelatedDenials * (ed.pctDocDenialsRecovered / 100);
+    levers.push({
+      id: "edDenialReduction",
+      label: leverLabels.edDenialReduction,
+      value: denialsValue,
+      enabled: true,
+    });
+  }
+
+  let retentionValue = 0;
+  if (inputs.levers.edRetention) {
+    const totalDepartures = ed.totalClinicians * (ed.baselineAttritionRate / 100);
+    const burnoutDepartures = totalDepartures * (ed.pctTurnoverFromBurnout / 100);
+    const departuresAvoided = burnoutDepartures * (ed.pctBurnoutReduction / 100);
+    retentionValue = departuresAvoided * ed.costPerDeparture;
+    levers.push({
+      id: "edRetention",
+      label: leverLabels.edRetention,
+      value: retentionValue,
+      enabled: true,
+    });
+  }
+
+  const totalAnnualBenefit = levers.reduce((sum, lever) => sum + lever.value, 0);
+  return { levers, totalAnnualBenefit };
+}
+
+export function calculateRoi(
+  inputs: RoiInputs,
+  careSetting: CareSettingCalculationType = "outpatient"
+): RoiResults {
+  if (careSetting === "ed" && inputs.ed) {
+    const edResults = calculateEdRoi(inputs);
+    const annualCost = inputs.numberOfProviders * inputs.monthlyCostPerProvider * 12;
+    const edLevers: Lever[] = edResults.levers.map((lever) => ({
+      ...lever,
+      description: leverDescriptions[lever.id],
+      category: lever.id === "edThroughput" || lever.id === "edRetention" ? "time" : "documentation",
+    }));
+
+    return {
+      levers: edLevers,
+      totalAnnualBenefit: edResults.totalAnnualBenefit,
+      annualAbridgeCost: annualCost,
+      netValueCreated: edResults.totalAnnualBenefit - annualCost,
+      roiMultiple: annualCost > 0 ? edResults.totalAnnualBenefit / annualCost : 0,
+      totalProviderHoursReclaimed: 0,
+      postWrvuPerEncounter: 0,
+      newEffectiveDenialRate: 0,
+    };
+  }
+
   // Encounters covered by Abridge (utilization must move the model)
   const encountersWithAbridge =
     inputs.annualOutpatientEncounters * (inputs.abridgeUtilizationPct / 100);

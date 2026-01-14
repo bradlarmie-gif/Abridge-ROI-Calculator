@@ -1,0 +1,540 @@
+Part 1: Initial Context Setting
+CopyI need to implement Emergency Department (ED) ROI calculations throughout the entire application flow. When a user selects "Emergency Department" in the New Care Setting scenario builder, the ENTIRE experience should become ED-specific - from value methodology explanations to strategic priority selection to final calculations.
+
+Here's the complete scope:
+
+1. SETTING_CONFIG.ts - Add ED care setting configuration
+2. Value Methodology page (Blueprint) - ED-specific driver explanations
+3. Strategic Priorities page - ED-relevant drivers only
+4. Value Posture selection - ED-specific assumptions
+5. Final ROI calculations - Use ED math from provided spreadsheet
+
+I'll provide the exact ED calculation formulas and requirements below.
+
+Part 2: Add ED Configuration to SETTING_CONFIG.ts
+CopySTEP 1: Update src/lib/SETTING_CONFIG.ts
+
+Add ED as a new care setting with ED-specific drivers:
+
+export const SETTING_CONFIG = {
+  // ... existing outpatient config
+  
+  ed: [
+    {
+      id: "edThroughput",
+      category: "time",
+      label: "Patient Throughput (LWBS Reduction)",
+      description: "Reduce Left Without Being Seen (LWBS) rates and missed admissions by completing documentation faster during shift",
+      keyMetric: "Additional patients treated",
+    },
+    {
+      id: "edLevelOfService",
+      category: "documentation",
+      label: "wRVU & Level-of-Service Alignment",
+      description: "Improve E/M accuracy and documentation completeness for better wRVU capture in time-pressured ED environment",
+      keyMetric: "wRVU capture improvement",
+    },
+    {
+      id: "edDenialReduction",
+      category: "documentation",
+      label: "Documentation-Related Denials",
+      description: "Reduce denials caused by incomplete or unclear ED documentation under time pressure",
+      keyMetric: "Documentation-related denials prevented",
+    },
+    {
+      id: "edRetention",
+      category: "time",
+      label: "Workforce Retention",
+      description: "Lower ED clinician burnout and turnover by reducing after-shift documentation burden",
+      keyMetric: "ED clinician departures avoided",
+    },
+  ],
+  
+  // ... existing nursing config (keep as-is)
+};
+
+// Update type definitions
+export type LeverId = 
+  | "patientAccess" | "overtime" | "workforce" | "wrvu" | "denials" | "hcc" 
+  | "edThroughput" | "edLevelOfService" | "edDenialReduction" | "edRetention"
+  | "rnDocTime" | "rnCommunication" | "rnSafetyReduction" | "rnDiagnosisSeverity";
+
+export type CareSettingType = "outpatient" | "ed" | "nursing" | "inpatient";
+
+export const CARE_SETTING_LABELS: Record<CareSettingType, string> = {
+  outpatient: "Outpatient",
+  ed: "Emergency Department",
+  nursing: "Nursing",
+  inpatient: "Inpatient",
+};
+
+Part 3: Add ED Types to roi-types.ts
+CopySTEP 2: Update src/lib/roi-types.ts
+
+Add ED-specific inputs interface:
+
+export interface EdInputs {
+  // Deployment
+  totalClinicians: number;
+  shiftsPerClinicianPerYear: number;
+  baselineDocMinutesPerShift: number;
+  minutesSavedPerShift: number;
+  
+  // Patient Throughput (LWBS)
+  totalEdEncounters: number;
+  baselineLwbsRate: number;
+  lwbsImprovementPct: number;
+  pctRecoveredTreatedAndReleased: number;
+  pctRecoveredAdmitted: number;
+  contributionMarginPerEncounter: number;
+  contributionMarginPerAdmission: number;
+  
+  // wRVU
+  baselineWrvuPerVisit: number;
+  wrvuConversionFactor: number;
+  wrvuImprovementPct: number;
+  
+  // Denials
+  netCollectibleRevenue: number;
+  baselineDenialRate: number;
+  pctDenialsFromDocumentation: number;
+  pctDocDenialsRecovered: number;
+  
+  // Retention
+  baselineAttritionRate: number;
+  pctTurnoverFromBurnout: number;
+  pctBurnoutReduction: number;
+  costPerDeparture: number;
+}
+
+// Update RoiInputs to include ED
+export interface RoiInputs {
+  // ... existing fields
+  ed?: EdInputs;
+}
+
+// Update lever labels
+export const leverLabels: Record<LeverId, string> = {
+  // ... existing
+  edThroughput: "Patient Throughput (LWBS Reduction)",
+  edLevelOfService: "wRVU & Level-of-Service Alignment",
+  edDenialReduction: "Documentation-Related Denials",
+  edRetention: "Workforce Retention",
+};
+
+// Update lever descriptions
+export const leverDescriptions: Record<LeverId, string> = {
+  // ... existing
+  edThroughput: "Reduce LWBS rate and treat more patients by completing documentation faster during shift",
+  edLevelOfService: "Capture accurate E/M levels and wRVUs despite time-pressured environment",
+  edDenialReduction: "Prevent denials from incomplete ED documentation",
+  edRetention: "Reduce ED clinician burnout and turnover",
+};
+
+Part 4: Add ED Calculations to roi-calculator.ts
+CopySTEP 3: Add to src/lib/roi-calculator.ts
+
+Add this function BEFORE the main calculateRoi function:
+
+/**
+ * Calculate ED-specific ROI using shift-based model
+ * Formulas match ED ROI spreadsheet exactly
+ */
+function calculateEdRoi(inputs: RoiInputs): {
+  levers: Array<{ id: LeverId; label: string; value: number; enabled: boolean }>;
+  totalAnnualBenefit: number;
+} {
+  if (!inputs.ed) throw new Error('ED inputs required for ED calculation');
+  
+  const ed = inputs.ed;
+  const eligibleEncounters = ed.totalEdEncounters * (inputs.abridgeUtilizationPct / 100);
+  const levers: Array<{ id: LeverId; label: string; value: number; enabled: boolean }> = [];
+  
+  // 1. Patient Throughput (LWBS Reduction)
+  let throughputValue = 0;
+  if (inputs.levers.edThroughput) {
+    // LWBS improvement calculation
+    const lwbsImprovement = ed.baselineLwbsRate * (ed.lwbsImprovementPct / 100);
+    const additionalPatientsTreated = eligibleEncounters * (lwbsImprovement / 100);
+    
+    // Split by outcome type
+    const treatedAndReleased = additionalPatientsTreated * (ed.pctRecoveredTreatedAndReleased / 100);
+    const admitted = additionalPatientsTreated * (ed.pctRecoveredAdmitted / 100);
+    
+    // Calculate contribution margin
+    const regularContribution = treatedAndReleased * ed.contributionMarginPerEncounter;
+    const admissionContribution = admitted * ed.contributionMarginPerAdmission;
+    
+    throughputValue = regularContribution + admissionContribution;
+    
+    levers.push({
+      id: 'edThroughput',
+      label: 'Patient Throughput (LWBS Reduction)',
+      value: throughputValue,
+      enabled: true,
+    });
+  }
+  
+  // 2. wRVU & Level of Service
+  let wrvuValue = 0;
+  if (inputs.levers.edLevelOfService) {
+    const wrvuChangePerVisit = ed.baselineWrvuPerVisit * (ed.wrvuImprovementPct / 100);
+    const totalAddedWrvus = wrvuChangePerVisit * eligibleEncounters;
+    wrvuValue = totalAddedWrvus * ed.wrvuConversionFactor;
+    
+    levers.push({
+      id: 'edLevelOfService',
+      label: 'wRVU & Level-of-Service Alignment',
+      value: wrvuValue,
+      enabled: true,
+    });
+  }
+  
+  // 3. Documentation-Related Denials
+  let denialsValue = 0;
+  if (inputs.levers.edDenialReduction) {
+    const baselineDeniedRevenue = ed.netCollectibleRevenue * (ed.baselineDenialRate / 100);
+    const docRelatedDenials = baselineDeniedRevenue * (ed.pctDenialsFromDocumentation / 100);
+    denialsValue = docRelatedDenials * (ed.pctDocDenialsRecovered / 100);
+    
+    levers.push({
+      id: 'edDenialReduction',
+      label: 'Documentation-Related Denials',
+      value: denialsValue,
+      enabled: true,
+    });
+  }
+  
+  // 4. Workforce Retention
+  let retentionValue = 0;
+  if (inputs.levers.edRetention) {
+    const totalDepartures = ed.totalClinicians * (ed.baselineAttritionRate / 100);
+    const burnoutDepartures = totalDepartures * (ed.pctTurnoverFromBurnout / 100);
+    const departuresAvoided = burnoutDepartures * (ed.pctBurnoutReduction / 100);
+    retentionValue = departuresAvoided * ed.costPerDeparture;
+    
+    levers.push({
+      id: 'edRetention',
+      label: 'Workforce Retention',
+      value: retentionValue,
+      enabled: true,
+    });
+  }
+  
+  const totalAnnualBenefit = levers.reduce((sum, lever) => sum + lever.value, 0);
+  
+  return { levers, totalAnnualBenefit };
+}
+
+// Update main calculateRoi function signature and routing:
+
+export function calculateRoi(
+  inputs: RoiInputs, 
+  careSetting: 'outpatient' | 'ed' | 'nursing' = 'outpatient'
+): RoiResults {
+  
+  // Route to ED calculator
+  if (careSetting === 'ed' && inputs.ed) {
+    const edResults = calculateEdRoi(inputs);
+    const annualCost = inputs.numberOfProviders * inputs.monthlyCostPerProvider * 12;
+    
+    return {
+      levers: edResults.levers,
+      totalAnnualBenefit: edResults.totalAnnualBenefit,
+      annualAbridgeCost: annualCost,
+      netValueCreated: edResults.totalAnnualBenefit - annualCost,
+      roiMultiple: annualCost > 0 ? edResults.totalAnnualBenefit / annualCost : 0,
+      threeYearTotalValue: edResults.totalAnnualBenefit * 3,
+      threeYearNetGain: (edResults.totalAnnualBenefit - annualCost) * 3,
+    };
+  }
+  
+  // ... existing outpatient logic continues unchanged
+}
+
+Part 5: Update ObjectiveSelectionScreen for ED Flow
+CopySTEP 4: Update src/pages/ObjectiveSelectionScreen.tsx
+
+In the showNewCareSetting section where ED is selected, update the initialization:
+
+// Around line 1850, when ED card is clicked:
+onClick={() => {
+  setSelectedNewCareSetting("ed");
+  setCareSettingConfig(prev => ({
+    ...prev,
+    providers: 500, // ED default: 500 clinicians
+    encountersPerProvider: 200, // ED: ~200 shifts/year (not encounters)
+    customEncounters: 100000, // ED default volume
+    utilizationRate: 70,
+  }));
+  // Set ED-specific default drivers
+  setCareSettingDrivers(new Set<LeverId>([
+    "edThroughput",
+    "edLevelOfService", 
+    "edDenialReduction",
+    "edRetention"
+  ]));
+  // ED-specific adjustment defaults
+  setCareSettingDriverAdjustments({
+    edThroughput: { minutesSaved: 20, lwbsImprovement: 0.5 },
+    edLevelOfService: { baselineWrvu: 2.6, qualityLift: 5, revenuePerWrvu: 34 },
+    edDenialReduction: { denialRate: 12, preventionRate: 40 },
+    edRetention: { burnoutReduction: 45, costPerDeparture: 350000 },
+  });
+}}
+
+Part 6: Update calculateCareSettingRoi Helper
+CopySTEP 5: In RoiCalculator.tsx, update the calculateCareSettingRoi helper (around line 3200):
+
+const calculateCareSettingRoi = useCallback(() => {
+  if (!selectedNewCareSetting) {
+    return { totalBenefit: 0, investment: 0, netGain: 0, roi: 0, driverValues: {} as Record<LeverId, number>, encounters: 0 };
+  }
+  
+  if (selectedNewCareSetting === 'ed') {
+    // Calculate ED encounters
+    const edEncounters = careSettingConfig.encounterMode === "calculated"
+      ? careSettingConfig.providers * careSettingConfig.encountersPerProvider
+      : careSettingConfig.customEncounters;
+    
+    // Build ED-specific inputs
+    const edInputs: RoiInputs = {
+      ...defaultInputs,
+      numberOfProviders: careSettingConfig.providers,
+      annualOutpatientEncounters: edEncounters,
+      abridgeUtilizationPct: careSettingConfig.utilizationRate,
+      monthlyCostPerProvider: inputs.monthlyCostPerProvider,
+      
+      // Enable ED levers based on user selection
+      levers: {
+        ...Object.fromEntries(Object.keys(defaultInputs.levers).map(k => [k, false])),
+        edThroughput: careSettingDrivers.has('edThroughput'),
+        edLevelOfService: careSettingDrivers.has('edLevelOfService'),
+        edDenialReduction: careSettingDrivers.has('edDenialReduction'),
+        edRetention: careSettingDrivers.has('edRetention'),
+      },
+      
+      // ED-specific configuration
+      ed: {
+        totalClinicians: careSettingConfig.providers,
+        shiftsPerClinicianPerYear: 200,
+        baselineDocMinutesPerShift: 75,
+        minutesSavedPerShift: careSettingDriverAdjustments.edThroughput?.minutesSaved || 20,
+        
+        // Throughput (LWBS)
+        totalEdEncounters: edEncounters,
+        baselineLwbsRate: 3.0,
+        lwbsImprovementPct: careSettingDriverAdjustments.edThroughput?.lwbsImprovement || 0.5,
+        pctRecoveredTreatedAndReleased: 81,
+        pctRecoveredAdmitted: 19,
+        contributionMarginPerEncounter: 250,
+        contributionMarginPerAdmission: 2000,
+        
+        // wRVU
+        baselineWrvuPerVisit: careSettingDriverAdjustments.edLevelOfService?.baselineWrvu || 2.6,
+        wrvuConversionFactor: careSettingDriverAdjustments.edLevelOfService?.revenuePerWrvu || 34,
+        wrvuImprovementPct: careSettingDriverAdjustments.edLevelOfService?.qualityLift || 5,
+        
+        // Denials
+        netCollectibleRevenue: edEncounters * 250,
+        baselineDenialRate: careSettingDriverAdjustments.edDenialReduction?.denialRate || 12,
+        pctDenialsFromDocumentation: 32,
+        pctDocDenialsRecovered: careSettingDriverAdjustments.edDenialReduction?.preventionRate || 40,
+        
+        // Retention
+        baselineAttritionRate: 5,
+        pctTurnoverFromBurnout: 31,
+        pctBurnoutReduction: careSettingDriverAdjustments.edRetention?.burnoutReduction || 45,
+        costPerDeparture: careSettingDriverAdjustments.edRetention?.costPerDeparture || 350000,
+      },
+    };
+    
+    // Call calculator with ED setting
+    const results = calculateRoi(edInputs, 'ed');
+    
+    // Extract driver values
+    const driverValues: Record<LeverId, number> = {
+      patientAccess: 0, overtime: 0, workforce: 0, wrvu: 0, denials: 0, hcc: 0,
+      edThroughput: 0, edLevelOfService: 0, edDenialReduction: 0, edRetention: 0,
+      rnDocTime: 0, rnCommunication: 0, rnSafetyReduction: 0, rnDiagnosisSeverity: 0,
+    };
+    
+    results.levers.forEach(lever => {
+      driverValues[lever.id] = lever.value;
+    });
+    
+    return {
+      totalBenefit: results.totalAnnualBenefit,
+      investment: results.annualAbridgeCost,
+      netGain: results.netValueCreated,
+      roi: results.roiMultiple,
+      driverValues,
+      encounters: edEncounters,
+    };
+  }
+  
+  // ... keep existing nursing logic
+  
+}, [selectedNewCareSetting, careSettingConfig, careSettingDrivers, careSettingDriverAdjustments, inputs.monthlyCostPerProvider]);
+
+Part 7: Update Value Methodology Content for ED
+CopySTEP 6: In ObjectiveSelectionScreen.tsx Value Blueprint section, add ED-specific driver content:
+
+Add to DRIVER_CONTENT object (around line 400):
+
+const DRIVER_CONTENT: Record<string, DriverContent> = {
+  // ... existing outpatient drivers
+  
+  edThroughput: {
+    id: "edThroughput",
+    label: "Patient Throughput (LWBS Reduction)",
+    icon: Zap,
+    theory: "In the ED, faster documentation during shift enables clinicians to see waiting patients instead of catching up on charts. This reduces Left Without Being Seen (LWBS) rates and captures patients who would otherwise leave. Each prevented LWBS represents both revenue capture and quality improvement.",
+    calculationSteps: [
+      {
+        title: "STEP 1: Calculate Time Saved",
+        steps: [
+          { label: "ED Clinicians", value: "500" },
+          { label: "Shifts per clinician/year", value: "200" },
+          { label: "Minutes saved per shift", value: "20 min" },
+          { label: "Annual hours reclaimed", value: "33,333 hrs" },
+        ],
+      },
+      {
+        title: "STEP 2: LWBS Improvement",
+        steps: [
+          { label: "Total ED encounters", value: "100,000" },
+          { label: "Baseline LWBS rate", value: "3.0%" },
+          { label: "LWBS improvement", value: "0.5%" },
+          { label: "Post-Abridge LWBS rate", value: "2.5%" },
+          { label: "Additional patients treated", value: "526 patients" },
+        ],
+      },
+      {
+        title: "STEP 3: Revenue Impact",
+        steps: [
+          { label: "Patients treated and released (81%)", value: "426" },
+          { label: "Contribution margin per encounter", value: "$250" },
+          { label: "Regular encounter value", value: "$106,575" },
+          { label: "Patients admitted (19%)", value: "100" },
+          { label: "Contribution margin per admission", value: "$2,000" },
+          { label: "Admission value", value: "$199,993" },
+          { label: "Total annual value", value: "$306,569", isFinal: true },
+        ],
+      },
+    ],
+    keyVariables: ["Shifts per year", "Minutes saved per shift", "LWBS improvement %", "Contribution margins"],
+    rangeData: { conservative: "$200k-250k", typical: "$250k-350k", aggressive: "$350k-450k" },
+    referenceValue: 306569,
+  },
+  
+  edLevelOfService: {
+    id: "edLevelOfService",
+    label: "wRVU & Level-of-Service Alignment",
+    icon: BarChart3,
+    theory: "Time pressure in the ED often results in under-documentation and lost wRVUs. Real-time ambient documentation captures clinical complexity without adding post-shift burden, improving E/M level accuracy and wRVU capture despite the fast-paced environment.",
+    calculationSteps: [
+      {
+        title: "STEP 1: Baseline Performance",
+        steps: [
+          { label: "Annual ED visits (Abridge-documented)", value: "65,000" },
+          { label: "Baseline wRVU per visit", value: "2.60" },
+          { label: "Current annual wRVUs", value: "169,000 wRVUs" },
+        ],
+      },
+      {
+        title: "STEP 2: Documentation Quality Lift",
+        steps: [
+          { label: "wRVU improvement from complete docs", value: "5%" },
+          { label: "Additional wRVUs captured", value: "8,450 wRVUs" },
+        ],
+      },
+      {
+        title: "STEP 3: Revenue Impact",
+        steps: [
+          { label: "Additional wRVUs", value: "8,450" },
+          { label: "ED wRVU conversion factor", value: "$34" },
+          { label: "Annual value", value: "$287,300", isFinal: true },
+        ],
+      },
+    ],
+    keyVariables: ["Baseline ED wRVU", "Quality lift %", "wRVU conversion factor"],
+    rangeData: { conservative: "$200k-300k", typical: "$250k-400k", aggressive: "$400k-550k" },
+    referenceValue: 287300,
+  },
+  
+  edDenialReduction: {
+    id: "edDenialReduction",
+    label: "Documentation-Related Denials",
+    icon: FileX,
+    theory: "ED documentation under time pressure is a leading cause of denials. Complete, real-time documentation reduces denials for medical necessity, level of service, and insufficient supporting details—claims that are often unrecoverable once denied.",
+    calculationSteps: [
+      {
+        title: "STEP 1: Baseline Denials",
+        steps: [
+          { label: "Net collectible ED revenue", value: "$25M" },
+          { label: "Baseline denial rate", value: "12%" },
+          { label: "Revenue denied annually", value: "$3.0M" },
+        ],
+      },
+      {
+        title: "STEP 2: Documentation-Related",
+        steps: [
+          { label: "% denials from documentation", value: "32%" },
+          { label: "Documentation-driven denials", value: "$960,000" },
+        ],
+      },
+      {
+        title: "STEP 3: Recovery Potential",
+        steps: [
+          { label: "% recoverable with better docs", value: "40%" },
+          { label: "Annual value", value: "$384,000", isFinal: true },
+        ],
+      },
+    ],
+    keyVariables: ["ED revenue", "Denial rate", "% doc-related", "Recovery rate"],
+    rangeData: { conservative: "$250k-350k", typical: "$350k-500k", aggressive: "$500k-700k" },
+    referenceValue: 384000,
+  },
+  
+  edRetention: {
+    id: "edRetention",
+    label: "Workforce Retention",
+    icon: HeartPulse,
+    theory: "ED clinicians face extreme burnout from shift work plus after-shift charting burden. Reducing documentation time during and after shifts directly addresses a major burnout driver, reducing turnover and recruitment costs.",
+    calculationSteps: [
+      {
+        title: "STEP 1: Baseline Turnover",
+        steps: [
+          { label: "Total ED clinicians", value: "500" },
+          { label: "Annual attrition rate", value: "5%" },
+          { label: "Expected departures", value: "25/year" },
+        ],
+      },
+      {
+        title: "STEP 2: Burnout Attribution",
+        steps: [
+          { label: "% turnover from burnout", value: "31%" },
+          { label: "Burnout-driven departures", value: "8/year" },
+        ],
+      },
+      {
+        title: "STEP 3: Abridge Impact",
+        steps: [
+          { label: "% burnout reduction", value: "45%" },
+          { label: "Departures avoided", value: "3.5/year" },
+        ],
+      },
+      {
+        title: "STEP 4: Cost Savings",
+        steps: [
+          { label: "Cost per ED departure", value: "$350,000" },
+          { label: "Annual value", value: "$1,225,000", isFinal: true },
+        ],
+      },
+    ],
+    keyVariables: ["Clinician count", "Attrition rate", "Burnout %", "Replacement cost"],
+    rangeData: { conservative: "$800k-1.0M", typical: "$1.0M-1.5M", aggressive: "$1.5M-2.0M" },
+    referenceValue: 1225000,
+  },
+};

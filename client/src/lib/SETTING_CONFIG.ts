@@ -64,44 +64,35 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
   ed: [
     {
       id: "edThroughput",
-      label: "Throughput & Patient Leakage Improvement",
+      label: "Patient Throughput (LWBS Reduction)",
       category: "time",
       description:
-        "Reduce documentation drag that slows clinician throughput and extends door-to-doc times.",
-      driverSummary: "throughput, LWBS reduction, recovered visits/admissions.",
-    },
-    {
-      id: "edStaffingEfficiency",
-      label: "Staffing Efficiency & Locum Avoidance",
-      category: "time",
-      description:
-        "Offload documentation work that contributes to overtime and locum dependency.",
-      driverSummary: "overtime spend, locum reliance.",
+        "Reduce Left Without Being Seen (LWBS) rates and missed admissions by completing documentation faster during shift.",
+      driverSummary: "additional patients treated, LWBS reduction, recovered visits/admissions.",
     },
     {
       id: "edRetention",
-      label: "Clinician Retention",
+      label: "Workforce Retention",
       category: "time",
       description:
-        "Reduce documentation burden in a high-intensity setting that accelerates burnout and churn.",
-      driverSummary: "avoided turnover cost, schedule stability.",
+        "Lower ED clinician burnout and turnover by reducing after-shift documentation burden.",
+      driverSummary: "ED clinician departures avoided, schedule stability.",
     },
     {
       id: "edLevelOfService",
-      label: "Accurate Level of Service",
+      label: "wRVU & Level-of-Service Alignment",
       category: "documentation",
       description:
-        "Ensure high-acuity encounters are documented at the level delivered.",
-      driverSummary: "ED professional revenue, acuity-aligned coding.",
+        "Improve E/M accuracy and documentation completeness for better wRVU capture in time-pressured ED environment.",
+      driverSummary: "wRVU capture improvement, acuity-aligned coding.",
     },
     {
-      id: "edDocCompliance",
-      label: "Clinical Quality Measure Support",
+      id: "edDenialReduction",
+      label: "Documentation-Related Denials",
       category: "documentation",
       description:
-        "Improve real-time documentation that supports sepsis, trauma, and quality reporting..",
-      driverSummary:
-        "quality measure performance, audit readiness, preventable denial reduction.",
+        "Reduce denials caused by incomplete or unclear ED documentation under time pressure.",
+      driverSummary: "documentation-related denials prevented, higher net collections.",
     },
   ],
   nursing: [
