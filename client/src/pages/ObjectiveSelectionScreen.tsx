@@ -1022,6 +1022,7 @@ export default function ObjectiveSelectionScreen({
   const [fineTuneExpanded, setFineTuneExpanded] = useState(false);
   const [minutesSaved, setMinutesSaved] = useState<number | null>(null); // No default - user must select
   const [customMinutes, setCustomMinutes] = useState<number | null>(null);
+  const [customMinutesStr, setCustomMinutesStr] = useState<string>(""); // String state for decimal typing
   const [showCustomMinutesInput, setShowCustomMinutesInput] = useState(false);
   const customMinutesInputRef = useRef<HTMLInputElement>(null);
 
@@ -1043,7 +1044,9 @@ export default function ObjectiveSelectionScreen({
   
   // Accurate Level of Service - org-specific inputs
   const [ftWrvuBaseline, setFtWrvuBaseline] = useState<number>(1.75);
+  const [ftWrvuBaselineStr, setFtWrvuBaselineStr] = useState<string>("1.75"); // String state for decimal typing
   const [ftWrvuRevenuePerUnit, setFtWrvuRevenuePerUnit] = useState<number>(40);
+  const [ftWrvuRevenuePerUnitStr, setFtWrvuRevenuePerUnitStr] = useState<string>("40");
   
   // Clinician Retention - org-specific inputs
   const [ftRetentionTurnoverRate, setFtRetentionTurnoverRate] = useState<number>(5);
@@ -3206,13 +3209,14 @@ export default function ObjectiveSelectionScreen({
                                     <input
                                       type="text"
                                       inputMode="decimal"
-                                      value={customMinutes !== null ? customMinutes : (minutesSaved ?? "")}
+                                      value={customMinutesStr || (minutesSaved !== null ? String(minutesSaved) : "")}
                                       onChange={(e) => {
                                         const val = e.target.value;
+                                        setCustomMinutesStr(val);
                                         if (val === "") {
                                           setMinutesSaved(null as any);
                                           setCustomMinutes(null);
-                                        } else {
+                                        } else if (!val.endsWith('.') && !val.endsWith('.0')) {
                                           const num = parseFloat(val);
                                           if (!isNaN(num)) {
                                             setMinutesSaved(num);
@@ -3221,9 +3225,16 @@ export default function ObjectiveSelectionScreen({
                                         }
                                       }}
                                       onBlur={(e) => {
-                                        if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
+                                        const val = e.target.value;
+                                        if (val === "" || isNaN(parseFloat(val))) {
                                           setMinutesSaved(POSTURE_PRESETS.typical.minutes);
                                           setCustomMinutes(POSTURE_PRESETS.typical.minutes);
+                                          setCustomMinutesStr(String(POSTURE_PRESETS.typical.minutes));
+                                        } else {
+                                          const num = parseFloat(val);
+                                          setMinutesSaved(num);
+                                          setCustomMinutes(num);
+                                          setCustomMinutesStr(String(num));
                                         }
                                       }}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3538,19 +3549,26 @@ export default function ObjectiveSelectionScreen({
                                     <input
                                       type="text"
                                       inputMode="decimal"
-                                      value={ftWrvuBaseline ?? ""}
+                                      value={ftWrvuBaselineStr}
                                       onChange={(e) => {
                                         const val = e.target.value;
+                                        setFtWrvuBaselineStr(val);
                                         if (val === "") {
                                           setFtWrvuBaseline(null as any);
-                                        } else {
+                                        } else if (!val.endsWith('.')) {
                                           const num = parseFloat(val);
                                           if (!isNaN(num)) setFtWrvuBaseline(num);
                                         }
                                       }}
                                       onBlur={(e) => {
-                                        if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
+                                        const val = e.target.value;
+                                        if (val === "" || isNaN(parseFloat(val))) {
                                           setFtWrvuBaseline(1.75);
+                                          setFtWrvuBaselineStr("1.75");
+                                        } else {
+                                          const num = parseFloat(val);
+                                          setFtWrvuBaseline(num);
+                                          setFtWrvuBaselineStr(String(num));
                                         }
                                       }}
                                       className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3597,19 +3615,26 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="decimal"
-                                        value={ftWrvuRevenuePerUnit ?? ""}
+                                        value={ftWrvuRevenuePerUnitStr}
                                         onChange={(e) => {
                                           const val = e.target.value;
+                                          setFtWrvuRevenuePerUnitStr(val);
                                           if (val === "") {
                                             setFtWrvuRevenuePerUnit(null as any);
-                                          } else {
+                                          } else if (!val.endsWith('.')) {
                                             const num = parseFloat(val);
                                             if (!isNaN(num)) setFtWrvuRevenuePerUnit(num);
                                           }
                                         }}
                                         onBlur={(e) => {
-                                          if (e.target.value === "" || isNaN(parseFloat(e.target.value))) {
-                                            setFtWrvuRevenuePerUnit(50);
+                                          const val = e.target.value;
+                                          if (val === "" || isNaN(parseFloat(val))) {
+                                            setFtWrvuRevenuePerUnit(40);
+                                            setFtWrvuRevenuePerUnitStr("40");
+                                          } else {
+                                            const num = parseFloat(val);
+                                            setFtWrvuRevenuePerUnit(num);
+                                            setFtWrvuRevenuePerUnitStr(String(num));
                                           }
                                         }}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
@@ -3623,8 +3648,10 @@ export default function ObjectiveSelectionScreen({
                                   type="button" 
                                   onClick={() => {
                                     setFtWrvuBaseline(1.75);
+                                    setFtWrvuBaselineStr("1.75");
                                     setWrvuSensitivity(POSTURE_PRESETS.typical.wrvu);
                                     setFtWrvuRevenuePerUnit(40);
+                                    setFtWrvuRevenuePerUnitStr("40");
                                   }}
                                   className="mt-3 text-xs text-[#F03319] hover:underline"
                                   data-testid="button-reset-wrvu"
