@@ -1015,7 +1015,7 @@ export default function ObjectiveSelectionScreen({
 
   // Adoption step state
   const [utilizationPercent, setUtilizationPercent] = useState<number | null>(
-    65,
+    null,
   );
   const [whyMattersExpanded, setWhyMattersExpanded] = useState(false);
   const [comparePosturesExpanded, setComparePosturesExpanded] = useState(false);
@@ -2853,10 +2853,10 @@ export default function ObjectiveSelectionScreen({
                         <button
                           onClick={() => setModelSetupStep(2)}
                           disabled={
-                            effectiveClinicians === 0 || effectiveEncounters === 0
+                            effectiveClinicians === 0 || effectiveEncounters === 0 || utilizationPercent === null
                           }
                           className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
-                            effectiveClinicians > 0 && effectiveEncounters > 0
+                            effectiveClinicians > 0 && effectiveEncounters > 0 && utilizationPercent !== null
                               ? "bg-neutral-900 text-white hover:bg-neutral-800"
                               : "bg-neutral-300 text-neutral-500 cursor-not-allowed"
                           }`}
