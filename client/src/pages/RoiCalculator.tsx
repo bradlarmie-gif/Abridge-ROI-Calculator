@@ -74,6 +74,7 @@ import {
   HeartPulse,
   GitCompareArrows,
   Scale,
+  Info,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -2864,11 +2865,46 @@ export default function RoiCalculator({
                     </span>
                   </div>
                   
-                  {/* Insight box */}
+                  {/* Dynamic Insight box based on context */}
                   <div className="mt-3 p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg flex items-start gap-3">
                     <Lightbulb className="h-5 w-5 text-[#1E40AF] shrink-0" />
                     <p className="text-[14px] text-[#1E40AF]">
-                      Adding drivers increases value without increasing investment. This often dramatically improves ROI.
+                      {(() => {
+                        const selectedCount = scenarioDriverSelections.size;
+                        const addedValue = Array.from(scenarioDriverSelections).reduce((sum, id) => 
+                          sum + calculateAdjustedDriverValue(id, driverAdjustments), 0);
+                        const newTotalBenefit = totalAnnualBenefit + addedValue;
+                        const newRoi = newTotalBenefit / annualInvestment;
+                        const roiPctIncrease = ((newRoi - roiMultiple) / roiMultiple * 100).toFixed(0);
+                        
+                        if (selectedCount === 0) {
+                          return `Adding drivers increases value without increasing investment. Select from ${availableDrivers.length} available drivers to model expanded value capture.`;
+                        }
+                        if (selectedCount === 1) {
+                          const driverId = Array.from(scenarioDriverSelections)[0];
+                          const driverValue = calculateAdjustedDriverValue(driverId, driverAdjustments);
+                          const pctOfTotal = ((driverValue / newTotalBenefit) * 100).toFixed(0);
+                          return `Adding ${leverLabels[driverId]} increases your ROI from ${roiMultiple.toFixed(1)}x to ${newRoi.toFixed(1)}x without any additional investment. This driver alone adds ${formatCurrency(driverValue)} (${pctOfTotal}% of total value).`;
+                        }
+                        if (selectedCount === 2) {
+                          let maxVal = 0;
+                          let maxId: LeverId = Array.from(scenarioDriverSelections)[0];
+                          scenarioDriverSelections.forEach(id => {
+                            const val = calculateAdjustedDriverValue(id, driverAdjustments);
+                            if (val > maxVal) { maxVal = val; maxId = id; }
+                          });
+                          return `Adding these ${selectedCount} drivers increases your ROI from ${roiMultiple.toFixed(1)}x to ${newRoi.toFixed(1)}x (+${roiPctIncrease}%) without any additional investment. ${leverLabels[maxId]} contributes the most at ${formatCurrency(maxVal)}.`;
+                        }
+                        // 3+ drivers
+                        let maxVal = 0;
+                        let maxId: LeverId = Array.from(scenarioDriverSelections)[0];
+                        scenarioDriverSelections.forEach(id => {
+                          const val = calculateAdjustedDriverValue(id, driverAdjustments);
+                          if (val > maxVal) { maxVal = val; maxId = id; }
+                        });
+                        const pctOfNew = ((maxVal / addedValue) * 100).toFixed(0);
+                        return `Adding these ${selectedCount} drivers increases your ROI from ${roiMultiple.toFixed(1)}x to ${newRoi.toFixed(1)}x (+${roiPctIncrease}%) without any additional investment. ${leverLabels[maxId]} alone adds ${formatCurrency(maxVal)} (${pctOfNew}% of new value).`;
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -3012,7 +3048,26 @@ export default function RoiCalculator({
                                       <div className="text-[16px] font-bold text-[#111827]">{leverLabels[id]}</div>
                                     </div>
                                   </div>
-                                  <span className="text-[18px] font-bold text-[#059669]">+{formatCurrency(driverValue)}</span>
+                                  <div className="text-right">
+                                    <span className="text-[18px] font-bold text-[#059669]">+{formatCurrency(driverValue)}</span>
+                                    {/* ROI Impact Preview */}
+                                    <div className="text-[12px] text-[#6B7280] mt-1">
+                                      {(() => {
+                                        const currentSelectedValue = Array.from(scenarioDriverSelections)
+                                          .filter(selId => selId !== id)
+                                          .reduce((sum, selId) => sum + calculateAdjustedDriverValue(selId, driverAdjustments), 0);
+                                        const newTotalWithThis = totalAnnualBenefit + currentSelectedValue + driverValue;
+                                        const newRoi = newTotalWithThis / annualInvestment;
+                                        const pctContribution = ((driverValue / newTotalWithThis) * 100).toFixed(0);
+                                        return (
+                                          <>
+                                            <span className="text-[#059669] font-medium">→ {newRoi.toFixed(1)}x ROI</span>
+                                            <span className="ml-2 text-[#9CA3AF]">({pctContribution}% of total)</span>
+                                          </>
+                                        );
+                                      })()}
+                                    </div>
+                                  </div>
                                 </div>
                                 
                                 {/* Description */}
@@ -3237,7 +3292,10 @@ export default function RoiCalculator({
                                           <p className="text-[13px] text-[#6B7280] mt-1">Typical range: 15-30%</p>
                                         </div>
                                         <div>
-                                          <label className="text-[14px] text-[#111827] block mb-2">Premium rate ($/hr)</label>
+                                          <div className="flex items-center justify-between mb-2">
+                                            <label className="text-[14px] text-[#111827]">Premium rate ($/hr)</label>
+                                            <span className="text-[12px] text-[#6B7280] px-2 py-0.5 bg-[#F3F4F6] rounded">Baseline: $145/hr</span>
+                                          </div>
                                           <div className="relative">
                                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">$</span>
                                             <input
@@ -3247,10 +3305,23 @@ export default function RoiCalculator({
                                                 ...prev,
                                                 overtime: { ...prev.overtime, premiumRate: Number(e.target.value) }
                                               }))}
-                                              className="w-full pl-7 p-3 border border-[#E5E7EB] rounded-lg"
+                                              className={`w-full pl-7 p-3 border rounded-lg ${
+                                                Math.abs((driverAdjustments.overtime?.premiumRate || 145) - 145) > 50 
+                                                  ? "border-[#F59E0B] bg-[#FFFBEB]" 
+                                                  : "border-[#E5E7EB]"
+                                              }`}
                                             />
                                           </div>
-                                          <p className="text-[13px] text-[#6B7280] mt-1">Baseline: $145/hr</p>
+                                          {/* Validation hint when significantly different */}
+                                          {Math.abs((driverAdjustments.overtime?.premiumRate || 145) - 145) > 50 && (
+                                            <div className="mt-2 p-2 bg-[#FFFBEB] border border-[#F59E0B]/30 rounded-lg flex items-center gap-2">
+                                              <Info className="h-4 w-4 text-[#F59E0B] shrink-0" />
+                                              <span className="text-[12px] text-[#92400E]">
+                                                {((driverAdjustments.overtime?.premiumRate || 145) - 145) / 145 * 100 > 0 ? "Higher" : "Lower"} than typical by {Math.abs(Math.round(((driverAdjustments.overtime?.premiumRate || 145) - 145) / 145 * 100))}%. Is this correct for your organization?
+                                              </span>
+                                            </div>
+                                          )}
+                                          <p className="text-[12px] text-[#9CA3AF] mt-1">Typical range: $100-$200/hr</p>
                                         </div>
                                       </div>
                                     )}
@@ -3411,7 +3482,7 @@ export default function RoiCalculator({
                                     <div className="text-right text-[#6B7280]">—</div>
                                     <div className="text-right font-bold text-[#059669]">{formatCurrency(adjustedDriverValue)}</div>
                                     <div className="text-right">
-                                      <span className="px-1.5 py-0.5 bg-[#ECFDF5] text-[12px] font-bold text-[#059669] uppercase rounded">
+                                      <span className="px-1.5 py-0.5 bg-[#059669] text-[12px] font-bold text-white uppercase rounded animate-pulse">
                                         NEW
                                       </span>
                                     </div>
@@ -3469,6 +3540,97 @@ export default function RoiCalculator({
                                     </div>
                                   </div>
                                 </div>
+                                
+                                <div className="border-t border-[#E5E7EB] my-4" />
+                                
+                                {/* Value Breakdown Stacked Bar */}
+                                {(enabledDriverIds.length > 0 || scenarioDriverSelections.size > 0) && (
+                                  <div className="mb-4">
+                                    <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Value Breakdown</div>
+                                    
+                                    {/* Stacked bar */}
+                                    <div className="flex h-8 rounded-lg overflow-hidden mb-3">
+                                      {(() => {
+                                        // Combine baseline and new drivers
+                                        const allDrivers: { id: LeverId; value: number; isNew: boolean }[] = [];
+                                        enabledDriverIds.forEach(id => {
+                                          allDrivers.push({ id, value: driverValues[id], isNew: false });
+                                        });
+                                        Array.from(scenarioDriverSelections).forEach(id => {
+                                          allDrivers.push({ id, value: calculateAdjustedDriverValue(id, driverAdjustments), isNew: true });
+                                        });
+                                        
+                                        const colors = [
+                                          "bg-gradient-to-r from-[#ef4444] to-[#dc2626]",
+                                          "bg-gradient-to-r from-[#f59e0b] to-[#d97706]",
+                                          "bg-gradient-to-r from-[#10b981] to-[#059669]",
+                                          "bg-gradient-to-r from-[#3b82f6] to-[#2563eb]",
+                                          "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed]",
+                                          "bg-gradient-to-r from-[#ec4899] to-[#db2777]",
+                                        ];
+                                        
+                                        return allDrivers.map((driver, index) => {
+                                          const pct = (driver.value / scenarioTotalBenefit) * 100;
+                                          return (
+                                            <div
+                                              key={driver.id}
+                                              className={`${colors[index % colors.length]} flex items-center justify-center transition-all hover:brightness-110 ${driver.isNew ? "ring-2 ring-white ring-inset" : ""}`}
+                                              style={{ width: `${pct}%` }}
+                                              title={`${leverLabels[driver.id]}: ${formatCurrency(driver.value)} (${pct.toFixed(1)}%)`}
+                                            >
+                                              {pct > 12 && (
+                                                <span className="text-[11px] font-bold text-white truncate px-1">
+                                                  {leverLabels[driver.id].split(" ")[0]}
+                                                </span>
+                                              )}
+                                            </div>
+                                          );
+                                        });
+                                      })()}
+                                    </div>
+                                    
+                                    {/* Legend */}
+                                    <div className="space-y-1">
+                                      {(() => {
+                                        const allDrivers: { id: LeverId; value: number; isNew: boolean }[] = [];
+                                        enabledDriverIds.forEach(id => {
+                                          allDrivers.push({ id, value: driverValues[id], isNew: false });
+                                        });
+                                        Array.from(scenarioDriverSelections).forEach(id => {
+                                          allDrivers.push({ id, value: calculateAdjustedDriverValue(id, driverAdjustments), isNew: true });
+                                        });
+                                        
+                                        const colors = [
+                                          "bg-[#ef4444]",
+                                          "bg-[#f59e0b]",
+                                          "bg-[#10b981]",
+                                          "bg-[#3b82f6]",
+                                          "bg-[#8b5cf6]",
+                                          "bg-[#ec4899]",
+                                        ];
+                                        
+                                        return allDrivers.map((driver, index) => {
+                                          const pct = (driver.value / scenarioTotalBenefit) * 100;
+                                          return (
+                                            <div key={driver.id} className="flex items-center justify-between text-[12px]">
+                                              <div className="flex items-center gap-2">
+                                                <div className={`w-3 h-3 rounded ${colors[index % colors.length]}`} />
+                                                <span className="text-[#6B7280]">{leverLabels[driver.id]}</span>
+                                                {driver.isNew && (
+                                                  <span className="px-1 py-0.5 bg-[#059669] text-[9px] font-bold text-white uppercase rounded">NEW</span>
+                                                )}
+                                              </div>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-[#111827] font-medium">${(driver.value / 1000).toFixed(0)}K</span>
+                                                <span className="text-[#9CA3AF]">({pct.toFixed(0)}%)</span>
+                                              </div>
+                                            </div>
+                                          );
+                                        });
+                                      })()}
+                                    </div>
+                                  </div>
+                                )}
                                 
                                 <div className="border-t border-[#E5E7EB] my-4" />
                                 

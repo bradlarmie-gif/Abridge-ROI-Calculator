@@ -1,0 +1,401 @@
+1. Fix the "Key Insight" Dynamic Messaging
+The insight box needs to update more intelligently based on what drivers are added:
+javascriptCopy// Enhanced Key Insight Generator
+const generateKeyInsight = (activeDrivers, baselineROI, scenarioROI, investment) => {
+  const roiIncrease = scenarioROI - baselineROI;
+  const roiPercentIncrease = ((roiIncrease / baselineROI) * 100).toFixed(0);
+  const totalNewValue = activeDrivers.reduce((sum, driver) => sum + driver.value, 0);
+  const largestDriver = activeDrivers.reduce((max, driver) => 
+    driver.value > max.value ? driver : max, activeDrivers[0]);
+  
+  // Different messages based on context
+  if (activeDrivers.length === 1) {
+    return `Adding ${activeDrivers[0].name} increases your ROI from ${baselineROI}x to ${scenarioROI}x without any additional investment. ${activeDrivers[0].name} alone adds $${activeDrivers[0].value.toLocaleString()} (${((activeDrivers[0].value / totalBenefit) * 100).toFixed(0)}% of total value).`;
+  }
+  
+  if (activeDrivers.length === 2) {
+    return `Adding these ${activeDrivers.length} drivers increases your ROI from ${baselineROI}x to ${scenarioROI}x (+${roiPercentIncrease}%) without any additional investment. ${largestDriver.name} contributes the most at $${largestDriver.value.toLocaleString()}.`;
+  }
+  
+  if (activeDrivers.length >= 3) {
+    return `Adding these ${activeDrivers.length} drivers increases your ROI from ${baselineROI}x to ${scenarioROI}x (+${roiPercentIncrease}%) without any additional investment. ${largestDriver.name} alone adds $${largestDriver.value.toLocaleString()} (${((largestDriver.value / totalNewValue) * 100).toFixed(0)}% of new value).`;
+  }
+  
+  return `Adding drivers increases value without increasing investment. This often dramatically improves ROI.`;
+};
+2. Add Incremental Value Display
+Show the marginal contribution of each driver as users add them:
+jsxCopy{/* After each driver card in AVAILABLE TO ADD section */}
+<div className="driver-card">
+  <label className="checkbox-label">
+    <input type="checkbox" onChange={handleDriverToggle} />
+    <div className="driver-info">
+      <strong>Clinician Retention</strong>
+      <p className="driver-description">Burnout is driven less by clinical load...</p>
+    </div>
+  </label>
+  
+  <div className="driver-value-display">
+    <span className="value-amount">+$80,000</span>
+    
+    {/* NEW: Show what this does to ROI */}
+    <div className="impact-preview">
+      <span className="roi-impact">→ {calculateNewROI(80000)}x ROI</span>
+      <span className="value-contribution">
+        {((80000 / (currentTotalBenefit + 80000)) * 100).toFixed(0)}% of total
+      </span>
+    </div>
+  </div>
+</div>
+3. Add Progressive Disclosure for Adjustable Inputs
+Make it clearer when users can customize the calculations:
+jsxCopy{/* Inside expanded driver methodology */}
+<div className="adjust-section">
+  <div className="adjust-header">
+    <h5>Adjust for Your Organization</h5>
+    <span className="badge baseline-badge">Baseline: $145/hr</span>
+  </div>
+  
+  <label>
+    <div className="label-with-tooltip">
+      <span>Premium rate ($/hr)</span>
+      <button className="info-tooltip" title="Includes overtime premium, locum tenens, or premium shift differentials">
+        ⓘ
+      </button>
+    </div>
+    <div className="input-with-comparison">
+      <input
+        type="number"
+        value={premiumRate}
+        onChange={handleRateChange}
+        onFocus={() => setShowComparison(true)}
+      />
+      {showComparison && (
+        <div className="comparison-hint">
+          <span className="your-value">Your value: ${premiumRate}</span>
+          <span className="vs">vs</span>
+          <span className="baseline">Baseline: $145</span>
+          {Math.abs(premiumRate - 145) > 20 && (
+            <span className="variance-warning">
+              ⚠️ Significantly different from typical
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  </label>
+  
+  {/* Live calculation preview */}
+  <div className="calculation-preview">
+    <div className="calc-line">
+      <span>After-hours work:</span>
+      <span>{afterHoursPercent}% × 1,923 hours</span>
+      <span className="calc-result">= {Math.round(1923 * afterHoursPercent / 100)} hours</span>
+    </div>
+    <div className="calc-line">
+      <span>Premium cost avoided:</span>
+      <span>{Math.round(1923 * afterHoursPercent / 100)} hours × ${premiumRate}/hr</span>
+      <span className="calc-result">= ${calculatedValue.toLocaleString()}</span>
+    </div>
+  </div>
+</div>
+4. Enhanced Scenario Preview - Show Marginal Impact
+Update the right-side preview to highlight what changed:
+jsxCopy<div className="scenario-preview">
+  <h4>SCENARIO PREVIEW</h4>
+  <p className="update-note">Updates in real-time</p>
+  
+  {/* Comparison table */}
+  <table className="comparison-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>BASELINE</th>
+        <th>SCENARIO</th>
+        <th>CHANGE</th>
+      </tr>
+    </thead>
+    <tbody>
+      {/* Deployment (unchanged) */}
+      <tr className="section-header">
+        <td colSpan="4">DEPLOYMENT (UNCHANGED)</td>
+      </tr>
+      <tr>
+        <td>Providers</td>
+        <td>40</td>
+        <td>40</td>
+        <td className="neutral">—</td>
+      </tr>
+      
+      {/* Active Drivers - Show each with NEW badge */}
+      <tr className="section-header">
+        <td colSpan="4">ACTIVE DRIVERS</td>
+      </tr>
+      
+      {baselineDrivers.map(driver => (
+        <tr key={driver.name}>
+          <td>{driver.name}</td>
+          <td>${driver.baselineValue.toLocaleString()}</td>
+          <td>${driver.scenarioValue.toLocaleString()}</td>
+          <td className="neutral">—</td>
+        </tr>
+      ))}
+      
+      {newDrivers.map(driver => (
+        <tr key={driver.name} className="new-driver-row">
+          <td>
+            {driver.name}
+            <span className="pulse-badge">NEW</span>
+          </td>
+          <td className="empty">—</td>
+          <td className="highlight">${driver.value.toLocaleString()}</td>
+          <td className="positive-change">
+            <span className="badge new-badge">NEW</span>
+          </td>
+        </tr>
+      ))}
+      
+      {/* Summary with highlighted changes */}
+      <tr className="section-header">
+        <td colSpan="4">SUMMARY</td>
+      </tr>
+      <tr className="summary-row">
+        <td><strong>Total Benefit</strong></td>
+        <td>${baselineBenefit.toLocaleString()}</td>
+        <td className="highlight">${scenarioBenefit.toLocaleString()}</td>
+        <td className="positive-change">
+          +{((scenarioBenefit - baselineBenefit) / baselineBenefit * 100).toFixed(0)}%
+        </td>
+      </tr>
+      <tr>
+        <td>Investment</td>
+        <td>${investment.toLocaleString()}</td>
+        <td>${investment.toLocaleString()}</td>
+        <td className="neutral">—</td>
+      </tr>
+      <tr className="net-gain-row">
+        <td><strong>Net Gain</strong></td>
+        <td>${baselineNetGain.toLocaleString()}</td>
+        <td className="highlight-strong">${scenarioNetGain.toLocaleString()}</td>
+        <td className="positive-change strong">
+          +{((scenarioNetGain - baselineNetGain) / baselineNetGain * 100).toFixed(0)}%
+        </td>
+      </tr>
+      <tr className="roi-row">
+        <td><strong>ROI</strong></td>
+        <td>{baselineROI}x</td>
+        <td className="highlight-strong">{scenarioROI}x</td>
+        <td className="positive-change strong">
+          +{((scenarioROI - baselineROI) / baselineROI * 100).toFixed(0)}%
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  {/* Key Insight Box */}
+  <div className="key-insight-box">
+    <div className="insight-icon">💡</div>
+    <div className="insight-content">
+      <strong>Key Insight</strong>
+      <p>{generateKeyInsight(activeDrivers, baselineROI, scenarioROI)}</p>
+    </div>
+  </div>
+  
+  {/* 3-Year Projection */}
+  <div className="projection-section">
+    <h5>3-YEAR PROJECTION</h5>
+    <div className="projection-row">
+      <span>Total Value</span>
+      <span className="baseline-value">${baselineThreeYear.toLocaleString()}</span>
+      <span className="scenario-value">${scenarioThreeYear.toLocaleString()}</span>
+      <span className="change">+{projectionIncrease}%</span>
+    </div>
+  </div>
+</div>
+5. Add "Value Breakdown" Visualization
+Show a stacked bar or pie chart of value contribution:
+jsxCopy{/* After the table in scenario preview */}
+<div className="value-breakdown-chart">
+  <h5>Value Breakdown</h5>
+  <div className="stacked-bar">
+    {activeDrivers.map((driver, index) => (
+      <div 
+        key={driver.name}
+        className={`bar-segment segment-${index}`}
+        style={{
+          width: `${(driver.value / totalBenefit) * 100}%`
+        }}
+        title={`${driver.name}: $${driver.value.toLocaleString()} (${((driver.value / totalBenefit) * 100).toFixed(1)}%)`}
+      >
+        {((driver.value / totalBenefit) * 100) > 10 && (
+          <span className="segment-label">
+            {driver.shortName || driver.name.split(' ')[0]}
+          </span>
+        )}
+      </div>
+    ))}
+  </div>
+  
+  {/* Legend */}
+  <div className="chart-legend">
+    {activeDrivers.map((driver, index) => (
+      <div key={driver.name} className="legend-item">
+        <span className={`legend-color segment-${index}`}></span>
+        <span className="legend-label">{driver.name}</span>
+        <span className="legend-value">${(driver.value / 1000).toFixed(0)}K</span>
+        <span className="legend-percent">
+          ({((driver.value / totalBenefit) * 100).toFixed(0)}%)
+        </span>
+      </div>
+    ))}
+  </div>
+</div>
+6. Add Validation & Smart Defaults
+Help users understand if their inputs are reasonable:
+jsxCopy{/* In adjustment fields */}
+<div className="input-validation">
+  <input
+    type="number"
+    value={value}
+    onChange={handleChange}
+    className={getValidationClass(value)}
+  />
+  {showValidation && (
+    <div className={`validation-message ${validationType}`}>
+      {validationType === 'warning' && (
+        <>
+          <span className="icon">⚠️</span>
+          <span>This is {percentDiff}% {direction} than typical. Is this correct?</span>
+        </>
+      )}
+      {validationType === 'info' && (
+        <>
+          <span className="icon">ℹ️</span>
+          <span>Typical range: {typicalRange}</span>
+        </>
+      )}
+    </div>
+  )}
+</div>
+7. Enhanced CSS for New Elements
+cssCopy/* Pulse animation for NEW badges */
+@keyframes pulse-glow {
+  0%, 100% { 
+    background-color: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% { 
+    background-color: #059669;
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+}
+
+.new-badge {
+  animation: pulse-glow 2s ease-in-out infinite;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Impact preview on hover */
+.impact-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.driver-card:hover .impact-preview {
+  opacity: 1;
+}
+
+.roi-impact {
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.value-contribution {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Value breakdown chart */
+.stacked-bar {
+  display: flex;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.bar-segment:hover {
+  filter: brightness(1.1);
+  transform: scaleY(1.1);
+}
+
+.segment-0 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.segment-1 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.segment-2 { background: linear-gradient(135deg, #10b981, #059669); }
+.segment-3 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.segment-4 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+.segment-label {
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Comparison hint */
+.comparison-hint {
+  position: absolute;
+  bottom: -60px;
+  left: 0;
+  right: 0;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.variance-warning {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* Highlight changed rows */
+.new-driver-row {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0) 100%);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
