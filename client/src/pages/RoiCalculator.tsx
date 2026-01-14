@@ -2498,14 +2498,30 @@ export default function RoiCalculator({
                                   <div>
                                     <label className="text-[13px] text-[#6B7280]">Count:</label>
                                     <input
-                                      type="number"
-                                      value={provider.count}
+                                      type="text"
+                                      inputMode="numeric"
+                                      value={rawInputValues[`provider_count_${index}`] ?? String(provider.count)}
                                       onChange={(e) => {
-                                        const newBreakdown = [...providerBreakdown];
-                                        newBreakdown[index].count = parseInt(e.target.value) || 0;
-                                        setProviderBreakdown(newBreakdown);
-                                        const totalProviders = newBreakdown.reduce((sum, p) => sum + p.count, 0);
-                                        setScenarioForm({ ...scenarioForm, providers: totalProviders });
+                                        const val = e.target.value;
+                                        if (val === "" || /^[0-9]*$/.test(val)) {
+                                          setRawInputValues(prev => ({ ...prev, [`provider_count_${index}`]: val }));
+                                          if (val !== "" && !isNaN(Number(val))) {
+                                            const newBreakdown = [...providerBreakdown];
+                                            newBreakdown[index].count = parseInt(val) || 0;
+                                            setProviderBreakdown(newBreakdown);
+                                            const totalProviders = newBreakdown.reduce((sum, p) => sum + p.count, 0);
+                                            setScenarioForm({ ...scenarioForm, providers: totalProviders });
+                                          }
+                                        }
+                                      }}
+                                      onBlur={() => {
+                                        const val = rawInputValues[`provider_count_${index}`];
+                                        if (val === "" || val === undefined) {
+                                          const newBreakdown = [...providerBreakdown];
+                                          newBreakdown[index].count = 0;
+                                          setProviderBreakdown(newBreakdown);
+                                        }
+                                        setRawInputValues(prev => { const next = { ...prev }; delete next[`provider_count_${index}`]; return next; });
                                       }}
                                       className="w-[80px] h-9 px-2 ml-2 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[2px] focus:ring-[#E8532F]/10 focus:outline-none"
                                       data-testid={`input-provider-count-${index}`}
@@ -4116,13 +4132,29 @@ export default function RoiCalculator({
                                   {selectedNewCareSetting === "ed" ? "ED providers in scope" : "Nurses in scope"}
                                 </label>
                                 <input
-                                  type="number"
-                                  value={careSettingConfig.providers}
-                                  onChange={(e) => setCareSettingConfig(prev => ({
-                                    ...prev,
-                                    providers: parseInt(e.target.value) || 0,
-                                    customEncounters: (parseInt(e.target.value) || 0) * prev.encountersPerProvider,
-                                  }))}
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={rawInputValues["cs_providers"] ?? String(careSettingConfig.providers)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^[0-9]*$/.test(val)) {
+                                      setRawInputValues(prev => ({ ...prev, "cs_providers": val }));
+                                      if (val !== "" && !isNaN(Number(val))) {
+                                        const providerCount = parseInt(val) || 0;
+                                        setCareSettingConfig(prev => ({
+                                          ...prev,
+                                          providers: providerCount,
+                                          customEncounters: providerCount * prev.encountersPerProvider,
+                                        }));
+                                      }
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (rawInputValues["cs_providers"] === "" || rawInputValues["cs_providers"] === undefined) {
+                                      setCareSettingConfig(prev => ({ ...prev, providers: 10 }));
+                                    }
+                                    setRawInputValues(prev => { const next = { ...prev }; delete next["cs_providers"]; return next; });
+                                  }}
                                   className="w-full px-4 py-3 border border-[#E5E7EB] rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#E8532F]/20 focus:border-[#E8532F]"
                                   data-testid="input-care-setting-providers"
                                 />
@@ -4170,12 +4202,27 @@ export default function RoiCalculator({
                                     <div className="flex-1">
                                       <span className="text-[14px] text-[#111827]">Enter custom volume</span>
                                       <input
-                                        type="number"
-                                        value={careSettingConfig.customEncounters}
-                                        onChange={(e) => setCareSettingConfig(prev => ({
-                                          ...prev,
-                                          customEncounters: parseInt(e.target.value) || 0,
-                                        }))}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={rawInputValues["cs_encounters"] ?? String(careSettingConfig.customEncounters)}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "" || /^[0-9]*$/.test(val)) {
+                                            setRawInputValues(prev => ({ ...prev, "cs_encounters": val }));
+                                            if (val !== "" && !isNaN(Number(val))) {
+                                              setCareSettingConfig(prev => ({
+                                                ...prev,
+                                                customEncounters: parseInt(val) || 0,
+                                              }));
+                                            }
+                                          }
+                                        }}
+                                        onBlur={() => {
+                                          if (rawInputValues["cs_encounters"] === "" || rawInputValues["cs_encounters"] === undefined) {
+                                            setCareSettingConfig(prev => ({ ...prev, customEncounters: prev.providers * prev.encountersPerProvider }));
+                                          }
+                                          setRawInputValues(prev => { const next = { ...prev }; delete next["cs_encounters"]; return next; });
+                                        }}
                                         disabled={careSettingConfig.encounterMode !== "custom"}
                                         className="mt-2 w-full px-4 py-3 border border-[#E5E7EB] rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[#E8532F]/20 focus:border-[#E8532F] disabled:bg-[#F9FAFB] disabled:cursor-not-allowed"
                                         data-testid="input-care-setting-custom-encounters"
@@ -4332,13 +4379,30 @@ export default function RoiCalculator({
                                             <div>
                                               <label className="block text-[14px] text-[#111827] mb-2">Baseline wRVU per {selectedNewCareSetting === "ed" ? "ED" : ""} encounter</label>
                                               <input
-                                                type="number"
-                                                step="0.1"
-                                                value={careSettingDriverAdjustments.wrvu?.baselineWrvu || 2.8}
-                                                onChange={(e) => setCareSettingDriverAdjustments(prev => ({
-                                                  ...prev,
-                                                  wrvu: { ...prev.wrvu, baselineWrvu: parseFloat(e.target.value) || 2.8 }
-                                                }))}
+                                                type="text"
+                                                inputMode="decimal"
+                                                value={rawInputValues["cs_baselineWrvu"] ?? String(careSettingDriverAdjustments.wrvu?.baselineWrvu || 2.8)}
+                                                onChange={(e) => {
+                                                  const val = e.target.value;
+                                                  if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                                    setRawInputValues(prev => ({ ...prev, "cs_baselineWrvu": val }));
+                                                    if (val !== "" && !isNaN(Number(val))) {
+                                                      setCareSettingDriverAdjustments(prev => ({
+                                                        ...prev,
+                                                        wrvu: { ...prev.wrvu, baselineWrvu: parseFloat(val) || 2.8 }
+                                                      }));
+                                                    }
+                                                  }
+                                                }}
+                                                onBlur={() => {
+                                                  if (rawInputValues["cs_baselineWrvu"] === "" || rawInputValues["cs_baselineWrvu"] === undefined) {
+                                                    setCareSettingDriverAdjustments(prev => ({
+                                                      ...prev,
+                                                      wrvu: { ...prev.wrvu, baselineWrvu: 2.8 }
+                                                    }));
+                                                  }
+                                                  setRawInputValues(prev => { const next = { ...prev }; delete next["cs_baselineWrvu"]; return next; });
+                                                }}
                                                 className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[14px]"
                                               />
                                               <p className="mt-1 text-[13px] text-[#6B7280]">ED typical range: 2.4-3.2 | Outpatient baseline: 1.75</p>
@@ -4366,12 +4430,30 @@ export default function RoiCalculator({
                                               <div className="flex items-center gap-2">
                                                 <span className="text-[14px] text-[#6B7280]">$</span>
                                                 <input
-                                                  type="number"
-                                                  value={careSettingDriverAdjustments.wrvu?.revenuePerWrvu || 45}
-                                                  onChange={(e) => setCareSettingDriverAdjustments(prev => ({
-                                                    ...prev,
-                                                    wrvu: { ...prev.wrvu, revenuePerWrvu: parseInt(e.target.value) || 45 }
-                                                  }))}
+                                                  type="text"
+                                                  inputMode="numeric"
+                                                  value={rawInputValues["cs_revenuePerWrvu"] ?? String(careSettingDriverAdjustments.wrvu?.revenuePerWrvu || 45)}
+                                                  onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === "" || /^[0-9]*$/.test(val)) {
+                                                      setRawInputValues(prev => ({ ...prev, "cs_revenuePerWrvu": val }));
+                                                      if (val !== "" && !isNaN(Number(val))) {
+                                                        setCareSettingDriverAdjustments(prev => ({
+                                                          ...prev,
+                                                          wrvu: { ...prev.wrvu, revenuePerWrvu: parseInt(val) || 45 }
+                                                        }));
+                                                      }
+                                                    }
+                                                  }}
+                                                  onBlur={() => {
+                                                    if (rawInputValues["cs_revenuePerWrvu"] === "" || rawInputValues["cs_revenuePerWrvu"] === undefined) {
+                                                      setCareSettingDriverAdjustments(prev => ({
+                                                        ...prev,
+                                                        wrvu: { ...prev.wrvu, revenuePerWrvu: 45 }
+                                                      }));
+                                                    }
+                                                    setRawInputValues(prev => { const next = { ...prev }; delete next["cs_revenuePerWrvu"]; return next; });
+                                                  }}
                                                   className="flex-1 px-4 py-2 border border-[#E5E7EB] rounded-lg text-[14px]"
                                                 />
                                               </div>
@@ -4444,12 +4526,30 @@ export default function RoiCalculator({
                                               <div className="flex items-center gap-2">
                                                 <span className="text-[14px] text-[#6B7280]">$</span>
                                                 <input
-                                                  type="number"
-                                                  value={careSettingDriverAdjustments.overtime?.premiumRate || 160}
-                                                  onChange={(e) => setCareSettingDriverAdjustments(prev => ({
-                                                    ...prev,
-                                                    overtime: { ...prev.overtime, premiumRate: parseInt(e.target.value) || 160 }
-                                                  }))}
+                                                  type="text"
+                                                  inputMode="numeric"
+                                                  value={rawInputValues["cs_premiumRate"] ?? String(careSettingDriverAdjustments.overtime?.premiumRate || 160)}
+                                                  onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === "" || /^[0-9]*$/.test(val)) {
+                                                      setRawInputValues(prev => ({ ...prev, "cs_premiumRate": val }));
+                                                      if (val !== "" && !isNaN(Number(val))) {
+                                                        setCareSettingDriverAdjustments(prev => ({
+                                                          ...prev,
+                                                          overtime: { ...prev.overtime, premiumRate: parseInt(val) || 160 }
+                                                        }));
+                                                      }
+                                                    }
+                                                  }}
+                                                  onBlur={() => {
+                                                    if (rawInputValues["cs_premiumRate"] === "" || rawInputValues["cs_premiumRate"] === undefined) {
+                                                      setCareSettingDriverAdjustments(prev => ({
+                                                        ...prev,
+                                                        overtime: { ...prev.overtime, premiumRate: 160 }
+                                                      }));
+                                                    }
+                                                    setRawInputValues(prev => { const next = { ...prev }; delete next["cs_premiumRate"]; return next; });
+                                                  }}
                                                   className="flex-1 px-4 py-2 border border-[#E5E7EB] rounded-lg text-[14px]"
                                                 />
                                               </div>
@@ -5311,9 +5411,20 @@ export default function RoiCalculator({
                               <div>
                                 <label className="block text-[14px] text-[#6B7280] mb-2">Number of Scribes</label>
                                 <input
-                                  type="number"
-                                  value={scribeCount}
-                                  onChange={(e) => setScribeCount(parseInt(e.target.value) || 0)}
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={rawInputValues["scribeCount"] ?? String(scribeCount)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^[0-9]*$/.test(val)) {
+                                      setRawInputValues(prev => ({ ...prev, "scribeCount": val }));
+                                      if (val !== "" && !isNaN(Number(val))) setScribeCount(parseInt(val) || 0);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (rawInputValues["scribeCount"] === "" || rawInputValues["scribeCount"] === undefined) setScribeCount(5);
+                                    setRawInputValues(prev => { const next = { ...prev }; delete next["scribeCount"]; return next; });
+                                  }}
                                   className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   data-testid="input-scribe-count"
                                 />
@@ -5321,9 +5432,20 @@ export default function RoiCalculator({
                               <div>
                                 <label className="block text-[14px] text-[#6B7280] mb-2">Average Hourly Rate ($)</label>
                                 <input
-                                  type="number"
-                                  value={scribeHourlyRate}
-                                  onChange={(e) => setScribeHourlyRate(parseInt(e.target.value) || 0)}
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={rawInputValues["scribeHourlyRate"] ?? String(scribeHourlyRate)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                      setRawInputValues(prev => ({ ...prev, "scribeHourlyRate": val }));
+                                      if (val !== "" && !isNaN(Number(val))) setScribeHourlyRate(parseInt(val) || 0);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (rawInputValues["scribeHourlyRate"] === "" || rawInputValues["scribeHourlyRate"] === undefined) setScribeHourlyRate(25);
+                                    setRawInputValues(prev => { const next = { ...prev }; delete next["scribeHourlyRate"]; return next; });
+                                  }}
                                   className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   data-testid="input-scribe-hourly-rate"
                                 />
@@ -5331,9 +5453,20 @@ export default function RoiCalculator({
                               <div>
                                 <label className="block text-[14px] text-[#6B7280] mb-2">Hours per Week (per scribe)</label>
                                 <input
-                                  type="number"
-                                  value={scribeHoursPerWeek}
-                                  onChange={(e) => setScribeHoursPerWeek(parseInt(e.target.value) || 0)}
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={rawInputValues["scribeHoursPerWeek"] ?? String(scribeHoursPerWeek)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^[0-9]*$/.test(val)) {
+                                      setRawInputValues(prev => ({ ...prev, "scribeHoursPerWeek": val }));
+                                      if (val !== "" && !isNaN(Number(val))) setScribeHoursPerWeek(parseInt(val) || 0);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (rawInputValues["scribeHoursPerWeek"] === "" || rawInputValues["scribeHoursPerWeek"] === undefined) setScribeHoursPerWeek(40);
+                                    setRawInputValues(prev => { const next = { ...prev }; delete next["scribeHoursPerWeek"]; return next; });
+                                  }}
                                   className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   data-testid="input-scribe-hours"
                                 />
@@ -5384,9 +5517,20 @@ export default function RoiCalculator({
                               <div>
                                 <label className="block text-[14px] text-[#6B7280] mb-2">Monthly Cost per Provider ($)</label>
                                 <input
-                                  type="number"
-                                  value={competitorCostPerProvider}
-                                  onChange={(e) => setCompetitorCostPerProvider(parseInt(e.target.value) || 0)}
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={rawInputValues["competitorCost"] ?? String(competitorCostPerProvider)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                      setRawInputValues(prev => ({ ...prev, "competitorCost": val }));
+                                      if (val !== "" && !isNaN(Number(val))) setCompetitorCostPerProvider(parseInt(val) || 0);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (rawInputValues["competitorCost"] === "" || rawInputValues["competitorCost"] === undefined) setCompetitorCostPerProvider(200);
+                                    setRawInputValues(prev => { const next = { ...prev }; delete next["competitorCost"]; return next; });
+                                  }}
                                   className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   data-testid="input-competitor-cost"
                                 />
@@ -5394,9 +5538,20 @@ export default function RoiCalculator({
                               <div>
                                 <label className="block text-[14px] text-[#6B7280] mb-2">Providers Using {selectedCompetitor.name}</label>
                                 <input
-                                  type="number"
-                                  value={competitorProviderCount === "" ? "" : competitorProviderCount}
-                                  onChange={(e) => setCompetitorProviderCount(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={rawInputValues["competitorProviders"] ?? (competitorProviderCount === "" ? "" : String(competitorProviderCount))}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^[0-9]*$/.test(val)) {
+                                      setRawInputValues(prev => ({ ...prev, "competitorProviders": val }));
+                                      if (val !== "") setCompetitorProviderCount(parseInt(val) || 0);
+                                      else setCompetitorProviderCount("");
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    setRawInputValues(prev => { const next = { ...prev }; delete next["competitorProviders"]; return next; });
+                                  }}
                                   className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   data-testid="input-competitor-providers"
                                 />
@@ -5419,10 +5574,20 @@ export default function RoiCalculator({
                               <div>
                                 <label className="block text-[14px] text-[#6B7280] mb-2">Time Saved per Encounter (min)</label>
                                 <input
-                                  type="number"
-                                  step="0.5"
-                                  value={competitorTimeSaved}
-                                  onChange={(e) => setCompetitorTimeSaved(parseFloat(e.target.value) || 0)}
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={rawInputValues["competitorTimeSaved"] ?? String(competitorTimeSaved)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                      setRawInputValues(prev => ({ ...prev, "competitorTimeSaved": val }));
+                                      if (val !== "" && !isNaN(Number(val))) setCompetitorTimeSaved(parseFloat(val) || 0);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    if (rawInputValues["competitorTimeSaved"] === "" || rawInputValues["competitorTimeSaved"] === undefined) setCompetitorTimeSaved(8);
+                                    setRawInputValues(prev => { const next = { ...prev }; delete next["competitorTimeSaved"]; return next; });
+                                  }}
                                   className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   data-testid="input-competitor-time-saved"
                                 />
@@ -5439,12 +5604,22 @@ export default function RoiCalculator({
                                   <div className="flex items-center gap-1">
                                     <span className="text-[14px] text-[#6B7280]">+</span>
                                     <input
-                                      type="number"
-                                      value={competitorDrivers.accurateService.wrvuUplift || ""}
-                                      onChange={(e) => setCompetitorDrivers(prev => ({
-                                        ...prev,
-                                        accurateService: { ...prev.accurateService, enabled: true, wrvuUplift: parseFloat(e.target.value) || 0 }
-                                      }))}
+                                      type="text"
+                                      inputMode="decimal"
+                                      value={rawInputValues["comp_wrvuUplift"] ?? (competitorDrivers.accurateService.wrvuUplift || "")}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                          setRawInputValues(prev => ({ ...prev, "comp_wrvuUplift": val }));
+                                          setCompetitorDrivers(prev => ({
+                                            ...prev,
+                                            accurateService: { ...prev.accurateService, enabled: true, wrvuUplift: parseFloat(val) || 0 }
+                                          }));
+                                        }
+                                      }}
+                                      onBlur={() => {
+                                        setRawInputValues(prev => { const next = { ...prev }; delete next["comp_wrvuUplift"]; return next; });
+                                      }}
                                       placeholder="e.g., 125"
                                       className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                       data-testid="input-competitor-wrvu-uplift"
@@ -5458,12 +5633,22 @@ export default function RoiCalculator({
                                   <div className="flex items-center gap-1">
                                     <span className="text-[14px] text-[#6B7280]">$</span>
                                     <input
-                                      type="number"
-                                      value={competitorDrivers.accurateService.wrvuRate || ""}
-                                      onChange={(e) => setCompetitorDrivers(prev => ({
-                                        ...prev,
-                                        accurateService: { ...prev.accurateService, enabled: true, wrvuRate: parseFloat(e.target.value) || 0 }
-                                      }))}
+                                      type="text"
+                                      inputMode="decimal"
+                                      value={rawInputValues["comp_wrvuRate"] ?? (competitorDrivers.accurateService.wrvuRate || "")}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                          setRawInputValues(prev => ({ ...prev, "comp_wrvuRate": val }));
+                                          setCompetitorDrivers(prev => ({
+                                            ...prev,
+                                            accurateService: { ...prev.accurateService, enabled: true, wrvuRate: parseFloat(val) || 0 }
+                                          }));
+                                        }
+                                      }}
+                                      onBlur={() => {
+                                        setRawInputValues(prev => { const next = { ...prev }; delete next["comp_wrvuRate"]; return next; });
+                                      }}
                                       placeholder="e.g., 40"
                                       className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                       data-testid="input-competitor-wrvu-rate"
@@ -5825,12 +6010,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">Additional visits per year</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.patientAccess.value || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      patientAccess: { ...prev.patientAccess, value: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_patientAccess_visits"] ?? (competitorDrivers.patientAccess.value || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_patientAccess_visits": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          patientAccess: { ...prev.patientAccess, value: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_patientAccess_visits"]; return next; })}
                                     placeholder="e.g., 650"
                                     className="w-full max-w-xs h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -5840,12 +6033,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">Annual value ($)</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.patientAccess.value || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      patientAccess: { ...prev.patientAccess, value: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_patientAccess_direct"] ?? (competitorDrivers.patientAccess.value || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_patientAccess_direct": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          patientAccess: { ...prev.patientAccess, value: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_patientAccess_direct"]; return next; })}
                                     placeholder="e.g., 130000"
                                     className="w-full max-w-xs h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -5893,12 +6094,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">wRVU uplift/provider/year</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.accurateService.wrvuUplift || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      accurateService: { ...prev.accurateService, wrvuUplift: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_as_wrvuUplift"] ?? (competitorDrivers.accurateService.wrvuUplift || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_as_wrvuUplift": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          accurateService: { ...prev.accurateService, wrvuUplift: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_as_wrvuUplift"]; return next; })}
                                     placeholder="e.g., 125"
                                     className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -5906,12 +6115,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">wRVU rate ($/wRVU)</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.accurateService.wrvuRate || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      accurateService: { ...prev.accurateService, wrvuRate: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_as_wrvuRate"] ?? (competitorDrivers.accurateService.wrvuRate || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_as_wrvuRate": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          accurateService: { ...prev.accurateService, wrvuRate: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_as_wrvuRate"]; return next; })}
                                     placeholder="e.g., 40"
                                     className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -5962,13 +6179,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">Departures prevented/year</label>
                                   <input
-                                    type="number"
-                                    step="0.1"
-                                    value={competitorDrivers.clinicianRetention.departuresPrevented || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      clinicianRetention: { ...prev.clinicianRetention, departuresPrevented: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_cr_departures"] ?? (competitorDrivers.clinicianRetention.departuresPrevented || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_cr_departures": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          clinicianRetention: { ...prev.clinicianRetention, departuresPrevented: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_cr_departures"]; return next; })}
                                     placeholder="e.g., 0.24"
                                     className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -5976,12 +6200,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">Replacement cost ($)</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.clinicianRetention.replacementCost || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      clinicianRetention: { ...prev.clinicianRetention, replacementCost: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={rawInputValues["comp_cr_cost"] ?? (competitorDrivers.clinicianRetention.replacementCost || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_cr_cost": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          clinicianRetention: { ...prev.clinicianRetention, replacementCost: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_cr_cost"]; return next; })}
                                     placeholder="e.g., 250000"
                                     className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -6032,12 +6264,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">Premium hours reduced/year</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.overtimeSavings.hoursReduced || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      overtimeSavings: { ...prev.overtimeSavings, hoursReduced: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_ot_hours"] ?? (competitorDrivers.overtimeSavings.hoursReduced || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_ot_hours": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          overtimeSavings: { ...prev.overtimeSavings, hoursReduced: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_ot_hours"]; return next; })}
                                     placeholder="e.g., 65"
                                     className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -6045,12 +6285,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">Premium rate ($/hour)</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.overtimeSavings.premiumRate || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      overtimeSavings: { ...prev.overtimeSavings, premiumRate: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_ot_rate"] ?? (competitorDrivers.overtimeSavings.premiumRate || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_ot_rate": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          overtimeSavings: { ...prev.overtimeSavings, premiumRate: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_ot_rate"]; return next; })}
                                     placeholder="e.g., 145"
                                     className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -6101,12 +6349,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">Denials prevented/year</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.denialReduction.denialsPrevented || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      denialReduction: { ...prev.denialReduction, denialsPrevented: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_dr_denials"] ?? (competitorDrivers.denialReduction.denialsPrevented || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_dr_denials": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          denialReduction: { ...prev.denialReduction, denialsPrevented: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_dr_denials"]; return next; })}
                                     placeholder="e.g., 117"
                                     className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -6114,12 +6370,20 @@ export default function RoiCalculator({
                                 <div>
                                   <label className="block text-[13px] text-[#6B7280] mb-1">Average denial value ($)</label>
                                   <input
-                                    type="number"
-                                    value={competitorDrivers.denialReduction.avgDenialValue || ""}
-                                    onChange={(e) => setCompetitorDrivers(prev => ({
-                                      ...prev,
-                                      denialReduction: { ...prev.denialReduction, avgDenialValue: parseFloat(e.target.value) || 0 }
-                                    }))}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={rawInputValues["comp_dr_value"] ?? (competitorDrivers.denialReduction.avgDenialValue || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_dr_value": val }));
+                                        setCompetitorDrivers(prev => ({
+                                          ...prev,
+                                          denialReduction: { ...prev.denialReduction, avgDenialValue: parseFloat(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_dr_value"]; return next; })}
                                     placeholder="e.g., 500"
                                     className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
                                   />
@@ -6867,9 +7131,20 @@ export default function RoiCalculator({
                         Providers in scope
                       </label>
                       <Input
-                        type="number"
-                        value={scenarioForm.providers}
-                        onChange={(e) => setScenarioForm({ ...scenarioForm, providers: parseInt(e.target.value) || 0 })}
+                        type="text"
+                        inputMode="numeric"
+                        value={rawInputValues["modal_providers"] ?? String(scenarioForm.providers)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "" || /^[0-9]*$/.test(val)) {
+                            setRawInputValues(prev => ({ ...prev, "modal_providers": val }));
+                            if (val !== "" && !isNaN(Number(val))) setScenarioForm({ ...scenarioForm, providers: parseInt(val) || 0 });
+                          }
+                        }}
+                        onBlur={() => {
+                          if (rawInputValues["modal_providers"] === "" || rawInputValues["modal_providers"] === undefined) setScenarioForm({ ...scenarioForm, providers: inputs.numberOfProviders });
+                          setRawInputValues(prev => { const next = { ...prev }; delete next["modal_providers"]; return next; });
+                        }}
                         placeholder="e.g., 100"
                         className="w-40"
                         data-testid="input-scenario-providers"
@@ -6887,9 +7162,20 @@ export default function RoiCalculator({
                       </label>
                       <div className="flex items-center gap-2">
                         <Input
-                          type="number"
-                          value={scenarioForm.encounters}
-                          onChange={(e) => setScenarioForm({ ...scenarioForm, encounters: parseInt(e.target.value) || 0 })}
+                          type="text"
+                          inputMode="numeric"
+                          value={rawInputValues["modal_encounters"] ?? String(scenarioForm.encounters)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "" || /^[0-9]*$/.test(val)) {
+                              setRawInputValues(prev => ({ ...prev, "modal_encounters": val }));
+                              if (val !== "" && !isNaN(Number(val))) setScenarioForm({ ...scenarioForm, encounters: parseInt(val) || 0 });
+                            }
+                          }}
+                          onBlur={() => {
+                            if (rawInputValues["modal_encounters"] === "" || rawInputValues["modal_encounters"] === undefined) setScenarioForm({ ...scenarioForm, encounters: inputs.annualOutpatientEncounters });
+                            setRawInputValues(prev => { const next = { ...prev }; delete next["modal_encounters"]; return next; });
+                          }}
                           placeholder="e.g., 200,000"
                           className="w-48"
                           data-testid="input-scenario-encounters"
@@ -7080,12 +7366,22 @@ export default function RoiCalculator({
                         <div className="flex items-center gap-2">
                           <span className="text-neutral-500">$</span>
                           <Input
-                            type="number"
-                            value={scenarioForm.revenuePerVisitOverride ?? ""}
-                            onChange={(e) => setScenarioForm({ 
-                              ...scenarioForm, 
-                              revenuePerVisitOverride: e.target.value ? parseFloat(e.target.value) : null 
-                            })}
+                            type="text"
+                            inputMode="decimal"
+                            value={rawInputValues["modal_revenueOverride"] ?? (scenarioForm.revenuePerVisitOverride ?? "")}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                setRawInputValues(prev => ({ ...prev, "modal_revenueOverride": val }));
+                                setScenarioForm({ 
+                                  ...scenarioForm, 
+                                  revenuePerVisitOverride: val !== "" && !isNaN(Number(val)) ? parseFloat(val) : null 
+                                });
+                              }
+                            }}
+                            onBlur={() => {
+                              setRawInputValues(prev => { const next = { ...prev }; delete next["modal_revenueOverride"]; return next; });
+                            }}
                             placeholder={inputs.patientAccess.avgNetRevenuePerVisit.toString()}
                             className="w-32"
                             data-testid="input-revenue-override"
