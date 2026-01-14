@@ -19,6 +19,7 @@ import {
   type LeverId,
   leverLabels,
   leverDescriptions,
+  leverShortNames,
 } from "@/lib/roi-types";
 import {
   calculateRoi,
@@ -2922,7 +2923,7 @@ export default function RoiCalculator({
                         type="text"
                         value={driversScenarioName}
                         onChange={(e) => setDriversScenarioName(e.target.value)}
-                        placeholder={scenarioDriverSelections.size > 0 ? `Add ${Array.from(scenarioDriverSelections).map(id => leverLabels[id].split(" ")[0]).join(" + ")}` : "Add new drivers..."}
+                        placeholder={scenarioDriverSelections.size > 0 ? `Add ${Array.from(scenarioDriverSelections).map(id => leverShortNames[id]).join(" + ")}` : "Add new drivers..."}
                         className="w-full p-4 text-[16px] border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#E8532F]/20 focus:border-[#E8532F]"
                         data-testid="input-drivers-scenario-name"
                       />
@@ -3366,7 +3367,7 @@ export default function RoiCalculator({
                           
                           const newScenario: Scenario = {
                             id: Date.now().toString(),
-                            name: driversScenarioName.trim() || `Add ${Array.from(scenarioDriverSelections).map(id => leverLabels[id].split(" ")[0]).join(" + ")}`,
+                            name: driversScenarioName.trim() || `Add ${Array.from(scenarioDriverSelections).map(id => leverShortNames[id]).join(" + ")}`,
                             type: "drivers",
                             createdAt: new Date(),
                             providers: inputs.numberOfProviders,
@@ -3467,8 +3468,8 @@ export default function RoiCalculator({
                             <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Active Drivers</div>
                             <div className="space-y-2">
                               {enabledDriverIds.map(id => (
-                                <div key={id} className="grid grid-cols-4 gap-2 text-[14px]">
-                                  <div className="text-[#6B7280] truncate">{leverLabels[id].split(" ")[0]}</div>
+                                <div key={id} className="grid grid-cols-4 gap-2 text-[14px]" title={leverLabels[id]}>
+                                  <div className="text-[#6B7280] truncate" title={leverLabels[id]}>{leverShortNames[id]}</div>
                                   <div className="text-right text-[#111827]">{formatCurrency(driverValues[id])}</div>
                                   <div className="text-right font-bold text-[#111827]">{formatCurrency(driverValues[id])}</div>
                                   <div className="text-right text-[#6B7280]">—</div>
@@ -3477,8 +3478,8 @@ export default function RoiCalculator({
                               {Array.from(scenarioDriverSelections).map(id => {
                                 const adjustedDriverValue = calculateAdjustedDriverValue(id, driverAdjustments);
                                 return (
-                                  <div key={id} className="grid grid-cols-4 gap-2 text-[14px]">
-                                    <div className="text-[#6B7280] truncate">{leverLabels[id].split(" ")[0]}</div>
+                                  <div key={id} className="grid grid-cols-4 gap-2 text-[14px]" title={leverLabels[id]}>
+                                    <div className="text-[#6B7280] truncate" title={leverLabels[id]}>{leverShortNames[id]}</div>
                                     <div className="text-right text-[#6B7280]">—</div>
                                     <div className="text-right font-bold text-[#059669]">{formatCurrency(adjustedDriverValue)}</div>
                                     <div className="text-right">
@@ -3580,7 +3581,7 @@ export default function RoiCalculator({
                                             >
                                               {pct > 12 && (
                                                 <span className="text-[11px] font-bold text-white truncate px-1">
-                                                  {leverLabels[driver.id].split(" ")[0]}
+                                                  {leverShortNames[driver.id]}
                                                 </span>
                                               )}
                                             </div>
@@ -3612,12 +3613,12 @@ export default function RoiCalculator({
                                         return allDrivers.map((driver, index) => {
                                           const pct = (driver.value / scenarioTotalBenefit) * 100;
                                           return (
-                                            <div key={driver.id} className="flex items-center justify-between text-[12px]">
+                                            <div key={driver.id} className="flex items-center justify-between text-[12px]" title={leverLabels[driver.id]}>
                                               <div className="flex items-center gap-2">
                                                 <div className={`w-3 h-3 rounded ${colors[index % colors.length]}`} />
-                                                <span className="text-[#6B7280]">{leverLabels[driver.id]}</span>
+                                                <span className="text-[#6B7280]" title={leverLabels[driver.id]}>{leverShortNames[driver.id]}</span>
                                                 {driver.isNew && (
-                                                  <span className="px-1 py-0.5 bg-[#059669] text-[9px] font-bold text-white uppercase rounded">NEW</span>
+                                                  <span className="px-1 py-0.5 bg-[#059669] text-[9px] font-bold text-white uppercase rounded animate-pulse">NEW</span>
                                                 )}
                                               </div>
                                               <div className="flex items-center gap-2">

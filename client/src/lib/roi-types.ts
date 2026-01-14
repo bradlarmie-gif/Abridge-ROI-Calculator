@@ -222,3 +222,20 @@ export const leverLabels: Record<LeverId, string> = {
   rnSafetyReduction: "Risk & Safety Event Reduction",
   rnDiagnosisSeverity: "Diagnosis Severity (CC/MCC Support)",
 };
+
+export const leverShortNames: Record<LeverId, string> = {
+  patientAccess: "Access",
+  overtime: "Locum",
+  workforce: "Retention",
+  wrvu: "LoS",
+  denials: "Denials",
+  hcc: "HCC",
+  edThroughput: "Throughput",
+  edLevelOfService: "LoS",
+  edDenialReduction: "Denials",
+  edRetention: "Retention",
+  rnDocTime: "Doc Time",
+  rnCommunication: "Comms",
+  rnSafetyReduction: "Safety",
+  rnDiagnosisSeverity: "Severity",
+};
