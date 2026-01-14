@@ -162,7 +162,7 @@ const REFERENCE_SCENARIO = {
   },
 };
 
-// Value driver content for the Blueprint page
+// Value driver content for the Value Methodology page
 interface DriverContent {
   id: string;
   label: string;
@@ -2650,12 +2650,12 @@ export default function ObjectiveSelectionScreen({
                 {modelSetupStep === 1 && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
                     <div className="space-y-6">
-                      {/* Blueprint Context Callout */}
+                      {/* Value Methodology Context Callout */}
                       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                         <div className="flex items-start gap-3">
                           <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                           <p className="text-sm text-blue-800">
-                            The Blueprint showed a reference scenario. Now input YOUR organization's actual numbers to see your specific ROI.
+                            The Value Methodology showed a reference scenario. Now input YOUR organization's actual numbers to see your specific ROI.
                           </p>
                         </div>
                       </div>
@@ -2878,7 +2878,7 @@ export default function ObjectiveSelectionScreen({
                       <div className="flex items-start gap-3">
                         <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-blue-800">
-                          <span className="font-medium">In the Blueprint</span>, we showed typical assumptions for each driver. Now choose how conservatively or aggressively to apply them to YOUR scenario.
+                          <span className="font-medium">In the Value Methodology</span>, we showed typical assumptions for each driver. Now choose how conservatively or aggressively to apply them to YOUR scenario.
                         </p>
                       </div>
                     </div>
