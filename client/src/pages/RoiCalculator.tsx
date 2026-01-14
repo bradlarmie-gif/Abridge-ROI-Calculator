@@ -939,7 +939,7 @@ export default function RoiCalculator({
               <span className="text-[18px] md:text-[20px] font-bold text-[#F03319] tracking-tight leading-none uppercase">
                 ABRIDGE
               </span>
-              <span className="text-[14px] md:text-[15px] font-semibold text-[#F03319] tracking-tight leading-none">
+              <span className="text-[14px] md:text-[15px] font-semibold text-[#111827] tracking-tight leading-none">
                 ROI Calculator
               </span>
             </div>
