@@ -2152,7 +2152,7 @@ export default function ObjectiveSelectionScreen({
             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
               <p className="text-lg font-semibold text-[#111827] mb-2">What outcomes matter most right now?</p>
               <p className="text-sm text-[#6B7280] leading-relaxed">
-                Select 2-6 strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
+                Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6} strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
               </p>
               <p className="text-[13px] text-[#6B7280] mt-4 flex items-center gap-1.5">
                 <BarChart3 className="w-3.5 h-3.5" /> Based on proven methodologies from 200+ health system partners
@@ -2215,7 +2215,7 @@ export default function ObjectiveSelectionScreen({
                       <p className="text-xs font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-1">
                         Strategic Priorities
                       </p>
-                      <p className="text-[13px] text-[#6B7280] mb-4">Select 2-6 drivers</p>
+                      <p className="text-[13px] text-[#6B7280] mb-4">Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6} drivers</p>
                       
                       {selectedLeverIds.size < 2 ? (
                         <p className="text-sm text-[#6B7280] leading-relaxed">
@@ -2236,7 +2236,7 @@ export default function ObjectiveSelectionScreen({
                             })}
                           </ul>
                           <p className="text-[13px] text-[#6B7280]">
-                            {selectedLeverIds.size} of 6 selected
+                            {selectedLeverIds.size} of {SETTING_CONFIG[selectedSetting]?.length || 6} selected
                           </p>
                         </>
                       )}
