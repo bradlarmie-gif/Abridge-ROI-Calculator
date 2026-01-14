@@ -4245,18 +4245,48 @@ export default function ObjectiveSelectionScreen({
                                 <h4 className="text-sm font-semibold text-neutral-800 mb-3">Time to value</h4>
                                 <p className="text-sm text-neutral-600 mb-2">Impact timeline varies by driver:</p>
                                 <ul className="space-y-1.5 text-sm text-neutral-600 mb-3">
-                                  <li className="flex items-start gap-2">
-                                    <span className="text-neutral-400 mt-0.5">•</span>
-                                    <span><span className="font-medium">Operational drivers</span> (Patient Access, Overtime): 3-6 months</span>
-                                  </li>
-                                  <li className="flex items-start gap-2">
-                                    <span className="text-neutral-400 mt-0.5">•</span>
-                                    <span><span className="font-medium">Documentation drivers</span> (Level of Service, Denials): 2-4 months</span>
-                                  </li>
-                                  <li className="flex items-start gap-2">
-                                    <span className="text-neutral-400 mt-0.5">•</span>
-                                    <span><span className="font-medium">Long-term drivers</span> (Retention, HCC): 12+ months</span>
-                                  </li>
+                                  {selectedSetting === 'outpatient' ? (
+                                    <>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-neutral-400 mt-0.5">•</span>
+                                        <span><span className="font-medium">Operational drivers</span> (Patient Access, Overtime): 3-6 months</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-neutral-400 mt-0.5">•</span>
+                                        <span><span className="font-medium">Documentation drivers</span> (Level of Service, Denials): 2-4 months</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-neutral-400 mt-0.5">•</span>
+                                        <span><span className="font-medium">Long-term drivers</span> (Retention, HCC): 12+ months</span>
+                                      </li>
+                                    </>
+                                  ) : selectedSetting === 'ed' ? (
+                                    <>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-neutral-400 mt-0.5">•</span>
+                                        <span><span className="font-medium">Operational drivers</span> (Throughput): 3-6 months</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-neutral-400 mt-0.5">•</span>
+                                        <span><span className="font-medium">Documentation drivers</span> (Level of Service, Denials): 2-4 months</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-neutral-400 mt-0.5">•</span>
+                                        <span><span className="font-medium">Long-term drivers</span> (Retention): 12+ months</span>
+                                      </li>
+                                    </>
+                                  ) : selectedSetting === 'nursing' ? (
+                                    <>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-neutral-400 mt-0.5">•</span>
+                                        <span><span className="font-medium">Operational drivers</span> (Documentation Time, Communication): 3-6 months</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-neutral-400 mt-0.5">•</span>
+                                        <span><span className="font-medium">Quality drivers</span> (Safety, Diagnosis Severity): 6-12 months</span>
+                                      </li>
+                                    </>
+                                  ) : null}
                                 </ul>
                                 <div className="flex items-start gap-2 pt-2 border-t border-blue-100">
                                   <Lightbulb className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
