@@ -447,8 +447,8 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         title: "STEP 1: TIME SAVED",
         steps: [
           { label: "ED Clinicians", value: "40" },
-          { label: "Shifts per clinician/year", value: "200" },
-          { label: "Minutes saved per shift", value: "20 min" },
+          { label: "Shifts per clinician/year", value: "200", note: "(typical)" },
+          { label: "Minutes saved per shift", value: "20 min", note: "(typical)" },
           { label: "Annual hours reclaimed", value: "2,667 hrs" },
         ],
       },
@@ -456,8 +456,8 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         title: "STEP 2: LWBS IMPROVEMENT",
         steps: [
           { label: "Total ED encounters", value: "80,000" },
-          { label: "Baseline LWBS rate", value: "3.0%" },
-          { label: "LWBS improvement", value: "0.5%" },
+          { label: "Baseline LWBS rate", value: "3.0%", note: "(national avg: 2-4%)" },
+          { label: "LWBS improvement", value: "0.5%", note: "(percentage points)" },
           { label: "Post-Abridge LWBS rate", value: "2.5%" },
           { label: "Additional patients treated", value: "400 patients" },
         ],
@@ -465,11 +465,11 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
       {
         title: "STEP 3: REVENUE IMPACT",
         steps: [
-          { label: "Patients treated and released (81%)", value: "324" },
-          { label: "Contribution margin per encounter", value: "$250" },
+          { label: "Patients treated and released (81%)", value: "324", note: "(typical ED mix)" },
+          { label: "Contribution margin per encounter", value: "$250", note: "(typical)" },
           { label: "Regular encounter value", value: "$81,000" },
           { label: "Patients admitted (19%)", value: "76" },
-          { label: "Contribution margin per admission", value: "$2,000" },
+          { label: "Contribution margin per admission", value: "$2,000", note: "(typical)" },
           { label: "Admission value", value: "$152,000" },
           { label: "Total annual value", value: "$233,000" },
         ],
@@ -489,14 +489,14 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         title: "STEP 1: BASELINE PERFORMANCE",
         steps: [
           { label: "Annual ED visits (Abridge-documented)", value: "52,000" },
-          { label: "Baseline wRVU per visit", value: "2.60" },
+          { label: "Baseline wRVU per visit", value: "2.60", note: "(typical ED)" },
           { label: "Current annual wRVUs", value: "135,200 wRVUs" },
         ],
       },
       {
         title: "STEP 2: DOCUMENTATION QUALITY LIFT",
         steps: [
-          { label: "wRVU improvement from complete docs", value: "5%" },
+          { label: "wRVU improvement from complete docs", value: "5%", note: "(typical)" },
           { label: "Additional wRVUs captured", value: "6,760 wRVUs" },
         ],
       },
@@ -504,7 +504,7 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         title: "STEP 3: REVENUE IMPACT",
         steps: [
           { label: "Additional wRVUs", value: "6,760" },
-          { label: "ED wRVU conversion factor", value: "$34" },
+          { label: "ED wRVU conversion factor", value: "$34", note: "(blended rate)" },
           { label: "Annual value", value: "$229,840" },
         ],
       },
@@ -523,21 +523,21 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         title: "STEP 1: BASELINE DENIALS",
         steps: [
           { label: "Net collectible ED revenue", value: "$20M" },
-          { label: "Baseline denial rate", value: "12%" },
+          { label: "Baseline denial rate", value: "12%", note: "(ED avg: 10-15%)" },
           { label: "Revenue denied annually", value: "$2.4M" },
         ],
       },
       {
         title: "STEP 2: DOCUMENTATION-RELATED",
         steps: [
-          { label: "% denials from documentation", value: "32%" },
+          { label: "% denials from documentation", value: "32%", note: "(typical)" },
           { label: "Documentation-driven denials", value: "$768,000" },
         ],
       },
       {
         title: "STEP 3: RECOVERY POTENTIAL",
         steps: [
-          { label: "% recoverable with better docs", value: "40%" },
+          { label: "% recoverable with better docs", value: "40%", note: "(typical)" },
           { label: "Annual value", value: "$307,200" },
         ],
       },
@@ -556,28 +556,28 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         title: "STEP 1: BASELINE TURNOVER",
         steps: [
           { label: "Total ED clinicians", value: "40" },
-          { label: "Annual attrition rate", value: "5%" },
+          { label: "Annual attrition rate", value: "5%", note: "(typical)" },
           { label: "Expected departures", value: "2/year" },
         ],
       },
       {
         title: "STEP 2: BURNOUT ATTRIBUTION",
         steps: [
-          { label: "% turnover from burnout", value: "31%" },
+          { label: "% turnover from burnout", value: "31%", note: "(research avg)" },
           { label: "Burnout-driven departures", value: "0.62/year" },
         ],
       },
       {
         title: "STEP 3: ABRIDGE IMPACT",
         steps: [
-          { label: "% burnout reduction", value: "45%" },
+          { label: "% burnout reduction", value: "45%", note: "(typical)" },
           { label: "Departures avoided", value: "0.28/year" },
         ],
       },
       {
         title: "STEP 4: COST SAVINGS",
         steps: [
-          { label: "Cost per ED departure", value: "$350,000" },
+          { label: "Cost per ED departure", value: "$350,000", note: "(typical)" },
           { label: "Annual value", value: "$98,000" },
         ],
       },
