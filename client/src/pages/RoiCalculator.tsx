@@ -465,7 +465,7 @@ export default function RoiCalculator({
   const expansionCalculation = useMemo(() => {
     const baselineProviders = inputs.numberOfProviders;
     const baselineEncounters = inputs.annualOutpatientEncounters;
-    const costPerProviderMonthly = inputs.costPerProviderPerMonth;
+    const costPerProviderMonthly = inputs.monthlyCostPerProvider || 225; // Use correct property name with fallback
     
     // Can't calculate if targetProviders is not greater than baseline
     if (targetProviders <= baselineProviders) {
@@ -500,25 +500,45 @@ export default function RoiCalculator({
       }
     }
     
-    // Benefits scale proportionally (conservative approach)
-    const scenarioBenefits = {
-      access: Math.round(driverValues.patientAccess * encounterRatio),
-      retention: Math.round(driverValues.workforce * providerRatio),
-      los: Math.round(driverValues.wrvu * encounterRatio),
-      locum: Math.round(driverValues.overtime * providerRatio),
-      denials: Math.round(driverValues.denials * encounterRatio),
-      hcc: Math.round(driverValues.hcc * encounterRatio),
+    // Benefits scale differently based on driver type
+    // Only scale drivers that are actually enabled
+    const scalingLogic: Record<LeverId, number> = {
+      patientAccess: encounterRatio,  // Scales with volume
+      workforce: providerRatio,       // Scales with provider count
+      wrvu: encounterRatio,           // Scales with volume
+      overtime: providerRatio * 0.9,  // Slight efficiency gains at scale
+      denials: encounterRatio,        // Scales with volume
+      hcc: encounterRatio,            // Scales with volume
+      edThroughput: encounterRatio,
+      edLevelOfService: encounterRatio,
+      edDenialReduction: encounterRatio,
+      edRetention: providerRatio,
+      rnDocTime: providerRatio,
+      rnCommunication: providerRatio,
+      rnSafetyReduction: providerRatio,
+      rnDiagnosisSeverity: providerRatio,
     };
     
-    const scenarioTotalBenefit = Object.values(scenarioBenefits).reduce((a, b) => a + b, 0);
+    // Calculate scenario benefits - only for enabled drivers
+    const scenarioBenefits: Partial<Record<LeverId, number>> = {};
+    let scenarioTotalBenefit = 0;
+    
+    enabledDriverIds.forEach((driverId) => {
+      const baselineValue = driverValues[driverId] || 0;
+      const scalingFactor = scalingLogic[driverId] || providerRatio;
+      const scenarioValue = Math.round(baselineValue * scalingFactor);
+      scenarioBenefits[driverId] = scenarioValue;
+      scenarioTotalBenefit += scenarioValue;
+    });
+    
     const scenarioNetGain = scenarioTotalBenefit - scenarioCost;
     const scenarioROI = scenarioCost > 0 ? scenarioTotalBenefit / scenarioCost : 0;
     
-    // Baseline calculations (for comparison)
-    const baselineCost = baselineProviders * costPerProviderMonthly * 12;
+    // Baseline calculations - use authoritative values from results
+    const baselineCost = annualInvestment; // Use annualAbridgeCost from calculateRoi
     const baselineBenefit = totalAnnualBenefit;
-    const baselineNetGain = baselineBenefit - baselineCost;
-    const baselineROI = baselineCost > 0 ? baselineBenefit / baselineCost : 0;
+    const baselineNetGain = netAnnualGain;
+    const baselineROI = roiMultiple;
     
     // Incremental analysis (the key!)
     const incrementalProviders = targetProviders - baselineProviders;
@@ -535,6 +555,7 @@ export default function RoiCalculator({
         benefit: baselineBenefit,
         netGain: baselineNetGain,
         roi: baselineROI,
+        activeDrivers: enabledDriverIds,
       },
       scenario: {
         providers: targetProviders,
@@ -556,7 +577,7 @@ export default function RoiCalculator({
         roi: incrementalROI,
       },
     };
-  }, [targetProviders, expansionPricingModel, enterpriseAnnualCost, inputs.numberOfProviders, inputs.annualOutpatientEncounters, inputs.costPerProviderPerMonth, driverValues, totalAnnualBenefit]);
+  }, [targetProviders, expansionPricingModel, enterpriseAnnualCost, inputs.numberOfProviders, inputs.annualOutpatientEncounters, inputs.monthlyCostPerProvider, driverValues, totalAnnualBenefit, enabledDriverIds, annualInvestment, netAnnualGain, roiMultiple]);
 
   // Helper: Convert internal Scenario to ScenarioData for PDF export
   const convertScenarioToExportData = useCallback((scenario: Scenario): ScenarioData => {
@@ -2360,7 +2381,26 @@ export default function RoiCalculator({
                       <span className="text-[#111827] font-medium">{inputs.annualOutpatientEncounters.toLocaleString()} encounters/year</span>
                       <span className="text-[#D1D5DB]">•</span>
                       <span className="text-[#111827] font-medium">{formatCurrency(netAnnualGain)} net gain</span>
+                      <span className="text-[#D1D5DB]">•</span>
+                      <span className="text-[#111827] font-medium">{roiMultiple.toFixed(1)}x ROI</span>
                     </div>
+                  </div>
+                  
+                  {/* Active Drivers Notice */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[13px] text-[#6B7280]">Active value drivers:</span>
+                    {enabledDriverIds.map((driverId) => (
+                      <span
+                        key={driverId}
+                        className="px-2 py-1 bg-[#F3F4F6] text-[#374151] text-[12px] font-medium rounded"
+                        title={leverLabels[driverId]}
+                      >
+                        {leverLabels[driverId]}
+                      </span>
+                    ))}
+                    {enabledDriverIds.length === 0 && (
+                      <span className="text-[13px] text-[#9CA3AF] italic">No drivers enabled</span>
+                    )}
                   </div>
                 </div>
                 
@@ -2452,7 +2492,7 @@ export default function RoiCalculator({
                         >
                           <div className="text-left">
                             <span className="text-[14px] font-bold text-[#111827]">Per Provider</span>
-                            <p className="text-[12px] text-[#6B7280] mt-0.5">${inputs.costPerProviderPerMonth}/provider/month</p>
+                            <p className="text-[12px] text-[#6B7280] mt-0.5">${inputs.monthlyCostPerProvider}/provider/month</p>
                           </div>
                         </button>
                         
@@ -2517,7 +2557,7 @@ export default function RoiCalculator({
                               {(expansionCalculation.scenario.volumeDiscount * 100).toFixed(0)}% volume discount applied
                             </span>
                             <p className="text-[13px] text-[#047857]">
-                              Standard pricing: {formatCurrency(targetProviders * inputs.costPerProviderPerMonth * 12)}/year<br />
+                              Standard pricing: {formatCurrency(targetProviders * inputs.monthlyCostPerProvider * 12)}/year<br />
                               Your price: {formatCurrency(expansionCalculation.scenario.cost)}/year
                             </p>
                           </div>
@@ -2644,7 +2684,7 @@ export default function RoiCalculator({
                                     {expansionCalculation.incremental.roi > expansionCalculation.baseline.roi ? ' exceeds ' : ' matches '}
                                     your baseline ROI ({expansionCalculation.baseline.roi.toFixed(1)}x).
                                     {expansionPricingModel === 'enterprise' && expansionCalculation.scenario.volumeDiscount > 0 && (
-                                      <> Volume discounts make this expansion even more attractive, saving {formatCurrency(targetProviders * inputs.costPerProviderPerMonth * 12 - expansionCalculation.scenario.cost)}/year vs. standard pricing.</>
+                                      <> Volume discounts make this expansion even more attractive, saving {formatCurrency(targetProviders * inputs.monthlyCostPerProvider * 12 - expansionCalculation.scenario.cost)}/year vs. standard pricing.</>
                                     )}
                                   </>
                                 ) : (
@@ -2696,8 +2736,17 @@ export default function RoiCalculator({
                                 providers: targetProviders,
                                 encounters: expansionCalculation.scenario.encounters,
                                 utilizationRate: scenarioForm.utilizationRate,
-                                createdAt: new Date().toISOString(),
-                                driversEnabled: Array.from(enabledDriverIds),
+                                createdAt: new Date(),
+                                maPopulationPct: inputs.hcc.pctMedicareAdvantage,
+                                newPatientPct: inputs.patientAccess.pctTimeToNewVisits,
+                                specialtyPct: 0,
+                                revenuePerVisitOverride: null,
+                                visitLengthOverride: null,
+                                totalBenefit: expansionCalculation.scenario.benefit,
+                                investment: expansionCalculation.scenario.cost,
+                                netGain: expansionCalculation.scenario.netGain,
+                                roiMultiple: expansionCalculation.scenario.roi,
+                                driverValues: driverValues,
                               };
                               setScenarios([...scenarios, newScenario]);
                               setShowExpandProviders(false);
