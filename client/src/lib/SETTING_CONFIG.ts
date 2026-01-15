@@ -1,6 +1,6 @@
 export type CareSettingType = "outpatient" | "ed" | "nursing";
 export type AllSettingType = CareSettingType | "inpatient";
-export type LeverCategory = "time" | "documentation";
+export type LeverCategory = "time" | "documentation" | "capacityLabor" | "documentationQuality" | "qualityRevenue";
 
 export interface LeverConfig {
   id: string;
@@ -8,6 +8,9 @@ export interface LeverConfig {
   category: LeverCategory;
   description: string;
   driverSummary: string;
+  keyMetric?: string;
+  hasWarning?: boolean;
+  warningText?: string;
 }
 
 export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
@@ -96,37 +99,76 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
   ],
   nursing: [
+    // Capacity & Labor
     {
-      id: "rnDocTime",
-      label: "Documentation Time Reduction",
-      category: "time",
-      description: "Reduce time spent documenting during and after shifts.",
-      driverSummary: "staffing efficiency, reduced overtime.",
+      id: "documentation_time_savings",
+      label: "Documentation Time Savings",
+      category: "capacityLabor",
+      description: "Return hours to nurses through efficient documentation.",
+      driverSummary: "staffing efficiency, reduced administrative burden.",
+      keyMetric: "Hours returned annually",
     },
     {
-      id: "rnCommunication",
-      label: "Communication Efficiency",
-      category: "time",
-      description:
-        "Reduce repetitive manual documentation across handoffs and care coordination.",
-      driverSummary: "faster handoffs, more efficient team workflows.",
+      id: "overtime_reduction",
+      label: "Overtime Reduction",
+      category: "capacityLabor",
+      description: "Reduce overtime driven by end-of-shift documentation.",
+      driverSummary: "overtime spend reduction, labor cost savings.",
+      keyMetric: "OT hours avoided",
     },
     {
-      id: "rnSafetyReduction",
-      label: "Risk & Safety Event Reduction",
-      category: "documentation",
-      description:
-        "Improve documentation timeliness to surface clinical changes and reduce safety events.",
+      id: "agency_reduction",
+      label: "Agency & Travel Nurse Reduction",
+      category: "capacityLabor",
+      description: "Decrease reliance on premium labor through retention.",
+      driverSummary: "agency spend reduction, workforce stability.",
+      keyMetric: "Agency hours reduced",
+    },
+    {
+      id: "nurse_retention",
+      label: "Nurse Retention",
+      category: "capacityLabor",
+      description: "Lower burnout and turnover from administrative burden.",
+      driverSummary: "reduced turnover, avoided replacement costs.",
+      keyMetric: "Departures avoided",
+    },
+    // Documentation Quality
+    {
+      id: "documentation_timeliness",
+      label: "Documentation Timeliness",
+      category: "documentationQuality",
+      description: "Enable real-time documentation at point of care.",
+      driverSummary: "reduced documentation lag, improved care coordination.",
+      keyMetric: "Documentation lag reduction",
+    },
+    {
+      id: "documentation_completeness",
+      label: "Documentation Completeness",
+      category: "documentationQuality",
+      description: "Improve compliance and clinical documentation rates.",
+      driverSummary: "improved field completion, better compliance.",
+      keyMetric: "Field completion rate",
+    },
+    // Quality & Revenue (Indirect Impact)
+    {
+      id: "safety_event_reduction",
+      label: "Safety Event Risk Reduction",
+      category: "qualityRevenue",
+      description: "Support identification of at-risk patients (HAPI, Falls).",
       driverSummary: "reduced safety events, improved patient outcomes.",
+      keyMetric: "Risk exposure reduction",
+      hasWarning: true,
+      warningText: "Indirect relationship—see important limitations",
     },
     {
-      id: "rnDiagnosisSeverity",
-      label: "Diagnosis Severity (CC/MCC Support)",
-      category: "documentation",
-      description:
-        "Ensure nursing assessments capture clinical severity that supports CC/MCC documentation.",
-      driverSummary:
-        "CC/MCC capture, DRG integrity, accurate severity representation.",
+      id: "ccmcc_support",
+      label: "Clinical Documentation & Revenue Support",
+      category: "qualityRevenue",
+      description: "Support CDI efforts through complete clinical indicators.",
+      driverSummary: "CC/MCC capture support, DRG accuracy.",
+      keyMetric: "CC/MCC capture support",
+      hasWarning: true,
+      warningText: "Indirect relationship—see important limitations",
     },
   ],
 };
@@ -141,6 +183,24 @@ export const CARE_SETTING_LABELS: Record<AllSettingType, string> = {
 export const CATEGORY_LABELS: Record<LeverCategory, string> = {
   time: "Time",
   documentation: "Documentation Quality",
+  capacityLabor: "Capacity & Labor",
+  documentationQuality: "Documentation Quality",
+  qualityRevenue: "Quality & Revenue",
+};
+
+export const NURSING_CATEGORY_LABELS: Record<string, { label: string; description: string }> = {
+  capacityLabor: {
+    label: "Capacity & Labor",
+    description: "Workforce efficiency and cost management",
+  },
+  documentationQuality: {
+    label: "Documentation Quality",
+    description: "Clinical documentation and compliance",
+  },
+  qualityRevenue: {
+    label: "Quality & Revenue",
+    description: "Requires additional assumptions—see methodology",
+  },
 };
 
 export function getLeversByCategory(
@@ -150,6 +210,18 @@ export function getLeversByCategory(
   return {
     time: levers.filter((l) => l.category === "time"),
     documentation: levers.filter((l) => l.category === "documentation"),
+    capacityLabor: levers.filter((l) => l.category === "capacityLabor"),
+    documentationQuality: levers.filter((l) => l.category === "documentationQuality"),
+    qualityRevenue: levers.filter((l) => l.category === "qualityRevenue"),
+  };
+}
+
+export function getNursingDriversByCategory(): Record<string, LeverConfig[]> {
+  const levers = SETTING_CONFIG.nursing;
+  return {
+    capacityLabor: levers.filter((l) => l.category === "capacityLabor"),
+    documentationQuality: levers.filter((l) => l.category === "documentationQuality"),
+    qualityRevenue: levers.filter((l) => l.category === "qualityRevenue"),
   };
 }
 

@@ -1,0 +1,133 @@
+We're building from the moment someone clicks "Nursing" on the care setting screen.
+
+STEP 1: CARE SETTING SELECTION
+Already exists in your app—just need to make sure nursing routes to the right flow
+When user clicks "Nursing" card:
+
+Set careSetting = 'nursing'
+Route to /nursing/strategic-priorities (or however you're handling routing)
+
+Nursing card content (already shown in your screenshot, but confirming):
+CopyNURSING
+Bedside documentation, care coordination
+
+Typical drivers:
+- Time savings
+- Overtime reduction  
+- Documentation quality
+
+↗ Workforce-focused value drivers
+
+STEP 2: STRATEGIC PRIORITIES
+This is the first nursing-specific screen
+URL: /nursing/strategic-priorities
+Header:
+CopyStrategic Priorities
+
+What outcomes matter most right now?
+
+Select 2-6 strategic priorities. These will shape your ROI model and determine 
+which value drivers we analyze in detail.
+
+📊 Based on proven methodologies from nursing leaders
+Right sidebar (YOUR SELECTIONS):
+CopyCARE SETTING
+Nursing                                    ✓
+
+STRATEGIC PRIORITIES
+Select 2-6 drivers
+
+[Continue button - disabled until 2+ selected]
+Main content - Driver selection:
+Copy💡 Selecting your priorities
+   ✓ Most organizations select 2-4 drivers
+   ✓ You'll see detailed calculations for each selected driver in the next step
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏱ CAPACITY & LABOR
+  Workforce efficiency and cost management
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ☐ Documentation Time Savings                                │
+  │   Return hours to nurses through efficient documentation     │
+  │   Key metric: Hours returned annually                        │
+  └─────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ☐ Overtime Reduction                                         │
+  │   Reduce overtime driven by end-of-shift documentation       │
+  │   Key metric: OT hours avoided                               │
+  └─────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ☐ Agency & Travel Nurse Reduction                           │
+  │   Decrease reliance on premium labor through retention       │
+  │   Key metric: Agency hours reduced                           │
+  └─────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ☐ Nurse Retention                                            │
+  │   Lower burnout and turnover from administrative burden      │
+  │   Key metric: Departures avoided                             │
+  └─────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 DOCUMENTATION QUALITY
+  Clinical documentation and compliance
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ☐ Documentation Timeliness                                   │
+  │   Enable real-time documentation at point of care            │
+  │   Key metric: Documentation lag reduction                    │
+  └─────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ☐ Documentation Completeness                                 │
+  │   Improve compliance and clinical documentation rates        │
+  │   Key metric: Field completion rate                          │
+  └─────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ QUALITY & REVENUE (Indirect Impact)
+  Requires additional assumptions—see methodology
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ☐ Safety Event Risk Reduction                                │
+  │   Support identification of at-risk patients (HAPI, Falls)   │
+  │   Key metric: Risk exposure reduction                        │
+  │   ⚠️ Indirect relationship—see important limitations         │
+  └─────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ☐ Clinical Documentation & Revenue Support                   │
+  │   Support CDI efforts through complete clinical indicators   │
+  │   Key metric: CC/MCC capture support                         │
+  │   ⚠️ Indirect relationship—see important limitations         │
+  └─────────────────────────────────────────────────────────────┘
+State to track:
+javascriptCopyconst [selectedDrivers, setSelectedDrivers] = useState([]);
+
+// Driver IDs
+const nursingDrivers = {
+  capacityLabor: [
+    'documentation_time_savings',
+    'overtime_reduction', 
+    'agency_reduction',
+    'nurse_retention'
+  ],
+  documentationQuality: [
+    'documentation_timeliness',
+    'documentation_completeness'
+  ],
+  qualityRevenue: [
+    'safety_event_reduction',
+    'ccmcc_support'
+  ]
+};
+Continue button:
+
+Disabled until selectedDrivers.length >= 2
+On click: Route to /nursing/value-methodology
