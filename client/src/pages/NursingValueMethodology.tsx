@@ -3,17 +3,17 @@ import {
   ArrowLeft, 
   ChevronRight, 
   ChevronDown, 
-  ChevronUp,
   Lightbulb, 
   Calculator, 
-  Sliders,
+  Settings,
   BarChart3,
   AlertTriangle,
   Building2,
-  ClipboardList,
+  FileText,
   Clock,
-  Info,
-  Check
+  Users,
+  TrendingUp,
+  Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SETTING_CONFIG, type LeverConfig } from "@/lib/SETTING_CONFIG";
@@ -29,13 +29,23 @@ interface DriverMethodology {
   theory: string;
   calculationSteps: {
     title: string;
-    rows: { label: string; value: string }[];
+    rows: { label: string; value: string; note?: string }[];
   }[];
   keyVariables: string[];
   rangeConservative: string;
   rangeTypical: string;
   referenceValue: number;
 }
+
+// Nursing reference scenario
+const NURSING_REFERENCE_SCENARIO = {
+  staffedBeds: 200,
+  documentationEventsPerYear: 332150,
+  adoptionPercent: 65,
+  get eligibleEvents() {
+    return Math.round(this.documentationEventsPerYear);
+  },
+};
 
 const NURSING_DRIVER_METHODOLOGY: Record<string, DriverMethodology> = {
   documentation_time_savings: {
@@ -50,14 +60,14 @@ const NURSING_DRIVER_METHODOLOGY: Record<string, DriverMethodology> = {
           { label: "Shifts per day", value: "3" },
           { label: "Days per year", value: "365" },
           { label: "Total events per year", value: "511,000" },
-          { label: "Utilization rate", value: "65% (typical)" },
+          { label: "Utilization rate", value: "65%", note: "(typical)" },
           { label: "Eligible events", value: "332,150" },
         ],
       },
       {
         title: "STEP 2: TIME RETURNED",
         rows: [
-          { label: "Minutes saved per documentation event", value: "4 min (typical)" },
+          { label: "Minutes saved per documentation event", value: "4 min", note: "(typical)" },
           { label: "Total minutes saved", value: "1,328,600" },
           { label: "Hours returned annually", value: "22,143 hrs" },
         ],
@@ -174,6 +184,7 @@ const NURSING_DRIVER_METHODOLOGY: Record<string, DriverMethodology> = {
           { label: "Replacement cost multiplier", value: "0.87x" },
           { label: "Cost per departure", value: "$65,520" },
           { label: "Total retention value", value: "$393,120" },
+          { label: "Impact timeline: Retention improvements typically measurable at 12+ months as turnover is an annual metric.", value: "", note: "info" },
         ],
       },
     ],
@@ -274,6 +285,7 @@ const NURSING_DRIVER_METHODOLOGY: Record<string, DriverMethodology> = {
         rows: [
           { label: "Avg cost per safety event", value: "$5,857" },
           { label: "Total safety event value", value: "$128,850" },
+          { label: "This is an INDIRECT relationship. Documentation supports but does not directly prevent safety events.", value: "", note: "warning" },
         ],
       },
     ],
@@ -308,6 +320,7 @@ const NURSING_DRIVER_METHODOLOGY: Record<string, DriverMethodology> = {
         rows: [
           { label: "Avg CC/MCC revenue lift", value: "$1,001" },
           { label: "Total CC/MCC support value", value: "$170,188" },
+          { label: "This is an INDIRECT relationship. Documentation supports but does not directly assign codes.", value: "", note: "warning" },
         ],
       },
     ],
@@ -318,357 +331,364 @@ const NURSING_DRIVER_METHODOLOGY: Record<string, DriverMethodology> = {
   },
 };
 
+// Driver icons mapping
+const DRIVER_ICONS: Record<string, typeof Clock> = {
+  documentation_time_savings: Clock,
+  overtime_reduction: Clock,
+  agency_reduction: Users,
+  nurse_retention: Users,
+  documentation_timeliness: FileText,
+  documentation_completeness: FileText,
+  safety_event_reduction: AlertTriangle,
+  ccmcc_support: Building2,
+};
+
+// Format currency
+function formatCurrency(value: number): string {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  return `$${value.toLocaleString()}`;
+}
+
+// Format number with commas
+function formatNumber(value: number): string {
+  return value.toLocaleString();
+}
+
 export default function NursingValueMethodology({
   selectedDrivers,
   onBack,
   onContinue,
 }: NursingValueMethodologyProps) {
-  const [expandedDrivers, setExpandedDrivers] = useState<Set<string>>(new Set([selectedDrivers[0] || ""]));
-  
-  const nursingDrivers = SETTING_CONFIG.nursing;
-  const selectedDriverConfigs = nursingDrivers.filter(d => selectedDrivers.includes(d.id));
-  
+  const [expandedDrivers, setExpandedDrivers] = useState<Set<string>>(new Set());
+
+  // Get nursing drivers from config
+  const nursingDrivers = SETTING_CONFIG.nursing || [];
+
+  // Get selected driver info
+  const selectedDriverInfo = selectedDrivers
+    .map((driverId) => {
+      const driver = nursingDrivers.find((d: LeverConfig) => d.id === driverId);
+      const methodology = NURSING_DRIVER_METHODOLOGY[driverId];
+      if (!driver || !methodology) return null;
+      return { ...driver, methodology };
+    })
+    .filter(Boolean) as (LeverConfig & { methodology: DriverMethodology })[];
+
+  // Calculate total reference value
+  const totalReferenceValue = selectedDriverInfo.reduce(
+    (sum, driver) => sum + driver.methodology.referenceValue,
+    0
+  );
+
+  // Check if any selected drivers have warnings
+  const hasIndirectDrivers = selectedDriverInfo.some((d) => d.hasWarning);
+
   const toggleExpanded = (driverId: string) => {
-    setExpandedDrivers(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(driverId)) {
-        newSet.delete(driverId);
+    setExpandedDrivers((prev) => {
+      const next = new Set(prev);
+      if (next.has(driverId)) {
+        next.delete(driverId);
       } else {
-        newSet.add(driverId);
+        next.add(driverId);
       }
-      return newSet;
+      return next;
     });
   };
 
-  const totalReferenceValue = selectedDrivers.reduce((sum, id) => {
-    const methodology = NURSING_DRIVER_METHODOLOGY[id];
-    return sum + (methodology?.referenceValue || 0);
-  }, 0);
-
-  const getDriverIcon = (driverId: string) => {
-    switch (driverId) {
-      case "documentation_time_savings":
-      case "overtime_reduction":
-        return <Clock className="w-5 h-5" />;
-      case "agency_reduction":
-      case "nurse_retention":
-        return <Building2 className="w-5 h-5" />;
-      case "documentation_timeliness":
-      case "documentation_completeness":
-        return <ClipboardList className="w-5 h-5" />;
-      case "safety_event_reduction":
-      case "ccmcc_support":
-        return <AlertTriangle className="w-5 h-5" />;
-      default:
-        return <Clock className="w-5 h-5" />;
-    }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
-  };
-
   return (
-    <div className="min-h-screen bg-[#FAFAF8]">
-      <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16 pb-32">
-        <div className="max-w-4xl">
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="mb-8 text-sm font-semibold text-[#F03319]"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Strategic Priorities
-          </Button>
+    <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16 pb-32">
+      <div className="max-w-4xl">
+        {/* Back Button */}
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
 
-          <div className="mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
-              Value Methodology
-            </h1>
-            <p className="text-lg text-neutral-600 leading-relaxed">
-              This reference scenario shows potential value for a typical mid-sized hospital.
-              Review how each driver creates value, then customize with your specific numbers
-              in the next step.
-            </p>
+        {/* Header */}
+        <div className="mb-10">
+          <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
+            Value Methodology
+          </h2>
+          <p className="text-lg text-neutral-600 leading-relaxed">
+            This reference scenario shows potential value for a typical mid-sized practice. Review how each driver creates value, then customize with your specific numbers in the next step.
+          </p>
+        </div>
+
+        {/* Reference Scenario Section */}
+        <section className="mb-10">
+          <div className="rounded-xl bg-gradient-to-br from-slate-50 to-blue-50/50 border border-slate-200 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-neutral-900">Reference Scenario</h3>
+              <p className="text-sm text-neutral-500">Typical mid-sized community hospital</p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-5">
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 bg-white rounded-lg px-2 sm:px-4 py-3 border border-slate-100">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-50 flex-shrink-0">
+                  <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                </div>
+                <div className="text-center sm:text-left min-w-0">
+                  <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{NURSING_REFERENCE_SCENARIO.staffedBeds}</div>
+                  <div className="text-[10px] sm:text-xs text-neutral-500">staffed beds</div>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 bg-white rounded-lg px-2 sm:px-4 py-3 border border-slate-100">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-50 flex-shrink-0">
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                </div>
+                <div className="text-center sm:text-left min-w-0">
+                  <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{formatNumber(NURSING_REFERENCE_SCENARIO.documentationEventsPerYear)}</div>
+                  <div className="text-[10px] sm:text-xs text-neutral-500">events/year</div>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 bg-white rounded-lg px-2 sm:px-4 py-3 border border-slate-100">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-50 flex-shrink-0">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                </div>
+                <div className="text-center sm:text-left min-w-0">
+                  <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{NURSING_REFERENCE_SCENARIO.adoptionPercent}%</div>
+                  <div className="text-[10px] sm:text-xs text-neutral-500">adoption</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-4 border-t border-slate-200">
+              <Calculator className="w-4 h-4 text-neutral-400" />
+              <span className="text-sm text-neutral-600">This creates:</span>
+              <span className="text-base font-semibold text-neutral-900">
+                ~{formatNumber(NURSING_REFERENCE_SCENARIO.eligibleEvents)} Abridge-documented events/year
+              </span>
+            </div>
           </div>
+        </section>
 
-          {/* Reference Scenario Card */}
-          <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-8 mb-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 rounded-full bg-[#F03319]" />
-              <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide">
-                Reference Scenario
-              </h2>
-            </div>
-            <p className="text-neutral-600 mb-6">
-              Typical 200-bed community hospital, med-surg focused
-            </p>
-            
-            <div className="grid grid-cols-3 gap-6 mb-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-neutral-900 font-mono">200</div>
-                <div className="text-sm text-neutral-500 mt-1">staffed beds</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-neutral-900 font-mono">332,150</div>
-                <div className="text-sm text-neutral-500 mt-1">documentation events/year</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-neutral-900 font-mono">65%</div>
-                <div className="text-sm text-neutral-500 mt-1">adoption</div>
-              </div>
-            </div>
+        {/* Value Drivers Section */}
+        <section className="mb-10">
+          <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4">
+            Your Selected Value Drivers
+          </h3>
 
-            <div className="bg-neutral-50 rounded-xl p-4 flex items-center gap-3">
-              <Info className="w-5 h-5 text-neutral-400 flex-shrink-0" />
-              <p className="text-sm text-neutral-600">
-                This creates: <span className="font-semibold">~332,150 Abridge-documented events per year</span>
-              </p>
-            </div>
-          </div>
+          <div className="space-y-4">
+            {selectedDriverInfo.map((driver) => {
+              const DriverIcon = DRIVER_ICONS[driver.id] || FileText;
+              const isExpanded = expandedDrivers.has(driver.id);
+              const methodology = driver.methodology;
 
-          {/* Your Selected Value Drivers */}
-          <div className="mb-10">
-            <h2 className="text-xl font-bold text-neutral-900 mb-6">
-              Your Selected Value Drivers
-            </h2>
-            
-            <div className="space-y-4">
-              {selectedDriverConfigs.map((driver) => {
-                const methodology = NURSING_DRIVER_METHODOLOGY[driver.id];
-                const isExpanded = expandedDrivers.has(driver.id);
-                
-                if (!methodology) return null;
-
-                return (
-                  <div
-                    key={driver.id}
-                    className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden"
-                    data-testid={`driver-card-${driver.id}`}
+              return (
+                <div
+                  key={driver.id}
+                  className="rounded-xl border border-neutral-200 bg-white overflow-hidden"
+                  data-testid={`driver-card-${driver.id}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleExpanded(driver.id)}
+                    className="w-full flex items-center justify-between p-5 text-left hover:bg-neutral-50 transition-colors"
+                    data-testid={`driver-toggle-${driver.id}`}
                   >
-                    {/* Header */}
-                    <div
-                      onClick={() => toggleExpanded(driver.id)}
-                      className="w-full flex items-center justify-between p-5 text-left cursor-pointer"
-                      data-testid={`driver-toggle-${driver.id}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${driver.hasWarning ? 'bg-amber-100 text-amber-600' : 'bg-[#FFF5F3] text-[#F03319]'}`}>
-                          {getDriverIcon(driver.id)}
+                    <div className="flex items-center gap-4">
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${driver.hasWarning ? 'bg-amber-50' : 'bg-[#FFF5F3]'}`}>
+                        <DriverIcon className={`w-5 h-5 ${driver.hasWarning ? 'text-amber-600' : 'text-[#F03319]'}`} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          {driver.hasWarning && <AlertTriangle className="w-4 h-4 text-amber-500" />}
+                          <span className="font-semibold text-neutral-900">{driver.label}</span>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            {driver.hasWarning && <AlertTriangle className="w-4 h-4 text-amber-500" />}
-                            <span className="font-semibold text-neutral-900">{driver.label}</span>
-                          </div>
-                          <div className="text-sm text-neutral-500">
-                            Reference value: <span className="font-semibold text-neutral-700">{formatCurrency(methodology.referenceValue)}</span>
-                          </div>
+                        <div className="text-sm text-neutral-500">
+                          Reference value: <span className="font-mono font-medium text-green-600">{formatCurrency(methodology.referenceValue)}</span>
                         </div>
                       </div>
-                      {isExpanded ? (
-                        <ChevronUp className="w-5 h-5 text-neutral-400" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-neutral-400" />
-                      )}
                     </div>
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  </button>
 
-                    {/* Expanded Content */}
-                    {isExpanded && (
-                      <div className="px-5 pb-5 border-t border-neutral-100">
-                        {/* Important Limitation Warning for indirect drivers */}
-                        {driver.hasWarning && (
-                          <div className="mt-5 bg-amber-50 border border-amber-200 rounded-xl p-4">
-                            <div className="flex items-start gap-3">
-                              <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                              <div>
-                                <div className="font-semibold text-amber-800 mb-2">Important Limitation</div>
-                                <p className="text-sm text-amber-700 mb-3">
-                                  This is an <strong>INDIRECT</strong> relationship. We cannot claim that
-                                  Abridge directly prevents these events.
-                                </p>
-                                <div className="text-sm text-amber-700">
-                                  <p className="font-medium mb-1">What we CAN say:</p>
-                                  <ul className="list-disc list-inside space-y-1 ml-2">
-                                    <li>Timely documentation supports identification of at-risk patients</li>
-                                    <li>Complete assessment documentation enables appropriate care planning</li>
-                                    <li>Documentation is ONE component of prevention protocols</li>
-                                  </ul>
-                                </div>
-                                <p className="text-sm text-amber-700 mt-3 italic">
-                                  This value is speculative and for directional planning only.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* The Theory */}
-                        <div className="mt-5">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Lightbulb className="w-4 h-4 text-[#F03319]" />
-                            <span className="text-sm font-semibold text-neutral-700">The Theory</span>
-                          </div>
-                          <p className="text-neutral-600 text-sm leading-relaxed">
-                            {methodology.theory}
-                          </p>
+                  {isExpanded && (
+                    <div className="px-5 pb-5 border-t border-neutral-100">
+                      {/* The Theory */}
+                      <div className="mt-5 mb-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Lightbulb className="w-4 h-4 text-amber-500" />
+                          <span className="text-sm font-semibold text-neutral-700">The Theory</span>
                         </div>
+                        <p className="text-sm text-neutral-600 leading-relaxed pl-6">
+                          {methodology.theory}
+                        </p>
+                      </div>
 
-                        {/* How We Calculate It */}
-                        <div className="mt-6">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Calculator className="w-4 h-4 text-[#F03319]" />
-                            <span className="text-sm font-semibold text-neutral-700">How We Calculate It</span>
-                          </div>
-                          <div className="bg-neutral-50 rounded-xl p-4 space-y-4">
-                            {methodology.calculationSteps.map((step, stepIdx) => (
-                              <div key={stepIdx}>
-                                <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
-                                  {step.title}
-                                </div>
-                                <div className="space-y-1">
-                                  {step.rows.map((row, rowIdx) => (
-                                    <div key={rowIdx} className="flex justify-between text-sm">
+                      {/* How We Calculate It */}
+                      <div className="mb-6">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Calculator className="w-4 h-4 text-blue-500" />
+                          <span className="text-sm font-semibold text-neutral-700">How We Calculate It</span>
+                        </div>
+                        <div className="space-y-4 pl-6">
+                          {methodology.calculationSteps.map((step, idx) => (
+                            <div key={idx} className="bg-slate-50 rounded-lg p-4">
+                              <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">{step.title}</div>
+                              <div className="space-y-1">
+                                {step.rows.map((row, rowIdx) => {
+                                  if (row.note === "warning") {
+                                    return (
+                                      <div key={rowIdx} className="mt-2 p-2 rounded bg-amber-50 border border-amber-200">
+                                        <span className="text-xs text-amber-800 flex items-center gap-1.5">
+                                          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                                          {row.label}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+                                  if (row.note === "info") {
+                                    return (
+                                      <div key={rowIdx} className="mt-2 p-2 rounded bg-blue-50 border border-blue-200">
+                                        <span className="text-xs text-blue-800 flex items-center gap-1.5">
+                                          <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                                          {row.label}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+                                  return (
+                                    <div key={rowIdx} className="flex items-center justify-between text-sm">
                                       <span className="text-neutral-600">{row.label}</span>
-                                      <span className="font-mono text-neutral-900">{row.value}</span>
+                                      <span className="font-mono text-neutral-900">
+                                        {row.value}
+                                        {row.note && <span className="text-[#F03319]/70 text-xs ml-1">{row.note}</span>}
+                                      </span>
                                     </div>
-                                  ))}
-                                </div>
+                                  );
+                                })}
                               </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Key Variables */}
-                        <div className="mt-6">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Sliders className="w-4 h-4 text-[#F03319]" />
-                            <span className="text-sm font-semibold text-neutral-700">Key Variables You'll Customize</span>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {methodology.keyVariables.map((variable, idx) => (
-                              <span key={idx} className="px-3 py-1 bg-neutral-100 rounded-full text-sm text-neutral-600">
-                                {variable}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Range Across Customers */}
-                        <div className="mt-6">
-                          <div className="flex items-center gap-2 mb-3">
-                            <BarChart3 className="w-4 h-4 text-[#F03319]" />
-                            <span className="text-sm font-semibold text-neutral-700">Range Across Customers</span>
-                          </div>
-                          <div className="flex gap-4">
-                            <div className="flex-1 bg-neutral-100 rounded-lg p-3 text-center">
-                              <div className="text-xs text-neutral-500 mb-1">Conservative</div>
-                              <div className="font-semibold text-neutral-700">{methodology.rangeConservative}</div>
                             </div>
-                            <div className="flex-1 bg-[#FFF5F3] rounded-lg p-3 text-center">
-                              <div className="text-xs text-neutral-500 mb-1">Typical</div>
-                              <div className="font-semibold text-[#F03319]">{methodology.rangeTypical}</div>
-                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Key Variables */}
+                      <div className="mb-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Settings className="w-4 h-4 text-neutral-500" />
+                          <span className="text-sm font-semibold text-neutral-700">Key Variables You'll Customize</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 pl-6">
+                          {methodology.keyVariables.map((v, idx) => (
+                            <span key={idx} className="px-3 py-1 bg-neutral-100 rounded-full text-xs text-neutral-600">
+                              {v}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Range Across Customers */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <BarChart3 className="w-4 h-4 text-green-500" />
+                          <span className="text-sm font-semibold text-neutral-700">Range Across Customers</span>
+                        </div>
+                        <div className="flex gap-4 pl-6">
+                          <div className="flex-1 bg-neutral-100 rounded-lg px-4 py-3 text-center">
+                            <div className="text-xs text-neutral-500 mb-1">Conservative</div>
+                            <div className="font-semibold text-neutral-700">{methodology.rangeConservative}</div>
+                          </div>
+                          <div className="flex-1 bg-[#FFF5F3] rounded-lg px-4 py-3 text-center">
+                            <div className="text-xs text-[#F03319] mb-1">Typical</div>
+                            <div className="font-semibold text-[#F03319]">{methodology.rangeTypical}</div>
                           </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Combined Impact Summary */}
-          <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-8 mb-10">
-            <h2 className="text-lg font-bold text-neutral-900 mb-6 uppercase tracking-wide">
-              Combined Impact (Reference Scenario)
-            </h2>
-            
-            <div className="space-y-3 mb-6">
-              {selectedDriverConfigs.map((driver) => {
-                const methodology = NURSING_DRIVER_METHODOLOGY[driver.id];
-                if (!methodology) return null;
-                
-                return (
-                  <div key={driver.id} className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="text-neutral-700">{driver.label}</span>
-                      {driver.hasWarning && <span className="text-amber-500">*</span>}
                     </div>
-                    <span className="font-mono font-semibold text-neutral-900">
-                      {formatCurrency(methodology.referenceValue)}
-                    </span>
-                  </div>
-                );
-              })}
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Combined Impact Summary */}
+        <section className="mb-10">
+          <div className="rounded-xl bg-white border border-neutral-200 p-6">
+            <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4">
+              Combined Impact (Reference Scenario)
+            </h3>
+
+            <div className="space-y-3 mb-4">
+              {selectedDriverInfo.map((driver) => (
+                <div key={driver.id} className="flex items-center justify-between text-sm">
+                  <span className="text-neutral-700">
+                    {driver.label}
+                    {driver.hasWarning && <span className="text-amber-500 ml-1">*</span>}
+                  </span>
+                  <span className="font-mono font-medium text-neutral-900">{formatCurrency(driver.methodology.referenceValue)}</span>
+                </div>
+              ))}
             </div>
 
             <div className="border-t border-neutral-200 pt-4">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-neutral-900">Total Annual Benefit</span>
-                <span className="font-mono text-2xl font-bold text-[#0E9F6E]">
+              <div className="flex items-center justify-between">
+                <span className="text-base font-semibold text-neutral-900">Total Annual Benefit</span>
+                <span className="text-2xl font-bold text-green-600 font-mono">
                   {formatCurrency(totalReferenceValue)}
                 </span>
               </div>
             </div>
-
-            {selectedDriverConfigs.some(d => d.hasWarning) && (
-              <p className="text-xs text-neutral-500 mt-4 italic">
-                *Indirect relationship—see methodology for limitations
-              </p>
-            )}
-
-            <div className="bg-neutral-50 rounded-xl p-4 mt-6 flex items-start gap-3">
-              <Lightbulb className="w-5 h-5 text-neutral-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-neutral-600">
-                This is before accounting for investment costs. Next, you'll
-                input your specifics to see YOUR numbers.
-              </p>
-            </div>
           </div>
 
-          {/* Important to Know */}
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 md:p-8 mb-10">
+          {/* Callout box */}
+          <div className="mt-4 rounded-lg bg-blue-50 border border-blue-100 p-4 flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-800">
+              This is before accounting for investment costs. Next, you'll input your specifics to see YOUR numbers.
+            </p>
+          </div>
+        </section>
+
+        {/* Important to Know Warning */}
+        <section className="mb-6">
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-6">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-bold text-amber-800 mb-3">Important to Know</h3>
-                <p className="text-sm text-amber-700 mb-4">
-                  These calculations use typical assumptions from health system
-                  implementations.
+                <h4 className="font-semibold text-amber-900 mb-2">Important to Know</h4>
+                <p className="text-sm text-amber-800 mb-3">
+                  These calculations use typical assumptions from 200+ health system partners.
                 </p>
-                <div className="text-sm text-amber-700">
-                  <p className="font-medium mb-2">Important limitations:</p>
-                  <ul className="list-disc list-inside space-y-1.5 ml-2">
-                    <li>We don't have access to your specific labor costs, overtime patterns, or turnover data</li>
-                    <li>Time savings assumptions use industry estimates—your actual may vary based on current workflows</li>
-                    <li>Quality & Revenue drivers (marked with *) have indirect relationships and require validation</li>
-                    <li>Long-term metrics (retention) may require 12+ months to measure</li>
-                  </ul>
-                </div>
-                <p className="text-sm text-amber-700 mt-4">
-                  The formulas stay the same—only <strong>YOUR numbers</strong> change. Adjust
-                  assumptions to reflect your organization's reality.
+                <p className="text-sm text-amber-800 mb-2 font-medium">
+                  Important limitations:
+                </p>
+                <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc mb-3">
+                  <li>We don't have access to your specific labor costs, staffing models, or financial systems</li>
+                  <li>Labor value assumptions use blended averages—your actual rates may vary</li>
+                  <li>Retention value assumes turnover attribution can be measured over 12+ months</li>
+                  {hasIndirectDrivers && (
+                    <li><strong>Drivers marked with * have indirect relationships</strong>—value is directional, not guaranteed</li>
+                  )}
+                </ul>
+                <p className="text-sm text-amber-800 font-medium">
+                  The formulas stay the same—only YOUR numbers change. Adjust assumptions to reflect your organization's reality.
                 </p>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Bottom Continue Button */}
+      {/* Fixed Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-neutral-200/60 shadow-lg">
         <div className="max-w-[1200px] mx-auto px-6 py-4">
           <Button
             onClick={onContinue}
             size="lg"
-            className="w-full bg-neutral-900 text-white rounded-xl px-8 py-4 font-semibold text-lg"
+            className="w-full bg-[#111827] text-white hover:bg-[#1f2937] rounded-xl font-semibold"
             data-testid="button-continue"
           >
-            Continue to Baseline Assumptions
-            <ChevronRight className="w-5 h-5" />
+            Continue
+            <ChevronRight className="h-5 w-5 ml-2" />
           </Button>
         </div>
       </div>

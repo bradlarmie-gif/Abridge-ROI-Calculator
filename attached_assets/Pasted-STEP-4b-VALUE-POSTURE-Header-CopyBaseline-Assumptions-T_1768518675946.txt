@@ -1,0 +1,410 @@
+STEP 4b: VALUE POSTURE
+Header:
+CopyBaseline Assumptions
+
+These inputs shape your ROI model.
+
+[ ✓ Adoption ] → [ 2 Value Posture ] → [ 3 Investment ]
+
+💡 In the Value Methodology, we showed typical assumptions for each driver.
+   Now choose how conservatively or aggressively to apply them to YOUR scenario.
+Main content:
+CopyValue posture
+
+How aggressively should this model assume value realization? Choose the 
+posture that best matches your rollout confidence.
+
+┌─────────────────┐  ┌──────────────────────────┐  ┌─────────────────┐
+│ Conservative    │  │ Typical (Recommended)    │  │ Aggressive      │
+│                 │  │                          │  │                 │
+└─────────────────┘  └──────────────────────────┘  └─────────────────┘
+                              ▲ Selected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TYPICAL POSTURE
+Best for: Initial business case, balanced approach
+Based on: Median performance from health system implementations
+
+Your value drivers:
+
+✓ Documentation Time Savings                                 $996,435
+  4 minutes saved per documentation event
+
+✓ Overtime Reduction                                         $460,688
+  50% reduction in documentation-driven overtime
+
+✓ Agency & Travel Nurse Reduction                            $832,000
+  10% reduction in agency hours
+
+✓ Nurse Retention                                            $393,120
+  35% prevention of documentation-burden departures
+
+✓ Documentation Timeliness                                    $15,000
+  20% risk reduction factor
+
+✓ Documentation Completeness                                  $17,500
+  25% risk reduction factor
+
+⚠️ Safety Event Risk Reduction                               $128,850
+  10% prevention factor (indirect relationship)
+
+⚠️ CC/MCC Support                                            $170,188
+  20% capture improvement (indirect relationship)
+
+───────────────────────────────────────────────────────────────────────
+TOTAL PROJECTED VALUE:                                     $3,013,781
+(Before investment costs)
+
+▸ Compare All Postures
+"Compare All Postures" expandable:
+Copy┌──────────────────────────────────────────────────────────────────────┐
+│ Compare All Postures                                                 │
+│                                                                       │
+│                      Conservative    Typical      Aggressive         │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Time Savings           $664,290     $996,435     $1,328,580         │
+│ Overtime Reduction     $276,413     $460,688       $645,000         │
+│ Agency Reduction       $416,000     $832,000     $1,248,000         │
+│ Nurse Retention        $224,640     $393,120       $561,600         │
+│ Timeliness              $7,500      $15,000        $22,500          │
+│ Completeness           $10,500      $17,500        $28,000          │
+│ Safety Events*         $64,425     $128,850       $193,275          │
+│ CC/MCC Support*        $85,094     $170,188       $255,281          │
+│ ─────────────────────────────────────────────────────────────────── │
+│ TOTAL                $1,748,862   $3,013,781     $4,282,236         │
+│                                                                       │
+│ *Indirect relationship—see methodology                               │
+└──────────────────────────────────────────────────────────────────────┘
+Fine-Tune Assumptions (collapsible, optional):
+Copy┌──────────────────────────────────────────────────────────────────────┐
+│ ⚙️ FINE-TUNE ASSUMPTIONS (Optional)                           ▼     │
+│    Want more control? Adjust the key assumptions that drive your    │
+│    selected value drivers.                                          │
+│                                                                       │
+│ ⚠️ Note: Changing these overrides your posture selection            │
+│                                                                       │
+│ ═══════════════════════════════════════════════════════════════════ │
+│                                                                       │
+│ CAPACITY & LABOR                                                     │
+│ ───────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│ Documentation Time Savings                                           │
+│                                                                       │
+│ Minutes saved per documentation event                                │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 4                                                      │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 3-5 min                                               │
+│                                                                       │
+│ Avg nurse hourly rate                                                │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ $ 45                                                   │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: $38-55                                                │
+│                                                                       │
+│ [Reset to Typical Defaults]                                          │
+│                                                                       │
+│ ───────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│ Overtime Reduction                                                   │
+│                                                                       │
+│ % of nurses with weekly overtime                                     │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 35                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 25-50%                                                │
+│                                                                       │
+│ Avg overtime hours per affected nurse (weekly)                       │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 2.5                                           hrs      │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 1.5-4 hrs                                             │
+│                                                                       │
+│ % of overtime from documentation                                     │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 30                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 20-45%                                                │
+│                                                                       │
+│ Overtime reduction factor                                            │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 50                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 30-70%                                                │
+│ ⓘ Portion of documentation-driven OT that Abridge eliminates       │
+│                                                                       │
+│ [Reset to Typical Defaults]                                          │
+│                                                                       │
+│ ───────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│ Agency & Travel Nurse Reduction                                      │
+│                                                                       │
+│ % of nursing hours filled by agency                                  │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 8                                             %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 3-15%                                                 │
+│                                                                       │
+│ Agency hourly rate (blended)                                         │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ $ 95                                                   │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: $75-150                                               │
+│                                                                       │
+│ Agency reduction factor                                              │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 10                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 5-15%                                                 │
+│ ⓘ Portion of agency hours reduced through improved retention        │
+│   and efficiency                                                     │
+│                                                                       │
+│ [Reset to Typical Defaults]                                          │
+│                                                                       │
+│ ───────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│ Nurse Retention                                                      │
+│                                                                       │
+│ Annual turnover rate                                                 │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 18                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 12-25%                                                │
+│                                                                       │
+│ Replacement cost per nurse                                           │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ $ 52000                                                │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: $40,000-65,000                                        │
+│                                                                       │
+│ Abridge prevention effectiveness                                     │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 35                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 20-50%                                                │
+│ ⓘ % of documentation-burden departures prevented (set by posture)  │
+│ Hidden assumption: 40% of turnover is burnout-related,               │
+│ 30% of burnout is documentation-related                              │
+│                                                                       │
+│ [Reset to Typical Defaults]                                          │
+│                                                                       │
+│ ═══════════════════════════════════════════════════════════════════ │
+│                                                                       │
+│ DOCUMENTATION QUALITY                                                │
+│ ───────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│ Documentation Timeliness                                             │
+│                                                                       │
+│ Baseline documentation lag                                           │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 2.5                                           hrs      │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 1.5-4 hrs                                             │
+│                                                                       │
+│ Documentation lag with Abridge                                       │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 15                                            min      │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 5-30 min                                              │
+│                                                                       │
+│ Risk reduction value (regulatory + litigation)                       │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ $ 75000                                                │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Combined annual risk exposure estimate                               │
+│                                                                       │
+│ [Reset to Typical Defaults]                                          │
+│                                                                       │
+│ ───────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│ Documentation Completeness                                           │
+│                                                                       │
+│ Baseline field completion rate                                       │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 72                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 55-80%                                                │
+│                                                                       │
+│ Field completion rate with Abridge                                   │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 94                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 88-98%                                                │
+│                                                                       │
+│ Risk reduction value (compliance + clinical)                         │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ $ 70000                                                │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Combined annual risk exposure estimate                               │
+│                                                                       │
+│ [Reset to Typical Defaults]                                          │
+│                                                                       │
+│ ═══════════════════════════════════════════════════════════════════ │
+│                                                                       │
+│ ⚠️ QUALITY & REVENUE (Indirect Impact)                              │
+│ ───────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│ Safety Event Risk Reduction                                          │
+│                                                                       │
+│ ┌────────────────────────────────────────────────────────────────┐  │
+│ │ ⚠️ These values represent theoretical risk reduction only.     │  │
+│ │ Direct causation cannot be established.                        │  │
+│ └────────────────────────────────────────────────────────────────┘  │
+│                                                                       │
+│ Average occupancy rate                                               │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 75                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│                                                                       │
+│ HAPI rate (per 1,000 patient days)                                   │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 2.5                                                    │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 1-5                                                   │
+│                                                                       │
+│ Cost per HAPI                                                        │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ $ 45000                                                │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: $20,000-70,000                                        │
+│                                                                       │
+│ Fall rate (per 1,000 patient days)                                   │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 3.5                                                    │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 2-6                                                   │
+│                                                                       │
+│ Cost per fall with injury                                            │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ $ 35000                                                │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: $15,000-50,000                                        │
+│                                                                       │
+│ % of events with documentation contribution                          │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 10                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 5-20%                                                 │
+│ ⓘ Events where documentation gaps may have contributed              │
+│                                                                       │
+│ Prevention factor                                                    │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 10                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 5-15% (deliberately conservative)                     │
+│                                                                       │
+│ [Reset to Typical Defaults]                                          │
+│                                                                       │
+│ ───────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│ CC/MCC Support                                                       │
+│                                                                       │
+│ ┌────────────────────────────────────────────────────────────────┐  │
+│ │ ⚠️ CC/MCC capture is primarily driven by physician             │  │
+│ │ documentation. Nursing contribution is indirect.               │  │
+│ └────────────────────────────────────────────────────────────────┘  │
+│                                                                       │
+│ Average length of stay (days)                                        │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 4.5                                           days     │          │
+│ └────────────────────────────────────────────────────────┘          │
+│                                                                       │
+│ % of opportunities nursing doc supports                              │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 5                                             %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 2-10% (deliberately conservative)                     │
+│ ⓘ CC/MCC opportunities where improved nursing documentation         │
+│   could support physician query                                      │
+│                                                                       │
+│ Capture improvement rate                                             │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ 20                                            %        │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: 10-30%                                                │
+│                                                                       │
+│ Avg incremental revenue per capture                                  │
+│ ┌────────────────────────────────────────────────────────┐          │
+│ │ $ 3500                                                 │          │
+│ └────────────────────────────────────────────────────────┘          │
+│ Typical range: $2,000-6,000                                          │
+│                                                                       │
+│ [Reset to Typical Defaults]                                          │
+│                                                                       │
+└──────────────────────────────────────────────────────────────────────┘
+[Next: Investment →] button
+
+STEP 4c: INVESTMENT
+Header:
+CopyBaseline Assumptions
+
+These inputs shape your ROI model.
+
+[ ✓ Adoption ] → [ ✓ Value Posture ] → [ 3 Investment ]
+
+💡 You've modeled ~$3,013,781 in annual value. Now let's account for 
+   what this investment costs.
+Main content:
+CopyHow is this investment shaped?
+
+⚪ Per staffed bed / month
+   Pay based on number of beds
+   Most flexible for phased rollouts
+
+⚪ Enterprise annual
+   Fixed annual contract
+   Often includes volume discounts
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Contract term
+
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│   2 yrs      │  │   3 yrs      │  │   Custom     │
+└──────────────┘  └──────────────┘  └──────────────┘
+                       ▲ Selected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cost per staffed bed / month
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ $                                                                   │
+└─────────────────────────────────────────────────────────────────────┘
+Monthly subscription cost per staffed bed
+Tip: Enterprise contracts often have lower per-bed pricing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ Your calculation:                                                   │
+│                                                                     │
+│ 200 beds × $__/month × 12 months = $___,___/year                   │
+└─────────────────────────────────────────────────────────────────────┘
+
+☐ Add implementation fee (one-time)
+   └─ Implementation fee: $________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3 YEAR VIEW:
+
+                    Year 1      Year 2      Year 3      TOTAL
+Value             $3,013,781  $3,013,781  $3,013,781  $9,041,343
+Cost                $XXX,XXX    $XXX,XXX    $XXX,XXX  $X,XXX,XXX
+Net               $X,XXX,XXX  $X,XXX,XXX  $X,XXX,XXX  $X,XXX,XXX
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ ⏱ Time to value                                                    │
+│                                                                     │
+│ Impact timeline varies by driver:                                   │
+│ • Operational drivers (Time Savings, OT): 3-6 months               │
+│ • Documentation drivers (Timeliness, Completeness): 2-4 months     │
+│ • Long-term drivers (Retention, Safety, CC/MCC): 12+ months        │
+│                                                                     │
+│ 💡 Full value realization typically occurs at 12-18 months as      │
+│    utilization matures.                                             │
+└─────────────────────────────────────────────────────────────────────┘
