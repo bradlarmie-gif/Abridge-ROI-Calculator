@@ -48,6 +48,24 @@ The Nursing flow has a dedicated Strategic Priorities screen with 8 drivers acro
 - `/client/src/pages/NursingStrategicPriorities.tsx` - Main component
 - `/client/src/lib/SETTING_CONFIG.ts` - Nursing driver configuration
 
+### Nursing Value Methodology Page
+After selecting strategic priorities, nurses see a Value Methodology page that educates them on how each driver creates value using a reference scenario.
+
+**Page Structure**:
+1. **Reference Scenario Card**: 200-bed community hospital, 332,150 documentation events/year, 65% adoption
+2. **Expandable Driver Cards**: For each selected driver, shows:
+   - The Theory: Why this driver matters
+   - How We Calculate It: Step-by-step calculation breakdown
+   - Key Variables You'll Customize: Variables they'll input in the next step
+   - Range Across Customers: Conservative vs Typical ranges
+3. **Important Limitation Warnings**: Drivers with indirect relationships (safety_event_reduction, ccmcc_support) show prominent warning boxes
+4. **Combined Impact Summary**: Total annual benefit across all selected drivers
+5. **Important to Know Box**: Limitations and assumptions disclosure
+
+**Key File**: `/client/src/pages/NursingValueMethodology.tsx`
+
+**Routing**: nursing-priorities → nursing-value-methodology → model-setup (baseline assumptions)
+
 ### Expansion Calculator (4-Step Full Wizard)
 The Expansion Calculator allows modeling ROI for provider expansion scenarios with a sophisticated 4-step wizard:
 
