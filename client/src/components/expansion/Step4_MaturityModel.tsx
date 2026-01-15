@@ -3,22 +3,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ArrowLeft, Download, TrendingUp, DollarSign, Calendar, Users, Zap, ChevronDown, ChevronRight, Check, AlertTriangle, Lightbulb, Target } from "lucide-react";
+import { ArrowLeft, Download, TrendingUp, DollarSign, Zap, ChevronDown, ChevronRight, Check, AlertTriangle, Lightbulb, Target } from "lucide-react";
 import {
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Area,
   ComposedChart,
   Bar,
   Legend,
-  Line,
   ReferenceLine,
+  Area,
+  Line,
 } from "recharts";
-import type { BaselineData, ExpansionInputs, ExpansionResults, AccessValidation, RetentionValidation, LosValidation } from "./expansion-types";
-import { calculateExpansionResults, formatCurrency, formatROI, getVolumeDiscount } from "./expansion-calculations";
+import type { BaselineData, ExpansionInputs, ExpansionResults, AccessValidation, LosValidation } from "./expansion-types";
+import { calculateExpansionResults, calculateExpandedModel, formatCurrency, formatROI, getVolumeDiscount, DRIVER_MATURITY_CURVES } from "./expansion-calculations";
+import { MaturityCurveViz } from "./MaturityCurveViz";
 import type { LeverId } from "@/lib/roi-types";
 
 interface Step4Props {
@@ -50,44 +51,38 @@ export function Step4_MaturityModel({
     [baseline, inputs]
   );
 
+  const expandedModel = useMemo(
+    () => calculateExpandedModel(baseline, inputs),
+    [baseline, inputs]
+  );
+
   const newProviders = inputs.targetProviders - baseline.providers;
   const discount = getVolumeDiscount(inputs.targetProviders);
 
-  const hasRetention = baseline.activeDrivers.includes('workforce' as LeverId);
-  const hasAccess = baseline.activeDrivers.includes('patientAccess' as LeverId);
+  const hasRetention = expandedModel.hasRetention;
+  const hasAccess = expandedModel.hasAccess;
 
   const accessValidation = inputs.driverValidations?.patientAccess as AccessValidation | undefined;
-  const losValidation = inputs.driverValidations?.wrvu as LosValidation | undefined;
 
-  const incrementalYear1Cost = results.year1.totalCost - baseline.annualCost;
-  const incrementalYear1Benefit = results.year1.totalBenefit - baseline.totalBenefit;
-  const incrementalYear1NetGain = incrementalYear1Benefit - incrementalYear1Cost;
-  const incrementalYear1ROI = incrementalYear1Cost > 0 ? incrementalYear1Benefit / incrementalYear1Cost : 0;
+  const incrementalYear1Cost = expandedModel.year1.incrementalCost;
+  const incrementalYear1Benefit = expandedModel.year1.incrementalBenefit;
+  const incrementalYear1NetGain = expandedModel.year1.incrementalNetGain;
+  const incrementalYear1ROI = expandedModel.year1.incrementalROI;
 
-  const incrementalYear2Cost = results.year2.totalCost - baseline.annualCost;
-  const incrementalYear2Benefit = results.year2.totalBenefit - baseline.totalBenefit;
-  const incrementalYear2NetGain = incrementalYear2Benefit - incrementalYear2Cost;
-  const incrementalYear2ROI = incrementalYear2Cost > 0 ? incrementalYear2Benefit / incrementalYear2Cost : 0;
+  const incrementalYear2Cost = expandedModel.year2.incrementalCost;
+  const incrementalYear2Benefit = expandedModel.year2.incrementalBenefit;
+  const incrementalYear2NetGain = expandedModel.year2.incrementalNetGain;
+  const incrementalYear2ROI = expandedModel.year2.incrementalROI;
 
-  const incrementalYear3Cost = results.year3.totalCost - baseline.annualCost;
-  const incrementalYear3Benefit = results.year3.totalBenefit - baseline.totalBenefit;
-  const incrementalYear3NetGain = incrementalYear3Benefit - incrementalYear3Cost;
-  const incrementalYear3ROI = incrementalYear3Cost > 0 ? incrementalYear3Benefit / incrementalYear3Cost : 0;
+  const incrementalYear3Cost = expandedModel.year3.incrementalCost;
+  const incrementalYear3Benefit = expandedModel.year3.incrementalBenefit;
+  const incrementalYear3NetGain = expandedModel.year3.incrementalNetGain;
+  const incrementalYear3ROI = expandedModel.year3.incrementalROI;
 
-  const totalIncrementalCost = incrementalYear1Cost + incrementalYear2Cost + incrementalYear3Cost;
-  const totalIncrementalBenefit = incrementalYear1Benefit + incrementalYear2Benefit + incrementalYear3Benefit;
-  const totalIncrementalNetGain = totalIncrementalBenefit - totalIncrementalCost;
-  const blended3YearROI = totalIncrementalCost > 0 ? totalIncrementalBenefit / totalIncrementalCost : 0;
-
-  const maturityChartData = results.maturityCurve.map((point) => ({
-    month: `M${point.month}`,
-    providers: point.providers,
-    utilization: Math.round(point.utilization * 100),
-    monthlyBenefit: point.benefit,
-    cumulativeBenefit: results.maturityCurve
-      .slice(0, point.month)
-      .reduce((sum, p) => sum + p.benefit, 0),
-  }));
+  const totalIncrementalCost = expandedModel.threeYear.totalIncrementalCost;
+  const totalIncrementalBenefit = expandedModel.threeYear.totalIncrementalBenefit;
+  const totalIncrementalNetGain = expandedModel.threeYear.totalIncrementalNetGain;
+  const blended3YearROI = expandedModel.threeYear.blendedROI;
 
   const threeYearData = [
     {
@@ -135,76 +130,20 @@ export function Step4_MaturityModel({
           </div>
           <p className="text-sm text-muted-foreground mb-4">
             Utilization & value realization over time for your new {newProviders} providers
+            {hasRetention && " (includes retention timing lag)"}
           </p>
 
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={maturityChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                />
-                <YAxis
-                  yAxisId="left"
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                  tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                  tickFormatter={(v) => `${v}%`}
-                />
-                <Tooltip
-                  formatter={(value: number, name: string) => {
-                    if (name === "Utilization") return [`${value}%`, name];
-                    return [formatCurrency(value), name];
-                  }}
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Legend />
-                <Area
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="cumulativeBenefit"
-                  name="Cumulative Benefit"
-                  fill="#0E9F6E"
-                  fillOpacity={0.2}
-                  stroke="#0E9F6E"
-                  strokeWidth={2}
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="utilization"
-                  name="Utilization"
-                  stroke="#F03319"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
+          <MaturityCurveViz hasRetention={hasRetention} />
 
-          <div className="flex justify-center gap-6 mt-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-yellow-500" />
-              <span className="text-sm text-muted-foreground">Ramp-Up (Mo 1-6)</span>
+          {hasRetention && (
+            <div className="mt-4 p-3 bg-[#0E9F6E]/10 rounded-lg border border-[#0E9F6E]/20 text-sm">
+              <strong className="text-[#0E9F6E]">Retention Benefit Lag:</strong>
+              <span className="text-muted-foreground ml-2">
+                The green dashed line shows how Clinician Retention benefits lag behind other drivers 
+                due to the 12-18 month decision cycle. Year 1 shows ~20%, Year 2 ~70%, Year 3 reaches 100%.
+              </span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#F03319]" />
-              <span className="text-sm text-muted-foreground">Maturing (Mo 7-18)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#0E9F6E]" />
-              <span className="text-sm text-muted-foreground">Mature State (18+)</span>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -212,15 +151,13 @@ export function Step4_MaturityModel({
         <YearCard
           year={1}
           title="The Ramp-Up Year"
-          utilization={results.maturityCurve.length > 0 
-            ? results.maturityCurve[results.maturityCurve.length - 1].utilization 
-            : 0.5}
-          baselineCost={baseline.annualCost}
-          baselineBenefit={baseline.totalBenefit}
-          baselineNetGain={baseline.netGain}
-          baselineROI={baseline.roi}
-          totalCost={results.year1.totalCost}
-          totalBenefit={results.year1.totalBenefit}
+          utilization={expandedModel.year1.avgUtilization}
+          baselineCost={expandedModel.baseline.cost}
+          baselineBenefit={expandedModel.baseline.benefit}
+          baselineNetGain={expandedModel.baseline.netGain}
+          baselineROI={expandedModel.baseline.roi}
+          totalCost={expandedModel.year1.totalCost}
+          totalBenefit={expandedModel.year1.totalBenefit}
           incrementalCost={incrementalYear1Cost}
           incrementalBenefit={incrementalYear1Benefit}
           incrementalROI={incrementalYear1ROI}
@@ -234,13 +171,13 @@ export function Step4_MaturityModel({
         <YearCard
           year={2}
           title="The Maturing Year"
-          utilization={0.8}
-          baselineCost={baseline.annualCost}
-          baselineBenefit={baseline.totalBenefit}
-          baselineNetGain={baseline.netGain}
-          baselineROI={baseline.roi}
-          totalCost={results.year2.totalCost}
-          totalBenefit={results.year2.totalBenefit}
+          utilization={expandedModel.year2.avgUtilization}
+          baselineCost={expandedModel.baseline.cost}
+          baselineBenefit={expandedModel.baseline.benefit}
+          baselineNetGain={expandedModel.baseline.netGain}
+          baselineROI={expandedModel.baseline.roi}
+          totalCost={expandedModel.year2.totalCost}
+          totalBenefit={expandedModel.year2.totalBenefit}
           incrementalCost={incrementalYear2Cost}
           incrementalBenefit={incrementalYear2Benefit}
           incrementalROI={incrementalYear2ROI}
@@ -254,13 +191,13 @@ export function Step4_MaturityModel({
         <YearCard
           year={3}
           title="The Mature State"
-          utilization={0.85}
-          baselineCost={baseline.annualCost}
-          baselineBenefit={baseline.totalBenefit}
-          baselineNetGain={baseline.netGain}
-          baselineROI={baseline.roi}
-          totalCost={results.year3.totalCost}
-          totalBenefit={results.year3.totalBenefit}
+          utilization={expandedModel.year3.avgUtilization}
+          baselineCost={expandedModel.baseline.cost}
+          baselineBenefit={expandedModel.baseline.benefit}
+          baselineNetGain={expandedModel.baseline.netGain}
+          baselineROI={expandedModel.baseline.roi}
+          totalCost={expandedModel.year3.totalCost}
+          totalBenefit={expandedModel.year3.totalBenefit}
           incrementalCost={incrementalYear3Cost}
           incrementalBenefit={incrementalYear3Benefit}
           incrementalROI={incrementalYear3ROI}
@@ -552,10 +489,16 @@ function YearCard({
     3: "bg-[#0E9F6E]",
   };
 
+  const yearCardClasses = {
+    1: "year-card-1",
+    2: "year-card-2",
+    3: "year-card-3",
+  };
+
   return (
-    <Card data-testid={`year-${year}-card`}>
+    <Card className={yearCardClasses[year as keyof typeof yearCardClasses]} data-testid={`year-${year}-card`}>
       <CardContent className="p-6 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <Badge className={`${yearBadgeColors[year as keyof typeof yearBadgeColors]} text-white`}>
               Year {year}
@@ -611,8 +554,8 @@ function YearCard({
 
         <div className={`flex items-start gap-3 p-3 rounded-lg ${
           insight.type === "warning" 
-            ? "bg-yellow-500/10 border border-yellow-500/20" 
-            : "bg-[#0E9F6E]/10 border border-[#0E9F6E]/20"
+            ? "insight-warning" 
+            : "insight-success"
         }`}>
           {insight.type === "warning" ? (
             <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />

@@ -4,7 +4,37 @@ import type {
   ExpansionInputs,
   ExpansionResults,
   MaturityPoint,
+  AccessValidation,
+  LosValidation,
 } from "./expansion-types";
+
+export interface DriverMaturityCurve {
+  year1: number;
+  year2: number;
+  year3: number;
+}
+
+export const DRIVER_MATURITY_CURVES: Record<string, DriverMaturityCurve> = {
+  patientAccess: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  workforce: { year1: 0.20, year2: 0.70, year3: 1.00 },
+  wrvu: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  overtime: { year1: 0.50, year2: 0.80, year3: 0.95 },
+  denials: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  hcc: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  edThroughput: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  edLevelOfService: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  edDenialReduction: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  edRetention: { year1: 0.20, year2: 0.70, year3: 1.00 },
+  rnDocTime: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  rnCommunication: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  rnSafetyReduction: { year1: 0.50, year2: 0.80, year3: 1.00 },
+  rnDiagnosisSeverity: { year1: 0.50, year2: 0.80, year3: 1.00 },
+};
+
+export function getDriverMaturityFactor(driverId: LeverId, year: 1 | 2 | 3): number {
+  const curve = DRIVER_MATURITY_CURVES[driverId] || { year1: 0.5, year2: 0.8, year3: 1.0 };
+  return curve[`year${year}` as keyof DriverMaturityCurve];
+}
 
 export function getVolumeDiscount(providers: number): number {
   if (providers >= 250) return 0.3;
@@ -309,4 +339,209 @@ export function formatROI(value: number): string {
     return "0.0x";
   }
   return `${value.toFixed(1)}x`;
+}
+
+export interface YearBenefits {
+  benefitsByDriver: Record<string, number>;
+  totalBenefit: number;
+}
+
+export interface ExpandedModel {
+  baseline: {
+    providers: number;
+    cost: number;
+    benefit: number;
+    netGain: number;
+    roi: number;
+  };
+  year1: {
+    avgUtilization: number;
+    totalCost: number;
+    incrementalCost: number;
+    benefitsByDriver: Record<string, number>;
+    totalBenefit: number;
+    incrementalBenefit: number;
+    totalNetGain: number;
+    incrementalNetGain: number;
+    totalROI: number;
+    incrementalROI: number;
+  };
+  year2: {
+    avgUtilization: number;
+    totalCost: number;
+    incrementalCost: number;
+    benefitsByDriver: Record<string, number>;
+    totalBenefit: number;
+    incrementalBenefit: number;
+    totalNetGain: number;
+    incrementalNetGain: number;
+    totalROI: number;
+    incrementalROI: number;
+  };
+  year3: {
+    avgUtilization: number;
+    totalCost: number;
+    incrementalCost: number;
+    benefitsByDriver: Record<string, number>;
+    totalBenefit: number;
+    incrementalBenefit: number;
+    totalNetGain: number;
+    incrementalNetGain: number;
+    totalROI: number;
+    incrementalROI: number;
+  };
+  threeYear: {
+    totalIncrementalCost: number;
+    totalIncrementalBenefit: number;
+    totalIncrementalNetGain: number;
+    blendedROI: number;
+  };
+  incremental: {
+    providers: number;
+  };
+  hasRetention: boolean;
+  hasAccess: boolean;
+}
+
+function applyDriverValidation(
+  driver: LeverId,
+  valuePerProvider: number,
+  newProviders: number,
+  maturityFactor: number,
+  validation: AccessValidation | LosValidation | undefined,
+  baseline: BaselineData
+): number {
+  let adjustedValue = valuePerProvider * newProviders * maturityFactor;
+
+  if (validation) {
+    if (driver === "patientAccess" && "hasCapacity" in validation) {
+      const accessVal = validation as AccessValidation;
+      if (!accessVal.hasCapacity) {
+        adjustedValue *= 0.5;
+      }
+      if (!accessVal.sameDemand && accessVal.additionalVisitsPerWeek > 0) {
+        const baselineVisitsPerProvider = (baseline.benefits?.patientAccess || 0) / baseline.providers / 48;
+        if (baselineVisitsPerProvider > 0) {
+          const ratio = accessVal.additionalVisitsPerWeek / baselineVisitsPerProvider;
+          adjustedValue *= Math.min(ratio, 1.5);
+        }
+      }
+    }
+
+    if (driver === "wrvu" && "sameCaseMix" in validation) {
+      const losVal = validation as LosValidation;
+      if (!losVal.sameCaseMix && losVal.wrvuUplift > 0) {
+        const baselineWRVU = (baseline.benefits?.wrvu || 0) / baseline.providers;
+        if (baselineWRVU > 0) {
+          const ratio = losVal.wrvuUplift / baselineWRVU;
+          adjustedValue *= Math.min(ratio, 1.5);
+        }
+      }
+    }
+  }
+
+  return Math.round(adjustedValue);
+}
+
+export function calculateExpandedModel(
+  baseline: BaselineData,
+  inputs: ExpansionInputs
+): ExpandedModel {
+  const newProviders = inputs.targetProviders - baseline.providers;
+  const baselineCost = baseline.annualCost;
+  const scenarioCost = calculateExpansionCost(inputs.targetProviders, baseline, inputs);
+  const incrementalCost = scenarioCost - baselineCost;
+
+  const calculateYearBenefits = (year: 1 | 2 | 3): YearBenefits => {
+    const benefitsByDriver: Record<string, number> = {};
+    let totalBenefit = 0;
+
+    Object.entries(baseline.benefits || {}).forEach(([driver, baseValue]) => {
+      if (baseValue && baseValue > 0) {
+        const valuePerProvider = baseValue / baseline.providers;
+        const maturityFactor = getDriverMaturityFactor(driver as LeverId, year);
+        
+        const adjustedValue = applyDriverValidation(
+          driver as LeverId,
+          valuePerProvider,
+          newProviders,
+          maturityFactor,
+          inputs.driverValidations?.[driver as LeverId] as AccessValidation | LosValidation | undefined,
+          baseline
+        );
+
+        benefitsByDriver[driver] = adjustedValue;
+        totalBenefit += adjustedValue;
+      }
+    });
+
+    return { benefitsByDriver, totalBenefit };
+  };
+
+  const year1Benefits = calculateYearBenefits(1);
+  const year2Benefits = calculateYearBenefits(2);
+  const year3Benefits = calculateYearBenefits(3);
+
+  const avgUtilization1 = 0.50;
+  const avgUtilization2 = 0.80;
+  const avgUtilization3 = 0.90;
+
+  return {
+    baseline: {
+      providers: baseline.providers,
+      cost: baselineCost,
+      benefit: baseline.totalBenefit,
+      netGain: baseline.totalBenefit - baselineCost,
+      roi: baselineCost > 0 ? baseline.totalBenefit / baselineCost : 0,
+    },
+    year1: {
+      avgUtilization: avgUtilization1,
+      totalCost: scenarioCost,
+      incrementalCost,
+      benefitsByDriver: year1Benefits.benefitsByDriver,
+      totalBenefit: baseline.totalBenefit + year1Benefits.totalBenefit,
+      incrementalBenefit: year1Benefits.totalBenefit,
+      totalNetGain: (baseline.totalBenefit + year1Benefits.totalBenefit) - scenarioCost,
+      incrementalNetGain: year1Benefits.totalBenefit - incrementalCost,
+      totalROI: scenarioCost > 0 ? (baseline.totalBenefit + year1Benefits.totalBenefit) / scenarioCost : 0,
+      incrementalROI: incrementalCost > 0 ? year1Benefits.totalBenefit / incrementalCost : 0,
+    },
+    year2: {
+      avgUtilization: avgUtilization2,
+      totalCost: scenarioCost,
+      incrementalCost,
+      benefitsByDriver: year2Benefits.benefitsByDriver,
+      totalBenefit: baseline.totalBenefit + year2Benefits.totalBenefit,
+      incrementalBenefit: year2Benefits.totalBenefit,
+      totalNetGain: (baseline.totalBenefit + year2Benefits.totalBenefit) - scenarioCost,
+      incrementalNetGain: year2Benefits.totalBenefit - incrementalCost,
+      totalROI: scenarioCost > 0 ? (baseline.totalBenefit + year2Benefits.totalBenefit) / scenarioCost : 0,
+      incrementalROI: incrementalCost > 0 ? year2Benefits.totalBenefit / incrementalCost : 0,
+    },
+    year3: {
+      avgUtilization: avgUtilization3,
+      totalCost: scenarioCost,
+      incrementalCost,
+      benefitsByDriver: year3Benefits.benefitsByDriver,
+      totalBenefit: baseline.totalBenefit + year3Benefits.totalBenefit,
+      incrementalBenefit: year3Benefits.totalBenefit,
+      totalNetGain: (baseline.totalBenefit + year3Benefits.totalBenefit) - scenarioCost,
+      incrementalNetGain: year3Benefits.totalBenefit - incrementalCost,
+      totalROI: scenarioCost > 0 ? (baseline.totalBenefit + year3Benefits.totalBenefit) / scenarioCost : 0,
+      incrementalROI: incrementalCost > 0 ? year3Benefits.totalBenefit / incrementalCost : 0,
+    },
+    threeYear: {
+      totalIncrementalCost: incrementalCost * 3,
+      totalIncrementalBenefit: year1Benefits.totalBenefit + year2Benefits.totalBenefit + year3Benefits.totalBenefit,
+      totalIncrementalNetGain: (year1Benefits.totalBenefit + year2Benefits.totalBenefit + year3Benefits.totalBenefit) - (incrementalCost * 3),
+      blendedROI: (incrementalCost * 3) > 0 
+        ? (year1Benefits.totalBenefit + year2Benefits.totalBenefit + year3Benefits.totalBenefit) / (incrementalCost * 3) 
+        : 0,
+    },
+    incremental: {
+      providers: newProviders,
+    },
+    hasRetention: (baseline.benefits?.workforce || 0) > 0,
+    hasAccess: (baseline.benefits?.patientAccess || 0) > 0,
+  };
 }

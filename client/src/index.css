@@ -386,3 +386,98 @@
   background: rgba(232, 83, 47, 0.2);
   color: #111827;
 }
+
+/* Expansion Calculator Styles */
+
+/* Year Card Gradients */
+.year-card-1 {
+  border-left: 6px solid #f59e0b;
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.3) 0%, transparent 100%);
+}
+
+.year-card-2 {
+  border-left: 6px solid #F03319;
+  background: linear-gradient(135deg, rgba(240, 51, 25, 0.05) 0%, transparent 100%);
+}
+
+.year-card-3 {
+  border-left: 6px solid #0E9F6E;
+  background: linear-gradient(135deg, rgba(14, 159, 110, 0.05) 0%, transparent 100%);
+}
+
+.dark .year-card-1 {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.08) 0%, transparent 100%);
+}
+
+.dark .year-card-2 {
+  background: linear-gradient(135deg, rgba(240, 51, 25, 0.1) 0%, transparent 100%);
+}
+
+.dark .year-card-3 {
+  background: linear-gradient(135deg, rgba(14, 159, 110, 0.1) 0%, transparent 100%);
+}
+
+/* Driver Progress Badge Animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(240, 51, 25, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(240, 51, 25, 0);
+  }
+}
+
+.driver-badge-active {
+  animation: pulseGlow 2s infinite;
+}
+
+/* Maturity Stage Indicators */
+.maturity-stage-ramp {
+  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+}
+
+.maturity-stage-mature {
+  background: linear-gradient(90deg, #F03319 0%, #f97316 100%);
+}
+
+.maturity-stage-full {
+  background: linear-gradient(90deg, #0E9F6E 0%, #34d399 100%);
+}
+
+/* Insight Cards */
+.insight-warning {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.insight-success {
+  background: linear-gradient(135deg, rgba(14, 159, 110, 0.1) 0%, rgba(14, 159, 110, 0.05) 100%);
+  border: 1px solid rgba(14, 159, 110, 0.3);
+}
+
+.dark .insight-warning {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%);
+}
+
+.dark .insight-success {
+  background: linear-gradient(135deg, rgba(14, 159, 110, 0.15) 0%, rgba(14, 159, 110, 0.05) 100%);
+}
+
+/* Value Breakdown Table */
+.value-breakdown-row:nth-child(odd) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.dark .value-breakdown-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Cumulative Summary Highlight */
+.cumulative-highlight {
+  background: linear-gradient(135deg, rgba(14, 159, 110, 0.08) 0%, rgba(14, 159, 110, 0.03) 100%);
+  border: 2px solid #0E9F6E;
+}
+
+.dark .cumulative-highlight {
+  background: linear-gradient(135deg, rgba(14, 159, 110, 0.15) 0%, rgba(14, 159, 110, 0.05) 100%);
+}
