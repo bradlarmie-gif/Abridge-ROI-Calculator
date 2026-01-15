@@ -25,6 +25,31 @@ Preferred communication style: Simple, everyday language.
 2. **Strategic Priorities Screen**: Users select which ROI levers to include, grouped by category (time vs documentation)
 3. **Calculator Screen**: Full two-panel calculator with inputs, KPIs, waterfall chart, and lever table
 
+### Expansion Calculator (4-Step Full Wizard)
+The Expansion Calculator allows modeling ROI for provider expansion scenarios with a sophisticated 4-step wizard:
+
+1. **Step 1 - Baseline Review**: Displays current deployment metrics (providers, cost, benefit, ROI)
+2. **Step 2 - Expansion Plan**: Target provider selection, rollout type (all-at-once or phased 3-wave), pricing model
+3. **Step 3 - Reality Check**: Driver-by-driver validation with progress bar navigation:
+   - **AccessValidation**: Capacity constraints, demand validation
+   - **RetentionValidation**: 12-18 month timing lag visualization  
+   - **LosValidation**: Case mix validation
+   - **DefaultValidation**: For locum, denials, HCC drivers
+4. **Step 4 - Maturity Model**: 3-year projections with year cards showing Current/Expanded/Incremental columns
+
+**Maturity Curve Constants**:
+- Year 1: 45-70% utilization (ramp-up phase)
+- Year 2: 80% utilization (maturing)
+- Year 3: 85% utilization (mature state)
+- Retention-specific: 20% → 70% → 100% (accounts for decision cycle lag)
+
+**Calculation Consistency**: All year totals (Year 1, 2, 3) include baseline + incremental for proper comparative analysis.
+
+**Key Files**:
+- `/client/src/components/expansion/` - All expansion wizard components
+- `expansion-calculations.ts` - Core calculation functions (maturity, costs, scaling)
+- `expansion-types.ts` - TypeScript interfaces for driver validations
+
 ### Key Design Patterns
 - **Configuration-driven levers**: All lever definitions (labels, categories, descriptions) are centralized in `SETTING_CONFIG.ts`
 - **Pure calculation functions**: ROI calculations are side-effect free functions in `roi-calculator.ts`
