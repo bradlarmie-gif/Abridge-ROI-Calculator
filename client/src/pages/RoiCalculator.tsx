@@ -25,6 +25,8 @@ import {
   calculateRoi,
   formatCurrency,
 } from "@/lib/roi-calculator";
+import { ExpansionCalculator } from "@/components/expansion";
+import type { ExpansionResults, ExpansionInputs } from "@/components/expansion";
 import {
   CARE_SETTING_LABELS,
   type CareSettingType,
@@ -229,6 +231,7 @@ export default function RoiCalculator({
   
   // Expand Providers full-page flow state
   const [showExpandProviders, setShowExpandProviders] = useState(false);
+  const [showExpansionWizard, setShowExpansionWizard] = useState(false);
   const [expandProvidersMode, setExpandProvidersMode] = useState<"quick" | "advanced">("quick");
   const [encounterScalingMode, setEncounterScalingMode] = useState<"proportional" | "custom">("proportional");
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
@@ -2347,8 +2350,58 @@ export default function RoiCalculator({
 
         {activeTab === "scenarios" && (
           <div className="space-y-6">
-            {/* EXPANSION CALCULATOR FULL-PAGE VIEW */}
-            {showExpandProviders ? (
+            {/* EXPANSION WIZARD FULL-PAGE VIEW */}
+            {showExpansionWizard ? (
+              <ExpansionCalculator
+                careSetting={selectedSettings[0] || "outpatient"}
+                inputs={inputs}
+                results={{
+                  annualAbridgeCost: annualInvestment,
+                  roiMultiple: roiMultiple,
+                  totalAnnualBenefit: totalAnnualBenefit,
+                  netValueCreated: netAnnualGain,
+                  totalProviderHoursReclaimed: totalHoursReclaimed,
+                  postWrvuPerEncounter: 0,
+                  newEffectiveDenialRate: 0,
+                  levers: enabledDriverIds.map(id => ({
+                    id,
+                    label: leverLabels[id],
+                    value: driverValues[id] || 0,
+                    enabled: true,
+                    description: leverDescriptions[id],
+                    category: "time" as const,
+                  })),
+                }}
+                onBack={() => setShowExpansionWizard(false)}
+                onSave={(expansionResults, expansionInputs) => {
+                  const newScenario: Scenario = {
+                    id: Date.now().toString(),
+                    name: `Expand to ${expansionInputs.targetProviders} Providers`,
+                    type: "expand",
+                    createdAt: new Date(),
+                    providers: expansionInputs.targetProviders,
+                    encounters: Math.round(expansionInputs.targetProviders * (inputs.annualOutpatientEncounters / inputs.numberOfProviders)),
+                    utilizationRate: inputs.abridgeUtilizationPct,
+                    maPopulationPct: inputs.hcc.pctMedicareAdvantage || 15,
+                    newPatientPct: 30,
+                    specialtyPct: 40,
+                    revenuePerVisitOverride: null,
+                    visitLengthOverride: null,
+                    totalBenefit: expansionResults.year2.totalBenefit,
+                    investment: expansionResults.year2.totalCost,
+                    netGain: expansionResults.year2.netGain,
+                    roiMultiple: expansionResults.year2.roi,
+                    driverValues: driverValues,
+                  };
+                  setScenarios(prev => [...prev, newScenario]);
+                  setShowExpansionWizard(false);
+                  toast({
+                    title: "Expansion scenario saved",
+                    description: `"${newScenario.name}" has been created with 3-year projections`,
+                  });
+                }}
+              />
+            ) : showExpandProviders ? (
               <div className="space-y-6">
                 {/* Back navigation */}
                 <button
@@ -6423,15 +6476,8 @@ export default function RoiCalculator({
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Expand Providers Card */}
-                <button
-                  onClick={() => {
-                    initScenarioForm();
-                    setCurrentScenarioType("expand");
-                    setExpandProvidersMode("quick");
-                    setEncounterScalingMode("proportional");
-                    setShowExpandProviders(true);
-                  }}
-                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                <div
+                  className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center"
                   data-testid="card-expand-providers"
                 >
                   <TrendingUp className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
@@ -6440,10 +6486,32 @@ export default function RoiCalculator({
                   <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
                     Add more users to your current deployment
                   </p>
-                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
-                    Start <ArrowRight className="h-4 w-4" />
-                  </span>
-                </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => {
+                        initScenarioForm();
+                        setCurrentScenarioType("expand");
+                        setExpandProvidersMode("quick");
+                        setEncounterScalingMode("proportional");
+                        setShowExpandProviders(true);
+                      }}
+                      className="w-full py-2 px-3 text-[13px] border border-[#E5E7EB] rounded-lg hover:border-[#E8532F] hover:bg-[#FEF2F0] transition-colors"
+                      data-testid="button-quick-expansion"
+                    >
+                      Quick Calculator
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowExpansionWizard(true);
+                      }}
+                      className="w-full py-2 px-3 text-[13px] bg-[#E8532F] text-white rounded-lg hover:bg-[#D14729] transition-colors flex items-center justify-center gap-2"
+                      data-testid="button-full-wizard"
+                    >
+                      <Zap className="h-4 w-4" />
+                      Full Wizard
+                    </button>
+                  </div>
+                </div>
                 
                 {/* Add Strategic Drivers Card */}
                 <button
