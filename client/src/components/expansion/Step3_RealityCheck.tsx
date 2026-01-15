@@ -53,11 +53,13 @@ export function Step3_RealityCheck({
     return initial as Record<LeverId, DriverValidation>;
   });
 
+  // Recalculate validations when target providers, baseline benefits, or care setting changes
   useEffect(() => {
     const updated: Record<string, DriverValidation> = {};
     activeDrivers.forEach(({ key, value }) => {
       const defaultScaling = getScalingFactor(key, providerRatio, encounterRatio);
       const existing = validations[key];
+      // Use existing user scaling if it was set, otherwise use default
       const userScale = existing?.scalingFactor || defaultScaling;
       updated[key] = {
         driverId: key,
@@ -69,7 +71,8 @@ export function Step3_RealityCheck({
       };
     });
     setValidations(updated as Record<LeverId, DriverValidation>);
-  }, [inputs.targetProviders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputs.targetProviders, JSON.stringify(baseline.benefits), careSetting]);
 
   const getDriverLabel = (driverId: LeverId): string => {
     const config = leverConfigs.find((l: LeverConfig) => l.id === driverId);

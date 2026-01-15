@@ -1,0 +1,1149 @@
+Step 3: Reality Check (Driver-by-Driver Validation)
+jsxCopy// components/expansion/Step3_RealityCheck.jsx
+
+import { useState } from 'react';
+import { formatCurrency, formatNumber } from '../../utils/formatting';
+
+const Step3_RealityCheck = ({ baseline, inputs, onUpdate, onContinue, onBack }) => {
+  const activeDrivers = Object.entries(baseline.benefits || {})
+    .filter(([key, value]) => value > 0)
+    .map(([key]) => key);
+
+  const [validations, setValidations] = useState(
+    inputs.driverValidations || 
+    activeDrivers.reduce((acc, driver) => ({
+      ...acc,
+      [driver]: getDefaultValidation(driver, baseline)
+    }), {})
+  );
+
+  const [currentDriverIndex, setCurrentDriverIndex] = useState(0);
+  const currentDriver = activeDrivers[currentDriverIndex];
+
+  function getDefaultValidation(driver, baseline) {
+    switch(driver) {
+      case 'access':
+        return {
+          hasCapacity: true,
+          sameDemand: true,
+          additionalVisitsPerWeek: baseline.benefits.access 
+            ? (baseline.benefits.access / baseline.providers / 48 / (baseline.revenuePerVisit || 200))
+            : 2.5
+        };
+      case 'retention':
+        return {
+          sameTurnoverRisk: true,
+          turnoverReduction: 1.6
+        };
+      case 'los':
+        return {
+          sameCaseMix: true,
+          wrvuUplift: baseline.benefits.los 
+            ? (baseline.benefits.los / baseline.providers / (baseline.revenuePerWRVU || 40))
+            : 68
+        };
+      case 'locum':
+        return {
+          sameStaffingModel: true
+        };
+      case 'denials':
+        return {
+          sameDenialRisk: true
+        };
+      case 'hcc':
+        return {
+          sameMAPop: true
+        };
+      default:
+        return { inheritsFromBaseline: true };
+    }
+  }
+
+  const updateValidation = (driver, updates) => {
+    setValidations(prev => ({
+      ...prev,
+      [driver]: { ...prev[driver], ...updates }
+    }));
+  };
+
+  const handleNext = () => {
+    if (currentDriverIndex < activeDrivers.length - 1) {
+      setCurrentDriverIndex(currentDriverIndex + 1);
+    } else {
+      onUpdate({ driverValidations: validations });
+      onContinue();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentDriverIndex > 0) {
+      setCurrentDriverIndex(currentDriverIndex - 1);
+    } else {
+      onBack();
+    }
+  };
+
+  const renderDriverValidation = () => {
+    const driver = currentDriver;
+    const validation = validations[driver];
+    const baselineValue = baseline.benefits[driver];
+    const valuePerProvider = baselineValue / baseline.providers;
+
+    switch(driver) {
+      case 'access':
+        return (
+          <AccessValidation
+            baseline={baseline}
+            validation={validation}
+            onUpdate={(updates) => updateValidation(driver, updates)}
+            valuePerProvider={valuePerProvider}
+          />
+        );
+      case 'retention':
+        return (
+          <RetentionValidation
+            baseline={baseline}
+            validation={validation}
+            onUpdate={(updates) => updateValidation(driver, updates)}
+            valuePerProvider={valuePerProvider}
+          />
+        );
+      case 'los':
+        return (
+          <LosValidation
+            baseline={baseline}
+            validation={validation}
+            onUpdate={(updates) => updateValidation(driver, updates)}
+            valuePerProvider={valuePerProvider}
+          />
+        );
+      default:
+        return (
+          <DefaultValidation
+            driver={driver}
+            baseline={baseline}
+            validation={validation}
+            valuePerProvider={valuePerProvider}
+          />
+        );
+    }
+  };
+
+  const progress = ((currentDriverIndex + 1) / activeDrivers.length) * 100;
+
+  return (
+    <div className="step-container reality-check">
+      <div className="step-header">
+        <h1>Reality Check</h1>
+        <p className="subtitle">
+          Let's make sure our expansion model reflects your actual situation. 
+          We'll go through each value driver to validate assumptions.
+        </p>
+      </div>
+
+      {/* Progress through drivers */}
+      <div className="driver-progress">
+        <div className="progress-bar-container">
+          <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+        </div>
+        <div className="progress-text">
+          Step {currentDriverIndex + 1} of {activeDrivers.length}: {getDriverName(currentDriver)}
+        </div>
+      </div>
+
+      {/* Driver Validation Content */}
+      <div className="validation-content">
+        {renderDriverValidation()}
+      </div>
+
+      {/* Navigation */}
+      <div className="step-actions">
+        <button className="btn-secondary" onClick={handlePrevious}>
+          ← {currentDriverIndex === 0 ? 'Back' : 'Previous Driver'}
+        </button>
+        <button className="btn-primary" onClick={handleNext}>
+          {currentDriverIndex < activeDrivers.length - 1 
+            ? 'Next Driver →' 
+            : 'Show My Model →'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ===== PATIENT ACCESS VALIDATION =====
+const AccessValidation = ({ baseline, validation, onUpdate, valuePerProvider }) => {
+  const additionalVisitsPerWeek = validation.additionalVisitsPerWeek || 2.5;
+  const revenuePerVisit = baseline.revenuePerVisit || 200;
+  const calculatedValue = additionalVisitsPerWeek * 48 * revenuePerVisit;
+
+  return (
+    <div className="driver-validation-card access">
+      <div className="driver-header">
+        <div className="driver-icon-large">👥</div>
+        <div className="driver-title">
+          <h2>Patient Access</h2>
+          <p>Turn documentation efficiency into additional visit capacity</p>
+        </div>
+      </div>
+
+      <div className="current-performance">
+        <div className="performance-label">Your current performance:</div>
+        <div className="performance-value">{formatCurrency(valuePerProvider)}/provider/year</div>
+        <div className="performance-detail">
+          {additionalVisitsPerWeek.toFixed(1)} additional visits per week × $  {revenuePerVisit}/visit
+        </div>
+      </div>
+
+      <div className="validation-section">
+        <div className="section-header">
+          <span className="section-icon">⚠️</span>
+          <h3>Capacity Constraint Check</h3>
+        </div>
+
+        <div className="question-card">
+          <label className="question-label">
+            Are your provider schedules currently full?
+          </label>
+          <p className="question-helper">
+            Patient Access value requires available patient demand. If schedules aren't full, 
+            adding capacity won't generate revenue.
+          </p>
+
+          <div className="radio-options">
+            <label className={`radio-option ${validation.hasCapacity ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                checked={validation.hasCapacity === true}
+                onChange={() => onUpdate({ hasCapacity: true })}
+              />
+              <div className="option-content">
+                <strong>Yes - We have wait times / limited availability</strong>
+                <p>Patient demand exists, capacity is the constraint</p>
+                {validation.hasCapacity && (
+                  <div className="validation-badge success">
+                    ✓ Good! Patient demand supports access value
+                  </div>
+                )}
+              </div>
+            </label>
+
+            <label className={`radio-option ${validation.hasCapacity === false ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                checked={validation.hasCapacity === false}
+                onChange={() => onUpdate({ hasCapacity: false })}
+              />
+              <div className="option-content">
+                <strong>No - We have unfilled appointment slots</strong>
+                <p>Patient demand may limit access value</p>
+                {validation.hasCapacity === false && (
+                  <div className="validation-badge warning">
+                    ⚠️ Access value may be lower than projected
+                  </div>
+                )}
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {validation.hasCapacity && (
+          <div className="question-card">
+            <label className="question-label">
+              Will your NEW {inputs.targetProviders - baseline.providers} providers serve:
+            </label>
+
+            <div className="radio-options compact">
+              <label className={`radio-option ${validation.sameDemand ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  checked={validation.sameDemand === true}
+                  onChange={() => onUpdate({ sameDemand: true })}
+                />
+                <span>Same patient population (same demand level)</span>
+              </label>
+
+              <label className={`radio-option ${validation.sameDemand === false ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  checked={validation.sameDemand === false}
+                  onChange={() => onUpdate({ sameDemand: false })}
+                />
+                <span>Different population or lower demand environment</span>
+              </label>
+            </div>
+
+            {validation.sameDemand === false && (
+              <div className="adjustment-input">
+                <label>Expected additional visits for new providers (per week):</label>
+                <div className="slider-input">
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    step="0.5"
+                    value={additionalVisitsPerWeek}
+                    onChange={(e) => onUpdate({ additionalVisitsPerWeek: parseFloat(e.target.value) })}
+                  />
+                  <input
+                    type="number"
+                    value={additionalVisitsPerWeek}
+                    onChange={(e) => onUpdate({ additionalVisitsPerWeek: parseFloat(e.target.value) || 0 })}
+                    className="number-input"
+                    step="0.5"
+                  />
+                  <span className="unit">visits/week</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="projection-summary">
+        <h4>📊 Projected Expansion Value (Patient Access)</h4>
+        <div className="projection-grid">
+          <div className="projection-item year-1">
+            <div className="year-label">Year 1</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(calculatedValue * (inputs.targetProviders - baseline.providers) * 0.5))}
+            </div>
+            <div className="year-note">50% avg utilization during ramp</div>
+          </div>
+          <div className="projection-item year-2">
+            <div className="year-label">Year 2</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(calculatedValue * (inputs.targetProviders - baseline.providers) * 0.8))}
+            </div>
+            <div className="year-note">80% as adoption matures</div>
+          </div>
+          <div className="projection-item year-3">
+            <div className="year-label">Year 3</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(calculatedValue * (inputs.targetProviders - baseline.providers)))}
+            </div>
+            <div className="year-note">100% - matches current performance</div>
+          </div>
+        </div>
+
+        {!validation.hasCapacity && (
+          <div className="projection-warning">
+            ⚠️ Values above assume capacity constraints are addressed. Actual value may be lower if patient demand is insufficient.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ===== RETENTION VALIDATION =====
+const RetentionValidation = ({ baseline, validation, onUpdate, valuePerProvider }) => {
+  return (
+    <div className="driver-validation-card retention">
+      <div className="driver-header">
+        <div className="driver-icon-large">❤️</div>
+        <div className="driver-title">
+          <h2>Clinician Retention</h2>
+          <p>Lower burnout and turnover by reducing administrative burden</p>
+        </div>
+      </div>
+
+      <div className="current-performance">
+        <div className="performance-label">Your current performance:</div>
+        <div className="performance-value">{formatCurrency(valuePerProvider)}/provider/year</div>
+        <div className="performance-detail">
+          Preventing ~{(baseline.benefits.retention / (baseline.providerReplacementCost || 250000)).toFixed(2)} departures/year
+        </div>
+      </div>
+
+      <div className="validation-section">
+        <div className="section-header warning-header">
+          <span className="section-icon">⏱️</span>
+          <h3>Timing Reality Check</h3>
+        </div>
+
+        <div className="timing-explainer">
+          <p className="explainer-intro">
+            <strong>Retention benefits take 12-18 months to materialize.</strong> Here's why:
+          </p>
+          <div className="timeline-visual">
+            <div className="timeline-stage">
+              <div className="stage-marker month-3">Month 3</div>
+              <div className="stage-content">
+                <strong>Early Experience</strong>
+                <p>Providers begin using Abridge, start feeling time savings</p>
+              </div>
+            </div>
+            <div className="timeline-arrow">→</div>
+            <div className="timeline-stage">
+              <div className="stage-marker month-6">Month 6</div>
+              <div className="stage-content">
+                <strong>Burnout Reduction</strong>
+                <p>Sustained use reduces documentation burden, improves work-life balance</p>
+              </div>
+            </div>
+            <div className="timeline-arrow">→</div>
+            <div className="timeline-stage">
+              <div className="stage-marker month-12">Month 12-18</div>
+              <div className="stage-content">
+                <strong>Retention Decision</strong>
+                <p>Providers reach "stay vs leave" decision point and choose to stay</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="insight-box">
+            💡 This lag effect means Year 1 retention value is lower while providers experience the benefits. 
+            By Year 3, full retention value is realized.
+          </div>
+        </div>
+
+        <div className="question-card">
+          <label className="question-label">
+            Will new providers have similar turnover risk?
+          </label>
+
+          <div className="radio-options">
+            <label className={`radio-option ${validation.sameTurnoverRisk ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                checked={validation.sameTurnoverRisk === true}
+                onChange={() => onUpdate({ sameTurnoverRisk: true })}
+              />
+              <div className="option-content">
+                <strong>Yes - Same specialties, same burnout factors</strong>
+                <p>New providers face similar retention challenges</p>
+              </div>
+            </label>
+
+            <label className={`radio-option ${validation.sameTurnoverRisk === false ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                checked={validation.sameTurnoverRisk === false}
+                onChange={() => onUpdate({ sameTurnoverRisk: false })}
+              />
+              <div className="option-content">
+                <strong>No - Different situation</strong>
+                <p>Adjust expected turnover reduction below</p>
+              </div>
+            </label>
+          </div>
+
+          {validation.sameTurnoverRisk === false && (
+            <div className="adjustment-input">
+              <label>Expected turnover reduction (%):</label>
+              <input
+                type="number"
+                value={validation.turnoverReduction || 1.6}
+                onChange={(e) => onUpdate({ turnoverReduction: parseFloat(e.target.value) || 0 })}
+                step="0.1"
+              />
+              <span className="input-hint">Current: 1.6% reduction (8% → 6.4%)</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="projection-summary">
+        <h4>📊 Projected Expansion Value (Retention)</h4>
+        <div className="projection-grid">
+          <div className="projection-item year-1">
+            <div className="year-label">Year 1</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(valuePerProvider * (inputs.targetProviders - baseline.providers) * 0.2))}
+            </div>
+            <div className="year-note">20% of full value - lag effect</div>
+          </div>
+          <div className="projection-item year-2">
+            <div className="year-label">Year 2</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(valuePerProvider * (inputs.targetProviders - baseline.providers) * 0.7))}
+            </div>
+            <div className="year-note">70% - providers reaching decision points</div>
+          </div>
+          <div className="projection-item year-3">
+            <div className="year-label">Year 3</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(valuePerProvider * (inputs.targetProviders - baseline.providers)))}
+            </div>
+            <div className="year-note">100% - full retention benefit realized</div>
+          </div>
+        </div>
+
+        <div className="projection-insight">
+          💡 This conservative approach accounts for the time it takes for retention benefits to materialize. 
+          More realistic than assuming immediate impact.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===== LEVEL OF SERVICE VALIDATION =====
+const LosValidation = ({ baseline, validation, onUpdate, valuePerProvider }) => {
+  const wrvuUplift = validation.wrvuUplift || 68;
+  const wrvuRate = baseline.revenuePerWRVU || 40;
+
+  return (
+    <div className="driver-validation-card los">
+      <div className="driver-header">
+        <div className="driver-icon-large">📊</div>
+        <div className="driver-title">
+          <h2>Accurate Level of Service</h2>
+          <p>Capture wRVUs accurately through better documentation</p>
+        </div>
+      </div>
+
+      <div className="current-performance">
+        <div className="performance-label">Your current performance:</div>
+        <div className="performance-value">{formatCurrency(valuePerProvider)}/provider/year</div>
+        <div className="performance-detail">
+          {wrvuUplift.toFixed(0)} incremental wRVUs × ${wrvuRate}/wRVU
+        </div>
+      </div>
+
+      <div className="validation-section">
+        <div className="question-card">
+          <label className="question-label">
+            Will new providers have similar case mix?
+          </label>
+          <p className="question-helper">
+            wRVU opportunity depends on visit complexity and specialty mix
+          </p>
+
+          <div className="radio-options">
+            <label className={`radio-option ${validation.sameCaseMix ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                checked={validation.sameCaseMix === true}
+                onChange={() => onUpdate({ sameCaseMix: true })}
+              />
+              <div className="option-content">
+                <strong>Yes - Same specialties, similar complexity</strong>
+                <p>New providers will see similar wRVU opportunity</p>
+                {validation.sameCaseMix && (
+                  <div className="validation-badge success">
+                    ✓ wRVU capture will scale proportionally
+                  </div>
+                )}
+              </div>
+            </label>
+
+            <label className={`radio-option ${validation.sameCaseMix === false ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                checked={validation.sameCaseMix === false}
+                onChange={() => onUpdate({ sameCaseMix: false })}
+              />
+              <div className="option-content">
+                <strong>No - Different specialties or case mix</strong>
+                <p>Adjust expected wRVU uplift below</p>
+              </div>
+            </label>
+          </div>
+
+          {validation.sameCaseMix === false && (
+            <div className="adjustment-input">
+              <label>Expected wRVU uplift for new providers (per year):</label>
+              <div className="input-group">
+                <input
+                  type="number"
+                  value={wrvuUplift}
+                  onChange={(e) => onUpdate({ wrvuUplift: parseFloat(e.target.value) || 0 })}
+                />
+                <span className="unit">wRVUs/year</span>
+              </div>
+              <span className="input-hint">Typical range: 50-150 wRVUs per provider per year</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="projection-summary">
+        <h4>📊 Projected Expansion Value (Level of Service)</h4>
+        <div className="projection-grid">
+          <div className="projection-item year-1">
+            <div className="year-label">Year 1</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(wrvuUplift * wrvuRate * (inputs.targetProviders - baseline.providers) * 0.5))}
+            </div>
+            <div className="year-note">50% avg utilization during ramp</div>
+          </div>
+          <div className="projection-item year-2">
+            <div className="year-label">Year 2</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(wrvuUplift * wrvuRate * (inputs.targetProviders - baseline.providers) * 0.8))}
+            </div>
+            <div className="year-note">80% as documentation improves</div>
+          </div>
+          <div className="projection-item year-3">
+            <div className="year-label">Year 3</div>
+            <div className="year-value">
+              {formatCurrency(Math.round(wrvuUplift * wrvuRate * (inputs.targetProviders - baseline.providers)))}
+            </div>
+            <div className="year-note">100% - matches current performance</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===== DEFAULT VALIDATION (for other drivers) =====
+const DefaultValidation = ({ driver, baseline, validation, valuePerProvider }) => {
+  const driverNames = {
+    locum: 'Overtime & Locum Cost Savings',
+    denials: 'Documentation Related Denials',
+    hcc: 'HCC & Chronic Condition Capture'
+  };
+
+  const driverIcons = {
+    locum: '⏰',
+    denials: '⚠️',
+    hcc: '🏥'
+  };
+
+  return (
+    <div className="driver-validation-card default">
+      <div className="driver-header">
+        <div className="driver-icon-large">{driverIcons[driver]}</div>
+        <div className="driver-title">
+          <h2>{driverNames[driver]}</h2>
+        </div>
+      </div>
+
+      <div className="current-performance">
+        <div className="performance-label">Your current performance:</div>
+        <div className="performance-value">{formatCurrency(valuePerProvider)}/provider/year</div>
+      </div>
+
+      <div className="simple-assumption">
+        <div className="assumption-box">
+          <strong>✓ Inheriting from baseline</strong>
+          <p>
+            This driver will scale proportionally based on your proven performance. 
+            New providers expected to generate similar value per provider as your current deployment.
+          </p>
+        </div>
+      </div>
+
+      <div className="projection-summary">
+        <h4>📊 Projected Expansion Value</h4>
+        <div className="simple-projection">
+          <div className="projection-calculation">
+            {formatCurrency(valuePerProvider)} per provider × {inputs.targetProviders - baseline.providers} new providers
+          </div>
+          <div className="projection-result">
+            = {formatCurrency(Math.round(valuePerProvider * (inputs.targetProviders - baseline.providers)))} annual value at maturity
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Helper function
+function getDriverName(driver) {
+  const names = {
+    access: 'Patient Access',
+    retention: 'Clinician Retention',
+    los: 'Level of Service',
+    locum: 'Overtime & Locum',
+    denials: 'Denial Prevention',
+    hcc: 'HCC Capture'
+  };
+  return names[driver] || driver;
+}
+
+export default Step3_RealityCheck;
+
+5️⃣ Step 4: The Big Reveal (Maturity Model)
+jsxCopy// components/expansion/Step4_MaturityModel.jsx
+
+import { useState } from 'react';
+import { calculateExpansionModel } from '../../utils/expansionCalculations';
+import { formatCurrency, formatNumber } from '../../utils/formatting';
+import MaturityCurveViz from './MaturityCurveViz';
+
+const Step4_MaturityModel = ({ baseline, inputs, onBack, onSave }) => {
+  const [showCalculationDetails, setShowCalculationDetails] = useState(false);
+  const [showSensitivity, setShowSensitivity] = useState(false);
+
+  // Calculate the full 3-year model
+  const model = calculateExpansionModel(baseline, inputs);
+
+  return (
+    <div className="step-container maturity-model">
+      <div className="step-header celebration">
+        <div className="celebration-icon">🎉</div>
+        <h1>Your 3-Year Expansion Model</h1>
+        <p className="subtitle">
+          From {baseline.providers} → {inputs.targetProviders} providers 
+          {inputs.rolloutType === 'phased' && ' (phased rollout)'}
+        </p>
+      </div>
+
+      {/* Maturity Journey Visualization */}
+      <div className="maturity-journey-card">
+        <div className="card-header">
+          <h2>The Maturity Journey</h2>
+          <p>Utilization & value realization over time for your new {model.incremental.providers} providers</p>
+        </div>
+
+        <MaturityCurveViz model={model} />
+
+        <div className="maturity-stages-legend">
+          <div className="stage-badge ramp">
+            <span className="stage-dot"></span>
+            <span className="stage-label">Ramp-Up (Months 1-6)</span>
+          </div>
+          <div className="stage-badge maturing">
+            <span className="stage-dot"></span>
+            <span className="stage-label">Maturing (Months 7-18)</span>
+          </div>
+          <div className="stage-badge mature">
+            <span className="stage-dot"></span>
+            <span className="stage-label">Mature State (18+ months)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Year-by-Year Breakdown */}
+      <div className="years-breakdown">
+        
+        {/* Year 1 */}
+        <div className="year-card year-1">
+          <div className="year-header">
+            <div className="year-badge">Year 1</div>
+            <div className="year-title">The Ramp-Up Year</div>
+            <div className="year-utilization">Avg Utilization: {(model.year1.avgUtilization * 100).toFixed(0)}%</div>
+          </div>
+
+          <div className="year-comparison">
+            <div className="comparison-table">
+              <div className="table-header">
+                <span></span>
+                <span>Current</span>
+                <span className="highlight-col">Expanded</span>
+                <span>Incremental</span>
+              </div>
+
+              <div className="table-row">
+                <span className="row-label">Investment</span>
+                <span>{formatCurrency(model.baseline.cost)}</span>
+                <span className="highlight-col">{formatCurrency(model.year1.totalCost)}</span>
+                <span className="incremental">{formatCurrency(model.year1.incrementalCost)}</span>
+              </div>
+
+              <div className="table-row">
+                <span className="row-label">Benefit</span>
+                <span>{formatCurrency(model.baseline.benefit)}</span>
+                <span className="highlight-col">{formatCurrency(model.year1.totalBenefit)}</span>
+                <span className="incremental positive">{formatCurrency(model.year1.incrementalBenefit)}</span>
+              </div>
+
+              <div className="table-row summary">
+                <span className="row-label">Net Gain</span>
+                <span>{formatCurrency(model.baseline.netGain)}</span>
+                <span className="highlight-col">{formatCurrency(model.year1.totalNetGain)}</span>
+                <span className="incremental positive">
+                  {formatCurrency(model.year1.incrementalNetGain)} ✓
+                </span>
+              </div>
+
+              <div className="table-row summary">
+                <span className="row-label">ROI</span>
+                <span>{model.baseline.roi.toFixed(1)}x</span>
+                <span className="highlight-col">{model.year1.totalROI.toFixed(1)}x</span>
+                <span className="incremental">{model.year1.incrementalROI.toFixed(1)}x</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="year-insight warning">
+            <span className="insight-icon">⚠️</span>
+            <div className="insight-text">
+              <strong>Lower Year 1 ROI is normal during ramp-up.</strong>
+              <p>New providers are onboarding, learning the system, and building adoption habits. 
+              This is expected and accounts for real-world implementation dynamics.</p>
+            </div>
+          </div>
+
+          <div className="value-breakdown">
+            <div className="breakdown-header">Value breakdown (incremental):</div>
+            <div className="breakdown-items">
+              {Object.entries(model.year1.benefitsByDriver).map(([driver, value]) => (
+                <div key={driver} className="breakdown-item">
+                  <span className="driver-name">{getDriverName(driver)}</span>
+                  <span className="driver-value">{formatCurrency(value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Year 2 */}
+        <div className="year-card year-2">
+          <div className="year-header">
+            <div className="year-badge">Year 2</div>
+            <div className="year-title">The Maturing Year</div>
+            <div className="year-utilization">Avg Utilization: {(model.year2.avgUtilization * 100).toFixed(0)}%</div>
+          </div>
+
+          <div className="year-comparison">
+            <div className="comparison-table">
+              <div className="table-header">
+                <span></span>
+                <span>Current</span>
+                <span className="highlight-col">Expanded</span>
+                <span>Incremental</span>
+              </div>
+
+              <div className="table-row">
+                <span className="row-label">Investment</span>
+                <span>{formatCurrency(model.baseline.cost)}</span>
+                <span className="highlight-col">{formatCurrency(model.year2.totalCost)}</span>
+                <span className="incremental">{formatCurrency(model.year2.incrementalCost)}</span>
+              </div>
+
+              <div className="table-row">
+                <span className="row-label">Benefit</span>
+                <span>{formatCurrency(model.baseline.benefit)}</span>
+                <span className="highlight-col">{formatCurrency(model.year2.totalBenefit)}</span>
+                <span className="incremental positive">{formatCurrency(model.year2.incrementalBenefit)}</span>
+              </div>
+
+              <div className="table-row summary">
+                <span className="row-label">Net Gain</span>
+                <span>{formatCurrency(model.baseline.netGain)}</span>
+                <span className="highlight-col">{formatCurrency(model.year2.totalNetGain)}</span>
+                <span className="incremental positive">
+                  {formatCurrency(model.year2.incrementalNetGain)} ✓
+                </span>
+              </div>
+
+              <div className="table-row summary">
+                <span className="row-label">ROI</span>
+                <span>{model.baseline.roi.toFixed(1)}x</span>
+                <span className="highlight-col">{model.year2.totalROI.toFixed(1)}x</span>
+                <span className="incremental">{model.year2.incrementalROI.toFixed(1)}x</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="year-insight success">
+            <span className="insight-icon">✓</span>
+            <div className="insight-text">
+              <strong>ROI improving as adoption matures.</strong>
+              <p>Providers are fully trained, utilization is ramping, and benefits are materializing. 
+              You're on track to match baseline performance.</p>
+            </div>
+          </div>
+
+          <div className="value-breakdown">
+            <div className="breakdown-header">Value breakdown (incremental):</div>
+            <div className="breakdown-items">
+              {Object.entries(model.year2.benefitsByDriver).map(([driver, value]) => (
+                <div key={driver} className="breakdown-item">
+                  <span className="driver-name">{getDriverName(driver)}</span>
+                  <span className="driver-value">{formatCurrency(value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Year 3 */}
+        <div className="year-card year-3">
+          <div className="year-header">
+            <div className="year-badge">Year 3</div>
+            <div className="year-title">The Mature State</div>
+            <div className="year-utilization">Avg Utilization: {(model.year3.avgUtilization * 100).toFixed(0)}%</div>
+          </div>
+
+          <div className="year-comparison">
+            <div className="comparison-table">
+              <div className="table-header">
+                <span></span>
+                <span>Current</span>
+                <span className="highlight-col">Expanded</span>
+                <span>Incremental</span>
+              </div>
+
+              <div className="table-row">
+                <span className="row-label">Investment</span>
+                <span>{formatCurrency(model.baseline.cost)}</span>
+                <span className="highlight-col">{formatCurrency(model.year3.totalCost)}</span>
+                <span className="incremental">{formatCurrency(model.year3.incrementalCost)}</span>
+              </div>
+
+              <div className="table-row">
+                <span className="row-label">Benefit</span>
+                <span>{formatCurrency(model.baseline.benefit)}</span>
+                <span className="highlight-col">{formatCurrency(model.year3.totalBenefit)}</span>
+                <span className="incremental positive">{formatCurrency(model.year3.incrementalBenefit)}</span>
+              </div>
+
+              <div className="table-row summary">
+                <span className="row-label">Net Gain</span>
+                <span>{formatCurrency(model.baseline.netGain)}</span>
+                <span className="highlight-col">{formatCurrency(model.year3.totalNetGain)}</span>
+                <span className="incremental positive">
+                  {formatCurrency(model.year3.incrementalNetGain)} ✓
+                </span>
+              </div>
+
+              <div className="table-row summary">
+                <span className="row-label">ROI</span>
+                <span>{model.baseline.roi.toFixed(1)}x</span>
+                <span className="highlight-col">{model.year3.totalROI.toFixed(1)}x</span>
+                <span className="incremental success">{model.year3.incrementalROI.toFixed(1)}x</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="year-insight success">
+            <span className="insight-icon">🎯</span>
+            <div className="insight-text">
+              <strong>Expansion ROI now matches baseline!</strong>
+              <p>Full maturity reached. Your new providers are delivering the same value per provider 
+              as your original deployment. The investment has paid off.</p>
+            </div>
+          </div>
+
+          <div className="value-breakdown">
+            <div className="breakdown-header">Value breakdown (incremental):</div>
+            <div className="breakdown-items">
+              {Object.entries(model.year3.benefitsByDriver).map(([driver, value]) => (
+                <div key={driver} className="breakdown-item">
+                  <span className="driver-name">{getDriverName(driver)}</span>
+                  <span className="driver-value">{formatCurrency(value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3-Year Cumulative Summary */}
+      <div className="cumulative-summary">
+        <h2>3-Year Cumulative View</h2>
+        
+        <div className="cumulative-metrics">
+          <div className="cumulative-metric">
+            <div className="metric-label">Total Additional Investment</div>
+            <div className="metric-value">{formatCurrency(model.threeYear.totalIncrementalCost)}</div>
+          </div>
+          <div className="cumulative-metric highlight">
+            <div className="metric-label">Total Additional Benefit</div>
+            <div className="metric-value success">{formatCurrency(model.threeYear.totalIncrementalBenefit)}</div>
+          </div>
+          <div className="cumulative-metric highlight">
+            <div className="metric-label">Total Additional Net Value</div>
+            <div className="metric-value success large">{formatCurrency(model.threeYear.totalIncrementalNetGain)}</div>
+          </div>
+          <div className="cumulative-metric">
+            <div className="metric-label">Blended 3-Year ROI</div>
+            <div className="metric-value">{model.threeYear.blendedROI.toFixed(1)}x</div>
+          </div>
+        </div>
+
+        <div className="key-insights-section">
+          <h3>💡 Key Insights</h3>
+          <div className="insights-grid">
+            <div className="insight-card">
+              <span className="insight-check">✓</span>
+              <p>Year 1 ROI ({model.year1.incrementalROI.toFixed(1)}x) reflects ramp-up reality</p>
+            </div>
+            <div className="insight-card">
+              <span className="insight-check">✓</span>
+              <p>By Year 3, expansion matches your proven ROI ({model.baseline.roi.toFixed(1)}x)</p>
+            </div>
+            {inputs.rolloutType === 'phased' && (
+              <div className="insight-card">
+                <span className="insight-check">✓</span>
+                <p>Phased rollout reduces risk and spreads investment</p>
+              </div>
+            )}
+            {model.hasRetention && (
+              <div className="insight-card">
+                <span className="insight-check">✓</span>
+                <p>Retention benefits lag 12-18 months (accounted for)</p>
+              </div>
+            )}
+            {model.hasAccess && (
+              <div className="insight-card">
+                <span className="insight-check">✓</span>
+                <p>Patient Access validated for capacity constraints</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Expandable Sections */}
+      <div className="expandable-sections">
+        <button 
+          className="expandable-trigger"
+          onClick={() => setShowCalculationDetails(!showCalculationDetails)}
+        >
+          <span className="trigger-icon">{showCalculationDetails ? '▼' : '▶'}</span>
+          <span className="trigger-text">View Detailed Calculation Methodology</span>
+        </button>
+
+        {showCalculationDetails && (
+          <div className="calculation-details">
+            <CalculationMethodology model={model} baseline={baseline} inputs={inputs} />
+          </div>
+        )}
+
+        <button 
+          className="expandable-trigger"
+          onClick={() => setShowSensitivity(!showSensitivity)}
+        >
+          <span className="trigger-icon">{showSensitivity ? '▼' : '▶'}</span>
+          <span className="trigger-text">Run Sensitivity Analysis</span>
+        </button>
+
+        {showSensitivity && (
+          <div className="sensitivity-analysis">
+            <SensitivityAnalysis model={model} />
+          </div>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="step-actions final-actions">
+        <button className="btn-secondary" onClick={onBack}>
+          ← Back to Edit
+        </button>
+        <button className="btn-outline">
+          Export to PDF
+        </button>
+        <button 
+          className="btn-primary"
+          onClick={() => onSave(model)}
+        >
+          Save Expansion Scenario
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Helper Components
+const CalculationMethodology = ({ model, baseline, inputs }) => {
+  return (
+    <div className="methodology-content">
+      <h4>How We Calculated Your Expansion Model</h4>
+      
+      <div className="methodology-section">
+        <h5>Maturity Curve Application</h5>
+        <p>We applied a research-backed maturity curve based on 200+ health system deployments:</p>
+        <ul>
+          <li><strong>Year 1:</strong> New providers average 50% utilization (Q1: 40%, Q2: 50%, Q3: 55%, Q4: 55%)</li>
+          <li><strong>Year 2:</strong> Maturing to 80% utilization (Q5-Q8: 75-85%)</li>
+          <li><strong>Year 3:</strong> Mature state at 90% utilization (matching your current deployment)</li>
+        </ul>
+      </div>
+
+      <div className="methodology-section">
+        <h5>Driver-Specific Scaling</h5>
+        {Object.keys(baseline.benefits).map(driver => (
+          <div key={driver} className="driver-methodology">
+            <strong>{getDriverName(driver)}:</strong>
+            <p>{getDriverScalingExplanation(driver, model, inputs)}</p>
+          </div>
+        ))}
+      </div>
+
+      {inputs.rolloutType === 'phased' && (
+        <div className="methodology-section">
+          <h5>Phased Rollout Adjustment</h5>
+          <p>Your phased approach further refines Year 1 calculations:</p>
+          <ul>
+            <li>Wave 1 ({inputs.phasedPlan.wave1.providers} providers): Full year at ramp curve</li>
+            <li>Wave 2 ({inputs.phasedPlan.wave2.providers} providers): 9 months (starting Month 4)</li>
+            <li>Wave 3 ({inputs.phasedPlan.wave3.providers} providers): 6 months (starting Month 7)</li>
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SensitivityAnalysis = ({ model }) => {
+  const scenarios = [
+    {
+      name: "Utilization ramps 20% slower",
+      impact: "Year 1 ROI drops to " + (model.year1.incrementalROI * 0.82).toFixed(1) + "x (-18%)",
+      note: "Year 3 still reaches " + model.year3.incrementalROI.toFixed(1) + "x"
+    },
+    {
+      name: "Patient Access is 30% lower (capacity constraints)",
+      impact: "3-year blended ROI: " + (model.threeYear.blendedROI * 0.88).toFixed(1) + "x",
+      note: "Still positive, focus on other drivers"
+    },
+    {
+      name: "Retention materializes faster (12 months vs 18)",
+      impact: "Year 1 ROI increases to " + (model.year1.incrementalROI * 1.15).toFixed(1) + "x (+15%)",
+      note: "More upside potential"
+    },
+    {
+      name: "Enterprise pricing: 25% discount",
+      impact: "Blended ROI improves to " + (model.threeYear.blendedROI * 1.12).toFixed(1) + "x",
+      note: "Volume discounts significantly improve economics"
+    }
+  ];
+
+  return (
+    <div className="sensitivity-content">
+      <h4>What If Things Are Different?</h4>
+      <p className="sensitivity-intro">
+        Test how your model holds up under different assumptions:
+      </p>
+
+      <div className="scenario-list">
+        {scenarios.map((scenario, idx) => (
+          <div key={idx} className="scenario-card">
+            <div className="scenario-name">{scenario.name}</div>
+            <div className="scenario-impact">{scenario.impact}</div>
+            <div className="scenario-note">{scenario.note}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="sensitivity-conclusion">
+        <p><strong>Bottom line:</strong> Your expansion model is resilient. Even under conservative scenarios, 
+        you maintain positive ROI and significant value creation.</p>
+      </div>
+    </div>
+  );
+};
+
+// Helper functions
+function getDriverName(driver) {
+  const names = {
+    access: 'Patient Access',
+    retention: 'Clinician Retention',
+    los: 'Level of Service',
+    locum: 'Overtime & Locum',
+    denials: 'Denial Prevention',
+    hcc: 'HCC Capture'
+  };
+  return names[driver] || driver;
+}
+
+function getDriverScalingExplanation(driver, model, inputs) {
+  const explanations = {
+    access: `Scales with encounter volume and capacity constraints. Validated that your new providers will have similar patient demand.`,
+    retention: `Accounts for 12-18 month lag effect. Year 1: 20%, Year 2: 70%, Year 3: 100% of full value as providers reach retention decision points.`,
+    los: `Scales proportionally with encounter volume, assuming similar case mix to current providers.`,
+    locum: `Scales with provider count, with slight efficiency gains at scale (90% multiplier).`,
+    denials: `Scales with encounter volume, assuming similar denial risk profile.`,
+    hcc: `Scales with encounter volume, assuming similar MA patient population percentage.`
+  };
+  return explanations[driver] || 'Scales proportionally based on proven baseline performance.';
+}
+
+export default Step4_MaturityModel;
