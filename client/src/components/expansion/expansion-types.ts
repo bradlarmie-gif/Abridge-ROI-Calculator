@@ -24,7 +24,7 @@ export interface PhasedPlan {
   wave3: PhasedWave;
 }
 
-export interface DriverValidation {
+export interface BaseDriverValidation {
   driverId: LeverId;
   baselineValue: number;
   scalingFactor: number;
@@ -32,6 +32,33 @@ export interface DriverValidation {
   confidence: "high" | "medium" | "low";
   notes: string;
 }
+
+export interface AccessValidation extends BaseDriverValidation {
+  hasCapacity: boolean;
+  sameDemand: boolean;
+  additionalVisitsPerWeek: number;
+}
+
+export interface RetentionValidation extends BaseDriverValidation {
+  sameTurnoverRisk: boolean;
+  turnoverReduction: number;
+}
+
+export interface LosValidation extends BaseDriverValidation {
+  sameCaseMix: boolean;
+  wrvuUplift: number;
+}
+
+export interface DefaultDriverValidation extends BaseDriverValidation {
+  inheritsFromBaseline: boolean;
+}
+
+export type DriverValidation = 
+  | AccessValidation 
+  | RetentionValidation 
+  | LosValidation 
+  | DefaultDriverValidation 
+  | BaseDriverValidation;
 
 export interface ExpansionInputs {
   targetProviders: number;
