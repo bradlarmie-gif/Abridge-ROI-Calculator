@@ -30,6 +30,24 @@ Preferred communication style: Simple, everyday language.
    - Step navigation pills enforce completion - Step 2 requires Step 1 complete, Step 3 requires Steps 1 & 2 complete
 4. **Calculator Screen**: Full two-panel calculator with inputs, KPIs, waterfall chart, and lever table
 
+### Nursing Strategic Priorities Flow
+The Nursing flow has a dedicated Strategic Priorities screen with 8 drivers across 3 categories:
+
+**Categories**:
+1. **Capacity & Labor** (4 drivers): documentation_time_savings, overtime_reduction, agency_reduction, nurse_retention
+2. **Documentation Quality** (2 drivers): documentation_timeliness, documentation_completeness
+3. **Quality & Revenue** (2 drivers with warnings): safety_event_reduction, ccmcc_support
+
+**Selection Constraints**:
+- Minimum: 2 drivers required to continue
+- Maximum: 6 drivers allowed
+- Visual feedback: disabled cards at max (opacity-50, cursor-not-allowed)
+- Sidebar shows "X of 8 selected" with amber color at max
+
+**Key Files**:
+- `/client/src/pages/NursingStrategicPriorities.tsx` - Main component
+- `/client/src/lib/SETTING_CONFIG.ts` - Nursing driver configuration
+
 ### Expansion Calculator (4-Step Full Wizard)
 The Expansion Calculator allows modeling ROI for provider expansion scenarios with a sophisticated 4-step wizard:
 
