@@ -233,6 +233,21 @@ export default function RoiCalculator({
   const [encounterScalingMode, setEncounterScalingMode] = useState<"proportional" | "custom">("proportional");
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   
+  // Expansion calculator pricing state
+  const [expansionPricingModel, setExpansionPricingModel] = useState<"per-provider" | "enterprise">("per-provider");
+  const [enterpriseAnnualCost, setEnterpriseAnnualCost] = useState<number | null>(null);
+  const [targetProviders, setTargetProviders] = useState<number>(0); // Will be synced with inputs.numberOfProviders
+  
+  // Volume discount helper
+  const getVolumeDiscount = (providers: number) => {
+    if (providers >= 250) return 0.30;
+    if (providers >= 150) return 0.25;
+    if (providers >= 100) return 0.20;
+    if (providers >= 75) return 0.15;
+    if (providers >= 50) return 0.10;
+    return 0;
+  };
+  
   // Advanced mode additional fields
   const [providerBreakdown, setProviderBreakdown] = useState([
     { type: "Primary Care Physicians", count: 40, encountersPerYear: 1800, avgWrvu: 1.2 },
@@ -438,6 +453,110 @@ export default function RoiCalculator({
   useEffect(() => {
     setExportScenarioSelections(new Set(scenariosForExport.map((s) => s.id)));
   }, [scenariosForExport]);
+
+  // Sync targetProviders with inputs.numberOfProviders when showExpandProviders opens
+  useEffect(() => {
+    if (showExpandProviders && targetProviders === 0) {
+      setTargetProviders(inputs.numberOfProviders);
+    }
+  }, [showExpandProviders, inputs.numberOfProviders, targetProviders]);
+
+  // Expansion calculation memo
+  const expansionCalculation = useMemo(() => {
+    const baselineProviders = inputs.numberOfProviders;
+    const baselineEncounters = inputs.annualOutpatientEncounters;
+    const costPerProviderMonthly = inputs.costPerProviderPerMonth;
+    
+    // Can't calculate if targetProviders is not greater than baseline
+    if (targetProviders <= baselineProviders) {
+      return null;
+    }
+    
+    // Scaling ratios
+    const providerRatio = targetProviders / baselineProviders;
+    const encounterRatio = providerRatio; // Assumes same encounters per provider
+    
+    // Scenario calculations
+    const scenarioEncounters = Math.round(baselineEncounters * encounterRatio);
+    
+    // Cost calculation based on pricing model
+    let scenarioCost: number;
+    let effectiveCostPerProvider: number;
+    let volumeDiscount = 0;
+    
+    if (expansionPricingModel === "per-provider") {
+      scenarioCost = targetProviders * costPerProviderMonthly * 12;
+      effectiveCostPerProvider = costPerProviderMonthly;
+    } else {
+      // Enterprise pricing
+      if (enterpriseAnnualCost && enterpriseAnnualCost > 0) {
+        scenarioCost = enterpriseAnnualCost;
+        effectiveCostPerProvider = scenarioCost / (targetProviders * 12);
+      } else {
+        // Auto-calculate with volume discount
+        volumeDiscount = getVolumeDiscount(targetProviders);
+        effectiveCostPerProvider = costPerProviderMonthly * (1 - volumeDiscount);
+        scenarioCost = targetProviders * effectiveCostPerProvider * 12;
+      }
+    }
+    
+    // Benefits scale proportionally (conservative approach)
+    const scenarioBenefits = {
+      access: Math.round(driverValues.patientAccess * encounterRatio),
+      retention: Math.round(driverValues.workforce * providerRatio),
+      los: Math.round(driverValues.wrvu * encounterRatio),
+      locum: Math.round(driverValues.overtime * providerRatio),
+      denials: Math.round(driverValues.denials * encounterRatio),
+      hcc: Math.round(driverValues.hcc * encounterRatio),
+    };
+    
+    const scenarioTotalBenefit = Object.values(scenarioBenefits).reduce((a, b) => a + b, 0);
+    const scenarioNetGain = scenarioTotalBenefit - scenarioCost;
+    const scenarioROI = scenarioCost > 0 ? scenarioTotalBenefit / scenarioCost : 0;
+    
+    // Baseline calculations (for comparison)
+    const baselineCost = baselineProviders * costPerProviderMonthly * 12;
+    const baselineBenefit = totalAnnualBenefit;
+    const baselineNetGain = baselineBenefit - baselineCost;
+    const baselineROI = baselineCost > 0 ? baselineBenefit / baselineCost : 0;
+    
+    // Incremental analysis (the key!)
+    const incrementalProviders = targetProviders - baselineProviders;
+    const incrementalCost = scenarioCost - baselineCost;
+    const incrementalBenefit = scenarioTotalBenefit - baselineBenefit;
+    const incrementalNetGain = incrementalBenefit - incrementalCost;
+    const incrementalROI = incrementalCost > 0 ? incrementalBenefit / incrementalCost : 0;
+    
+    return {
+      baseline: {
+        providers: baselineProviders,
+        encounters: baselineEncounters,
+        cost: baselineCost,
+        benefit: baselineBenefit,
+        netGain: baselineNetGain,
+        roi: baselineROI,
+      },
+      scenario: {
+        providers: targetProviders,
+        encounters: scenarioEncounters,
+        cost: scenarioCost,
+        costPerProvider: effectiveCostPerProvider,
+        benefit: scenarioTotalBenefit,
+        benefits: scenarioBenefits,
+        netGain: scenarioNetGain,
+        roi: scenarioROI,
+        volumeDiscount,
+      },
+      incremental: {
+        providers: incrementalProviders,
+        encounters: scenarioEncounters - baselineEncounters,
+        cost: incrementalCost,
+        benefit: incrementalBenefit,
+        netGain: incrementalNetGain,
+        roi: incrementalROI,
+      },
+    };
+  }, [targetProviders, expansionPricingModel, enterpriseAnnualCost, inputs.numberOfProviders, inputs.annualOutpatientEncounters, inputs.costPerProviderPerMonth, driverValues, totalAnnualBenefit]);
 
   // Helper: Convert internal Scenario to ScenarioData for PDF export
   const convertScenarioToExportData = useCallback((scenario: Scenario): ScenarioData => {
