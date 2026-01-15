@@ -1,0 +1,613 @@
+📁 File Structure
+Copy/components
+  /expansion
+    ExpansionCalculator.jsx        (Main orchestrator)
+    Step1_BaselineReview.jsx       (Show inherited data)
+    Step2_ExpansionPlan.jsx        (Target, timing, pricing)
+    Step3_RealityCheck.jsx         (Driver validation)
+    Step4_MaturityModel.jsx        (The big reveal)
+    MaturityCurveViz.jsx           (Beautiful chart)
+/utils
+  expansionCalculations.js         (All the math)
+/styles
+  expansion.css                    (Beautiful styling)
+
+1️⃣ Main Orchestrator Component
+jsxCopy// components/expansion/ExpansionCalculator.jsx
+
+import { useState } from 'react';
+import Step1_BaselineReview from './Step1_BaselineReview';
+import Step2_ExpansionPlan from './Step2_ExpansionPlan';
+import Step3_RealityCheck from './Step3_RealityCheck';
+import Step4_MaturityModel from './Step4_MaturityModel';
+import './expansion.css';
+
+const ExpansionCalculator = ({ baselineData, onBack, onSave }) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [expansionInputs, setExpansionInputs] = useState({
+    targetProviders: baselineData.providers,
+    rolloutType: 'phased',
+    phasedPlan: {
+      wave1: { providers: 0, month: 1 },
+      wave2: { providers: 0, month: 4 },
+      wave3: { providers: 0, month: 7 }
+    },
+    pricingModel: 'per-provider',
+    enterpriseCost: null,
+    driverValidations: {}
+  });
+
+  const updateInputs = (updates) => {
+    setExpansionInputs(prev => ({ ...prev, ...updates }));
+  };
+
+  const nextStep = () => {
+    if (currentStep < 4) setCurrentStep(currentStep + 1);
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
+
+  return (
+    <div className="expansion-calculator">
+      {/* Progress Indicator */}
+      <div className="progress-bar">
+        <div className={`progress-step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'complete' : ''}`}>
+          <div className="step-number">1</div>
+          <div className="step-label">Your Baseline</div>
+        </div>
+        <div className={`progress-step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'complete' : ''}`}>
+          <div className="step-number">2</div>
+          <div className="step-label">Expansion Plan</div>
+        </div>
+        <div className={`progress-step ${currentStep >= 3 ? 'active' : ''} ${currentStep > 3 ? 'complete' : ''}`}>
+          <div className="step-number">3</div>
+          <div className="step-label">Reality Check</div>
+        </div>
+        <div className={`progress-step ${currentStep >= 4 ? 'active' : ''}`}>
+          <div className="step-number">4</div>
+          <div className="step-label">Your Model</div>
+        </div>
+      </div>
+
+      {/* Step Content */}
+      <div className="step-content">
+        {currentStep === 1 && (
+          <Step1_BaselineReview
+            baseline={baselineData}
+            onContinue={nextStep}
+            onBack={onBack}
+          />
+        )}
+        
+        {currentStep === 2 && (
+          <Step2_ExpansionPlan
+            baseline={baselineData}
+            inputs={expansionInputs}
+            onUpdate={updateInputs}
+            onContinue={nextStep}
+            onBack={prevStep}
+          />
+        )}
+        
+        {currentStep === 3 && (
+          <Step3_RealityCheck
+            baseline={baselineData}
+            inputs={expansionInputs}
+            onUpdate={updateInputs}
+            onContinue={nextStep}
+            onBack={prevStep}
+          />
+        )}
+        
+        {currentStep === 4 && (
+          <Step4_MaturityModel
+            baseline={baselineData}
+            inputs={expansionInputs}
+            onBack={prevStep}
+            onSave={onSave}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ExpansionCalculator;
+
+2️⃣ Step 1: Baseline Review (Build Trust)
+jsxCopy// components/expansion/Step1_BaselineReview.jsx
+
+import { formatCurrency, formatNumber } from '../../utils/formatting';
+
+const Step1_BaselineReview = ({ baseline, onContinue, onBack }) => {
+  const activeDrivers = Object.entries(baseline.benefits || {})
+    .filter(([key, value]) => value > 0)
+    .map(([key, value]) => ({ key, value }));
+
+  const driverIcons = {
+    access: '👥',
+    retention: '❤️',
+    los: '📊',
+    locum: '⏰',
+    denials: '⚠️',
+    hcc: '🏥'
+  };
+
+  const driverNames = {
+    access: 'Patient Access',
+    retention: 'Clinician Retention',
+    los: 'Level of Service',
+    locum: 'Overtime & Locum',
+    denials: 'Denial Prevention',
+    hcc: 'HCC Capture'
+  };
+
+  return (
+    <div className="step-container baseline-review">
+      <button className="back-link" onClick={onBack}>
+        ← Back to Calculator
+      </button>
+
+      <div className="step-header">
+        <h1>Your Current Abridge Deployment</h1>
+        <p className="subtitle">
+          Let's start with what you've already proven. We'll use this as the foundation for your expansion model.
+        </p>
+      </div>
+
+      <div className="baseline-card">
+        <div className="card-section">
+          <h3>📊 Deployment</h3>
+          <div className="metrics-grid">
+            <div className="metric">
+              <div className="metric-value">{baseline.providers}</div>
+              <div className="metric-label">providers</div>
+            </div>
+            <div className="metric">
+              <div className="metric-value">{formatNumber(baseline.encounters)}</div>
+              <div className="metric-label">encounters/year</div>
+            </div>
+            <div className="metric">
+              <div className="metric-value">{(baseline.utilization * 100).toFixed(0)}%</div>
+              <div className="metric-label">utilization</div>
+            </div>
+            <div className="metric">
+              <div className="metric-value">
+                {formatNumber(Math.round(baseline.encounters / baseline.providers))}
+              </div>
+              <div className="metric-label">encounters/provider</div>
+            </div>
+          </div>
+
+          <div className="maturity-badge">
+            {baseline.utilization >= 0.75 ? (
+              <span className="badge mature">🟢 Mature deployment (75%+ utilization)</span>
+            ) : baseline.utilization >= 0.60 ? (
+              <span className="badge maturing">🔵 Maturing deployment (60-75% utilization)</span>
+            ) : (
+              <span className="badge ramping">🟡 Ramping up (40-60% utilization)</span>
+            )}
+          </div>
+        </div>
+
+        <div className="card-section">
+          <h3>💰 Financial Performance</h3>
+          <div className="financial-summary">
+            <div className="financial-row">
+              <span className="label">Annual Investment</span>
+              <span className="value">{formatCurrency(baseline.annualCost)}</span>
+            </div>
+            <div className="financial-row">
+              <span className="label">Annual Benefit</span>
+              <span className="value">{formatCurrency(baseline.totalBenefit)}</span>
+            </div>
+            <div className="financial-row highlight">
+              <span className="label">Net Gain</span>
+              <span className="value success">{formatCurrency(baseline.netGain)}</span>
+            </div>
+            <div className="financial-row highlight">
+              <span className="label">ROI</span>
+              <span className="value success">{baseline.roi.toFixed(1)}x</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card-section">
+          <h3>🎯 Active Value Drivers</h3>
+          <div className="drivers-list">
+            {activeDrivers.map(({ key, value }) => (
+              <div key={key} className="driver-item">
+                <div className="driver-icon">{driverIcons[key]}</div>
+                <div className="driver-info">
+                  <div className="driver-name">{driverNames[key]}</div>
+                  <div className="driver-value">{formatCurrency(value)}/year</div>
+                </div>
+                <div className="driver-per-provider">
+                  {formatCurrency(Math.round(value / baseline.providers))}/provider
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="confidence-banner">
+          <div className="banner-icon">✓</div>
+          <div className="banner-content">
+            <strong>This is your proven performance.</strong>
+            <p>We'll use these real results to model your expansion, accounting for ramp-up time and maturity curves.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="step-actions">
+        <button className="btn-primary" onClick={onContinue}>
+          Start Expansion Model →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Step1_BaselineReview;
+
+3️⃣ Step 2: Expansion Plan (The Core Inputs)
+jsxCopy// components/expansion/Step2_ExpansionPlan.jsx
+
+import { useState, useEffect } from 'react';
+import { formatCurrency } from '../../utils/formatting';
+
+const Step2_ExpansionPlan = ({ baseline, inputs, onUpdate, onContinue, onBack }) => {
+  const [targetProviders, setTargetProviders] = useState(inputs.targetProviders);
+  const [rolloutType, setRolloutType] = useState(inputs.rolloutType);
+  const [phasedPlan, setPhasedPlan] = useState(inputs.phasedPlan);
+  const [pricingModel, setPricingModel] = useState(inputs.pricingModel);
+  const [enterpriseCost, setEnterpriseCost] = useState(inputs.enterpriseCost);
+
+  const newProviders = targetProviders - baseline.providers;
+
+  // Auto-distribute phased rollout
+  useEffect(() => {
+    if (rolloutType === 'phased' && newProviders > 0) {
+      const wave1 = Math.round(newProviders * 0.4);
+      const wave2 = Math.round(newProviders * 0.3);
+      const wave3 = newProviders - wave1 - wave2;
+      
+      setPhasedPlan({
+        wave1: { providers: wave1, month: 1 },
+        wave2: { providers: wave2, month: 4 },
+        wave3: { providers: wave3, month: 7 }
+      });
+    }
+  }, [newProviders, rolloutType]);
+
+  const handleContinue = () => {
+    onUpdate({
+      targetProviders,
+      rolloutType,
+      phasedPlan,
+      pricingModel,
+      enterpriseCost: pricingModel === 'enterprise' ? enterpriseCost : null
+    });
+    onContinue();
+  };
+
+  const getVolumeDiscount = (providers) => {
+    if (providers >= 250) return 0.30;
+    if (providers >= 150) return 0.25;
+    if (providers >= 100) return 0.20;
+    if (providers >= 75) return 0.15;
+    return 0;
+  };
+
+  const calculateCost = () => {
+    if (pricingModel === 'per-provider') {
+      return targetProviders * baseline.costPerProviderMonth * 12;
+    } else {
+      if (enterpriseCost && enterpriseCost > 0) {
+        return enterpriseCost;
+      }
+      const discount = getVolumeDiscount(targetProviders);
+      return targetProviders * baseline.costPerProviderMonth * 12 * (1 - discount);
+    }
+  };
+
+  const standardCost = targetProviders * baseline.costPerProviderMonth * 12;
+  const actualCost = calculateCost();
+  const discount = getVolumeDiscount(targetProviders);
+
+  return (
+    <div className="step-container expansion-plan">
+      <div className="step-header">
+        <h1>Plan Your Expansion</h1>
+        <p className="subtitle">
+          Let's map out how you'll scale from {baseline.providers} to your target deployment.
+        </p>
+      </div>
+
+      {/* Provider Count Slider */}
+      <div className="input-card primary-card">
+        <label className="input-label">
+          How many providers do you want to expand to?
+        </label>
+
+        <div className="provider-input-group">
+          <input
+            type="number"
+            className="provider-number-input"
+            value={targetProviders}
+            onChange={(e) => setTargetProviders(parseInt(e.target.value) || baseline.providers)}
+            min={baseline.providers}
+            max={500}
+          />
+          <span className="input-unit">providers</span>
+        </div>
+
+        <input
+          type="range"
+          className="provider-slider"
+          value={targetProviders}
+          onChange={(e) => setTargetProviders(parseInt(e.target.value))}
+          min={baseline.providers}
+          max={Math.max(baseline.providers * 3, 200)}
+          step={5}
+        />
+
+        <div className="slider-markers">
+          <span className="marker">{baseline.providers}</span>
+          <span className="marker current">
+            {targetProviders}
+            {newProviders > 0 && (
+              <span className="delta">+{newProviders}</span>
+            )}
+          </span>
+          <span className="marker">{Math.max(baseline.providers * 3, 200)}</span>
+        </div>
+
+        {newProviders <= 0 && (
+          <div className="validation-message warning">
+            ⚠️ Target must be greater than current deployment ({baseline.providers} providers)
+          </div>
+        )}
+      </div>
+
+      {/* Rollout Timing */}
+      {newProviders > 0 && (
+        <>
+          <div className="input-card">
+            <label className="input-label">
+              When will they go live?
+            </label>
+
+            <div className="rollout-options">
+              <div
+                className={`rollout-option ${rolloutType === 'all-at-once' ? 'selected' : ''}`}
+                onClick={() => setRolloutType('all-at-once')}
+              >
+                <input
+                  type="radio"
+                  checked={rolloutType === 'all-at-once'}
+                  onChange={() => setRolloutType('all-at-once')}
+                />
+                <div className="option-content">
+                  <strong>All at Once</strong>
+                  <p>All {newProviders} providers go live in Month 1</p>
+                  <div className="option-pros-cons">
+                    <span className="pro">✓ Faster time to value</span>
+                    <span className="con">⚠️ Higher change management risk</span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={`rollout-option ${rolloutType === 'phased' ? 'selected' : ''}`}
+                onClick={() => setRolloutType('phased')}
+              >
+                <input
+                  type="radio"
+                  checked={rolloutType === 'phased'}
+                  onChange={() => setRolloutType('phased')}
+                />
+                <div className="option-content">
+                  <strong>Phased Rollout</strong>
+                  <span className="recommended-badge">Recommended</span>
+                  <p>Deploy in waves over 12 months</p>
+                  <div className="option-pros-cons">
+                    <span className="pro">✓ Lower risk, apply learnings</span>
+                    <span className="pro">✓ Spread investment over time</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {rolloutType === 'phased' && (
+              <div className="phased-plan">
+                <div className="phase-timeline">
+                  <div className="phase">
+                    <div className="phase-header">
+                      <span className="phase-label">Wave 1</span>
+                      <span className="phase-timing">Months 1-3</span>
+                    </div>
+                    <input
+                      type="number"
+                      value={phasedPlan.wave1.providers}
+                      onChange={(e) => setPhasedPlan({
+                        ...phasedPlan,
+                        wave1: { ...phasedPlan.wave1, providers: parseInt(e.target.value) || 0 }
+                      })}
+                      className="phase-input"
+                    />
+                    <span className="phase-unit">providers</span>
+                  </div>
+
+                  <div className="phase">
+                    <div className="phase-header">
+                      <span className="phase-label">Wave 2</span>
+                      <span className="phase-timing">Months 4-6</span>
+                    </div>
+                    <input
+                      type="number"
+                      value={phasedPlan.wave2.providers}
+                      onChange={(e) => setPhasedPlan({
+                        ...phasedPlan,
+                        wave2: { ...phasedPlan.wave2, providers: parseInt(e.target.value) || 0 }
+                      })}
+                      className="phase-input"
+                    />
+                    <span className="phase-unit">providers</span>
+                  </div>
+
+                  <div className="phase">
+                    <div className="phase-header">
+                      <span className="phase-label">Wave 3</span>
+                      <span className="phase-timing">Months 7-12</span>
+                    </div>
+                    <input
+                      type="number"
+                      value={phasedPlan.wave3.providers}
+                      onChange={(e) => setPhasedPlan({
+                        ...phasedPlan,
+                        wave3: { ...phasedPlan.wave3, providers: parseInt(e.target.value) || 0 }
+                      })}
+                      className="phase-input"
+                    />
+                    <span className="phase-unit">providers</span>
+                  </div>
+                </div>
+
+                <div className="phase-insight">
+                  💡 Phased rollout reduces risk and allows you to refine your approach between cohorts
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Pricing Model */}
+          <div className="input-card">
+            <label className="input-label">
+              Pricing for expansion
+            </label>
+
+            <div className="pricing-options">
+              <div
+                className={`pricing-option ${pricingModel === 'per-provider' ? 'selected' : ''}`}
+                onClick={() => setPricingModel('per-provider')}
+              >
+                <input
+                  type="radio"
+                  checked={pricingModel === 'per-provider'}
+                  onChange={() => setPricingModel('per-provider')}
+                />
+                <div className="option-content">
+                  <strong>Per-Provider Pricing</strong>
+                  <p>${baseline.costPerProviderMonth}/provider/month</p>
+                  <div className="pricing-detail">
+                    Same as your current deployment
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={`pricing-option ${pricingModel === 'enterprise' ? 'selected' : ''}`}
+                onClick={() => setPricingModel('enterprise')}
+              >
+                <input
+                  type="radio"
+                  checked={pricingModel === 'enterprise'}
+                  onChange={() => setPricingModel('enterprise')}
+                />
+                <div className="option-content">
+                  <strong>Enterprise Annual Contract</strong>
+                  {discount > 0 && (
+                    <span className="discount-badge">{(discount * 100).toFixed(0)}% volume discount</span>
+                  )}
+                  <p>Custom pricing for large deployments</p>
+                </div>
+              </div>
+            </div>
+
+            {pricingModel === 'enterprise' && (
+              <div className="enterprise-pricing">
+                <label className="sublabel">
+                  Custom annual contract value (optional)
+                </label>
+                <div className="input-with-prefix">
+                  <span className="prefix">$</span>
+                  <input
+                    type="number"
+                    placeholder="Enter annual cost"
+                    value={enterpriseCost || ''}
+                    onChange={(e) => setEnterpriseCost(e.target.value ? parseFloat(e.target.value) : null)}
+                  />
+                  <span className="suffix">/year</span>
+                </div>
+
+                {discount > 0 && (
+                  <div className="discount-info">
+                    <div className="discount-comparison">
+                      <div className="comparison-item">
+                        <span className="comparison-label">Standard pricing</span>
+                        <span className="comparison-value">{formatCurrency(standardCost)}/year</span>
+                      </div>
+                      <div className="comparison-arrow">→</div>
+                      <div className="comparison-item highlight">
+                        <span className="comparison-label">With {(discount * 100).toFixed(0)}% discount</span>
+                        <span className="comparison-value">{formatCurrency(actualCost)}/year</span>
+                      </div>
+                    </div>
+                    <div className="savings-badge">
+                      Save {formatCurrency(standardCost - actualCost)}/year
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Summary Preview */}
+          <div className="plan-summary">
+            <h4>Expansion Summary</h4>
+            <div className="summary-grid">
+              <div className="summary-item">
+                <span className="summary-label">Adding</span>
+                <span className="summary-value">+{newProviders} providers</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Rollout</span>
+                <span className="summary-value">
+                  {rolloutType === 'phased' ? 'Phased (12 months)' : 'All at once'}
+                </span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Annual Investment</span>
+                <span className="summary-value">{formatCurrency(actualCost)}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Cost per Provider</span>
+                <span className="summary-value">
+                  ${Math.round(actualCost / targetProviders / 12)}/month
+                </span>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="step-actions">
+        <button className="btn-secondary" onClick={onBack}>
+          ← Back
+        </button>
+        <button
+          className="btn-primary"
+          onClick={handleContinue}
+          disabled={newProviders <= 0}
+        >
+          Continue to Reality Check →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Step2_ExpansionPlan;
