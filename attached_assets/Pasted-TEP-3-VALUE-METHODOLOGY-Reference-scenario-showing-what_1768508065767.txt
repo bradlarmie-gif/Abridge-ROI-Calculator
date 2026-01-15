@@ -1,0 +1,236 @@
+TEP 3: VALUE METHODOLOGY
+Reference scenario showing what's possible—same pattern as your outpatient
+URL: /nursing/value-methodology
+Header:
+CopyValue Methodology
+
+This reference scenario shows potential value for a typical mid-sized hospital.
+Review how each driver creates value, then customize with your specific numbers 
+in the next step.
+Reference Scenario Card:
+Copy┌──────────────────────────────────────────────────────────────────────┐
+│  Reference Scenario                                                   │
+│  Typical 200-bed community hospital, med-surg focused                │
+│                                                                       │
+│  🏥 200          📋 332,150         📈 65%                           │
+│  staffed beds    documentation      adoption                          │
+│                  events/year                                          │
+│                                                                       │
+│  This creates: ~332,150 Abridge-documented events per year           │
+└──────────────────────────────────────────────────────────────────────┘
+YOUR SELECTED VALUE DRIVERS:
+Only show the drivers they selected in Step 2. Each is expandable.
+Example: Documentation Time Savings (expanded)
+Copy┌──────────────────────────────────────────────────────────────────────┐
+│ ⏱ Documentation Time Savings                              ▼         │
+│   Reference value: $996,435                                          │
+│                                                                       │
+│   💡 The Theory                                                      │
+│   Nurses spend significant time documenting into flowsheets          │
+│   throughout each shift. Ambient documentation reduces time spent    │
+│   on manual entry, returning hours to nursing staff. This time can   │
+│   be reinvested in patient care or captured as labor efficiency.     │
+│                                                                       │
+│   📐 How We Calculate It                                             │
+│   ┌────────────────────────────────────────────────────────────────┐ │
+│   │ STEP 1: DOCUMENTATION VOLUME                                   │ │
+│   │ Staffed beds                                    200            │ │
+│   │ Documentation events per patient per shift      7              │ │
+│   │ Shifts per day                                  3              │ │
+│   │ Days per year                                   365            │ │
+│   │ Total events per year                           511,000        │ │
+│   │ Utilization rate                                65% (typical)  │ │
+│   │ Eligible events                                 332,150        │ │
+│   │                                                                │ │
+│   │ STEP 2: TIME RETURNED                                          │ │
+│   │ Minutes saved per documentation event           4 min (typical)│ │
+│   │ Total minutes saved                             1,328,600      │ │
+│   │ Hours returned annually                         22,143 hrs     │ │
+│   │                                                                │ │
+│   │ STEP 3: VALUE EQUIVALENT                                       │ │
+│   │ Avg nurse hourly rate                           $45            │ │
+│   │ Labor value equivalent                          $996,435       │ │
+│   └────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│   ⚙️ Key Variables You'll Customize                                  │
+│   • Staffed beds  • Patients per nurse  • Minutes saved per event   │
+│   • Flowsheets in scope  • Utilization rate                          │
+│                                                                       │
+│   📊 Range Across Customers                                          │
+│   Conservative: $400k-600k    Typical: $800k-1.2M                    │
+└──────────────────────────────────────────────────────────────────────┘
+Example: Overtime Reduction (collapsed)
+Copy┌──────────────────────────────────────────────────────────────────────┐
+│ 💰 Overtime Reduction                                     ▶         │
+│   Reference value: $460,688                                          │
+└──────────────────────────────────────────────────────────────────────┘
+Example: Safety Event Risk Reduction (expanded, with caveat)
+Copy┌──────────────────────────────────────────────────────────────────────┐
+│ ⚠️ Safety Event Risk Reduction                            ▼         │
+│   Reference value: $128,850                                          │
+│                                                                       │
+│   ┌────────────────────────────────────────────────────────────────┐ │
+│   │ ⚠️ IMPORTANT LIMITATION                                        │ │
+│   │                                                                │ │
+│   │ This is an INDIRECT relationship. We cannot claim that         │ │
+│   │ Abridge directly prevents pressure injuries or falls.          │ │
+│   │                                                                │ │
+│   │ What we CAN say:                                               │ │
+│   │ • Timely documentation supports identification of at-risk      │ │
+│   │   patients                                                     │ │
+│   │ • Complete assessment documentation enables appropriate        │ │
+│   │   care planning                                                │ │
+│   │ • Documentation is ONE component of prevention protocols       │ │
+│   │                                                                │ │
+│   │ This value is speculative and for directional planning only.  │ │
+│   └────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│   💡 The Theory                                                      │
+│   [...]                                                              │
+└──────────────────────────────────────────────────────────────────────┘
+Combined Impact Summary:
+Copy┌──────────────────────────────────────────────────────────────────────┐
+│  COMBINED IMPACT (REFERENCE SCENARIO)                                │
+│                                                                       │
+│  Documentation Time Savings                           $996,435       │
+│  Overtime Reduction                                   $460,688       │
+│  Agency & Travel Nurse Reduction                      $832,000       │
+│  Nurse Retention                                      $393,120       │
+│  Documentation Timeliness                              $15,000       │
+│  Documentation Completeness                            $17,500       │
+│  Safety Event Risk Reduction*                         $128,850       │
+│  CC/MCC Support*                                      $170,188       │
+│  ───────────────────────────────────────────────────────────────     │
+│  Total Annual Benefit                               $3,013,781       │
+│                                                                       │
+│  *Indirect relationship—see methodology for limitations              │
+│                                                                       │
+│  💡 This is before accounting for investment costs. Next, you'll    │
+│     input your specifics to see YOUR numbers.                        │
+└──────────────────────────────────────────────────────────────────────┘
+Important to Know box:
+Copy┌──────────────────────────────────────────────────────────────────────┐
+│  ⚠️ Important to Know                                                │
+│                                                                       │
+│  These calculations use typical assumptions from health system       │
+│  implementations.                                                     │
+│                                                                       │
+│  Important limitations:                                               │
+│  • We don't have access to your specific labor costs, overtime      │
+│    patterns, or turnover data                                        │
+│  • Time savings assumptions use industry estimates—your actual      │
+│    may vary based on current workflows                               │
+│  • Quality & Revenue drivers (marked with ⚠️) have indirect         │
+│    relationships and require validation                              │
+│  • Long-term metrics (retention) may require 12+ months to measure  │
+│                                                                       │
+│  The formulas stay the same—only YOUR numbers change. Adjust        │
+│  assumptions to reflect your organization's reality.                 │
+└──────────────────────────────────────────────────────────────────────┘
+Continue button: Route to /nursing/baseline-assumptions
+
+STEP 4: BASELINE ASSUMPTIONS (ADOPTION)
+This is where they input their actual numbers
+URL: /nursing/baseline-assumptions
+Page structure: Three-step flow within this page
+
+Adoption (inputs)
+Value Posture
+Investment
+
+Right sidebar (LIVE RECEIPT):
+CopyLIVE RECEIPT
+Updates in real-time
+
+ADOPTION INPUTS
+Staffed beds                              —
+Patients per nurse                        —
+Flowsheets in scope                       —
+Documentation events/year                 —
+Utilization                               —
+Eligible events                           —
+
+TIME SAVINGS
+Minutes saved/event                       —
+Hours returned (gross)                    —
+Labor value equivalent                    —
+
+YOUR VALUE DRIVERS
+Documentation Time Savings                $0
+Overtime Reduction                        $0
+[etc. based on selections]
+
+PROJECTED ANNUAL VALUE
+Total Benefit                             $0
+Investment                                —
+Net Annual Gain                           $0
+
+STEP 4a: ADOPTION
+Header:
+CopyBaseline Assumptions
+
+These inputs shape your ROI model.
+
+[ 1 Adoption ] → [ 2 Value Posture ] → [ 3 Investment ]
+
+💡 The Value Methodology showed a reference scenario. Now input YOUR 
+   organization's actual numbers to see your specific ROI.
+Main content:
+CopyADOPTION INPUTS
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ Staffed beds *                                                       │
+│ ┌──────────────────────────────────────────────────────────────────┐│
+│ │ e.g., 200                                                        ││
+│ └──────────────────────────────────────────────────────────────────┘│
+│ Number of staffed inpatient beds. This is the foundation of your   │
+│ ROI model.                                                           │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ Average patients per nurse *                                         │
+│ ┌──────────────────────────────────────────────────────────────────┐│
+│ │ e.g., 5                                                          ││
+│ └──────────────────────────────────────────────────────────────────┘│
+│ Typical patient assignment for med-surg units. Adjust based on your│
+│ unit mix (ICU may be 2:1, med-surg 5:1, tele 4:1).                  │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ Flowsheets in scope                                                  │
+│                                                                       │
+│ Select which flowsheets will be documented with Abridge:             │
+│                                                                       │
+│ ☑️ Complex Assessments          1 event/patient/shift               │
+│ ☑️ Daily Cares & Safety         1 event/patient/shift               │
+│ ☑️ Intake/Output (I&O)          2 events/patient/shift              │
+│ ☑️ PCT Vitals                   3 events/patient/shift              │
+│ ☐ [Add Custom Flowsheet]        _ events/patient/shift              │
+│                                                                       │
+│ Total: 7 documentation events per patient per shift                  │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ Utilization rate: 65%                                                │
+│ ════════════════════════════════●═══════════════════════════════     │
+│                                                                       │
+│ ┌─────────────┐  ┌─────────────────────┐  ┌──────────────────────┐  │
+│ │ Early (50%) │  │ Typical (65%)       │  │ Aggressive (80%)     │  │
+│ │ Pilot/phased│  │ Steady adoption     │  │ Mature deployment    │  │
+│ │ rollout     │  │ with enablement     │  │                      │  │
+│ └─────────────┘  └─────────────────────┘  └──────────────────────┘  │
+│                           ▲ Selected                                 │
+│                                                                       │
+│ Percentage of documentation events where Abridge is actively used.  │
+│                                                                       │
+│ ▸ Why this matters                                                   │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ 📊 YOUR SCENARIO                                                     │
+│                                                                       │
+│ 200 beds × 7 events/patient/shift × 3 shifts × 365 days × 65%       │
+│                                                                       │
+│ = 332,150 Abridge-documented events per year                        │
+└──────────────────────────────────────────────────────────────────────┘
+[Next: Value Posture →] button

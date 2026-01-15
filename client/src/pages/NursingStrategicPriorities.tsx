@@ -21,15 +21,25 @@ export default function NursingStrategicPriorities({
     qualityRevenue: nursingDrivers.filter((l) => l.category === "qualityRevenue"),
   };
 
+  const MAX_SELECTIONS = 6;
+  const MIN_SELECTIONS = 2;
+
   const toggleDriver = (driverId: string) => {
-    setSelectedDrivers((prev) =>
-      prev.includes(driverId)
-        ? prev.filter((id) => id !== driverId)
-        : [...prev, driverId]
-    );
+    setSelectedDrivers((prev) => {
+      // If already selected, allow deselecting
+      if (prev.includes(driverId)) {
+        return prev.filter((id) => id !== driverId);
+      }
+      // If at max, don't allow more selections
+      if (prev.length >= MAX_SELECTIONS) {
+        return prev;
+      }
+      return [...prev, driverId];
+    });
   };
 
-  const canContinue = selectedDrivers.length >= 2;
+  const canContinue = selectedDrivers.length >= MIN_SELECTIONS && selectedDrivers.length <= MAX_SELECTIONS;
+  const isAtMax = selectedDrivers.length >= MAX_SELECTIONS;
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -46,15 +56,18 @@ export default function NursingStrategicPriorities({
 
   const renderDriverCard = (driver: LeverConfig) => {
     const isSelected = selectedDrivers.includes(driver.id);
+    const isDisabled = isAtMax && !isSelected;
     
     return (
       <div
         key={driver.id}
-        onClick={() => toggleDriver(driver.id)}
-        className={`relative p-4 border rounded-xl cursor-pointer transition-all ${
+        onClick={() => !isDisabled && toggleDriver(driver.id)}
+        className={`relative p-4 border rounded-xl transition-all ${
           isSelected
-            ? "border-[#F03319] bg-[#FFF5F3] ring-1 ring-[#F03319]/20"
-            : "border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50"
+            ? "border-[#F03319] bg-[#FFF5F3] ring-1 ring-[#F03319]/20 cursor-pointer"
+            : isDisabled
+              ? "border-neutral-200 bg-neutral-50 opacity-50 cursor-not-allowed"
+              : "border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50 cursor-pointer"
         }`}
         data-testid={`priority-${driver.id}`}
       >
@@ -213,8 +226,11 @@ export default function NursingStrategicPriorities({
 
               {/* Selected Priorities */}
               <div className="mb-6">
-                <div className="text-xs text-neutral-500 uppercase tracking-wide mb-2">
-                  Strategic Priorities
+                <div className="flex items-center justify-between text-xs text-neutral-500 uppercase tracking-wide mb-2">
+                  <span>Strategic Priorities</span>
+                  <span className={`font-medium ${isAtMax ? 'text-amber-600' : ''}`}>
+                    {selectedDrivers.length} of {nursingDrivers.length} selected
+                  </span>
                 </div>
                 {selectedDrivers.length === 0 ? (
                   <p className="text-sm text-neutral-400">Select 2-6 drivers</p>
@@ -232,6 +248,9 @@ export default function NursingStrategicPriorities({
                         </div>
                       ) : null;
                     })}
+                    {isAtMax && (
+                      <p className="text-xs text-amber-600 mt-2">Maximum 6 drivers selected</p>
+                    )}
                   </div>
                 )}
               </div>
