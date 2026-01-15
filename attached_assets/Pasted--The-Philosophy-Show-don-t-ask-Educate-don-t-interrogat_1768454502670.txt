@@ -1,0 +1,979 @@
+📋 The Philosophy
+"Show, don't ask. Educate, don't interrogate. Make it feel inevitable."
+This isn't a form. It's an interactive exploration. The user should feel like they're discovering the answer, not calculating it.
+
+📁 File 1: Main Component
+Path: components/expansion/NewCareSettingFlow.jsx
+jsxCopyimport { useState, useEffect } from 'react';
+import { calculateCombinedDeployment } from '../../utils/newCareSettingCalculations';
+import { formatCurrency, formatNumber } from '../../utils/formatting';
+import './newCareSetting.css';
+
+const NewCareSettingFlow = ({ baseline, onBack, onSave }) => {
+  const [selectedSetting, setSelectedSetting] = useState(null);
+  const [settingConfig, setSettingConfig] = useState({
+    providers: 20,
+    encounters: null, // null = auto-calculate
+    customEncounters: false,
+    utilization: baseline.utilization || 0.65
+  });
+  
+  const [model, setModel] = useState(null);
+  
+  // Recalculate instantly when anything changes
+  useEffect(() => {
+    if (selectedSetting) {
+      const calculated = calculateCombinedDeployment(baseline, {
+        type: selectedSetting,
+        ...settingConfig
+      });
+      setModel(calculated);
+    }
+  }, [selectedSetting, settingConfig, baseline]);
+  
+  if (!selectedSetting) {
+    return (
+      <CareSettingExplorer 
+        baseline={baseline}
+        onSelect={setSelectedSetting} 
+        onBack={onBack} 
+      />
+    );
+  }
+  
+  return (
+    <CombinedPreview 
+      baseline={baseline}
+      settingType={selectedSetting}
+      config={settingConfig}
+      onConfigChange={setSettingConfig}
+      model={model}
+      onBack={() => setSelectedSetting(null)}
+      onSave={onSave}
+    />
+  );
+};
+
+// ===== STEP 1: CARE SETTING EXPLORER =====
+const CareSettingExplorer = ({ baseline, onSelect, onBack }) => {
+  const settings = [
+    {
+      id: 'ed',
+      icon: '🚨',
+      name: 'Emergency Department',
+      tagline: 'High-volume, fast-paced acute care',
+      available: true,
+      characteristics: [
+        '3,000-8,000 encounters per provider per year',
+        'Higher wRVU density (2.4-3.2 per encounter)',
+        'Time pressure makes efficiency critical'
+      ],
+      drivers: ['Patient Throughput', 'Level of Service', 'Denial Reduction'],
+      typicalROI: '6-8x',
+      why: 'Time pressure makes documentation efficiency critical. Every minute saved = more patients seen = higher throughput = significant revenue impact.',
+      pricing: `Same as Outpatient ($${baseline.costPerProviderMonth}/provider/month)`
+    },
+    {
+      id: 'nursing',
+      icon: '👩‍⚕️',
+      name: 'Nursing',
+      tagline: 'Bedside documentation, care coordination',
+      available: false,
+      characteristics: [
+        'Different encounter patterns than providers',
+        'Focus on time savings & documentation quality',
+        'Significant overtime reduction opportunity'
+      ],
+      drivers: ['Time Savings', 'Overtime Reduction', 'Documentation Quality'],
+      typicalROI: '4-6x',
+      why: 'Nurses spend 25-35% of shift time on documentation. Abridge reclaims this time for patient care.',
+      pricing: 'Different structure (contact for details)'
+    },
+    {
+      id: 'inpatient',
+      icon: '🏥',
+      name: 'Inpatient',
+      tagline: 'Hospital admissions, daily rounding',
+      available: false,
+      characteristics: [
+        'Complex, multi-day encounters',
+        'High HCC capture opportunity',
+        'Critical for risk adjustment'
+      ],
+      drivers: ['HCC Capture', 'Level of Service', 'Denial Prevention'],
+      typicalROI: '5-7x',
+      why: 'Inpatient encounters generate the most complete clinical narratives, maximizing HCC capture and accurate coding.',
+      pricing: `Same as Outpatient ($${baseline.costPerProviderMonth}/provider/month)`
+    }
+  ];
+
+  return (
+    <div className="care-setting-explorer">
+      <button className="back-link" onClick={onBack}>
+        ← Back to Scenario Builder
+      </button>
+
+      <div className="explorer-header">
+        <h1>Add a New Care Setting</h1>
+        <p className="subtitle">
+          Explore how different care settings would combine with your current deployment
+        </p>
+      </div>
+
+      <div className="current-deployment-banner">
+        <div className="banner-label">Your Current Deployment</div>
+        <div className="banner-content">
+          <div className="deployment-badge">
+            📍 {baseline.careSetting || 'Outpatient'}
+          </div>
+          <div className="deployment-stats">
+            <span>{baseline.providers} providers</span>
+            <span className="divider">•</span>
+            <span>{formatCurrency(baseline.netGain)} net gain</span>
+            <span className="divider">•</span>
+            <span>{baseline.roi.toFixed(1)}x ROI</span>
+          </div>
+        </div>
+        {baseline.benefits && (
+          <div className="active-drivers-preview">
+            Active drivers: {Object.keys(baseline.benefits).map(d => getDriverShortName(d)).join(' • ')}
+          </div>
+        )}
+      </div>
+
+      <div className="settings-grid">
+        {settings.map(setting => (
+          <div 
+            key={setting.id}
+            className={`setting-card ${!setting.available ? 'coming-soon' : ''}`}
+            onClick={() => setting.available && onSelect(setting.id)}
+          >
+            <div className="setting-header">
+              <div className="setting-icon">{setting.icon}</div>
+              <div className="setting-title">
+                <h3>{setting.name}</h3>
+                {!setting.available && <span className="coming-soon-badge">Coming Soon</span>}
+              </div>
+            </div>
+
+            <p className="setting-tagline">{setting.tagline}</p>
+
+            <div className="setting-section">
+              <div className="section-label">💰 Typical Economics</div>
+              <ul className="setting-list">
+                {setting.characteristics.map((char, idx) => (
+                  <li key={idx}>{char}</li>
+                ))}
+                <li className="roi-highlight">
+                  <strong>{setting.typicalROI} ROI typical</strong>
+                </li>
+              </ul>
+            </div>
+
+            <div className="setting-section">
+              <div className="section-label">🎯 Key Value Drivers</div>
+              <div className="drivers-tags">
+                {setting.drivers.map(driver => (
+                  <span key={driver} className="driver-tag">{driver}</span>
+                ))}
+              </div>
+            </div>
+
+            <div className="setting-section why-section">
+              <div className="section-label">⚡ Why {setting.name}?</div>
+              <p className="why-text">{setting.why}</p>
+            </div>
+
+            <div className="setting-footer">
+              <div className="pricing-note">Pricing: {setting.pricing}</div>
+              {setting.available && (
+                <button className="preview-button">
+                  Preview →
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ===== STEP 2: COMBINED PREVIEW =====
+const CombinedPreview = ({ baseline, settingType, config, onConfigChange, model, onBack, onSave }) => {
+  const settingNames = {
+    ed: 'Emergency Department',
+    nursing: 'Nursing',
+    inpatient: 'Inpatient'
+  };
+
+  const settingDefaults = {
+    ed: {
+      encountersPerProvider: 5000,
+      avgWRVU: 2.8,
+      typicalProviders: '15-30'
+    },
+    nursing: {
+      encountersPerProvider: 2000,
+      typicalProviders: '30-100'
+    },
+    inpatient: {
+      encountersPerProvider: 800,
+      avgWRVU: 3.5,
+      typicalProviders: '20-50'
+    }
+  };
+
+  const defaults = settingDefaults[settingType];
+
+  if (!model) return <div className="loading">Calculating...</div>;
+
+  return (
+    <div className="combined-preview">
+      <button className="back-link" onClick={onBack}>
+        ← Back to Settings
+      </button>
+
+      <div className="preview-header">
+        <h1>Your Deployment: {baseline.careSetting || 'Outpatient'} + {settingNames[settingType]}</h1>
+        <p className="subtitle">
+          Explore how {settingNames[settingType]} would combine with your {baseline.careSetting || 'Outpatient'} deployment
+        </p>
+      </div>
+
+      <div className="preview-layout">
+        {/* LEFT SIDE: Configuration */}
+        <div className="config-panel">
+          <div className="config-card">
+            <h3>🚨 {settingNames[settingType]} Configuration</h3>
+
+            <div className="config-section">
+              <label className="config-label">
+                How many {settingNames[settingType]} providers?
+              </label>
+
+              <div className="provider-input-group">
+                <input
+                  type="number"
+                  className="provider-input"
+                  value={config.providers}
+                  onChange={(e) => onConfigChange({ ...config, providers: parseInt(e.target.value) || 1 })}
+                  min="1"
+                  max="100"
+                />
+                <span className="input-unit">providers</span>
+              </div>
+
+              <input
+                type="range"
+                className="provider-slider"
+                value={config.providers}
+                onChange={(e) => onConfigChange({ ...config, providers: parseInt(e.target.value) })}
+                min="5"
+                max="50"
+                step="5"
+              />
+
+              <div className="typical-note">
+                Typical {settingNames[settingType]}: {defaults.typicalProviders} providers
+              </div>
+            </div>
+
+            <div className="config-section">
+              <label className="config-label">Annual encounters:</label>
+
+              <div className="radio-options">
+                <label className={`radio-option ${!config.customEncounters ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    checked={!config.customEncounters}
+                    onChange={() => onConfigChange({ ...config, customEncounters: false, encounters: null })}
+                  />
+                  <div className="radio-content">
+                    <strong>Typical volume</strong>
+                    <p>{config.providers} providers × {formatNumber(defaults.encountersPerProvider)} = {formatNumber(config.providers * defaults.encountersPerProvider)} encounters/year</p>
+                  </div>
+                </label>
+
+                <label className={`radio-option ${config.customEncounters ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    checked={config.customEncounters}
+                    onChange={() => onConfigChange({ ...config, customEncounters: true })}
+                  />
+                  <div className="radio-content">
+                    <strong>Custom volume</strong>
+                    {config.customEncounters && (
+                      <input
+                        type="number"
+                        className="custom-encounters-input"
+                        placeholder="Enter encounters/year"
+                        value={config.encounters || ''}
+                        onChange={(e) => onConfigChange({ ...config, encounters: parseInt(e.target.value) || null })}
+                      />
+                    )}
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {defaults.avgWRVU && (
+              <div className="config-section metrics-section">
+                <div className="section-label">📊 {settingNames[settingType]}-Specific Metrics</div>
+                <div className="metric-item">
+                  <span className="metric-label">Average wRVU per encounter:</span>
+                  <span className="metric-value">{defaults.avgWRVU}</span>
+                  <span className="metric-note">({settingNames[settingType]} typical: {defaults.avgWRVU})</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Expected utilization:</span>
+                  <span className="metric-value">{(config.utilization * 100).toFixed(0)}%</span>
+                  <span className="metric-note">(inherited from {baseline.careSetting || 'Outpatient'})</span>
+                </div>
+
+                <div className="insight-box">
+                  💡 {settingNames[settingType]} generates higher LoS value due to higher wRVU density
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="config-card drivers-card">
+            <h3>🎯 Value Drivers for {settingNames[settingType]}</h3>
+            <p className="drivers-intro">Pre-selected based on {settingNames[settingType]} best practices:</p>
+
+            <div className="driver-list">
+              {model.newSetting.benefits && Object.entries(model.newSetting.benefits).map(([driver, value]) => (
+                <div key={driver} className="driver-item">
+                  <div className="driver-header">
+                    <span className="driver-icon">✓</span>
+                    <span className="driver-name">{getDriverName(driver)}</span>
+                  </div>
+                  <div className="driver-description">{getDriverDescription(driver)}</div>
+                  <div className="driver-value">Estimated: {formatCurrency(value)}/year</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT SIDE: Live Combined View */}
+        <div className="results-panel sticky">
+          <div className="results-card">
+            <div className="results-header">
+              <h3>Combined Deployment</h3>
+              <p className="updates-note">Updates in real-time</p>
+            </div>
+
+            {/* Comparison Table */}
+            <div className="comparison-table-wrapper">
+              <table className="comparison-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>{baseline.careSetting || 'Outpatient'}<br/><span className="sub">(current)</span></th>
+                    <th className="plus-col">+</th>
+                    <th>{settingNames[settingType]}<br/><span className="sub">(new)</span></th>
+                    <th className="equals-col">=</th>
+                    <th className="combined-col">Combined<br/><span className="sub">(total)</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="row-label">Providers</td>
+                    <td>{model.baseline.providers}</td>
+                    <td className="plus-col">+</td>
+                    <td>{model.newSetting.providers}</td>
+                    <td className="equals-col">=</td>
+                    <td className="combined-col">
+                      <strong>{model.combined.providers}</strong>
+                      <div className="delta positive">+{((model.combined.providers - model.baseline.providers) / model.baseline.providers * 100).toFixed(0)}%</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="row-label">Encounters</td>
+                    <td>{formatNumber(model.baseline.encounters)}</td>
+                    <td className="plus-col">+</td>
+                    <td>{formatNumber(model.newSetting.encounters)}</td>
+                    <td className="equals-col">=</td>
+                    <td className="combined-col">
+                      <strong>{formatNumber(model.combined.encounters)}</strong>
+                      <div className="delta positive">+{((model.combined.encounters - model.baseline.encounters) / model.baseline.encounters * 100).toFixed(0)}%</div>
+                    </td>
+                  </tr>
+                  <tr className="divider-row">
+                    <td colSpan="6"></td>
+                  </tr>
+                  <tr>
+                    <td className="row-label">Investment</td>
+                    <td>{formatCurrency(model.baseline.cost)}</td>
+                    <td className="plus-col">+</td>
+                    <td>{formatCurrency(model.newSetting.cost)}</td>
+                    <td className="equals-col">=</td>
+                    <td className="combined-col"><strong>{formatCurrency(model.combined.cost)}</strong></td>
+                  </tr>
+                  <tr>
+                    <td className="row-label">Benefit</td>
+                    <td>{formatCurrency(model.baseline.benefit)}</td>
+                    <td className="plus-col">+</td>
+                    <td>{formatCurrency(model.newSetting.totalBenefit)}</td>
+                    <td className="equals-col">=</td>
+                    <td className="combined-col"><strong>{formatCurrency(model.combined.benefit)}</strong></td>
+                  </tr>
+                  <tr className="highlight-row">
+                    <td className="row-label">Net Gain</td>
+                    <td>
+                      {formatCurrency(model.baseline.netGain)}
+                      <div className="sub-label">baseline</div>
+                    </td>
+                    <td className="plus-col">+</td>
+                    <td>
+                      {formatCurrency(model.newSetting.netGain)}
+                      <div className="delta positive">+{model.deltas.netGainIncrease}%</div>
+                    </td>
+                    <td className="equals-col">=</td>
+                    <td className="combined-col success">
+                      <strong className="large">{formatCurrency(model.combined.netGain)}</strong>
+                      <div className="delta positive large">+{model.deltas.netGainIncrease}%</div>
+                    </td>
+                  </tr>
+                  <tr className="highlight-row">
+                    <td className="row-label">ROI</td>
+                    <td>{model.baseline.roi.toFixed(1)}x</td>
+                    <td className="plus-col"></td>
+                    <td>
+                      <strong>{model.newSetting.roi.toFixed(1)}x</strong>
+                      {model.newSetting.roi > model.baseline.roi && (
+                        <div className="roi-badge">Higher!</div>
+                      )}
+                    </td>
+                    <td className="equals-col"></td>
+                    <td className="combined-col success">
+                      <strong className="large">{model.combined.roi.toFixed(1)}x</strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Key Insight */}
+            <div className="key-insight-box">
+              <div className="insight-icon">💡</div>
+              <div className="insight-content">
+                <strong>Key Insight</strong>
+                <p>{model.insight}</p>
+              </div>
+            </div>
+
+            {/* Value Breakdown */}
+            <div className="value-breakdown-section">
+              <h4>Value Breakdown (Combined)</h4>
+              
+              <div className="breakdown-bars">
+                {Object.entries(model.combined.benefitsByDriver).map(([driver, value]) => {
+                  const percentage = (value / model.combined.benefit * 100);
+                  return (
+                    <div key={driver} className="breakdown-bar">
+                      <div className="bar-header">
+                        <span className="bar-label">{getDriverName(driver)}</span>
+                        <span className="bar-value">{formatCurrency(value)} ({percentage.toFixed(0)}%)</span>
+                      </div>
+                      <div className="bar-track">
+                        <div 
+                          className="bar-fill" 
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="breakdown-total">
+                Total Annual Benefit: <strong>{formatCurrency(model.combined.benefit)}</strong>
+              </div>
+            </div>
+
+            {/* 3-Year Projection */}
+            <div className="three-year-section">
+              <h4>3-Year Projection</h4>
+              <div className="three-year-value">
+                <div className="projection-label">Year 1-3 cumulative net gain:</div>
+                <div className="projection-value">{formatCurrency(model.combined.threeYearValue)}</div>
+              </div>
+              <div className="projection-note">
+                ✓ Assumes same {(config.utilization * 100).toFixed(0)}% utilization as current {baseline.careSetting || 'Outpatient'}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="results-actions">
+              <button className="btn-secondary" onClick={() => window.print()}>
+                Export Model
+              </button>
+              <button 
+                className="btn-primary" 
+                onClick={() => onSave({
+                  name: `${baseline.careSetting || 'Outpatient'} + ${settingNames[settingType]}`,
+                  type: 'combined-setting',
+                  model
+                })}
+              >
+                Save Combined Scenario
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Helper functions
+function getDriverName(key) {
+  const names = {
+    access: 'Patient Access',
+    throughput: 'Patient Throughput',
+    retention: 'Clinician Retention',
+    los: 'Level of Service',
+    locum: 'Overtime & Locum',
+    denials: 'Denial Reduction',
+    hcc: 'HCC Capture',
+    timeSavings: 'Time Savings',
+    overtime: 'Overtime Reduction',
+    quality: 'Documentation Quality'
+  };
+  return names[key] || key;
+}
+
+function getDriverShortName(key) {
+  const names = {
+    access: 'Access',
+    throughput: 'Throughput',
+    retention: 'Retention',
+    los: 'LoS',
+    locum: 'Locum',
+    denials: 'Denials',
+    hcc: 'HCC'
+  };
+  return names[key] || key;
+}
+
+function getDriverDescription(key) {
+  const descriptions = {
+    throughput: 'Time saved → more patients seen → revenue',
+    los: 'Accurate coding at higher wRVU rates',
+    denials: 'Better documentation reduces denials',
+    access: 'Time returned → visit capacity',
+    retention: 'Reduced turnover from lower burden',
+    hcc: 'Risk adjustment through better capture',
+    timeSavings: 'Reclaimed time for patient care',
+    overtime: 'Reduced premium labor hours',
+    quality: 'Improved documentation completeness'
+  };
+  return descriptions[key] || '';
+}
+
+export default NewCareSettingFlow;
+
+📁 File 2: Calculation Logic
+Path: utils/newCareSettingCalculations.js
+javascriptCopyexport const calculateCombinedDeployment = (baseline, newSetting) => {
+  const settingDefaults = getSettingDefaults(newSetting.type);
+  
+  // NEW SETTING CALCULATIONS
+  const newProviders = newSetting.providers;
+  const newEncounters = newSetting.encounters || (newProviders * settingDefaults.encountersPerProvider);
+  const newUtilization = newSetting.utilization || baseline.utilization || 0.65;
+  const newCost = newProviders * (baseline.costPerProviderMonth || 120) * 12;
+  
+  // Calculate benefits for new setting
+  const newBenefits = {};
+  settingDefaults.primaryDrivers.forEach(driver => {
+    newBenefits[driver] = calculateDriverValue(
+      driver,
+      newProviders,
+      newEncounters,
+      newUtilization,
+      settingDefaults.metrics,
+      baseline
+    );
+  });
+  
+  const newTotalBenefit = Object.values(newBenefits).reduce((sum, val) => sum + val, 0);
+  const newNetGain = newTotalBenefit - newCost;
+  const newROI = newTotalBenefit / newCost;
+  
+  // COMBINED CALCULATIONS
+  const combinedProviders = baseline.providers + newProviders;
+  const combinedEncounters = baseline.encounters + newEncounters;
+  const combinedCost = (baseline.annualCost || 0) + newCost;
+  const combinedBenefit = baseline.totalBenefit + newTotalBenefit;
+  
+  // Merge benefit breakdowns
+  const combinedBenefitsByDriver = { ...baseline.benefits };
+  Object.entries(newBenefits).forEach(([driver, value]) => {
+    combinedBenefitsByDriver[driver] = (combinedBenefitsByDriver[driver] || 0) + value;
+  });
+  
+  const combinedNetGain = combinedBenefit - combinedCost;
+  const combinedROI = combinedBenefit / combinedCost;
+  
+  // Generate insight
+  const insight = generateInsight(baseline, newSetting, newROI, combinedNetGain, settingDefaults);
+  
+  return {
+    baseline: {
+      providers: baseline.providers,
+      encounters: baseline.encounters,
+      cost: baseline.annualCost || 0,
+      benefit: baseline.totalBenefit,
+      netGain: baseline.netGain || (baseline.totalBenefit - (baseline.annualCost || 0)),
+      roi: baseline.roi
+    },
+    newSetting: {
+      type: newSetting.type,
+      providers: newProviders,
+      encounters: newEncounters,
+      utilization: newUtilization,
+      cost: newCost,
+      benefits: newBenefits,
+      totalBenefit: newTotalBenefit,
+      netGain: newNetGain,
+      roi: newROI
+    },
+    combined: {
+      providers: combinedProviders,
+      encounters: combinedEncounters,
+      cost: combinedCost,
+      benefit: combinedBenefit,
+      benefitsByDriver: combinedBenefitsByDriver,
+      netGain: combinedNetGain,
+      roi: combinedROI,
+      threeYearValue: combinedNetGain * 3
+    },
+    deltas: {
+      netGainIncrease: (((combinedNetGain - baseline.netGain) / baseline.netGain) * 100).toFixed(0)
+    },
+    insight
+  };
+};
+
+function getSettingDefaults(settingType) {
+  const defaults = {
+    ed: {
+      encountersPerProvider: 5000,
+      avgWRVUPerEncounter: 2.8,
+      primaryDrivers: ['throughput', 'los', 'denials'],
+      metrics: {
+        revenuePerVisit: 200,
+        revenuePerWRVU: 45,
+        denialRate: 0.08,
+        avgDenialValue: 500
+      }
+    },
+    nursing: {
+      encountersPerProvider: 2000,
+      primaryDrivers: ['timeSavings', 'overtime', 'quality'],
+      metrics: {}
+    },
+    inpatient: {
+      encountersPerProvider: 800,
+      avgWRVUPerEncounter: 3.5,
+      primaryDrivers: ['hcc', 'los', 'denials'],
+      metrics: {
+        revenuePerWRVU: 50,
+        maPopulation: 0.25,
+        denialRate: 0.06
+      }
+    }
+  };
+  
+  return defaults[settingType];
+}
+
+function calculateDriverValue(driver, providers, encounters, utilization, metrics, baseline) {
+  const eligibleEncounters = Math.round(encounters * utilization);
+  
+  switch(driver) {
+    case 'throughput':
+    case 'access':
+      // Additional visits per week × weeks × revenue
+      const visitsPerWeek = 2.5;
+      const revenuePerVisit = metrics.revenuePerVisit || baseline.revenuePerVisit || 200;
+      return Math.round(providers * visitsPerWeek * 48 * revenuePerVisit);
+    
+    case 'los':
+      // wRVU uplift × wRVU rate
+      const wrvuUplift = metrics.avgWRVUPerEncounter ? eligibleEncounters * 0.05 : 0; // 5% uplift
+      const wrvuRate = metrics.revenuePerWRVU || baseline.revenuePerWRVU || 40;
+      return Math.round(wrvuUplift * wrvuRate);
+    
+    case 'denials':
+      // Encounters × denial rate × reduction % × avg value
+      const denialRate = metrics.denialRate || 0.05;
+      const reductionPercent = 0.20;
+      const avgDenialValue = metrics.avgDenialValue || 500;
+      return Math.round(eligibleEncounters * denialRate * reductionPercent * avgDenialValue);
+    
+    case 'hcc':
+      // MA patients × conditions captured × RAF value
+      const maPopulation = metrics.maPopulation || 0.15;
+      const maPatients = Math.round((eligibleEncounters / 2.5) * maPopulation);
+      const conditionsPerPatient = 0.15;
+      const rafValue = 3000;
+      return Math.round(maPatients * conditionsPerPatient * rafValue);
+    
+    default:
+      return 0;
+  }
+}
+
+function generateInsight(baseline, newSetting, newROI, combinedNetGain, settingDefaults) {
+  const settingNames = {
+    ed: 'ED',
+    nursing: 'Nursing',
+    inpatient: 'Inpatient'
+  };
+  
+  const name = settingNames[newSetting.type];
+  const gainIncrease = (((combinedNetGain - baseline.netGain) / baseline.netGain) * 100).toFixed(0);
+  
+  if (newROI > baseline.roi) {
+    return `Adding ${name} increases your net gain by ${gainIncrease}% while achieving higher ROI (${newROI.toFixed(1)}x vs ${baseline.roi.toFixed(1)}x). ${name}'s higher ${settingDefaults.avgWRVUPerEncounter ? 'wRVU density' : 'efficiency gains'} drives superior value.`;
+  } else {
+    return `Adding ${name} increases your net gain by ${gainIncrease}% with solid ${newROI.toFixed(1)}x ROI. This expands your deployment while maintaining strong returns.`;
+  }
+}
+
+📁 File 3: Minimal CSS (just the essentials)
+Path: components/expansion/newCareSetting.css
+cssCopy/* New Care Setting Flow - Essential Styles */
+
+.care-setting-explorer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.current-deployment-banner {
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 32px 0;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.setting-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.setting-card:hover:not(.coming-soon) {
+  border-color: #ef4444;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+  transform: translateY(-4px);
+}
+
+.setting-card.coming-soon {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.setting-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.drivers-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.driver-tag {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Combined Preview */
+.combined-preview {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.preview-layout {
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.config-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.config-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.provider-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  margin: 16px 0;
+}
+
+.provider-slider::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ef4444;
+  cursor: pointer;
+}
+
+/* Comparison Table */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 16px 12px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.comparison-table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.comparison-table .combined-col {
+  background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+  font-weight: 600;
+}
+
+.comparison-table .highlight-row {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+.comparison-table .highlight-row.success .combined-col {
+  background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+}
+
+.delta {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.delta.positive {
+  color: #10b981;
+}
+
+.delta.large {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Value Breakdown */
+.breakdown-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.bar-track {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+  transition: width 0.5s ease;
+}
+
+/* Sticky Results */
+.results-panel.sticky {
+  position: sticky;
+  top: 32px;
+  align-self: flex-start;
+}
+
+/* Buttons */
+.btn-primary {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-secondary {
+  background: white;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .preview-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .results-panel.sticky {
+    position: static;
+  }
+}
