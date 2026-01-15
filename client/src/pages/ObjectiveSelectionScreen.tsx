@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import { LiveReceipt } from "@/components/LiveReceipt";
+import NursingStrategicPriorities from "@/pages/NursingStrategicPriorities";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import {
@@ -85,11 +86,17 @@ const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
 const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
   time: Clock,
   documentation: FileText,
+  capacityLabor: Clock,
+  documentationQuality: FileText,
+  qualityRevenue: AlertTriangle,
 };
 
 const CATEGORY_SUBTITLES: Record<LeverCategory, string> = {
   time: "Workforce efficiency and utilization",
   documentation: "Clinical and financial accuracy",
+  capacityLabor: "Workforce efficiency and cost management",
+  documentationQuality: "Clinical documentation and compliance",
+  qualityRevenue: "Requires additional assumptions—see methodology",
 };
 
 const LEVER_ICONS: Record<string, typeof Users> = {
@@ -107,10 +114,15 @@ const LEVER_ICONS: Record<string, typeof Users> = {
   edRetention: HeartPulse,
   edLevelOfService: BarChart3,
   edDocCompliance: FileText,
-  rnDocTime: Clock,
-  rnCommunication: Users,
-  rnSafetyReduction: AlertTriangle,
-  rnDiagnosisSeverity: Building2,
+  // Nursing drivers
+  documentation_time_savings: Clock,
+  overtime_reduction: Clock,
+  agency_reduction: Users,
+  nurse_retention: HeartPulse,
+  documentation_timeliness: FileText,
+  documentation_completeness: FileText,
+  safety_event_reduction: AlertTriangle,
+  ccmcc_support: Building2,
 };
 
 const LEVER_KEY_METRICS: Record<string, string> = {
@@ -128,10 +140,15 @@ const LEVER_KEY_METRICS: Record<string, string> = {
   edRetention: "Staff departures avoided",
   edLevelOfService: "wRVU capture improvement",
   edDocCompliance: "Documentation compliance rate",
-  rnDocTime: "Documentation time saved",
-  rnCommunication: "Handoff efficiency improvement",
-  rnSafetyReduction: "Safety events prevented",
-  rnDiagnosisSeverity: "DRG accuracy improvement",
+  // Nursing drivers
+  documentation_time_savings: "Hours returned annually",
+  overtime_reduction: "OT hours avoided",
+  agency_reduction: "Agency hours reduced",
+  nurse_retention: "Departures avoided",
+  documentation_timeliness: "Documentation lag reduction",
+  documentation_completeness: "Field completion rate",
+  safety_event_reduction: "Risk exposure reduction",
+  ccmcc_support: "CC/MCC capture support",
 };
 
 const ALL_SETTINGS: AllSettingType[] = [
@@ -141,7 +158,7 @@ const ALL_SETTINGS: AllSettingType[] = [
   "inpatient",
 ];
 
-type Page = "orientation" | "setting" | "priorities" | "value-blueprint" | "model-setup";
+type Page = "orientation" | "setting" | "priorities" | "value-blueprint" | "model-setup" | "nursing-priorities";
 
 // Value posture presets for Step 2 (moved outside component to avoid recreation each render)
 type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
@@ -1716,7 +1733,24 @@ export default function ObjectiveSelectionScreen({
 
   const handleContinueToPage2 = () => {
     if (!selectedSetting) return;
-    setCurrentPage("priorities");
+    // Route nursing to its dedicated flow
+    if (selectedSetting === "nursing") {
+      setCurrentPage("nursing-priorities");
+    } else {
+      setCurrentPage("priorities");
+    }
+  };
+  
+  // Nursing flow handlers
+  const handleNursingBackToSettings = () => {
+    setCurrentPage("setting");
+  };
+  
+  const handleNursingContinue = (selectedDrivers: string[]) => {
+    // Set the selected driver IDs for nursing
+    setSelectedLeverIds(new Set(selectedDrivers));
+    // Continue to the value methodology step (or next step in nursing flow)
+    setCurrentPage("value-blueprint");
   };
 
   const handleBackToPage1 = () => {
@@ -2136,6 +2170,14 @@ export default function ObjectiveSelectionScreen({
               </div>
             </div>
           </div>
+        )}
+
+        {/* NURSING STRATEGIC PRIORITIES */}
+        {currentPage === "nursing-priorities" && selectedSetting === "nursing" && (
+          <NursingStrategicPriorities
+            onBack={handleNursingBackToSettings}
+            onContinue={handleNursingContinue}
+          />
         )}
 
         {/* PAGE 2 — STRATEGIC PRIORITIES */}
