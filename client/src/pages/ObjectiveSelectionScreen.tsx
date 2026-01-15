@@ -2623,15 +2623,24 @@ export default function ObjectiveSelectionScreen({
                   {([1, 2, 3] as const).map((step) => {
                     const isComplete = step === 1 ? isStep1Complete : step === 2 ? isStep2Complete : isStep3Complete;
                     const isActive = modelSetupStep === step;
+                    // Can navigate to step if: it's the current step, it's complete, or all previous steps are complete
+                    const canNavigateToStep = step === 1 || 
+                      (step === 2 && isStep1Complete) || 
+                      (step === 3 && isStep1Complete && isStep2Complete);
                     
                     return (
                       <button
                         key={step}
-                        onClick={() => setModelSetupStep(step)}
+                        onClick={() => canNavigateToStep && setModelSetupStep(step)}
+                        disabled={!canNavigateToStep}
+                        aria-disabled={!canNavigateToStep}
+                        data-testid={`step-pill-${step}`}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                           isActive
                             ? "bg-[#FFF5F3] text-[#F03319] ring-1 ring-[#F03319]/20"
-                            : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+                            : canNavigateToStep 
+                              ? "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+                              : "bg-neutral-100 text-neutral-400 cursor-not-allowed opacity-60"
                         }`}
                       >
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
