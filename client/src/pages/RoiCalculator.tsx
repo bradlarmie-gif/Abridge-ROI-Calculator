@@ -2326,12 +2326,17 @@ export default function RoiCalculator({
 
         {activeTab === "scenarios" && (
           <div className="space-y-6">
-            {/* EXPAND PROVIDERS FULL-PAGE VIEW */}
+            {/* EXPANSION CALCULATOR FULL-PAGE VIEW */}
             {showExpandProviders ? (
               <div className="space-y-6">
                 {/* Back navigation */}
                 <button
-                  onClick={() => setShowExpandProviders(false)}
+                  onClick={() => {
+                    setShowExpandProviders(false);
+                    setTargetProviders(inputs.numberOfProviders);
+                    setExpansionPricingModel("per-provider");
+                    setEnterpriseAnnualCost(null);
+                  }}
                   className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
                   data-testid="button-back-scenario-builder"
                 >
@@ -2341,753 +2346,374 @@ export default function RoiCalculator({
                 
                 {/* Page header */}
                 <div>
-                  <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
-                    Expand Providers
-                  </h2>
+                  <h1 className="text-[32px] font-semibold text-[#111827] mb-2">Expansion Calculator</h1>
                   <p className="text-[16px] text-[#6B7280] mb-4">
-                    Model what happens when you add more users to your deployment
+                    Model the ROI of expanding Abridge to more providers
                   </p>
                   
                   {/* Baseline reference box */}
-                  <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-center gap-3">
-                    <BarChart3 className="h-5 w-5 text-[#6B7280]" />
-                    <span className="text-[14px] text-[#6B7280]">
-                      Your baseline: {inputs.numberOfProviders} providers | {inputs.annualOutpatientEncounters.toLocaleString()} encounters | {formatCurrency(netAnnualGain)} net gain
-                    </span>
+                  <div className="p-4 bg-white border border-[#E5E7EB] rounded-lg flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span className="text-[14px] text-[#6B7280] font-medium">Your current deployment:</span>
+                    <div className="flex items-center gap-3 text-[14px]">
+                      <span className="text-[#111827] font-medium">{inputs.numberOfProviders} providers</span>
+                      <span className="text-[#D1D5DB]">•</span>
+                      <span className="text-[#111827] font-medium">{inputs.annualOutpatientEncounters.toLocaleString()} encounters/year</span>
+                      <span className="text-[#D1D5DB]">•</span>
+                      <span className="text-[#111827] font-medium">{formatCurrency(netAnnualGain)} net gain</span>
+                    </div>
                   </div>
                 </div>
                 
-                {/* Two-column layout for desktop */}
-                <div className="flex flex-col lg:flex-row gap-8">
-                  {/* Left column - Input form */}
-                  <div className="flex-1 lg:max-w-[60%] space-y-6">
-                    {/* Mode Toggle */}
-                    <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-1 flex">
-                      <button
-                        onClick={() => setExpandProvidersMode("quick")}
-                        className={`flex-1 p-4 rounded-md transition-all ${
-                          expandProvidersMode === "quick"
-                            ? "bg-white border border-neutral-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
-                            : "bg-transparent hover:bg-white/50"
-                        }`}
-                        data-testid="toggle-quick-mode"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          {expandProvidersMode === "quick" && <span className="text-[#E8532F]">●</span>}
-                          <span className="text-[14px] font-bold text-[#111827]">Quick Mode</span>
-                        </div>
-                        <p className="text-[13px] text-[#6B7280]">Fast estimate with typical assumptions</p>
-                      </button>
-                      <button
-                        onClick={() => setExpandProvidersMode("advanced")}
-                        className={`flex-1 p-4 rounded-md transition-all ${
-                          expandProvidersMode === "advanced"
-                            ? "bg-white border border-neutral-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
-                            : "bg-transparent hover:bg-white/50"
-                        }`}
-                        data-testid="toggle-advanced-mode"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          {expandProvidersMode === "advanced" && <span className="text-[#E8532F]">●</span>}
-                          <span className="text-[14px] font-bold text-[#111827]">Advanced Mode</span>
-                        </div>
-                        <p className="text-[13px] text-[#6B7280]">Organization-specific inputs for precision</p>
-                      </button>
-                    </div>
+                {/* Two-column layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-8">
+                  {/* LEFT COLUMN: Inputs */}
+                  <div className="space-y-6">
                     
-                    {/* Scenario Name */}
-                    <div>
-                      <label className="block text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">
-                        Scenario Name
+                    {/* Provider Count - Primary Input */}
+                    <div className="bg-white border-2 border-[#E8532F] rounded-xl p-6 shadow-[0_4px_12px_rgba(232,83,47,0.1)]">
+                      <label className="block text-[15px] font-semibold text-[#111827] mb-4">
+                        How many providers do you want to expand to?
                       </label>
-                      <input
-                        type="text"
-                        value={scenarioForm.name}
-                        onChange={(e) => setScenarioForm({ ...scenarioForm, name: e.target.value })}
-                        placeholder={`Expand to ${Math.round(inputs.numberOfProviders * 1.5)} providers`}
-                        className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                        data-testid="input-scenario-name"
-                      />
-                      <p className="mt-1.5 text-[13px] text-[#6B7280]">Give this scenario a descriptive name</p>
-                    </div>
-                    
-                    <div className="border-t border-[#E5E7EB]" />
-                    
-                    {/* Deployment Size */}
-                    <div>
-                      <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                        Deployment Size
-                      </h3>
                       
-                      {/* Providers in scope */}
-                      <div className="mb-6">
-                        <label className="block text-[14px] text-[#111827] mb-2">Providers in scope</label>
+                      <div className="flex items-center gap-3 mb-4">
                         <input
                           type="text"
                           inputMode="numeric"
-                          value={rawInputValues["scenario_providers"] ?? String(scenarioForm.providers)}
+                          value={rawInputValues["target_providers"] ?? String(targetProviders)}
                           onChange={(e) => {
                             const val = e.target.value;
                             if (val === "" || /^[0-9]*$/.test(val)) {
-                              setRawInputValues(prev => ({ ...prev, "scenario_providers": val }));
+                              setRawInputValues(prev => ({ ...prev, "target_providers": val }));
                               if (val !== "" && !isNaN(Number(val))) {
-                                const newProviders = parseInt(val) || 0;
-                                const encountersPerProvider = inputs.annualOutpatientEncounters / inputs.numberOfProviders;
-                                setScenarioForm({ 
-                                  ...scenarioForm, 
-                                  providers: newProviders,
-                                  encounters: encounterScalingMode === "proportional" 
-                                    ? Math.round(newProviders * encountersPerProvider)
-                                    : scenarioForm.encounters
-                                });
+                                setTargetProviders(parseInt(val) || inputs.numberOfProviders);
                               }
                             }
                           }}
                           onBlur={() => {
-                            const val = rawInputValues["scenario_providers"];
+                            const val = rawInputValues["target_providers"];
                             if (val === "" || val === undefined) {
-                              setScenarioForm({ ...scenarioForm, providers: inputs.numberOfProviders });
+                              setTargetProviders(inputs.numberOfProviders);
                             }
                             setRawInputValues(prev => {
                               const next = { ...prev };
-                              delete next["scenario_providers"];
+                              delete next["target_providers"];
                               return next;
                             });
                           }}
-                          className="w-[200px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                          data-testid="input-providers"
+                          className="flex-1 text-[24px] font-semibold text-center py-3 px-4 border-2 border-[#E5E7EB] rounded-lg focus:border-[#E8532F] focus:outline-none"
+                          data-testid="input-target-providers"
                         />
-                        {scenarioForm.providers > 0 && inputs.numberOfProviders > 0 && (
-                          <p className="mt-1.5 text-[13px]">
-                            <span className="text-[#6B7280]">Currently: {inputs.numberOfProviders} providers </span>
-                            <span className={scenarioForm.providers >= inputs.numberOfProviders ? "text-[#059669]" : "text-[#DC2626]"}>
-                              ({scenarioForm.providers >= inputs.numberOfProviders ? "+" : ""}
-                              {(((scenarioForm.providers - inputs.numberOfProviders) / inputs.numberOfProviders) * 100).toFixed(0)}% change)
+                        <span className="text-[14px] text-[#6B7280] font-medium">providers</span>
+                      </div>
+                      
+                      <input
+                        type="range"
+                        value={targetProviders}
+                        onChange={(e) => setTargetProviders(parseInt(e.target.value))}
+                        min={inputs.numberOfProviders}
+                        max={Math.max(inputs.numberOfProviders * 3, 200)}
+                        step={5}
+                        className="w-full h-2 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-[#E8532F] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, #E8532F 0%, #E8532F ${((targetProviders - inputs.numberOfProviders) / (Math.max(inputs.numberOfProviders * 3, 200) - inputs.numberOfProviders)) * 100}%, #E5E7EB ${((targetProviders - inputs.numberOfProviders) / (Math.max(inputs.numberOfProviders * 3, 200) - inputs.numberOfProviders)) * 100}%, #E5E7EB 100%)`
+                        }}
+                        data-testid="slider-target-providers"
+                      />
+                      
+                      <div className="flex justify-between items-center mt-2 text-[12px] text-[#6B7280]">
+                        <span>{inputs.numberOfProviders}</span>
+                        <span className="text-[#E8532F] font-semibold text-[14px]">
+                          {targetProviders}
+                          {targetProviders > inputs.numberOfProviders && (
+                            <span className="ml-1 px-2 py-0.5 bg-[#E8532F]/10 rounded-full text-[12px]">
+                              +{targetProviders - inputs.numberOfProviders}
                             </span>
-                          </p>
+                          )}
+                        </span>
+                        <span>{Math.max(inputs.numberOfProviders * 3, 200)}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Pricing Model Toggle */}
+                    <div className="bg-white border border-[#E5E7EB] rounded-xl p-6">
+                      <label className="block text-[15px] font-semibold text-[#111827] mb-4">
+                        Pricing model
+                      </label>
+                      
+                      <div className="grid grid-cols-2 gap-2 p-1 bg-[#F9FAFB] rounded-lg">
+                        <button
+                          onClick={() => setExpansionPricingModel("per-provider")}
+                          className={`p-4 rounded-md transition-all ${
+                            expansionPricingModel === "per-provider"
+                              ? "bg-white border border-[#E5E7EB] shadow-sm"
+                              : "hover:bg-white/50"
+                          }`}
+                          data-testid="toggle-per-provider"
+                        >
+                          <div className="text-left">
+                            <span className="text-[14px] font-bold text-[#111827]">Per Provider</span>
+                            <p className="text-[12px] text-[#6B7280] mt-0.5">${inputs.costPerProviderPerMonth}/provider/month</p>
+                          </div>
+                        </button>
+                        
+                        <button
+                          onClick={() => setExpansionPricingModel("enterprise")}
+                          className={`p-4 rounded-md transition-all ${
+                            expansionPricingModel === "enterprise"
+                              ? "bg-white border border-[#E5E7EB] shadow-sm"
+                              : "hover:bg-white/50"
+                          }`}
+                          data-testid="toggle-enterprise"
+                        >
+                          <div className="text-left">
+                            <span className="text-[14px] font-bold text-[#111827]">Enterprise Annual</span>
+                            <p className="text-[12px] text-[#6B7280] mt-0.5">Volume discounts</p>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Enterprise Pricing Input (conditional) */}
+                    {expansionPricingModel === "enterprise" && (
+                      <div className="bg-white border border-[#E5E7EB] rounded-xl p-6">
+                        <label className="block text-[15px] font-semibold text-[#111827] mb-4">
+                          Custom enterprise pricing (optional)
+                        </label>
+                        
+                        <div className="flex items-center border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <span className="px-3 py-3 bg-[#F9FAFB] text-[#6B7280] border-r border-[#E5E7EB]">$</span>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="Enter annual contract value"
+                            value={rawInputValues["enterprise_cost"] ?? (enterpriseAnnualCost !== null ? String(enterpriseAnnualCost) : "")}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                setRawInputValues(prev => ({ ...prev, "enterprise_cost": val }));
+                                if (val !== "" && !isNaN(Number(val))) {
+                                  setEnterpriseAnnualCost(parseFloat(val) || null);
+                                } else if (val === "") {
+                                  setEnterpriseAnnualCost(null);
+                                }
+                              }
+                            }}
+                            onBlur={() => {
+                              setRawInputValues(prev => {
+                                const next = { ...prev };
+                                delete next["enterprise_cost"];
+                                return next;
+                              });
+                            }}
+                            className="flex-1 py-3 px-3 text-[16px] focus:outline-none"
+                            data-testid="input-enterprise-cost"
+                          />
+                          <span className="px-3 py-3 bg-[#F9FAFB] text-[#6B7280] border-l border-[#E5E7EB]">/year</span>
+                        </div>
+                        
+                        {expansionCalculation && expansionCalculation.scenario.volumeDiscount > 0 && !enterpriseAnnualCost && (
+                          <div className="mt-4 p-3 bg-[#ECFDF5] border border-[#A7F3D0] rounded-lg">
+                            <span className="inline-block px-2 py-1 bg-[#059669] text-white text-[12px] font-bold rounded mb-2">
+                              {(expansionCalculation.scenario.volumeDiscount * 100).toFixed(0)}% volume discount applied
+                            </span>
+                            <p className="text-[13px] text-[#047857]">
+                              Standard pricing: {formatCurrency(targetProviders * inputs.costPerProviderPerMonth * 12)}/year<br />
+                              Your price: {formatCurrency(expansionCalculation.scenario.cost)}/year
+                            </p>
+                          </div>
                         )}
                       </div>
-                      
-                      {/* Annual encounters */}
-                      <div>
-                        <label className="block text-[14px] text-[#111827] mb-3">Annual encounters</label>
-                        
-                        {/* Scale proportionally option */}
-                        <div className="mb-3">
-                          <label className="flex items-start gap-3 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="encounterScaling"
-                              checked={encounterScalingMode === "proportional"}
-                              onChange={() => {
-                                setEncounterScalingMode("proportional");
-                                const encountersPerProvider = inputs.annualOutpatientEncounters / inputs.numberOfProviders;
-                                setScenarioForm({
-                                  ...scenarioForm,
-                                  encounters: Math.round(scenarioForm.providers * encountersPerProvider)
-                                });
-                              }}
-                              className="mt-1 h-[18px] w-[18px] accent-[#E8532F]"
-                              data-testid="radio-proportional"
-                            />
-                            <div>
-                              <span className="text-[14px] text-[#111827]">Scale proportionally from baseline</span>
-                              <p className="text-[14px] text-[#111827] mt-1">
-                                {scenarioForm.providers} providers × {Math.round(inputs.annualOutpatientEncounters / inputs.numberOfProviders).toLocaleString()} encounters/provider = <span className="font-bold">{scenarioForm.encounters.toLocaleString()}</span>
-                              </p>
-                            </div>
+                    )}
+                    
+                    {/* Advanced Settings (collapsible) */}
+                    <details className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
+                      <summary className="p-6 cursor-pointer text-[15px] font-semibold text-[#111827] hover:bg-[#F9FAFB]">
+                        Advanced settings
+                      </summary>
+                      <div className="px-6 pb-6 border-t border-[#E5E7EB]">
+                        <div className="pt-4">
+                          <label className="block text-[14px] text-[#6B7280] mb-2">
+                            Expected utilization for new providers
                           </label>
-                        </div>
-                        
-                        {/* Custom volume option */}
-                        <div>
-                          <label className="flex items-start gap-3 cursor-pointer">
+                          <div className="flex items-center gap-3">
                             <input
-                              type="radio"
-                              name="encounterScaling"
-                              checked={encounterScalingMode === "custom"}
-                              onChange={() => setEncounterScalingMode("custom")}
-                              className="mt-1 h-[18px] w-[18px] accent-[#E8532F]"
-                              data-testid="radio-custom"
+                              type="range"
+                              min="40"
+                              max="90"
+                              value={scenarioForm.utilizationRate}
+                              onChange={(e) => setScenarioForm({ ...scenarioForm, utilizationRate: parseInt(e.target.value) })}
+                              className="flex-1 h-2 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer"
+                              data-testid="slider-utilization"
                             />
-                            <div className="flex-1">
-                              <span className="text-[14px] text-[#111827]">Enter custom volume</span>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                value={rawInputValues["scenario_encounters"] ?? String(scenarioForm.encounters)}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  if (val === "" || /^[0-9]*$/.test(val)) {
-                                    setRawInputValues(prev => ({ ...prev, "scenario_encounters": val }));
-                                    if (val !== "" && !isNaN(Number(val))) {
-                                      setScenarioForm({ ...scenarioForm, encounters: parseInt(val) || 0 });
-                                    }
-                                  }
-                                }}
-                                onBlur={() => {
-                                  const val = rawInputValues["scenario_encounters"];
-                                  if (val === "" || val === undefined) {
-                                    setScenarioForm({ ...scenarioForm, encounters: inputs.annualOutpatientEncounters });
-                                  }
-                                  setRawInputValues(prev => {
-                                    const next = { ...prev };
-                                    delete next["scenario_encounters"];
-                                    return next;
-                                  });
-                                }}
-                                disabled={encounterScalingMode !== "custom"}
-                                className="w-[200px] h-11 px-3 mt-2 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none disabled:bg-[#F9FAFB] disabled:text-[#9CA3AF]"
-                                data-testid="input-custom-encounters"
-                              />
-                              <p className="mt-1.5 text-[13px] text-[#6B7280]">Use if you have specific volume projections</p>
-                            </div>
-                          </label>
+                            <span className="text-[16px] font-bold text-[#111827] w-12">{scenarioForm.utilizationRate}%</span>
+                          </div>
+                          <p className="mt-2 text-[12px] text-[#6B7280]">
+                            New deployments typically start at 40-50% and mature to 75-90%
+                          </p>
                         </div>
                       </div>
-                    </div>
+                    </details>
                     
-                    <div className="border-t border-[#E5E7EB]" />
+                  </div>
+                  
+                  {/* RIGHT COLUMN: Results Panel */}
+                  <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 space-y-6">
                     
-                    {/* Utilization Projection */}
-                    <div>
-                      <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">
-                        Utilization Projection
-                      </h3>
-                      
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <label className="text-[14px] text-[#111827]">Expected utilization rate</label>
-                          <span className="text-[18px] font-bold text-[#111827]">{scenarioForm.utilizationRate}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="20"
-                          max="100"
-                          value={scenarioForm.utilizationRate}
-                          onChange={(e) => setScenarioForm({ ...scenarioForm, utilizationRate: parseInt(e.target.value) })}
-                          className="w-full h-1 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#E8532F] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md"
-                          style={{
-                            background: `linear-gradient(to right, #E8532F 0%, #E8532F ${scenarioForm.utilizationRate}%, #E5E7EB ${scenarioForm.utilizationRate}%, #E5E7EB 100%)`
-                          }}
-                          data-testid="slider-utilization"
-                        />
-                        <p className="mt-2 text-[13px] text-[#6B7280]">
-                          {inputs.abridgeUtilizationPct}% (current) → {scenarioForm.utilizationRate}% (projected)
+                    {!expansionCalculation ? (
+                      <div className="text-center py-12">
+                        <BarChart3 className="h-12 w-12 text-[#D1D5DB] mx-auto mb-4" />
+                        <p className="text-[16px] text-[#6B7280]">
+                          Increase the provider count above your current deployment to see expansion ROI
                         </p>
                       </div>
-                      
-                      {/* Utilization tips */}
-                      <div className="p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
-                        <div className="flex items-start gap-2">
-                          <Lightbulb className="h-4 w-4 text-[#1E40AF] mt-0.5 shrink-0" />
-                          <div className="text-[13px] text-[#1E40AF]">
-                            <p className="mb-2">Utilization typically increases as teams mature:</p>
-                            <ul className="space-y-1">
-                              <li>• Pilot (0-3 mo): 40-50%</li>
-                              <li>• Early (3-6 mo): 50-65%</li>
-                              <li>• Mature (6-12 mo): 65-80%</li>
-                              <li>• Optimized (12+ mo): 75-90%</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* ADVANCED MODE ADDITIONAL INPUTS */}
-                    {expandProvidersMode === "advanced" && (
+                    ) : (
                       <>
-                        <div className="border-t border-[#E5E7EB]" />
+                        {/* Hero Metric: Expansion ROI */}
+                        <div className="text-center p-6 bg-gradient-to-br from-[#FEF2F2] to-[#FFF7ED] rounded-xl border border-[#FECACA]">
+                          <p className="text-[14px] text-[#6B7280] font-medium mb-2">Expansion ROI</p>
+                          <p className="text-[48px] font-bold text-[#E8532F]">
+                            {expansionCalculation.incremental.roi.toFixed(1)}x
+                          </p>
+                          <p className="text-[14px] text-[#6B7280] mt-2">
+                            Adding {expansionCalculation.incremental.providers} providers generates{' '}
+                            <span className="font-bold text-[#059669]">{formatCurrency(expansionCalculation.incremental.netGain)}</span> in additional annual value
+                          </p>
+                        </div>
                         
-                        {/* Provider Breakdown */}
-                        <div>
-                          <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-2">
-                            Provider Breakdown
-                          </h3>
-                          <p className="text-[13px] text-[#6B7280] mb-4">Break down by provider type for more accurate calculations</p>
+                        {/* Quick Comparison Table */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <div className="grid grid-cols-4 bg-[#F9FAFB] border-b border-[#E5E7EB] text-[13px] font-bold text-[#6B7280]">
+                            <div className="p-3"></div>
+                            <div className="p-3 text-center">Current</div>
+                            <div className="p-3 text-center bg-[#E8532F]/5 text-[#E8532F]">Expanded</div>
+                            <div className="p-3 text-center">Change</div>
+                          </div>
                           
-                          <div className="bg-white border border-neutral-200/60 rounded-lg p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                            {providerBreakdown.map((provider, index) => (
-                              <div key={index}>
-                                {index > 0 && <div className="border-t border-[#E5E7EB] my-4" />}
-                                <div className="mb-2">
-                                  <span className="text-[14px] font-bold text-[#111827]">{provider.type}</span>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                  <div>
-                                    <label className="text-[13px] text-[#6B7280]">Count:</label>
-                                    <input
-                                      type="text"
-                                      inputMode="numeric"
-                                      value={rawInputValues[`provider_count_${index}`] ?? String(provider.count)}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === "" || /^[0-9]*$/.test(val)) {
-                                          setRawInputValues(prev => ({ ...prev, [`provider_count_${index}`]: val }));
-                                          if (val !== "" && !isNaN(Number(val))) {
-                                            const newBreakdown = [...providerBreakdown];
-                                            newBreakdown[index].count = parseInt(val) || 0;
-                                            setProviderBreakdown(newBreakdown);
-                                            const totalProviders = newBreakdown.reduce((sum, p) => sum + p.count, 0);
-                                            setScenarioForm({ ...scenarioForm, providers: totalProviders });
-                                          }
-                                        }
-                                      }}
-                                      onBlur={() => {
-                                        const val = rawInputValues[`provider_count_${index}`];
-                                        if (val === "" || val === undefined) {
-                                          const newBreakdown = [...providerBreakdown];
-                                          newBreakdown[index].count = 0;
-                                          setProviderBreakdown(newBreakdown);
-                                        }
-                                        setRawInputValues(prev => { const next = { ...prev }; delete next[`provider_count_${index}`]; return next; });
-                                      }}
-                                      className="w-[80px] h-9 px-2 ml-2 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[2px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                      data-testid={`input-provider-count-${index}`}
-                                    />
-                                  </div>
-                                </div>
-                                <p className="mt-1 text-[13px] text-[#6B7280]">
-                                  Avg encounters/year: {provider.encountersPerYear.toLocaleString()} | Avg wRVU: {provider.avgWrvu}
-                                </p>
-                              </div>
-                            ))}
-                            
-                            <button
-                              onClick={() => {
-                                setProviderBreakdown([
-                                  ...providerBreakdown,
-                                  { type: `Provider Type ${providerBreakdown.length + 1}`, count: 0, encountersPerYear: 1500, avgWrvu: 1.0 }
-                                ]);
-                              }}
-                              className="mt-4 text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
-                              data-testid="button-add-provider-type"
-                            >
-                              <Plus className="h-4 w-4" /> Add Provider Type
-                            </button>
-                            
-                            <div className="mt-4 pt-4 border-t border-[#E5E7EB] bg-[#F9FAFB] -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
-                              <div className="flex flex-wrap gap-6 text-[14px]">
-                                <span>Total: <span className="font-bold">{providerBreakdown.reduce((sum, p) => sum + p.count, 0)} providers</span></span>
-                                <span>Calculated encounters: <span className="font-bold">{providerBreakdown.reduce((sum, p) => sum + (p.count * p.encountersPerYear), 0).toLocaleString()}</span></span>
-                                <span>Blended wRVU: <span className="font-bold">
-                                  {(providerBreakdown.reduce((sum, p) => sum + (p.count * p.avgWrvu), 0) / Math.max(1, providerBreakdown.reduce((sum, p) => sum + p.count, 0))).toFixed(2)}
-                                </span></span>
-                              </div>
+                          <div className="grid grid-cols-4 border-b border-[#E5E7EB] text-[14px]">
+                            <div className="p-3 text-[#6B7280]">Providers</div>
+                            <div className="p-3 text-center text-[#111827]">{expansionCalculation.baseline.providers}</div>
+                            <div className="p-3 text-center bg-[#E8532F]/5 font-bold text-[#111827]">{expansionCalculation.scenario.providers}</div>
+                            <div className="p-3 text-center text-[#059669] font-medium">+{expansionCalculation.incremental.providers}</div>
+                          </div>
+                          
+                          <div className="grid grid-cols-4 border-b border-[#E5E7EB] text-[14px]">
+                            <div className="p-3 text-[#6B7280]">Annual Investment</div>
+                            <div className="p-3 text-center text-[#111827]">{formatCurrency(expansionCalculation.baseline.cost)}</div>
+                            <div className="p-3 text-center bg-[#E8532F]/5 font-bold text-[#111827]">{formatCurrency(expansionCalculation.scenario.cost)}</div>
+                            <div className="p-3 text-center text-[#6B7280]">{formatCurrency(expansionCalculation.incremental.cost)}</div>
+                          </div>
+                          
+                          <div className="grid grid-cols-4 border-b border-[#E5E7EB] text-[14px]">
+                            <div className="p-3 text-[#6B7280]">Annual Benefit</div>
+                            <div className="p-3 text-center text-[#111827]">{formatCurrency(expansionCalculation.baseline.benefit)}</div>
+                            <div className="p-3 text-center bg-[#E8532F]/5 font-bold text-[#111827]">{formatCurrency(expansionCalculation.scenario.benefit)}</div>
+                            <div className="p-3 text-center text-[#059669] font-medium">+{formatCurrency(expansionCalculation.incremental.benefit)}</div>
+                          </div>
+                          
+                          <div className="grid grid-cols-4 border-b border-[#E5E7EB] text-[14px] font-bold bg-[#F9FAFB]">
+                            <div className="p-3 text-[#111827]">Net Gain</div>
+                            <div className="p-3 text-center text-[#111827]">{formatCurrency(expansionCalculation.baseline.netGain)}</div>
+                            <div className="p-3 text-center bg-[#E8532F]/10 text-[#059669]">{formatCurrency(expansionCalculation.scenario.netGain)}</div>
+                            <div className="p-3 text-center text-[#059669]">+{formatCurrency(expansionCalculation.incremental.netGain)}</div>
+                          </div>
+                          
+                          <div className="grid grid-cols-4 text-[14px] font-bold bg-[#F9FAFB]">
+                            <div className="p-3 text-[#111827]">ROI</div>
+                            <div className="p-3 text-center text-[#111827]">{expansionCalculation.baseline.roi.toFixed(1)}x</div>
+                            <div className="p-3 text-center bg-[#E8532F]/10 text-[#059669]">{expansionCalculation.scenario.roi.toFixed(1)}x</div>
+                            <div className="p-3 text-center">
+                              {expansionCalculation.scenario.roi >= expansionCalculation.baseline.roi ? (
+                                <span className="text-[#059669]">+{(expansionCalculation.scenario.roi - expansionCalculation.baseline.roi).toFixed(1)}x</span>
+                              ) : (
+                                <span className="text-[#6B7280]">{(expansionCalculation.scenario.roi - expansionCalculation.baseline.roi).toFixed(1)}x</span>
+                              )}
                             </div>
                           </div>
                         </div>
                         
-                        <div className="border-t border-[#E5E7EB]" />
-                        
-                        {/* Financial Parameters */}
-                        <div>
-                          <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-2">
-                            Financial Parameters
-                          </h3>
-                          <p className="text-[13px] text-[#6B7280] mb-4">Override with your organization's actual values</p>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Key Insight */}
+                        <div className="p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
+                          <div className="flex items-start gap-3">
+                            <Lightbulb className="h-5 w-5 text-[#1E40AF] shrink-0 mt-0.5" />
                             <div>
-                              <label className="block text-[14px] text-[#111827] mb-2">Revenue per visit</label>
-                              <div className="flex items-center">
-                                <span className="text-[16px] text-[#6B7280] mr-1">$</span>
-                                <input
-                                  type="text"
-                                  inputMode="decimal"
-                                  value={rawInputValues["fin_revenuePerVisit"] ?? String(financialParams.revenuePerVisit)}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                      setRawInputValues(prev => ({ ...prev, "fin_revenuePerVisit": val }));
-                                      if (val !== "" && !isNaN(Number(val))) {
-                                        setFinancialParams({ ...financialParams, revenuePerVisit: parseInt(val) || 0 });
-                                      }
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    const val = rawInputValues["fin_revenuePerVisit"];
-                                    if (val === "" || val === undefined) {
-                                      setFinancialParams({ ...financialParams, revenuePerVisit: 200 });
-                                    }
-                                    setRawInputValues(prev => { const next = { ...prev }; delete next["fin_revenuePerVisit"]; return next; });
-                                  }}
-                                  className="w-[160px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  data-testid="input-revenue-per-visit"
-                                />
-                              </div>
-                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: $200 | Typical range: $150-350</p>
-                            </div>
-                            
-                            <div>
-                              <label className="block text-[14px] text-[#111827] mb-2">Revenue per wRVU</label>
-                              <div className="flex items-center">
-                                <span className="text-[16px] text-[#6B7280] mr-1">$</span>
-                                <input
-                                  type="text"
-                                  inputMode="decimal"
-                                  value={rawInputValues["fin_revenuePerWrvu"] ?? String(financialParams.revenuePerWrvu)}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                      setRawInputValues(prev => ({ ...prev, "fin_revenuePerWrvu": val }));
-                                      if (val !== "" && !isNaN(Number(val))) {
-                                        setFinancialParams({ ...financialParams, revenuePerWrvu: parseInt(val) || 0 });
-                                      }
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    const val = rawInputValues["fin_revenuePerWrvu"];
-                                    if (val === "" || val === undefined) {
-                                      setFinancialParams({ ...financialParams, revenuePerWrvu: 40 });
-                                    }
-                                    setRawInputValues(prev => { const next = { ...prev }; delete next["fin_revenuePerWrvu"]; return next; });
-                                  }}
-                                  className="w-[160px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  data-testid="input-revenue-per-wrvu"
-                                />
-                              </div>
-                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: $40 | Typical range: $30-80</p>
-                            </div>
-                            
-                            <div>
-                              <label className="block text-[14px] text-[#111827] mb-2">Provider replacement cost</label>
-                              <div className="flex items-center">
-                                <span className="text-[16px] text-[#6B7280] mr-1">$</span>
-                                <input
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={rawInputValues["fin_replacementCost"] ?? String(financialParams.providerReplacementCost)}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === "" || /^[0-9]*$/.test(val)) {
-                                      setRawInputValues(prev => ({ ...prev, "fin_replacementCost": val }));
-                                      if (val !== "" && !isNaN(Number(val))) {
-                                        setFinancialParams({ ...financialParams, providerReplacementCost: parseInt(val) || 0 });
-                                      }
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    const val = rawInputValues["fin_replacementCost"];
-                                    if (val === "" || val === undefined) {
-                                      setFinancialParams({ ...financialParams, providerReplacementCost: 250000 });
-                                    }
-                                    setRawInputValues(prev => { const next = { ...prev }; delete next["fin_replacementCost"]; return next; });
-                                  }}
-                                  className="w-[160px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  data-testid="input-replacement-cost"
-                                />
-                              </div>
-                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: $250,000 | Typical range: $200k-400k</p>
-                            </div>
-                            
-                            <div>
-                              <label className="block text-[14px] text-[#111827] mb-2">Medicare Advantage population</label>
-                              <div className="flex items-center gap-3">
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="100"
-                                  value={financialParams.maPopulationPct}
-                                  onChange={(e) => setFinancialParams({ ...financialParams, maPopulationPct: parseInt(e.target.value) })}
-                                  className="flex-1 h-1 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#E8532F] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm"
-                                  style={{
-                                    background: `linear-gradient(to right, #E8532F 0%, #E8532F ${financialParams.maPopulationPct}%, #E5E7EB ${financialParams.maPopulationPct}%, #E5E7EB 100%)`
-                                  }}
-                                  data-testid="slider-ma-population"
-                                />
-                                <span className="text-[16px] font-bold text-[#111827] w-12 text-right">{financialParams.maPopulationPct}%</span>
-                              </div>
-                              <p className="mt-1 text-[13px] text-[#6B7280]">Affects HCC Capture calculations</p>
+                              <p className="text-[14px] font-bold text-[#1E40AF] mb-1">Key Insight</p>
+                              <p className="text-[14px] text-[#1E40AF]">
+                                {expansionCalculation.incremental.roi >= expansionCalculation.baseline.roi ? (
+                                  <>
+                                    Strong expansion economics: Your incremental ROI ({expansionCalculation.incremental.roi.toFixed(1)}x)
+                                    {expansionCalculation.incremental.roi > expansionCalculation.baseline.roi ? ' exceeds ' : ' matches '}
+                                    your baseline ROI ({expansionCalculation.baseline.roi.toFixed(1)}x).
+                                    {expansionPricingModel === 'enterprise' && expansionCalculation.scenario.volumeDiscount > 0 && (
+                                      <> Volume discounts make this expansion even more attractive, saving {formatCurrency(targetProviders * inputs.costPerProviderPerMonth * 12 - expansionCalculation.scenario.cost)}/year vs. standard pricing.</>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    While incremental ROI ({expansionCalculation.incremental.roi.toFixed(1)}x) is slightly lower than baseline
+                                    ({expansionCalculation.baseline.roi.toFixed(1)}x), you still generate <span className="font-bold">{formatCurrency(expansionCalculation.incremental.netGain)}</span> in
+                                    additional annual value with positive returns.
+                                  </>
+                                )}
+                              </p>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="border-t border-[#E5E7EB]" />
-                        
-                        {/* Current Performance */}
-                        <div>
-                          <h3 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-2">
-                            Current Performance
-                          </h3>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                              <label className="block text-[14px] text-[#111827] mb-2">Your actual turnover rate</label>
-                              <div className="flex items-center">
-                                <input
-                                  type="text"
-                                  inputMode="decimal"
-                                  value={rawInputValues["fin_turnoverRate"] ?? String(financialParams.turnoverRate)}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                      setRawInputValues(prev => ({ ...prev, "fin_turnoverRate": val }));
-                                      if (val !== "" && !isNaN(Number(val))) {
-                                        setFinancialParams({ ...financialParams, turnoverRate: parseInt(val) || 0 });
-                                      }
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    const val = rawInputValues["fin_turnoverRate"];
-                                    if (val === "" || val === undefined) {
-                                      setFinancialParams({ ...financialParams, turnoverRate: 5 });
-                                    }
-                                    setRawInputValues(prev => { const next = { ...prev }; delete next["fin_turnoverRate"]; return next; });
-                                  }}
-                                  className="w-[80px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  data-testid="input-turnover-rate"
-                                />
-                                <span className="text-[16px] text-[#6B7280] ml-1">%</span>
-                              </div>
-                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: 5% | National average: 6-8%</p>
+                        {/* 3-Year Projection */}
+                        <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                          <h4 className="text-[14px] font-bold text-[#111827] mb-4">3-Year Value</h4>
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-center flex-1">
+                              <p className="text-[12px] text-[#6B7280] mb-1">Current (3-year)</p>
+                              <p className="text-[18px] font-bold text-[#111827]">{formatCurrency(expansionCalculation.baseline.netGain * 3)}</p>
                             </div>
-                            
-                            <div>
-                              <label className="block text-[14px] text-[#111827] mb-2">Your actual denial rate</label>
-                              <div className="flex items-center">
-                                <input
-                                  type="text"
-                                  inputMode="decimal"
-                                  value={rawInputValues["fin_denialRate"] ?? String(financialParams.denialRate)}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                      setRawInputValues(prev => ({ ...prev, "fin_denialRate": val }));
-                                      if (val !== "" && !isNaN(Number(val))) {
-                                        setFinancialParams({ ...financialParams, denialRate: parseInt(val) || 0 });
-                                      }
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    const val = rawInputValues["fin_denialRate"];
-                                    if (val === "" || val === undefined) {
-                                      setFinancialParams({ ...financialParams, denialRate: 5 });
-                                    }
-                                    setRawInputValues(prev => { const next = { ...prev }; delete next["fin_denialRate"]; return next; });
-                                  }}
-                                  className="w-[80px] h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  data-testid="input-denial-rate"
-                                />
-                                <span className="text-[16px] text-[#6B7280] ml-1">%</span>
-                              </div>
-                              <p className="mt-1 text-[13px] text-[#6B7280]">Baseline: 5% | Industry average: 5-10%</p>
+                            <ArrowRight className="h-5 w-5 text-[#D1D5DB] shrink-0" />
+                            <div className="text-center flex-1 p-3 bg-[#ECFDF5] border border-[#A7F3D0] rounded-lg">
+                              <p className="text-[12px] text-[#059669] mb-1">Expanded (3-year)</p>
+                              <p className="text-[18px] font-bold text-[#059669]">{formatCurrency(expansionCalculation.scenario.netGain * 3)}</p>
                             </div>
                           </div>
+                          <p className="text-[14px] text-center text-[#6B7280] mt-4">
+                            Additional 3-year value: <span className="font-bold text-[#059669]">{formatCurrency(expansionCalculation.incremental.netGain * 3)}</span>
+                          </p>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setTargetProviders(inputs.numberOfProviders)}
+                            className="flex-1 py-3 px-4 border border-[#E5E7EB] rounded-lg text-[14px] font-medium text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
+                            data-testid="button-reset-expansion"
+                          >
+                            Reset
+                          </button>
+                          <button
+                            onClick={() => {
+                              const newScenario: Scenario = {
+                                id: `exp-${Date.now()}`,
+                                name: scenarioForm.name || `Expand to ${targetProviders} providers`,
+                                type: "expand",
+                                providers: targetProviders,
+                                encounters: expansionCalculation.scenario.encounters,
+                                utilizationRate: scenarioForm.utilizationRate,
+                                createdAt: new Date().toISOString(),
+                                driversEnabled: Array.from(enabledDriverIds),
+                              };
+                              setScenarios([...scenarios, newScenario]);
+                              setShowExpandProviders(false);
+                              setTargetProviders(inputs.numberOfProviders);
+                              setExpansionPricingModel("per-provider");
+                              setEnterpriseAnnualCost(null);
+                            }}
+                            className="flex-1 py-3 px-4 bg-[#E8532F] text-white rounded-lg text-[14px] font-medium hover:bg-[#D14426] transition-colors"
+                            data-testid="button-save-expansion"
+                          >
+                            Save Scenario
+                          </button>
                         </div>
                       </>
                     )}
                     
-                    {/* Footer Actions */}
-                    <div className="border-t border-[#E5E7EB] pt-6">
-                      <div className="flex justify-end gap-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowExpandProviders(false)}
-                          className="border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB]"
-                          data-testid="button-cancel-scenario"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            handleCalculateScenario();
-                            setShowExpandProviders(false);
-                            toast({
-                              title: "Scenario saved",
-                              description: scenarioForm.name || `Scenario ${scenarios.length + 1}`,
-                            });
-                          }}
-                          disabled={!scenarioForm.name && scenarioForm.providers === inputs.numberOfProviders}
-                          className="bg-[#E8532F] hover:bg-[#D4471F] text-white disabled:bg-[#E5E7EB] disabled:text-[#9CA3AF]"
-                          data-testid="button-save-scenario"
-                        >
-                          Save Scenario
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Right column - Preview Panel (sticky on desktop) */}
-                  <div className="lg:w-[40%]">
-                    <div className="lg:sticky lg:top-6">
-                      {/* Mobile toggle for preview */}
-                      <button
-                        onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
-                        className="lg:hidden w-full mb-4 p-4 bg-white border border-neutral-200/60 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] flex items-center justify-between"
-                        data-testid="button-toggle-preview"
-                      >
-                        <span className="text-[14px] text-[#111827]">
-                          Net Gain: <span className="font-bold text-[#059669]">{formatCurrency((() => {
-                            const scenarioResults = calculateScenarioResults(scenarioForm);
-                            return scenarioResults.netGain;
-                          })())}</span>
-                        </span>
-                        <ChevronDown className={`h-5 w-5 text-[#6B7280] transition-transform ${mobilePreviewOpen ? "rotate-180" : ""}`} />
-                      </button>
-                      
-                      {/* Preview Panel Content */}
-                      <div className={`${mobilePreviewOpen ? "block" : "hidden"} lg:block`}>
-                        <div className="mb-2">
-                          <h3 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em]">Scenario Preview</h3>
-                          <p className="text-[13px] text-[#6B7280]">Updates in real-time</p>
-                        </div>
-                        
-                        <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                          {/* Comparison table */}
-                          {(() => {
-                            const scenarioResults = calculateScenarioResults(scenarioForm);
-                            const baselineEligible = Math.round(inputs.annualOutpatientEncounters * inputs.abridgeUtilizationPct / 100);
-                            const scenarioEligible = Math.round(scenarioForm.encounters * scenarioForm.utilizationRate / 100);
-                            
-                            return (
-                              <>
-                                {/* Header row */}
-                                <div className="grid grid-cols-4 gap-2 mb-4 text-[12px] text-[#6B7280] uppercase">
-                                  <div></div>
-                                  <div className="text-right">Baseline</div>
-                                  <div className="text-right">Scenario</div>
-                                  <div className="text-right">Change</div>
-                                </div>
-                                
-                                {/* Deployment section */}
-                                <div className="mb-4">
-                                  <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Deployment</div>
-                                  <div className="space-y-2">
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">Providers</div>
-                                      <div className="text-right text-[#111827]">{inputs.numberOfProviders}</div>
-                                      <div className="text-right font-bold text-[#111827]">{scenarioForm.providers}</div>
-                                      <div className={`text-right ${scenarioForm.providers >= inputs.numberOfProviders ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioForm.providers >= inputs.numberOfProviders ? "+" : ""}
-                                        {(((scenarioForm.providers - inputs.numberOfProviders) / Math.max(1, inputs.numberOfProviders)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">Encounters</div>
-                                      <div className="text-right text-[#111827]">{inputs.annualOutpatientEncounters.toLocaleString()}</div>
-                                      <div className="text-right font-bold text-[#111827]">{scenarioForm.encounters.toLocaleString()}</div>
-                                      <div className={`text-right ${scenarioForm.encounters >= inputs.annualOutpatientEncounters ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioForm.encounters >= inputs.annualOutpatientEncounters ? "+" : ""}
-                                        {(((scenarioForm.encounters - inputs.annualOutpatientEncounters) / Math.max(1, inputs.annualOutpatientEncounters)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">Utilization</div>
-                                      <div className="text-right text-[#111827]">{inputs.abridgeUtilizationPct}%</div>
-                                      <div className="text-right font-bold text-[#111827]">{scenarioForm.utilizationRate}%</div>
-                                      <div className={`text-right ${scenarioForm.utilizationRate >= inputs.abridgeUtilizationPct ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioForm.utilizationRate >= inputs.abridgeUtilizationPct ? "+" : ""}
-                                        {scenarioForm.utilizationRate - inputs.abridgeUtilizationPct} pts
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">Eligible</div>
-                                      <div className="text-right text-[#111827]">{baselineEligible.toLocaleString()}</div>
-                                      <div className="text-right font-bold text-[#111827]">{scenarioEligible.toLocaleString()}</div>
-                                      <div className={`text-right ${scenarioEligible >= baselineEligible ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioEligible >= baselineEligible ? "+" : ""}
-                                        {(((scenarioEligible - baselineEligible) / Math.max(1, baselineEligible)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="border-t border-[#E5E7EB] my-4" />
-                                
-                                {/* Summary section */}
-                                <div>
-                                  <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">Summary</div>
-                                  <div className="space-y-2">
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">Total Benefit</div>
-                                      <div className="text-right text-[#111827]">{formatCurrency(totalAnnualBenefit)}</div>
-                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioResults.totalBenefit)}</div>
-                                      <div className={`text-right ${scenarioResults.totalBenefit >= totalAnnualBenefit ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioResults.totalBenefit >= totalAnnualBenefit ? "+" : ""}
-                                        {(((scenarioResults.totalBenefit - totalAnnualBenefit) / Math.max(1, totalAnnualBenefit)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">Investment</div>
-                                      <div className="text-right text-[#111827]">{formatCurrency(annualInvestment)}</div>
-                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioResults.investment)}</div>
-                                      <div className={`text-right ${scenarioResults.investment >= annualInvestment ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioResults.investment >= annualInvestment ? "+" : ""}
-                                        {(((scenarioResults.investment - annualInvestment) / Math.max(1, annualInvestment)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-2 text-[16px] bg-[#F9FAFB] -mx-6 px-6 py-2">
-                                      <div className="font-bold text-[#111827]">Net Gain</div>
-                                      <div className="text-right text-[#111827]">{formatCurrency(netAnnualGain)}</div>
-                                      <div className="text-right font-bold text-[#059669]">{formatCurrency(scenarioResults.netGain)}</div>
-                                      <div className={`text-right font-bold ${scenarioResults.netGain >= netAnnualGain ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioResults.netGain >= netAnnualGain ? "+" : ""}
-                                        {(((scenarioResults.netGain - netAnnualGain) / Math.max(1, netAnnualGain)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">ROI</div>
-                                      <div className="text-right text-[#111827]">{roiMultiple.toFixed(1)}x</div>
-                                      <div className="text-right font-bold text-[#111827]">{scenarioResults.roiMultiple.toFixed(1)}x</div>
-                                      <div className={`text-right ${scenarioResults.roiMultiple >= roiMultiple ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioResults.roiMultiple >= roiMultiple ? "+" : ""}
-                                        {(((scenarioResults.roiMultiple - roiMultiple) / Math.max(0.1, roiMultiple)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="border-t border-[#E5E7EB] my-4" />
-                                
-                                {/* 3-Year Projection */}
-                                <div>
-                                  <div className="text-[12px] font-bold text-[#6B7280] uppercase mb-2">3-Year Projection</div>
-                                  <div className="space-y-2">
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">Total Value</div>
-                                      <div className="text-right text-[#111827]">{formatCurrency(totalAnnualBenefit * 3)}</div>
-                                      <div className="text-right font-bold text-[#111827]">{formatCurrency(scenarioResults.totalBenefit * 3)}</div>
-                                      <div className={`text-right ${scenarioResults.totalBenefit >= totalAnnualBenefit ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioResults.totalBenefit >= totalAnnualBenefit ? "+" : ""}
-                                        {(((scenarioResults.totalBenefit - totalAnnualBenefit) / Math.max(1, totalAnnualBenefit)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-2 text-[14px]">
-                                      <div className="text-[#6B7280]">Net 3-Year</div>
-                                      <div className="text-right text-[#111827]">{formatCurrency(netAnnualGain * 3)}</div>
-                                      <div className="text-right font-bold text-[#059669]">{formatCurrency(scenarioResults.netGain * 3)}</div>
-                                      <div className={`text-right ${scenarioResults.netGain >= netAnnualGain ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                        {scenarioResults.netGain >= netAnnualGain ? "+" : ""}
-                                        {(((scenarioResults.netGain - netAnnualGain) / Math.max(1, netAnnualGain)) * 100).toFixed(0)}%
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </>
-                            );
-                          })()}
-                        </div>
-                        
-                        {/* Key Insight */}
-                        <div className="mt-4 p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
-                          <div className="flex items-start gap-2">
-                            <Lightbulb className="h-4 w-4 text-[#1E40AF] mt-0.5 shrink-0" />
-                            <div>
-                              <p className="text-[13px] font-bold text-[#1E40AF] mb-1">Key Insight</p>
-                              <p className="text-[14px] text-[#1E40AF]">
-                                {(() => {
-                                  const scenarioResults = calculateScenarioResults(scenarioForm);
-                                  const additionalValue = scenarioResults.netGain - netAnnualGain;
-                                  const percentChange = netAnnualGain > 0 ? ((additionalValue / netAnnualGain) * 100).toFixed(0) : 0;
-                                  return `Expanding to ${scenarioForm.providers} providers would generate an additional ${formatCurrency(additionalValue)} in annual value (${additionalValue >= 0 ? "+" : ""}${percentChange}% over your current model).`;
-                                })()}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
