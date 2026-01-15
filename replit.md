@@ -23,7 +23,12 @@ Preferred communication style: Simple, everyday language.
 ### Application Flow
 1. **Care Setting Selection Screen**: Users select Outpatient, ED, or Nursing (Inpatient is "coming soon")
 2. **Strategic Priorities Screen**: Users select which ROI levers to include, grouped by category (time vs documentation)
-3. **Calculator Screen**: Full two-panel calculator with inputs, KPIs, waterfall chart, and lever table
+3. **Baseline Assumptions Wizard (3-Step)**:
+   - **Step 1 - Adoption**: Providers, encounters, utilization rate (required before proceeding)
+   - **Step 2 - Value Posture**: Conservative/Typical/Aggressive driver assumptions
+   - **Step 3 - Investment**: Pricing and contract inputs
+   - Step navigation pills enforce completion - Step 2 requires Step 1 complete, Step 3 requires Steps 1 & 2 complete
+4. **Calculator Screen**: Full two-panel calculator with inputs, KPIs, waterfall chart, and lever table
 
 ### Expansion Calculator (4-Step Full Wizard)
 The Expansion Calculator allows modeling ROI for provider expansion scenarios with a sophisticated 4-step wizard:
