@@ -298,20 +298,25 @@ export function LiveReceipt({
                       const value = currentDriverValues[leverId] || 0;
                       const label = DRIVER_LABELS[leverId] || leverId;
                       
+                      // Only show calculations after a posture has been selected
+                      const hasPosture = currentPosture !== null;
+                      
                       let subCalc = "";
-                      if (leverId === "patientAccess") {
-                        subCalc = `${formatNumber(newVisits)} new visits × $${ftPatientAccessRevenuePerVisit}/visit`;
-                      } else if (leverId === "wrvu") {
-                        subCalc = `${formatNumber(additionalWrvus)} wRVUs × $${ftWrvuRevenuePerUnit}/wRVU`;
-                      } else if (leverId === "workforce") {
-                        const departures = (providers * 0.05 * 0.4 * 0.4).toFixed(1);
-                        subCalc = `${departures} departures avoided × $${formatNumber(ftRetentionReplacementCost / 1000)}k`;
-                      } else if (leverId === "hccCapture" || leverId === "hcc") {
-                        subCalc = `RAF improvement × MA patients × $${ftHccBenchmarkPmpm} PMPM`;
-                      } else if (leverId === "denialReduction" || leverId === "denials") {
-                        subCalc = `Doc-related denials prevented`;
-                      } else if (leverId === "overtime") {
-                        subCalc = `After-hours documentation reduction`;
+                      if (hasPosture) {
+                        if (leverId === "patientAccess") {
+                          subCalc = `${formatNumber(newVisits)} new visits × $${ftPatientAccessRevenuePerVisit}/visit`;
+                        } else if (leverId === "wrvu") {
+                          subCalc = `${formatNumber(additionalWrvus)} wRVUs × $${ftWrvuRevenuePerUnit}/wRVU`;
+                        } else if (leverId === "workforce") {
+                          const departures = (providers * 0.05 * 0.4 * 0.4).toFixed(1);
+                          subCalc = `${departures} departures avoided × $${formatNumber(ftRetentionReplacementCost / 1000)}k`;
+                        } else if (leverId === "hccCapture" || leverId === "hcc") {
+                          subCalc = `RAF improvement × MA patients × $${ftHccBenchmarkPmpm} PMPM`;
+                        } else if (leverId === "denialReduction" || leverId === "denials") {
+                          subCalc = `Doc-related denials prevented`;
+                        } else if (leverId === "overtime") {
+                          subCalc = `After-hours documentation reduction`;
+                        }
                       }
                       
                       return (
@@ -319,7 +324,7 @@ export function LiveReceipt({
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-neutral-800">{label}</span>
                             <span className="text-base font-semibold text-emerald-600 tabular-nums">
-                              {formatCurrency(value)}
+                              {hasPosture ? formatCurrency(value) : "—"}
                             </span>
                           </div>
                           {subCalc && (
@@ -386,7 +391,7 @@ export function LiveReceipt({
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-neutral-700">Total Benefit</span>
                   <span className={`text-base font-semibold text-emerald-600 tabular-nums ${getHighlightClass("totalProjectedValue")}`}>
-                    {formatCurrency(totalProjectedValue)}
+                    {currentPosture !== null ? formatCurrency(totalProjectedValue) : "—"}
                   </span>
                 </div>
                 
@@ -403,7 +408,7 @@ export function LiveReceipt({
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-neutral-900">Net Annual Gain</span>
                     <span className={`text-xl font-bold text-emerald-600 tabular-nums receipt-major-value ${getHighlightClass("netAnnualGain")}`}>
-                      {formatCurrency(netAnnualGain)}
+                      {currentPosture !== null ? formatCurrency(netAnnualGain) : "—"}
                     </span>
                   </div>
                 </div>
@@ -470,11 +475,11 @@ export function LiveReceipt({
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-neutral-900">Net Annual Gain:</span>
               <span className="text-lg font-bold text-emerald-600 tabular-nums">
-                {formatCurrency(netAnnualGain)}
+                {currentPosture !== null ? formatCurrency(netAnnualGain) : "—"}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {roiMultiple > 0 && (
+              {currentPosture !== null && roiMultiple > 0 && (
                 <span className="text-sm font-semibold text-neutral-700 tabular-nums">{roiMultiple.toFixed(1)}x ROI</span>
               )}
               <ChevronUp className="w-5 h-5 text-neutral-400" />
@@ -550,7 +555,7 @@ export function LiveReceipt({
                         <div key={leverId} className="flex justify-between items-center">
                           <span className="text-sm text-neutral-700">{label}</span>
                           <span className="text-sm font-semibold text-emerald-600 tabular-nums">
-                            {formatCurrency(value)}
+                            {currentPosture !== null ? formatCurrency(value) : "—"}
                           </span>
                         </div>
                       );
@@ -563,7 +568,7 @@ export function LiveReceipt({
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-neutral-700">Total Benefit</span>
                   <span className="text-base font-semibold text-emerald-600 tabular-nums">
-                    {formatCurrency(totalProjectedValue)}
+                    {currentPosture !== null ? formatCurrency(totalProjectedValue) : "—"}
                   </span>
                 </div>
                 {annualSubscriptionCost !== null && (
@@ -578,7 +583,7 @@ export function LiveReceipt({
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-bold text-neutral-900">Net Annual Gain</span>
                     <span className="text-xl font-bold text-emerald-600 tabular-nums">
-                      {formatCurrency(netAnnualGain)}
+                      {currentPosture !== null ? formatCurrency(netAnnualGain) : "—"}
                     </span>
                   </div>
                 </div>
