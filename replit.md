@@ -66,6 +66,37 @@ After selecting strategic priorities, nurses see a Value Methodology page that e
 
 **Routing**: nursing-priorities → nursing-value-methodology → model-setup (baseline assumptions)
 
+### Nursing Value Posture (Step 2)
+The Nursing flow has a dedicated Value Posture step (modelSetupStep === 2) that differs from Outpatient/ED.
+
+**Structure (matching Outpatient/ED design patterns)**:
+1. **Posture Selection Buttons**: Conservative / Typical (recommended) / Aggressive
+2. **Posture Preview Card**: Shows current posture description, all selected drivers with values and summaries, total projected value
+3. **Compare All Postures Table**: Expandable table showing all driver values across all three postures
+4. **Fine-Tune Assumptions Section**: Expandable accordion organized by category
+
+**Nursing Posture Presets** (`NURSING_POSTURE_PRESETS`):
+- Conservative: 3 min/event, 30% OT reduction, 5% agency reduction, 20% retention prevention
+- Typical: 4 min/event, 50% OT reduction, 10% agency reduction, 35% retention prevention
+- Aggressive: 5 min/event, 70% OT reduction, 15% agency reduction, 50% retention prevention
+
+**Fine-Tune Categories**:
+1. **Capacity & Labor**: Documentation time savings (minutes, hourly rate), Overtime reduction (% from docs, reduction factor), Agency reduction, Nurse retention
+2. **Documentation Quality**: Timeliness risk reduction, Completeness risk reduction
+3. **Quality & Revenue (Indirect)**: Safety event prevention (with amber warning), CC/MCC capture (with amber warning)
+
+**Key State Variables**:
+- nursingMinutesSavedPerEvent, nursingHourlyRate, nursingOvertimeReductionPct, nursingPctOvertimeFromDocs
+- nursingAgencyReductionPct, nursingRetentionPreventionPct
+- nursingTimelinessRiskReduction, nursingCompletenessRiskReduction
+- nursingSafetyPreventionPct, nursingCcmccCaptureImprovement
+- nursingPosture, nursingCompareExpanded, nursingFineTuneExpanded
+
+**Key Functions**:
+- `applyNursingPosture()`: Applies preset values for all nursing drivers
+- `calculateNursingDriverValue()`: Calculates dollar value for each driver based on reference scenario (200 beds, 332,150 events/year, 280 FTEs)
+- `getNursingDriverSummary()`: Returns human-readable summary of current assumptions per driver
+
 ### Expansion Calculator (4-Step Full Wizard)
 The Expansion Calculator allows modeling ROI for provider expansion scenarios with a sophisticated 4-step wizard:
 

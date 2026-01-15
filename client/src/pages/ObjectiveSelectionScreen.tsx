@@ -170,6 +170,79 @@ const POSTURE_PRESETS: Record<Exclude<ValuePosture, "custom">, { minutes: number
   aggressive: { minutes: 4, realization: 30, wrvu: 7 },
 };
 
+// Nursing-specific posture presets with all 8 drivers
+interface NursingPostureValues {
+  // Documentation Time Savings
+  minutesSavedPerEvent: number;
+  nurseHourlyRate: number;
+  // Overtime Reduction
+  overtimeReductionPct: number;
+  pctOvertimeFromDocs: number;
+  // Agency Reduction  
+  agencyReductionPct: number;
+  // Nurse Retention
+  retentionPreventionPct: number;
+  // Documentation Timeliness
+  timelinessRiskReduction: number;
+  // Documentation Completeness
+  completenessRiskReduction: number;
+  // Safety Event Risk Reduction (indirect)
+  safetyPreventionPct: number;
+  // CC/MCC Support (indirect)
+  ccmccCaptureImprovement: number;
+}
+
+const NURSING_POSTURE_PRESETS: Record<Exclude<ValuePosture, "custom">, NursingPostureValues> = {
+  conservative: {
+    minutesSavedPerEvent: 3,
+    nurseHourlyRate: 45,
+    overtimeReductionPct: 30,
+    pctOvertimeFromDocs: 20,
+    agencyReductionPct: 5,
+    retentionPreventionPct: 20,
+    timelinessRiskReduction: 10,
+    completenessRiskReduction: 15,
+    safetyPreventionPct: 5,
+    ccmccCaptureImprovement: 10,
+  },
+  typical: {
+    minutesSavedPerEvent: 4,
+    nurseHourlyRate: 45,
+    overtimeReductionPct: 50,
+    pctOvertimeFromDocs: 30,
+    agencyReductionPct: 10,
+    retentionPreventionPct: 35,
+    timelinessRiskReduction: 20,
+    completenessRiskReduction: 25,
+    safetyPreventionPct: 10,
+    ccmccCaptureImprovement: 20,
+  },
+  aggressive: {
+    minutesSavedPerEvent: 5,
+    nurseHourlyRate: 45,
+    overtimeReductionPct: 70,
+    pctOvertimeFromDocs: 40,
+    agencyReductionPct: 15,
+    retentionPreventionPct: 50,
+    timelinessRiskReduction: 30,
+    completenessRiskReduction: 35,
+    safetyPreventionPct: 15,
+    ccmccCaptureImprovement: 30,
+  },
+};
+
+// Nursing driver content for Value Posture display
+const NURSING_DRIVER_CONTENT: Record<string, { label: string; hasWarning?: boolean }> = {
+  documentation_time_savings: { label: "Documentation Time Savings" },
+  overtime_reduction: { label: "Overtime Reduction" },
+  agency_reduction: { label: "Agency & Travel Nurse Reduction" },
+  nurse_retention: { label: "Nurse Retention" },
+  documentation_timeliness: { label: "Documentation Timeliness" },
+  documentation_completeness: { label: "Documentation Completeness" },
+  safety_event_reduction: { label: "Safety Event Risk Reduction", hasWarning: true },
+  ccmcc_support: { label: "CC/MCC Support", hasWarning: true },
+};
+
 // Reference scenario defaults for Value Methodology
 const REFERENCE_SCENARIO = {
   providers: 40,
@@ -1097,6 +1170,177 @@ export default function ObjectiveSelectionScreen({
   
   // Reset all confirmation modal state
   const [showResetAllModal, setShowResetAllModal] = useState(false);
+
+  // ============================================
+  // Nursing-Specific Fine-Tune State
+  // ============================================
+  const [nursingMinutesSavedPerEvent, setNursingMinutesSavedPerEvent] = useState<number>(4);
+  const [nursingHourlyRate, setNursingHourlyRate] = useState<number>(45);
+  const [nursingOvertimeReductionPct, setNursingOvertimeReductionPct] = useState<number>(50);
+  const [nursingPctOvertimeFromDocs, setNursingPctOvertimeFromDocs] = useState<number>(30);
+  const [nursingAgencyReductionPct, setNursingAgencyReductionPct] = useState<number>(10);
+  const [nursingRetentionPreventionPct, setNursingRetentionPreventionPct] = useState<number>(35);
+  const [nursingTimelinessRiskReduction, setNursingTimelinessRiskReduction] = useState<number>(20);
+  const [nursingCompletenessRiskReduction, setNursingCompletenessRiskReduction] = useState<number>(25);
+  const [nursingSafetyPreventionPct, setNursingSafetyPreventionPct] = useState<number>(10);
+  const [nursingCcmccCaptureImprovement, setNursingCcmccCaptureImprovement] = useState<number>(20);
+  
+  // Nursing posture state
+  const [nursingPosture, setNursingPosture] = useState<ValuePosture>("typical");
+  const [nursingCompareExpanded, setNursingCompareExpanded] = useState(false);
+  const [nursingFineTuneExpanded, setNursingFineTuneExpanded] = useState(false);
+  
+  // Apply nursing posture
+  const applyNursingPosture = (posture: "conservative" | "typical" | "aggressive") => {
+    const preset = NURSING_POSTURE_PRESETS[posture];
+    setNursingPosture(posture);
+    setNursingMinutesSavedPerEvent(preset.minutesSavedPerEvent);
+    setNursingHourlyRate(preset.nurseHourlyRate);
+    setNursingOvertimeReductionPct(preset.overtimeReductionPct);
+    setNursingPctOvertimeFromDocs(preset.pctOvertimeFromDocs);
+    setNursingAgencyReductionPct(preset.agencyReductionPct);
+    setNursingRetentionPreventionPct(preset.retentionPreventionPct);
+    setNursingTimelinessRiskReduction(preset.timelinessRiskReduction);
+    setNursingCompletenessRiskReduction(preset.completenessRiskReduction);
+    setNursingSafetyPreventionPct(preset.safetyPreventionPct);
+    setNursingCcmccCaptureImprovement(preset.ccmccCaptureImprovement);
+    setLastNonCustomPosture(posture);
+  };
+
+  // Calculate nursing driver values based on reference scenario and current inputs
+  const calculateNursingDriverValue = (driverId: string, posture?: "conservative" | "typical" | "aggressive") => {
+    // Reference scenario: 200 beds, 332,150 events/year, 65% adoption
+    const eligibleEvents = 332150;
+    const staffedBeds = 200;
+    const nursingFTEs = 280;
+    
+    const p = posture ? NURSING_POSTURE_PRESETS[posture] : {
+      minutesSavedPerEvent: nursingMinutesSavedPerEvent,
+      nurseHourlyRate: nursingHourlyRate,
+      overtimeReductionPct: nursingOvertimeReductionPct,
+      pctOvertimeFromDocs: nursingPctOvertimeFromDocs,
+      agencyReductionPct: nursingAgencyReductionPct,
+      retentionPreventionPct: nursingRetentionPreventionPct,
+      timelinessRiskReduction: nursingTimelinessRiskReduction,
+      completenessRiskReduction: nursingCompletenessRiskReduction,
+      safetyPreventionPct: nursingSafetyPreventionPct,
+      ccmccCaptureImprovement: nursingCcmccCaptureImprovement,
+    };
+    
+    switch (driverId) {
+      case "documentation_time_savings": {
+        const hoursSaved = (eligibleEvents * p.minutesSavedPerEvent) / 60;
+        return Math.round(hoursSaved * p.nurseHourlyRate);
+      }
+      case "overtime_reduction": {
+        const totalHours = nursingFTEs * 2080;
+        const otHours = totalHours * 0.08;
+        const docOtHours = otHours * (p.pctOvertimeFromDocs / 100);
+        const hoursAvoided = docOtHours * (p.overtimeReductionPct / 100);
+        const otPremium = 22.50; // Net OT cost above base
+        return Math.round(hoursAvoided * otPremium);
+      }
+      case "agency_reduction": {
+        const totalHours = 582400;
+        const agencyHours = totalHours * 0.12;
+        const hoursReduced = agencyHours * (p.agencyReductionPct / 100);
+        const premiumPerHour = 50;
+        return Math.round(hoursReduced * premiumPerHour);
+      }
+      case "nurse_retention": {
+        const turnoverRate = 0.22;
+        const departures = nursingFTEs * turnoverRate;
+        const burnoutDepartures = departures * 0.40;
+        const departuresAvoided = burnoutDepartures * (p.retentionPreventionPct / 100);
+        const costPerDeparture = 65520;
+        return Math.round(departuresAvoided * costPerDeparture);
+      }
+      case "documentation_timeliness": {
+        const baseRisk = 75000;
+        return Math.round(baseRisk * (p.timelinessRiskReduction / 100));
+      }
+      case "documentation_completeness": {
+        const baseRisk = 70000;
+        return Math.round(baseRisk * (p.completenessRiskReduction / 100));
+      }
+      case "safety_event_reduction": {
+        const patientDays = 73000;
+        const safetyEvents = 416;
+        const docRelated = safetyEvents * 0.35;
+        const eventsAvoided = docRelated * (p.safetyPreventionPct / 100);
+        const costPerEvent = 5857;
+        return Math.round(eventsAvoided * costPerEvent);
+      }
+      case "ccmcc_support": {
+        const discharges = 8500;
+        const opportunityCases = discharges * 0.25;
+        const gapCases = opportunityCases * 0.40;
+        const additionalCaptures = gapCases * (p.ccmccCaptureImprovement / 100);
+        const revenuePerCapture = 1001;
+        return Math.round(additionalCaptures * revenuePerCapture);
+      }
+      default:
+        return 0;
+    }
+  };
+
+  // Get summary text for nursing driver based on posture
+  const getNursingDriverSummary = (driverId: string) => {
+    switch (driverId) {
+      case "documentation_time_savings":
+        return `${nursingMinutesSavedPerEvent} minutes saved per documentation event`;
+      case "overtime_reduction":
+        return `${nursingOvertimeReductionPct}% reduction in documentation-driven overtime`;
+      case "agency_reduction":
+        return `${nursingAgencyReductionPct}% reduction in agency hours`;
+      case "nurse_retention":
+        return `${nursingRetentionPreventionPct}% prevention of documentation-burden departures`;
+      case "documentation_timeliness":
+        return `${nursingTimelinessRiskReduction}% risk reduction factor`;
+      case "documentation_completeness":
+        return `${nursingCompletenessRiskReduction}% risk reduction factor`;
+      case "safety_event_reduction":
+        return `${nursingSafetyPreventionPct}% prevention factor (indirect relationship)`;
+      case "ccmcc_support":
+        return `${nursingCcmccCaptureImprovement}% capture improvement (indirect relationship)`;
+      default:
+        return "";
+    }
+  };
+
+  // Calculate total nursing value
+  const totalNursingValue = useMemo(() => {
+    return Array.from(selectedLeverIds).reduce((sum, driverId) => {
+      return sum + calculateNursingDriverValue(driverId);
+    }, 0);
+  }, [selectedLeverIds, nursingMinutesSavedPerEvent, nursingHourlyRate, nursingOvertimeReductionPct, 
+      nursingPctOvertimeFromDocs, nursingAgencyReductionPct, nursingRetentionPreventionPct,
+      nursingTimelinessRiskReduction, nursingCompletenessRiskReduction, nursingSafetyPreventionPct,
+      nursingCcmccCaptureImprovement]);
+
+  // Detect nursing posture based on current values - checks all key posture-driven parameters
+  const detectedNursingPosture = useMemo((): ValuePosture => {
+    for (const [postureName, preset] of Object.entries(NURSING_POSTURE_PRESETS)) {
+      // Check the 4 primary capacity/labor drivers that are most posture-sensitive
+      // Other drivers (timeliness, completeness, safety, ccmcc) are less frequently adjusted
+      if (
+        nursingMinutesSavedPerEvent === preset.minutesSavedPerEvent &&
+        nursingOvertimeReductionPct === preset.overtimeReductionPct &&
+        nursingPctOvertimeFromDocs === preset.pctOvertimeFromDocs &&
+        nursingAgencyReductionPct === preset.agencyReductionPct &&
+        nursingRetentionPreventionPct === preset.retentionPreventionPct &&
+        nursingTimelinessRiskReduction === preset.timelinessRiskReduction &&
+        nursingCompletenessRiskReduction === preset.completenessRiskReduction &&
+        nursingSafetyPreventionPct === preset.safetyPreventionPct &&
+        nursingCcmccCaptureImprovement === preset.ccmccCaptureImprovement
+      ) {
+        return postureName as ValuePosture;
+      }
+    }
+    return "custom";
+  }, [nursingMinutesSavedPerEvent, nursingOvertimeReductionPct, nursingPctOvertimeFromDocs,
+      nursingAgencyReductionPct, nursingRetentionPreventionPct, nursingTimelinessRiskReduction,
+      nursingCompletenessRiskReduction, nursingSafetyPreventionPct, nursingCcmccCaptureImprovement]);
 
   // Extended posture presets for additional drivers (aligned with POSTURE_PRESETS)
   const FINE_TUNE_EXTRA_POSTURE_VALUES = {
@@ -2946,7 +3190,566 @@ export default function ObjectiveSelectionScreen({
                 )}
 
                 {/* Step 2: Value Posture */}
-                {modelSetupStep === 2 && (
+                {modelSetupStep === 2 && selectedSetting === "nursing" && (
+                  <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-8">
+                    {/* Context Callout */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-blue-800">
+                          <span className="font-medium">In the Value Methodology</span>, we showed typical assumptions for each driver. Now choose how conservatively or aggressively to apply them to YOUR scenario.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Value Posture Header */}
+                    <div className="mb-8">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="text-base font-semibold text-neutral-900">
+                          Value posture
+                        </div>
+                        {detectedNursingPosture === "custom" && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 font-medium">
+                            Custom
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-neutral-600 mb-4">
+                        How aggressively should this model assume value realization? Choose the posture that best matches your rollout confidence.
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => applyNursingPosture("conservative")}
+                          className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                            detectedNursingPosture === "conservative"
+                              ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                          }`}
+                          data-testid="posture-conservative"
+                        >
+                          Conservative
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyNursingPosture("typical")}
+                          className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                            detectedNursingPosture === "typical"
+                              ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                          }`}
+                          data-testid="posture-typical"
+                        >
+                          Typical
+                          <span className="ml-1.5 text-xs text-neutral-500">(Recommended)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyNursingPosture("aggressive")}
+                          className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                            detectedNursingPosture === "aggressive"
+                              ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                          }`}
+                          data-testid="posture-aggressive"
+                        >
+                          Aggressive
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Nursing Posture Preview Card */}
+                    <div className="border border-neutral-200 rounded-xl p-5 mb-6 bg-neutral-50/50" data-testid="posture-preview-card">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
+                          {detectedNursingPosture.toUpperCase()} POSTURE
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#6B7280] mb-1">
+                        {detectedNursingPosture === "conservative" && "Best for: Risk-averse modeling, board presentation"}
+                        {detectedNursingPosture === "typical" && "Best for: Initial business case, balanced approach"}
+                        {detectedNursingPosture === "aggressive" && "Best for: Aspirational planning, optimal adoption"}
+                        {detectedNursingPosture === "custom" && "Custom assumptions based on your fine-tuned inputs"}
+                      </p>
+                      <p className="text-[13px] text-[#6B7280] mb-4">
+                        {detectedNursingPosture === "custom" 
+                          ? `Customized from ${lastNonCustomPosture.charAt(0).toUpperCase() + lastNonCustomPosture.slice(1)} posture`
+                          : "Based on: Median performance from health system implementations"
+                        }
+                      </p>
+                      
+                      {/* Dynamic driver values */}
+                      <div className="text-xs font-medium text-neutral-700 mb-2">
+                        Your value drivers:
+                      </div>
+                      <div className="space-y-3">
+                        {Array.from(selectedLeverIds).map((leverId) => {
+                          const driverContent = NURSING_DRIVER_CONTENT[leverId];
+                          if (!driverContent) return null;
+                          const dynamicValue = calculateNursingDriverValue(leverId);
+                          return (
+                            <div key={leverId} className="flex items-start justify-between gap-3 bg-white rounded-lg p-3 border border-neutral-100" data-testid={`driver-preview-${leverId}`}>
+                              <div className="flex items-start gap-2">
+                                {driverContent.hasWarning ? (
+                                  <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                                ) : (
+                                  <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                )}
+                                <div>
+                                  <div className="text-sm font-medium text-neutral-800">{driverContent.label}</div>
+                                  <div className="text-[13px] text-[#6B7280] mt-0.5 ml-5">
+                                    {getNursingDriverSummary(leverId)}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-sm font-semibold text-emerald-700 font-mono whitespace-nowrap" data-testid={`value-${leverId}`}>
+                                ${formatNumber(dynamicValue)}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t border-neutral-200">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-neutral-900">TOTAL PROJECTED VALUE:</span>
+                          <span className="text-lg font-bold text-emerald-700 font-mono" data-testid="total-projected-value">
+                            ${formatNumber(totalNursingValue)}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-[#6B7280] mt-1 italic">(Before investment costs)</p>
+                      </div>
+
+                      {/* Compare All Postures Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => setNursingCompareExpanded(!nursingCompareExpanded)}
+                        className="mt-4 text-sm font-medium text-[#E8532F] hover:text-[#d14a28] flex items-center gap-1 transition-all"
+                        data-testid="button-compare-postures"
+                      >
+                        <span className={`text-[#E8532F] transition-transform duration-200 ${nursingCompareExpanded ? "rotate-90" : ""}`}>›</span>
+                        Compare All Postures
+                      </button>
+
+                      {/* Compare Postures Table */}
+                      <div 
+                        className={`overflow-hidden transition-all duration-300 ease-out ${
+                          nursingCompareExpanded ? "max-h-[800px] opacity-100 mt-4" : "max-h-0 opacity-0"
+                        }`}
+                      >
+                        <div className="bg-white rounded-lg border border-[#E5E7EB] p-4">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-[#E5E7EB]">
+                                <th className="text-left py-2 pr-4 text-sm font-medium text-[#6B7280]">Driver</th>
+                                <th className={`text-right py-2 px-3 text-sm font-medium ${detectedNursingPosture === "conservative" ? "text-[#111827] bg-[#F9FAFB]" : "text-[#6B7280]"}`}>Conservative</th>
+                                <th className={`text-right py-2 px-3 text-sm font-medium ${detectedNursingPosture === "typical" ? "text-[#111827] bg-[#F9FAFB]" : "text-[#6B7280]"}`}>Typical</th>
+                                <th className={`text-right py-2 px-3 text-sm font-medium ${detectedNursingPosture === "aggressive" ? "text-[#111827] bg-[#F9FAFB]" : "text-[#6B7280]"}`}>Aggressive</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Array.from(selectedLeverIds).map((leverId) => {
+                                const content = NURSING_DRIVER_CONTENT[leverId];
+                                if (!content) return null;
+                                return (
+                                  <tr key={leverId}>
+                                    <td className="py-2 pr-4 text-sm font-medium text-[#111827]">
+                                      {content.label}{content.hasWarning && "*"}
+                                    </td>
+                                    <td className={`py-2 px-3 text-right text-sm tabular-nums ${detectedNursingPosture === "conservative" ? "bg-[#F9FAFB] text-[#111827] font-medium" : "text-[#111827]"}`}>
+                                      ${formatNumber(calculateNursingDriverValue(leverId, "conservative"))}
+                                    </td>
+                                    <td className={`py-2 px-3 text-right text-sm tabular-nums ${detectedNursingPosture === "typical" ? "bg-[#F9FAFB] text-[#111827] font-medium" : "text-[#111827]"}`}>
+                                      ${formatNumber(calculateNursingDriverValue(leverId, "typical"))}
+                                    </td>
+                                    <td className={`py-2 px-3 text-right text-sm tabular-nums ${detectedNursingPosture === "aggressive" ? "bg-[#F9FAFB] text-[#111827] font-medium" : "text-[#111827]"}`}>
+                                      ${formatNumber(calculateNursingDriverValue(leverId, "aggressive"))}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                              <tr className="border-t border-[#E5E7EB]">
+                                <td className="py-2 pr-4 text-[15px] font-bold text-[#111827]">TOTAL</td>
+                                <td className={`py-2 px-3 text-right text-[15px] font-bold tabular-nums ${detectedNursingPosture === "conservative" ? "bg-[#F9FAFB] text-emerald-700" : "text-[#111827]"}`}>
+                                  ${formatNumber(Array.from(selectedLeverIds).reduce((sum, id) => sum + calculateNursingDriverValue(id, "conservative"), 0))}
+                                </td>
+                                <td className={`py-2 px-3 text-right text-[15px] font-bold tabular-nums ${detectedNursingPosture === "typical" ? "bg-[#F9FAFB] text-emerald-700" : "text-[#111827]"}`}>
+                                  ${formatNumber(Array.from(selectedLeverIds).reduce((sum, id) => sum + calculateNursingDriverValue(id, "typical"), 0))}
+                                </td>
+                                <td className={`py-2 px-3 text-right text-[15px] font-bold tabular-nums ${detectedNursingPosture === "aggressive" ? "bg-[#F9FAFB] text-emerald-700" : "text-[#111827]"}`}>
+                                  ${formatNumber(Array.from(selectedLeverIds).reduce((sum, id) => sum + calculateNursingDriverValue(id, "aggressive"), 0))}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          {Array.from(selectedLeverIds).some(id => NURSING_DRIVER_CONTENT[id]?.hasWarning) && (
+                            <p className="text-xs text-[#6B7280] mt-3 italic">*Indirect relationship—see methodology</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Fine-Tune Assumptions Section */}
+                    <div className="border-2 border-[#F03319]/20 bg-gradient-to-r from-[#FFF7F5] to-white rounded-xl mb-6 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => setNursingFineTuneExpanded(!nursingFineTuneExpanded)}
+                        className="w-full flex items-center justify-between p-4 text-left"
+                        data-testid="button-fine-tune-toggle"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#F03319]/10">
+                            <Sliders className="w-4 h-4 text-[#F03319]" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-[#F03319]">FINE-TUNE ASSUMPTIONS</span>
+                              <span className="text-xs px-2 py-0.5 bg-[#F03319]/10 text-[#F03319] rounded-full font-medium">Optional</span>
+                            </div>
+                            <p className="text-xs text-neutral-600 mt-0.5">
+                              Want more control? Adjust the key assumptions that drive your selected value drivers.
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronDown className={`w-5 h-5 text-[#F03319] transition-transform ${nursingFineTuneExpanded ? "" : "-rotate-90"}`} />
+                      </button>
+                      
+                      {nursingFineTuneExpanded && (
+                        <div className="px-4 pb-4">
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                            <div className="flex items-start gap-2">
+                              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-amber-800">
+                                <span className="font-medium">Note:</span> Changing these overrides your posture selection
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Capacity & Labor Category */}
+                          {(selectedLeverIds.has("documentation_time_savings") || selectedLeverIds.has("overtime_reduction") || selectedLeverIds.has("agency_reduction") || selectedLeverIds.has("nurse_retention")) && (
+                            <div className="mb-6">
+                              <div className="text-sm font-semibold text-neutral-800 uppercase tracking-wide mb-4 flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                Capacity & Labor
+                              </div>
+                              
+                              {selectedLeverIds.has("documentation_time_savings") && (
+                                <div className="bg-white border border-neutral-200 rounded-lg p-4 mb-4">
+                                  <div className="font-medium text-neutral-800 mb-3">Documentation Time Savings</div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <label className="text-xs text-neutral-600 mb-1 block">Minutes saved per event</label>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="number"
+                                          value={nursingMinutesSavedPerEvent}
+                                          onChange={(e) => setNursingMinutesSavedPerEvent(Number(e.target.value))}
+                                          className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                          data-testid="input-nursing-minutes"
+                                        />
+                                        <span className="text-sm text-neutral-500">min</span>
+                                      </div>
+                                      <p className="text-xs text-neutral-500 mt-1">Typical range: 3-5 min</p>
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-neutral-600 mb-1 block">Avg nurse hourly rate</label>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm text-neutral-500">$</span>
+                                        <input
+                                          type="number"
+                                          value={nursingHourlyRate}
+                                          onChange={(e) => setNursingHourlyRate(Number(e.target.value))}
+                                          className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                          data-testid="input-nursing-rate"
+                                        />
+                                      </div>
+                                      <p className="text-xs text-neutral-500 mt-1">Typical range: $38-55</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setNursingMinutesSavedPerEvent(NURSING_POSTURE_PRESETS.typical.minutesSavedPerEvent);
+                                      setNursingHourlyRate(NURSING_POSTURE_PRESETS.typical.nurseHourlyRate);
+                                    }}
+                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  >
+                                    [Reset to Typical Defaults]
+                                  </button>
+                                </div>
+                              )}
+                              
+                              {selectedLeverIds.has("overtime_reduction") && (
+                                <div className="bg-white border border-neutral-200 rounded-lg p-4 mb-4">
+                                  <div className="font-medium text-neutral-800 mb-3">Overtime Reduction</div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <label className="text-xs text-neutral-600 mb-1 block">% of overtime from documentation</label>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="number"
+                                          value={nursingPctOvertimeFromDocs}
+                                          onChange={(e) => setNursingPctOvertimeFromDocs(Number(e.target.value))}
+                                          className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                          data-testid="input-nursing-ot-pct"
+                                        />
+                                        <span className="text-sm text-neutral-500">%</span>
+                                      </div>
+                                      <p className="text-xs text-neutral-500 mt-1">Typical range: 20-45%</p>
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-neutral-600 mb-1 block">Overtime reduction factor</label>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="number"
+                                          value={nursingOvertimeReductionPct}
+                                          onChange={(e) => setNursingOvertimeReductionPct(Number(e.target.value))}
+                                          className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                          data-testid="input-nursing-ot-reduction"
+                                        />
+                                        <span className="text-sm text-neutral-500">%</span>
+                                      </div>
+                                      <p className="text-xs text-neutral-500 mt-1">Typical range: 30-70%</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setNursingPctOvertimeFromDocs(NURSING_POSTURE_PRESETS.typical.pctOvertimeFromDocs);
+                                      setNursingOvertimeReductionPct(NURSING_POSTURE_PRESETS.typical.overtimeReductionPct);
+                                    }}
+                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  >
+                                    [Reset to Typical Defaults]
+                                  </button>
+                                </div>
+                              )}
+                              
+                              {selectedLeverIds.has("agency_reduction") && (
+                                <div className="bg-white border border-neutral-200 rounded-lg p-4 mb-4">
+                                  <div className="font-medium text-neutral-800 mb-3">Agency & Travel Nurse Reduction</div>
+                                  <div>
+                                    <label className="text-xs text-neutral-600 mb-1 block">Agency reduction factor</label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        value={nursingAgencyReductionPct}
+                                        onChange={(e) => setNursingAgencyReductionPct(Number(e.target.value))}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-nursing-agency"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 5-15%</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setNursingAgencyReductionPct(NURSING_POSTURE_PRESETS.typical.agencyReductionPct)}
+                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  >
+                                    [Reset to Typical Defaults]
+                                  </button>
+                                </div>
+                              )}
+                              
+                              {selectedLeverIds.has("nurse_retention") && (
+                                <div className="bg-white border border-neutral-200 rounded-lg p-4 mb-4">
+                                  <div className="font-medium text-neutral-800 mb-3">Nurse Retention</div>
+                                  <div>
+                                    <label className="text-xs text-neutral-600 mb-1 block">Abridge prevention effectiveness</label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        value={nursingRetentionPreventionPct}
+                                        onChange={(e) => setNursingRetentionPreventionPct(Number(e.target.value))}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-nursing-retention"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 20-50%</p>
+                                    <p className="text-xs text-neutral-400 mt-1 flex items-center gap-1">
+                                      <Info className="w-3 h-3" />
+                                      % of documentation-burden departures prevented
+                                    </p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setNursingRetentionPreventionPct(NURSING_POSTURE_PRESETS.typical.retentionPreventionPct)}
+                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  >
+                                    [Reset to Typical Defaults]
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Documentation Quality Category */}
+                          {(selectedLeverIds.has("documentation_timeliness") || selectedLeverIds.has("documentation_completeness")) && (
+                            <div className="mb-6">
+                              <div className="text-sm font-semibold text-neutral-800 uppercase tracking-wide mb-4 flex items-center gap-2">
+                                <FileText className="w-4 h-4" />
+                                Documentation Quality
+                              </div>
+                              
+                              {selectedLeverIds.has("documentation_timeliness") && (
+                                <div className="bg-white border border-neutral-200 rounded-lg p-4 mb-4">
+                                  <div className="font-medium text-neutral-800 mb-3">Documentation Timeliness</div>
+                                  <div>
+                                    <label className="text-xs text-neutral-600 mb-1 block">Risk reduction value (%)</label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        value={nursingTimelinessRiskReduction}
+                                        onChange={(e) => setNursingTimelinessRiskReduction(Number(e.target.value))}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-nursing-timeliness"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 10-30%</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setNursingTimelinessRiskReduction(NURSING_POSTURE_PRESETS.typical.timelinessRiskReduction)}
+                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  >
+                                    [Reset to Typical Defaults]
+                                  </button>
+                                </div>
+                              )}
+                              
+                              {selectedLeverIds.has("documentation_completeness") && (
+                                <div className="bg-white border border-neutral-200 rounded-lg p-4 mb-4">
+                                  <div className="font-medium text-neutral-800 mb-3">Documentation Completeness</div>
+                                  <div>
+                                    <label className="text-xs text-neutral-600 mb-1 block">Risk reduction value (%)</label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        value={nursingCompletenessRiskReduction}
+                                        onChange={(e) => setNursingCompletenessRiskReduction(Number(e.target.value))}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-nursing-completeness"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 15-35%</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setNursingCompletenessRiskReduction(NURSING_POSTURE_PRESETS.typical.completenessRiskReduction)}
+                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  >
+                                    [Reset to Typical Defaults]
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Quality & Revenue Category (Indirect) */}
+                          {(selectedLeverIds.has("safety_event_reduction") || selectedLeverIds.has("ccmcc_support")) && (
+                            <div className="mb-6">
+                              <div className="text-sm font-semibold text-amber-800 uppercase tracking-wide mb-4 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                Quality & Revenue (Indirect Impact)
+                              </div>
+                              
+                              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                                <div className="flex items-start gap-2">
+                                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                                  <p className="text-xs text-amber-800">
+                                    These values represent theoretical risk reduction only. Direct causation cannot be established.
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              {selectedLeverIds.has("safety_event_reduction") && (
+                                <div className="bg-white border border-neutral-200 rounded-lg p-4 mb-4">
+                                  <div className="font-medium text-neutral-800 mb-3">Safety Event Risk Reduction</div>
+                                  <div>
+                                    <label className="text-xs text-neutral-600 mb-1 block">Prevention factor</label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        value={nursingSafetyPreventionPct}
+                                        onChange={(e) => setNursingSafetyPreventionPct(Number(e.target.value))}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-nursing-safety"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 5-15%</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setNursingSafetyPreventionPct(NURSING_POSTURE_PRESETS.typical.safetyPreventionPct)}
+                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  >
+                                    [Reset to Typical Defaults]
+                                  </button>
+                                </div>
+                              )}
+                              
+                              {selectedLeverIds.has("ccmcc_support") && (
+                                <div className="bg-white border border-neutral-200 rounded-lg p-4 mb-4">
+                                  <div className="font-medium text-neutral-800 mb-3">CC/MCC Support</div>
+                                  <div>
+                                    <label className="text-xs text-neutral-600 mb-1 block">Capture improvement</label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        value={nursingCcmccCaptureImprovement}
+                                        onChange={(e) => setNursingCcmccCaptureImprovement(Number(e.target.value))}
+                                        className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
+                                        data-testid="input-nursing-ccmcc"
+                                      />
+                                      <span className="text-sm text-neutral-500">%</span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">Typical range: 10-30%</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setNursingCcmccCaptureImprovement(NURSING_POSTURE_PRESETS.typical.ccmccCaptureImprovement)}
+                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  >
+                                    [Reset to Typical Defaults]
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Navigation Buttons */}
+                    <div className="mt-8 flex items-center justify-between gap-4">
+                      <button
+                        onClick={() => setModelSetupStep(1)}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                        data-testid="button-step2-back"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Adoption
+                      </button>
+                      <button
+                        onClick={() => setModelSetupStep(3)}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-neutral-900 text-white hover:bg-neutral-800 transition-all"
+                        data-testid="button-step2-next"
+                      >
+                        Next: Investment
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Value Posture (Outpatient/ED) */}
+                {modelSetupStep === 2 && selectedSetting !== "nursing" && (
                   <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 md:p-8">
                     {/* Context Callout */}
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
