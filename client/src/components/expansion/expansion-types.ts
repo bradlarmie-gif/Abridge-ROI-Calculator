@@ -11,6 +11,7 @@ export interface BaselineData {
   roi: number;
   benefits: Partial<Record<LeverId, number>>;
   activeDrivers: LeverId[];
+  careSetting?: string;
 }
 
 export interface PhasedWave {

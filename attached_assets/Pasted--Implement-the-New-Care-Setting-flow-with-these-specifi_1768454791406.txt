@@ -1,0 +1,365 @@
+"Implement the New Care Setting flow with these specifications:
+
+DESIGN SYSTEM:
+- Use Lucide React icons (not emojis):
+  • ED: AlertCircle
+  • Nursing: HeartPulse  
+  • Inpatient: Building2
+- Follow existing shadcn/ui + Tailwind patterns
+- Match the visual language of our Scenario Builder
+- Use our existing formatCurrency and formatNumber utilities
+
+CALCULATION LOGIC:
+- Integrate with existing calculation architecture
+- Use the same driver calculation methods as baseline
+- Clearly distinguish which drivers are inherited vs. new
+- Apply volume discounts if applicable (use existing getVolumeDiscount logic)
+
+INSIGHT GENERATION:
+- Make insights specific to actual numbers: 'Adding ED increases your ROI from 5.9x to 7.5x'
+- Reference specific drivers: 'ED's higher wRVU density (2.8 vs 2.1) drives superior LoS value'
+- Show percentage increases: 'Nearly doubles your net gain (+98%)'
+
+COMPONENT STRUCTURE:
+1. NewCareSettingFlow.jsx (orchestrator)
+2. CareSettingExplorer.jsx (Step 1: Select setting)
+3. CombinedPreview.jsx (Step 2: Configure & preview)
+4. Use newCareSettingCalculations.js for math
+
+KEY BEHAVIORS:
+- Live updates as user adjusts provider slider (no 'Calculate' button)
+- Sticky results panel on right side
+- Inherit utilization from baseline by default
+- Pre-select appropriate drivers based on care setting
+- Show comparison table: Current | New | Combined
+- Generate dynamic insight based on actual ROI comparison
+"
+
+📝 Specific Code Refinements
+1. Replace Emojis with Lucide Icons
+Tell Replit:
+jsxCopy// At top of file:
+import { AlertCircle, HeartPulse, Building2, TrendingUp, DollarSign } from 'lucide-react';
+
+// In settings array:
+const settings = [
+  {
+    id: 'ed',
+    icon: AlertCircle,
+    iconColor: 'text-red-500',
+    name: 'Emergency Department',
+    // ... rest
+  },
+  {
+    id: 'nursing',
+    icon: HeartPulse,
+    iconColor: 'text-pink-500',
+    name: 'Nursing',
+    // ... rest
+  },
+  {
+    id: 'inpatient',
+    icon: Building2,
+    iconColor: 'text-blue-500',
+    name: 'Inpatient',
+    // ... rest
+  }
+];
+
+// In render:
+<div className="setting-card">
+  <setting.icon className={`w-12 h-12 ${setting.iconColor}`} />
+  <h3>{setting.name}</h3>
+</div>
+
+2. Specific Insight Generation
+Tell Replit to use this function:
+javascriptCopyfunction generateInsight(baseline, newSetting, model) {
+  const settingNames = { ed: 'ED', nursing: 'Nursing', inpatient: 'Inpatient' };
+  const name = settingNames[newSetting.type];
+  
+  const baselineROI = baseline.roi;
+  const combinedROI = model.combined.roi;
+  const newROI = model.newSetting.roi;
+  const gainIncrease = model.deltas.netGainIncrease;
+  
+  // Identify what's driving the value
+  const topDriver = Object.entries(model.newSetting.benefits)
+    .sort(([,a], [,b]) => b - a)[0];
+  const driverName = getDriverName(topDriver[0]);
+  
+  // Build specific insight
+  let insight = `Adding ${name} `;
+  
+  if (newROI > baselineROI) {
+    insight += `increases your combined ROI from ${baselineROI.toFixed(1)}x to ${combinedROI.toFixed(1)}x. `;
+    insight += `${name}'s ${newROI.toFixed(1)}x ROI outperforms your current deployment, `;
+    
+    // Explain WHY
+    if (newSetting.type === 'ed') {
+      const baselineWRVU = baseline.encounters > 0 ? 2.1 : 2.5; // typical outpatient
+      insight += `driven by higher wRVU density (2.8 vs ${baselineWRVU.toFixed(1)} per encounter). `;
+    }
+    
+    insight += `${driverName} accounts for the largest value contribution.`;
+  } else if (gainIncrease >= 50) {
+    insight += `nearly doubles your net gain (+${gainIncrease}%), `;
+    insight += `generating an additional $${(model.incremental.netGain / 1000).toFixed(0)}K annually `;
+    insight += `while maintaining strong ${combinedROI.toFixed(1)}x combined ROI.`;
+  } else {
+    insight += `increases your net gain by ${gainIncrease}% `;
+    insight += `with solid ${newROI.toFixed(1)}x ROI. `;
+    insight += `Combined ROI of ${combinedROI.toFixed(1)}x demonstrates efficient scaling.`;
+  }
+  
+  return insight;
+}
+
+3. Driver Inheritance Clarity
+Tell Replit to add this visual distinction:
+jsxCopy// In the Combined Preview, show driver breakdown with inheritance badges:
+
+<div className="value-breakdown-section">
+  <h4>Value Breakdown (Combined)</h4>
+  
+  {Object.entries(model.combined.benefitsByDriver).map(([driver, value]) => {
+    const isInherited = baseline.benefits?.[driver] > 0;
+    const isNew = model.newSetting.benefits?.[driver] > 0;
+    const percentage = (value / model.combined.benefit * 100);
+    
+    return (
+      <div key={driver} className="breakdown-bar">
+        <div className="bar-header">
+          <span className="bar-label">
+            {getDriverName(driver)}
+            {isInherited && isNew && (
+              <span className="badge badge-both">Both settings</span>
+            )}
+            {isInherited && !isNew && (
+              <span className="badge badge-baseline">From {baseline.careSetting}</span>
+            )}
+            {!isInherited && isNew && (
+              <span className="badge badge-new">New from {settingName}</span>
+            )}
+          </span>
+          <span className="bar-value">
+            {formatCurrency(value)} ({percentage.toFixed(0)}%)
+          </span>
+        </div>
+        <div className="bar-track">
+          <div 
+            className="bar-fill" 
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        
+        {/* Show the breakdown if driver appears in both */}
+        {isInherited && isNew && (
+          <div className="driver-detail">
+            <span className="detail-item">
+              {baseline.careSetting}: {formatCurrency(baseline.benefits[driver])}
+            </span>
+            <span className="detail-divider">+</span>
+            <span className="detail-item">
+              {settingName}: {formatCurrency(model.newSetting.benefits[driver])}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  })}
+</div>
+
+4. Volume Discount Integration
+Tell Replit to add this to the configuration panel:
+jsxCopy// In CombinedPreview, calculate and display volume discount:
+
+const totalProviders = baseline.providers + config.providers;
+const volumeDiscount = getVolumeDiscount(totalProviders); // use existing function
+
+// In the pricing display:
+<div className="pricing-section">
+  <h4>Investment</h4>
+  
+  <div className="pricing-breakdown">
+    <div className="pricing-row">
+      <span>Cost per provider/month:</span>
+      <span className="price">${baseline.costPerProviderMonth}</span>
+    </div>
+    
+    {volumeDiscount > 0 && (
+      <>
+        <div className="pricing-row highlight">
+          <span>Volume discount ({totalProviders} total providers):</span>
+          <span className="discount">-{(volumeDiscount * 100).toFixed(0)}%</span>
+        </div>
+        <div className="pricing-row">
+          <span>Effective rate:</span>
+          <span className="price">
+            ${(baseline.costPerProviderMonth * (1 - volumeDiscount)).toFixed(0)}/month
+          </span>
+        </div>
+      </>
+    )}
+    
+    <div className="pricing-row total">
+      <span>Annual investment for {settingName}:</span>
+      <span className="price">{formatCurrency(model.newSetting.cost)}</span>
+    </div>
+  </div>
+  
+  {volumeDiscount > 0 && (
+    <div className="pricing-note success">
+      ✓ Reaching {totalProviders} providers unlocks {(volumeDiscount * 100).toFixed(0)}% enterprise discount
+    </div>
+  )}
+</div>
+
+5. Match Existing Component Patterns
+Tell Replit:
+Copy"Use the same component structure as ExpandProviders flow:
+
+IMPORTS:
+- Import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+- Import { Slider } from '@/components/ui/slider'
+- Import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+- Import { Badge } from '@/components/ui/badge'
+- Import { Button } from '@/components/ui/button'
+
+STYLING:
+- Use Tailwind classes, not custom CSS
+- Follow existing color scheme: red-500 for primary actions, green-500 for positive metrics
+- Use existing spacing scale (space-y-4, gap-6, etc.)
+- Match typography: text-3xl font-bold for headers, text-sm text-muted-foreground for helpers
+
+LAYOUT:
+- Use same grid structure as Scenario Builder
+- Left panel: min-w-[400px] max-w-[600px]
+- Right panel: w-[480px] for results (sticky)
+- Use existing section dividers and spacing
+"
+
+6. Integration with Existing Architecture
+Tell Replit:
+javascriptCopy// In newCareSettingCalculations.js:
+
+import { 
+  calculateAccessValue,
+  calculateRetentionValue,
+  calculateLosValue,
+  calculateDenialValue,
+  calculateHCCValue
+} from './roiCalculations'; // your existing calculation functions
+
+export const calculateCombinedDeployment = (baseline, newSetting) => {
+  const settingDefaults = getSettingDefaults(newSetting.type);
+  
+  // NEW SETTING CALCULATIONS
+  const newProviders = newSetting.providers;
+  const newEncounters = newSetting.encounters || 
+    (newProviders * settingDefaults.encountersPerProvider);
+  const newUtilization = newSetting.utilization || baseline.utilization;
+  
+  // Calculate cost with volume discount if applicable
+  const totalProviders = baseline.providers + newProviders;
+  const volumeDiscount = getVolumeDiscount(totalProviders); // from existing utils
+  const effectiveCostPerProvider = baseline.costPerProviderMonth * (1 - volumeDiscount);
+  const newCost = newProviders * effectiveCostPerProvider * 12;
+  
+  // Use EXISTING driver calculation functions
+  const newBenefits = {};
+  
+  settingDefaults.primaryDrivers.forEach(driver => {
+    const driverConfig = {
+      providers: newProviders,
+      encounters: newEncounters,
+      utilization: newUtilization,
+      ...settingDefaults.metrics,
+      ...baseline // inherit baseline metrics where applicable
+    };
+    
+    switch(driver) {
+      case 'access':
+      case 'throughput':
+        newBenefits[driver] = calculateAccessValue(driverConfig);
+        break;
+      case 'los':
+        newBenefits[driver] = calculateLosValue(driverConfig);
+        break;
+      case 'denials':
+        newBenefits[driver] = calculateDenialValue(driverConfig);
+        break;
+      case 'hcc':
+        newBenefits[driver] = calculateHCCValue(driverConfig);
+        break;
+      // ... etc
+    }
+  });
+  
+  // Rest of calculation logic...
+  // Return model with volumeDiscount included
+  
+  return {
+    // ... existing return structure
+    volumeDiscount,
+    effectiveCostPerProvider
+  };
+};
+
+✅ Final Instructions for Replit
+Paste this complete prompt:
+CopyCreate a New Care Setting flow with these requirements:
+
+FILE STRUCTURE:
+- components/expansion/NewCareSettingFlow.jsx (main orchestrator)
+- components/expansion/CareSettingExplorer.jsx (care setting selection cards)
+- components/expansion/CombinedPreview.jsx (live preview with config)
+- utils/newCareSettingCalculations.js (calculation logic)
+
+DESIGN SYSTEM:
+✓ Use Lucide React icons (AlertCircle, HeartPulse, Building2) not emojis
+✓ Use shadcn/ui components (Card, Badge, Button, Slider, RadioGroup)
+✓ Use Tailwind for all styling (no custom CSS file)
+✓ Match existing component patterns from ExpandProviders flow
+✓ Colors: red-500 primary, green-500 positive metrics, slate-600 labels
+
+FUNCTIONALITY:
+✓ Live preview updates as user adjusts provider slider (no calculate button)
+✓ Inherit utilization from baseline by default
+✓ Pre-select appropriate drivers based on care setting (ED = throughput, los, denials)
+✓ Calculate volume discount based on total combined providers
+✓ Show comparison table: Current | New | Combined with deltas
+✓ Generate specific insights: "Adding ED increases ROI from 5.9x to 7.5x..."
+
+DRIVER HANDLING:
+✓ Clearly badge which drivers are "From Outpatient", "New from ED", or "Both settings"
+✓ Show breakdown when driver appears in both settings
+✓ Use existing driver calculation functions (calculateAccessValue, etc.)
+
+CALCULATION INTEGRATION:
+✓ Import and use existing getVolumeDiscount from utils
+✓ Import and use existing driver calculation functions
+✓ Import formatCurrency and formatNumber from utils/formatting
+✓ Follow same calculation patterns as baseline ROI model
+
+CARE SETTING DEFAULTS:
+ED:
+- 5,000 encounters per provider per year
+- 2.8 avg wRVU per encounter
+- Primary drivers: throughput, los, denials
+- Same pricing as baseline
+
+Nursing (Coming Soon):
+- 2,000 encounters per provider per year
+- Primary drivers: timeSavings, overtime, quality
+- Different pricing structure
+
+Inpatient (Coming Soon):
+- 800 encounters per provider per year
+- 3.5 avg wRVU per encounter
+- Primary drivers: hcc, los, denials
+- Same pricing as baseline
+
+RESULT:
+A beautiful, production-ready flow that lets users explore adding ED/Nursing/Inpatient
+to their current deployment with live ROI preview and specific, data-driven 

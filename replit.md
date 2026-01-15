@@ -50,6 +50,32 @@ The Expansion Calculator allows modeling ROI for provider expansion scenarios wi
 - `expansion-calculations.ts` - Core calculation functions (maturity, costs, scaling)
 - `expansion-types.ts` - TypeScript interfaces for driver validations
 
+### New Care Setting Flow (Component-Based)
+The New Care Setting Flow allows users to explore adding additional care settings (ED, Nursing, Inpatient) to their current deployment with real-time combined ROI calculations.
+
+**Design Philosophy**: "Show, don't ask. Educate, don't interrogate. Make it feel inevitable."
+
+**Two-Step Flow**:
+1. **CareSettingExplorer**: Educational cards for each care setting showing characteristics, recommended drivers, typical ROI, and pricing. ED is available; Nursing and Inpatient show "Coming Soon".
+2. **CombinedPreview**: Real-time configuration with sliders for providers/utilization, comparison table (Baseline vs New vs Combined with delta %), and driver inheritance visualization.
+
+**Key Components** (`/client/src/components/expansion/`):
+- `NewCareSettingFlow.tsx` - Orchestrator component managing step state
+- `CareSettingExplorer.tsx` - Educational cards with setting selection
+- `CombinedPreview.tsx` - Live combined preview with configuration controls
+- `newCareSettingCalculations.ts` - Combined deployment calculation logic
+
+**Care Setting Defaults**:
+- ED: 5,000 encounters/provider, 2.8 avg wRVU, drivers: throughput, LOS, denial reduction
+- Nursing: 2,000 encounters/provider (coming soon)
+- Inpatient: 800 encounters/provider, 3.5 avg wRVU (coming soon)
+
+**Calculation Features**:
+- Volume discount applied to combined provider count
+- Driver inheritance badges (from baseline, new, or both)
+- Dynamic insight generation with actual numbers
+- Three-year value projections
+
 ### Key Design Patterns
 - **Configuration-driven levers**: All lever definitions (labels, categories, descriptions) are centralized in `SETTING_CONFIG.ts`
 - **Pure calculation functions**: ROI calculations are side-effect free functions in `roi-calculator.ts`

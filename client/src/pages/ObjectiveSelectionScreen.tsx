@@ -867,12 +867,14 @@ function PriorityCard({
               )}
             </div>
           </div>
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={onToggle}
-            className={`flex-shrink-0 mt-1 ${isSelected ? "border-[#E8532F] data-[state=checked]:bg-[#E8532F]" : ""}`}
-            data-testid={`checkbox-${lever.id}`}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={onToggle}
+              className={`flex-shrink-0 mt-1 ${isSelected ? "border-[#E8532F] data-[state=checked]:bg-[#E8532F]" : ""}`}
+              data-testid={`checkbox-${lever.id}`}
+            />
+          </div>
         </div>
       </div>
     </div>
