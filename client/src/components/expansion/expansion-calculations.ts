@@ -200,32 +200,40 @@ export function calculateExpansionResults(
   const scenarioEncounters = targetProviders * encountersPerProvider;
   const matureUtilization = 0.85;
 
-  const year2Encounters = scenarioEncounters * matureUtilization;
-  const year2Benefit = year2Encounters * benefitPerEncounter;
-  const year2Cost = expansionCost;
-  const year2NetGain = year2Benefit - year2Cost;
-  const year2Roi = year2Cost > 0 ? year2Benefit / year2Cost : 0;
-
-  const year3Encounters = scenarioEncounters * matureUtilization;
-  const year3Benefit = year3Encounters * benefitPerEncounter;
-  const year3Cost = expansionCost;
-  const year3NetGain = year3Benefit - year3Cost;
-  const year3Roi = year3Cost > 0 ? year3Benefit / year3Cost : 0;
+  const newProviderEncounters = newProviders * encountersPerProvider;
+  
+  const year2IncrementalEncounters = newProviderEncounters * matureUtilization;
+  const year2IncrementalBenefit = year2IncrementalEncounters * benefitPerEncounter;
+  const year2IncrementalCost = expansionCost - baseline.annualCost;
+  
+  const year3IncrementalEncounters = newProviderEncounters * matureUtilization;
+  const year3IncrementalBenefit = year3IncrementalEncounters * benefitPerEncounter;
+  const year3IncrementalCost = expansionCost - baseline.annualCost;
 
   const totalYear1Cost = baseline.annualCost + year1Cost;
   const totalYear1Benefit = baseline.totalBenefit + year1Benefit;
 
-  const threeYearCost = totalYear1Cost + year2Cost + year3Cost;
-  const threeYearBenefit = totalYear1Benefit + year2Benefit + year3Benefit;
+  const totalYear2Cost = baseline.annualCost + year2IncrementalCost;
+  const totalYear2Benefit = baseline.totalBenefit + year2IncrementalBenefit;
+  const year2NetGain = totalYear2Benefit - totalYear2Cost;
+  const year2Roi = totalYear2Cost > 0 ? totalYear2Benefit / totalYear2Cost : 0;
+  
+  const totalYear3Cost = baseline.annualCost + year3IncrementalCost;
+  const totalYear3Benefit = baseline.totalBenefit + year3IncrementalBenefit;
+  const year3NetGain = totalYear3Benefit - totalYear3Cost;
+  const year3Roi = totalYear3Cost > 0 ? totalYear3Benefit / totalYear3Cost : 0;
+
+  const threeYearCost = totalYear1Cost + totalYear2Cost + totalYear3Cost;
+  const threeYearBenefit = totalYear1Benefit + totalYear2Benefit + totalYear3Benefit;
   const threeYearNetGain = threeYearBenefit - threeYearCost;
   const threeYearRoi = threeYearCost > 0 ? threeYearBenefit / threeYearCost : 0;
 
-  const incrementalCost = expansionCost - baseline.annualCost;
-  const incrementalBenefit =
-    year2Benefit + year3Benefit - baseline.totalBenefit * 2;
-  const incrementalNetGain = incrementalBenefit - incrementalCost;
-  const incrementalRoi =
-    incrementalCost > 0 ? incrementalBenefit / incrementalCost : 0;
+  const threeYearIncrementalCost = year1Cost + year2IncrementalCost + year3IncrementalCost;
+  const threeYearIncrementalBenefit = year1Benefit + year2IncrementalBenefit + year3IncrementalBenefit;
+  const incrementalNetGain = threeYearIncrementalBenefit - threeYearIncrementalCost;
+  const incrementalRoi = threeYearIncrementalCost > 0 
+    ? threeYearIncrementalBenefit / threeYearIncrementalCost 
+    : 0;
 
   return {
     year1: {
@@ -238,17 +246,17 @@ export function calculateExpansionResults(
     },
     year2: {
       totalProviders: targetProviders,
-      totalEncounters: year2Encounters,
-      totalCost: year2Cost,
-      totalBenefit: year2Benefit,
+      totalEncounters: baseline.encounters + year2IncrementalEncounters,
+      totalCost: totalYear2Cost,
+      totalBenefit: totalYear2Benefit,
       netGain: year2NetGain,
       roi: year2Roi,
     },
     year3: {
       totalProviders: targetProviders,
-      totalEncounters: year3Encounters,
-      totalCost: year3Cost,
-      totalBenefit: year3Benefit,
+      totalEncounters: baseline.encounters + year3IncrementalEncounters,
+      totalCost: totalYear3Cost,
+      totalBenefit: totalYear3Benefit,
       netGain: year3NetGain,
       roi: year3Roi,
     },
@@ -262,8 +270,8 @@ export function calculateExpansionResults(
     incremental: {
       providers: newProviders,
       encounters: scenarioEncounters - baseline.encounters,
-      cost: incrementalCost,
-      benefit: incrementalBenefit,
+      cost: threeYearIncrementalCost,
+      benefit: threeYearIncrementalBenefit,
       netGain: incrementalNetGain,
       roi: incrementalRoi,
     },

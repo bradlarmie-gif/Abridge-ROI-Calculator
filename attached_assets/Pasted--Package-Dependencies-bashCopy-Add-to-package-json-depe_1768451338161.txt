@@ -1,0 +1,723 @@
+📦 Package Dependencies
+bashCopy# Add to package.json dependencies:
+npm install recharts
+
+🧮 Calculation Utilities
+javascriptCopy// utils/expansionCalculations.js
+
+export const calculateExpansionModel = (baseline, inputs) => {
+  const newProviders = inputs.targetProviders - baseline.providers;
+  
+  // Calculate costs
+  const baselineCost = baseline.annualCost || (baseline.providers * baseline.costPerProviderMonth * 12);
+  const scenarioCost = calculateScenarioCost(inputs, baseline);
+  
+  // Maturity curves for different drivers
+  const maturityCurves = {
+    access: { year1: 0.50, year2: 0.80, year3: 1.00 },
+    retention: { year1: 0.20, year2: 0.70, year3: 1.00 }, // Lag effect
+    los: { year1: 0.50, year2: 0.80, year3: 1.00 },
+    locum: { year1: 0.50, year2: 0.80, year3: 0.95 }, // Efficiency gains
+    denials: { year1: 0.50, year2: 0.80, year3: 1.00 },
+    hcc: { year1: 0.50, year2: 0.80, year3: 1.00 }
+  };
+
+  // Calculate benefits by year
+  const calculateYearBenefits = (year) => {
+    const benefitsByDriver = {};
+    let totalBenefit = 0;
+
+    Object.entries(baseline.benefits || {}).forEach(([driver, baseValue]) => {
+      if (baseValue > 0) {
+        const valuePerProvider = baseValue / baseline.providers;
+        const curve = maturityCurves[driver] || { year1: 0.5, year2: 0.8, year3: 1.0 };
+        const maturityFactor = curve[`year${year}`];
+        
+        // Apply validation adjustments
+        const adjustedValue = applyDriverValidation(
+          driver, 
+          valuePerProvider, 
+          newProviders, 
+          maturityFactor,
+          inputs.driverValidations?.[driver],
+          baseline
+        );
+        
+        benefitsByDriver[driver] = adjustedValue;
+        totalBenefit += adjustedValue;
+      }
+    });
+
+    return { benefitsByDriver, totalBenefit };
+  };
+
+  const year1 = calculateYearBenefits(1);
+  const year2 = calculateYearBenefits(2);
+  const year3 = calculateYearBenefits(3);
+
+  // Build the model
+  return {
+    baseline: {
+      providers: baseline.providers,
+      cost: baselineCost,
+      benefit: baseline.totalBenefit,
+      netGain: baseline.totalBenefit - baselineCost,
+      roi: baseline.totalBenefit / baselineCost
+    },
+    
+    year1: {
+      avgUtilization: 0.50,
+      totalCost: scenarioCost,
+      incrementalCost: scenarioCost - baselineCost,
+      benefitsByDriver: year1.benefitsByDriver,
+      totalBenefit: baseline.totalBenefit + year1.totalBenefit,
+      incrementalBenefit: year1.totalBenefit,
+      totalNetGain: (baseline.totalBenefit + year1.totalBenefit) - scenarioCost,
+      incrementalNetGain: year1.totalBenefit - (scenarioCost - baselineCost),
+      totalROI: (baseline.totalBenefit + year1.totalBenefit) / scenarioCost,
+      incrementalROI: year1.totalBenefit / (scenarioCost - baselineCost)
+    },
+    
+    year2: {
+      avgUtilization: 0.80,
+      totalCost: scenarioCost,
+      incrementalCost: scenarioCost - baselineCost,
+      benefitsByDriver: year2.benefitsByDriver,
+      totalBenefit: baseline.totalBenefit + year2.totalBenefit,
+      incrementalBenefit: year2.totalBenefit,
+      totalNetGain: (baseline.totalBenefit + year2.totalBenefit) - scenarioCost,
+      incrementalNetGain: year2.totalBenefit - (scenarioCost - baselineCost),
+      totalROI: (baseline.totalBenefit + year2.totalBenefit) / scenarioCost,
+      incrementalROI: year2.totalBenefit / (scenarioCost - baselineCost)
+    },
+    
+    year3: {
+      avgUtilization: 0.90,
+      totalCost: scenarioCost,
+      incrementalCost: scenarioCost - baselineCost,
+      benefitsByDriver: year3.benefitsByDriver,
+      totalBenefit: baseline.totalBenefit + year3.totalBenefit,
+      incrementalBenefit: year3.totalBenefit,
+      totalNetGain: (baseline.totalBenefit + year3.totalBenefit) - scenarioCost,
+      incrementalNetGain: year3.totalBenefit - (scenarioCost - baselineCost),
+      totalROI: (baseline.totalBenefit + year3.totalBenefit) / scenarioCost,
+      incrementalROI: year3.totalBenefit / (scenarioCost - baselineCost)
+    },
+    
+    threeYear: {
+      totalIncrementalCost: (scenarioCost - baselineCost) * 3,
+      totalIncrementalBenefit: year1.totalBenefit + year2.totalBenefit + year3.totalBenefit,
+      totalIncrementalNetGain: (year1.totalBenefit + year2.totalBenefit + year3.totalBenefit) - ((scenarioCost - baselineCost) * 3),
+      blendedROI: (year1.totalBenefit + year2.totalBenefit + year3.totalBenefit) / ((scenarioCost - baselineCost) * 3)
+    },
+    
+    incremental: {
+      providers: newProviders
+    },
+    
+    hasRetention: baseline.benefits?.retention > 0,
+    hasAccess: baseline.benefits?.access > 0
+  };
+};
+
+function calculateScenarioCost(inputs, baseline) {
+  const { targetProviders, pricingModel, enterpriseCost } = inputs;
+  
+  if (pricingModel === 'per-provider') {
+    return targetProviders * baseline.costPerProviderMonth * 12;
+  }
+  
+  if (enterpriseCost && enterpriseCost > 0) {
+    return enterpriseCost;
+  }
+  
+  // Apply volume discount
+  const discount = getVolumeDiscount(targetProviders);
+  return targetProviders * baseline.costPerProviderMonth * 12 * (1 - discount);
+}
+
+function getVolumeDiscount(providers) {
+  if (providers >= 250) return 0.30;
+  if (providers >= 150) return 0.25;
+  if (providers >= 100) return 0.20;
+  if (providers >= 75) return 0.15;
+  return 0;
+}
+
+function applyDriverValidation(driver, valuePerProvider, newProviders, maturityFactor, validation, baseline) {
+  let adjustedValue = valuePerProvider * newProviders * maturityFactor;
+  
+  // Apply driver-specific adjustments
+  if (validation) {
+    switch(driver) {
+      case 'access':
+        if (!validation.hasCapacity) {
+          adjustedValue *= 0.5; // Reduce if no capacity constraint
+        }
+        if (!validation.sameDemand) {
+          const ratio = validation.additionalVisitsPerWeek / (baseline.benefits.access / baseline.providers / 48 / (baseline.revenuePerVisit || 200));
+          adjustedValue *= ratio;
+        }
+        break;
+      
+      case 'retention':
+        // Already handled by maturity curve lag
+        break;
+      
+      case 'los':
+        if (!validation.sameCaseMix) {
+          const baselineWRVU = baseline.benefits.los / baseline.providers / (baseline.revenuePerWRVU || 40);
+          const ratio = validation.wrvuUplift / baselineWRVU;
+          adjustedValue *= ratio;
+        }
+        break;
+    }
+  }
+  
+  return Math.round(adjustedValue);
+}
+
+📈 Maturity Curve Visualization
+jsxCopy// components/expansion/MaturityCurveViz.jsx
+
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+
+const MaturityCurveViz = ({ model }) => {
+  // Generate data points for the curve
+  const data = [
+    { month: 0, utilization: 0, label: 'Start' },
+    { month: 1, utilization: 40, label: 'M1' },
+    { month: 3, utilization: 50, label: 'M3' },
+    { month: 6, utilization: 58, label: 'M6', stage: 'Ramp-Up' },
+    { month: 9, utilization: 68, label: 'M9' },
+    { month: 12, utilization: 75, label: 'M12', stage: 'Maturing' },
+    { month: 15, utilization: 80, label: 'M15' },
+    { month: 18, utilization: 85, label: 'M18' },
+    { month: 21, utilization: 88, label: 'M21', stage: 'Mature' },
+    { month: 24, utilization: 90, label: 'M24' }
+  ];
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="maturity-tooltip">
+          <p className="tooltip-label">{payload[0].payload.label}</p>
+          <p className="tooltip-value">{payload[0].value}% utilization</p>
+          {payload[0].payload.stage && (
+            <p className="tooltip-stage">{payload[0].payload.stage}</p>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="maturity-curve-container">
+      <ResponsiveContainer width="100%" height={300}>
+        <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="utilizationGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis 
+            dataKey="month" 
+            label={{ value: 'Months', position: 'insideBottom', offset: -5 }}
+            stroke="#6b7280"
+          />
+          <YAxis 
+            label={{ value: 'Utilization %', angle: -90, position: 'insideLeft' }}
+            stroke="#6b7280"
+            domain={[0, 100]}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Area 
+            type="monotone" 
+            dataKey="utilization" 
+            stroke="#ef4444" 
+            strokeWidth={3}
+            fillOpacity={1} 
+            fill="url(#utilizationGradient)" 
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export default MaturityCurveViz;
+
+🎨 Critical CSS (expansion.css)
+cssCopy/* expansion.css - Essential Styles */
+
+/* Progress Bar */
+.progress-bar {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 40px 0;
+  padding: 0 40px;
+  position: relative;
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 40px;
+  right: 40px;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #9ca3af;
+  transition: all 0.3s;
+}
+
+.progress-step.active .step-number {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.progress-step.complete .step-number {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.step-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.progress-step.active .step-label {
+  color: #111827;
+  font-weight: 600;
+}
+
+/* Year Cards */
+.year-card {
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  background: white;
+}
+
+.year-card.year-1 {
+  border-left: 6px solid #f59e0b;
+  background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);
+}
+
+.year-card.year-2 {
+  border-left: 6px solid #3b82f6;
+  background: linear-gradient(135deg, #dbeafe 0%, #ffffff 100%);
+}
+
+.year-card.year-3 {
+  border-left: 6px solid #10b981;
+  background: linear-gradient(135deg, #d1fae5 0%, #ffffff 100%);
+}
+
+.year-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.year-badge {
+  background: rgba(0,0,0,0.05);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.year-1 .year-badge { background: #fde68a; color: #78350f; }
+.year-2 .year-badge { background: #bfdbfe; color: #1e3a8a; }
+.year-3 .year-badge { background: #a7f3d0; color: #065f46; }
+
+.year-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.year-utilization {
+  margin-left: auto;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Comparison Table */
+.comparison-table {
+  display: grid;
+  grid-template-columns: 140px repeat(3, 1fr);
+  gap: 12px 16px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.table-header {
+  display: contents;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.table-row {
+  display: contents;
+}
+
+.table-row.summary {
+  font-weight: 600;
+}
+
+.table-row > span {
+  padding: 12px 8px;
+  display: flex;
+  align-items: center;
+}
+
+.row-label {
+  color: #374151;
+  font-weight: 500;
+}
+
+.highlight-col {
+  background: #fef2f2;
+  color: #ef4444;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.incremental {
+  color: #6b7280;
+}
+
+.incremental.positive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* Year Insights */
+.year-insight {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 24px;
+}
+
+.year-insight.warning {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+}
+
+.year-insight.success {
+  background: #d1fae5;
+  border: 1px solid #34d399;
+}
+
+.insight-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.insight-text strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.insight-text p {
+  margin: 0;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Value Breakdown */
+.value-breakdown {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.breakdown-header {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.breakdown-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.driver-name {
+  color: #374151;
+}
+
+.driver-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Cumulative Summary */
+.cumulative-summary {
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 40px;
+  margin: 40px 0;
+}
+
+.cumulative-summary h2 {
+  text-align: center;
+  margin-bottom: 32px;
+  color: #111827;
+}
+
+.cumulative-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.cumulative-metric {
+  text-align: center;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.cumulative-metric.highlight {
+  background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+  border: 2px solid #10b981;
+}
+
+.metric-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.metric-value.success {
+  color: #10b981;
+}
+
+.metric-value.large {
+  font-size: 40px;
+}
+
+/* Key Insights Grid */
+.key-insights-section h3 {
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.insight-card {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.insight-check {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Buttons */
+.btn-primary {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.btn-primary:hover {
+  background: #dc2626;
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: white;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.step-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 2px solid #e5e7eb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .comparison-table {
+    grid-template-columns: 100px repeat(3, 1fr);
+    gap: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .cumulative-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+🔌 How to Integrate Into Your App
+jsxCopy// In your main ROI Calculator component:
+
+import ExpansionCalculator from './components/expansion/ExpansionCalculator';
+
+function ROICalculator() {
+  const [showExpansion, setShowExpansion] = useState(false);
+  const [baselineData, setBaselineData] = useState(null);
+
+  if (showExpansion) {
+    return (
+      <ExpansionCalculator
+        baselineData={baselineData}
+        onBack={() => setShowExpansion(false)}
+        onSave={(model) => {
+          console.log('Saved expansion model:', model);
+          // Save to your state/database
+          setShowExpansion(false);
+        }}
+      />
+    );
+  }
+
+  return (
+    <div>
+      {/* Your existing calculator */}
+      
+      {/* Add this button in Scenario Builder */}
+      <button onClick={() => {
+        setBaselineData({
+          providers: 50,
+          encounters: 100000,
+          utilization: 0.65,
+          costPerProviderMonth: 120,
+          totalBenefit: 455333,
+          benefits: {
+            access: 217000,
+            retention: 100000,
+            los: 227500
+          },
+          annualCost: 90000,
+          netGain: 365333,
+          roi: 5.06,
+          revenuePerVisit: 200,
+          revenuePerWRVU: 40,
+          providerReplacementCost: 250000
+        });
+        setShowExpansion(true);
+      }}>
+        Model Expansion →
+      </button>
+    </div>
+  );
+}
+
