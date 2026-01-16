@@ -798,86 +798,62 @@ function CareSettingRow({
   onClick: () => void;
 }) {
   const description = SETTING_DESCRIPTIONS[settingKey] || "";
-  const drivers = SETTING_DRIVERS[settingKey] || [];
-  const footer = SETTING_FOOTERS[settingKey];
 
   const buttonContent = (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative w-full text-left p-6 transition-all duration-200 ease-out ${
+      className={`group relative w-full text-left rounded-xl transition-all duration-200 ease-out ${
         disabled
-          ? "cursor-not-allowed bg-white border border-dashed border-[#D1D5DB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+          ? "cursor-not-allowed bg-white border border-dashed border-[#D1D5DB]"
           : selected
-            ? "bg-[#FFF7F5] border border-[#E8532F]/30 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
-            : "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#E8532F] cursor-pointer"
+            ? "bg-[#FEF2F0] border-2 border-[#E85D3F] shadow-[0_0_0_3px_rgba(232,93,63,0.1)]"
+            : "bg-white border border-[#E5E7EB] hover:border-[#E85D3F] hover:shadow-md cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      {selected && (
-        <div className="absolute right-5 top-5">
-          <Check className="w-5 h-5 text-[#F03319]" />
-        </div>
-      )}
-      
-      <div
-        className={`flex items-center justify-center w-12 h-12 rounded-lg mb-4 ${
-          selected
-            ? "bg-[#F03319]/10"
-            : disabled
-              ? "bg-neutral-100"
-              : "bg-neutral-100 group-hover:bg-neutral-200"
-        }`}
-      >
-        <Icon
-          className={`w-6 h-6 ${selected ? "text-[#F03319]" : disabled ? "text-neutral-400" : "text-neutral-600"}`}
-        />
-      </div>
-      
-      <div className="pr-8">
-        <span
-          className={`text-lg font-semibold block ${
+      <div className="flex items-center gap-4 p-5">
+        <div
+          className={`flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0 ${
             selected
-              ? "text-[#111827]"
+              ? "bg-[#E85D3F]"
               : disabled
-                ? "text-neutral-400"
-                : "text-[#111827]"
+                ? "bg-neutral-100"
+                : "bg-neutral-100 group-hover:bg-[#FEF2F0]"
           }`}
         >
-          {label}
-        </span>
-        <p className={`text-sm mt-1 ${disabled ? "text-neutral-400" : "text-[#6B7280]"}`}>
-          {description}
-        </p>
-      </div>
-      
-      {!disabled && drivers.length > 0 && (
-        <>
-          <div className="border-t border-[#E5E7EB] my-4" />
-          <div>
-            <p className="text-[13px] font-medium text-[#6B7280] mb-2">Typical drivers:</p>
-            <div className="space-y-1">
-              {drivers.map((driver, idx) => (
-                <p key={idx} className="text-[13px] text-[#6B7280] leading-relaxed">• {driver}</p>
-              ))}
+          <Icon
+            className={`w-6 h-6 ${selected ? "text-white" : disabled ? "text-neutral-400" : "text-neutral-600 group-hover:text-[#E85D3F]"}`}
+          />
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <span
+            className={`text-base font-semibold block ${
+              disabled ? "text-neutral-400" : "text-[#111827]"
+            }`}
+          >
+            {label}
+          </span>
+          <p className={`text-sm mt-0.5 ${disabled ? "text-neutral-400" : "text-[#6B7280]"}`}>
+            {description}
+          </p>
+          {disabled && (
+            <p className="text-xs text-[#9CA3AF] italic mt-1">Coming soon</p>
+          )}
+        </div>
+        
+        <div className="flex-shrink-0">
+          {selected ? (
+            <div className="w-6 h-6 rounded-full bg-[#E85D3F] flex items-center justify-center">
+              <Check className="w-4 h-4 text-white" />
             </div>
-          </div>
-        </>
-      )}
-      
-      {disabled && (
-        <p className="text-[13px] text-[#9CA3AF] italic mt-4">In development</p>
-      )}
-      
-      {!disabled && footer && footer.text && (
-        <p className="text-[13px] text-[#6B7280] mt-4 flex items-center gap-1.5">
-          {footer.iconType === "trending" && <TrendingUp className="w-3.5 h-3.5" />}
-          {footer.iconType === "zap" && <Zap className="w-3.5 h-3.5" />}
-          {footer.iconType === "users" && <Users className="w-3.5 h-3.5" />}
-          {footer.text}
-        </p>
-      )}
+          ) : !disabled ? (
+            <div className="w-6 h-6 rounded-full border-2 border-[#D1D5DB] group-hover:border-[#E85D3F]" />
+          ) : null}
+        </div>
+      </div>
     </button>
   );
 
