@@ -1,0 +1,544 @@
+Step 3: Gap Analysis - Redesigned UX
+The New Flow
+
+User sees all available drivers as selectable cards (collapsed state)
+User clicks on a driver to select it → card expands to show the math flow
+User confirms/edits the assumptions in the expanded card
+User can select multiple drivers - each one expands when selected
+Summary section at bottom shows total gap from all selected drivers
+Colors are Abridge orange, not green
+
+
+Visual Layout
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  THE GAP AT A GLANCE                                                        │
+│  [Side-by-side comparison card - already done, looks good]                  │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  HOW THE GAP TRANSLATES TO VALUE                                            │
+│  Select the value drivers that matter most to your organization             │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  ☑️ Patient Access                                    +$100,000     │   │
+│  │     Turn documentation efficiency into visit capacity   ───────     │   │
+│  │                                                        SELECTED     │   │
+│  │  ┌───────────────────────────────────────────────────────────────┐ │   │
+│  │  │                                                               │ │   │
+│  │  │  [Full expanded math card - With DAX vs With Abridge]         │ │   │
+│  │  │  [All the calculation steps visible]                          │ │   │
+│  │  │  [Comparison bars at bottom]                                  │ │   │
+│  │  │                                                               │ │   │
+│  │  └───────────────────────────────────────────────────────────────┘ │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  ☑️ Overtime Savings                                  +$54,375      │   │
+│  │     Reduce after-hours documentation burden           ───────       │   │
+│  │                                                       SELECTED      │   │
+│  │  ┌───────────────────────────────────────────────────────────────┐ │   │
+│  │  │  [Expanded math card]                                         │ │   │
+│  │  └───────────────────────────────────────────────────────────────┘ │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  ☐ Level of Service                                   +$XX,XXX      │   │
+│  │     Capture accurate wRVU through complete documentation            │   │
+│  │                                                                     │   │
+│  │     [Click to add this driver]                        NOT SELECTED  │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  ☐ Clinician Retention                                +$XX,XXX      │   │
+│  │     Reduce burnout-driven turnover                    NOT SELECTED  │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  ☐ HCC Capture                                        +$XX,XXX      │   │
+│  │     Improve risk adjustment through documentation     NOT SELECTED  │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  ☐ Documentation-Related Denials                      +$XX,XXX      │   │
+│  │     Reduce preventable claim denials                  NOT SELECTED  │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  YOUR SELECTED DRIVERS                              TOTAL GAP       │   │
+│  │                                                                     │   │
+│  │  Patient Access                                    +$100,000        │   │
+│  │  Overtime Savings                                  +$54,375         │   │
+│  │  ──────────────────────────────────────────────────────────────    │   │
+│  │  TOTAL ADDITIONAL VALUE                            +$154,375/yr     │   │
+│  │                                                                     │   │
+│  │                    [See Opportunity at Scale →]                     │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Replit Instructions
+Copy this to Replit:
+
+Step 3 Gap Analysis - Complete Redesign
+Overview:
+Redesign the driver cards to be selectable. Users click to select a driver, which expands to show the math. Unselected drivers show as collapsed cards. Change all green colors to Abridge orange.
+
+1. Color Changes (Global)
+Replace all green with Abridge orange throughout Step 3:
+cssCopy/* OLD (green) → NEW (orange) */
+bg-green-50 → bg-orange-50
+bg-green-100 → bg-orange-100
+bg-green-500 → bg-orange-500
+bg-green-600 → bg-orange-600
+text-green-500 → text-orange-500
+text-green-600 → text-orange-600
+text-green-700 → text-orange-700
+border-green-200 → border-orange-200
+border-green-500 → border-orange-500
+
+/* Abridge orange values */
+--orange-50: #FFF7ED;
+--orange-100: #FFEDD5;
+--orange-200: #FED7AA;
+--orange-500: #E85D3F;
+--orange-600: #DC4A2C;
+--orange-700: #C73E22;
+
+2. Driver Card Component - Two States
+State: NOT SELECTED (Collapsed)
+tsxCopyinterface DriverCardProps {
+  driver: Driver;
+  isSelected: boolean;
+  onToggle: (driverId: string) => void;
+  calculations: DriverCalculation;
+}
+
+function DriverCard({ driver, isSelected, onToggle, calculations }: DriverCardProps) {
+  
+  if (!isSelected) {
+    // COLLAPSED STATE
+    return (
+      <div 
+        className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 transition-all"
+        onClick={() => onToggle(driver.id)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Checkbox */}
+            <div className="w-6 h-6 border-2 border-gray-300 rounded-md flex items-center justify-center">
+              {/* Empty checkbox */}
+            </div>
+            
+            {/* Icon */}
+            <div className="p-2 bg-gray-100 rounded-lg text-gray-500">
+              {driver.icon}
+            </div>
+            
+            {/* Title & subtitle */}
+            <div>
+              <div className="font-semibold text-gray-900">{driver.label}</div>
+              <div className="text-sm text-gray-500">{driver.subtitle}</div>
+            </div>
+          </div>
+          
+          {/* Potential value (estimated) */}
+          <div className="text-right">
+            <div className="text-lg font-semibold text-gray-400">
+              +{formatCurrency(calculations.estimatedGap)}
+            </div>
+            <div className="text-xs text-gray-400">potential value</div>
+          </div>
+        </div>
+        
+        {/* Click hint */}
+        <div className="mt-3 text-center">
+          <span className="text-sm text-orange-500 font-medium">
+            Click to add this driver →
+          </span>
+        </div>
+      </div>
+    );
+  }
+  
+  // EXPANDED STATE (selected)
+  return (
+    <div className="bg-white border-2 border-orange-300 rounded-xl overflow-hidden">
+      {/* Header */}
+      <div 
+        className="p-5 bg-orange-50 cursor-pointer"
+        onClick={() => onToggle(driver.id)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Checked checkbox */}
+            <div className="w-6 h-6 bg-orange-500 border-2 border-orange-500 rounded-md flex items-center justify-center">
+              <CheckIcon className="w-4 h-4 text-white" />
+            </div>
+            
+            {/* Icon */}
+            <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
+              {driver.icon}
+            </div>
+            
+            {/* Title & subtitle */}
+            <div>
+              <div className="font-semibold text-gray-900">{driver.label}</div>
+              <div className="text-sm text-gray-600">{driver.subtitle}</div>
+            </div>
+          </div>
+          
+          {/* Calculated value */}
+          <div className="text-right">
+            <div className="text-2xl font-bold text-orange-600">
+              +{formatCurrency(calculations.gap)}
+            </div>
+            <div className="text-sm text-orange-600">additional value</div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Expanded content - the math flow */}
+      <div className="p-5 border-t border-orange-200">
+        {/* Side by side comparison */}
+        <div className="grid grid-cols-2 gap-8">
+          {/* Left: With Competitor */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+              <span className="text-sm font-medium text-gray-500">
+                With {competitor.name}
+              </span>
+            </div>
+            <MathFlowSteps steps={calculations.competitorSteps} color="gray" />
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Annual Value</span>
+                <span className="text-xl font-bold text-gray-700">
+                  {formatCurrency(calculations.competitorValue)}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right: With Abridge */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+              <span className="text-sm font-medium text-orange-600">
+                With Abridge
+              </span>
+            </div>
+            <MathFlowSteps steps={calculations.abridgeSteps} color="orange" />
+            <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-orange-600">Annual Value</span>
+                <span className="text-xl font-bold text-orange-600">
+                  {formatCurrency(calculations.abridgeValue)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Comparison bars */}
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <div className="space-y-2">
+            {/* Abridge bar */}
+            <div className="flex items-center gap-3">
+              <span className="w-16 text-sm text-gray-500 text-right">Abridge</span>
+              <div className="flex-1 h-8 bg-gray-100 rounded-lg overflow-hidden">
+                <div 
+                  className="h-full bg-orange-500 rounded-lg flex items-center px-3"
+                  style={{ width: `${(calculations.abridgeValue / Math.max(calculations.abridgeValue, calculations.competitorValue)) * 100}%` }}
+                >
+                  <span className="text-sm font-semibold text-white">
+                    {formatCurrency(calculations.abridgeValue)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Competitor bar */}
+            <div className="flex items-center gap-3">
+              <span className="w-16 text-sm text-gray-400 text-right">Current</span>
+              <div className="flex-1 h-8 bg-gray-100 rounded-lg overflow-hidden">
+                <div 
+                  className="h-full bg-gray-400 rounded-lg flex items-center px-3"
+                  style={{ width: `${(calculations.competitorValue / Math.max(calculations.abridgeValue, calculations.competitorValue)) * 100}%` }}
+                >
+                  <span className="text-sm font-semibold text-white">
+                    {formatCurrency(calculations.competitorValue)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Gap callout */}
+          <div className="flex justify-end mt-2">
+            <span className="text-orange-600 font-semibold">
+              ↑ +{formatCurrency(calculations.gap)} gap
+            </span>
+          </div>
+        </div>
+        
+        {/* Insight */}
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-start gap-2">
+            <LightbulbIcon className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-gray-600">
+              {calculations.insight}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+3. Math Flow Steps Component (Updated for Orange)
+tsxCopyinterface MathStep {
+  label: string;
+  value: string;
+  formula?: string;
+  isEditable?: boolean;
+  editKey?: string;
+}
+
+function MathFlowSteps({ 
+  steps, 
+  color,
+  onEdit 
+}: { 
+  steps: MathStep[]; 
+  color: 'gray' | 'orange';
+  onEdit?: (key: string, value: number) => void;
+}) {
+  const styles = {
+    gray: {
+      dot: 'bg-gray-300',
+      number: 'bg-gray-200 text-gray-600',
+      line: 'bg-gray-200',
+      value: 'text-gray-700',
+      formula: 'text-gray-400',
+    },
+    orange: {
+      dot: 'bg-orange-400',
+      number: 'bg-orange-100 text-orange-600',
+      line: 'bg-orange-200',
+      value: 'text-orange-700',
+      formula: 'text-orange-400',
+    },
+  }[color];
+  
+  return (
+    <div className="relative">
+      {/* Vertical line */}
+      <div className={`absolute left-3 top-3 bottom-3 w-0.5 ${styles.line}`} />
+      
+      <div className="space-y-3">
+        {steps.map((step, i) => (
+          <div key={i} className="flex items-start gap-3 relative">
+            {/* Step indicator */}
+            <div className={`w-6 h-6 rounded-full ${styles.number} flex items-center justify-center text-xs font-medium z-10`}>
+              {step.isEditable ? '●' : i + 1}
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 flex items-center justify-between">
+              <div>
+                <span className="text-sm text-gray-600">{step.label}</span>
+                {step.formula && (
+                  <div className={`text-xs ${styles.formula}`}>{step.formula}</div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`font-semibold ${styles.value}`}>{step.value}</span>
+                {step.isEditable && onEdit && (
+                  <button 
+                    onClick={() => {/* open edit modal */}}
+                    className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600"
+                  >
+                    <PencilIcon className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+4. Summary Section at Bottom
+tsxCopyfunction DriverSummary({ 
+  selectedDrivers, 
+  onContinue 
+}: { 
+  selectedDrivers: DriverCalculation[];
+  onContinue: () => void;
+}) {
+  const totalGap = selectedDrivers.reduce((sum, d) => sum + d.gap, 0);
+  
+  if (selectedDrivers.length === 0) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center">
+        <p className="text-gray-500">
+          Select at least one value driver above to see your total opportunity
+        </p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-sm font-medium text-orange-600 uppercase tracking-wide mb-3">
+            Your Selected Drivers
+          </div>
+          <div className="space-y-2">
+            {selectedDrivers.map(driver => (
+              <div key={driver.id} className="flex items-center justify-between text-sm">
+                <span className="text-gray-700">{driver.label}</span>
+                <span className="font-medium text-orange-600">
+                  +{formatCurrency(driver.gap)}
+                </span>
+              </div>
+            ))}
+            <div className="pt-2 mt-2 border-t border-orange-200 flex items-center justify-between">
+              <span className="font-semibold text-gray-900">Total Additional Value</span>
+              <span className="text-xl font-bold text-orange-600">
+                +{formatCurrency(totalGap)}/year
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-6 text-center">
+        <button
+          onClick={onContinue}
+          className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
+        >
+          See Opportunity at Scale →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+5. Main Step 3 Component
+tsxCopyfunction GapAnalysisStep({ 
+  competitor,
+  inputs,
+  onContinue 
+}: Props) {
+  // All available drivers
+  const allDrivers: Driver[] = [
+    { id: 'patient_access', label: 'Patient Access', subtitle: 'Turn documentation efficiency into additional visit capacity', icon: <UserPlusIcon /> },
+    { id: 'overtime', label: 'Overtime Savings', subtitle: 'Reduce after-hours documentation burden', icon: <ClockIcon /> },
+    { id: 'level_of_service', label: 'Level of Service', subtitle: 'Capture accurate wRVU through complete documentation', icon: <ChartBarIcon /> },
+    { id: 'retention', label: 'Clinician Retention', subtitle: 'Reduce burnout-driven turnover', icon: <HeartIcon /> },
+    { id: 'hcc', label: 'HCC Capture', subtitle: 'Improve risk adjustment through documentation', icon: <ClipboardIcon /> },
+    { id: 'denials', label: 'Documentation-Related Denials', subtitle: 'Reduce preventable claim denials', icon: <ExclamationIcon /> },
+  ];
+  
+  // Track which drivers are selected
+  const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
+  
+  // Calculate values for each driver
+  const driverCalculations = useMemo(() => {
+    return allDrivers.map(driver => ({
+      ...driver,
+      ...calculateDriver(driver.id, inputs, competitor),
+    }));
+  }, [inputs, competitor]);
+  
+  // Selected drivers with their calculations
+  const selectedDrivers = driverCalculations.filter(d => selectedDriverIds.includes(d.id));
+  
+  const toggleDriver = (driverId: string) => {
+    setSelectedDriverIds(prev => 
+      prev.includes(driverId)
+        ? prev.filter(id => id !== driverId)
+        : [...prev, driverId]
+    );
+  };
+  
+  return (
+    <div className="space-y-8">
+      {/* Gap at a Glance - keep existing */}
+      <GapAtAGlance competitor={competitor} inputs={inputs} />
+      
+      {/* How the Gap Translates to Value */}
+      <section>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">
+            How the Gap Translates to Value
+          </h2>
+          <p className="text-gray-500 mt-1">
+            Select the value drivers that matter most to your organization
+          </p>
+        </div>
+        
+        <div className="space-y-4">
+          {driverCalculations.map(driver => (
+            <DriverCard
+              key={driver.id}
+              driver={driver}
+              isSelected={selectedDriverIds.includes(driver.id)}
+              onToggle={toggleDriver}
+              calculations={driver}
+              competitor={competitor}
+            />
+          ))}
+        </div>
+      </section>
+      
+      {/* Summary */}
+      <DriverSummary 
+        selectedDrivers={selectedDrivers}
+        onContinue={() => onContinue(selectedDrivers)}
+      />
+    </div>
+  );
+}
+
+6. Pass Selected Drivers to Step 4
+When user clicks "See Opportunity at Scale", pass the selected drivers:
+tsxCopyconst handleContinueToStep4 = (selectedDrivers: DriverCalculation[]) => {
+  // Save to context/state
+  setSelectedDrivers(selectedDrivers);
+  
+  // Navigate to Step 4
+  goToStep(4);
+};
+In Step 4, use selectedDrivers for all calculations instead of hardcoded drivers.
+
+Summary of Changes
+
+Color: All green → Abridge orange (#E85D3F)
+Driver cards: Collapsed (not selected) vs Expanded (selected)
+Click to select: Users click a driver card to add it
+Checkbox visual: Empty checkbox → Filled orange checkbox when selected
+Summary section: Shows only selected drivers + total gap
+Data flow: Selected drivers passed to Step 4 for scaling

@@ -5017,8 +5017,8 @@ export default function RoiCalculator({
                               <div className="text-sm text-[#6B7280] font-medium">Your Current</div>
                               <div className="text-lg font-semibold text-[#374151] mt-1">{selectedCompetitor.name}</div>
                             </div>
-                            <div className="p-6 bg-[#ECFDF5] text-center">
-                              <div className="text-sm text-[#059669] font-medium">The Opportunity</div>
+                            <div className="p-6 bg-[#FEF2F0] text-center">
+                              <div className="text-sm text-[#E8532F] font-medium">The Opportunity</div>
                               <div className="flex items-center justify-center mt-1">
                                 <img src={abridgeLogo} alt="Abridge" className="h-5" />
                               </div>
@@ -5037,18 +5037,18 @@ export default function RoiCalculator({
                                 <div className="text-lg font-semibold text-[#374151]">{competitorUtilization}%</div>
                                 <div className="text-sm text-[#9CA3AF]">Your utilization</div>
                               </div>
-                              <div className="p-6 bg-[#ECFDF5]/30">
-                                <div className="text-xs font-medium text-[#059669] uppercase tracking-wide mb-3">Adoption</div>
-                                <div className="w-full bg-[#A7F3D0] rounded-full h-2 mb-3">
-                                  <div className="bg-[#10B981] h-2 rounded-full transition-all" style={{ width: `${abridgeUtilPct}%` }} />
+                              <div className="p-6 bg-[#FEF2F0]/30">
+                                <div className="text-xs font-medium text-[#E8532F] uppercase tracking-wide mb-3">Adoption</div>
+                                <div className="w-full bg-[#FED7AA] rounded-full h-2 mb-3">
+                                  <div className="bg-[#E8532F] h-2 rounded-full transition-all" style={{ width: `${abridgeUtilPct}%` }} />
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                  <span className="text-lg font-semibold text-[#059669]">{abridgeUtil}%</span>
+                                  <span className="text-lg font-semibold text-[#E8532F]">{abridgeUtil}%</span>
                                   {adoptionDelta > 0 && (
-                                    <span className="text-sm font-medium text-[#059669]">+{adoptionDelta}%</span>
+                                    <span className="text-sm font-medium text-[#E8532F]">+{adoptionDelta}%</span>
                                   )}
                                 </div>
-                                <div className="text-sm text-[#059669]/70">Abridge average</div>
+                                <div className="text-sm text-[#E8532F]/70">Abridge average</div>
                               </div>
                             </div>
                             
@@ -5063,18 +5063,18 @@ export default function RoiCalculator({
                                   <div className="text-lg font-semibold text-[#374151]">{competitorTimeSaved} min</div>
                                   <div className="text-sm text-[#9CA3AF]">per encounter</div>
                                 </div>
-                                <div className="p-6 bg-[#ECFDF5]/30">
-                                  <div className="text-xs font-medium text-[#059669] uppercase tracking-wide mb-3">Time Savings</div>
-                                  <div className="w-full bg-[#A7F3D0] rounded-full h-2 mb-3">
-                                    <div className="bg-[#10B981] h-2 rounded-full transition-all" style={{ width: `${abridgeTimePct}%` }} />
+                                <div className="p-6 bg-[#FEF2F0]/30">
+                                  <div className="text-xs font-medium text-[#E8532F] uppercase tracking-wide mb-3">Time Savings</div>
+                                  <div className="w-full bg-[#FED7AA] rounded-full h-2 mb-3">
+                                    <div className="bg-[#E8532F] h-2 rounded-full transition-all" style={{ width: `${abridgeTimePct}%` }} />
                                   </div>
                                   <div className="flex items-baseline gap-2">
-                                    <span className="text-lg font-semibold text-[#059669]">{abridgeTimeSaved} min</span>
+                                    <span className="text-lg font-semibold text-[#E8532F]">{abridgeTimeSaved} min</span>
                                     {timeDeltaPct > 0 && (
-                                      <span className="text-sm font-medium text-[#059669]">+{timeDeltaPct}%</span>
+                                      <span className="text-sm font-medium text-[#E8532F]">+{timeDeltaPct}%</span>
                                     )}
                                   </div>
-                                  <div className="text-sm text-[#059669]/70">per encounter</div>
+                                  <div className="text-sm text-[#E8532F]/70">per encounter</div>
                                 </div>
                               </div>
                             )}
@@ -5091,15 +5091,15 @@ export default function RoiCalculator({
                                   }
                                 </div>
                               </div>
-                              <div className="p-6 bg-[#ECFDF5]/30">
-                                <div className="text-xs font-medium text-[#059669] uppercase tracking-wide mb-3">Annual Cost</div>
+                              <div className="p-6 bg-[#FEF2F0]/30">
+                                <div className="text-xs font-medium text-[#E8532F] uppercase tracking-wide mb-3">Annual Cost</div>
                                 <div className="flex items-baseline gap-2">
-                                  <span className="text-lg font-semibold text-[#059669]">{formatCurrency(abridgeCost)}</span>
+                                  <span className="text-lg font-semibold text-[#E8532F]">{formatCurrency(abridgeCost)}</span>
                                   {costDiff > 0 && (
-                                    <span className="text-sm font-medium text-[#059669]">Save {formatCurrency(costDiff)}</span>
+                                    <span className="text-sm font-medium text-[#E8532F]">Save {formatCurrency(costDiff)}</span>
                                   )}
                                 </div>
-                                <div className="text-sm text-[#059669]/70">$180/provider/mo</div>
+                                <div className="text-sm text-[#E8532F]/70">$180/provider/mo</div>
                               </div>
                             </div>
                           </div>
@@ -5272,7 +5272,7 @@ export default function RoiCalculator({
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="text-2xl font-bold text-[#059669]">
+                                <div className="text-2xl font-bold text-[#E8532F]">
                                   +${accessGap.toLocaleString()}
                                 </div>
                                 <div className="text-sm text-[#6B7280]">additional value</div>
@@ -5397,121 +5397,121 @@ export default function RoiCalculator({
                                 
                                 {/* Abridge Flow */}
                                 <div>
-                                  <div className="text-sm font-medium text-[#059669] mb-4 flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#10B981]" />
+                                  <div className="text-sm font-medium text-[#E8532F] mb-4 flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-[#E8532F]" />
                                     With Abridge
                                   </div>
                                   <div className="relative">
-                                    <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#A7F3D0]" />
+                                    <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#FED7AA]" />
                                     <div className="space-y-3">
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">●</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Annual encounters</span>
-                                            <span className="font-semibold text-[#059669]">{annualEncounters.toLocaleString()}</span>
+                                            <span className="font-semibold text-[#E8532F]">{annualEncounters.toLocaleString()}</span>
                                           </div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">1</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">At Abridge utilization</span>
-                                            <span className="font-semibold text-[#059669]">65%</span>
+                                            <span className="font-semibold text-[#E8532F]">65%</span>
                                           </div>
-                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{annualEncounters.toLocaleString()} × 65%</div>
+                                          <div className="text-xs text-[#F97316] mt-0.5">{annualEncounters.toLocaleString()} × 65%</div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">2</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Documented encounters</span>
-                                            <span className="font-semibold text-[#059669]">{abridgeDocEncounters.toLocaleString()}</span>
+                                            <span className="font-semibold text-[#E8532F]">{abridgeDocEncounters.toLocaleString()}</span>
                                           </div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">●</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Time saved/encounter</span>
-                                            <span className="font-semibold text-[#059669]">3 min</span>
+                                            <span className="font-semibold text-[#E8532F]">3 min</span>
                                           </div>
-                                          <div className="text-xs text-[#6EE7B7] mt-0.5">Abridge average</div>
+                                          <div className="text-xs text-[#F97316] mt-0.5">Abridge average</div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">3</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                            <span className="font-semibold text-[#059669]">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
+                                            <span className="font-semibold text-[#E8532F]">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
                                           </div>
-                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{abridgeDocEncounters.toLocaleString()} × 3 min ÷ 60</div>
+                                          <div className="text-xs text-[#F97316] mt-0.5">{abridgeDocEncounters.toLocaleString()} × 3 min ÷ 60</div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">●</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Realization factor</span>
-                                            <span className="font-semibold text-[#059669]">{driverEditableFields.realizationFactor}%</span>
+                                            <span className="font-semibold text-[#E8532F]">{driverEditableFields.realizationFactor}%</span>
                                           </div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">4</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Usable hours</span>
-                                            <span className="font-semibold text-[#059669]">{Math.round(abridgeUsableHours).toLocaleString()} hrs</span>
+                                            <span className="font-semibold text-[#E8532F]">{Math.round(abridgeUsableHours).toLocaleString()} hrs</span>
                                           </div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">●</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Revenue per visit</span>
-                                            <span className="font-semibold text-[#059669]">${driverEditableFields.revenuePerVisit}</span>
+                                            <span className="font-semibold text-[#E8532F]">${driverEditableFields.revenuePerVisit}</span>
                                           </div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">5</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Additional visits possible</span>
-                                            <span className="font-semibold text-[#059669]">{abridgeAdditionalVisits.toLocaleString()}</span>
+                                            <span className="font-semibold text-[#E8532F]">{abridgeAdditionalVisits.toLocaleString()}</span>
                                           </div>
-                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{Math.round(abridgeUsableHours).toLocaleString()} hrs ÷ 0.5 hrs/visit</div>
+                                          <div className="text-xs text-[#F97316] mt-0.5">{Math.round(abridgeUsableHours).toLocaleString()} hrs ÷ 0.5 hrs/visit</div>
                                         </div>
                                       </div>
                                     </div>
-                                    <div className="ml-9 p-3 rounded-lg border bg-[#ECFDF5] border-[#A7F3D0] mt-3">
+                                    <div className="ml-9 p-3 rounded-lg border bg-[#FEF2F0] border-[#FED7AA] mt-3">
                                       <div className="flex items-baseline justify-between">
                                         <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
-                                        <span className="text-xl font-bold text-[#059669]">${abridgeAccessValue.toLocaleString()}</span>
+                                        <span className="text-xl font-bold text-[#E8532F]">${abridgeAccessValue.toLocaleString()}</span>
                                       </div>
                                     </div>
                                   </div>
@@ -5548,19 +5548,19 @@ export default function RoiCalculator({
                                   <div className="flex items-center gap-3">
                                     <div className="w-20" />
                                     <div className="flex-1 flex justify-end">
-                                      <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#ECFDF5] rounded-full">
-                                        <ArrowUp className="w-3 h-3 text-[#059669]" />
-                                        <span className="text-sm font-semibold text-[#059669]">+${accessGap.toLocaleString()} gap</span>
+                                      <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#FEF2F0] rounded-full">
+                                        <ArrowUp className="w-3 h-3 text-[#E8532F]" />
+                                        <span className="text-sm font-semibold text-[#E8532F]">+${accessGap.toLocaleString()} gap</span>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
                                 
                                 {/* Key Insight */}
-                                <div className="mt-4 p-3 bg-[#ECFDF5] rounded-lg">
+                                <div className="mt-4 p-3 bg-[#FEF2F0] rounded-lg">
                                   <div className="flex items-start gap-2">
-                                    <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
-                                    <p className="text-sm text-[#065F46]">
+                                    <Lightbulb className="w-4 h-4 text-[#E8532F] mt-0.5 flex-shrink-0" />
+                                    <p className="text-sm text-[#9A3412]">
                                       The {timeSavingsRatio}x difference in time savings ({abridgeTimeSaved} min vs {compTimeSaved} min) combined with {utilizationLift}% higher utilization means {visitsMultiplier > 0 ? visitsMultiplier : "significantly more"}x visits enabled.
                                     </p>
                                   </div>
@@ -5583,7 +5583,7 @@ export default function RoiCalculator({
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-2xl font-bold text-[#059669]">
+                                    <div className="text-2xl font-bold text-[#E8532F]">
                                       +${overtimeGap.toLocaleString()}
                                     </div>
                                     <div className="text-sm text-[#6B7280]">additional savings</div>
@@ -5650,62 +5650,62 @@ export default function RoiCalculator({
                                     
                                     {/* Abridge Flow */}
                                     <div>
-                                      <div className="text-sm font-medium text-[#059669] mb-4 flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#10B981]" />
+                                      <div className="text-sm font-medium text-[#E8532F] mb-4 flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#E8532F]" />
                                         With Abridge
                                       </div>
                                       <div className="relative">
-                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#A7F3D0]" />
+                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#FED7AA]" />
                                         <div className="space-y-3">
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">1</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                                <span className="font-semibold text-[#059669]">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
+                                                <span className="font-semibold text-[#E8532F]">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
                                               </div>
                                             </div>
                                           </div>
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">●</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">% after-hours work</span>
-                                                <span className="font-semibold text-[#059669]">{driverEditableFields.afterHoursPercent}%</span>
+                                                <span className="font-semibold text-[#E8532F]">{driverEditableFields.afterHoursPercent}%</span>
                                               </div>
                                             </div>
                                           </div>
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">2</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Premium hours avoided</span>
-                                                <span className="font-semibold text-[#059669]">{abridgePremiumHours.toLocaleString()} hrs</span>
+                                                <span className="font-semibold text-[#E8532F]">{abridgePremiumHours.toLocaleString()} hrs</span>
                                               </div>
                                             </div>
                                           </div>
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">●</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Overtime rate</span>
-                                                <span className="font-semibold text-[#059669]">${driverEditableFields.overtimeRate}/hr</span>
+                                                <span className="font-semibold text-[#E8532F]">${driverEditableFields.overtimeRate}/hr</span>
                                               </div>
                                             </div>
                                           </div>
                                         </div>
-                                        <div className="ml-9 p-3 rounded-lg border bg-[#ECFDF5] border-[#A7F3D0] mt-3">
+                                        <div className="ml-9 p-3 rounded-lg border bg-[#FEF2F0] border-[#FED7AA] mt-3">
                                           <div className="flex items-baseline justify-between">
                                             <span className="text-sm font-medium text-[#6B7280]">Annual Savings</span>
-                                            <span className="text-xl font-bold text-[#059669]">${abridgeOvertimeValue.toLocaleString()}</span>
+                                            <span className="text-xl font-bold text-[#E8532F]">${abridgeOvertimeValue.toLocaleString()}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -5718,7 +5718,7 @@ export default function RoiCalculator({
                                       <div className="flex items-center gap-3">
                                         <div className="w-20 text-sm text-[#6B7280] text-right">Abridge</div>
                                         <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
-                                          <div className="absolute inset-y-0 left-0 bg-[#10B981] rounded-lg" style={{ width: '100%' }} />
+                                          <div className="absolute inset-y-0 left-0 bg-[#E8532F] rounded-lg" style={{ width: '100%' }} />
                                           <div className="absolute inset-0 flex items-center px-3">
                                             <span className="text-white font-semibold text-sm drop-shadow">${abridgeOvertimeValue.toLocaleString()}</span>
                                           </div>
@@ -5736,17 +5736,17 @@ export default function RoiCalculator({
                                       <div className="flex items-center gap-3">
                                         <div className="w-20" />
                                         <div className="flex-1 flex justify-end">
-                                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#ECFDF5] rounded-full">
-                                            <ArrowUp className="w-3 h-3 text-[#059669]" />
-                                            <span className="text-sm font-semibold text-[#059669]">+${overtimeGap.toLocaleString()} gap</span>
+                                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#FEF2F0] rounded-full">
+                                            <ArrowUp className="w-3 h-3 text-[#E8532F]" />
+                                            <span className="text-sm font-semibold text-[#E8532F]">+${overtimeGap.toLocaleString()} gap</span>
                                           </div>
                                         </div>
                                       </div>
                                     </div>
-                                    <div className="mt-4 p-3 bg-[#ECFDF5] rounded-lg">
+                                    <div className="mt-4 p-3 bg-[#FEF2F0] rounded-lg">
                                       <div className="flex items-start gap-2">
-                                        <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
-                                        <p className="text-sm text-[#065F46]">
+                                        <Lightbulb className="w-4 h-4 text-[#E8532F] mt-0.5 flex-shrink-0" />
+                                        <p className="text-sm text-[#9A3412]">
                                           More time saved per encounter means less after-hours documentation, reducing costly overtime by {abridgePremiumHours - compPremiumHours} additional hours.
                                         </p>
                                       </div>
@@ -5770,7 +5770,7 @@ export default function RoiCalculator({
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-2xl font-bold text-[#059669]">
+                                    <div className="text-2xl font-bold text-[#E8532F]">
                                       +${losGap.toLocaleString()}
                                     </div>
                                     <div className="text-sm text-[#6B7280]">additional value</div>
@@ -5842,73 +5842,73 @@ export default function RoiCalculator({
                                     
                                     {/* Abridge Flow */}
                                     <div>
-                                      <div className="text-sm font-medium text-[#059669] mb-4 flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#10B981]" />
+                                      <div className="text-sm font-medium text-[#E8532F] mb-4 flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#E8532F]" />
                                         With Abridge
                                       </div>
                                       <div className="relative">
-                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#A7F3D0]" />
+                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#FED7AA]" />
                                         <div className="space-y-3">
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">1</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Documented encounters</span>
-                                                <span className="font-semibold text-[#059669]">{abridgeDocEncounters.toLocaleString()}</span>
+                                                <span className="font-semibold text-[#E8532F]">{abridgeDocEncounters.toLocaleString()}</span>
                                               </div>
                                             </div>
                                           </div>
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">●</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Baseline wRVU/encounter</span>
-                                                <span className="font-semibold text-[#059669]">{driverEditableFields.baselineWrvuPerEncounter}</span>
+                                                <span className="font-semibold text-[#E8532F]">{driverEditableFields.baselineWrvuPerEncounter}</span>
                                               </div>
                                             </div>
                                           </div>
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">●</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Quality lift</span>
-                                                <span className="font-semibold text-[#059669]">{Math.round(abridgeQualityLift * 100)}%</span>
+                                                <span className="font-semibold text-[#E8532F]">{Math.round(abridgeQualityLift * 100)}%</span>
                                               </div>
                                             </div>
                                           </div>
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">2</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">wRVU uplift</span>
-                                                <span className="font-semibold text-[#059669]">{abridgeWrvuUplift.toLocaleString()}</span>
+                                                <span className="font-semibold text-[#E8532F]">{abridgeWrvuUplift.toLocaleString()}</span>
                                               </div>
                                             </div>
                                           </div>
                                           <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">●</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">wRVU rate</span>
-                                                <span className="font-semibold text-[#059669]">${driverEditableFields.wrvuRate}</span>
+                                                <span className="font-semibold text-[#E8532F]">${driverEditableFields.wrvuRate}</span>
                                               </div>
                                             </div>
                                           </div>
                                         </div>
-                                        <div className="ml-9 p-3 rounded-lg border bg-[#ECFDF5] border-[#A7F3D0] mt-3">
+                                        <div className="ml-9 p-3 rounded-lg border bg-[#FEF2F0] border-[#FED7AA] mt-3">
                                           <div className="flex items-baseline justify-between">
                                             <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
-                                            <span className="text-xl font-bold text-[#059669]">${abridgeLosValue.toLocaleString()}</span>
+                                            <span className="text-xl font-bold text-[#E8532F]">${abridgeLosValue.toLocaleString()}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -5921,7 +5921,7 @@ export default function RoiCalculator({
                                       <div className="flex items-center gap-3">
                                         <div className="w-20 text-sm text-[#6B7280] text-right">Abridge</div>
                                         <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
-                                          <div className="absolute inset-y-0 left-0 bg-[#10B981] rounded-lg" style={{ width: '100%' }} />
+                                          <div className="absolute inset-y-0 left-0 bg-[#E8532F] rounded-lg" style={{ width: '100%' }} />
                                           <div className="absolute inset-0 flex items-center px-3">
                                             <span className="text-white font-semibold text-sm drop-shadow">${abridgeLosValue.toLocaleString()}</span>
                                           </div>
@@ -5939,17 +5939,17 @@ export default function RoiCalculator({
                                       <div className="flex items-center gap-3">
                                         <div className="w-20" />
                                         <div className="flex-1 flex justify-end">
-                                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#ECFDF5] rounded-full">
-                                            <ArrowUp className="w-3 h-3 text-[#059669]" />
-                                            <span className="text-sm font-semibold text-[#059669]">+${losGap.toLocaleString()} gap</span>
+                                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#FEF2F0] rounded-full">
+                                            <ArrowUp className="w-3 h-3 text-[#E8532F]" />
+                                            <span className="text-sm font-semibold text-[#E8532F]">+${losGap.toLocaleString()} gap</span>
                                           </div>
                                         </div>
                                       </div>
                                     </div>
-                                    <div className="mt-4 p-3 bg-[#ECFDF5] rounded-lg">
+                                    <div className="mt-4 p-3 bg-[#FEF2F0] rounded-lg">
                                       <div className="flex items-start gap-2">
-                                        <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
-                                        <p className="text-sm text-[#065F46]">
+                                        <Lightbulb className="w-4 h-4 text-[#E8532F] mt-0.5 flex-shrink-0" />
+                                        <p className="text-sm text-[#9A3412]">
                                           Higher quality documentation ({Math.round(abridgeQualityLift * 100)}% vs {driverEditableFields.competitorQualityLift}% lift) across more encounters captures {(abridgeWrvuUplift - compWrvuUplift).toLocaleString()} additional wRVUs annually.
                                         </p>
                                       </div>
@@ -5961,32 +5961,32 @@ export default function RoiCalculator({
                           
                           {/* Total Gap Summary */}
                           {(enabledDriverCards.overtime || enabledDriverCards.los) && (
-                            <div className="mt-6 p-5 bg-gradient-to-r from-[#ECFDF5] to-[#D1FAE5] rounded-xl border border-[#A7F3D0]" data-testid="total-gap-summary">
+                            <div className="mt-6 p-5 bg-gradient-to-r from-[#FEF2F0] to-[#FFEDD5] rounded-xl border border-[#FED7AA]" data-testid="total-gap-summary">
                               <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-semibold text-[#065F46]">Total Incremental Value with Abridge</h4>
-                                <div className="text-2xl font-bold text-[#059669]">${totalGap.toLocaleString()}</div>
+                                <h4 className="font-semibold text-[#9A3412]">Total Incremental Value with Abridge</h4>
+                                <div className="text-2xl font-bold text-[#E8532F]">${totalGap.toLocaleString()}</div>
                               </div>
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between text-sm" data-testid="text-gap-access">
-                                  <span className="text-[#065F46]">Patient Access Gap</span>
-                                  <span className="font-medium text-[#059669]">+${accessGap.toLocaleString()}</span>
+                                  <span className="text-[#9A3412]">Patient Access Gap</span>
+                                  <span className="font-medium text-[#E8532F]">+${accessGap.toLocaleString()}</span>
                                 </div>
                                 {enabledDriverCards.overtime && (
                                   <div className="flex items-center justify-between text-sm" data-testid="text-gap-overtime">
-                                    <span className="text-[#065F46]">Overtime Savings Gap</span>
-                                    <span className="font-medium text-[#059669]">+${overtimeGap.toLocaleString()}</span>
+                                    <span className="text-[#9A3412]">Overtime Savings Gap</span>
+                                    <span className="font-medium text-[#E8532F]">+${overtimeGap.toLocaleString()}</span>
                                   </div>
                                 )}
                                 {enabledDriverCards.los && (
                                   <div className="flex items-center justify-between text-sm" data-testid="text-gap-los">
-                                    <span className="text-[#065F46]">Level of Service Gap</span>
-                                    <span className="font-medium text-[#059669]">+${losGap.toLocaleString()}</span>
+                                    <span className="text-[#9A3412]">Level of Service Gap</span>
+                                    <span className="font-medium text-[#E8532F]">+${losGap.toLocaleString()}</span>
                                   </div>
                                 )}
-                                <div className="border-t border-[#A7F3D0] pt-2 mt-2">
+                                <div className="border-t border-[#FED7AA] pt-2 mt-2">
                                   <div className="flex items-center justify-between text-sm font-semibold" data-testid="text-gap-total">
-                                    <span className="text-[#065F46]">Total Annual Incremental Gap</span>
-                                    <span className="text-[#059669]">${totalGap.toLocaleString()}</span>
+                                    <span className="text-[#9A3412]">Total Annual Incremental Gap</span>
+                                    <span className="text-[#E8532F]">${totalGap.toLocaleString()}</span>
                                   </div>
                                 </div>
                               </div>
@@ -6006,7 +6006,7 @@ export default function RoiCalculator({
                                       setEnabledDriverCards(prev => ({ ...prev, los: true }));
                                     }
                                   }}
-                                  className="border-dashed border-2 border-[#D1D5DB] text-[#6B7280] hover:border-[#059669] hover:text-[#059669] px-6 py-2"
+                                  className="border-dashed border-2 border-[#D1D5DB] text-[#6B7280] hover:border-[#E8532F] hover:text-[#E8532F] px-6 py-2"
                                   data-testid="button-add-driver"
                                 >
                                   <Plus className="w-4 h-4 mr-2" />
