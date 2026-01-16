@@ -1,0 +1,225 @@
+ISSUE 1: Sliders Not Updating Chart (BROKEN FUNCTIONALITY)
+The problem: Moving the providers/encounters sliders does nothing to the chart or numbers. This is a critical bug.
+What should happen:
+
+User moves "Total Providers" slider from 25 → 85
+User moves "Annual Encounters" slider from 80K → 140K
+Chart immediately updates to show new values
+Year 1/2/3 cards immediately update
+Bottom line "3-Year Value" immediately updates
+"Where Gap Comes From" driver cards immediately update
+
+The fix:
+typescriptCopy// The sliders should trigger recalculation of ALL values
+
+// State
+const [providers, setProviders] = useState(baselineProviders);
+const [encounters, setEncounters] = useState(baselineEncounters);
+
+// Scale factor (encounters drive most value, providers affect cost)
+const providerScaleFactor = providers / baselineProviders;
+const encounterScaleFactor = encounters / baselineEncounters;
+
+// Use ENCOUNTER scale factor as primary driver
+const scaleFactor = encounterScaleFactor;
+
+// Recalculate ALL driver values at this scale
+const scaledDrivers = selectedDrivers.map(driver => ({
+  ...driver,
+  competitorValue: driver.baselineCompetitorValue * scaleFactor,
+  abridgeValue: driver.baselineAbridgeValue * scaleFactor,
+  gap: driver.baselineGap * scaleFactor,
+}));
+
+// Total gap at this scale
+const scaledTotalGap = scaledDrivers.reduce((sum, d) => sum + d.gap, 0);
+
+// Chart data (recalculated with scaled values)
+const chartData = chartView === 'current' 
+  ? calculateChartData(currentStateGap, currentStateDax, currentStateAbridge)
+  : calculateChartData(scaledTotalGap, scaledCompetitorTotal, scaledAbridgeTotal);
+
+// IMPORTANT: All these values must be in a useEffect or useMemo that watches [providers, encounters]
+Tell Replit:
+
+The provider and encounter sliders are not updating the chart or any calculated values. Fix this by:
+
+Calculate scaleFactor = encounters / baselineEncounters
+Multiply ALL driver values by scaleFactor: scaledDriverGap = baselineDriverGap * scaleFactor
+Recalculate chart data using scaled values whenever sliders change
+Use useMemo or useEffect to watch [providers, encounters] and recalculate everything
+The chart, year cards, driver cards, and bottom line should all update in real-time as sliders move
+
+
+
+ISSUE 2: Way Too Much Orange (VISUAL OVERLOAD)
+The problem: Orange is everywhere - backgrounds, text, bars, buttons. It's overwhelming and loses impact.
+The principle: Orange should be strategic, not everywhere. Use it to highlight THE KEY NUMBERS and actions.
+Where orange SHOULD be:
+
+The Abridge chart line (cumulative value)
+Gap numbers ("+$384K gap")
+CTA buttons ("Let's Talk")
+Driver icons (small accent)
+The "Expansion Scale" value in bottom line
+
+Where orange SHOULD NOT be:
+
+Large background sections (too much)
+All Abridge text (gray is fine)
+Every card border
+Headers that aren't critical
+
+The fix:
+CopyREDUCE ORANGE USAGE:
+
+Current State section:
+❌ Orange background on whole card
+✅ White background, orange only on the "+$96K" number
+
+Expansion State section:
+❌ Orange background on callout box
+✅ Light gray background (bg-gray-50), orange border-left accent, orange on gap number
+
+"Where Gap Comes From" cards:
+❌ Orange backgrounds
+✅ White cards, gray border, orange only on:
+   - The gap number (+$369K)
+   - The Abridge value ($600K)
+   - The gap bar (right portion)
+
+Multi-Year Chart:
+❌ Orange shaded area filling entire gap
+✅ Very light orange/peach shaded area (opacity 0.05), darker orange line
+
+Year cards below chart:
+❌ Orange backgrounds
+✅ White/light gray background, orange only on:
+   - "Abridge" label text
+   - "Gap" value text
+   - NOT the background
+
+Bottom hero section:
+❌ Both numbers in orange
+✅ Dark background, white text, only "Expansion Scale" value in orange to draw eye
+
+Think: Stripe doesn't use purple everywhere. They use it strategically.
+Orange = "pay attention here" not "everything is orange"
+
+ISSUE 3: Show What Drives the Chart
+The problem: User sees chart update but doesn't understand why it's changing or what is driving it.
+The fix: Add a simple breakdown that shows the math:
+CopyAbove the chart, add:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Based on your selected drivers:                                 │
+│                                                                 │
+│ • Patient Access    +$369K/year (at expansion scale)            │
+│                                                                 │
+│ Your total gap: +$384K/year                                     │
+│                                                                 │
+│ Over 3 years with Abridge ramp-up: +$590K                       │
+│ (Year 1: 20% | Year 2: 50% | Year 3: 85% of full value)        │
+└─────────────────────────────────────────────────────────────────┘
+
+This creates the through-line: 
+"I selected Patient Access in Step 3 → it calculated +$96K at baseline → at expansion scale it's +$369K → over 3 years that's +$590K"
+
+ISSUE 4: Toggle Should Update Immediately
+The problem: When you click "Expansion Scale" toggle, the chart should change but you can't tell what changed.
+The fix:
+CopyWhen toggle switches from "Current Scale" to "Expansion Scale":
+
+1. Chart should animate to new values (smooth transition, not instant)
+2. Y-axis scale should update (if expansion is 10x bigger, axis should adjust)
+3. Year cards below should update their numbers
+4. A subtle label should appear showing what changed:
+
+   Toggle active state:
+   [Expansion Scale]
+   85 providers · 320K encounters
+   
+   And the chart should show:
+   "Viewing: Expansion Scale (3.4x baseline)"
+   
+This makes it obvious that the chart IS updating.
+
+ISSUE 5: The Orange Background in Bottom Section
+The problem: The dark hero section with orange background box for "Expansion Scale" is too heavy.
+The fix:
+CopyCurrent:
+┌─────────────────────────────────────────────────────────────┐
+│ Dark background (good)                                      │
+│                                                             │
+│ ┌──────────────┐  ┌──────────────┐                         │
+│ │ At Current   │  │ At Expansion │  (orange bg box)        │
+│ │ +$148K       │  │ +$590K       │                         │
+│ └──────────────┘  └──────────────┘                         │
+└─────────────────────────────────────────────────────────────┘
+
+Change to:
+┌─────────────────────────────────────────────────────────────┐
+│ Dark background (same)                                      │
+│                                                             │
+│ At Current Scale        At Expansion Scale                  │
+│ +$148K                  +$590K                              │
+│ (white text)            (orange text, no bg box)            │
+│                                                             │
+│ 25 providers            85 providers                        │
+│ 80K encounters          320K encounters                     │
+│ (gray text)             (gray text)                         │
+└─────────────────────────────────────────────────────────────┘
+
+Subtle divider between them. No orange background box.
+
+Summary: Tell Replit This
+Copy this entire prompt:
+
+Critical Fixes for Step 4 Opportunity Page
+PRIORITY 1 - BROKEN FUNCTIONALITY:
+The provider and encounter sliders are not updating ANY calculated values. This is broken. Fix it:
+
+Calculate scaleFactor = encounters / baselineEncounters
+Use useMemo(() => { ... }, [providers, encounters]) to recalculate all scaled values
+Every driver value, chart data point, year card, and bottom line number must multiply by scaleFactor
+The chart should update in real-time as sliders move (use smooth transition animation)
+
+PRIORITY 2 - TOO MUCH ORANGE:
+Reduce orange usage dramatically. Orange should only be on:
+
+Key gap numbers ("+$384K gap")
+The Abridge chart line
+CTA buttons
+The "Expansion Scale" value in the bottom comparison
+
+Remove orange from:
+
+Card backgrounds (use white or light gray)
+Section backgrounds (use white)
+All body text (use gray, only numbers in orange)
+The shaded chart area (make it very subtle, opacity 0.05)
+
+Think Stripe: purple is strategic, not everywhere.
+PRIORITY 3 - SHOW WHAT DRIVES THE CHART:
+Add a breakdown above the chart that shows:
+
+Which drivers are included
+What their values are at current scale
+How they sum to the total gap
+How the 3-year value is calculated (Year 1: 20%, Year 2: 50%, Year 3: 85%)
+
+PRIORITY 4 - TOGGLE SHOULD BE OBVIOUS:
+When switching between "Current Scale" and "Expansion Scale":
+
+Chart should animate smoothly to new values
+A label should show what scale you're viewing
+Year cards should update immediately
+Make it obvious the chart changed
+
+PRIORITY 5 - SIMPLIFY BOTTOM HERO:
+Remove the orange background box in the bottom comparison. Just use:
+
+Dark background (keep)
+White text for "Current Scale" number
+Orange text for "Expansion Scale" number (no background)
+Gray text for scale details below each

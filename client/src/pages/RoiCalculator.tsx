@@ -400,11 +400,12 @@ export default function RoiCalculator({
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempEditValue, setTempEditValue] = useState<string>("");
   
-  // Step 4: Opportunity at Scale - scale input state
-  const [scaleProviders, setScaleProviders] = useState<number>(50);
-  const [scaleEncounters, setScaleEncounters] = useState<number>(100000);
+  // Step 4: Opportunity at Scale - scale input state (will be synced via useEffect when competitorStep changes)
+  const [scaleProviders, setScaleProviders] = useState<number>(100);
+  const [scaleEncounters, setScaleEncounters] = useState<number>(200000);
   const [showExpansion, setShowExpansion] = useState(false);
-  const [chartView, setChartView] = useState<'current' | 'expansion'>('current');
+  const [chartView, setChartView] = useState<'current' | 'expansion'>('expansion'); // Default to expansion to show slider changes
+  const [scaleInitialized, setScaleInitialized] = useState(false);
   
   // Step 4: Driver assumptions that can be edited via sliders
   const [step4DriverAssumptions, setStep4DriverAssumptions] = useState<Record<string, Record<string, number>>>({});
@@ -763,6 +764,22 @@ export default function RoiCalculator({
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [showExpandProviders, showExpansionWizard, showAddDrivers, showNewCareSetting, showCompetitorComparison, competitorStep, activeTab]);
+  
+  // Initialize scale values when entering Step 4 competitor comparison
+  useEffect(() => {
+    if (competitorStep === 4 && !scaleInitialized) {
+      const baseProviders = typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders;
+      const baseEncounters = inputs.annualOutpatientEncounters;
+      // Initialize to 2x baseline for meaningful expansion view
+      setScaleProviders(Math.round(baseProviders * 2));
+      setScaleEncounters(Math.round(baseEncounters * 2));
+      setScaleInitialized(true);
+    }
+    // Reset when leaving competitor comparison
+    if (competitorStep === 0) {
+      setScaleInitialized(false);
+    }
+  }, [competitorStep, scaleInitialized, competitorProviderCount, inputs.numberOfProviders, inputs.annualOutpatientEncounters]);
 
   // Expansion calculation memo
   const expansionCalculation = useMemo(() => {
@@ -6365,43 +6382,34 @@ export default function RoiCalculator({
                               </div>
                             </div>
                             
-                            {/* Scaled gap */}
-                            <div className="bg-[#FEF3F2] border border-[#FECACA] rounded-xl p-6 text-center">
-                              <div className="text-sm text-[#E85D3F] font-medium mb-2">At this scale, the annual gap is:</div>
-                              <div className="text-4xl font-bold text-[#111827] mb-2 tabular-nums">
+                            {/* Scaled gap - reduced orange, white background */}
+                            <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 text-center">
+                              <div className="text-sm text-[#6B7280] font-medium mb-2">At this scale, the annual gap is:</div>
+                              <div className="text-4xl font-bold text-[#E85D3F] mb-2 tabular-nums">
                                 +{formatCurrency(totalGap)}
                               </div>
                               <div className="text-sm text-[#6B7280] mb-4">per year</div>
                               
                               {scaleFactor > 1 && (
-                                <div className="mt-4 p-4 bg-white/50 rounded-lg border border-[#FECACA]">
-                                  <div className="flex items-start gap-3">
-                                    <Lightbulb className="w-5 h-5 text-[#E85D3F] flex-shrink-0 mt-0.5" />
-                                    <div className="text-left">
-                                      <div className="text-sm font-semibold text-[#374151] mb-2">
-                                        That's <span className="text-[#E85D3F]">{scaleFactor.toFixed(1)}x</span> what you're currently missing
-                                      </div>
-                                      <div className="text-xs text-[#6B7280] space-y-1">
-                                        <div className="flex justify-between">
-                                          <span>At current scale:</span>
-                                          <span className="font-medium tabular-nums">{formatCurrency(step3Drivers.reduce((sum, d) => sum + d.gap, 0))}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                          <span>At expansion:</span>
-                                          <span className="font-medium text-[#E85D3F] tabular-nums">{formatCurrency(totalGap)}</span>
-                                        </div>
-                                        <div className="flex justify-between pt-1 border-t border-[#FECACA]">
-                                          <span>Difference:</span>
-                                          <span className="font-semibold text-[#E85D3F] tabular-nums">+{formatCurrency(totalGap - step3Drivers.reduce((sum, d) => sum + d.gap, 0))} more per year</span>
-                                        </div>
-                                      </div>
+                                <div className="mt-4 p-4 bg-[#F9FAFB] rounded-lg border-l-4 border-l-[#E85D3F] border border-[#E5E7EB] text-left">
+                                  <div className="text-sm text-[#374151] mb-2">
+                                    That's <span className="font-bold text-[#E85D3F]">{scaleFactor.toFixed(1)}x</span> your current baseline
+                                  </div>
+                                  <div className="text-xs text-[#6B7280] space-y-1">
+                                    <div className="flex justify-between">
+                                      <span>Current scale ({originalProviders} providers):</span>
+                                      <span className="font-medium tabular-nums">{formatCurrency(step3Drivers.reduce((sum, d) => sum + d.gap, 0))}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Expansion scale ({scaleProviders} providers):</span>
+                                      <span className="font-semibold text-[#E85D3F] tabular-nums">{formatCurrency(totalGap)}</span>
                                     </div>
                                   </div>
                                 </div>
                               )}
                               
                               {/* Scaled driver breakdown */}
-                              <div className="mt-4 pt-4 border-t border-[#FECACA] space-y-2">
+                              <div className="mt-4 pt-4 border-t border-[#E5E7EB] space-y-2">
                                 {scaledDrivers.map(driver => (
                                   <div key={driver.id} className="flex items-center justify-between text-sm">
                                     <span className="text-[#374151]">{driver.label}</span>
@@ -6500,38 +6508,69 @@ export default function RoiCalculator({
                           <p className="text-sm text-[#6B7280] mt-1">And it compounds over time</p>
                         </div>
                         
+                        {/* Driver breakdown showing what drives the chart */}
+                        <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4 mb-6">
+                          <div className="text-sm text-[#6B7280] mb-3">Based on your selected drivers{showExpansion && chartView === 'expansion' ? ' (at expansion scale)' : ''}:</div>
+                          <div className="space-y-2">
+                            {(showExpansion && chartView === 'expansion' ? scaledDrivers : step3Drivers).map(driver => (
+                              <div key={driver.id} className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-[#E85D3F]" />
+                                  <span className="text-[#374151]">{driver.label}</span>
+                                </div>
+                                <span className="font-semibold text-[#E85D3F] tabular-nums">
+                                  +{formatCurrency((showExpansion && chartView === 'expansion') ? (driver as typeof scaledDrivers[0]).scaledGap : driver.gap)}/year
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-[#E5E7EB] flex justify-between items-center">
+                            <span className="text-sm font-medium text-[#374151]">Your total gap:</span>
+                            <span className="text-lg font-bold text-[#E85D3F] tabular-nums">
+                              +{formatCurrency((showExpansion && chartView === 'expansion') 
+                                ? scaledDrivers.reduce((sum, d) => sum + d.scaledGap, 0) 
+                                : step3Drivers.reduce((sum, d) => sum + d.gap, 0))}/year
+                            </span>
+                          </div>
+                          <div className="mt-2 text-xs text-[#9CA3AF]">
+                            Over 3 years with Abridge ramp-up: Year 1 (40%) → Year 2 (70%) → Year 3 (100%)
+                          </div>
+                        </div>
+                        
                         {/* Toggle for current vs expansion */}
                         {showExpansion && (
                           <div className="mb-6">
-                            <div className="text-sm text-[#6B7280] text-center mb-3">View by:</div>
-                            <div className="flex items-center justify-center gap-3">
+                            <div className="flex items-center justify-center gap-4">
                               <button
                                 onClick={() => setChartView('current')}
-                                className={`px-5 py-4 rounded-xl text-center transition-all min-w-[140px] ${
+                                className={`px-5 py-3 rounded-lg text-center transition-all min-w-[140px] ${
                                   chartView === 'current'
-                                    ? 'bg-white text-[#111827] shadow-md border border-[#E5E7EB]'
-                                    : 'bg-[#F3F4F6] text-[#6B7280] border border-transparent'
+                                    ? 'bg-white text-[#111827] shadow-sm border border-[#E5E7EB]'
+                                    : 'bg-[#F9FAFB] text-[#6B7280] border border-[#E5E7EB]'
                                 }`}
                                 data-testid="button-chart-view-current"
                               >
-                                <div className="font-semibold">Current Scale</div>
-                                <div className="text-xs mt-1 tabular-nums">{originalProviders} providers</div>
-                                <div className="text-xs tabular-nums">{(originalEncounters / 1000).toFixed(0)}K visits</div>
+                                <div className="font-medium">Current Scale</div>
+                                <div className="text-xs mt-1 text-[#9CA3AF] tabular-nums">{originalProviders} providers</div>
                               </button>
                               <button
                                 onClick={() => setChartView('expansion')}
-                                className={`px-5 py-4 rounded-xl text-center transition-all min-w-[140px] ${
+                                className={`px-5 py-3 rounded-lg text-center transition-all min-w-[140px] ${
                                   chartView === 'expansion'
-                                    ? 'bg-white text-[#111827] shadow-md border border-[#E5E7EB]'
-                                    : 'bg-[#F3F4F6] text-[#6B7280] border border-transparent'
+                                    ? 'bg-white text-[#111827] shadow-sm border border-[#E5E7EB]'
+                                    : 'bg-[#F9FAFB] text-[#6B7280] border border-[#E5E7EB]'
                                 }`}
                                 data-testid="button-chart-view-expansion"
                               >
-                                <div className="font-semibold">Expansion Scale</div>
-                                <div className="text-xs mt-1 tabular-nums">{scaleProviders} providers</div>
-                                <div className="text-xs tabular-nums">{(scaleEncounters / 1000).toFixed(0)}K visits</div>
+                                <div className="font-medium">Expansion Scale</div>
+                                <div className="text-xs mt-1 text-[#9CA3AF] tabular-nums">{scaleProviders} providers</div>
                               </button>
                             </div>
+                            {chartView === 'expansion' && (
+                              <div className="text-center mt-3 text-sm text-[#6B7280]">
+                                Viewing: <span className="font-medium text-[#111827]">Expansion Scale</span> ({(scaleEncounters / originalEncounters).toFixed(1)}x baseline)
+                              </div>
+                            )}
                           </div>
                         )}
                         
@@ -6553,12 +6592,12 @@ export default function RoiCalculator({
                             })()} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
                               <defs>
                                 <linearGradient id="abridgeGradientStep4" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.25}/>
-                                  <stop offset="95%" stopColor="#E85D3F" stopOpacity={0.02}/>
+                                  <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.08}/>
+                                  <stop offset="95%" stopColor="#E85D3F" stopOpacity={0.01}/>
                                 </linearGradient>
                                 <linearGradient id="compGradientStep4" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#9CA3AF" stopOpacity={0.15}/>
-                                  <stop offset="95%" stopColor="#9CA3AF" stopOpacity={0.02}/>
+                                  <stop offset="5%" stopColor="#9CA3AF" stopOpacity={0.08}/>
+                                  <stop offset="95%" stopColor="#9CA3AF" stopOpacity={0.01}/>
                                 </linearGradient>
                               </defs>
                               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
@@ -6665,18 +6704,18 @@ export default function RoiCalculator({
                                   by staying with {selectedCompetitor?.name || "your current solution"}
                                 </div>
                                 <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto mb-6">
-                                  <div className="bg-[#374151]/50 rounded-xl p-6 text-left">
+                                  <div className="text-left">
                                     <div className="text-xs text-[#9CA3AF] uppercase tracking-wide mb-3">At Current Scale</div>
-                                    <div className="text-4xl font-bold tabular-nums text-white mb-3">
+                                    <div className="text-4xl font-bold tabular-nums text-white mb-2">
                                       +{formatCurrency(currentThreeYearGap)}
                                     </div>
                                     <div className="text-xs text-[#9CA3AF] tabular-nums">
                                       {originalProviders} providers · {(originalEncounters / 1000).toFixed(0)}K encounters
                                     </div>
                                   </div>
-                                  <div className="bg-[#E85D3F]/20 border border-[#E85D3F]/40 rounded-xl p-6 text-left">
-                                    <div className="text-xs text-[#E85D3F] uppercase tracking-wide mb-3">At Expansion Scale</div>
-                                    <div className="text-4xl font-bold text-[#E85D3F] tabular-nums mb-3">
+                                  <div className="text-left border-l border-[#4B5563] pl-6">
+                                    <div className="text-xs text-[#9CA3AF] uppercase tracking-wide mb-3">At Expansion Scale</div>
+                                    <div className="text-4xl font-bold text-[#E85D3F] tabular-nums mb-2">
                                       +{formatCurrency(expansionThreeYearGap)}
                                     </div>
                                     <div className="text-xs text-[#9CA3AF] tabular-nums">
