@@ -318,7 +318,7 @@ export default function RoiCalculator({
 
   // Competitor Comparison state
   const [showCompetitorComparison, setShowCompetitorComparison] = useState(false);
-  const [competitorStep, setCompetitorStep] = useState<1 | 2 | 3>(1); // 1=selection, 2=deployment, 3=value comparison
+  const [competitorStep, setCompetitorStep] = useState<1 | 2 | 3 | 4>(1); // 1=solution, 2=usage, 3=gap analysis, 4=opportunity
   const [selectedCompetitor, setSelectedCompetitor] = useState<{
     name: string;
     type: "ambient" | "human" | "custom";
@@ -4521,52 +4521,119 @@ export default function RoiCalculator({
                   </div>
                 </div>
                 
-                {/* Step 1: Competitor Selection */}
+                {/* Step 1: Solution Selection */}
                 {competitorStep === 1 && (
-                  <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                    <h3 className="text-[18px] font-bold text-[#111827] mb-4">
-                      What solution are you currently using?
-                    </h3>
-                    
-                    {/* Competitor Options */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                      {[
-                        { name: "DAX (Nuance)", type: "ambient" as const, icon: "🎙️" },
-                        { name: "Suki", type: "ambient" as const, icon: "🤖" },
-                        { name: "Ambience Healthcare", type: "ambient" as const, icon: "💡" },
-                        { name: "Nabla", type: "ambient" as const, icon: "📝" },
-                        { name: "Human Scribe", type: "human" as const, icon: "👤" },
-                        { name: "Other AI Solution", type: "custom" as const, icon: "⚙️" },
-                      ].map((competitor) => (
-                        <button
-                          key={competitor.name}
-                          onClick={() => setSelectedCompetitor({ name: competitor.name, type: competitor.type })}
-                          className={`p-4 border rounded-lg text-left transition-all ${
-                            selectedCompetitor?.name === competitor.name
-                              ? "border-[#E8532F] bg-[#E8532F]/5 ring-2 ring-[#E8532F]/20"
-                              : "border-[#E5E7EB] hover:border-[#E8532F]/50"
-                          }`}
-                          data-testid={`button-competitor-${competitor.name.toLowerCase().replace(/\s+/g, '-')}`}
-                        >
-                          <div className="text-2xl mb-2">{competitor.icon}</div>
-                          <div className="font-semibold text-[#111827]">{competitor.name}</div>
-                          <div className="text-[13px] text-[#6B7280]">
-                            {competitor.type === "human" ? "In-person documentation" : "Ambient AI"}
-                          </div>
-                        </button>
-                      ))}
+                  <div className="space-y-6">
+                    {/* 4-Step Progress Indicator */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">1</span>
+                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Solution</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E5E7EB] text-[#9CA3AF] text-[12px] font-bold">2</span>
+                        <span className="ml-2 text-[13px] text-[#9CA3AF]">Your Usage</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E5E7EB] text-[#9CA3AF] text-[12px] font-bold">3</span>
+                        <span className="ml-2 text-[13px] text-[#9CA3AF]">Gap Analysis</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E5E7EB] text-[#9CA3AF] text-[12px] font-bold">4</span>
+                        <span className="ml-2 text-[13px] text-[#9CA3AF]">Opportunity</span>
+                      </div>
                     </div>
                     
-                    {/* Conditional Input Forms based on competitor type */}
-                    {selectedCompetitor && (
-                      <div className="border-t border-[#E5E7EB] pt-6">
-                        <h4 className="text-[16px] font-bold text-[#111827] mb-4">
-                          Tell us about your current {selectedCompetitor.name} usage
-                        </h4>
-                        
-                        {/* Human Scribe Inputs */}
-                        {selectedCompetitor.type === "human" && (
-                          <div className="space-y-4">
+                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                      <h3 className="text-[18px] font-bold text-[#111827] mb-4">
+                        What solution are you currently using?
+                      </h3>
+                      
+                      {/* Competitor Options */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[
+                          { name: "DAX (Nuance)", type: "ambient" as const, icon: "🎙️" },
+                          { name: "Suki", type: "ambient" as const, icon: "🤖" },
+                          { name: "Ambience Healthcare", type: "ambient" as const, icon: "💡" },
+                          { name: "Nabla", type: "ambient" as const, icon: "📝" },
+                          { name: "Human Scribe", type: "human" as const, icon: "👤" },
+                          { name: "Other AI Solution", type: "custom" as const, icon: "⚙️" },
+                        ].map((competitor) => (
+                          <button
+                            key={competitor.name}
+                            onClick={() => setSelectedCompetitor({ name: competitor.name, type: competitor.type })}
+                            className={`p-4 border rounded-lg text-left transition-all ${
+                              selectedCompetitor?.name === competitor.name
+                                ? "border-[#E8532F] bg-[#E8532F]/5 ring-2 ring-[#E8532F]/20"
+                                : "border-[#E5E7EB] hover:border-[#E8532F]/50"
+                            }`}
+                            data-testid={`button-competitor-${competitor.name.toLowerCase().replace(/\s+/g, '-')}`}
+                          >
+                            <div className="text-2xl mb-2">{competitor.icon}</div>
+                            <div className="font-semibold text-[#111827]">{competitor.name}</div>
+                            <div className="text-[13px] text-[#6B7280]">
+                              {competitor.type === "human" ? "In-person documentation" : "Ambient AI"}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      
+                      {/* Continue Button */}
+                      <div className="flex justify-end pt-6 border-t border-[#E5E7EB] mt-6">
+                        <Button
+                          onClick={() => setCompetitorStep(2)}
+                          disabled={!selectedCompetitor}
+                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          data-testid="button-continue-to-usage"
+                        >
+                          Continue
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Step 2: Your Usage Details */}
+                {competitorStep === 2 && selectedCompetitor && (
+                  <div className="space-y-6">
+                    {/* 4-Step Progress Indicator */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Solution</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">2</span>
+                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Your Usage</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E5E7EB] text-[#9CA3AF] text-[12px] font-bold">3</span>
+                        <span className="ml-2 text-[13px] text-[#9CA3AF]">Gap Analysis</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E5E7EB] text-[#9CA3AF] text-[12px] font-bold">4</span>
+                        <span className="ml-2 text-[13px] text-[#9CA3AF]">Opportunity</span>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                      <h3 className="text-[18px] font-bold text-[#111827] mb-6">
+                        Tell us about your {selectedCompetitor.name} deployment
+                      </h3>
+                      
+                      {/* Human Scribe Form */}
+                      {selectedCompetitor.type === "human" && (
+                        <div className="space-y-6">
+                          {/* Scribe Workforce Section */}
+                          <div>
+                            <h4 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">Scribe Workforce</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <label className="block text-[14px] text-[#6B7280] mb-2">Number of Scribes</label>
@@ -4610,8 +4677,8 @@ export default function RoiCalculator({
                                   data-testid="input-scribe-hourly-rate"
                                 />
                               </div>
-                              <div>
-                                <label className="block text-[14px] text-[#6B7280] mb-2">Hours per Week (per scribe)</label>
+                              <div className="md:col-span-2">
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Average Hours per Scribe per Week</label>
                                 <input
                                   type="text"
                                   inputMode="numeric"
@@ -4631,49 +4698,84 @@ export default function RoiCalculator({
                                   data-testid="input-scribe-hours"
                                 />
                               </div>
-                              <div>
-                                <label className="block text-[14px] text-[#6B7280] mb-2">Expected Reduction with Abridge (%)</label>
-                                <div className="flex items-center gap-3">
-                                  <Slider
-                                    value={[scribeReductionPercent]}
-                                    onValueChange={([val]) => setScribeReductionPercent(val)}
-                                    min={0}
-                                    max={100}
-                                    step={5}
-                                    className="flex-1"
-                                    data-testid="slider-scribe-reduction"
-                                  />
-                                  <span className="text-[16px] font-mono w-12 text-right">{scribeReductionPercent}%</span>
-                                </div>
-                              </div>
                             </div>
-                            
-                            {/* Scribe cost calculation preview */}
-                            <div className="mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <div className="text-[13px] text-[#6B7280]">Current Annual Scribe Cost</div>
-                                  <div className="text-[20px] font-bold text-[#111827] font-mono">
-                                    {formatCurrency(scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3)}
-                                  </div>
-                                  <div className="text-[12px] text-[#9CA3AF]">Includes 30% burden rate</div>
-                                </div>
-                                <div>
-                                  <div className="text-[13px] text-[#6B7280]">Projected Savings with Abridge</div>
-                                  <div className="text-[20px] font-bold text-[#059669] font-mono">
-                                    {formatCurrency((scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3) * (scribeReductionPercent / 100))}
-                                  </div>
-                                  <div className="text-[12px] text-[#9CA3AF]">Based on {scribeReductionPercent}% reduction</div>
-                                </div>
+                          </div>
+                          
+                          {/* Potential Reduction Section */}
+                          <div>
+                            <h4 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">Potential Reduction</h4>
+                            <div>
+                              <label className="block text-[14px] text-[#6B7280] mb-2">If you switched to AI, what % of scribe hours could you reduce?</label>
+                              <div className="flex items-center gap-3">
+                                <Slider
+                                  value={[scribeReductionPercent]}
+                                  onValueChange={([val]) => setScribeReductionPercent(val)}
+                                  min={0}
+                                  max={100}
+                                  step={5}
+                                  className="flex-1"
+                                  data-testid="slider-scribe-reduction"
+                                />
+                                <span className="text-[16px] font-mono w-12 text-right">{scribeReductionPercent}%</span>
+                              </div>
+                              <div className="text-[13px] text-[#9CA3AF] mt-2 flex items-center gap-1">
+                                <Lightbulb className="h-4 w-4" />
+                                Most organizations reduce 60-80% of scribe hours
                               </div>
                             </div>
                           </div>
-                        )}
-                        
-                        {/* Ambient AI Competitor Inputs */}
-                        {(selectedCompetitor.type === "ambient" || selectedCompetitor.type === "custom") && (
-                          <div className="space-y-4">
+                          
+                          {/* Calculated Summary */}
+                          <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                            <div className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">Calculated Summary</div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <div className="text-[13px] text-[#6B7280]">Annual Scribe Cost</div>
+                                <div className="text-[20px] font-bold text-[#111827] font-mono">
+                                  {formatCurrency(scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3)}
+                                </div>
+                                <div className="text-[12px] text-[#9CA3AF]">{scribeCount} scribes × ${scribeHourlyRate}/hr × {scribeHoursPerWeek}hrs × 52 weeks</div>
+                              </div>
+                              <div>
+                                <div className="text-[13px] text-[#6B7280]">Potential Annual Savings</div>
+                                <div className="text-[20px] font-bold text-[#059669] font-mono">
+                                  {formatCurrency((scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3) * (scribeReductionPercent / 100))}
+                                </div>
+                                <div className="text-[12px] text-[#9CA3AF]">@ {scribeReductionPercent}% reduction</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* AI Solution Form */}
+                      {(selectedCompetitor.type === "ambient" || selectedCompetitor.type === "custom") && (
+                        <div className="space-y-6">
+                          {/* Core Metrics Section */}
+                          <div>
+                            <h4 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">Core Metrics</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-[14px] text-[#6B7280] mb-2">Total Providers Using {selectedCompetitor.name}</label>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={rawInputValues["competitorProviders"] ?? (competitorProviderCount === "" ? "" : String(competitorProviderCount))}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^[0-9]*$/.test(val)) {
+                                      setRawInputValues(prev => ({ ...prev, "competitorProviders": val }));
+                                      if (val !== "") setCompetitorProviderCount(parseInt(val) || 0);
+                                      else setCompetitorProviderCount("");
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    setRawInputValues(prev => { const next = { ...prev }; delete next["competitorProviders"]; return next; });
+                                  }}
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  data-testid="input-competitor-providers"
+                                />
+                              </div>
                               <div>
                                 <label className="block text-[14px] text-[#6B7280] mb-2">Monthly Cost per Provider ($)</label>
                                 <input
@@ -4695,29 +4797,16 @@ export default function RoiCalculator({
                                   data-testid="input-competitor-cost"
                                 />
                               </div>
+                            </div>
+                          </div>
+                          
+                          {/* Current Performance Section */}
+                          <div>
+                            <h4 className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-4">Current Performance</h4>
+                            <div className="space-y-5">
                               <div>
-                                <label className="block text-[14px] text-[#6B7280] mb-2">Providers Using {selectedCompetitor.name}</label>
-                                <input
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={rawInputValues["competitorProviders"] ?? (competitorProviderCount === "" ? "" : String(competitorProviderCount))}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === "" || /^[0-9]*$/.test(val)) {
-                                      setRawInputValues(prev => ({ ...prev, "competitorProviders": val }));
-                                      if (val !== "") setCompetitorProviderCount(parseInt(val) || 0);
-                                      else setCompetitorProviderCount("");
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    setRawInputValues(prev => { const next = { ...prev }; delete next["competitorProviders"]; return next; });
-                                  }}
-                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  data-testid="input-competitor-providers"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[14px] text-[#6B7280] mb-2">Current Utilization Rate (%)</label>
+                                <label className="block text-[14px] text-[#6B7280] mb-1">Current Utilization Rate</label>
+                                <p className="text-[13px] text-[#9CA3AF] mb-3">What % of providers actively use {selectedCompetitor.name} daily?</p>
                                 <div className="flex items-center gap-3">
                                   <Slider
                                     value={[competitorUtilization]}
@@ -4728,87 +4817,111 @@ export default function RoiCalculator({
                                     className="flex-1"
                                     data-testid="slider-competitor-utilization"
                                   />
-                                  <span className="text-[16px] font-mono w-12 text-right">{competitorUtilization}%</span>
+                                  <span className="text-[16px] font-mono w-16 text-right">{competitorUtilization}%</span>
+                                </div>
+                                <div className="text-[13px] text-[#9CA3AF] mt-2 flex items-center gap-1">
+                                  <Lightbulb className="h-4 w-4" />
+                                  Industry average for {selectedCompetitor.name}: 45-55%
                                 </div>
                               </div>
+                              
                               <div>
-                                <label className="block text-[14px] text-[#6B7280] mb-2">Time Saved per Encounter (min)</label>
-                                <input
-                                  type="text"
-                                  inputMode="decimal"
-                                  value={rawInputValues["competitorTimeSaved"] ?? String(competitorTimeSaved)}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                      setRawInputValues(prev => ({ ...prev, "competitorTimeSaved": val }));
-                                      if (val !== "" && !isNaN(Number(val))) setCompetitorTimeSaved(parseFloat(val) || 0);
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    if (rawInputValues["competitorTimeSaved"] === "" || rawInputValues["competitorTimeSaved"] === undefined) setCompetitorTimeSaved(8);
-                                    setRawInputValues(prev => { const next = { ...prev }; delete next["competitorTimeSaved"]; return next; });
-                                  }}
-                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  data-testid="input-competitor-time-saved"
-                                />
-                              </div>
-                            </div>
-                            
-                            {/* Competitor cost calculation preview */}
-                            <div className="mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <div className="text-[13px] text-[#6B7280]">Current Annual {selectedCompetitor.name} Cost</div>
-                                  <div className="text-[20px] font-bold text-[#111827] font-mono">
-                                    {formatCurrency(competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12)}
-                                  </div>
+                                <label className="block text-[14px] text-[#6B7280] mb-1">Time Saved per Encounter (minutes)</label>
+                                <p className="text-[13px] text-[#9CA3AF] mb-3">How much documentation time does {selectedCompetitor.name} save per visit?</p>
+                                <div className="flex items-center gap-3">
+                                  <Slider
+                                    value={[competitorTimeSaved]}
+                                    onValueChange={([val]) => setCompetitorTimeSaved(val)}
+                                    min={0}
+                                    max={10}
+                                    step={0.5}
+                                    className="flex-1"
+                                    data-testid="slider-competitor-time-saved"
+                                  />
+                                  <span className="text-[16px] font-mono w-20 text-right">{competitorTimeSaved} min</span>
                                 </div>
-                                <div>
-                                  <div className="text-[13px] text-[#6B7280]">Current Utilization</div>
-                                  <div className="text-[20px] font-bold text-[#111827] font-mono">
-                                    {competitorUtilization}%
-                                  </div>
+                                <div className="text-[13px] text-[#9CA3AF] mt-2 flex items-center gap-1">
+                                  <Lightbulb className="h-4 w-4" />
+                                  {selectedCompetitor.name} customers typically report 1-2 min saved
                                 </div>
                               </div>
                             </div>
                           </div>
-                        )}
+                          
+                          {/* Calculated Summary */}
+                          <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                            <div className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">Calculated Summary</div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <div className="text-[13px] text-[#6B7280]">Annual {selectedCompetitor.name} Cost</div>
+                                <div className="text-[20px] font-bold text-[#111827] font-mono">
+                                  {formatCurrency(competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12)}
+                                </div>
+                                <div className="text-[12px] text-[#9CA3AF]">${competitorCostPerProvider}/provider × {typeof competitorProviderCount === "number" ? competitorProviderCount : 0} × 12</div>
+                              </div>
+                              <div>
+                                <div className="text-[13px] text-[#6B7280]">Current Annual Time Saved</div>
+                                <div className="text-[20px] font-bold text-[#111827] font-mono">
+                                  {(() => {
+                                    const providers = typeof competitorProviderCount === "number" ? competitorProviderCount : 0;
+                                    const monthlyEncounters = Math.round(inputs.annualOutpatientEncounters / 12 * (providers / inputs.numberOfProviders));
+                                    const annualHours = Math.round((monthlyEncounters * 12 * competitorTimeSaved * (competitorUtilization / 100)) / 60);
+                                    return annualHours.toLocaleString();
+                                  })()} hours
+                                </div>
+                                <div className="text-[12px] text-[#9CA3AF]">@ {competitorUtilization}% utilization</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Footer Actions */}
+                      <div className="flex items-center justify-between pt-6 border-t border-[#E5E7EB] mt-6">
+                        <Button
+                          variant="outline"
+                          onClick={() => setCompetitorStep(1)}
+                          data-testid="button-back-to-solution"
+                        >
+                          <ArrowLeft className="h-4 w-4 mr-2" />
+                          Back
+                        </Button>
+                        <Button
+                          onClick={() => setCompetitorStep(3)}
+                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          data-testid="button-analyze-gap"
+                        >
+                          Analyze the Gap
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
                       </div>
-                    )}
-                    
-                    {/* Continue Button */}
-                    <div className="flex justify-end pt-6 border-t border-[#E5E7EB] mt-6">
-                      <Button
-                        onClick={() => setCompetitorStep(2)}
-                        disabled={!selectedCompetitor}
-                        className="bg-[#E8532F] hover:bg-[#D14729] text-white"
-                        data-testid="button-continue-comparison"
-                      >
-                        Continue to Deployment Info
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
                     </div>
                   </div>
                 )}
                 
-                {/* Step 2: The Gap at a Glance */}
-                {competitorStep === 2 && selectedCompetitor && (
+                {/* Step 3: Gap Analysis - Side-by-Side Comparison */}
+                {competitorStep === 3 && selectedCompetitor && (
                   <div className="space-y-6">
-                    {/* Step indicator */}
-                    <div className="flex items-center gap-2 mb-2">
+                    {/* 4-Step Progress Indicator */}
+                    <div className="flex items-center gap-2">
                       <div className="flex items-center">
                         <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
-                        <span className="ml-2 text-[13px] text-[#6B7280]">Competitor</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Solution</span>
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
                       <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">2</span>
-                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Deployment</span>
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">2</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Your Usage</span>
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
                       <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E5E7EB] text-[#9CA3AF] text-[12px] font-bold">3</span>
-                        <span className="ml-2 text-[13px] text-[#9CA3AF]">Value Comparison</span>
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">3</span>
+                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Gap Analysis</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E5E7EB] text-[#9CA3AF] text-[12px] font-bold">4</span>
+                        <span className="ml-2 text-[13px] text-[#9CA3AF]">Opportunity</span>
                       </div>
                     </div>
                     
@@ -4930,12 +5043,12 @@ export default function RoiCalculator({
                                   los: { ...prev.los, wrvuUpliftPerProvider: defaults.los, skipped: false },
                                   overtime: { ...prev.overtime, hoursPerProvider: defaults.overtime, skipped: false },
                                 }));
-                                setCompetitorStep(3);
+                                setCompetitorStep(4);
                               }}
                               className="bg-[#ef4444] hover:bg-[#dc2626] text-white px-12 py-4 text-[16px] font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                              data-testid="button-show-numbers"
+                              data-testid="button-show-opportunity"
                             >
-                              Yes, Show Me the Numbers
+                              See Your Opportunity
                               <ArrowRight className="h-4 w-4 ml-2" />
                             </Button>
                           </div>
@@ -5060,8 +5173,8 @@ export default function RoiCalculator({
                     <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
                       <Button
                         variant="outline"
-                        onClick={() => setCompetitorStep(1)}
-                        data-testid="button-back-to-selection"
+                        onClick={() => setCompetitorStep(2)}
+                        data-testid="button-back-to-usage"
                       >
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back
@@ -5070,9 +5183,32 @@ export default function RoiCalculator({
                   </div>
                 )}
                 
-                {/* Step 3: THE COMPARISON - Split Screen View */}
-                {competitorStep === 3 && selectedCompetitor && (
+                {/* Step 4: The Opportunity - Results View */}
+                {competitorStep === 4 && selectedCompetitor && (
                   <div className="space-y-6">
+                    {/* 4-Step Progress Indicator */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Solution</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">2</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Your Usage</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">3</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Gap Analysis</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">4</span>
+                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Opportunity</span>
+                      </div>
+                    </div>
+                    
                     {/* Context Header */}
                     <div className="text-center py-2 border-b border-[#E5E7EB]">
                       <div className="text-[14px] text-[#6B7280]">
@@ -5110,8 +5246,8 @@ export default function RoiCalculator({
                     <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
                       <Button
                         variant="outline"
-                        onClick={() => setCompetitorStep(2)}
-                        data-testid="button-back-to-deployment"
+                        onClick={() => setCompetitorStep(3)}
+                        data-testid="button-back-to-gap-analysis"
                       >
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back
@@ -5600,8 +5736,8 @@ export default function RoiCalculator({
                     <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
                       <Button
                         variant="outline"
-                        onClick={() => setCompetitorStep(2)}
-                        data-testid="button-back-to-deployment"
+                        onClick={() => setCompetitorStep(3)}
+                        data-testid="button-back-to-gap-analysis"
                       >
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back

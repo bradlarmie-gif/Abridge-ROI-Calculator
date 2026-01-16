@@ -1,0 +1,705 @@
+Overview
+Rebuild the Competitor Comparison flow as a 4-step progressive experience that collects the right inputs, shows the gap clearly, and reveals the switching opportunity tied to their specific strategic priorities.
+
+STEP 1: Current Solution Selection
+URL: /scenario-builder/competitor/solution
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ← Back to Scenario Builder                                          │
+│                                                                     │
+│ COMPETITOR COMPARISON                                               │
+│ Understand the value gap between your current solution and Abridge  │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ 📊 Your Abridge baseline: 50 providers | 100,000 encounters |   │ │
+│ │    $108,667 net gain                                            │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ● Solution ─────────○ Your Usage ─────────○ Gap Analysis ─────────○ Opportunity │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                                                                 │ │
+│ │  What solution are you currently using?                         │ │
+│ │                                                                 │ │
+│ │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │ │
+│ │  │ [DAX Logo]  │  │ [Suki Logo] │  │ [Ambience   │             │ │
+│ │  │             │  │             │  │  Logo]      │             │ │
+│ │  │ DAX         │  │ Suki        │  │ Ambience    │             │ │
+│ │  │ (Nuance)    │  │             │  │ Healthcare  │             │ │
+│ │  │             │  │             │  │             │             │ │
+│ │  │ Ambient AI  │  │ Ambient AI  │  │ Ambient AI  │             │ │
+│ │  └─────────────┘  └─────────────┘  └─────────────┘             │ │
+│ │                                                                 │ │
+│ │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │ │
+│ │  │ [Nabla Logo]│  │ [Person     │  │ [Gear Icon] │             │ │
+│ │  │             │  │  Icon]      │  │             │             │ │
+│ │  │ Nabla       │  │ Human       │  │ Other AI    │             │ │
+│ │  │             │  │ Scribe      │  │ Solution    │             │ │
+│ │  │             │  │             │  │             │             │ │
+│ │  │ Ambient AI  │  │ In-person   │  │ Ambient AI  │             │ │
+│ │  └─────────────┘  └─────────────┘  └─────────────┘             │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│                                    [Continue →] (disabled until selection) │
+└─────────────────────────────────────────────────────────────────────┘
+Logic:
+
+Competitor logos should be actual logos (provide image assets)
+Selection highlights card with brand color border
+"Other AI Solution" shows a text input for name
+"Human Scribe" triggers different inputs in Step 2
+
+
+STEP 2: Current Usage Details
+URL: /scenario-builder/competitor/usage
+For AI Solutions (DAX, Suki, Ambience, Nabla, Other):
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ← Back                                                              │
+│                                                                     │
+│ COMPETITOR COMPARISON                                               │
+│                                                                     │
+│ ○ Solution ─────────● Your Usage ─────────○ Gap Analysis ─────────○ Opportunity │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                                                                 │ │
+│ │  Tell us about your [DAX (Nuance)] deployment                   │ │
+│ │                                                                 │ │
+│ │  CORE METRICS                                                   │ │
+│ │  ─────────────────────────────────────────────────────────────  │ │
+│ │                                                                 │ │
+│ │  Total Providers Using [DAX]      Monthly Cost per Provider ($) │ │
+│ │  ┌─────────────────────────┐     ┌─────────────────────────┐   │ │
+│ │  │ 50                      │     │ 200                      │   │ │
+│ │  └─────────────────────────┘     └─────────────────────────┘   │ │
+│ │                                                                 │ │
+│ │  Monthly Outpatient Encounters (with these providers)           │ │
+│ │  ┌─────────────────────────────────────────────────────────┐   │ │
+│ │  │ 8,333                                                    │   │ │
+│ │  └─────────────────────────────────────────────────────────┘   │ │
+│ │  💡 ~167 encounters/provider/month                              │ │
+│ │                                                                 │ │
+│ │  CURRENT PERFORMANCE                                            │ │
+│ │  ─────────────────────────────────────────────────────────────  │ │
+│ │                                                                 │ │
+│ │  Current Utilization Rate                                       │ │
+│ │  What % of providers actively use [DAX] daily?                  │ │
+│ │  ├──────────────────●──────────────────────┤ 50%               │ │
+│ │  0%                                        100%                 │ │
+│ │  💡 Industry average for [DAX]: 45-55%                          │ │
+│ │                                                                 │ │
+│ │  Time Saved per Encounter (minutes)                             │ │
+│ │  How much documentation time does [DAX] save per visit?         │ │
+│ │  ├────────●────────────────────────────────┤ 1.5 min           │ │
+│ │  0 min                                     10 min               │ │
+│ │  💡 [DAX] customers typically report 1-2 min saved              │ │
+│ │                                                                 │ │
+│ │  ─────────────────────────────────────────────────────────────  │ │
+│ │                                                                 │ │
+│ │  DOCUMENTATION QUALITY (Optional - helps refine analysis)       │ │
+│ │  ┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐  │ │
+│ │  │                                                           │  │ │
+│ │  │  Baseline wRVU per Encounter       wRVU Change Since [DAX]│  │ │
+│ │  │  ┌───────────────────────┐        ┌────────────────────┐ │  │ │
+│ │  │  │ 1.2                   │        │ +0%         ▼      │ │  │ │
+│ │  │  └───────────────────────┘        └────────────────────┘ │  │ │
+│ │  │                                   [0%, +2%, +4%, +6%]    │  │ │
+│ │  │                                                           │  │ │
+│ │  └─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┘  │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ CALCULATED SUMMARY                                              │ │
+│ │                                                                 │ │
+│ │ Annual [DAX] Cost         Current Annual Time Saved             │ │
+│ │ $120,000                  2,083 hours                           │ │
+│ │ $200/provider × 50 × 12   @ 50% utilization                     │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ [← Back]                              [Analyze the Gap →]           │
+└─────────────────────────────────────────────────────────────────────┘
+For Human Scribe (Different form):
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│  Tell us about your Human Scribe operation                          │
+│                                                                     │
+│  SCRIBE WORKFORCE                                                   │
+│  ─────────────────────────────────────────────────────────────────  │
+│                                                                     │
+│  Number of Scribes              Average Hourly Rate ($)             │
+│  ┌─────────────────────┐       ┌─────────────────────┐             │
+│  │ 25                  │       │ 18                  │             │
+│  └─────────────────────┘       └─────────────────────┘             │
+│                                                                     │
+│  Average Hours per Scribe per Week                                  │
+│  ┌─────────────────────────────────────────────────────────┐       │
+│  │ 32                                                      │       │
+│  └─────────────────────────────────────────────────────────┘       │
+│                                                                     │
+│  COVERAGE                                                           │
+│  ─────────────────────────────────────────────────────────────────  │
+│                                                                     │
+│  Providers Covered by Scribes    Monthly Encounters Covered         │
+│  ┌─────────────────────┐        ┌─────────────────────┐            │
+│  │ 50                  │        │ 8,333               │            │
+│  └─────────────────────┘        └─────────────────────┘            │
+│                                                                     │
+│  What % of encounters have scribe coverage?                         │
+│  ├──────────────────●──────────────────────┤ 60%                   │
+│  0%                                        100%                     │
+│                                                                     │
+│  POTENTIAL REDUCTION                                                │
+│  ─────────────────────────────────────────────────────────────────  │
+│                                                                     │
+│  If you switched to AI, what % of scribe hours could you reduce?    │
+│  ├──────────────────────────────●──────────┤ 75%                   │
+│  0%                                        100%                     │
+│  💡 Most organizations reduce 60-80% of scribe hours                │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ CALCULATED SUMMARY                                              │ │
+│ │                                                                 │ │
+│ │ Annual Scribe Cost         Potential Annual Savings             │ │
+│ │ $748,800                   $561,600                             │ │
+│ │ 25 scribes × 32hrs × $18   @ 75% reduction                      │ │
+│ │ × 52 weeks                                                      │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+STEP 3: The Gap Analysis
+URL: /scenario-builder/competitor/gap
+This is where the magic happens. Show them clearly what they're missing.
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ← Back                                                              │
+│                                                                     │
+│ COMPETITOR COMPARISON                                               │
+│                                                                     │
+│ ○ Solution ─────────○ Your Usage ─────────● Gap Analysis ─────────○ Opportunity │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                     THE GAP AT A GLANCE                         │ │
+│ │                                                                 │ │
+│ │          [DAX Logo]                      [Abridge Logo]         │ │
+│ │          Your Current                    The Opportunity        │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                                                                 │ │
+│ │  ┌────────────────────────┬────────────────────────┐           │ │
+│ │  │      DAX (Nuance)      │        Abridge         │           │ │
+│ │  ├────────────────────────┼────────────────────────┤           │ │
+│ │  │                        │                        │           │ │
+│ │  │  ADOPTION              │  ADOPTION              │           │ │
+│ │  │  ████████░░░░░░░░ 50%  │  █████████████░░░ 65%  │           │ │
+│ │  │  Your utilization      │  Abridge average       │           │ │
+│ │  │                        │        +30% higher     │           │ │
+│ │  │                        │                        │           │ │
+│ │  ├────────────────────────┼────────────────────────┤           │ │
+│ │  │                        │                        │           │ │
+│ │  │  TIME SAVINGS          │  TIME SAVINGS          │           │ │
+│ │  │  1.5 min/encounter     │  7 min/encounter       │           │ │
+│ │  │                        │        +367% more      │           │ │
+│ │  │                        │                        │           │ │
+│ │  ├────────────────────────┼────────────────────────┤           │ │
+│ │  │                        │                        │           │ │
+│ │  │  ANNUAL COST           │  ANNUAL COST           │           │ │
+│ │  │  $120,000              │  $108,000              │           │ │
+│ │  │  $200/provider/mo      │  $180/provider/mo      │           │ │
+│ │  │                        │        Save $12,000    │           │ │
+│ │  │                        │                        │           │ │
+│ │  └────────────────────────┴────────────────────────┘           │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                                                                 │ │
+│ │  WHAT THIS MEANS FOR YOUR STRATEGIC PRIORITIES                  │ │
+│ │  Based on your selections: Patient Access, Overtime Savings     │ │
+│ │                                                                 │ │
+│ │  ┌───────────────────────────────────────────────────────────┐ │ │
+│ │  │ 📈 PATIENT ACCESS                                         │ │ │
+│ │  │                                                           │ │ │
+│ │  │ To calculate your access opportunity, we need:            │ │ │
+│ │  │                                                           │ │ │
+│ │  │ Additional encounters per provider per month enabled      │ │ │
+│ │  │ by freeing up documentation time:                         │ │ │
+│ │  │                                                           │ │ │
+│ │  │ With DAX today:    [    0.5    ] encounters/provider/mo   │ │ │
+│ │  │                                                           │ │ │
+│ │  │ 💡 At 7 min saved vs 1.5 min, Abridge enables ~3.3x       │ │ │
+│ │  │    more encounters from recaptured time                   │ │ │
+│ │  │                                                           │ │ │
+│ │  │         DAX: 0.5 encounters → Abridge: 1.7 encounters     │ │ │
+│ │  │                              +240% more capacity          │ │ │
+│ │  └───────────────────────────────────────────────────────────┘ │ │
+│ │                                                                 │ │
+│ │  ┌───────────────────────────────────────────────────────────┐ │ │
+│ │  │ ⏰ OVERTIME & LOCUM SAVINGS                                │ │ │
+│ │  │                                                           │ │ │
+│ │  │ To calculate your overtime opportunity:                   │ │ │
+│ │  │                                                           │ │ │
+│ │  │ Avg overtime hours per provider per week:                 │ │ │
+│ │  │ ┌─────────────────────────────────────────────────────┐  │ │ │
+│ │  │ │ 3                                                    │  │ │ │
+│ │  │ └─────────────────────────────────────────────────────┘  │ │ │
+│ │  │                                                           │ │ │
+│ │  │ Overtime hourly rate ($/hr):                              │ │ │
+│ │  │ ┌─────────────────────────────────────────────────────┐  │ │ │
+│ │  │ │ 150                                                  │  │ │ │
+│ │  │ └─────────────────────────────────────────────────────┘  │ │ │
+│ │  │                                                           │ │ │
+│ │  │ % of overtime that is documentation-driven:               │ │ │
+│ │  │ ├──────────────────────●────────────────┤ 70%            │ │ │
+│ │  │                                                           │ │ │
+│ │  │ Current overtime eliminated by DAX:    [ 25 ]%            │ │ │
+│ │  │                                                           │ │ │
+│ │  │ 💡 Abridge's greater time savings typically eliminates    │ │ │
+│ │  │    60-75% of documentation-driven overtime                │ │ │
+│ │  │                                                           │ │ │
+│ │  │         DAX: $81,900 saved → Abridge: $163,800 saved     │ │ │
+│ │  │                              +$81,900 additional          │ │ │
+│ │  └───────────────────────────────────────────────────────────┘ │ │
+│ │                                                                 │ │
+│ │  (Additional driver cards based on selected strategic priorities)│ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ [← Back]                              [See the Full Opportunity →]  │
+└─────────────────────────────────────────────────────────────────────┘
+Driver-Specific Input Cards (show only for selected priorities):
+Clinician Retention:
+Copy┌───────────────────────────────────────────────────────────────────┐
+│ 👤 CLINICIAN RETENTION                                            │
+│                                                                   │
+│ Avg hours/week providers spend on documentation after hours:      │
+│ ├────────────●────────────────────────────┤ 8 hrs                │
+│                                                                   │
+│ Hours/week spent on chart closure at home:                        │
+│ ├──────────●──────────────────────────────┤ 5 hrs                │
+│                                                                   │
+│ 💡 Burnout risk increases 40% when after-hours work exceeds       │
+│    5 hrs/week. Abridge reduces this by avg 60%.                   │
+│                                                                   │
+│         DAX: 6 hrs after-hours → Abridge: 3 hrs after-hours      │
+│                                  -50% burnout risk factor        │
+└───────────────────────────────────────────────────────────────────┘
+Accurate Level of Service:
+Copy┌───────────────────────────────────────────────────────────────────┐
+│ 📊 ACCURATE LEVEL OF SERVICE                                      │
+│                                                                   │
+│ Baseline wRVU per encounter:                                      │
+│ ┌─────────────────────────────────────────────────────────────┐  │
+│ │ 1.2                                                          │  │
+│ └─────────────────────────────────────────────────────────────┘  │
+│                                                                   │
+│ wRVU improvement seen with DAX:                                   │
+│ [ +0% ▼ ]  (select: 0%, +2%, +4%, +6%, +8%)                      │
+│                                                                   │
+│ 💡 Abridge's complete documentation capture typically drives      │
+│    4-8% wRVU improvement from accurate coding support             │
+│                                                                   │
+│ Annual revenue impact:                                            │
+│         DAX: $0 uplift → Abridge: +$240,000 uplift               │
+│         Based on 100,000 encounters × 1.2 wRVU × $40/wRVU × 5%   │
+└───────────────────────────────────────────────────────────────────┘
+Documentation-Related Denials:
+Copy┌───────────────────────────────────────────────────────────────────┐
+│ ⚠️ DOCUMENTATION-RELATED DENIALS                                  │
+│                                                                   │
+│ Current denial rate (%):                                          │
+│ ┌─────────────────────────────────────────────────────────────┐  │
+│ │ 8%                                                           │  │
+│ └─────────────────────────────────────────────────────────────┘  │
+│                                                                   │
+│ % of denials that are documentation-related:                      │
+│ ├────────────────────●────────────────────┤ 35%                  │
+│                                                                   │
+│ Average revenue per encounter:                                    │
+│ ┌─────────────────────────────────────────────────────────────┐  │
+│ │ $150                                                         │  │
+│ └─────────────────────────────────────────────────────────────┘  │
+│                                                                   │
+│ Chart closure time (days):                                        │
+│ ├────────●────────────────────────────────┤ 3 days               │
+│                                                                   │
+│ 💡 Faster chart closure = faster payment. Abridge averages        │
+│    same-day closure vs industry avg of 2.7 days                   │
+│                                                                   │
+│         DAX: 2 days → Abridge: 0.5 days                          │
+│         Cash flow improvement: $XX,XXX earlier                    │
+└───────────────────────────────────────────────────────────────────┘
+HCC & Chronic Condition Capture:
+Copy┌───────────────────────────────────────────────────────────────────┐
+│ 🏥 HCC & CHRONIC CONDITION CAPTURE                                │
+│                                                                   │
+│ Total patients in your panel with chronic conditions:             │
+│ ┌─────────────────────────────────────────────────────────────┐  │
+│ │ 15,000                                                       │  │
+│ └─────────────────────────────────────────────────────────────┘  │
+│                                                                   │
+│ Current suspected HCC capture rate:                               │
+│ ├────────────────────────●────────────────┤ 65%                  │
+│                                                                   │
+│ Average RAF value per HCC captured:                               │
+│ ┌─────────────────────────────────────────────────────────────┐  │
+│ │ $850                                                         │  │
+│ └─────────────────────────────────────────────────────────────┘  │
+│                                                                   │
+│ 💡 Abridge's clinical intelligence prompts capture of missed HCCs │
+│    Organizations see 15-25% lift in capture rates                 │
+│                                                                   │
+│         DAX: 65% capture → Abridge: 78% capture                  │
+│         +1,950 additional HCCs × $850 = $1,657,500               │
+└───────────────────────────────────────────────────────────────────┘
+
+STEP 4: The Switching Opportunity
+URL: /scenario-builder/competitor/opportunity
+This is the payoff - show them exactly what they're leaving on the table.
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ← Back                                                              │
+│                                                                     │
+│ COMPETITOR COMPARISON                                               │
+│                                                                     │
+│ ○ Solution ─────────○ Your Usage ─────────○ Gap Analysis ─────────● Opportunity │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                                                                 │ │
+│ │                    THE SWITCHING OPPORTUNITY                    │ │
+│ │                                                                 │ │
+│ │                     +$444,500/year                             │ │
+│ │                                                                 │ │
+│ │           Additional value by switching to Abridge              │ │
+│ │                                                                 │ │
+│ │   ───────────────────────────────────────────────────────────   │ │
+│ │                                                                 │ │
+│ │   This is what you're leaving on the table with DAX (Nuance)    │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                                                                 │ │
+│ │  WHERE THE VALUE COMES FROM                                     │ │
+│ │                                                                 │ │
+│ │  Based on your inputs and strategic priorities                  │ │
+│ │                                                                 │ │
+│ │  ┌─────────────────────────────────────────────────────────┐   │ │
+│ │  │                                                         │   │ │
+│ │  │  📈 Patient Access                                      │   │ │
+│ │  │  ───────────────────────────────────────────────────    │   │ │
+│ │  │                                                         │   │ │
+│ │  │  With DAX         With Abridge          Delta           │   │ │
+│ │  │  ─────────────    ─────────────         ───────         │   │ │
+│ │  │  +300 visits/yr   +990 visits/yr        +690 visits     │   │ │
+│ │  │  $90,000          $297,000              +$207,000       │   │ │
+│ │  │                                                         │   │ │
+│ │  │  💡 Based on: 50 providers × 0.5→1.7 encounters/mo      │   │ │
+│ │  │     × $300/visit contribution margin                    │   │ │
+│ │  │                                                         │   │ │
+│ │  └─────────────────────────────────────────────────────────┘   │ │
+│ │                                                                 │ │
+│ │  ┌─────────────────────────────────────────────────────────┐   │ │
+│ │  │                                                         │   │ │
+│ │  │  ⏰ Overtime & Locum Savings                            │   │ │
+│ │  │  ───────────────────────────────────────────────────    │   │ │
+│ │  │                                                         │   │ │
+│ │  │  With DAX         With Abridge          Delta           │   │ │
+│ │  │  ─────────────    ─────────────         ───────         │   │ │
+│ │  │  $81,900 saved    $163,800 saved        +$81,900        │   │ │
+│ │  │                                                         │   │ │
+│ │  │  💡 25%→70% reduction in doc-driven overtime            │   │ │
+│ │  │     50 providers × 3 hrs × $150 × 52 weeks × 70%        │   │ │
+│ │  │                                                         │   │ │
+│ │  └─────────────────────────────────────────────────────────┘   │ │
+│ │                                                                 │ │
+│ │  ┌─────────────────────────────────────────────────────────┐   │ │
+│ │  │                                                         │   │ │
+│ │  │  📊 Level of Service / wRVU Accuracy                    │   │ │
+│ │  │  ───────────────────────────────────────────────────    │   │ │
+│ │  │                                                         │   │ │
+│ │  │  With DAX         With Abridge          Delta           │   │ │
+│ │  │  ─────────────    ─────────────         ───────         │   │ │
+│ │  │  +$0              +$240,000             +$240,000       │   │ │
+│ │  │                                                         │   │ │
+│ │  │  💡 100K encounters × 1.2 wRVU × $40 × 5% improvement   │   │ │
+│ │  │                                                         │   │ │
+│ │  └─────────────────────────────────────────────────────────┘   │ │
+│ │                                                                 │ │
+│ │  ┌─────────────────────────────────────────────────────────┐   │ │
+│ │  │                                                         │   │ │
+│ │  │  💰 Cost Savings                                        │   │ │
+│ │  │  ───────────────────────────────────────────────────    │   │ │
+│ │  │                                                         │   │ │
+│ │  │  DAX Cost          Abridge Cost        Savings          │   │ │
+│ │  │  ─────────────     ─────────────       ───────          │   │ │
+│ │  │  $120,000/yr       $108,000/yr         -$12,000         │   │ │
+│ │  │                                                         │   │ │
+│ │  └─────────────────────────────────────────────────────────┘   │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                                                                 │ │
+│ │  THE SUMMARY                                                    │ │
+│ │  ───────────────────────────────────────────────────────────    │ │
+│ │                                                                 │ │
+│ │  ┌──────────────────┬──────────────────┬──────────────────┐    │ │
+│ │  │   DAX (Nuance)   │     Abridge      │      Delta       │    │ │
+│ │  ├──────────────────┼──────────────────┼──────────────────┤    │ │
+│ │  │ INVESTMENT       │                  │                  │    │ │
+│ │  │ $120,000/year    │ $108,000/year    │ Save $12,000     │    │ │
+│ │  ├──────────────────┼──────────────────┼──────────────────┤    │ │
+│ │  │ VALUE CREATED    │                  │                  │    │ │
+│ │  │ $171,900         │ $700,800         │ +$528,900        │    │ │
+│ │  ├──────────────────┼──────────────────┼──────────────────┤    │ │
+│ │  │ NET GAIN         │                  │                  │    │ │
+│ │  │ $51,900          │ $592,800         │ +$540,900        │    │ │
+│ │  ├──────────────────┼──────────────────┼──────────────────┤    │ │
+│ │  │ ROI              │                  │                  │    │ │
+│ │  │ 1.4x             │ 6.5x             │ +5.1x better     │    │ │
+│ │  └──────────────────┴──────────────────┴──────────────────┘    │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ ⚡ TIME TO VALUE                                                │ │
+│ │                                                                 │ │
+│ │ This assumes mature Abridge performance (65%+ utilization).     │ │
+│ │ Reality: It takes 18-24 months to get there.                    │ │
+│ │                                                                 │ │
+│ │ [Show Me the Realistic Timeline →]                              │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │                                                                 │ │
+│ │  WANT TO EXPLORE CAPTURING THIS VALUE?                          │ │
+│ │                                                                 │ │
+│ │  [Save This Analysis]     [Export to PDF]     [Talk to Team]    │ │
+│ │                                                                 │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ [← Back to Gap Analysis]                      [Save as Scenario]    │
+└─────────────────────────────────────────────────────────────────────┘
+
+Time to Value Modal (when clicked)
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│                                                              ✕      │
+│                                                                     │
+│  THE REALISTIC PATH TO $540,900                                     │
+│  Value doesn't happen overnight. Here's the realistic journey.     │
+│                                                                     │
+│        (20%)          (40%)          (80%)         (100%)          │
+│         M6            M12            M18           M24+             │
+│  ───────●─────────────●──────────────●─────────────●───────        │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ YEAR 1: THE RAMP-UP                                         │   │
+│  │                                                             │   │
+│  │ Months 1-3: Onboarding & training                           │   │
+│  │ Months 4-8: Building habits & workflows                     │   │
+│  │ Months 9-12: Early adopters succeeding                      │   │
+│  │                                                             │   │
+│  │ Utilization: 26% avg ████████░░░░░░░░░░░░░░░░░░░░░          │   │
+│  │                                                             │   │
+│  │ ┌────────────┬────────────┬────────────┬────────────┐       │   │
+│  │ │ Investment │   Value    │  Net Gain  │    ROI     │       │   │
+│  │ │ -$108,000  │  +$280,320 │  +$172,320 │   2.6x     │       │   │
+│  │ └────────────┴────────────┴────────────┴────────────┘       │   │
+│  │                                                             │   │
+│  │ Still better than DAX's 1.4x ROI, even during ramp-up ✓     │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ YEAR 2: THE ACCELERATION                                    │   │
+│  │                                                             │   │
+│  │ Utilization climbing (65%+)                                 │   │
+│  │ Workflows optimized                                         │   │
+│  │ Retention benefits starting to materialize                  │   │
+│  │                                                             │   │
+│  │ Utilization: 55% avg █████████████████░░░░░░░░░░░░░         │   │
+│  │                                                             │   │
+│  │ ┌────────────┬────────────┬────────────┬────────────┐       │   │
+│  │ │ Investment │   Value    │  Net Gain  │    ROI     │       │   │
+│  │ │ -$108,000  │  +$490,560 │  +$382,560 │   4.5x     │       │   │
+│  │ └────────────┴────────────┴────────────┴────────────┘       │   │
+│  │                                                             │   │
+│  │ ROI now 3.2x better than DAX ✓                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ YEAR 3: THE PAYOFF                                          │   │
+│  │                                                             │   │
+│  │ Full maturity achieved                                      │   │
+│  │ Compounding benefits delivering                             │   │
+│  │ Retention benefits fully realized                           │   │
+│  │ Provider satisfaction high                                  │   │
+│  │                                                             │   │
+│  │ Utilization: 70% avg █████████████████████░░░░░░░░░         │   │
+│  │                                                             │   │
+│  │ ┌────────────┬────────────┬────────────┬────────────┐       │   │
+│  │ │ Investment │   Value    │  Net Gain  │    ROI     │       │   │
+│  │ │ -$108,000  │  +$700,800 │  +$592,800 │   6.5x     │       │   │
+│  │ └────────────┴────────────┴────────────┴────────────┘       │   │
+│  │                                                             │   │
+│  │ Compounds forever - $592,800+ per year ongoing ✓            │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                                                             │   │
+│  │  3-YEAR CUMULATIVE COMPARISON                               │   │
+│  │                                                             │   │
+│  │  ┌──────────────┬──────────────────┬────────────────────┐  │   │
+│  │  │    Year      │ Abridge Net Gain │  DAX Net Gain      │  │   │
+│  │  ├──────────────┼──────────────────┼────────────────────┤  │   │
+│  │  │ Year 1       │ $172,320         │ $51,900            │  │   │
+│  │  │ Year 2       │ $382,560         │ $51,900            │  │   │
+│  │  │ Year 3       │ $592,800         │ $51,900            │  │   │
+│  │  ├──────────────┼──────────────────┼────────────────────┤  │   │
+│  │  │ 3-Year Total │ $1,147,680       │ $155,700           │  │   │
+│  │  └──────────────┴──────────────────┴────────────────────┘  │   │
+│  │                                                             │   │
+│  │         +$991,980 more value over 3 years                   │   │
+│  │                                                             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│                                                        [Close]      │
+└─────────────────────────────────────────────────────────────────────┘
+
+Data Model Requirements
+typescriptCopyinterface CompetitorComparison {
+  // Step 1: Solution Selection
+  currentSolution: 'dax' | 'suki' | 'ambience' | 'nabla' | 'human_scribe' | 'other';
+  otherSolutionName?: string;
+  
+  // Step 2: Usage Details (for AI solutions)
+  aiUsage?: {
+    providersUsing: number;
+    monthlyEncounters: number;
+    monthlyCostPerProvider: number;
+    currentUtilization: number; // 0-100
+    timeSavedPerEncounter: number; // minutes
+    baselineWRVU?: number;
+    wrvuChange?: number; // percentage
+  };
+  
+  // Step 2: Usage Details (for Human Scribe)
+  scribeUsage?: {
+    numberOfScribes: number;
+    hourlyRate: number;
+    hoursPerWeek: number;
+    providersCovered: number;
+    monthlyEncountersCovered: number;
+    coveragePercent: number; // 0-100
+    reductionPercent: number; // 0-100
+  };
+  
+  // Step 3: Driver-specific inputs
+  driverInputs: {
+    patientAccess?: {
+      currentEncountersEnabled: number; // per provider per month
+    };
+    overtime?: {
+      overtimeHoursPerWeek: number;
+      overtimeRate: number;
+      docDrivenPercent: number; // 0-100
+      currentReductionPercent: number; // 0-100
+    };
+    clinicianRetention?: {
+      afterHoursPerWeek: number;
+      chartClosureHoursPerWeek: number;
+    };
+    levelOfService?: {
+      baselineWRVU: number;
+      currentWRVUImprovement: number; // percentage
+    };
+    denials?: {
+      denialRate: number; // percentage
+      docRelatedPercent: number; // 0-100
+      avgRevenuePerEncounter: number;
+      chartClosureDays: number;
+    };
+    hcc?: {
+      chronicConditionPatients: number;
+      currentCaptureRate: number; // 0-100
+      avgRAFValue: number;
+    };
+  };
+}
+
+Competitor Benchmarks (hardcoded defaults)
+typescriptCopyconst competitorBenchmarks = {
+  dax: {
+    name: 'DAX (Nuance)',
+    typicalUtilization: { min: 45, max: 55, default: 50 },
+    typicalTimeSaved: { min: 1, max: 2, default: 1.5 },
+    typicalCost: { min: 180, max: 250, default: 200 },
+    wrvuImprovement: { typical: 0 },
+    overtimeReduction: { typical: 25 },
+  },
+  suki: {
+    name: 'Suki',
+    typicalUtilization: { min: 40, max: 50, default: 45 },
+    typicalTimeSaved: { min: 1, max: 2.5, default: 1.5 },
+    typicalCost: { min: 150, max: 200, default: 175 },
+    wrvuImprovement: { typical: 0 },
+    overtimeReduction: { typical: 20 },
+  },
+  ambience: {
+    name: 'Ambience Healthcare',
+    typicalUtilization: { min: 50, max: 60, default: 55 },
+    typicalTimeSaved: { min: 2, max: 4, default: 3 },
+    typicalCost: { min: 175, max: 225, default: 200 },
+    wrvuImprovement: { typical: 2 },
+    overtimeReduction: { typical: 30 },
+  },
+  nabla: {
+    name: 'Nabla',
+    typicalUtilization: { min: 35, max: 45, default: 40 },
+    typicalTimeSaved: { min: 1, max: 2, default: 1.5 },
+    typicalCost: { min: 100, max: 150, default: 125 },
+    wrvuImprovement: { typical: 0 },
+    overtimeReduction: { typical: 15 },
+  },
+  human_scribe: {
+    name: 'Human Scribe',
+    typicalCoverage: 60,
+    typicalReduction: 75,
+  },
+  other: {
+    name: 'Other AI Solution',
+    // Use DAX defaults as baseline
+  },
+};
+
+const abridgeBenchmarks = {
+  typicalUtilization: { mature: 65, year1: 26, year2: 55, year3: 70 },
+  timeSavedPerEncounter: 7, // minutes
+  typicalCost: 180, // per provider per month
+  wrvuImprovement: 5, // percentage
+  overtimeReduction: 70, // percentage
+  afterHoursReduction: 60, // percentage
+  chartClosureDays: 0.5,
+  hccCaptureLift: 13, // percentage points
+};
+
+Design Principles to Follow
+
+Progressive Disclosure: Only show what's relevant at each step
+Contextual Intelligence: Show hints/benchmarks that help them understand if their inputs are realistic
+No Aggressive Sales Language: Let the numbers speak for themselves
+Honest About Time: The realistic timeline modal builds trust
+Visual Hierarchy: The big number (switching opportunity) should be the clear focal point
+Always Show the Math: Every number should have a tooltip or caption explaining how it was calculated
+Stripe-like Polish: Clean, minimal, lots of whitespace, subtle animations on state changes
+
+
+Implementation Notes
+
+State Management: All inputs should persist across steps (use React context or similar)
+Real-time Calculations: The "Calculated Summary" boxes should update as inputs change
+Validation: Gentle validation - highlight unrealistic inputs but don't block progress
+Mobile Responsive: The flow should work on tablets (common in healthcare settings)
+Export: The final opportunity view should be exportable as a PDF
