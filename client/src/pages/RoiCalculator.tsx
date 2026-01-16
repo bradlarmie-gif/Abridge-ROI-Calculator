@@ -637,7 +637,7 @@ export default function RoiCalculator({
   // Scroll to top when navigating between major views/wizards
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [showExpandProviders, showExpansionWizard, showAddDrivers, showNewCareSettingFlow, showCompetitorComparison, competitorStep, activeTab]);
+  }, [showExpandProviders, showExpansionWizard, showAddDrivers, showNewCareSetting, showCompetitorComparison, competitorStep, activeTab]);
 
   // Expansion calculation memo
   const expansionCalculation = useMemo(() => {
