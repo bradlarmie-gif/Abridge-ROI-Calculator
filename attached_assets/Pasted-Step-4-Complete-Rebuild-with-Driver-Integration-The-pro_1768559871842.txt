@@ -1,0 +1,283 @@
+Step 4 - Complete Rebuild with Driver Integration
+The problem: Step 3 and Step 4 are disconnected. The drivers configured in Step 3 need to flow into Step 4 and be interactive.
+
+1. Data Flow from Step 3
+When user clicks "See Opportunity at Scale" in Step 3, pass this data:
+typescriptCopyinterface Step3Output {
+  selectedDrivers: {
+    id: string;
+    label: string;
+    icon: string;
+    assumptions: Record<string, number>; // The editable values they set
+    competitorValue: number; // At baseline scale
+    abridgeValue: number; // At baseline scale
+    gap: number;
+  }[];
+  baselineProviders: number; // From Step 2
+  baselineEncounters: number; // From Step 2
+}
+
+2. Step 4 State Management
+typescriptCopyfunction OpportunityStep({ step3Data }) {
+  // Scale controls
+  const [providers, setProviders] = useState(step3Data.baselineProviders);
+  const [encounters, setEncounters] = useState(step3Data.baselineEncounters);
+  
+  // Driver assumptions (can be edited in Step 4)
+  const [driverAssumptions, setDriverAssumptions] = useState(
+    step3Data.selectedDrivers.reduce((acc, d) => ({
+      ...acc,
+      [d.id]: d.assumptions
+    }), {})
+  );
+  
+  // Calculate scale factor
+  const scaleFactor = encounters / step3Data.baselineEncounters;
+  
+  // Recalculate each driver when assumptions or scale change
+  const scaledDrivers = useMemo(() => {
+    return step3Data.selectedDrivers.map(driver => {
+      const currentAssumptions = driverAssumptions[driver.id];
+      const recalculated = calculateDriver(driver.id, currentAssumptions, step3Data);
+      
+      return {
+        ...driver,
+        assumptions: currentAssumptions,
+        competitorValue: recalculated.competitorValue * scaleFactor,
+        abridgeValue: recalculated.abridgeValue * scaleFactor,
+        gap: recalculated.gap * scaleFactor,
+      };
+    });
+  }, [driverAssumptions, scaleFactor]);
+  
+  // Totals
+  const totalCompetitorValue = scaledDrivers.reduce((sum, d) => sum + d.competitorValue, 0);
+  const totalAbridgeValue = scaledDrivers.reduce((sum, d) => sum + d.abridgeValue, 0);
+  const totalGap = totalAbridgeValue - totalCompetitorValue;
+  
+  // Multi-year projections (Abridge ramps up, competitor stays flat)
+  const chartData = [
+    { year: 'Today', competitor: 0, abridge: 0 },
+    { year: 'Year 1', competitor: totalCompetitorValue, abridge: totalAbridgeValue * 0.4 },
+    { year: 'Year 2', competitor: totalCompetitorValue * 2, abridge: totalAbridgeValue * 0.4 + totalAbridgeValue * 0.7 },
+    { year: 'Year 3', competitor: totalCompetitorValue * 3, abridge: totalAbridgeValue * 0.4 + totalAbridgeValue * 0.7 + totalAbridgeValue },
+  ];
+  
+  const threeYearGap = chartData[3].abridge - chartData[3].competitor;
+  
+  // ... render
+}
+
+3. Driver Card with Inline Sliders
+tsxCopyfunction DriverControlCard({ 
+  driver, 
+  assumptions, 
+  onAssumptionChange,
+  scaledValues 
+}) {
+  const editableFields = getEditableFields(driver.id);
+  
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+            {driver.icon}
+          </div>
+          <span className="font-medium text-gray-900">{driver.label}</span>
+        </div>
+        <div className="text-right">
+          <div className="text-lg font-semibold text-orange-600">
+            +{formatCurrency(scaledValues.gap)}
+          </div>
+          <div className="text-xs text-gray-400">at scale / year</div>
+        </div>
+      </div>
+      
+      {/* Assumption Sliders */}
+      <div className="space-y-3 mb-4">
+        {editableFields.map(field => (
+          <div key={field.id} className="flex items-center justify-between gap-4">
+            <label className="text-sm text-gray-600 flex-shrink-0">
+              {field.label}
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min={field.min || 0}
+                max={field.max || 100}
+                value={assumptions[field.id]}
+                onChange={(e) => onAssumptionChange(field.id, Number(e.target.value))}
+                className="w-24 h-1 bg-gray-200 rounded-full appearance-none cursor-pointer"
+              />
+              <span className="text-sm font-medium text-gray-900 w-16 text-right tabular-nums">
+                {field.prefix}{assumptions[field.id]}{field.suffix}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Value Summary */}
+      <div className="flex items-center justify-between text-sm pt-3 border-t border-gray-100">
+        <div className="text-gray-500">
+          <span className="text-gray-400">Current:</span> {formatCurrency(scaledValues.competitorValue)}/yr
+        </div>
+        <div className="text-gray-500">
+          <span className="text-orange-500">Abridge:</span> {formatCurrency(scaledValues.abridgeValue)}/yr
+        </div>
+      </div>
+    </div>
+  );
+}
+
+4. The Chart Updates in Real-Time
+The chart should re-render whenever:
+
+Scale sliders change (providers or encounters)
+Any driver assumption slider changes
+
+tsxCopy<ResponsiveContainer width="100%" height={300}>
+  <AreaChart data={chartData}>
+    <defs>
+      <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#E85D3F" stopOpacity={0.15} />
+        <stop offset="100%" stopColor="#E85D3F" stopOpacity={0.02} />
+      </linearGradient>
+    </defs>
+    
+    <XAxis dataKey="year" />
+    <YAxis tickFormatter={(v) => formatCurrency(v)} />
+    
+    {/* Abridge area (on top) */}
+    <Area
+      type="monotone"
+      dataKey="abridge"
+      stroke="#E85D3F"
+      strokeWidth={2}
+      fill="url(#gapGradient)"
+    />
+    
+    {/* Competitor line */}
+    <Area
+      type="monotone"
+      dataKey="competitor"
+      stroke="#9CA3AF"
+      strokeWidth={2}
+      strokeDasharray="4 4"
+      fill="transparent"
+    />
+    
+    <Tooltip content={<CustomTooltip />} />
+  </AreaChart>
+</ResponsiveContainer>
+
+5. Page Layout
+tsxCopyfunction OpportunityStep({ step3Data }) {
+  // ... state and calculations from above
+  
+  return (
+    <div className="space-y-8">
+      {/* Scale Controls */}
+      <section className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">
+          Scale
+        </div>
+        <div className="grid grid-cols-2 gap-8">
+          <ScaleSlider
+            label="Total Providers"
+            value={providers}
+            onChange={setProviders}
+            min={10}
+            max={2000}
+          />
+          <ScaleSlider
+            label="Annual Encounters"
+            value={encounters}
+            onChange={setEncounters}
+            min={10000}
+            max={5000000}
+          />
+        </div>
+      </section>
+      
+      {/* Chart */}
+      <section className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">
+          Cumulative Value Over 3 Years
+        </div>
+        {/* Chart component */}
+      </section>
+      
+      {/* Driver Controls */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+              Your Value Drivers
+            </div>
+            <p className="text-sm text-gray-500 mt-1">
+              Adjust assumptions and see real-time impact on the chart
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          {scaledDrivers.map(driver => (
+            <DriverControlCard
+              key={driver.id}
+              driver={driver}
+              assumptions={driverAssumptions[driver.id]}
+              onAssumptionChange={(fieldId, value) => {
+                setDriverAssumptions(prev => ({
+                  ...prev,
+                  [driver.id]: {
+                    ...prev[driver.id],
+                    [fieldId]: value
+                  }
+                }));
+              }}
+              scaledValues={driver}
+            />
+          ))}
+        </div>
+        
+        {/* Add more drivers */}
+        {unselectedDrivers.length > 0 && (
+          <button className="mt-4 text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+            <PlusIcon className="w-4 h-4" />
+            Add another driver ({unselectedDrivers.length} available)
+          </button>
+        )}
+      </section>
+      
+      {/* Summary */}
+      <section className="bg-orange-50 border border-orange-200 rounded-xl p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm text-orange-600">At this scale</div>
+            <div className="text-gray-900">
+              {providers.toLocaleString()} providers · {encounters.toLocaleString()} encounters/yr
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-500">3-Year Total Gap</div>
+            <div className="text-3xl font-semibold text-gray-900">
+              +{formatCurrency(threeYearGap)}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+Summary of What This Achieves
+
+Drivers from Step 3 flow directly into Step 4 - same data, same calculations
+Driver assumptions are editable in Step 4 - sliders let them adjust and see impact
+Scale sliders multiply everything - see what 500 providers looks like vs 50
+Chart updates in real-time - any change immediately reflects in the visualization
+Clear comparison - Competitor vs Abridge, visually obvious
+Clean design - matches the Stripe aesthetic you want
