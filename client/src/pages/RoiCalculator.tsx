@@ -6136,99 +6136,7 @@ export default function RoiCalculator({
                         </div>
                       </section>
                       
-                      {/* Section 3: Year-by-Year Breakdown Cards */}
-                      <section className="mb-8">
-                        <div className="grid grid-cols-3 gap-4">
-                          {/* Year 1 */}
-                          <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
-                            <div className="text-sm font-medium text-[#9CA3AF] mb-4">Year 1</div>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-[#6B7280]">Abridge</span>
-                                <span className="text-lg font-semibold text-[#E8532F]">{formatCurrency(yearlyData.year1.abridge)}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-[#6B7280]">{selectedCompetitor.name}</span>
-                                <span className="text-lg font-semibold text-[#6B7280]">{formatCurrency(yearlyData.year1.competitor)}</span>
-                              </div>
-                              <div className="pt-3 mt-3 border-t border-[#F3F4F6]">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-medium text-[#6B7280]">Gap</span>
-                                  <span className="text-lg font-bold text-[#E8532F]">+{formatCurrency(yearlyData.year1.gap)}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="mt-4 space-y-1">
-                              <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
-                                <div className="h-full bg-[#E8532F] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year1.abridge / maxYearlyValue) * 100 : 0}%` }} />
-                              </div>
-                              <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
-                                <div className="h-full bg-[#9CA3AF] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year1.competitor / maxYearlyValue) * 100 : 0}%` }} />
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Year 2 */}
-                          <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
-                            <div className="text-sm font-medium text-[#9CA3AF] mb-4">Year 2</div>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-[#6B7280]">Abridge</span>
-                                <span className="text-lg font-semibold text-[#E8532F]">{formatCurrency(yearlyData.year2.abridge)}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-[#6B7280]">{selectedCompetitor.name}</span>
-                                <span className="text-lg font-semibold text-[#6B7280]">{formatCurrency(yearlyData.year2.competitor)}</span>
-                              </div>
-                              <div className="pt-3 mt-3 border-t border-[#F3F4F6]">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-medium text-[#6B7280]">Gap</span>
-                                  <span className="text-lg font-bold text-[#E8532F]">+{formatCurrency(yearlyData.year2.gap)}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="mt-4 space-y-1">
-                              <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
-                                <div className="h-full bg-[#E8532F] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year2.abridge / maxYearlyValue) * 100 : 0}%` }} />
-                              </div>
-                              <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
-                                <div className="h-full bg-[#9CA3AF] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year2.competitor / maxYearlyValue) * 100 : 0}%` }} />
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Year 3 - Highlighted */}
-                          <div className="bg-[#FEF3F2] border border-[#FECACA] rounded-xl p-5">
-                            <div className="text-sm font-medium text-[#E8532F] mb-4">Year 3</div>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-[#E8532F]/70">Abridge</span>
-                                <span className="text-lg font-semibold text-[#E8532F]">{formatCurrency(yearlyData.year3.abridge)}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-[#6B7280]">{selectedCompetitor.name}</span>
-                                <span className="text-lg font-semibold text-[#6B7280]">{formatCurrency(yearlyData.year3.competitor)}</span>
-                              </div>
-                              <div className="pt-3 mt-3 border-t border-[#FECACA]">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-medium text-[#DC2626]">Gap</span>
-                                  <span className="text-lg font-bold text-[#DC2626]">+{formatCurrency(yearlyData.year3.gap)}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="mt-4 space-y-1">
-                              <div className="h-2 bg-[#FECACA] rounded-full overflow-hidden">
-                                <div className="h-full bg-[#E8532F] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year3.abridge / maxYearlyValue) * 100 : 0}%` }} />
-                              </div>
-                              <div className="h-2 bg-[#FECACA] rounded-full overflow-hidden">
-                                <div className="h-full bg-[#9CA3AF] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year3.competitor / maxYearlyValue) * 100 : 0}%` }} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </section>
-                      
-                      {/* Section 4: Driver Controls with Sliders */}
+                      {/* Section 3: Driver Controls with Editable Inputs */}
                       {scaledDrivers.length > 0 && (
                         <section className="mb-8">
                           <div className="flex items-center justify-between mb-4">
@@ -6279,7 +6187,7 @@ export default function RoiCalculator({
                                             <label className="text-sm text-gray-600 flex-shrink-0">
                                               {field.label}
                                             </label>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-3">
                                               <input
                                                 type="range"
                                                 min={field.min}
@@ -6296,12 +6204,34 @@ export default function RoiCalculator({
                                                     }
                                                   }));
                                                 }}
-                                                className="w-24 h-1 bg-gray-200 rounded-full appearance-none cursor-pointer slider-orange"
+                                                className="w-20 h-1 bg-gray-200 rounded-full appearance-none cursor-pointer accent-[#E85D3F]"
                                                 data-testid={`slider-${driver.id}-${field.id}`}
                                               />
-                                              <span className="text-sm font-medium text-gray-900 w-20 text-right tabular-nums">
-                                                {field.prefix}{currentValue.toLocaleString()}{field.suffix}
-                                              </span>
+                                              <div className="flex items-center">
+                                                {field.prefix && <span className="text-sm text-gray-500">{field.prefix}</span>}
+                                                <input
+                                                  type="number"
+                                                  min={field.min}
+                                                  max={field.max}
+                                                  step={field.step}
+                                                  value={currentValue}
+                                                  onChange={(e) => {
+                                                    let newValue = Number(e.target.value);
+                                                    if (newValue < field.min) newValue = field.min;
+                                                    if (newValue > field.max) newValue = field.max;
+                                                    setStep4DriverAssumptions(prev => ({
+                                                      ...prev,
+                                                      [driver.id]: {
+                                                        ...getDriverAssumptions(driver.id),
+                                                        [field.id]: newValue
+                                                      }
+                                                    }));
+                                                  }}
+                                                  className="w-16 px-2 py-1 text-sm font-medium text-gray-900 text-right tabular-nums border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#E85D3F] focus:border-[#E85D3F]"
+                                                  data-testid={`input-${driver.id}-${field.id}`}
+                                                />
+                                                {field.suffix && <span className="text-sm text-gray-500 ml-1">{field.suffix}</span>}
+                                              </div>
                                             </div>
                                           </div>
                                         );
