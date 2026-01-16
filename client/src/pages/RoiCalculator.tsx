@@ -1929,7 +1929,7 @@ export default function RoiCalculator({
                 return (
                   <div
                     key={driverId}
-                    className="group bg-white rounded-xl border border-neutral-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F] transform hover:scale-[1.01] overflow-hidden transition-all duration-200 ease-out cursor-pointer"
+                    className="group bg-white rounded-xl border border-neutral-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E85D3F] transform hover:scale-[1.01] overflow-hidden transition-all duration-200 ease-out cursor-pointer"
                     data-testid={`driver-card-${driverId}`}
                   >
                     {/* Collapsed Header (always visible) */}
@@ -2708,7 +2708,7 @@ export default function RoiCalculator({
                     setExpansionPricingModel("per-provider");
                     setEnterpriseAnnualCost(null);
                   }}
-                  className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                  className="text-[14px] text-[#E85D3F] hover:underline flex items-center gap-1"
                   data-testid="button-back-scenario-builder"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -2760,7 +2760,7 @@ export default function RoiCalculator({
                   <div className="space-y-6">
                     
                     {/* Provider Count - Primary Input */}
-                    <div className="bg-white border-2 border-[#E8532F] rounded-xl p-6 shadow-[0_4px_12px_rgba(232,83,47,0.1)]">
+                    <div className="bg-white border-2 border-[#E85D3F] rounded-xl p-6 shadow-[0_4px_12px_rgba(232,83,47,0.1)]">
                       <label className="block text-[15px] font-semibold text-[#111827] mb-4">
                         How many providers do you want to expand to?
                       </label>
@@ -2790,7 +2790,7 @@ export default function RoiCalculator({
                               return next;
                             });
                           }}
-                          className="flex-1 min-w-[120px] text-[24px] font-semibold text-center py-3 px-4 border-2 border-[#E5E7EB] rounded-lg focus:border-[#E8532F] focus:outline-none"
+                          className="flex-1 min-w-[120px] text-[24px] font-semibold text-center py-3 px-4 border-2 border-[#E5E7EB] rounded-lg focus:border-[#E85D3F] focus:outline-none"
                           data-testid="input-target-providers"
                         />
                         <span className="text-[14px] text-[#6B7280] font-medium whitespace-nowrap">providers</span>
@@ -2803,19 +2803,19 @@ export default function RoiCalculator({
                         min={inputs.numberOfProviders}
                         max={Math.max(inputs.numberOfProviders * 3, 200)}
                         step={5}
-                        className="w-full h-2 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-[#E8532F] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
+                        className="w-full h-2 bg-[#E5E7EB] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-[#E85D3F] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
                         style={{
-                          background: `linear-gradient(to right, #E8532F 0%, #E8532F ${((targetProviders - inputs.numberOfProviders) / (Math.max(inputs.numberOfProviders * 3, 200) - inputs.numberOfProviders)) * 100}%, #E5E7EB ${((targetProviders - inputs.numberOfProviders) / (Math.max(inputs.numberOfProviders * 3, 200) - inputs.numberOfProviders)) * 100}%, #E5E7EB 100%)`
+                          background: `linear-gradient(to right, #E85D3F 0%, #E85D3F ${((targetProviders - inputs.numberOfProviders) / (Math.max(inputs.numberOfProviders * 3, 200) - inputs.numberOfProviders)) * 100}%, #E5E7EB ${((targetProviders - inputs.numberOfProviders) / (Math.max(inputs.numberOfProviders * 3, 200) - inputs.numberOfProviders)) * 100}%, #E5E7EB 100%)`
                         }}
                         data-testid="slider-target-providers"
                       />
                       
                       <div className="flex justify-between items-center mt-2 text-[12px] text-[#6B7280]">
                         <span>{inputs.numberOfProviders}</span>
-                        <span className="text-[#E8532F] font-semibold text-[14px]">
+                        <span className="text-[#E85D3F] font-semibold text-[14px]">
                           {targetProviders}
                           {targetProviders > inputs.numberOfProviders && (
-                            <span className="ml-1 px-2 py-0.5 bg-[#E8532F]/10 rounded-full text-[12px]">
+                            <span className="ml-1 px-2 py-0.5 bg-[#E85D3F]/10 rounded-full text-[12px]">
                               +{targetProviders - inputs.numberOfProviders}
                             </span>
                           )}
@@ -2961,7 +2961,7 @@ export default function RoiCalculator({
                         {/* Hero Metric: Expansion ROI */}
                         <div className="text-center p-6 bg-gradient-to-br from-[#FEF2F2] to-[#FFF7ED] rounded-xl border border-[#FECACA]">
                           <p className="text-[14px] text-[#6B7280] font-medium mb-2">Expansion ROI</p>
-                          <p className="text-[48px] font-bold text-[#E8532F]">
+                          <p className="text-[48px] font-bold text-[#E85D3F]">
                             {expansionCalculation.incremental.roi.toFixed(1)}x
                           </p>
                           <p className="text-[14px] text-[#6B7280] mt-2">
@@ -2975,42 +2975,42 @@ export default function RoiCalculator({
                           <div className="grid grid-cols-4 bg-[#F9FAFB] border-b border-[#E5E7EB] text-[13px] font-bold text-[#6B7280]">
                             <div className="p-3"></div>
                             <div className="p-3 text-center">Current</div>
-                            <div className="p-3 text-center bg-[#E8532F]/5 text-[#E8532F]">Expanded</div>
+                            <div className="p-3 text-center bg-[#E85D3F]/5 text-[#E85D3F]">Expanded</div>
                             <div className="p-3 text-center">Change</div>
                           </div>
                           
                           <div className="grid grid-cols-4 border-b border-[#E5E7EB] text-[14px]">
                             <div className="p-3 text-[#6B7280]">Providers</div>
                             <div className="p-3 text-center text-[#111827]">{expansionCalculation.baseline.providers}</div>
-                            <div className="p-3 text-center bg-[#E8532F]/5 font-bold text-[#111827]">{expansionCalculation.scenario.providers}</div>
+                            <div className="p-3 text-center bg-[#E85D3F]/5 font-bold text-[#111827]">{expansionCalculation.scenario.providers}</div>
                             <div className="p-3 text-center text-[#059669] font-medium">+{expansionCalculation.incremental.providers}</div>
                           </div>
                           
                           <div className="grid grid-cols-4 border-b border-[#E5E7EB] text-[14px]">
                             <div className="p-3 text-[#6B7280]">Annual Investment</div>
                             <div className="p-3 text-center text-[#111827]">{formatCurrency(expansionCalculation.baseline.cost)}</div>
-                            <div className="p-3 text-center bg-[#E8532F]/5 font-bold text-[#111827]">{formatCurrency(expansionCalculation.scenario.cost)}</div>
+                            <div className="p-3 text-center bg-[#E85D3F]/5 font-bold text-[#111827]">{formatCurrency(expansionCalculation.scenario.cost)}</div>
                             <div className="p-3 text-center text-[#6B7280]">{formatCurrency(expansionCalculation.incremental.cost)}</div>
                           </div>
                           
                           <div className="grid grid-cols-4 border-b border-[#E5E7EB] text-[14px]">
                             <div className="p-3 text-[#6B7280]">Annual Benefit</div>
                             <div className="p-3 text-center text-[#111827]">{formatCurrency(expansionCalculation.baseline.benefit)}</div>
-                            <div className="p-3 text-center bg-[#E8532F]/5 font-bold text-[#111827]">{formatCurrency(expansionCalculation.scenario.benefit)}</div>
+                            <div className="p-3 text-center bg-[#E85D3F]/5 font-bold text-[#111827]">{formatCurrency(expansionCalculation.scenario.benefit)}</div>
                             <div className="p-3 text-center text-[#059669] font-medium">+{formatCurrency(expansionCalculation.incremental.benefit)}</div>
                           </div>
                           
                           <div className="grid grid-cols-4 border-b border-[#E5E7EB] text-[14px] font-bold bg-[#F9FAFB]">
                             <div className="p-3 text-[#111827]">Net Gain</div>
                             <div className="p-3 text-center text-[#111827]">{formatCurrency(expansionCalculation.baseline.netGain)}</div>
-                            <div className="p-3 text-center bg-[#E8532F]/10 text-[#059669]">{formatCurrency(expansionCalculation.scenario.netGain)}</div>
+                            <div className="p-3 text-center bg-[#E85D3F]/10 text-[#059669]">{formatCurrency(expansionCalculation.scenario.netGain)}</div>
                             <div className="p-3 text-center text-[#059669]">+{formatCurrency(expansionCalculation.incremental.netGain)}</div>
                           </div>
                           
                           <div className="grid grid-cols-4 text-[14px] font-bold bg-[#F9FAFB]">
                             <div className="p-3 text-[#111827]">ROI</div>
                             <div className="p-3 text-center text-[#111827]">{expansionCalculation.baseline.roi.toFixed(1)}x</div>
-                            <div className="p-3 text-center bg-[#E8532F]/10 text-[#059669]">{expansionCalculation.scenario.roi.toFixed(1)}x</div>
+                            <div className="p-3 text-center bg-[#E85D3F]/10 text-[#059669]">{expansionCalculation.scenario.roi.toFixed(1)}x</div>
                             <div className="p-3 text-center">
                               {expansionCalculation.scenario.roi >= expansionCalculation.baseline.roi ? (
                                 <span className="text-[#059669]">+{(expansionCalculation.scenario.roi - expansionCalculation.baseline.roi).toFixed(1)}x</span>
@@ -3104,7 +3104,7 @@ export default function RoiCalculator({
                               setExpansionPricingModel("per-provider");
                               setEnterpriseAnnualCost(null);
                             }}
-                            className="flex-1 py-3 px-4 bg-[#E8532F] text-white rounded-lg text-[14px] font-medium hover:bg-[#D14426] transition-colors"
+                            className="flex-1 py-3 px-4 bg-[#E85D3F] text-white rounded-lg text-[14px] font-medium hover:bg-[#D14426] transition-colors"
                             data-testid="button-save-expansion"
                           >
                             Save Scenario
@@ -3122,7 +3122,7 @@ export default function RoiCalculator({
                 {/* Back navigation */}
                 <button
                   onClick={() => setShowAddDrivers(false)}
-                  className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                  className="text-[14px] text-[#E85D3F] hover:underline flex items-center gap-1"
                   data-testid="button-back-from-drivers"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -3131,7 +3131,7 @@ export default function RoiCalculator({
                 
                 {/* Page header */}
                 <div>
-                  <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
+                  <h2 className="text-[14px] font-bold text-[#E85D3F] uppercase tracking-[0.05em] mb-1">
                     Add Strategic Drivers
                   </h2>
                   <p className="text-[16px] text-[#6B7280] mb-4">
@@ -3204,7 +3204,7 @@ export default function RoiCalculator({
                         value={driversScenarioName}
                         onChange={(e) => setDriversScenarioName(e.target.value)}
                         placeholder={scenarioDriverSelections.size > 0 ? `Add ${Array.from(scenarioDriverSelections).map(id => leverShortNames[id]).join(" + ")}` : "Add new drivers..."}
-                        className="w-full p-4 text-[16px] border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#E8532F]/20 focus:border-[#E8532F]"
+                        className="w-full p-4 text-[16px] border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F]"
                         data-testid="input-drivers-scenario-name"
                       />
                       <p className="text-[13px] text-[#6B7280] mt-2">Give this scenario a descriptive name</p>
@@ -3312,8 +3312,8 @@ export default function RoiCalculator({
                                 }}
                                 className={`p-5 bg-white border rounded-lg cursor-pointer transition-all duration-200 ${
                                   isSelected 
-                                    ? "border-2 border-[#E8532F] bg-[rgba(232,83,47,0.02)] shadow-[inset_4px_0_0_#E8532F]" 
-                                    : "border-[#E5E7EB] hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+                                    ? "border-2 border-[#E85D3F] bg-[rgba(232,83,47,0.02)] shadow-[inset_4px_0_0_#E85D3F]" 
+                                    : "border-[#E5E7EB] hover:border-[#E85D3F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
                                 }`}
                                 data-testid={`card-driver-${id}`}
                               >
@@ -3321,7 +3321,7 @@ export default function RoiCalculator({
                                 <div className="flex items-start justify-between gap-4 mb-3">
                                   <div className="flex items-start gap-3">
                                     <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
-                                      isSelected ? "bg-[#E8532F] border-[#E8532F]" : "border-[#E5E7EB]"
+                                      isSelected ? "bg-[#E85D3F] border-[#E85D3F]" : "border-[#E5E7EB]"
                                     }`}>
                                       {isSelected && <Check className="h-4 w-4 text-white" />}
                                     </div>
@@ -3380,7 +3380,7 @@ export default function RoiCalculator({
                                     e.stopPropagation();
                                     setExpandedDriverMethodology(isMethodologyExpanded ? null : id);
                                   }}
-                                  className="ml-9 text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                                  className="ml-9 text-[14px] text-[#E85D3F] hover:underline flex items-center gap-1"
                                   data-testid={`link-methodology-${id}`}
                                 >
                                   {isMethodologyExpanded ? (
@@ -3415,7 +3415,7 @@ export default function RoiCalculator({
                                             <div className="flex justify-between"><span className="text-[#6B7280]">Average visits per patient</span><span className="text-[#111827] tabular-nums">2.5</span></div>
                                             <div className="flex justify-between"><span className="text-[#6B7280]">Unique patients</span><span className="text-[#111827] tabular-nums">{Math.round(abridgeDocumentedEncounters / 2.5).toLocaleString()}</span></div>
                                             <div className="flex justify-between"><span className="text-[#6B7280]">% Medicare Advantage</span><span className="text-[#111827] tabular-nums">{inputs.hcc.pctMedicareAdvantage || 15}%</span></div>
-                                            <div className="flex justify-between"><span className="text-[#6B7280]">Unique MA patients</span><span className="text-[#E8532F] tabular-nums font-medium">{Math.round((abridgeDocumentedEncounters / 2.5) * ((inputs.hcc.pctMedicareAdvantage || 15) / 100)).toLocaleString()} patients</span></div>
+                                            <div className="flex justify-between"><span className="text-[#6B7280]">Unique MA patients</span><span className="text-[#E85D3F] tabular-nums font-medium">{Math.round((abridgeDocumentedEncounters / 2.5) * ((inputs.hcc.pctMedicareAdvantage || 15) / 100)).toLocaleString()} patients</span></div>
                                           </div>
                                         </div>
                                         <div>
@@ -3423,7 +3423,7 @@ export default function RoiCalculator({
                                           <div className="space-y-1">
                                             <div className="flex justify-between"><span className="text-[#6B7280]">RAF improvement per patient</span><span className="text-[#111827] tabular-nums">0.09</span></div>
                                             <div className="flex justify-between"><span className="text-[#6B7280]">Benchmark PMPM</span><span className="text-[#111827] tabular-nums">{formatCurrency(inputs.hcc.pmpmBenchmark || 1000)}</span></div>
-                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E8532F] tabular-nums">{formatCurrency(driverValue)}</span></div>
+                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E85D3F] tabular-nums">{formatCurrency(driverValue)}</span></div>
                                           </div>
                                         </div>
                                       </div>
@@ -3445,7 +3445,7 @@ export default function RoiCalculator({
                                             <div className="flex justify-between"><span className="text-[#6B7280]">Denial rate</span><span className="text-[#111827] tabular-nums">{inputs.denials.baselineDenialRate || 5}%</span></div>
                                             <div className="flex justify-between"><span className="text-[#6B7280]">% documentation-related</span><span className="text-[#111827] tabular-nums">30%</span></div>
                                             <div className="flex justify-between"><span className="text-[#6B7280]">Prevention rate</span><span className="text-[#111827] tabular-nums">50%</span></div>
-                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E8532F] tabular-nums">{formatCurrency(driverValue)}</span></div>
+                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E85D3F] tabular-nums">{formatCurrency(driverValue)}</span></div>
                                           </div>
                                         </div>
                                       </div>
@@ -3466,7 +3466,7 @@ export default function RoiCalculator({
                                           <div className="space-y-1">
                                             <div className="flex justify-between"><span className="text-[#6B7280]">% after-hours work</span><span className="text-[#111827] tabular-nums">{inputs.overtime.pctAfterHours || 20}%</span></div>
                                             <div className="flex justify-between"><span className="text-[#6B7280]">Premium rate</span><span className="text-[#111827] tabular-nums">{formatCurrency(inputs.overtime.blendedOvertimeRate || 145)}/hr</span></div>
-                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E8532F] tabular-nums">{formatCurrency(driverValue)}</span></div>
+                                            <div className="flex justify-between font-bold"><span className="text-[#111827]">Annual value</span><span className="text-[#E85D3F] tabular-nums">{formatCurrency(driverValue)}</span></div>
                                           </div>
                                         </div>
                                       </div>
@@ -3718,7 +3718,7 @@ export default function RoiCalculator({
                             description: `"${newScenario.name}" has been created`,
                           });
                         }}
-                        className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                        className="bg-[#E85D3F] hover:bg-[#D14729] text-white"
                         data-testid="button-save-drivers-scenario"
                       >
                         Save Scenario
@@ -4075,7 +4075,7 @@ export default function RoiCalculator({
                 {/* Back navigation */}
                 <button
                   onClick={() => setShowScenarioComparison(false)}
-                  className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                  className="text-[14px] text-[#E85D3F] hover:underline flex items-center gap-1"
                   data-testid="button-back-from-comparison"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -4084,7 +4084,7 @@ export default function RoiCalculator({
                 
                 {/* Page header */}
                 <div>
-                  <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
+                  <h2 className="text-[14px] font-bold text-[#E85D3F] uppercase tracking-[0.05em] mb-1">
                     Compare Scenarios
                   </h2>
                   <p className="text-[16px] text-[#6B7280] mb-4">
@@ -4110,9 +4110,9 @@ export default function RoiCalculator({
                   </p>
                   
                   {/* Baseline card (always selected) */}
-                  <div className="p-4 bg-white border-2 border-[#E8532F] rounded-lg mb-3 bg-[rgba(232,83,47,0.02)]">
+                  <div className="p-4 bg-white border-2 border-[#E85D3F] rounded-lg mb-3 bg-[rgba(232,83,47,0.02)]">
                     <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded bg-[#E8532F] flex items-center justify-center">
+                      <div className="w-5 h-5 rounded bg-[#E85D3F] flex items-center justify-center">
                         <Check className="h-3 w-3 text-white" />
                       </div>
                       <div className="flex-1">
@@ -4139,16 +4139,16 @@ export default function RoiCalculator({
                         onClick={() => !maxReached && toggleScenarioSelection(scenario.id)}
                         className={`p-4 bg-white border rounded-lg mb-3 cursor-pointer transition-all ${
                           isSelected 
-                            ? "border-2 border-[#E8532F] bg-[rgba(232,83,47,0.02)]" 
+                            ? "border-2 border-[#E85D3F] bg-[rgba(232,83,47,0.02)]" 
                             : maxReached 
                               ? "border-[#E5E7EB] opacity-60 cursor-not-allowed"
-                              : "border-[#E5E7EB] hover:border-[#E8532F]"
+                              : "border-[#E5E7EB] hover:border-[#E85D3F]"
                         }`}
                         data-testid={`compare-selector-${scenario.id}`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-5 h-5 rounded flex items-center justify-center border-2 ${
-                            isSelected ? "bg-[#E8532F] border-[#E8532F]" : "border-[#E5E7EB]"
+                            isSelected ? "bg-[#E85D3F] border-[#E85D3F]" : "border-[#E5E7EB]"
                           }`}>
                             {isSelected && <Check className="h-3 w-3 text-white" />}
                           </div>
@@ -4438,7 +4438,7 @@ export default function RoiCalculator({
                               <span className="text-[14px] text-[#111827] w-32 truncate">Baseline</span>
                               <div className="flex-1 h-6 bg-[#E5E7EB] rounded overflow-hidden">
                                 <div 
-                                  className={`h-full rounded transition-all duration-300 ${baselineNetGain === maxNetGain ? "bg-[#059669]" : "bg-[#E8532F]"}`}
+                                  className={`h-full rounded transition-all duration-300 ${baselineNetGain === maxNetGain ? "bg-[#059669]" : "bg-[#E85D3F]"}`}
                                   style={{ width: `${safeChartWidth(baselineNetGain, maxNetGain)}%` }}
                                 />
                               </div>
@@ -4449,7 +4449,7 @@ export default function RoiCalculator({
                                 <span className="text-[14px] text-[#111827] w-32 truncate">{s.name.length > 15 ? s.name.substring(0, 15) + "..." : s.name}</span>
                                 <div className="flex-1 h-6 bg-[#E5E7EB] rounded overflow-hidden">
                                   <div 
-                                    className={`h-full rounded transition-all duration-300 ${s.netGain === maxNetGain ? "bg-[#059669]" : "bg-[#E8532F]"}`}
+                                    className={`h-full rounded transition-all duration-300 ${s.netGain === maxNetGain ? "bg-[#059669]" : "bg-[#E85D3F]"}`}
                                     style={{ width: `${safeChartWidth(s.netGain, maxNetGain)}%` }}
                                   />
                                 </div>
@@ -4467,7 +4467,7 @@ export default function RoiCalculator({
                               <span className="text-[14px] text-[#111827] w-32 truncate">Baseline</span>
                               <div className="flex-1 h-6 bg-[#E5E7EB] rounded overflow-hidden">
                                 <div 
-                                  className={`h-full rounded transition-all duration-300 ${baselineRoi === maxRoi ? "bg-[#059669]" : "bg-[#E8532F]"}`}
+                                  className={`h-full rounded transition-all duration-300 ${baselineRoi === maxRoi ? "bg-[#059669]" : "bg-[#E85D3F]"}`}
                                   style={{ width: `${safeChartWidth(baselineRoi, maxRoi)}%` }}
                                 />
                               </div>
@@ -4478,7 +4478,7 @@ export default function RoiCalculator({
                                 <span className="text-[14px] text-[#111827] w-32 truncate">{s.name.length > 15 ? s.name.substring(0, 15) + "..." : s.name}</span>
                                 <div className="flex-1 h-6 bg-[#E5E7EB] rounded overflow-hidden">
                                   <div 
-                                    className={`h-full rounded transition-all duration-300 ${s.roiMultiple === maxRoi ? "bg-[#059669]" : "bg-[#E8532F]"}`}
+                                    className={`h-full rounded transition-all duration-300 ${s.roiMultiple === maxRoi ? "bg-[#059669]" : "bg-[#E85D3F]"}`}
                                     style={{ width: `${safeChartWidth(s.roiMultiple, maxRoi)}%` }}
                                   />
                                 </div>
@@ -4577,7 +4577,7 @@ export default function RoiCalculator({
                               description: "PDF export will be available in a future update",
                             });
                           }}
-                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          className="bg-[#E85D3F] hover:bg-[#D14729] text-white"
                           data-testid="button-export-comparison"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
@@ -4593,7 +4593,7 @@ export default function RoiCalculator({
                 {/* Back navigation */}
                 <button
                   onClick={() => setShowCompetitorComparison(false)}
-                  className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+                  className="text-[14px] text-[#E85D3F] hover:underline flex items-center gap-1"
                   data-testid="button-back-competitor"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -4602,7 +4602,7 @@ export default function RoiCalculator({
                 
                 {/* Page header */}
                 <div>
-                  <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
+                  <h2 className="text-[14px] font-bold text-[#E85D3F] uppercase tracking-[0.05em] mb-1">
                     Competitor Comparison
                   </h2>
                   <p className="text-[16px] text-[#6B7280] mb-4">
@@ -4624,7 +4624,7 @@ export default function RoiCalculator({
                     {/* 4-Step Progress Indicator */}
                     <div className="flex items-center gap-2">
                       <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">1</span>
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E85D3F] text-white text-[12px] font-bold">1</span>
                         <span className="ml-2 text-[13px] text-[#111827] font-medium">Solution</span>
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
@@ -4664,7 +4664,7 @@ export default function RoiCalculator({
                             onClick={() => setSelectedCompetitor({ name: competitor.name, type: competitor.type })}
                             className={`relative p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
                               selectedCompetitor?.name === competitor.name
-                                ? "border-[#E8532F] bg-[#E8532F]/5 shadow-md"
+                                ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-md"
                                 : "border-[#E5E7EB] bg-white hover:border-[#9CA3AF]"
                             }`}
                             data-testid={`button-competitor-${competitor.id}`}
@@ -4689,7 +4689,7 @@ export default function RoiCalculator({
                             
                             {selectedCompetitor?.name === competitor.name && (
                               <div className="absolute top-3 right-3">
-                                <CheckCircle className="w-5 h-5 text-[#E8532F]" />
+                                <CheckCircle className="w-5 h-5 text-[#E85D3F]" />
                               </div>
                             )}
                           </button>
@@ -4701,7 +4701,7 @@ export default function RoiCalculator({
                         <Button
                           onClick={() => setCompetitorStep(2)}
                           disabled={!selectedCompetitor}
-                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          className="bg-[#E85D3F] hover:bg-[#D14729] text-white"
                           data-testid="button-continue-to-usage"
                         >
                           Continue
@@ -4723,7 +4723,7 @@ export default function RoiCalculator({
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
                       <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">2</span>
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E85D3F] text-white text-[12px] font-bold">2</span>
                         <span className="ml-2 text-[13px] text-[#111827] font-medium">Your Usage</span>
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
@@ -4767,7 +4767,7 @@ export default function RoiCalculator({
                                     if (rawInputValues["scribeCount"] === "" || rawInputValues["scribeCount"] === undefined) setScribeCount(5);
                                     setRawInputValues(prev => { const next = { ...prev }; delete next["scribeCount"]; return next; });
                                   }}
-                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E85D3F] focus:ring-[3px] focus:ring-[#E85D3F]/10 focus:outline-none"
                                   data-testid="input-scribe-count"
                                 />
                               </div>
@@ -4788,7 +4788,7 @@ export default function RoiCalculator({
                                     if (rawInputValues["scribeHourlyRate"] === "" || rawInputValues["scribeHourlyRate"] === undefined) setScribeHourlyRate(25);
                                     setRawInputValues(prev => { const next = { ...prev }; delete next["scribeHourlyRate"]; return next; });
                                   }}
-                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E85D3F] focus:ring-[3px] focus:ring-[#E85D3F]/10 focus:outline-none"
                                   data-testid="input-scribe-hourly-rate"
                                 />
                               </div>
@@ -4809,7 +4809,7 @@ export default function RoiCalculator({
                                     if (rawInputValues["scribeHoursPerWeek"] === "" || rawInputValues["scribeHoursPerWeek"] === undefined) setScribeHoursPerWeek(40);
                                     setRawInputValues(prev => { const next = { ...prev }; delete next["scribeHoursPerWeek"]; return next; });
                                   }}
-                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E85D3F] focus:ring-[3px] focus:ring-[#E85D3F]/10 focus:outline-none"
                                   data-testid="input-scribe-hours"
                                 />
                               </div>
@@ -4887,7 +4887,7 @@ export default function RoiCalculator({
                                   onBlur={() => {
                                     setRawInputValues(prev => { const next = { ...prev }; delete next["competitorProviders"]; return next; });
                                   }}
-                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E85D3F] focus:ring-[3px] focus:ring-[#E85D3F]/10 focus:outline-none"
                                   data-testid="input-competitor-providers"
                                 />
                               </div>
@@ -4908,7 +4908,7 @@ export default function RoiCalculator({
                                     if (rawInputValues["competitorCost"] === "" || rawInputValues["competitorCost"] === undefined) setCompetitorCostPerProvider(200);
                                     setRawInputValues(prev => { const next = { ...prev }; delete next["competitorCost"]; return next; });
                                   }}
-                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E85D3F] focus:ring-[3px] focus:ring-[#E85D3F]/10 focus:outline-none"
                                   data-testid="input-competitor-cost"
                                 />
                               </div>
@@ -5003,7 +5003,7 @@ export default function RoiCalculator({
                         </Button>
                         <Button
                           onClick={() => setCompetitorStep(3)}
-                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          className="bg-[#E85D3F] hover:bg-[#D14729] text-white"
                           data-testid="button-analyze-gap"
                         >
                           Analyze the Gap
@@ -5076,7 +5076,7 @@ export default function RoiCalculator({
                               <div className="text-lg font-semibold text-[#374151] mt-1">{selectedCompetitor.name}</div>
                             </div>
                             <div className="p-6 bg-[#FEF2F0] text-center">
-                              <div className="text-sm text-[#E8532F] font-medium">The Opportunity</div>
+                              <div className="text-sm text-[#E85D3F] font-medium">The Opportunity</div>
                               <div className="flex items-center justify-center mt-1">
                                 <img src={abridgeLogo} alt="Abridge" className="h-5" />
                               </div>
@@ -5096,17 +5096,17 @@ export default function RoiCalculator({
                                 <div className="text-sm text-[#9CA3AF]">Your utilization</div>
                               </div>
                               <div className="p-6 bg-[#FEF2F0]/30">
-                                <div className="text-xs font-medium text-[#E8532F] uppercase tracking-wide mb-3">Adoption</div>
-                                <div className="w-full bg-[#FED7AA] rounded-full h-2 mb-3">
-                                  <div className="bg-[#E8532F] h-2 rounded-full transition-all" style={{ width: `${abridgeUtilPct}%` }} />
+                                <div className="text-xs font-medium text-[#E85D3F] uppercase tracking-wide mb-3">Adoption</div>
+                                <div className="w-full bg-[#FECACA] rounded-full h-2 mb-3">
+                                  <div className="bg-[#E85D3F] h-2 rounded-full transition-all" style={{ width: `${abridgeUtilPct}%` }} />
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                  <span className="text-lg font-semibold text-[#E8532F]">{abridgeUtil}%</span>
+                                  <span className="text-lg font-semibold text-[#E85D3F]">{abridgeUtil}%</span>
                                   {adoptionDelta > 0 && (
-                                    <span className="text-sm font-medium text-[#E8532F]">+{adoptionDelta}%</span>
+                                    <span className="text-sm font-medium text-[#E85D3F]">+{adoptionDelta}%</span>
                                   )}
                                 </div>
-                                <div className="text-sm text-[#E8532F]/70">Abridge average</div>
+                                <div className="text-sm text-[#E85D3F]/70">Abridge average</div>
                               </div>
                             </div>
                             
@@ -5122,17 +5122,17 @@ export default function RoiCalculator({
                                   <div className="text-sm text-[#9CA3AF]">per encounter</div>
                                 </div>
                                 <div className="p-6 bg-[#FEF2F0]/30">
-                                  <div className="text-xs font-medium text-[#E8532F] uppercase tracking-wide mb-3">Time Savings</div>
-                                  <div className="w-full bg-[#FED7AA] rounded-full h-2 mb-3">
-                                    <div className="bg-[#E8532F] h-2 rounded-full transition-all" style={{ width: `${abridgeTimePct}%` }} />
+                                  <div className="text-xs font-medium text-[#E85D3F] uppercase tracking-wide mb-3">Time Savings</div>
+                                  <div className="w-full bg-[#FECACA] rounded-full h-2 mb-3">
+                                    <div className="bg-[#E85D3F] h-2 rounded-full transition-all" style={{ width: `${abridgeTimePct}%` }} />
                                   </div>
                                   <div className="flex items-baseline gap-2">
-                                    <span className="text-lg font-semibold text-[#E8532F]">{abridgeTimeSaved} min</span>
+                                    <span className="text-lg font-semibold text-[#E85D3F]">{abridgeTimeSaved} min</span>
                                     {timeDeltaPct > 0 && (
-                                      <span className="text-sm font-medium text-[#E8532F]">+{timeDeltaPct}%</span>
+                                      <span className="text-sm font-medium text-[#E85D3F]">+{timeDeltaPct}%</span>
                                     )}
                                   </div>
-                                  <div className="text-sm text-[#E8532F]/70">per encounter</div>
+                                  <div className="text-sm text-[#E85D3F]/70">per encounter</div>
                                 </div>
                               </div>
                             )}
@@ -5150,14 +5150,14 @@ export default function RoiCalculator({
                                 </div>
                               </div>
                               <div className="p-6 bg-[#FEF2F0]/30">
-                                <div className="text-xs font-medium text-[#E8532F] uppercase tracking-wide mb-3">Annual Cost</div>
+                                <div className="text-xs font-medium text-[#E85D3F] uppercase tracking-wide mb-3">Annual Cost</div>
                                 <div className="flex items-baseline gap-2">
-                                  <span className="text-lg font-semibold text-[#E8532F]">{formatCurrency(abridgeCost)}</span>
+                                  <span className="text-lg font-semibold text-[#E85D3F]">{formatCurrency(abridgeCost)}</span>
                                   {costDiff > 0 && (
-                                    <span className="text-sm font-medium text-[#E8532F]">Save {formatCurrency(costDiff)}</span>
+                                    <span className="text-sm font-medium text-[#E85D3F]">Save {formatCurrency(costDiff)}</span>
                                   )}
                                 </div>
-                                <div className="text-sm text-[#E8532F]/70">$180/provider/mo</div>
+                                <div className="text-sm text-[#E85D3F]/70">$180/provider/mo</div>
                               </div>
                             </div>
                           </div>
@@ -5985,7 +5985,7 @@ export default function RoiCalculator({
                         </div>
                         <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
                         <div className="flex items-center">
-                          <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">4</span>
+                          <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E85D3F] text-white text-[12px] font-bold">4</span>
                           <span className="ml-2 text-[13px] text-[#111827] font-medium">Opportunity</span>
                         </div>
                       </div>
@@ -6069,8 +6069,8 @@ export default function RoiCalculator({
                               <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                                 <defs>
                                   <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#E8532F" stopOpacity={0.2}/>
-                                    <stop offset="95%" stopColor="#E8532F" stopOpacity={0.02}/>
+                                    <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.2}/>
+                                    <stop offset="95%" stopColor="#E85D3F" stopOpacity={0.02}/>
                                   </linearGradient>
                                   <linearGradient id="compGradient" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#9CA3AF" stopOpacity={0.15}/>
@@ -6092,7 +6092,7 @@ export default function RoiCalculator({
                                         <div className="space-y-2">
                                           <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                              <div className="w-3 h-3 rounded-full bg-[#E8532F]" />
+                                              <div className="w-3 h-3 rounded-full bg-[#E85D3F]" />
                                               <span className="text-sm text-[#6B7280]">Abridge</span>
                                             </div>
                                             <span className="text-sm font-semibold text-[#111827]">{formatCurrency(Number(abridge?.value) || 0)}</span>
@@ -6106,14 +6106,14 @@ export default function RoiCalculator({
                                           </div>
                                           <div className="pt-2 mt-2 border-t border-[#F3F4F6] flex items-center justify-between">
                                             <span className="text-sm font-medium text-[#6B7280]">Gap</span>
-                                            <span className="text-sm font-bold text-[#E8532F]">+{formatCurrency(gap)}</span>
+                                            <span className="text-sm font-bold text-[#E85D3F]">+{formatCurrency(gap)}</span>
                                           </div>
                                         </div>
                                       </div>
                                     );
                                   }}
                                 />
-                                <Area type="monotone" dataKey="abridgeCumulative" stroke="#E8532F" strokeWidth={3} fill="url(#abridgeGradient)" dot={{ fill: '#E8532F', strokeWidth: 2, r: 5 }} activeDot={{ r: 7, fill: '#E8532F' }} />
+                                <Area type="monotone" dataKey="abridgeCumulative" stroke="#E85D3F" strokeWidth={3} fill="url(#abridgeGradient)" dot={{ fill: '#E85D3F', strokeWidth: 2, r: 5 }} activeDot={{ r: 7, fill: '#E85D3F' }} />
                                 <Area type="monotone" dataKey="compCumulative" stroke="#9CA3AF" strokeWidth={2} strokeDasharray="6 4" fill="url(#compGradient)" dot={{ fill: '#9CA3AF', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#9CA3AF' }} />
                               </AreaChart>
                             </ResponsiveContainer>
@@ -6121,7 +6121,7 @@ export default function RoiCalculator({
                           
                           <div className="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-[#F3F4F6]">
                             <div className="flex items-center gap-2">
-                              <div className="w-4 h-1 bg-[#E8532F] rounded" />
+                              <div className="w-4 h-1 bg-[#E85D3F] rounded" />
                               <span className="text-sm text-[#6B7280]">Abridge</span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -6259,7 +6259,7 @@ export default function RoiCalculator({
                         <div className="bg-gradient-to-br from-[#FEF3F2] to-[#FECACA]/50 border border-[#FECACA] rounded-xl p-8 mb-6">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="text-sm font-medium text-[#E8532F] uppercase tracking-wide mb-1">At This Scale</div>
+                              <div className="text-sm font-medium text-[#E85D3F] uppercase tracking-wide mb-1">At This Scale</div>
                               <div className="text-sm text-[#6B7280]">{scaleProviders.toLocaleString()} providers · {scaleEncounters.toLocaleString()} encounters/year</div>
                             </div>
                             <div className="text-right">
@@ -6275,7 +6275,7 @@ export default function RoiCalculator({
                           <p className="text-[#6B7280] mb-6 max-w-md mx-auto">Save this analysis to revisit later, or talk to our team about what a pilot could look like for your organization.</p>
                           <div className="flex items-center justify-center gap-4">
                             <Button variant="outline" className="px-6 py-3" data-testid="button-save-analysis">Save This Analysis</Button>
-                            <Button className="px-6 py-3 bg-[#E8532F] hover:bg-[#D14729] text-white" data-testid="button-talk-to-team">
+                            <Button className="px-6 py-3 bg-[#E85D3F] hover:bg-[#D14729] text-white" data-testid="button-talk-to-team">
                               Talk to Our Team
                               <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
@@ -6346,7 +6346,7 @@ export default function RoiCalculator({
                             {[0, 1, 2].map((i) => (
                               <div
                                 key={i}
-                                className={`h-1.5 w-8 rounded-full ${i <= currentDriverIndex ? "bg-[#E8532F]" : "bg-[#E5E7EB]"}`}
+                                className={`h-1.5 w-8 rounded-full ${i <= currentDriverIndex ? "bg-[#E85D3F]" : "bg-[#E5E7EB]"}`}
                               />
                             ))}
                           </div>
@@ -6373,9 +6373,9 @@ export default function RoiCalculator({
                             <div className="space-y-6">
                               {/* Driver Header */}
                               <div className="flex items-center gap-3">
-                                {driverId === "access" && <Users className="h-6 w-6 text-[#E8532F]" />}
-                                {driverId === "los" && <TrendingUp className="h-6 w-6 text-[#E8532F]" />}
-                                {driverId === "overtime" && <Clock className="h-6 w-6 text-[#E8532F]" />}
+                                {driverId === "access" && <Users className="h-6 w-6 text-[#E85D3F]" />}
+                                {driverId === "los" && <TrendingUp className="h-6 w-6 text-[#E85D3F]" />}
+                                {driverId === "overtime" && <Clock className="h-6 w-6 text-[#E85D3F]" />}
                                 <div>
                                   <h3 className="text-[18px] font-bold text-[#111827]">{driverConfig.label}</h3>
                                   <p className="text-[13px] text-[#6B7280]">{driverConfig.description}</p>
@@ -6391,7 +6391,7 @@ export default function RoiCalculator({
                                     ...prev,
                                     [driverId]: { ...prev[driverId], skipped: e.target.checked }
                                   }))}
-                                  className="w-4 h-4 rounded border-[#D1D5DB] text-[#E8532F] focus:ring-[#E8532F]"
+                                  className="w-4 h-4 rounded border-[#D1D5DB] text-[#E85D3F] focus:ring-[#E85D3F]"
                                 />
                                 <span className="text-[13px] text-[#6B7280]">{selectedCompetitor.name} doesn't measure this</span>
                               </label>
@@ -6422,7 +6422,7 @@ export default function RoiCalculator({
                                           }
                                         }}
                                         placeholder={`${defaults[driverId]}`}
-                                        className="w-32 h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-center font-mono focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                        className="w-32 h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-center font-mono focus:border-[#E85D3F] focus:ring-[3px] focus:ring-[#E85D3F]/10 focus:outline-none"
                                         data-testid={`input-comp-${driverId}`}
                                       />
                                       <span className="text-[14px] text-[#6B7280]">{unit} per provider per year</span>
@@ -6441,10 +6441,10 @@ export default function RoiCalculator({
                                         <div className="text-[24px] font-bold text-[#111827] font-mono">{userValue} <span className="text-[14px] font-normal text-[#6B7280]">{unit}</span></div>
                                         <div className="text-[13px] text-[#6B7280] mt-1">{formatCurrency(comparison.userTotal)}/year</div>
                                       </div>
-                                      <div className="p-4 bg-[#E8532F]/5">
-                                        <div className="text-[12px] text-[#E8532F] mb-1">Abridge Customers</div>
-                                        <div className="text-[24px] font-bold text-[#E8532F] font-mono">{abridgeValue} <span className="text-[14px] font-normal text-[#6B7280]">{unit}</span></div>
-                                        <div className="text-[13px] text-[#E8532F] mt-1">{formatCurrency(comparison.abridgeTotal)}/year</div>
+                                      <div className="p-4 bg-[#E85D3F]/5">
+                                        <div className="text-[12px] text-[#E85D3F] mb-1">Abridge Customers</div>
+                                        <div className="text-[24px] font-bold text-[#E85D3F] font-mono">{abridgeValue} <span className="text-[14px] font-normal text-[#6B7280]">{unit}</span></div>
+                                        <div className="text-[13px] text-[#E85D3F] mt-1">{formatCurrency(comparison.abridgeTotal)}/year</div>
                                       </div>
                                     </div>
                                   </div>
@@ -6491,7 +6491,7 @@ export default function RoiCalculator({
                           </Button>
                           <Button
                             onClick={() => setCurrentDriverIndex(currentDriverIndex + 1)}
-                            className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                            className="bg-[#E85D3F] hover:bg-[#D14729] text-white"
                             data-testid="button-next-driver"
                           >
                             {currentDriverIndex < 2 ? "Continue" : "See Your Total"}
@@ -6505,9 +6505,9 @@ export default function RoiCalculator({
                         {/* Abridge Exclusive Drivers Section */}
                         {(totalComparison.workforce.active || totalComparison.denials.active || totalComparison.hcc.active) && (
                           <div className="bg-white border border-neutral-200/60 rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                            <div className="px-6 py-4 bg-[#E8532F]/5 border-b border-[#E8532F]/20">
+                            <div className="px-6 py-4 bg-[#E85D3F]/5 border-b border-[#E85D3F]/20">
                               <div className="flex items-center gap-2">
-                                <Target className="h-5 w-5 text-[#E8532F]" />
+                                <Target className="h-5 w-5 text-[#E85D3F]" />
                                 <span className="text-[15px] font-bold text-[#111827]">Abridge Exclusive Benefits</span>
                               </div>
                               <p className="text-[13px] text-[#6B7280] mt-1">Additional value {selectedCompetitor.name} typically doesn't deliver</p>
@@ -6516,7 +6516,7 @@ export default function RoiCalculator({
                               {totalComparison.workforce.active && (
                                 <div className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg">
                                   <div className="flex items-center gap-3">
-                                    <Heart className="h-5 w-5 text-[#E8532F]" />
+                                    <Heart className="h-5 w-5 text-[#E85D3F]" />
                                     <span className="text-[14px] text-[#111827]">Clinician Retention</span>
                                   </div>
                                   <span className="text-[14px] font-bold text-[#059669] font-mono">+{formatCurrency(totalComparison.workforce.abridgeTotal)}</span>
@@ -6525,7 +6525,7 @@ export default function RoiCalculator({
                               {totalComparison.denials.active && (
                                 <div className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg">
                                   <div className="flex items-center gap-3">
-                                    <FileX className="h-5 w-5 text-[#E8532F]" />
+                                    <FileX className="h-5 w-5 text-[#E85D3F]" />
                                     <span className="text-[14px] text-[#111827]">Denial Reduction</span>
                                   </div>
                                   <span className="text-[14px] font-bold text-[#059669] font-mono">+{formatCurrency(totalComparison.denials.abridgeTotal)}</span>
@@ -6534,7 +6534,7 @@ export default function RoiCalculator({
                               {totalComparison.hcc.active && (
                                 <div className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg">
                                   <div className="flex items-center gap-3">
-                                    <ClipboardList className="h-5 w-5 text-[#E8532F]" />
+                                    <ClipboardList className="h-5 w-5 text-[#E85D3F]" />
                                     <span className="text-[14px] text-[#111827]">HCC Capture</span>
                                   </div>
                                   <span className="text-[14px] font-bold text-[#059669] font-mono">+{formatCurrency(totalComparison.hcc.abridgeTotal)}</span>
@@ -6576,7 +6576,7 @@ export default function RoiCalculator({
                               <tr className="bg-[#F9FAFB] border-b-2 border-[#E5E7EB]">
                                 <th className="text-left px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#6B7280] font-semibold">Value Driver</th>
                                 <th className="text-right px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#6B7280] font-semibold">{selectedCompetitor.name}</th>
-                                <th className="text-right px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#E8532F] font-semibold">Abridge</th>
+                                <th className="text-right px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#E85D3F] font-semibold">Abridge</th>
                                 <th className="text-right px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#059669] font-semibold">Delta</th>
                               </tr>
                             </thead>
@@ -6587,7 +6587,7 @@ export default function RoiCalculator({
                                   {compDriverInputs.access.skipped && <span className="ml-2 text-[12px] text-[#9CA3AF]">(Skipped)</span>}
                                 </td>
                                 <td className="px-6 py-4 text-right font-mono">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.userTotal)}</td>
-                                <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.abridgeTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#E85D3F]">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.abridgeTotal)}</td>
                                 <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">{compDriverInputs.access.skipped ? "—" : `+${formatCurrency(totalComparison.access.deltaTotal)}`}</td>
                               </tr>
                               <tr className={`border-b border-[#F3F4F6] ${compDriverInputs.los.skipped ? "opacity-50" : ""}`}>
@@ -6596,7 +6596,7 @@ export default function RoiCalculator({
                                   {compDriverInputs.los.skipped && <span className="ml-2 text-[12px] text-[#9CA3AF]">(Skipped)</span>}
                                 </td>
                                 <td className="px-6 py-4 text-right font-mono">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.userTotal)}</td>
-                                <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.abridgeTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#E85D3F]">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.abridgeTotal)}</td>
                                 <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">{compDriverInputs.los.skipped ? "—" : `+${formatCurrency(totalComparison.los.deltaTotal)}`}</td>
                               </tr>
                               <tr className={`border-b border-[#F3F4F6] ${compDriverInputs.overtime.skipped ? "opacity-50" : ""}`}>
@@ -6605,40 +6605,40 @@ export default function RoiCalculator({
                                   {compDriverInputs.overtime.skipped && <span className="ml-2 text-[12px] text-[#9CA3AF]">(Skipped)</span>}
                                 </td>
                                 <td className="px-6 py-4 text-right font-mono">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.userTotal)}</td>
-                                <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.abridgeTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#E85D3F]">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.abridgeTotal)}</td>
                                 <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">{compDriverInputs.overtime.skipped ? "—" : `+${formatCurrency(totalComparison.overtime.deltaTotal)}`}</td>
                               </tr>
                               {/* Abridge Exclusive Drivers in Breakdown */}
                               {totalComparison.workforce.active && (
-                                <tr className="border-b border-[#F3F4F6] bg-[#E8532F]/5">
+                                <tr className="border-b border-[#F3F4F6] bg-[#E85D3F]/5">
                                   <td className="px-6 py-4 text-[#111827]">
                                     Clinician Retention
-                                    <span className="ml-2 text-[11px] text-[#E8532F] font-medium">Abridge Only</span>
+                                    <span className="ml-2 text-[11px] text-[#E85D3F] font-medium">Abridge Only</span>
                                   </td>
                                   <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
-                                  <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.workforce.abridgeTotal)}</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#E85D3F]">{formatCurrency(totalComparison.workforce.abridgeTotal)}</td>
                                   <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.workforce.deltaTotal)}</td>
                                 </tr>
                               )}
                               {totalComparison.denials.active && (
-                                <tr className="border-b border-[#F3F4F6] bg-[#E8532F]/5">
+                                <tr className="border-b border-[#F3F4F6] bg-[#E85D3F]/5">
                                   <td className="px-6 py-4 text-[#111827]">
                                     Denial Reduction
-                                    <span className="ml-2 text-[11px] text-[#E8532F] font-medium">Abridge Only</span>
+                                    <span className="ml-2 text-[11px] text-[#E85D3F] font-medium">Abridge Only</span>
                                   </td>
                                   <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
-                                  <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.denials.abridgeTotal)}</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#E85D3F]">{formatCurrency(totalComparison.denials.abridgeTotal)}</td>
                                   <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.denials.deltaTotal)}</td>
                                 </tr>
                               )}
                               {totalComparison.hcc.active && (
-                                <tr className="border-b border-[#F3F4F6] bg-[#E8532F]/5">
+                                <tr className="border-b border-[#F3F4F6] bg-[#E85D3F]/5">
                                   <td className="px-6 py-4 text-[#111827]">
                                     HCC Capture
-                                    <span className="ml-2 text-[11px] text-[#E8532F] font-medium">Abridge Only</span>
+                                    <span className="ml-2 text-[11px] text-[#E85D3F] font-medium">Abridge Only</span>
                                   </td>
                                   <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
-                                  <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.hcc.abridgeTotal)}</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#E85D3F]">{formatCurrency(totalComparison.hcc.abridgeTotal)}</td>
                                   <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.hcc.deltaTotal)}</td>
                                 </tr>
                               )}
@@ -6652,7 +6652,7 @@ export default function RoiCalculator({
                                     (compDriverInputs.overtime.skipped ? 0 : totalComparison.overtime.userTotal)
                                   )}
                                 </td>
-                                <td className="px-6 py-5 text-right font-mono font-bold text-[18px] text-[#E8532F]">
+                                <td className="px-6 py-5 text-right font-mono font-bold text-[18px] text-[#E85D3F]">
                                   {formatCurrency(
                                     (compDriverInputs.access.skipped ? 0 : totalComparison.access.abridgeTotal) + 
                                     (compDriverInputs.los.skipped ? 0 : totalComparison.los.abridgeTotal) + 
@@ -6758,7 +6758,7 @@ export default function RoiCalculator({
                         value={competitorScenarioName}
                         onChange={(e) => setCompetitorScenarioName(e.target.value)}
                         placeholder={`Switch from ${selectedCompetitor.name} to Abridge`}
-                        className="w-full max-w-md h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                        className="w-full max-w-md h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-[#111827] focus:border-[#E85D3F] focus:ring-[3px] focus:ring-[#E85D3F]/10 focus:outline-none"
                         data-testid="input-competitor-scenario-name"
                       />
                     </div>
@@ -6810,7 +6810,7 @@ export default function RoiCalculator({
                               description: `"${newScenario.name}" has been added to your scenarios.`,
                             });
                           }}
-                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          className="bg-[#E85D3F] hover:bg-[#D14729] text-white"
                           data-testid="button-save-competitor-scenario"
                         >
                           <Plus className="h-4 w-4 mr-2" />
@@ -6825,7 +6825,7 @@ export default function RoiCalculator({
             <>
             {/* Header */}
             <div>
-              <h2 className="text-[14px] font-bold text-[#E8532F] uppercase tracking-[0.05em] mb-1">
+              <h2 className="text-[14px] font-bold text-[#E85D3F] uppercase tracking-[0.05em] mb-1">
                 Scenario Builder
               </h2>
               <p className="text-[16px] text-[#6B7280]">
@@ -6918,7 +6918,7 @@ export default function RoiCalculator({
                 {/* View Full Breakdown link */}
                 <button
                   onClick={() => setActiveTab("summary")}
-                  className="flex items-center gap-1 text-[14px] text-[#E8532F] hover:underline"
+                  className="flex items-center gap-1 text-[14px] text-[#E85D3F] hover:underline"
                   data-testid="link-view-breakdown"
                 >
                   View Full Breakdown
@@ -6957,7 +6957,7 @@ export default function RoiCalculator({
                         setEncounterScalingMode("proportional");
                         setShowExpandProviders(true);
                       }}
-                      className="w-full py-2 px-3 text-[13px] border border-[#E5E7EB] rounded-lg hover:border-[#E8532F] hover:bg-[#FEF2F0] transition-colors"
+                      className="w-full py-2 px-3 text-[13px] border border-[#E5E7EB] rounded-lg hover:border-[#E85D3F] hover:bg-[#FEF2F0] transition-colors"
                       data-testid="button-quick-expansion"
                     >
                       Quick Calculator
@@ -6966,7 +6966,7 @@ export default function RoiCalculator({
                       onClick={() => {
                         setShowExpansionWizard(true);
                       }}
-                      className="w-full py-2 px-3 text-[13px] bg-[#E8532F] text-white rounded-lg hover:bg-[#D14729] transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-2 px-3 text-[13px] bg-[#E85D3F] text-white rounded-lg hover:bg-[#D14729] transition-colors flex items-center justify-center gap-2"
                       data-testid="button-full-wizard"
                     >
                       <Zap className="h-4 w-4" />
@@ -6984,7 +6984,7 @@ export default function RoiCalculator({
                     setCurrentScenarioType("drivers");
                     setShowAddDrivers(true);
                   }}
-                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E85D3F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
                   data-testid="card-add-drivers"
                 >
                   <Target className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
@@ -6993,7 +6993,7 @@ export default function RoiCalculator({
                   <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
                     Enable new value streams without adding users
                   </p>
-                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
+                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E85D3F] group-hover:underline">
                     Start <ArrowRight className="h-4 w-4" />
                   </span>
                 </button>
@@ -7014,7 +7014,7 @@ export default function RoiCalculator({
                     setExpandedCareSettingDriver(null);
                     setShowNewCareSetting(true);
                   }}
-                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E85D3F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
                   data-testid="card-new-setting"
                 >
                   <Building2 className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
@@ -7023,7 +7023,7 @@ export default function RoiCalculator({
                   <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
                     Deploy in ED, Nursing, or Inpatient
                   </p>
-                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
+                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E85D3F] group-hover:underline">
                     Start <ArrowRight className="h-4 w-4" />
                   </span>
                 </button>
@@ -7044,7 +7044,7 @@ export default function RoiCalculator({
                     setCompetitorProviderCount(inputs.numberOfProviders);
                     setShowCompetitorComparison(true);
                   }}
-                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E8532F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
+                  className="group bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] text-center hover:border-[#E85D3F] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:scale-[1.01] transition-all duration-200 cursor-pointer"
                   data-testid="card-competitor-comparison"
                 >
                   <GitCompareArrows className="h-8 w-8 text-[#6B7280] mx-auto mb-4" />
@@ -7053,7 +7053,7 @@ export default function RoiCalculator({
                   <p className="text-[14px] text-[#6B7280] leading-relaxed mb-4">
                     Compare ROI vs. current solution
                   </p>
-                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E8532F] group-hover:underline">
+                  <span className="inline-flex items-center gap-1 text-[14px] text-[#E85D3F] group-hover:underline">
                     Start <ArrowRight className="h-4 w-4" />
                   </span>
                 </button>
@@ -7106,7 +7106,7 @@ export default function RoiCalculator({
                   <div
                     key={scenario.id}
                     className={`bg-white border rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] mb-4 ${
-                      isSelected ? "border-[#E8532F] bg-[rgba(232,83,47,0.02)]" : "border-[#E5E7EB]"
+                      isSelected ? "border-[#E85D3F] bg-[rgba(232,83,47,0.02)]" : "border-[#E5E7EB]"
                     }`}
                   >
                     {/* Header row with checkbox */}
@@ -7159,7 +7159,7 @@ export default function RoiCalculator({
                     <div className="flex items-center gap-4">
                       <button
                         onClick={() => setShowComparison(scenario.id)}
-                        className="text-[13px] text-[#E8532F] hover:underline"
+                        className="text-[13px] text-[#E85D3F] hover:underline"
                         data-testid={`button-view-${scenario.id}`}
                       >
                         View Details
@@ -7205,7 +7205,7 @@ export default function RoiCalculator({
                         }
                       }}
                       disabled={selectedScenariosForCompare.size < 1}
-                      className="bg-[#111827] hover:bg-[#E8532F] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-[#111827] hover:bg-[#E85D3F] text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       data-testid="button-compare-selected"
                     >
                       Compare Selected Scenarios
@@ -7784,7 +7784,7 @@ export default function RoiCalculator({
                       }
                     }}
                     disabled={selectedScenariosForCompare.size < 1}
-                    className="bg-[#111827] hover:bg-[#E8532F] text-white disabled:opacity-50"
+                    className="bg-[#111827] hover:bg-[#E85D3F] text-white disabled:opacity-50"
                     data-testid="button-compare-mobile"
                   >
                     Compare Now
