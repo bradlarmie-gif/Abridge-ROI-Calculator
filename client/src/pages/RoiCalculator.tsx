@@ -96,6 +96,10 @@ import {
   UserPlus,
   ArrowUp,
   Pencil,
+  X,
+  Briefcase,
+  ShieldCheck,
+  FileWarning,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -402,6 +406,28 @@ export default function RoiCalculator({
   
   // Wizard step for driver comparison (0 = access, 1 = los, 2 = overtime, 3 = summary)
   const [currentDriverIndex, setCurrentDriverIndex] = useState(0);
+  
+  // NEW Step 3: 6-driver grid state
+  const [activeDriverId, setActiveDriverId] = useState<string | null>(null);
+  const [configuredDrivers, setConfiguredDrivers] = useState<Record<string, {
+    id: string;
+    label: string;
+    gap: number;
+    competitorValue: number;
+    abridgeValue: number;
+    competitorSteps: { label: string; value: string }[];
+    abridgeSteps: { label: string; value: string }[];
+  }>>({});
+  
+  // All 6 drivers for Step 3 grid
+  const ALL_DRIVERS = [
+    { id: 'patient_access', label: 'Patient Access', subtitle: 'Turn documentation efficiency into visit capacity', Icon: TrendingUp },
+    { id: 'overtime', label: 'Overtime Savings', subtitle: 'Reduce after-hours documentation burden', Icon: Clock },
+    { id: 'level_of_service', label: 'Level of Service', subtitle: 'Capture accurate wRVU through complete documentation', Icon: BarChart3 },
+    { id: 'retention', label: 'Clinician Retention', subtitle: 'Reduce burnout-driven turnover', Icon: UserMinus },
+    { id: 'hcc', label: 'HCC Capture', subtitle: 'Improve risk adjustment through documentation', Icon: ShieldCheck },
+    { id: 'denials', label: 'Documentation Denials', subtitle: 'Reduce preventable claim denials', Icon: FileWarning },
+  ];
   
   // Competitor default values for pre-filling (typical values by competitor)
   const COMPETITOR_DEFAULTS: Record<string, { access: number; los: number; overtime: number }> = {
@@ -4956,7 +4982,7 @@ export default function RoiCalculator({
                   </div>
                 )}
                 
-                {/* Step 3: Gap Analysis - Side-by-Side Comparison */}
+                {/* Step 3: Gap Analysis - 6 Driver Grid */}
                 {competitorStep === 3 && selectedCompetitor && (
                   <div className="space-y-6">
                     {/* 4-Step Progress Indicator */}
@@ -4972,7 +4998,7 @@ export default function RoiCalculator({
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
                       <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">3</span>
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#EA580C] text-white text-[12px] font-bold">3</span>
                         <span className="ml-2 text-[13px] text-[#111827] font-medium">Gap Analysis</span>
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
@@ -4982,7 +5008,7 @@ export default function RoiCalculator({
                       </div>
                     </div>
                     
-                    {/* THE GAP AT A GLANCE - Side-by-Side Comparison */}
+                    {/* Gap at a Glance Header */}
                     {(() => {
                       const competitorCost = selectedCompetitor.type === "human"
                         ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
@@ -5247,117 +5273,446 @@ export default function RoiCalculator({
                         );
                       };
                       
+                      // Calculate all driver gaps for the grid display
+                      const driverCalculations: Record<string, {
+                        id: string;
+                        label: string;
+                        gap: number;
+                        competitorValue: number;
+                        abridgeValue: number;
+                        competitorSteps: { label: string; value: string }[];
+                        abridgeSteps: { label: string; value: string }[];
+                      }> = {
+                        patient_access: {
+                          id: 'patient_access',
+                          label: 'Patient Access',
+                          gap: accessGap,
+                          competitorValue: compAccessValue,
+                          abridgeValue: abridgeAccessValue,
+                          competitorSteps: [
+                            { label: 'Documented encounters', value: compDocEncounters.toLocaleString() },
+                            { label: 'Time saved per encounter', value: `${compTimeSaved} min` },
+                            { label: 'Hours returned', value: `${Math.round(compHoursReturned).toLocaleString()} hrs` },
+                            { label: 'Realization factor', value: `${driverEditableFields.realizationFactor}%` },
+                            { label: 'Additional visits', value: compAdditionalVisits.toLocaleString() },
+                            { label: 'Revenue per visit', value: `$${driverEditableFields.revenuePerVisit}` },
+                          ],
+                          abridgeSteps: [
+                            { label: 'Documented encounters', value: abridgeDocEncounters.toLocaleString() },
+                            { label: 'Time saved per encounter', value: `${abridgeTimeSaved} min` },
+                            { label: 'Hours returned', value: `${Math.round(abridgeHoursReturned).toLocaleString()} hrs` },
+                            { label: 'Realization factor', value: `${driverEditableFields.realizationFactor}%` },
+                            { label: 'Additional visits', value: abridgeAdditionalVisits.toLocaleString() },
+                            { label: 'Revenue per visit', value: `$${driverEditableFields.revenuePerVisit}` },
+                          ],
+                        },
+                        overtime: {
+                          id: 'overtime',
+                          label: 'Overtime Savings',
+                          gap: overtimeGap,
+                          competitorValue: compOvertimeValue,
+                          abridgeValue: abridgeOvertimeValue,
+                          competitorSteps: [
+                            { label: 'Hours returned', value: `${Math.round(compHoursReturned).toLocaleString()} hrs` },
+                            { label: '% after-hours work', value: `${driverEditableFields.afterHoursPercent}%` },
+                            { label: 'Premium hours avoided', value: `${compPremiumHours.toLocaleString()} hrs` },
+                            { label: 'Overtime rate', value: `$${driverEditableFields.overtimeRate}/hr` },
+                          ],
+                          abridgeSteps: [
+                            { label: 'Hours returned', value: `${Math.round(abridgeHoursReturned).toLocaleString()} hrs` },
+                            { label: '% after-hours work', value: `${driverEditableFields.afterHoursPercent}%` },
+                            { label: 'Premium hours avoided', value: `${abridgePremiumHours.toLocaleString()} hrs` },
+                            { label: 'Overtime rate', value: `$${driverEditableFields.overtimeRate}/hr` },
+                          ],
+                        },
+                        level_of_service: {
+                          id: 'level_of_service',
+                          label: 'Level of Service',
+                          gap: losGap,
+                          competitorValue: compLosValue,
+                          abridgeValue: abridgeLosValue,
+                          competitorSteps: [
+                            { label: 'Documented encounters', value: compDocEncounters.toLocaleString() },
+                            { label: 'Baseline wRVU/encounter', value: `${driverEditableFields.baselineWrvuPerEncounter}` },
+                            { label: 'Quality lift', value: `${driverEditableFields.competitorQualityLift}%` },
+                            { label: 'wRVU uplift', value: compWrvuUplift.toLocaleString() },
+                            { label: 'wRVU rate', value: `$${driverEditableFields.wrvuRate}` },
+                          ],
+                          abridgeSteps: [
+                            { label: 'Documented encounters', value: abridgeDocEncounters.toLocaleString() },
+                            { label: 'Baseline wRVU/encounter', value: `${driverEditableFields.baselineWrvuPerEncounter}` },
+                            { label: 'Quality lift', value: `${Math.round(abridgeQualityLift * 100)}%` },
+                            { label: 'wRVU uplift', value: abridgeWrvuUplift.toLocaleString() },
+                            { label: 'wRVU rate', value: `$${driverEditableFields.wrvuRate}` },
+                          ],
+                        },
+                        retention: {
+                          id: 'retention',
+                          label: 'Clinician Retention',
+                          gap: Math.round(0.02 * providers * 250000), // 2% retention improvement * avg replacement cost
+                          competitorValue: 0,
+                          abridgeValue: Math.round(0.02 * providers * 250000),
+                          competitorSteps: [
+                            { label: 'Provider count', value: providers.toLocaleString() },
+                            { label: 'Baseline turnover rate', value: '15%' },
+                            { label: 'Replacement cost', value: '$250,000' },
+                            { label: 'Retention improvement', value: '0%' },
+                          ],
+                          abridgeSteps: [
+                            { label: 'Provider count', value: providers.toLocaleString() },
+                            { label: 'Baseline turnover rate', value: '15%' },
+                            { label: 'Replacement cost', value: '$250,000' },
+                            { label: 'Retention improvement', value: '2%' },
+                          ],
+                        },
+                        hcc: {
+                          id: 'hcc',
+                          label: 'HCC Capture',
+                          gap: Math.round(abridgeDocEncounters * 0.05 * 0.3 * 1500), // 5% improvement * 30% MA * $1500/HCC
+                          competitorValue: 0,
+                          abridgeValue: Math.round(abridgeDocEncounters * 0.05 * 0.3 * 1500),
+                          competitorSteps: [
+                            { label: 'Medicare Advantage patients', value: `${Math.round(compDocEncounters * 0.3).toLocaleString()}` },
+                            { label: 'HCC gap closure rate', value: '0%' },
+                            { label: 'Value per HCC', value: '$1,500' },
+                          ],
+                          abridgeSteps: [
+                            { label: 'Medicare Advantage patients', value: `${Math.round(abridgeDocEncounters * 0.3).toLocaleString()}` },
+                            { label: 'HCC gap closure rate', value: '5%' },
+                            { label: 'Value per HCC', value: '$1,500' },
+                          ],
+                        },
+                        denials: {
+                          id: 'denials',
+                          label: 'Documentation Denials',
+                          gap: Math.round(abridgeDocEncounters * 0.02 * 0.25 * 500), // 2% denial rate * 25% reduction * $500/denial
+                          competitorValue: 0,
+                          abridgeValue: Math.round(abridgeDocEncounters * 0.02 * 0.25 * 500),
+                          competitorSteps: [
+                            { label: 'Claims volume', value: compDocEncounters.toLocaleString() },
+                            { label: 'Documentation denial rate', value: '2%' },
+                            { label: 'Denial reduction', value: '0%' },
+                            { label: 'Avg denial cost', value: '$500' },
+                          ],
+                          abridgeSteps: [
+                            { label: 'Claims volume', value: abridgeDocEncounters.toLocaleString() },
+                            { label: 'Documentation denial rate', value: '2%' },
+                            { label: 'Denial reduction', value: '25%' },
+                            { label: 'Avg denial cost', value: '$500' },
+                          ],
+                        },
+                      };
+
+                      // Get list of configured drivers for summary
+                      const selectedDriversList = Object.values(configuredDrivers);
+                      const configuredTotalGap = selectedDriversList.reduce((sum, d) => sum + d.gap, 0);
+                      
                       return (
                         <div className="space-y-6 mt-8" data-testid="driver-math-section">
+                          {/* Section Header */}
                           <div>
-                            <h3 className="text-lg font-semibold text-[#111827]">
+                            <h3 className="text-xl font-semibold text-[#111827]">
                               How the Gap Translates to Value
                             </h3>
                             <p className="text-[#6B7280] text-sm mt-1">
-                              Based on your strategic priorities, here's where the numbers diverge
+                              Select the value drivers that matter to your organization
                             </p>
                           </div>
                           
-                          {/* Patient Access Driver Card - Clean Design */}
-                          <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden" data-testid="driver-card-access">
-                            {/* Card Header */}
-                            <div className="flex items-start justify-between p-5 border-b border-[#F3F4F6]">
-                              <div className="flex items-center gap-4">
-                                <div className="p-3 bg-[#FFF7ED] rounded-xl text-[#EA580C]">
-                                  <UserPlus className="w-5 h-5" />
-                                </div>
-                                <div>
-                                  <h3 className="font-semibold text-[#111827] text-lg">Patient Access</h3>
-                                  <p className="text-sm text-[#6B7280]">Turn documentation efficiency into visit capacity</p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-2xl font-bold text-[#EA580C]">
-                                  +${accessGap.toLocaleString()}
-                                </div>
-                                <div className="text-sm text-[#9CA3AF]">additional value</div>
-                              </div>
-                            </div>
-                            
-                            {/* Clean Math Flow Columns */}
-                            <div className="p-6">
-                              <div className="grid grid-cols-2 gap-8">
-                                {/* Left column - Competitor */}
-                                <div>
-                                  <div className="text-sm font-medium text-[#9CA3AF] mb-4 pb-2 border-b border-[#F3F4F6]">
-                                    With {selectedCompetitor?.name}
-                                  </div>
-                                  
-                                  <div className="space-y-3 text-sm">
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="text-[#6B7280]">Annual encounters</span>
-                                      <span className="font-medium text-[#374151] tabular-nums">{annualEncounters.toLocaleString()}</span>
+                          {/* 6 Driver Mini Cards Grid */}
+                          <div className="grid grid-cols-3 gap-4" data-testid="driver-grid">
+                            {ALL_DRIVERS.map((driver) => {
+                              const isConfigured = !!configuredDrivers[driver.id];
+                              const gapValue = configuredDrivers[driver.id]?.gap || driverCalculations[driver.id]?.gap || 0;
+                              const DriverIcon = driver.Icon;
+                              
+                              return (
+                                <div
+                                  key={driver.id}
+                                  onClick={() => setActiveDriverId(driver.id)}
+                                  className={`
+                                    p-4 rounded-xl border-2 cursor-pointer transition-all
+                                    ${isConfigured 
+                                      ? 'border-[#FDBA74] bg-[#FFF7ED]' 
+                                      : 'border-[#E5E7EB] bg-white hover:border-[#FDBA74] hover:bg-[#FFF7ED]/30'}
+                                  `}
+                                  data-testid={`driver-mini-card-${driver.id}`}
+                                >
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="p-2 bg-[#FFF7ED] rounded-lg text-[#EA580C]">
+                                      <DriverIcon className="w-5 h-5" />
                                     </div>
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="text-[#6B7280]">Utilization rate</span>
-                                      <span className="font-medium text-[#374151] tabular-nums">{competitorUtilization}%</span>
-                                    </div>
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="text-[#6B7280]">Documented encounters</span>
-                                      <span className="font-medium text-[#374151] tabular-nums">{compDocEncounters.toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="text-[#6B7280]">Time saved/encounter</span>
-                                      <span className="font-medium text-[#374151] tabular-nums">{compTimeSaved} min</span>
-                                    </div>
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="text-[#6B7280]">Hours returned</span>
-                                      <span className="font-medium text-[#374151] tabular-nums">{Math.round(compHoursReturned).toLocaleString()} hrs</span>
-                                    </div>
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="text-[#6B7280]">Realization factor</span>
-                                      <button 
-                                        onClick={() => {
-                                          setEditingField("realizationFactor");
-                                          setTempEditValue(driverEditableFields.realizationFactor.toString());
-                                        }}
-                                        className="flex items-center gap-1 group"
-                                        data-testid="button-edit-realizationFactor"
-                                      >
-                                        <span className="font-medium text-[#374151] tabular-nums">{driverEditableFields.realizationFactor}%</span>
-                                        <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
-                                      </button>
-                                    </div>
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="text-[#6B7280]">Revenue per visit</span>
-                                      <button 
-                                        onClick={() => {
-                                          setEditingField("revenuePerVisit");
-                                          setTempEditValue(driverEditableFields.revenuePerVisit.toString());
-                                        }}
-                                        className="flex items-center gap-1 group"
-                                        data-testid="button-edit-revenuePerVisit"
-                                      >
-                                        <span className="font-medium text-[#374151] tabular-nums">${driverEditableFields.revenuePerVisit}</span>
-                                        <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
-                                      </button>
-                                    </div>
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="text-[#6B7280]">Additional visits</span>
-                                      <span className="font-medium text-[#374151] tabular-nums">{compAdditionalVisits.toLocaleString()}</span>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
-                                    <div className="flex justify-between items-baseline">
-                                      <span className="font-medium text-[#6B7280]">Annual Value</span>
-                                      <span className="text-xl font-bold text-[#374151] tabular-nums">
-                                        ${compAccessValue.toLocaleString()}
+                                    {isConfigured && (
+                                      <span className="text-xs font-medium text-[#EA580C] bg-[#FFEDD5] px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <Check className="w-3 h-3" /> Added
                                       </span>
+                                    )}
+                                  </div>
+                                  
+                                  <h4 className="font-semibold text-[#111827] mb-1">{driver.label}</h4>
+                                  
+                                  {isConfigured ? (
+                                    <div className="text-lg font-bold text-[#EA580C] tabular-nums">
+                                      +${gapValue.toLocaleString()}
                                     </div>
+                                  ) : (
+                                    <div className="text-sm text-[#9CA3AF]">
+                                      Click to configure
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Active Configuration Panel */}
+                          {activeDriverId && !configuredDrivers[activeDriverId] && (() => {
+                            const activeDriver = ALL_DRIVERS.find(d => d.id === activeDriverId);
+                            const calc = driverCalculations[activeDriverId];
+                            if (!activeDriver || !calc) return null;
+                            const ActiveIcon = activeDriver.Icon;
+                            
+                            return (
+                              <div className="bg-white border border-[#E5E7EB] rounded-xl p-6" data-testid="driver-config-panel">
+                                <div className="flex items-center justify-between mb-6">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-[#FFF7ED] rounded-lg text-[#EA580C]">
+                                      <ActiveIcon className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                      <h3 className="font-semibold text-[#111827]">{activeDriver.label}</h3>
+                                      <p className="text-sm text-[#6B7280]">{activeDriver.subtitle}</p>
+                                    </div>
+                                  </div>
+                                  <button 
+                                    onClick={() => setActiveDriverId(null)} 
+                                    className="text-[#9CA3AF] hover:text-[#6B7280]"
+                                    data-testid="button-close-config"
+                                  >
+                                    <X className="w-5 h-5" />
+                                  </button>
+                                </div>
+                                
+                                {/* Preview of calculation */}
+                                <div className="mb-6 p-4 bg-[#F9FAFB] rounded-lg">
+                                  <div className="text-sm text-[#6B7280] mb-2">Estimated annual gap value</div>
+                                  <div className="text-2xl font-bold text-[#EA580C] tabular-nums">
+                                    +${calc.gap.toLocaleString()}
                                   </div>
                                 </div>
                                 
-                                {/* Right column - Abridge with subtle orange bg */}
-                                <div className="bg-[#FFF7ED]/50 rounded-xl p-4 -m-4">
-                                  <div className="text-sm font-medium text-[#EA580C] mb-4 pb-2 border-b border-[#FFEDD5]">
-                                    With Abridge
+                                <button 
+                                  onClick={() => {
+                                    setConfiguredDrivers(prev => ({
+                                      ...prev,
+                                      [activeDriverId]: calc
+                                    }));
+                                    setActiveDriverId(null);
+                                  }}
+                                  className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-medium rounded-lg transition-colors"
+                                  data-testid="button-add-driver"
+                                >
+                                  Add to Analysis
+                                </button>
+                              </div>
+                            );
+                          })()}
+                          
+                          {/* Configured Driver Result Cards */}
+                          <div className="space-y-4">
+                            {selectedDriversList.map(driverCalc => {
+                              const driverDef = ALL_DRIVERS.find(d => d.id === driverCalc.id);
+                              if (!driverDef) return null;
+                              const DriverIcon = driverDef.Icon;
+                              
+                              return (
+                                <div 
+                                  key={driverCalc.id} 
+                                  className="bg-white border border-[#FDBA74] rounded-xl overflow-hidden"
+                                  data-testid={`driver-result-card-${driverCalc.id}`}
+                                >
+                                  {/* Header */}
+                                  <div className="p-5 bg-[#FFF7ED] flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2 bg-white rounded-lg text-[#EA580C]">
+                                        <DriverIcon className="w-5 h-5" />
+                                      </div>
+                                      <div>
+                                        <h3 className="font-semibold text-[#111827]">{driverCalc.label}</h3>
+                                        <p className="text-sm text-[#6B7280]">{driverDef.subtitle}</p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-2xl font-bold text-[#EA580C] tabular-nums">
+                                        +${driverCalc.gap.toLocaleString()}
+                                      </div>
+                                      <div className="text-sm text-[#9CA3AF]">additional value</div>
+                                    </div>
                                   </div>
+                                  
+                                  {/* Math comparison */}
+                                  <div className="p-5">
+                                    <div className="grid grid-cols-2 gap-8">
+                                      {/* Left: Competitor */}
+                                      <div>
+                                        <div className="text-sm font-medium text-[#9CA3AF] mb-3">
+                                          With {selectedCompetitor?.name}
+                                        </div>
+                                        <div className="space-y-2 text-sm">
+                                          {driverCalc.competitorSteps.map((step, i) => (
+                                            <div key={i} className="flex justify-between">
+                                              <span className="text-[#6B7280]">{step.label}</span>
+                                              <span className="text-[#374151] font-medium tabular-nums">{step.value}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        <div className="mt-3 pt-3 border-t border-[#E5E7EB] flex justify-between">
+                                          <span className="font-medium text-[#6B7280]">Annual Value</span>
+                                          <span className="text-xl font-bold text-[#374151] tabular-nums">
+                                            ${driverCalc.competitorValue.toLocaleString()}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Right: Abridge */}
+                                      <div className="bg-[#FFF7ED]/50 rounded-lg p-4 -m-2">
+                                        <div className="text-sm font-medium text-[#EA580C] mb-3">
+                                          With Abridge
+                                        </div>
+                                        <div className="space-y-2 text-sm">
+                                          {driverCalc.abridgeSteps.map((step, i) => (
+                                            <div key={i} className="flex justify-between">
+                                              <span className="text-[#78716C]">{step.label}</span>
+                                              <span className="text-[#EA580C] font-medium tabular-nums">{step.value}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        <div className="mt-3 pt-3 border-t border-[#FDBA74] flex justify-between">
+                                          <span className="font-medium text-[#EA580C]">Annual Value</span>
+                                          <span className="text-xl font-bold text-[#EA580C] tabular-nums">
+                                            ${driverCalc.abridgeValue.toLocaleString()}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Gap bar */}
+                                    <div className="mt-6 pt-4 border-t border-[#F3F4F6]">
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-sm text-[#9CA3AF] w-20 text-right tabular-nums">
+                                          ${driverCalc.competitorValue.toLocaleString()}
+                                        </span>
+                                        <div className="flex-1 h-2 bg-[#F3F4F6] rounded-full relative overflow-hidden">
+                                          <div 
+                                            className="absolute inset-y-0 left-0 bg-[#D1D5DB] rounded-full"
+                                            style={{ width: `${driverCalc.abridgeValue > 0 ? (driverCalc.competitorValue / driverCalc.abridgeValue) * 100 : 0}%` }}
+                                          />
+                                          <div 
+                                            className="absolute inset-y-0 bg-[#EA580C] rounded-full"
+                                            style={{ 
+                                              left: `${driverCalc.abridgeValue > 0 ? (driverCalc.competitorValue / driverCalc.abridgeValue) * 100 : 0}%`,
+                                              right: 0
+                                            }}
+                                          />
+                                        </div>
+                                        <span className="text-sm font-semibold text-[#EA580C] w-20 tabular-nums">
+                                          ${driverCalc.abridgeValue.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="text-right mt-1">
+                                        <span className="text-sm text-[#EA580C] font-medium tabular-nums">
+                                          +${driverCalc.gap.toLocaleString()} gap
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Footer */}
+                                  <div className="px-5 py-3 bg-[#F9FAFB] border-t border-[#F3F4F6] flex justify-end gap-3">
+                                    <button 
+                                      onClick={() => {
+                                        setConfiguredDrivers(prev => {
+                                          const next = {...prev};
+                                          delete next[driverCalc.id];
+                                          return next;
+                                        });
+                                      }}
+                                      className="text-sm text-[#6B7280] hover:text-[#374151]"
+                                      data-testid={`button-remove-driver-${driverCalc.id}`}
+                                    >
+                                      Remove
+                                    </button>
+                                    <span className="text-sm text-[#EA580C] font-medium flex items-center gap-1">
+                                      <Check className="w-3 h-3" /> Added to total
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Summary Section */}
+                          {selectedDriversList.length > 0 && (
+                            <div className="bg-white border border-[#E5E7EB] rounded-xl p-6" data-testid="summary-section">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <div className="text-sm font-medium text-[#9CA3AF] uppercase tracking-wide mb-3">
+                                    Selected Drivers
+                                  </div>
+                                  <div className="space-y-2">
+                                    {selectedDriversList.map(d => (
+                                      <div key={d.id} className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-[#EA580C]" />
+                                        <span className="text-[#374151]">{d.label}</span>
+                                        <span className="text-[#EA580C] font-medium ml-auto tabular-nums">
+                                          +${d.gap.toLocaleString()}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                
+                                <div className="text-right pl-8 border-l border-[#F3F4F6]">
+                                  <div className="text-sm text-[#9CA3AF] mb-1">Total Annual Gap</div>
+                                  <div className="text-3xl font-bold text-[#111827] tabular-nums">
+                                    +${configuredTotalGap.toLocaleString()}
+                                  </div>
+                                  <div className="text-sm text-[#9CA3AF] mt-1">per year</div>
+                                </div>
+                              </div>
+                              
+                              <div className="mt-6 pt-6 border-t border-[#F3F4F6] flex justify-end">
+                                <Button 
+                                  onClick={() => {
+                                    setCompetitorStep(4);
+                                  }}
+                                  className="px-6 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-medium"
+                                  data-testid="button-continue-to-step4"
+                                >
+                                  See Opportunity at Scale
+                                  <ArrowRight className="ml-2 w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* Footer Actions */}
+                    <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCompetitorStep(2)}
+                        data-testid="button-back-to-usage"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back
+                      </Button>
+                    </div>
+                  </div>
+                )}
                                   
                                   <div className="space-y-3 text-sm">
                                     <div className="flex justify-between items-baseline">

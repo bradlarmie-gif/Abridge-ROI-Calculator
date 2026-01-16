@@ -1,0 +1,360 @@
+Step 3 - Complete Restructure
+The flow is currently wrong. Here's what needs to change:
+1. Show ALL 6 drivers as mini cards in a 3x2 grid
+tsxCopyconst ALL_DRIVERS = [
+  { id: 'patient_access', label: 'Patient Access', subtitle: 'Turn documentation efficiency into visit capacity', icon: '📈' },
+  { id: 'overtime', label: 'Overtime Savings', subtitle: 'Reduce after-hours documentation burden', icon: '⏰' },
+  { id: 'level_of_service', label: 'Level of Service', subtitle: 'Capture accurate wRVU through complete documentation', icon: '📊' },
+  { id: 'retention', label: 'Clinician Retention', subtitle: 'Reduce burnout-driven turnover', icon: '👤' },
+  { id: 'hcc', label: 'HCC Capture', subtitle: 'Improve risk adjustment through documentation', icon: '🏥' },
+  { id: 'denials', label: 'Documentation Denials', subtitle: 'Reduce preventable claim denials', icon: '⚠️' },
+];
+2. Mini Card Component (collapsed state)
+tsxCopyfunction DriverMiniCard({ driver, isConfigured, gapValue, onClick }: Props) {
+  return (
+    <div 
+      onClick={onClick}
+      className={`
+        p-4 rounded-xl border-2 cursor-pointer transition-all
+        ${isConfigured 
+          ? 'border-orange-300 bg-orange-50' 
+          : 'border-gray-200 bg-white hover:border-orange-200 hover:bg-orange-50/30'}
+      `}
+    >
+      <div className="flex items-start justify-between mb-2">
+        <span className="text-2xl">{driver.icon}</span>
+        {isConfigured && (
+          <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">
+            ✓ Added
+          </span>
+        )}
+      </div>
+      
+      <h4 className="font-semibold text-gray-900 mb-1">{driver.label}</h4>
+      
+      {isConfigured ? (
+        <div className="text-lg font-bold text-orange-600">
+          +{formatCurrency(gapValue)}
+        </div>
+      ) : (
+        <div className="text-sm text-gray-400">
+          Click to configure
+        </div>
+      )}
+    </div>
+  );
+}
+3. When clicked, show configuration form (modal or expanded panel)
+tsxCopyfunction DriverConfigPanel({ driver, onCalculate, onClose }: Props) {
+  const [inputs, setInputs] = useState(getDefaultInputs(driver.id));
+  
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-6 mt-4">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{driver.icon}</span>
+          <div>
+            <h3 className="font-semibold text-gray-900">{driver.label}</h3>
+            <p className="text-sm text-gray-500">{driver.subtitle}</p>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <XIcon className="w-5 h-5" />
+        </button>
+      </div>
+      
+      <div className="mb-6">
+        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
+          Configure Your Inputs
+        </div>
+        
+        {/* Driver-specific inputs */}
+        {driver.id === 'patient_access' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Realization factor (% of time saved that converts to visits)
+              </label>
+              <div className="flex items-center gap-2">
+                <input 
+                  type="number"
+                  value={inputs.realizationFactor}
+                  onChange={(e) => setInputs({...inputs, realizationFactor: Number(e.target.value)})}
+                  className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-right"
+                />
+                <span className="text-gray-500">%</span>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Revenue per additional visit
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">$</span>
+                <input 
+                  type="number"
+                  value={inputs.revenuePerVisit}
+                  onChange={(e) => setInputs({...inputs, revenuePerVisit: Number(e.target.value)})}
+                  className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-right"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Similar input sections for other drivers... */}
+      </div>
+      
+      <button 
+        onClick={() => onCalculate(inputs)}
+        className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+      >
+        Calculate Value
+      </button>
+    </div>
+  );
+}
+4. After calculation, show the full math comparison
+tsxCopyfunction DriverResultCard({ driver, calculations, onRemove }: Props) {
+  return (
+    <div className="bg-white border border-orange-200 rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="p-5 bg-orange-50 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{driver.icon}</span>
+          <div>
+            <h3 className="font-semibold text-gray-900">{driver.label}</h3>
+            <p className="text-sm text-gray-500">{driver.subtitle}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-orange-600">
+            +{formatCurrency(calculations.gap)}
+          </div>
+          <div className="text-sm text-gray-400">additional value</div>
+        </div>
+      </div>
+      
+      {/* Math comparison */}
+      <div className="p-5">
+        <div className="grid grid-cols-2 gap-8">
+          {/* Left: Competitor */}
+          <div>
+            <div className="text-sm font-medium text-gray-400 mb-3">
+              With {competitor.name}
+            </div>
+            <div className="space-y-2 text-sm">
+              {calculations.competitorSteps.map((step, i) => (
+                <div key={i} className="flex justify-between">
+                  <span className="text-gray-500">{step.label}</span>
+                  <span className="text-gray-700 font-medium tabular-nums">{step.value}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between">
+              <span className="font-medium text-gray-600">Annual Value</span>
+              <span className="text-xl font-bold text-gray-800">
+                {formatCurrency(calculations.competitorValue)}
+              </span>
+            </div>
+          </div>
+          
+          {/* Right: Abridge */}
+          <div className="bg-orange-50/50 rounded-lg p-4 -m-2">
+            <div className="text-sm font-medium text-orange-600 mb-3">
+              With Abridge
+            </div>
+            <div className="space-y-2 text-sm">
+              {calculations.abridgeSteps.map((step, i) => (
+                <div key={i} className="flex justify-between">
+                  <span className="text-gray-600">{step.label}</span>
+                  <span className="text-orange-700 font-medium tabular-nums">{step.value}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 pt-3 border-t border-orange-200 flex justify-between">
+              <span className="font-medium text-orange-600">Annual Value</span>
+              <span className="text-xl font-bold text-orange-600">
+                {formatCurrency(calculations.abridgeValue)}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Gap bar */}
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-400 w-20 text-right">
+              {formatCurrency(calculations.competitorValue)}
+            </span>
+            <div className="flex-1 h-2 bg-gray-100 rounded-full relative">
+              <div 
+                className="absolute inset-y-0 left-0 bg-gray-300 rounded-full"
+                style={{ width: `${(calculations.competitorValue / calculations.abridgeValue) * 100}%` }}
+              />
+              <div 
+                className="absolute inset-y-0 bg-orange-500 rounded-full"
+                style={{ 
+                  left: `${(calculations.competitorValue / calculations.abridgeValue) * 100}%`,
+                  right: 0
+                }}
+              />
+            </div>
+            <span className="text-sm font-semibold text-orange-600 w-20">
+              {formatCurrency(calculations.abridgeValue)}
+            </span>
+          </div>
+          <div className="text-right mt-1">
+            <span className="text-sm text-orange-600 font-medium">
+              +{formatCurrency(calculations.gap)} gap
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Footer actions */}
+      <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+        <button 
+          onClick={onRemove}
+          className="text-sm text-gray-500 hover:text-gray-700"
+        >
+          Remove
+        </button>
+        <span className="text-sm text-orange-600 font-medium">
+          ✓ Added to total
+        </span>
+      </div>
+    </div>
+  );
+}
+5. Main Step 3 Component Structure
+tsxCopyfunction GapAnalysisStep() {
+  const [activeDriver, setActiveDriver] = useState<string | null>(null);
+  const [configuredDrivers, setConfiguredDrivers] = useState<Record<string, DriverCalculation>>({});
+  
+  const handleCalculate = (driverId: string, inputs: DriverInputs) => {
+    const calculation = calculateDriver(driverId, inputs, competitorData);
+    setConfiguredDrivers(prev => ({
+      ...prev,
+      [driverId]: calculation
+    }));
+    setActiveDriver(null); // Close config panel
+  };
+  
+  const handleRemove = (driverId: string) => {
+    setConfiguredDrivers(prev => {
+      const next = {...prev};
+      delete next[driverId];
+      return next;
+    });
+  };
+  
+  const selectedDrivers = Object.values(configuredDrivers);
+  const totalGap = selectedDrivers.reduce((sum, d) => sum + d.gap, 0);
+  
+  return (
+    <div className="space-y-8">
+      {/* Gap at a Glance - keep as is */}
+      <GapAtAGlance />
+      
+      {/* Driver Selection Section */}
+      <section>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          How the Gap Translates to Value
+        </h2>
+        <p className="text-gray-500 mb-6">
+          Select the value drivers that matter to your organization
+        </p>
+        
+        {/* 6 Mini Cards Grid */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {ALL_DRIVERS.map(driver => (
+            <DriverMiniCard
+              key={driver.id}
+              driver={driver}
+              isConfigured={!!configuredDrivers[driver.id]}
+              gapValue={configuredDrivers[driver.id]?.gap}
+              onClick={() => setActiveDriver(driver.id)}
+            />
+          ))}
+        </div>
+        
+        {/* Active Configuration Panel */}
+        {activeDriver && !configuredDrivers[activeDriver] && (
+          <DriverConfigPanel
+            driver={ALL_DRIVERS.find(d => d.id === activeDriver)!}
+            onCalculate={(inputs) => handleCalculate(activeDriver, inputs)}
+            onClose={() => setActiveDriver(null)}
+          />
+        )}
+        
+        {/* Configured Driver Results */}
+        <div className="space-y-4">
+          {selectedDrivers.map(driver => (
+            <DriverResultCard
+              key={driver.id}
+              driver={ALL_DRIVERS.find(d => d.id === driver.id)!}
+              calculations={driver}
+              onRemove={() => handleRemove(driver.id)}
+            />
+          ))}
+        </div>
+      </section>
+      
+      {/* Summary Section */}
+      {selectedDrivers.length > 0 && (
+        <section className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-3">
+                Selected Drivers
+              </div>
+              <div className="space-y-2">
+                {selectedDrivers.map(d => (
+                  <div key={d.id} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-orange-500" />
+                    <span className="text-gray-700">{d.label}</span>
+                    <span className="text-orange-600 font-medium ml-auto">
+                      +{formatCurrency(d.gap)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="text-right pl-8 border-l border-gray-100">
+              <div className="text-sm text-gray-400 mb-1">Total Annual Gap</div>
+              <div className="text-3xl font-bold text-gray-900">
+                +{formatCurrency(totalGap)}
+              </div>
+              <div className="text-sm text-gray-400">per year</div>
+            </div>
+          </div>
+          
+          <div className="mt-6 pt-6 border-t border-gray-100 flex justify-end">
+            <button 
+              onClick={() => goToStep4(selectedDrivers)}
+              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg"
+            >
+              See Opportunity at Scale →
+            </button>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+Summary of Changes Needed
+
+Add a 3x2 grid of ALL 6 driver mini-cards at the top
+Mini cards show: icon, name, and either "Click to configure" or the gap value + "✓ Added"
+Clicking a mini card opens a configuration panel with input fields
+After configuring, the full math comparison appears below
+User can configure multiple drivers - each adds to the total
+Summary section shows all selected drivers + total gap + CTA button
+Pass selected drivers to Step 4 when clicking "See Opportunity at Scale"
+
+
+This creates a proper choose → configure → see results → add more flow that makes sense.Add to Conversation
