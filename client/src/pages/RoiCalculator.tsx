@@ -366,6 +366,13 @@ export default function RoiCalculator({
     overtime: { hoursPerProvider: 0, premiumRate: 145, expanded: false, skipped: false },
   });
   
+  // State for which driver cards are shown in Step 3
+  const [enabledDriverCards, setEnabledDriverCards] = useState<{
+    access: boolean;
+    overtime: boolean;
+    los: boolean;
+  }>({ access: true, overtime: false, los: false });
+  
   // Wizard step for driver comparison (0 = access, 1 = los, 2 = overtime, 3 = summary)
   const [currentDriverIndex, setCurrentDriverIndex] = useState(0);
   
@@ -5372,6 +5379,422 @@ export default function RoiCalculator({
                               </div>
                             </div>
                           </div>
+                          
+                          {/* Overtime Savings Driver Card */}
+                          {enabledDriverCards.overtime && (() => {
+                            // Overtime calculations
+                            const compOvertimeHoursReturned = Math.round(compDocEncounters * compTimeSaved / 60);
+                            const compOvertimeReduction = Math.round(compOvertimeHoursReturned * 0.15); // 15% goes to overtime reduction
+                            const overtimeRate = 145;
+                            const compOvertimeValue = compOvertimeReduction * overtimeRate;
+                            
+                            const abridgeOvertimeHoursReturned = Math.round(abridgeDocEncounters * abridgeTimeSaved / 60);
+                            const abridgeOvertimeReduction = Math.round(abridgeOvertimeHoursReturned * 0.15);
+                            const abridgeOvertimeValue = abridgeOvertimeReduction * overtimeRate;
+                            const overtimeGap = abridgeOvertimeValue - compOvertimeValue;
+                            
+                            return (
+                              <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mt-4" data-testid="driver-card-overtime">
+                                <div className="p-5 flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-[#FEF3C7] rounded-lg text-[#D97706]">
+                                      <Clock className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                      <h4 className="font-semibold text-[#111827]">Overtime Savings</h4>
+                                      <p className="text-sm text-[#6B7280]">Reduce after-hours documentation burden</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-2xl font-bold text-[#059669]">
+                                      +${overtimeGap.toLocaleString()}
+                                    </div>
+                                    <div className="text-sm text-[#6B7280]">additional savings</div>
+                                  </div>
+                                </div>
+                                
+                                <div className="border-t border-[#F3F4F6] p-6 bg-[#F9FAFB]">
+                                  <div className="grid grid-cols-2 gap-8">
+                                    {/* Competitor Flow */}
+                                    <div>
+                                      <div className="text-sm font-medium text-[#6B7280] mb-4 flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#9CA3AF]" />
+                                        With {selectedCompetitor?.name}
+                                      </div>
+                                      <div className="relative">
+                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#D1D5DB]" />
+                                        <div className="space-y-3">
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">1</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Hours returned</span>
+                                                <span className="font-semibold text-[#374151]">{compOvertimeHoursReturned.toLocaleString()} hrs</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">2</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Overtime reduction (15%)</span>
+                                                <span className="font-semibold text-[#374151]">{compOvertimeReduction.toLocaleString()} hrs</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">●</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Overtime rate</span>
+                                                <span className="font-semibold text-[#374151]">${overtimeRate}/hr</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="ml-9 p-3 rounded-lg border bg-[#F3F4F6] border-[#D1D5DB] mt-3">
+                                          <div className="flex items-baseline justify-between">
+                                            <span className="text-sm font-medium text-[#6B7280]">Annual Savings</span>
+                                            <span className="text-xl font-bold text-[#374151]">${compOvertimeValue.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Abridge Flow */}
+                                    <div>
+                                      <div className="text-sm font-medium text-[#059669] mb-4 flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#10B981]" />
+                                        With Abridge
+                                      </div>
+                                      <div className="relative">
+                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#A7F3D0]" />
+                                        <div className="space-y-3">
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">1</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Hours returned</span>
+                                                <span className="font-semibold text-[#059669]">{abridgeOvertimeHoursReturned.toLocaleString()} hrs</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">2</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Overtime reduction (15%)</span>
+                                                <span className="font-semibold text-[#059669]">{abridgeOvertimeReduction.toLocaleString()} hrs</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">●</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Overtime rate</span>
+                                                <span className="font-semibold text-[#059669]">${overtimeRate}/hr</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="ml-9 p-3 rounded-lg border bg-[#ECFDF5] border-[#A7F3D0] mt-3">
+                                          <div className="flex items-baseline justify-between">
+                                            <span className="text-sm font-medium text-[#6B7280]">Annual Savings</span>
+                                            <span className="text-xl font-bold text-[#059669]">${abridgeOvertimeValue.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Difference Bar */}
+                                  <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-20 text-sm text-[#6B7280] text-right">Abridge</div>
+                                        <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
+                                          <div className="absolute inset-y-0 left-0 bg-[#10B981] rounded-lg" style={{ width: '100%' }} />
+                                          <div className="absolute inset-0 flex items-center px-3">
+                                            <span className="text-white font-semibold text-sm drop-shadow">${abridgeOvertimeValue.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-20 text-sm text-[#9CA3AF] text-right">Current</div>
+                                        <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
+                                          <div className="absolute inset-y-0 left-0 bg-[#9CA3AF] rounded-lg" style={{ width: `${abridgeOvertimeValue > 0 ? Math.round((compOvertimeValue / abridgeOvertimeValue) * 100) : 0}%` }} />
+                                          <div className="absolute inset-0 flex items-center px-3">
+                                            <span className="text-white font-semibold text-sm drop-shadow">${compOvertimeValue.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-20" />
+                                        <div className="flex-1 flex justify-end">
+                                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#ECFDF5] rounded-full">
+                                            <ArrowUp className="w-3 h-3 text-[#059669]" />
+                                            <span className="text-sm font-semibold text-[#059669]">+${overtimeGap.toLocaleString()} gap</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="mt-4 p-3 bg-[#ECFDF5] rounded-lg">
+                                      <div className="flex items-start gap-2">
+                                        <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
+                                        <p className="text-sm text-[#065F46]">
+                                          More time saved per encounter means less after-hours documentation, reducing costly overtime by {abridgeOvertimeReduction - compOvertimeReduction} additional hours.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                          
+                          {/* Level of Service Driver Card */}
+                          {enabledDriverCards.los && (() => {
+                            // Level of Service calculations - wRVU uplift from better documentation
+                            const baseWrvuRate = 45;
+                            const compQualityLift = 0.02; // 2% improvement
+                            const abridgeQualityLift = 0.06; // 6% improvement
+                            
+                            const compWrvuUplift = Math.round(compDocEncounters * compQualityLift * 100) / 100;
+                            const compLosValue = Math.round(compWrvuUplift * baseWrvuRate);
+                            
+                            const abridgeWrvuUplift = Math.round(abridgeDocEncounters * abridgeQualityLift * 100) / 100;
+                            const abridgeLosValue = Math.round(abridgeWrvuUplift * baseWrvuRate);
+                            const losGap = abridgeLosValue - compLosValue;
+                            
+                            return (
+                              <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mt-4" data-testid="driver-card-los">
+                                <div className="p-5 flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-[#EDE9FE] rounded-lg text-[#7C3AED]">
+                                      <TrendingUp className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                      <h4 className="font-semibold text-[#111827]">Level of Service</h4>
+                                      <p className="text-sm text-[#6B7280]">Capture accurate wRVU through complete documentation</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-2xl font-bold text-[#059669]">
+                                      +${losGap.toLocaleString()}
+                                    </div>
+                                    <div className="text-sm text-[#6B7280]">additional value</div>
+                                  </div>
+                                </div>
+                                
+                                <div className="border-t border-[#F3F4F6] p-6 bg-[#F9FAFB]">
+                                  <div className="grid grid-cols-2 gap-8">
+                                    {/* Competitor Flow */}
+                                    <div>
+                                      <div className="text-sm font-medium text-[#6B7280] mb-4 flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#9CA3AF]" />
+                                        With {selectedCompetitor?.name}
+                                      </div>
+                                      <div className="relative">
+                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#D1D5DB]" />
+                                        <div className="space-y-3">
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">1</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Documented encounters</span>
+                                                <span className="font-semibold text-[#374151]">{compDocEncounters.toLocaleString()}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">2</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Quality lift</span>
+                                                <span className="font-semibold text-[#374151]">{Math.round(compQualityLift * 100)}%</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">3</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">wRVU uplift</span>
+                                                <span className="font-semibold text-[#374151]">{compWrvuUplift.toLocaleString()}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">●</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">wRVU rate</span>
+                                                <span className="font-semibold text-[#374151]">${baseWrvuRate}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="ml-9 p-3 rounded-lg border bg-[#F3F4F6] border-[#D1D5DB] mt-3">
+                                          <div className="flex items-baseline justify-between">
+                                            <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
+                                            <span className="text-xl font-bold text-[#374151]">${compLosValue.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Abridge Flow */}
+                                    <div>
+                                      <div className="text-sm font-medium text-[#059669] mb-4 flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#10B981]" />
+                                        With Abridge
+                                      </div>
+                                      <div className="relative">
+                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#A7F3D0]" />
+                                        <div className="space-y-3">
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">1</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Documented encounters</span>
+                                                <span className="font-semibold text-[#059669]">{abridgeDocEncounters.toLocaleString()}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">2</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Quality lift</span>
+                                                <span className="font-semibold text-[#059669]">{Math.round(abridgeQualityLift * 100)}%</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">3</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">wRVU uplift</span>
+                                                <span className="font-semibold text-[#059669]">{abridgeWrvuUplift.toLocaleString()}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">●</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">wRVU rate</span>
+                                                <span className="font-semibold text-[#059669]">${baseWrvuRate}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="ml-9 p-3 rounded-lg border bg-[#ECFDF5] border-[#A7F3D0] mt-3">
+                                          <div className="flex items-baseline justify-between">
+                                            <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
+                                            <span className="text-xl font-bold text-[#059669]">${abridgeLosValue.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Difference Bar */}
+                                  <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-20 text-sm text-[#6B7280] text-right">Abridge</div>
+                                        <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
+                                          <div className="absolute inset-y-0 left-0 bg-[#10B981] rounded-lg" style={{ width: '100%' }} />
+                                          <div className="absolute inset-0 flex items-center px-3">
+                                            <span className="text-white font-semibold text-sm drop-shadow">${abridgeLosValue.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-20 text-sm text-[#9CA3AF] text-right">Current</div>
+                                        <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
+                                          <div className="absolute inset-y-0 left-0 bg-[#9CA3AF] rounded-lg" style={{ width: `${abridgeLosValue > 0 ? Math.round((compLosValue / abridgeLosValue) * 100) : 0}%` }} />
+                                          <div className="absolute inset-0 flex items-center px-3">
+                                            <span className="text-white font-semibold text-sm drop-shadow">${compLosValue.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-20" />
+                                        <div className="flex-1 flex justify-end">
+                                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#ECFDF5] rounded-full">
+                                            <ArrowUp className="w-3 h-3 text-[#059669]" />
+                                            <span className="text-sm font-semibold text-[#059669]">+${losGap.toLocaleString()} gap</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="mt-4 p-3 bg-[#ECFDF5] rounded-lg">
+                                      <div className="flex items-start gap-2">
+                                        <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
+                                        <p className="text-sm text-[#065F46]">
+                                          Higher quality documentation (6% vs 2% lift) across more encounters captures {Math.round(abridgeWrvuUplift - compWrvuUplift).toLocaleString()} additional wRVUs annually.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                          
+                          {/* Add More Drivers Button */}
+                          {(!enabledDriverCards.overtime || !enabledDriverCards.los) && (
+                            <div className="flex items-center justify-center pt-4">
+                              <div className="relative">
+                                <Button
+                                  variant="outline"
+                                  onClick={() => {
+                                    if (!enabledDriverCards.overtime) {
+                                      setEnabledDriverCards(prev => ({ ...prev, overtime: true }));
+                                    } else if (!enabledDriverCards.los) {
+                                      setEnabledDriverCards(prev => ({ ...prev, los: true }));
+                                    }
+                                  }}
+                                  className="border-dashed border-2 border-[#D1D5DB] text-[#6B7280] hover:border-[#059669] hover:text-[#059669] px-6 py-2"
+                                  data-testid="button-add-driver"
+                                >
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Add {!enabledDriverCards.overtime ? "Overtime Savings" : "Level of Service"} Driver
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
