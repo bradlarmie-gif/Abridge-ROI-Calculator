@@ -1,0 +1,118 @@
+ISSUE 4: Step 4 Current State - Driver Breakdown Missing
+Current problem: The "Your Current State" section shows the total annual gap (+$45K) but doesn't show WHICH drivers contribute. This breaks the through-line from Step 3.
+Fix:
+CopyIn Step 4 "Your Current State" section, add driver breakdown:
+
+Your Current State
+Based on your comparison: 50 providers · 100,000 encounters/year
+
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  Annual Gap                                                 │
+│  +$45,000                                                   │
+│  per year                                                   │
+│                                                             │
+│  Driver breakdown:                                          │
+│  • Patient Access           +$45,000                        │
+│                                                             │
+│  (If they selected more drivers, list them all here)       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+[See what this looks like at your full scale →]
+
+This creates continuity from Step 3 to Step 4.
+
+ISSUE 5: Step 4 Expansion View - "Where Gap Comes From" Styling
+Current problem: The driver cards in expansion view look good, but the arrow between DAX/Abridge is missing. The visual comparison isn't obvious enough.
+Fix:
+CopyIn "Where the Gap Comes From" driver cards (expansion view):
+
+Patient Access                               +$369K / year
+
+With DAX (Nuance)     →     With Abridge
+$231K                        $600K
+value                        value
+
+[███████████████████████████████████████████████████] +$369K gap
+        gray (DAX)              orange (Abridge)
+
+Changes:
+1. Add arrow (→) between the two columns to show transformation
+2. Make the values larger/bolder
+3. Keep the gap bar below, but make it thinner (current is good height)
+4. Add "value" label under each number for clarity
+
+ISSUE 6: Step 4 Multi-Year Chart - Toggle Button Styling
+Current problem: The "Current Scale / Expansion Scale" toggle is a bit bland. It needs to feel more purposeful.
+Fix:
+CopyThe toggle is currently:
+┌─────────────────────────────────────┐
+│ [Current Scale] [Expansion Scale]   │
+└─────────────────────────────────────┘
+
+Make it feel more significant:
+
+┌───────────────────────────────────────────────┐
+│ View by:                                      │
+│ ┌──────────────┬──────────────┐               │
+│ │ Current      │ Expansion    │               │
+│ │ Scale        │ Scale        │               │
+│ │              │              │               │
+│ │ 50 providers │ 245 providers│               │
+│ │ 100K visits  │ 410K visits  │               │
+│ └──────────────┴──────────────┘               │
+└───────────────────────────────────────────────┘
+
+Show the actual scale differences IN the toggle so they understand what they're comparing.
+Active state: white background, shadow
+Inactive state: transparent, gray text
+
+ISSUE 7: Step 4 Bottom Line - Make the Contrast Stark
+Current problem: The dark hero section at bottom is good, but "At Current Scale" vs "At Expansion Scale" needs more visual contrast.
+Fix:
+CopyCurrent bottom line shows:
+3-YEAR VALUE LEFT ON THE TABLE
+At Current Scale        At Expansion Scale
++$69K                  +$567K
+
+Make it more dramatic:
+
+3-YEAR VALUE LEFT ON THE TABLE
+by staying with DAX (Nuance)
+
+┌────────────────────┬────────────────────┐
+│ At Current Scale   │ At Expansion Scale │
+│                    │                    │
+│    +$69K           │    +$567K          │
+│    (white text)    │  (orange text)     │
+│                    │                    │
+│  50 providers      │  245 providers     │
+│  100K encounters   │  410K encounters   │
+│  (gray text)       │  (gray text)       │
+└────────────────────┴────────────────────┘
+
+Subtle divider between them, orange highlights expansion number, show scale underneath each.
+
+ISSUE 8: Step 4 Expansion Section - "That's 8.2x what you're currently missing"
+Current problem: The multiplier callout is great, but it needs to feel more impactful.
+Fix:
+CopyCurrent text:
+"That's 8.2x what you're currently missing"
+
+Make it a visual callout:
+
+At this scale, the annual gap is:
++$369K
+per year
+
+┌─────────────────────────────────────────────┐
+│  💡                                         │
+│  That's 8.2x what you're currently missing  │
+│                                             │
+│  At current scale: $45K                     │
+│  At expansion: $369K                        │
+│  Difference: +$324K more per year           │
+└─────────────────────────────────────────────┘
+
+A subtle info box that breaks down the multiplier effect.

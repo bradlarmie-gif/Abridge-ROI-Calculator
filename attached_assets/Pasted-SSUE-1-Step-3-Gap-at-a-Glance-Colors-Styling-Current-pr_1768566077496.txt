@@ -1,0 +1,72 @@
+SSUE 1: Step 3 "Gap at a Glance" - Colors & Styling
+Current problem: The gray/beige background boxes look dated. The orange TIME SAVINGS bar looks good, but the layout feels heavy.
+Fix:
+CopyChange "The Gap at a Glance" card styling:
+
+1. Remove the beige/tan background from both columns
+2. Use pure white background with subtle border
+3. Left column (DAX): Keep gray bars as-is
+4. Right column (Abridge): Keep orange bars but make background white, not beige
+5. Add subtle divider between columns (1px gray line, not thick)
+
+The visual should be:
+┌─────────────────────────────────────────────────────────────────┐
+│ The Gap at a Glance                                             │
+│ ┌──────────────────────┬──────────────────────┐                 │
+│ │  Your Current        │  The Opportunity     │                 │
+│ │  DAX (Nuance)        │  ABRIDGE             │                 │
+│ │  white bg            │  white bg            │                 │
+│ │                      │                      │                 │
+│ │  ADOPTION            │  ADOPTION            │                 │
+│ │  ████████ 50%        │  ████████████ 65%    │                 │
+│ │  (gray bar)          │  (orange bar)        │                 │
+│ │                      │                      │                 │
+│ │  TIME SAVINGS        │  TIME SAVINGS        │                 │
+│ │  ██ 1.5 min          │  ████████ 3 min      │                 │
+│ │  (gray bar)          │  (orange bar)        │                 │
+│ │                      │                      │                 │
+│ │  ANNUAL COST         │  ANNUAL COST         │                 │
+│ │  $90,000             │  $90,000             │                 │
+│ │  (gray text)         │  (orange text)       │                 │
+│ └──────────────────────┴──────────────────────┘                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Keep it clean. Pure white. Subtle gray divider. Orange only on right side.
+
+ISSUE 2: Step 3 Modal - Fix Estimated Gap Position
+Current problem: In the driver configuration modal (Patient Access), the "Estimated annual gap value +$160,000" shows BEFORE they click "Calculate Value". This breaks the flow.
+Fix:
+CopyIn the driver configuration modal:
+
+1. REMOVE the "Estimated annual gap value +$160,000" from the modal
+2. Only show the input fields (Realization Factor, Revenue per Visit)
+3. Button should say "Calculate Value" (current is correct)
+4. After clicking, the modal closes and the EXPANDED card appears showing the full breakdown
+
+The modal should be minimal - just inputs, no preview of results.
+
+ISSUE 3: Step 3 Expanded Card - Math Flow Styling
+Current problem: The side-by-side math comparison is good, but the numbers don't feel aligned/tabular enough.
+Fix:
+CopyIn the expanded driver card (after calculating):
+
+1. Add `tabular-nums` class to ALL numbers for alignment
+2. Make the row spacing more consistent (currently looks cramped)
+3. The "Annual Value" boxes at bottom should be more prominent
+
+Example styling:
+WITH DAX (NUANCE)              |  WITH ABRIDGE
+─────────────────────────────  |  ─────────────────────────────
+Documented encounters  50,000  |  Documented encounters  65,000
+Time saved/encounter   1.5 min |  Time saved/encounter   3 min
+Hours returned        1,250 hrs|  Hours returned        3,250 hrs
+Realization factor         20% |  Realization factor         20%
+Additional visits          500 |  Additional visits        1,300
+Revenue per visit         $200 |  Revenue per visit         $200
+─────────────────────────────  |  ─────────────────────────────
+Annual Value          $100,000 |  Annual Value          $260,000
+                               |
+[────────────────────────────────────────────────] +$160K gap
+              gray portion         orange portion
+
+All numbers right-aligned, tabular font, consistent spacing.
