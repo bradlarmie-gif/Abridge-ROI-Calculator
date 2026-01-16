@@ -2003,6 +2003,10 @@ export default function ObjectiveSelectionScreen({
   };
 
   const handleNursingValueMethodologyContinue = () => {
+    // Auto-apply typical posture if no posture has been selected yet
+    if (minutesSaved === null) {
+      applyPosture("typical");
+    }
     // Continue to the model-setup (baseline assumptions) page
     setCurrentPage("model-setup");
   };
@@ -2022,6 +2026,10 @@ export default function ObjectiveSelectionScreen({
 
   const handleContinueToPage4 = () => {
     if (!selectedSetting || selectedLeverIds.size === 0) return;
+    // Auto-apply typical posture if no posture has been selected yet
+    if (minutesSaved === null) {
+      applyPosture("typical");
+    }
     setModelSetupStep(1);
     setCurrentPage("model-setup");
   };
