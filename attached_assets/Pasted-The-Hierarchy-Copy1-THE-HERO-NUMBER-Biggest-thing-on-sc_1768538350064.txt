@@ -1,0 +1,471 @@
+The Hierarchy:
+Copy1. THE HERO NUMBER (Biggest thing on screen)
+2. The reason why (Medium)
+3. The proof (Small, scannable)
+4. The reality check (Expandable)
+
+NEW LAYOUT:
+Copy┌────────────────────────────────────────────────────────────────┐
+│  ← Back to Scenario Builder                                    │
+│                                                                 │
+│  COMPETITOR COMPARISON                                         │
+│  Switching from DAX (Nuance) to Abridge                        │
+│  50 providers | 100,000 encounters                             │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│                    THE SWITCHING OPPORTUNITY                    │
+│                                                                 │
+│                      +$432,500 per year                        │
+│                                                                 │
+│            Additional value by switching to Abridge            │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+    ↑ THIS is 72px, bold 900, green. Nothing else competes.
+
+┌─────────────────────────┬──────────────────────────────────────┐
+│                         │                                      │
+│   WHAT YOU PAY          │   WHAT YOU GET                       │
+│                         │                                      │
+├─────────────────────────┼──────────────────────────────────────┤
+│                         │                                      │
+│   DAX (Nuance)          │   9.8x ROI                          │
+│   $90,000/year          │   Abridge                           │
+│                         │                                      │
+│   Same cost             │   2x better ROI                     │
+│   $150/provider/mo      │   $791,250 net gain                 │
+│                         │                                      │
+└─────────────────────────┴──────────────────────────────────────┘
+    ↑ Left is COST (small). Right is OUTCOME (big).
+
+┌────────────────────────────────────────────────────────────────┐
+│  WHY THE DIFFERENCE                                            │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                                 │
+│  ⚡ Higher Utilization                                         │
+│     DAX: 40%  →  Abridge: 65%  [+63% more adoption]          │
+│                                                                 │
+│  ⏱️ More Time Saved                                            │
+│     DAX: 1.6 min  →  Abridge: 7 min  [+338% more time]       │
+│                                                                 │
+│  💰 Better Outcomes                                            │
+│                                                                 │
+│     Access         DAX: $300K    →  Abridge: $600K   +$300K  │
+│     LoS            DAX: $40K     →  Abridge: $100K   +$60K   │
+│     Overtime       DAX: $109K    →  Abridge: $181K   +$72K   │
+│                                                                 │
+│  [View detailed breakdown ▼]                                   │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│  ⚠️ REALITY CHECK                                              │
+│                                                                 │
+│  This assumes mature Abridge performance (65%+ utilization).   │
+│  Reality: It takes 18-24 months to get there.                 │
+│                                                                 │
+│  [Show Me the Realistic Timeline →]                           │
+└────────────────────────────────────────────────────────────────┘
+
+📐 EXACT DESIGN SPECS
+Section 1: THE HERO (The Punchline)
+jsxCopy<div className="hero-section">
+  <div className="hero-label">The Switching Opportunity</div>
+  <div className="hero-value">+$432,500 per year</div>
+  <div className="hero-context">Additional value by switching to Abridge</div>
+</div>
+CSS:
+cssCopy.hero-section {
+  background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+  border: 3px solid #10b981;
+  border-radius: 16px;
+  padding: 64px 48px;
+  text-align: center;
+  margin: 48px 0;
+}
+
+.hero-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #047857;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.hero-value {
+  font-size: 72px;
+  font-weight: 900;
+  color: #065f46;
+  line-height: 1;
+  margin: 24px 0;
+  font-feature-settings: 'tnum';
+}
+
+.hero-context {
+  font-size: 18px;
+  color: #047857;
+  font-weight: 500;
+}
+
+Section 2: COST vs OUTCOME (Not Side-by-Side Details)
+jsxCopy<div className="cost-outcome-grid">
+  <div className="cost-panel">
+    <div className="panel-label">What You Pay</div>
+    <div className="competitor-info">
+      <div className="competitor-name">DAX (Nuance)</div>
+      <div className="cost-value">$90,000/year</div>
+      <div className="cost-detail">$150/provider/mo • 50 providers</div>
+    </div>
+    <div className="cost-delta">Same cost as current</div>
+  </div>
+
+  <div className="outcome-panel">
+    <div className="panel-label">What You Get</div>
+    <div className="roi-display">
+      <div className="roi-value">9.8x ROI</div>
+      <div className="roi-product">Abridge</div>
+    </div>
+    <div className="outcome-improvement">2x better ROI</div>
+    <div className="outcome-detail">$791,250 net gain</div>
+  </div>
+</div>
+CSS:
+cssCopy.cost-outcome-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 48px;
+  margin: 48px 0;
+}
+
+/* Cost Panel (Muted) */
+.cost-panel {
+  background: #f9fafb;
+  padding: 32px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.panel-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #9ca3af;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.cost-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #374151;
+  margin: 12px 0;
+}
+
+.cost-detail {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Outcome Panel (HERO) */
+.outcome-panel {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  padding: 48px;
+  border-radius: 12px;
+  border: 3px solid #10b981;
+}
+
+.roi-display {
+  text-align: center;
+}
+
+.roi-value {
+  font-size: 80px;
+  font-weight: 900;
+  color: #065f46;
+  line-height: 1;
+}
+
+.roi-product {
+  font-size: 24px;
+  color: #047857;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.outcome-improvement {
+  text-align: center;
+  font-size: 20px;
+  color: #059669;
+  font-weight: 600;
+  margin: 16px 0;
+}
+
+.outcome-detail {
+  text-align: center;
+  font-size: 16px;
+  color: #047857;
+}
+
+Section 3: WHY THE DIFFERENCE (Scannable Bullets)
+jsxCopy<div className="why-section">
+  <h3>Why The Difference</h3>
+
+  {/* Utilization */}
+  <div className="reason-item">
+    <div className="reason-icon">⚡</div>
+    <div className="reason-content">
+      <div className="reason-title">Higher Utilization</div>
+      <div className="reason-comparison">
+        <span className="from">DAX: 40%</span>
+        <span className="arrow">→</span>
+        <span className="to">Abridge: 65%</span>
+        <span className="delta">[+63% more adoption]</span>
+      </div>
+    </div>
+  </div>
+
+  {/* Time Saved */}
+  <div className="reason-item">
+    <div className="reason-icon">⏱️</div>
+    <div className="reason-content">
+      <div className="reason-title">More Time Saved</div>
+      <div className="reason-comparison">
+        <span className="from">DAX: 1.6 min</span>
+        <span className="arrow">→</span>
+        <span className="to">Abridge: 7 min</span>
+        <span className="delta">[+338% more time]</span>
+      </div>
+    </div>
+  </div>
+
+  {/* Value Drivers (Collapsed by default) */}
+  <div className="reason-item">
+    <div className="reason-icon">💰</div>
+    <div className="reason-content">
+      <div className="reason-title">Better Outcomes</div>
+      <div className="driver-summary">
+        Access +$300K • LoS +$60K • Overtime +$72K
+      </div>
+      <button className="view-breakdown">View detailed breakdown ▼</button>
+    </div>
+  </div>
+</div>
+CSS:
+cssCopy.why-section {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  margin: 48px 0;
+}
+
+.why-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 32px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reason-item {
+  display: flex;
+  gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.reason-item:last-child {
+  border-bottom: none;
+}
+
+.reason-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.reason-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.reason-comparison {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+}
+
+.from {
+  color: #6b7280;
+}
+
+.arrow {
+  color: #d1d5db;
+  font-weight: 700;
+}
+
+.to {
+  color: #059669;
+  font-weight: 600;
+}
+
+.delta {
+  color: #10b981;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.driver-summary {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 8px 0;
+}
+
+.view-breakdown {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 8px;
+}
+
+Section 4: REALITY CHECK (The Hook to Next Page)
+jsxCopy<div className="reality-check-banner">
+  <div className="warning-icon">⚠️</div>
+  <div className="reality-content">
+    <div className="reality-message">
+      This assumes mature Abridge performance (65%+ utilization). 
+      <strong>Reality: It takes 18-24 months to get there.</strong>
+    </div>
+    <button className="show-timeline-btn">
+      Show Me the Realistic Timeline →
+    </button>
+  </div>
+</div>
+CSS:
+cssCopy.reality-check-banner {
+  background: #fef3c7;
+  border: 2px solid #fbbf24;
+  border-radius: 12px;
+  padding: 32px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin: 48px 0;
+}
+
+.warning-icon {
+  font-size: 40px;
+  flex-shrink: 0;
+}
+
+.reality-message {
+  font-size: 16px;
+  color: #78350f;
+  line-height: 1.6;
+}
+
+.reality-message strong {
+  color: #92400e;
+  font-weight: 700;
+}
+
+.show-timeline-btn {
+  margin-top: 16px;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.show-timeline-btn:hover {
+  background: #d97706;
+}
+
+🎯 THE MATURITY PAGE (After Click)
+The Narrative Structure:
+Copy┌────────────────────────────────────────────────────────────────┐
+│                    THE REALISTIC TIMELINE                       │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                                 │
+│  Value doesn't happen overnight. Here's the honest journey     │
+│  from $432K opportunity → reality.                             │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+
+┌─────────┬─────────┬─────────┬─────────────────────────────────┐
+│         │         │         │                                 │
+│ MONTH 6 │ MONTH 12│ MONTH 18│ MONTH 24+                       │
+│         │         │         │                                 │
+│ $87K    │ $173K   │ $346K   │ $432K                          │
+│ value   │ value   │ value   │ FULL VALUE                     │
+│         │         │         │                                 │
+│ 20%     │ 40%     │ 80%     │ 100%                           │
+│ of full │ of full │ of full │ of mature state                │
+│         │         │         │                                 │
+└─────────┴─────────┴─────────┴─────────────────────────────────┘
+    ↑ Visual timeline, not cards. Flowing left to right.
+
+┌────────────────────────────────────────────────────────────────┐
+│  WHY IT TAKES TIME                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                                 │
+│  Months 1-6: Onboarding & Training                            │
+│  • Provider onboarding, workflow setup                        │
+│  • Early adopters start, others learning                      │
+│  • Utilization: 30-40%                                        │
+│                                                                 │
+│  Months 7-12: Building Habits                                 │
+│  • Majority adoption, workflows embedding                     │
+│  • Time savings becoming measurable                           │
+│  • Utilization: 50-60%                                        │
+│                                                                 │
+│  Months 13-18: Optimization                                   │
+│  • High utilization, retention benefits emerging              │
+│  • Documentation quality improvements flowing through         │
+│  • Utilization: 65-75%                                        │
+│                                                                 │
+│  Month 18+: Mature State                                      │
+│  • Full value realization                                     │
+│  • Workflows embedded in culture                              │
+│  • Utilization: 75-90%                                        │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│  BUT EVEN DURING RAMP-UP...                                    │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                                 │
+│  Month 6 Abridge:    $87K value    vs   DAX: $358K            │
+│  Month 12 Abridge:   $173K value   vs   DAX: $358K            │
+│  Month 18 Abridge:   $346K value   vs   DAX: $358K  [BREAK-EVEN]│
+│  Month 24+ Abridge:  $432K value   vs   DAX: $358K  [+$74K/yr] │
+│                                                                 │
+│  💡 You're cash-flow positive from Month 18 onward, forever.  │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│  3-YEAR CUMULATIVE                                             │
+│                                                                 │
+│  DAX (stay):          3 × $358K = $1,074,000                  │
+│  Abridge (switch):    $87K + $173K + $432K = $692K Year 1-3   │
+│                       Then $432K/year forever                  │
+│                                                                 │
+│  Year 4+ value:       $432K - $358K = +$74K additional/year   │
+│  5-year advantage:    +$222,000                                │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
