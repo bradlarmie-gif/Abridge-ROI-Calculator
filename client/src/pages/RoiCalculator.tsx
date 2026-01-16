@@ -404,6 +404,37 @@ export default function RoiCalculator({
   const [scaleProviders, setScaleProviders] = useState<number>(50);
   const [scaleEncounters, setScaleEncounters] = useState<number>(100000);
   
+  // Step 4: Driver assumptions that can be edited via sliders
+  const [step4DriverAssumptions, setStep4DriverAssumptions] = useState<Record<string, Record<string, number>>>({});
+  
+  // Driver editable field definitions for Step 4 sliders
+  const DRIVER_EDITABLE_FIELDS: Record<string, { id: string; label: string; min: number; max: number; step: number; prefix?: string; suffix?: string; defaultValue: number }[]> = {
+    patient_access: [
+      { id: 'realizationFactor', label: 'Realization Rate', min: 5, max: 50, step: 1, suffix: '%', defaultValue: 20 },
+      { id: 'revenuePerVisit', label: 'Revenue per Visit', min: 100, max: 500, step: 10, prefix: '$', defaultValue: 200 },
+    ],
+    overtime: [
+      { id: 'afterHoursPercent', label: 'After-Hours Work', min: 5, max: 40, step: 1, suffix: '%', defaultValue: 15 },
+      { id: 'overtimeRate', label: 'Overtime Rate', min: 50, max: 250, step: 5, prefix: '$', suffix: '/hr', defaultValue: 145 },
+    ],
+    level_of_service: [
+      { id: 'wrvuUplift', label: 'wRVU Uplift', min: 1, max: 10, step: 0.5, suffix: '%', defaultValue: 3 },
+      { id: 'wrvuRate', label: 'wRVU Rate', min: 20, max: 60, step: 1, prefix: '$', defaultValue: 34 },
+    ],
+    retention: [
+      { id: 'turnoverReduction', label: 'Turnover Reduction', min: 1, max: 5, step: 1, suffix: ' clinicians', defaultValue: 1 },
+      { id: 'replacementCost', label: 'Replacement Cost', min: 100000, max: 500000, step: 25000, prefix: '$', defaultValue: 250000 },
+    ],
+    hcc: [
+      { id: 'captureImprovement', label: 'Capture Improvement', min: 1, max: 10, step: 1, suffix: '%', defaultValue: 3 },
+      { id: 'avgHccValue', label: 'Avg HCC Value', min: 500, max: 2000, step: 100, prefix: '$', defaultValue: 1000 },
+    ],
+    denials: [
+      { id: 'denialReduction', label: 'Denial Reduction', min: 5, max: 30, step: 1, suffix: '%', defaultValue: 15 },
+      { id: 'avgDenialValue', label: 'Avg Denial Value', min: 200, max: 1000, step: 50, prefix: '$', defaultValue: 500 },
+    ],
+  };
+  
   // Wizard step for driver comparison (0 = access, 1 = los, 2 = overtime, 3 = summary)
   const [currentDriverIndex, setCurrentDriverIndex] = useState(0);
   
@@ -417,6 +448,7 @@ export default function RoiCalculator({
     abridgeValue: number;
     competitorSteps: { label: string; value: string }[];
     abridgeSteps: { label: string; value: string }[];
+    assumptions: Record<string, number>; // Editable assumptions from Step 3
   }>>({});
   
   // All 6 drivers for Step 3 grid
@@ -5282,6 +5314,7 @@ export default function RoiCalculator({
                         abridgeValue: number;
                         competitorSteps: { label: string; value: string }[];
                         abridgeSteps: { label: string; value: string }[];
+                        assumptions: Record<string, number>;
                       }> = {
                         patient_access: {
                           id: 'patient_access',
@@ -5289,6 +5322,10 @@ export default function RoiCalculator({
                           gap: accessGap,
                           competitorValue: compAccessValue,
                           abridgeValue: abridgeAccessValue,
+                          assumptions: {
+                            realizationFactor: driverEditableFields.realizationFactor,
+                            revenuePerVisit: driverEditableFields.revenuePerVisit,
+                          },
                           competitorSteps: [
                             { label: 'Documented encounters', value: compDocEncounters.toLocaleString() },
                             { label: 'Time saved per encounter', value: `${compTimeSaved} min` },
@@ -5312,6 +5349,10 @@ export default function RoiCalculator({
                           gap: overtimeGap,
                           competitorValue: compOvertimeValue,
                           abridgeValue: abridgeOvertimeValue,
+                          assumptions: {
+                            afterHoursPercent: driverEditableFields.afterHoursPercent,
+                            overtimeRate: driverEditableFields.overtimeRate,
+                          },
                           competitorSteps: [
                             { label: 'Hours returned', value: `${Math.round(compHoursReturned).toLocaleString()} hrs` },
                             { label: '% after-hours work', value: `${driverEditableFields.afterHoursPercent}%` },
@@ -5331,6 +5372,10 @@ export default function RoiCalculator({
                           gap: losGap,
                           competitorValue: compLosValue,
                           abridgeValue: abridgeLosValue,
+                          assumptions: {
+                            wrvuUplift: Math.round(abridgeQualityLift * 100),
+                            wrvuRate: driverEditableFields.wrvuRate,
+                          },
                           competitorSteps: [
                             { label: 'Documented encounters', value: compDocEncounters.toLocaleString() },
                             { label: 'Baseline wRVU/encounter', value: `${driverEditableFields.baselineWrvuPerEncounter}` },
@@ -5352,6 +5397,10 @@ export default function RoiCalculator({
                           gap: Math.round(0.02 * providerCount * 250000), // 2% retention improvement * avg replacement cost
                           competitorValue: 0,
                           abridgeValue: Math.round(0.02 * providerCount * 250000),
+                          assumptions: {
+                            turnoverReduction: 1,
+                            replacementCost: 250000,
+                          },
                           competitorSteps: [
                             { label: 'Provider count', value: providerCount.toLocaleString() },
                             { label: 'Baseline turnover rate', value: '15%' },
@@ -5371,6 +5420,10 @@ export default function RoiCalculator({
                           gap: Math.round(abridgeDocEncounters * 0.05 * 0.3 * 1500), // 5% improvement * 30% MA * $1500/HCC
                           competitorValue: 0,
                           abridgeValue: Math.round(abridgeDocEncounters * 0.05 * 0.3 * 1500),
+                          assumptions: {
+                            captureImprovement: 5,
+                            avgHccValue: 1500,
+                          },
                           competitorSteps: [
                             { label: 'Medicare Advantage patients', value: `${Math.round(compDocEncounters * 0.3).toLocaleString()}` },
                             { label: 'HCC gap closure rate', value: '0%' },
@@ -5388,6 +5441,10 @@ export default function RoiCalculator({
                           gap: Math.round(abridgeDocEncounters * 0.02 * 0.25 * 500), // 2% denial rate * 25% reduction * $500/denial
                           competitorValue: 0,
                           abridgeValue: Math.round(abridgeDocEncounters * 0.02 * 0.25 * 500),
+                          assumptions: {
+                            denialReduction: 25,
+                            avgDenialValue: 500,
+                          },
                           competitorSteps: [
                             { label: 'Claims volume', value: compDocEncounters.toLocaleString() },
                             { label: 'Documentation denial rate', value: '2%' },
@@ -5748,27 +5805,121 @@ export default function RoiCalculator({
                   </div>
                 )}
                 
-                {/* Step 4: The Opportunity at Scale */}
+                {/* Step 4: The Opportunity at Scale - Rebuilt with Driver Integration */}
                 {competitorStep === 4 && selectedCompetitor && (() => {
                   // Get baseline values from Step 2
                   const originalProviders = typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders;
                   const originalEncounters = inputs.annualOutpatientEncounters;
                   
+                  // Get configured drivers from Step 3
+                  const step3Drivers = Object.values(configuredDrivers);
+                  
+                  // Initialize assumptions if not already set
+                  const getDriverAssumptions = (driverId: string) => {
+                    const saved = step4DriverAssumptions[driverId];
+                    if (saved) return saved;
+                    const fields = DRIVER_EDITABLE_FIELDS[driverId] || [];
+                    const configured = configuredDrivers[driverId]?.assumptions || {};
+                    const defaults: Record<string, number> = {};
+                    fields.forEach(f => {
+                      defaults[f.id] = configured[f.id] ?? f.defaultValue;
+                    });
+                    return defaults;
+                  };
+                  
                   // Scale factor for calculations (with protection against division by zero)
                   const scaleFactor = originalEncounters > 0 ? scaleEncounters / originalEncounters : 1;
                   
-                  // Calculate base annual values from Step 3 gap analysis
-                  // Note: userTotal represents the competitor's value (what user currently gets from their existing solution)
-                  const baseAbridgeAnnualValue = totalComparison.access.abridgeTotal + 
-                    (enabledDriverCards.overtime ? totalComparison.overtime.abridgeTotal : 0) + 
-                    (enabledDriverCards.los ? totalComparison.los.abridgeTotal : 0);
-                  const baseCompAnnualValue = totalComparison.access.userTotal + 
-                    (enabledDriverCards.overtime ? totalComparison.overtime.userTotal : 0) + 
-                    (enabledDriverCards.los ? totalComparison.los.userTotal : 0);
+                  // Recalculate driver values based on current assumptions
+                  const recalculateDriver = (driverId: string, assumptions: Record<string, number>, baseGap: number) => {
+                    // Get original assumptions to calculate adjustment factor
+                    const originalAssumptions = configuredDrivers[driverId]?.assumptions || {};
+                    
+                    switch (driverId) {
+                      case 'patient_access': {
+                        const origRealization = originalAssumptions.realizationFactor || 20;
+                        const origRevenue = originalAssumptions.revenuePerVisit || 200;
+                        const newRealization = assumptions.realizationFactor || origRealization;
+                        const newRevenue = assumptions.revenuePerVisit || origRevenue;
+                        // Adjust gap proportionally based on assumption changes
+                        const adjustmentFactor = (newRealization / origRealization) * (newRevenue / origRevenue);
+                        return baseGap * adjustmentFactor;
+                      }
+                      case 'overtime': {
+                        const origAfterHours = originalAssumptions.afterHoursPercent || 15;
+                        const origRate = originalAssumptions.overtimeRate || 145;
+                        const newAfterHours = assumptions.afterHoursPercent || origAfterHours;
+                        const newRate = assumptions.overtimeRate || origRate;
+                        const adjustmentFactor = (newAfterHours / origAfterHours) * (newRate / origRate);
+                        return baseGap * adjustmentFactor;
+                      }
+                      case 'level_of_service': {
+                        const origUplift = originalAssumptions.wrvuUplift || 3;
+                        const origRate = originalAssumptions.wrvuRate || 34;
+                        const newUplift = assumptions.wrvuUplift || origUplift;
+                        const newRate = assumptions.wrvuRate || origRate;
+                        const adjustmentFactor = (newUplift / origUplift) * (newRate / origRate);
+                        return baseGap * adjustmentFactor;
+                      }
+                      case 'retention': {
+                        const origTurnover = originalAssumptions.turnoverReduction || 1;
+                        const origCost = originalAssumptions.replacementCost || 250000;
+                        const newTurnover = assumptions.turnoverReduction || origTurnover;
+                        const newCost = assumptions.replacementCost || origCost;
+                        const adjustmentFactor = (newTurnover / origTurnover) * (newCost / origCost);
+                        return baseGap * adjustmentFactor;
+                      }
+                      case 'hcc': {
+                        const origCapture = originalAssumptions.captureImprovement || 5;
+                        const origValue = originalAssumptions.avgHccValue || 1500;
+                        const newCapture = assumptions.captureImprovement || origCapture;
+                        const newValue = assumptions.avgHccValue || origValue;
+                        const adjustmentFactor = (newCapture / origCapture) * (newValue / origValue);
+                        return baseGap * adjustmentFactor;
+                      }
+                      case 'denials': {
+                        const origReduction = originalAssumptions.denialReduction || 25;
+                        const origValue = originalAssumptions.avgDenialValue || 500;
+                        const newReduction = assumptions.denialReduction || origReduction;
+                        const newValue = assumptions.avgDenialValue || origValue;
+                        const adjustmentFactor = (newReduction / origReduction) * (newValue / origValue);
+                        return baseGap * adjustmentFactor;
+                      }
+                      default:
+                        return baseGap;
+                    }
+                  };
                   
-                  // Scale values
-                  const scaledAbridgeAnnualValue = baseAbridgeAnnualValue * scaleFactor;
-                  const scaledCompAnnualValue = baseCompAnnualValue * scaleFactor;
+                  // Calculate scaled values for each configured driver with recalculation
+                  const scaledDrivers = step3Drivers.map(driver => {
+                    const assumptions = getDriverAssumptions(driver.id);
+                    // Recalculate gap based on current assumption values
+                    const recalculatedGap = recalculateDriver(driver.id, assumptions, driver.gap);
+                    const recalculatedAbridgeValue = recalculateDriver(driver.id, assumptions, driver.abridgeValue);
+                    const recalculatedCompetitorValue = driver.competitorValue; // Competitor value stays same
+                    
+                    // Then apply scale factor
+                    const scaledGap = recalculatedGap * scaleFactor;
+                    const scaledAbridgeValue = recalculatedAbridgeValue * scaleFactor;
+                    const scaledCompetitorValue = recalculatedCompetitorValue * scaleFactor;
+                    
+                    return {
+                      ...driver,
+                      scaledGap,
+                      scaledAbridgeValue,
+                      scaledCompetitorValue,
+                      assumptions,
+                    };
+                  });
+                  
+                  // Calculate totals from configured drivers
+                  const totalAbridgeValue = scaledDrivers.reduce((sum, d) => sum + d.scaledAbridgeValue, 0);
+                  const totalCompetitorValue = scaledDrivers.reduce((sum, d) => sum + d.scaledCompetitorValue, 0);
+                  const totalGap = scaledDrivers.reduce((sum, d) => sum + d.scaledGap, 0);
+                  
+                  // Use configured drivers totals instead of old totals
+                  const scaledAbridgeAnnualValue = totalAbridgeValue || 0;
+                  const scaledCompAnnualValue = totalCompetitorValue || 0;
                   
                   // Ramp factors (Abridge ramps up, competitor stays flat)
                   const RAMP_FACTORS = { year1: 0.4, year2: 0.7, year3: 1.0 };
@@ -6077,7 +6228,103 @@ export default function RoiCalculator({
                         </div>
                       </section>
                       
-                      {/* Section 4: Summary + CTA */}
+                      {/* Section 4: Driver Controls with Sliders */}
+                      {scaledDrivers.length > 0 && (
+                        <section className="mb-8">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <div className="text-sm font-medium text-[#6B7280] uppercase tracking-wide">
+                                Your Value Drivers
+                              </div>
+                              <p className="text-sm text-[#9CA3AF] mt-1">
+                                Adjust assumptions and see real-time impact on the chart
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            {scaledDrivers.map(driver => {
+                              const driverDef = ALL_DRIVERS.find(d => d.id === driver.id);
+                              if (!driverDef) return null;
+                              const DriverIcon = driverDef.Icon;
+                              const editableFields = DRIVER_EDITABLE_FIELDS[driver.id] || [];
+                              
+                              return (
+                                <div 
+                                  key={driver.id}
+                                  className="bg-white border border-gray-200 rounded-xl p-5"
+                                  data-testid={`driver-control-card-${driver.id}`}
+                                >
+                                  <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 rounded-lg bg-[#FEF2F0] flex items-center justify-center">
+                                        <DriverIcon className="w-4 h-4 text-[#E85D3F]" />
+                                      </div>
+                                      <span className="font-medium text-gray-900">{driver.label}</span>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-lg font-semibold text-[#E85D3F] tabular-nums">
+                                        +{formatCurrency(driver.scaledGap)}
+                                      </div>
+                                      <div className="text-xs text-gray-400">at scale / year</div>
+                                    </div>
+                                  </div>
+                                  
+                                  {editableFields.length > 0 && (
+                                    <div className="space-y-3 mb-4">
+                                      {editableFields.map(field => {
+                                        const currentValue = driver.assumptions[field.id] ?? field.defaultValue;
+                                        return (
+                                          <div key={field.id} className="flex items-center justify-between gap-4">
+                                            <label className="text-sm text-gray-600 flex-shrink-0">
+                                              {field.label}
+                                            </label>
+                                            <div className="flex items-center gap-2">
+                                              <input
+                                                type="range"
+                                                min={field.min}
+                                                max={field.max}
+                                                step={field.step}
+                                                value={currentValue}
+                                                onChange={(e) => {
+                                                  const newValue = Number(e.target.value);
+                                                  setStep4DriverAssumptions(prev => ({
+                                                    ...prev,
+                                                    [driver.id]: {
+                                                      ...getDriverAssumptions(driver.id),
+                                                      [field.id]: newValue
+                                                    }
+                                                  }));
+                                                }}
+                                                className="w-24 h-1 bg-gray-200 rounded-full appearance-none cursor-pointer slider-orange"
+                                                data-testid={`slider-${driver.id}-${field.id}`}
+                                              />
+                                              <span className="text-sm font-medium text-gray-900 w-20 text-right tabular-nums">
+                                                {field.prefix}{currentValue.toLocaleString()}{field.suffix}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex items-center justify-between text-sm pt-3 border-t border-gray-100">
+                                    <div className="text-gray-500">
+                                      <span className="text-gray-400">Current:</span> {formatCurrency(driver.scaledCompetitorValue)}/yr
+                                    </div>
+                                    <div className="text-gray-500">
+                                      <span className="text-[#E85D3F]">Abridge:</span> {formatCurrency(driver.scaledAbridgeValue)}/yr
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </section>
+                      )}
+                      
+                      {/* Section 5: Summary + CTA */}
                       <section>
                         <div className="bg-gradient-to-br from-[#FEF3F2] to-[#FECACA]/50 border border-[#FECACA] rounded-xl p-8 mb-6">
                           <div className="flex items-center justify-between">
