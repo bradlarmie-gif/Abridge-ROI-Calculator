@@ -100,6 +100,7 @@ import {
   Briefcase,
   ShieldCheck,
   FileWarning,
+  Lightbulb,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -6374,8 +6375,29 @@ export default function RoiCalculator({
                               <div className="text-sm text-[#6B7280] mb-4">per year</div>
                               
                               {scaleFactor > 1 && (
-                                <div className="text-sm text-[#6B7280]">
-                                  That's <span className="font-semibold text-[#E85D3F]">{scaleFactor.toFixed(1)}x</span> what you're currently missing
+                                <div className="mt-4 p-4 bg-white/50 rounded-lg border border-[#FECACA]">
+                                  <div className="flex items-start gap-3">
+                                    <Lightbulb className="w-5 h-5 text-[#E85D3F] flex-shrink-0 mt-0.5" />
+                                    <div className="text-left">
+                                      <div className="text-sm font-semibold text-[#374151] mb-2">
+                                        That's <span className="text-[#E85D3F]">{scaleFactor.toFixed(1)}x</span> what you're currently missing
+                                      </div>
+                                      <div className="text-xs text-[#6B7280] space-y-1">
+                                        <div className="flex justify-between">
+                                          <span>At current scale:</span>
+                                          <span className="font-medium tabular-nums">{formatCurrency(step3Drivers.reduce((sum, d) => sum + d.gap, 0))}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span>At expansion:</span>
+                                          <span className="font-medium text-[#E85D3F] tabular-nums">{formatCurrency(totalGap)}</span>
+                                        </div>
+                                        <div className="flex justify-between pt-1 border-t border-[#FECACA]">
+                                          <span>Difference:</span>
+                                          <span className="font-semibold text-[#E85D3F] tabular-nums">+{formatCurrency(totalGap - step3Drivers.reduce((sum, d) => sum + d.gap, 0))} more per year</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               )}
                               
@@ -6429,25 +6451,25 @@ export default function RoiCalculator({
                                   </div>
                                   
                                   {/* Comparison Grid */}
-                                  <div className="grid grid-cols-3 gap-6 mb-5">
-                                    <div>
-                                      <div className="text-xs text-[#9CA3AF] mb-1">With {selectedCompetitor?.name || "competitor"}</div>
-                                      <div className="text-2xl font-semibold text-[#6B7280] tabular-nums">
+                                  <div className="grid grid-cols-[1fr_auto_1fr] gap-4 mb-5">
+                                    <div className="text-center p-4 bg-[#F9FAFB] rounded-lg">
+                                      <div className="text-xs text-[#9CA3AF] uppercase tracking-wide mb-2">With {selectedCompetitor?.name || "competitor"}</div>
+                                      <div className="text-3xl font-bold text-[#374151] tabular-nums">
                                         {formatCurrency(driver.scaledCompetitorValue)}
                                       </div>
-                                      <div className="text-sm text-[#9CA3AF]">value</div>
+                                      <div className="text-sm text-[#9CA3AF] mt-1">value</div>
                                     </div>
                                     
                                     <div className="flex items-center justify-center">
-                                      <ArrowRight className="w-5 h-5 text-[#D1D5DB]" />
+                                      <ArrowRight className="w-6 h-6 text-[#E85D3F]" />
                                     </div>
                                     
-                                    <div>
-                                      <div className="text-xs text-[#E85D3F] mb-1">With Abridge</div>
-                                      <div className="text-2xl font-semibold text-[#E85D3F] tabular-nums">
+                                    <div className="text-center p-4 bg-[#FEF3F2] rounded-lg">
+                                      <div className="text-xs text-[#E85D3F] uppercase tracking-wide mb-2">With Abridge</div>
+                                      <div className="text-3xl font-bold text-[#E85D3F] tabular-nums">
                                         {formatCurrency(driver.scaledAbridgeValue)}
                                       </div>
-                                      <div className="text-sm text-[#E85D3F]/70">value</div>
+                                      <div className="text-sm text-[#E85D3F]/70 mt-1">value</div>
                                     </div>
                                   </div>
                                   
@@ -6481,29 +6503,34 @@ export default function RoiCalculator({
                         
                         {/* Toggle for current vs expansion */}
                         {showExpansion && (
-                          <div className="flex items-center justify-center mb-6">
-                            <div className="inline-flex items-center bg-[#F3F4F6] rounded-lg p-1">
+                          <div className="mb-6">
+                            <div className="text-sm text-[#6B7280] text-center mb-3">View by:</div>
+                            <div className="flex items-center justify-center gap-3">
                               <button
                                 onClick={() => setChartView('current')}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                className={`px-5 py-4 rounded-xl text-center transition-all min-w-[140px] ${
                                   chartView === 'current'
-                                    ? 'bg-white text-[#111827] shadow-sm'
-                                    : 'text-[#6B7280] hover:text-[#374151]'
+                                    ? 'bg-white text-[#111827] shadow-md border border-[#E5E7EB]'
+                                    : 'bg-[#F3F4F6] text-[#6B7280] border border-transparent'
                                 }`}
                                 data-testid="button-chart-view-current"
                               >
-                                Current Scale
+                                <div className="font-semibold">Current Scale</div>
+                                <div className="text-xs mt-1 tabular-nums">{originalProviders} providers</div>
+                                <div className="text-xs tabular-nums">{(originalEncounters / 1000).toFixed(0)}K visits</div>
                               </button>
                               <button
                                 onClick={() => setChartView('expansion')}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                className={`px-5 py-4 rounded-xl text-center transition-all min-w-[140px] ${
                                   chartView === 'expansion'
-                                    ? 'bg-white text-[#111827] shadow-sm'
-                                    : 'text-[#6B7280] hover:text-[#374151]'
+                                    ? 'bg-white text-[#111827] shadow-md border border-[#E5E7EB]'
+                                    : 'bg-[#F3F4F6] text-[#6B7280] border border-transparent'
                                 }`}
                                 data-testid="button-chart-view-expansion"
                               >
-                                Expansion Scale
+                                <div className="font-semibold">Expansion Scale</div>
+                                <div className="text-xs mt-1 tabular-nums">{scaleProviders} providers</div>
+                                <div className="text-xs tabular-nums">{(scaleEncounters / 1000).toFixed(0)}K visits</div>
                               </button>
                             </div>
                           </div>
@@ -6634,29 +6661,41 @@ export default function RoiCalculator({
                             </div>
                             
                             {showExpansion ? (
-                              <div className="grid grid-cols-2 gap-8 max-w-2xl mx-auto mb-6">
-                                <div>
-                                  <div className="text-xs text-[#9CA3AF] mb-2">At Current Scale</div>
-                                  <div className="text-3xl font-bold tabular-nums">
-                                    +{formatCurrency(currentThreeYearGap)}
+                              <>
+                                <div className="text-sm text-[#9CA3AF] mb-6">
+                                  by staying with {selectedCompetitor?.name || "your current solution"}
+                                </div>
+                                <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto mb-6">
+                                  <div className="bg-[#374151]/50 rounded-xl p-6 text-left">
+                                    <div className="text-xs text-[#9CA3AF] uppercase tracking-wide mb-3">At Current Scale</div>
+                                    <div className="text-4xl font-bold tabular-nums text-white mb-3">
+                                      +{formatCurrency(currentThreeYearGap)}
+                                    </div>
+                                    <div className="text-xs text-[#9CA3AF] tabular-nums">
+                                      {originalProviders} providers · {(originalEncounters / 1000).toFixed(0)}K encounters
+                                    </div>
+                                  </div>
+                                  <div className="bg-[#E85D3F]/20 border border-[#E85D3F]/40 rounded-xl p-6 text-left">
+                                    <div className="text-xs text-[#E85D3F] uppercase tracking-wide mb-3">At Expansion Scale</div>
+                                    <div className="text-4xl font-bold text-[#E85D3F] tabular-nums mb-3">
+                                      +{formatCurrency(expansionThreeYearGap)}
+                                    </div>
+                                    <div className="text-xs text-[#9CA3AF] tabular-nums">
+                                      {scaleProviders} providers · {(scaleEncounters / 1000).toFixed(0)}K encounters
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="border-l border-[#374151] pl-8">
-                                  <div className="text-xs text-[#9CA3AF] mb-2">At Expansion Scale</div>
-                                  <div className="text-3xl font-bold text-[#E85D3F] tabular-nums">
-                                    +{formatCurrency(expansionThreeYearGap)}
-                                  </div>
-                                </div>
-                              </div>
+                              </>
                             ) : (
-                              <div className="text-5xl font-bold mb-3 tabular-nums">
-                                +{formatCurrency(currentThreeYearGap)}
-                              </div>
+                              <>
+                                <div className="text-5xl font-bold mb-3 tabular-nums">
+                                  +{formatCurrency(currentThreeYearGap)}
+                                </div>
+                                <div className="text-[#9CA3AF] mb-8">
+                                  by staying with {selectedCompetitor?.name || "your current solution"}
+                                </div>
+                              </>
                             )}
-                            
-                            <div className="text-[#9CA3AF] mb-8">
-                              by staying with {selectedCompetitor?.name || "your current solution"}
-                            </div>
                             
                             <div className="flex items-center justify-center gap-4">
                               <Button 
