@@ -1907,15 +1907,15 @@ export default function RoiCalculator({
 
             {/* Removed driver toast */}
             {removedDriverToast && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between">
-                <p className="text-sm text-amber-800">
+              <div className="bg-[#FEF3F2] border border-[#FECACA] rounded-lg p-3 flex items-center justify-between">
+                <p className="text-sm text-[#DC4A2C]">
                   {removedDriverToast} removed. You can add it back with the "Add Driver" button above.
                 </p>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setRemovedDriverToast(null)}
-                  className="text-amber-600"
+                  className="text-[#E85D3F]"
                 >
                   Dismiss
                 </Button>
@@ -2075,9 +2075,9 @@ export default function RoiCalculator({
                             </div>
 
                             {/* Helper note */}
-                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
-                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                              <p className="text-xs text-amber-800">
+                            <div className="flex items-start gap-2 p-3 bg-[#FEF3F2] rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-[#E85D3F] mt-0.5 shrink-0" />
+                              <p className="text-xs text-[#DC4A2C]">
                                 Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
                               </p>
                             </div>
@@ -2181,9 +2181,9 @@ export default function RoiCalculator({
                             </div>
 
                             {/* Helper note */}
-                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
-                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                              <p className="text-xs text-amber-800">
+                            <div className="flex items-start gap-2 p-3 bg-[#FEF3F2] rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-[#E85D3F] mt-0.5 shrink-0" />
+                              <p className="text-xs text-[#DC4A2C]">
                                 Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
                               </p>
                             </div>
@@ -2284,9 +2284,9 @@ export default function RoiCalculator({
                             </div>
 
                             {/* Helper note */}
-                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
-                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                              <p className="text-xs text-amber-800">
+                            <div className="flex items-start gap-2 p-3 bg-[#FEF3F2] rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-[#E85D3F] mt-0.5 shrink-0" />
+                              <p className="text-xs text-[#DC4A2C]">
                                 Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
                               </p>
                             </div>
@@ -2406,9 +2406,9 @@ export default function RoiCalculator({
                             </div>
 
                             {/* Helper note */}
-                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
-                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                              <p className="text-xs text-amber-800">
+                            <div className="flex items-start gap-2 p-3 bg-[#FEF3F2] rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-[#E85D3F] mt-0.5 shrink-0" />
+                              <p className="text-xs text-[#DC4A2C]">
                                 Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
                               </p>
                             </div>
@@ -2513,9 +2513,9 @@ export default function RoiCalculator({
                             </div>
 
                             {/* Helper note */}
-                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
-                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                              <p className="text-xs text-amber-800">
+                            <div className="flex items-start gap-2 p-3 bg-[#FEF3F2] rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-[#E85D3F] mt-0.5 shrink-0" />
+                              <p className="text-xs text-[#DC4A2C]">
                                 Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
                               </p>
                             </div>
@@ -2605,9 +2605,9 @@ export default function RoiCalculator({
                             </div>
 
                             {/* Helper note */}
-                            <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
-                              <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                              <p className="text-xs text-amber-800">
+                            <div className="flex items-start gap-2 p-3 bg-[#FEF3F2] rounded-lg">
+                              <Lightbulb className="h-4 w-4 text-[#E85D3F] mt-0.5 shrink-0" />
+                              <p className="text-xs text-[#DC4A2C]">
                                 Click [Edit] next to any value to adjust. Changes update all calculations in real-time.
                               </p>
                             </div>
@@ -4967,19 +4967,19 @@ export default function RoiCalculator({
                           </div>
                           
                           {/* Calculated Summary */}
-                          <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
-                            <div className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">Calculated Summary</div>
-                            <div className="grid grid-cols-2 gap-4">
+                          <div className="p-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                            <div className="text-[11px] font-bold text-[#6B7280] uppercase tracking-[0.1em] mb-5">Calculated Summary</div>
+                            <div className="grid grid-cols-2 gap-8">
                               <div>
-                                <div className="text-[13px] text-[#6B7280]">Annual {selectedCompetitor.name} Cost</div>
-                                <div className="text-[20px] font-bold text-[#111827] font-mono">
+                                <div className="text-[13px] text-[#6B7280] mb-2">Annual {selectedCompetitor.name} Cost</div>
+                                <div className="text-[28px] font-bold text-[#111827] tabular-nums mb-1">
                                   {formatCurrency(competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12)}
                                 </div>
-                                <div className="text-[12px] text-[#9CA3AF]">${competitorCostPerProvider}/provider × {typeof competitorProviderCount === "number" ? competitorProviderCount : 0} × 12</div>
+                                <div className="text-[12px] text-[#9CA3AF] tabular-nums">${competitorCostPerProvider}/provider/mo</div>
                               </div>
-                              <div>
-                                <div className="text-[13px] text-[#6B7280]">Current Annual Time Saved</div>
-                                <div className="text-[20px] font-bold text-[#111827] font-mono">
+                              <div className="border-l border-[#E5E7EB] pl-8">
+                                <div className="text-[13px] text-[#6B7280] mb-2">Current Annual Time Saved</div>
+                                <div className="text-[28px] font-bold text-[#111827] tabular-nums mb-1">
                                   {(() => {
                                     const providers = typeof competitorProviderCount === "number" ? competitorProviderCount : 0;
                                     const monthlyEncounters = Math.round(inputs.annualOutpatientEncounters / 12 * (providers / inputs.numberOfProviders));
@@ -4987,7 +4987,7 @@ export default function RoiCalculator({
                                     return annualHours.toLocaleString();
                                   })()} hours
                                 </div>
-                                <div className="text-[12px] text-[#9CA3AF]">@ {competitorUtilization}% utilization</div>
+                                <div className="text-[12px] text-[#9CA3AF]">at {competitorUtilization}% utilization</div>
                               </div>
                             </div>
                           </div>
@@ -5109,7 +5109,7 @@ export default function RoiCalculator({
                                     <span className="text-sm font-medium text-[#E85D3F] tabular-nums">+{adoptionDelta}%</span>
                                   )}
                                 </div>
-                                <div className="text-sm text-[#E85D3F]/70">Abridge average</div>
+                                <div className="text-sm text-[#DC4A2C]">Abridge average</div>
                               </div>
                             </div>
                             
@@ -5135,7 +5135,7 @@ export default function RoiCalculator({
                                       <span className="text-sm font-medium text-[#E85D3F] tabular-nums">+{timeDeltaPct}%</span>
                                     )}
                                   </div>
-                                  <div className="text-sm text-[#E85D3F]/70">per encounter</div>
+                                  <div className="text-sm text-[#DC4A2C]">per encounter</div>
                                 </div>
                               </div>
                             )}
@@ -5160,7 +5160,7 @@ export default function RoiCalculator({
                                     <span className="text-sm font-medium text-[#E85D3F] tabular-nums">Save {formatCurrency(costDiff)}</span>
                                   )}
                                 </div>
-                                <div className="text-sm text-[#E85D3F]/70">$180/provider/mo</div>
+                                <div className="text-sm text-[#DC4A2C]">$180/provider/mo</div>
                               </div>
                             </div>
                           </div>
@@ -6468,7 +6468,7 @@ export default function RoiCalculator({
                                       <div className="text-3xl font-bold text-[#E85D3F] tabular-nums">
                                         {formatCurrency(driver.scaledAbridgeValue)}
                                       </div>
-                                      <div className="text-sm text-[#E85D3F]/70 mt-1">value</div>
+                                      <div className="text-sm text-[#DC4A2C] mt-1">value</div>
                                     </div>
                                   </div>
                                   
@@ -7666,7 +7666,7 @@ export default function RoiCalculator({
                     </p>
                   </div>
                   {selectedScenariosForCompare.size >= 3 && (
-                    <p className="text-[13px] text-amber-600 mt-2">
+                    <p className="text-[13px] text-[#E85D3F] mt-2">
                       Maximum 3 scenarios for comparison. Deselect one to choose another.
                     </p>
                   )}
@@ -7837,9 +7837,9 @@ export default function RoiCalculator({
                   </div>
 
                   {/* Key Insight */}
-                  <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-200">
-                    <h4 className="text-sm font-bold text-amber-800 mb-2">Key Insight</h4>
-                    <p className="text-sm text-amber-700">
+                  <div className="mt-6 p-4 bg-[#FEF3F2] rounded-xl border border-[#FECACA]">
+                    <h4 className="text-sm font-bold text-[#DC4A2C] mb-2">Key Insight</h4>
+                    <p className="text-sm text-[#DC4A2C]">
                       Expanding to {scenario.providers} providers (from {inputs.numberOfProviders}) with {scenario.utilizationRate}% utilization generates {(scenario.totalBenefit / totalAnnualBenefit).toFixed(1)}x more value while maintaining strong ROI ({scenario.roiMultiple.toFixed(1)}x).
                       {scenario.maPopulationPct > 20 && inputs.levers.hcc && ` Higher Medicare Advantage population (${scenario.maPopulationPct}%) increases HCC Capture value.`}
                       {scenario.utilizationRate - inputs.abridgeUtilizationPct > 10 && ` Increased utilization (${scenario.utilizationRate}% vs ${inputs.abridgeUtilizationPct}%) improves value realization across all drivers.`}
@@ -8075,7 +8075,7 @@ export default function RoiCalculator({
                         <p className="text-xs text-neutral-500 mt-1">Percentage of patients in MA plans</p>
                         <p className="text-xs text-neutral-400">Impacts: HCC Capture driver value</p>
                         {!inputs.levers.hcc && scenarioForm.maPopulationPct > 20 && (
-                          <p className="text-xs text-amber-600 mt-1">
+                          <p className="text-xs text-[#E85D3F] mt-1">
                             Increasing MA % above 20% may make HCC Capture relevant - you can add it later
                           </p>
                         )}
@@ -8184,8 +8184,8 @@ export default function RoiCalculator({
                       </div>
 
                       {/* Info callout */}
-                      <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                        <p className="text-xs text-amber-700">
+                      <div className="p-3 bg-[#FEF3F2] rounded-lg border border-[#FECACA]">
+                        <p className="text-xs text-[#DC4A2C]">
                           Advanced inputs apply ONLY to this scenario. Your baseline model remains unchanged. These help model expansions into different specialties, populations, or care settings.
                         </p>
                       </div>
@@ -8566,11 +8566,11 @@ export default function RoiCalculator({
                 {exportForm.customNotes.length} / 1000 characters
               </p>
 
-              <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                <p className="text-xs text-amber-700">
+              <div className="mt-4 p-3 bg-[#FEF3F2] rounded-lg border border-[#FECACA]">
+                <p className="text-xs text-[#DC4A2C]">
                   Use this space to:
                 </p>
-                <ul className="text-xs text-amber-600 mt-1 space-y-0.5 list-disc list-inside">
+                <ul className="text-xs text-[#E85D3F] mt-1 space-y-0.5 list-disc list-inside">
                   <li>Provide organizational context</li>
                   <li>Highlight key priorities or constraints</li>
                   <li>Add next steps or recommendations</li>
