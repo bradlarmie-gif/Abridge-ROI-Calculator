@@ -1,0 +1,356 @@
+What's Wrong:
+CopyCurrent layout problems:
+1. Two columns feel unbalanced (left is shorter than right)
+2. "Typical Abridge customer" labels are tiny/hard to see
+3. The cost delta banner is too subtle (light green bg)
+4. Providers/Utilization/Time saved aren't visually aligned
+5. No clear "winner" framing
+What to Tell Replit:
+CopyREDESIGN Step 2 (Deployment Confirmation):
+
+Make it a TRUE side-by-side comparison with clear visual hierarchy:
+
+┌─────────────────────────────────────────────────────────────┐
+│  Confirm Your DAX (Nuance) Deployment                       │
+│  ─────────────────────────────────────────────────────────  │
+│                                                              │
+│  ┌──────────────────────┐        ┌──────────────────────┐  │
+│  │  ⚖️ Current: DAX     │        │ 🎯 Switch to:       │  │
+│  │     (Nuance)         │   VS   │    Abridge           │  │
+│  └──────────────────────┘        └──────────────────────┘  │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │                 DAX          →        Abridge          │ │
+│  ├────────────────────────────────────────────────────────┤ │
+│  │ Providers        70                   70               │ │
+│  │ Utilization      50%                  65%  ⬆️ +15%     │ │
+│  │ Time Saved       2 min/enc            2.5 min  ⬆️ +0.5 │ │
+│  │ Annual Cost      $151,200             $90,000  ⬇️ Save │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  💰 COST IMPACT                                        │ │
+│  │  Abridge costs $61,200 LESS per year                   │ │
+│  │  (40% cost reduction vs DAX)                           │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  💡 What's Next                                             │
+│  In the next step, compare what value DAX delivers vs       │
+│  what Abridge customers achieve. Enter per-provider         │
+│  metrics to see your total opportunity.                     │
+│                                                              │
+│  [← Back]                    [Continue to Value Comparison →]│
+└─────────────────────────────────────────────────────────────┘
+Key changes:
+
+Single comparison table (not two separate boxes)
+Show deltas inline (⬆️ +15%, ⬇️ Save $61K)
+Make cost impact a hero callout (green bg, large text)
+Add percentage context ("40% cost reduction")
+
+CSS:
+cssCopy.comparison-table {
+  width: 100%;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.comparison-table th {
+  background: #f9fafb;
+  padding: 16px;
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.comparison-table td {
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.comparison-table td:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: #374151;
+}
+
+.comparison-table .delta {
+  color: #10b981;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.cost-impact-banner {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin: 24px 0;
+}
+
+.cost-impact-banner .amount {
+  font-size: 32px;
+  font-weight: 800;
+  color: #065f46;
+  display: block;
+}
+
+.cost-impact-banner .context {
+  font-size: 16px;
+  color: #047857;
+  margin-top: 8px;
+}
+
+❌ ISSUE 2: Only Showing 3 of 6 Drivers
+What's Wrong:
+You're only showing:
+
+Patient Access (expanded)
+Accurate Level of Service (collapsed)
+Overtime & Locum Savings (collapsed)
+
+Missing:
+4. Clinician Retention
+5. Denial Reduction
+6. HCC Capture
+What to Tell Replit:
+CopyFIX: Show ALL active drivers from baseline
+
+In ComparisonView component:
+
+// Get active drivers from baseline
+const activeDrivers = Object.keys(baseline.benefits).filter(
+  driver => baseline.benefits[driver] > 0
+);
+
+// Render ALL active drivers
+{activeDrivers.map(driver => (
+  <DriverComparisonCard 
+    key={driver}
+    driverName={driver}
+    isExpanded={expandedDriver === driver}
+    onToggle={() => setExpandedDriver(expandedDriver === driver ? null : driver)}
+  />
+))}
+
+// Default: First driver expanded, rest collapsed
+const [expandedDriver, setExpandedDriver] = useState(activeDrivers[0]);
+Display order (most valuable first):
+
+Patient Access (usually largest)
+Accurate Level of Service
+Clinician Retention
+HCC Capture
+Overtime & Locum Savings
+Denial Reduction
+
+
+❌ ISSUE 3: Total Opportunity is Too Small/Hard to Read
+What's Wrong:
+Looking at your screenshot:
+
+"Total Opportunity" section is at the bottom
+Numbers are hard to see
+No clear visual hierarchy showing the delta
+Buried below the driver cards
+
+What to Tell Replit:
+CopyREDESIGN Total Opportunity section:
+
+Make it HUGE and unmissable. This is the punchline.
+
+┌──────────────────────────────────────────────────────────────┐
+│                      TOTAL OPPORTUNITY                        │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                               │
+│              Additional Annual Value with Abridge             │
+│                                                               │
+│                      +$1,088,750                              │
+│                                                               │
+│         Based on 50 providers switching from DAX              │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│  VALUE BREAKDOWN                                              │
+│  ─────────────────────────────────────────────────────────   │
+│                                                               │
+│  Value Driver              DAX         Abridge      Delta    │
+│  ────────────────────────────────────────────────────────── │
+│  Patient Access         $700,000    $1,200,000   +$500,000  │
+│  Level of Service        $60,000      $250,000   +$190,000  │
+│  Overtime Savings        $72,500      $471,250   +$398,750  │
+│  Clinician Retention          $0      $100,000   +$100,000  │
+│  Denial Reduction             $0       $97,500    +$97,500  │
+│  HCC Capture                  $0            $0          $0   │
+│  ────────────────────────────────────────────────────────── │
+│  TOTAL                  $832,500    $2,118,750 +$1,286,250  │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+Styling for hero number:
+cssCopy.total-opportunity-hero {
+  background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+  border: 3px solid #10b981;
+  border-radius: 16px;
+  padding: 48px;
+  text-align: center;
+  margin: 40px 0;
+}
+
+.opportunity-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #059669;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.opportunity-value {
+  font-size: 72px;  /* HUGE */
+  font-weight: 900;
+  color: #065f46;
+  line-height: 1;
+  margin: 24px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.opportunity-context {
+  font-size: 18px;
+  color: #047857;
+  margin-top: 16px;
+}
+
+.breakdown-table {
+  width: 100%;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  margin-top: 32px;
+  font-size: 16px;  /* Larger than default */
+}
+
+.breakdown-table th {
+  background: #f9fafb;
+  padding: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+}
+
+.breakdown-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.breakdown-table .total-row {
+  background: #f9fafb;
+  font-weight: 700;
+  font-size: 20px;  /* Larger */
+  border-top: 3px solid #e5e7eb;
+}
+
+.breakdown-table .delta-col {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.breakdown-table .total-row .delta-col {
+  font-size: 28px;  /* Even larger for total */
+}
+
+✅ COMPLETE REPLIT INSTRUCTIONS
+Change 1: Fix Step 2 Layout
+CopyCreate a single comparison table instead of two separate boxes:
+
+TABLE STRUCTURE:
+- Column 1: Metric name (left-aligned)
+- Column 2: DAX value (center)
+- Column 3: → arrow
+- Column 4: Abridge value (center)
+- Column 5: Delta (right-aligned, green)
+
+ROWS:
+1. Providers: {n} → {n} (—)
+2. Utilization: {x}% → 65% (+{delta}%)
+3. Time Saved: {y} min → 2.5 min (+{delta} min)
+4. Annual Cost: ${dax} → ${abridge} (Save ${delta})
+
+Below table: Large green banner
+"💰 Abridge costs ${delta} LESS per year (X% cost reduction)"
+or if more expensive:
+"⚠️ Abridge costs ${delta} MORE per year, but delivers significantly more value"
+
+Font sizes:
+- Table text: 16px
+- Delta values: 16px bold
+- Cost banner: 24px bold
+Change 2: Show All Active Drivers
+CopyIn Step 3 (Value Comparison):
+
+1. Get all active drivers from baseline.benefits where value > 0
+2. Sort by value (highest first)
+3. Render DriverComparisonCard for EACH driver
+4. First driver: expanded by default
+5. Others: collapsed by default
+6. User can expand any driver to see details
+
+Each collapsed card shows:
+- Driver icon + name
+- Brief description
+- Delta value in green (right side)
+- Dropdown arrow
+
+No limit on number of cards shown. If user has 6 drivers active, show all 6.
+Change 3: Make Total Opportunity Unmissable
+CopyTotal Opportunity section layout:
+
+HERO BOX (top):
+- Green gradient background (#d1fae5 to #ecfdf5)
+- 3px green border
+- 48px padding
+- Center aligned
+- Label: "Additional Annual Value with Abridge" (14px, uppercase)
+- Value: "+$1,088,750" (72px, bold 900 weight)
+- Context: "Based on {n} providers switching from {competitor}" (18px)
+
+BREAKDOWN TABLE (below):
+- Full width
+- 2px border
+- 16px font size (larger than typical)
+- Columns: Value Driver | DAX | Abridge | Delta
+- Show ALL drivers (even if DAX value is $0)
+- Total row: 20px font, bold, background color
+- Delta total: 28px font, green, bold
+
+CONFIDENCE SECTION (bottom):
+- Small gray text
+- "Abridge benchmarks based on 200+ health system deployments. 
+   Actual results vary by organization size, specialty mix, and 
+   implementation maturity."
+
+🎯 The Real Issue: Cognitive Load
+The fundamental problem isn't just styling - it's that users have to scroll to see all drivers AND the total.
+Top 0.5% solution:
+CopySTICKY SUMMARY BAR (always visible)
+
+As user scrolls through driver cards, show a sticky bar at top:
+
+┌────────────────────────────────────────────────────────┐
+│  Total Opportunity: +$1,088,750  [View Full Summary ▼] │
+└────────────────────────────────────────────────────────┘
+
+This way they ALWAYS see the total as they're entering data.
+
+Bottom line: Your logic is perfect. Your UX just needs:
+
+Tighter visual hierarchy (bigger totals, clearer deltas)
+Show ALL drivers (not just 3)
+Make the comparison table in Step 2 a single unified table
+Consider sticky summary so total is always visible
+
+Make these 4 changes and you'll nail it. 🎯

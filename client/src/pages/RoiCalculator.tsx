@@ -513,15 +513,51 @@ export default function RoiCalculator({
     const losDelta = calculateDriverDelta("los");
     const overtimeDelta = calculateDriverDelta("overtime");
     
-    const grandTotal = accessDelta.deltaTotal + losDelta.deltaTotal + overtimeDelta.deltaTotal;
+    // Get baseline values for Abridge-exclusive drivers (competitors don't track these)
+    // Use inputs.levers to determine if driver is ENABLED, regardless of value
+    const workforceLever = results.levers.find(l => l.id === "workforce");
+    const denialsLever = results.levers.find(l => l.id === "denials");
+    const hccLever = results.levers.find(l => l.id === "hcc");
+    
+    const workforceValue = workforceLever?.value || 0;
+    const denialsValue = denialsLever?.value || 0;
+    const hccValue = hccLever?.value || 0;
+    
+    // Check if drivers are ENABLED (from inputs.levers), not just if value > 0
+    const workforceEnabled = inputs.levers.workforce === true;
+    const denialsEnabled = inputs.levers.denials === true;
+    const hccEnabled = inputs.levers.hcc === true;
+    
+    // Grand total includes compared drivers + Abridge-exclusive drivers (only if enabled)
+    const comparedTotal = accessDelta.deltaTotal + losDelta.deltaTotal + overtimeDelta.deltaTotal;
+    const exclusiveTotal = (workforceEnabled ? workforceValue : 0) + (denialsEnabled ? denialsValue : 0) + (hccEnabled ? hccValue : 0);
+    const grandTotal = comparedTotal + exclusiveTotal;
     
     return {
       access: accessDelta,
       los: losDelta,
       overtime: overtimeDelta,
+      // Abridge-exclusive drivers - shown when ENABLED in baseline, even if value is $0
+      workforce: { 
+        abridgeTotal: workforceValue, 
+        deltaTotal: workforceValue,
+        active: workforceEnabled  // Based on lever enablement, not value
+      },
+      denials: { 
+        abridgeTotal: denialsValue, 
+        deltaTotal: denialsValue,
+        active: denialsEnabled  // Based on lever enablement, not value
+      },
+      hcc: { 
+        abridgeTotal: hccValue, 
+        deltaTotal: hccValue,
+        active: hccEnabled  // Based on lever enablement, not value
+      },
+      comparedTotal,
+      exclusiveTotal,
       grandTotal,
     };
-  }, [compDriverInputs, competitorProviderCount, inputs.numberOfProviders]);
+  }, [compDriverInputs, competitorProviderCount, inputs.numberOfProviders, results.levers, inputs.levers]);
 
   // Total annual benefit from calculateRoi (authoritative source)
   const totalAnnualBenefit = results.totalAnnualBenefit;
@@ -4753,106 +4789,152 @@ export default function RoiCalculator({
                     
                     {/* Deployment Summary Card */}
                     <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                      <h3 className="text-[18px] font-bold text-[#111827] mb-4">
+                      <h3 className="text-[18px] font-bold text-[#111827] mb-6">
                         Confirm Your {selectedCompetitor.name} Deployment
                       </h3>
                       
-                      {/* Two-column summary */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Left: Current Solution */}
-                        <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Scale className="h-5 w-5 text-[#6B7280]" />
-                            <span className="text-[14px] font-bold text-[#111827]">Current: {selectedCompetitor.name}</span>
+                      {/* Column Headers */}
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="flex-1" />
+                        <div className="w-32 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Scale className="h-4 w-4 text-[#6B7280]" />
+                            <span className="text-[13px] font-bold text-[#6B7280]">{selectedCompetitor.name}</span>
                           </div>
-                          <div className="space-y-3">
-                            <div className="flex justify-between">
-                              <span className="text-[13px] text-[#6B7280]">Providers</span>
-                              <span className="text-[14px] font-mono text-[#111827]">
-                                {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[13px] text-[#6B7280]">Utilization</span>
-                              <span className="text-[14px] font-mono text-[#111827]">{competitorUtilization}%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[13px] text-[#6B7280]">Time Saved / Encounter</span>
-                              <span className="text-[14px] font-mono text-[#111827]">
-                                {selectedCompetitor.type === "human" ? "N/A" : `${competitorTimeSaved} min`}
-                              </span>
-                            </div>
-                            <div className="pt-3 border-t border-[#E5E7EB]">
-                              <div className="flex justify-between">
-                                <span className="text-[13px] font-medium text-[#6B7280]">Annual Cost</span>
-                                <span className="text-[16px] font-bold font-mono text-[#111827]">
-                                  {selectedCompetitor.type === "human" 
-                                    ? formatCurrency(scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3)
-                                    : formatCurrency(competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12)
-                                  }
-                                </span>
-                              </div>
-                            </div>
+                        </div>
+                        <div className="w-8 text-center text-[#9CA3AF]">→</div>
+                        <div className="w-40 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <img src={abridgeLogo} alt="Abridge" className="h-4" />
+                          </div>
+                        </div>
+                        <div className="w-32 text-right text-[13px] font-bold text-[#059669]">Delta</div>
+                      </div>
+                      
+                      {/* Comparison Table */}
+                      <div className="border-2 border-[#E5E7EB] rounded-xl overflow-hidden">
+                        {/* Providers Row */}
+                        <div className="flex items-center gap-4 px-4 py-4 border-b border-[#F3F4F6]">
+                          <div className="flex-1 text-[15px] font-medium text-[#374151]">Providers</div>
+                          <div className="w-32 text-center text-[16px] font-mono text-[#111827]">
+                            {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
+                          </div>
+                          <div className="w-8 text-center text-[#9CA3AF]">→</div>
+                          <div className="w-40 text-center text-[16px] font-mono text-[#111827]">
+                            {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
+                          </div>
+                          <div className="w-32 text-right text-[14px] text-[#9CA3AF]">—</div>
+                        </div>
+                        
+                        {/* Utilization Row */}
+                        <div className="flex items-center gap-4 px-4 py-4 border-b border-[#F3F4F6]">
+                          <div className="flex-1 text-[15px] font-medium text-[#374151]">Utilization</div>
+                          <div className="w-32 text-center text-[16px] font-mono text-[#111827]">{competitorUtilization}%</div>
+                          <div className="w-8 text-center text-[#9CA3AF]">→</div>
+                          <div className="w-40 text-center">
+                            <span className="text-[16px] font-mono text-[#111827]">65%</span>
+                            <div className="text-[11px] text-[#E8532F] font-medium">Typical</div>
+                          </div>
+                          <div className="w-32 text-right">
+                            {65 - competitorUtilization > 0 ? (
+                              <span className="text-[14px] font-bold text-[#059669]">⬆ +{65 - competitorUtilization}%</span>
+                            ) : 65 - competitorUtilization < 0 ? (
+                              <span className="text-[14px] font-bold text-[#DC2626]">⬇ {65 - competitorUtilization}%</span>
+                            ) : (
+                              <span className="text-[14px] text-[#9CA3AF]">—</span>
+                            )}
                           </div>
                         </div>
                         
-                        {/* Right: Abridge Comparison */}
-                        <div className="p-4 bg-[#E8532F]/5 border border-[#E8532F]/20 rounded-lg">
-                          <div className="flex items-center gap-2 mb-3">
-                            <img src={abridgeLogo} alt="Abridge" className="h-5" />
-                            <span className="text-[14px] font-bold text-[#E8532F]">Switch to: Abridge</span>
+                        {/* Time Saved Row */}
+                        <div className="flex items-center gap-4 px-4 py-4 border-b border-[#F3F4F6]">
+                          <div className="flex-1 text-[15px] font-medium text-[#374151]">Time Saved / Encounter</div>
+                          <div className="w-32 text-center text-[16px] font-mono text-[#111827]">
+                            {selectedCompetitor.type === "human" ? "N/A" : `${competitorTimeSaved} min`}
                           </div>
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-start">
-                              <span className="text-[13px] text-[#6B7280]">Providers</span>
-                              <span className="text-[14px] font-mono text-[#111827]">{typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}</span>
-                            </div>
-                            <div className="flex justify-between items-start">
-                              <span className="text-[13px] text-[#6B7280]">Utilization</span>
-                              <div className="text-right">
-                                <span className="text-[14px] font-mono text-[#111827]">65%</span>
-                                <p className="text-[11px] text-[#E8532F]">Typical Abridge customer</p>
-                              </div>
-                            </div>
-                            <div className="flex justify-between items-start">
-                              <span className="text-[13px] text-[#6B7280]">Time Saved / Encounter</span>
-                              <div className="text-right">
-                                <span className="text-[14px] font-mono text-[#111827]">2.5 min</span>
-                                <p className="text-[11px] text-[#E8532F]">Typical Abridge customer</p>
-                              </div>
-                            </div>
-                            <div className="pt-3 border-t border-[#E8532F]/20">
-                              <div className="flex justify-between">
-                                <span className="text-[13px] font-medium text-[#6B7280]">Annual Investment</span>
-                                <span className="text-[16px] font-bold font-mono text-[#111827]">
-                                  {formatCurrency(results.annualAbridgeCost)}
-                                </span>
-                              </div>
-                            </div>
+                          <div className="w-8 text-center text-[#9CA3AF]">→</div>
+                          <div className="w-40 text-center">
+                            <span className="text-[16px] font-mono text-[#111827]">2.5 min</span>
+                            <div className="text-[11px] text-[#E8532F] font-medium">Typical</div>
+                          </div>
+                          <div className="w-32 text-right">
+                            {selectedCompetitor.type !== "human" && (2.5 - competitorTimeSaved) !== 0 ? (
+                              (2.5 - competitorTimeSaved) > 0 ? (
+                                <span className="text-[14px] font-bold text-[#059669]">⬆ +{(2.5 - competitorTimeSaved).toFixed(1)} min</span>
+                              ) : (
+                                <span className="text-[14px] font-bold text-[#DC2626]">⬇ {(2.5 - competitorTimeSaved).toFixed(1)} min</span>
+                              )
+                            ) : (
+                              <span className="text-[14px] text-[#9CA3AF]">—</span>
+                            )}
                           </div>
                         </div>
+                        
+                        {/* Annual Cost Row */}
+                        {(() => {
+                          const competitorCost = selectedCompetitor.type === "human"
+                            ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
+                            : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
+                          const costDiff = competitorCost - results.annualAbridgeCost;
+                          return (
+                            <div className="flex items-center gap-4 px-4 py-4 bg-[#F9FAFB]">
+                              <div className="flex-1 text-[15px] font-bold text-[#374151]">Annual Cost</div>
+                              <div className="w-32 text-center text-[16px] font-mono font-bold text-[#111827]">
+                                {formatCurrency(competitorCost)}
+                              </div>
+                              <div className="w-8 text-center text-[#9CA3AF]">→</div>
+                              <div className="w-40 text-center text-[16px] font-mono font-bold text-[#111827]">
+                                {formatCurrency(results.annualAbridgeCost)}
+                              </div>
+                              <div className="w-32 text-right">
+                                {costDiff > 0 ? (
+                                  <span className="text-[14px] font-bold text-[#059669]">⬇ Save {formatCurrency(costDiff)}</span>
+                                ) : costDiff < 0 ? (
+                                  <span className="text-[14px] font-bold text-[#DC2626]">⬆ +{formatCurrency(Math.abs(costDiff))}</span>
+                                ) : (
+                                  <span className="text-[14px] text-[#9CA3AF]">—</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                       
-                      {/* Cost difference callout */}
+                      {/* Cost Impact Hero Banner */}
                       {(() => {
                         const competitorCost = selectedCompetitor.type === "human"
                           ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
                           : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
                         const costDiff = competitorCost - results.annualAbridgeCost;
+                        const pctSavings = competitorCost > 0 ? Math.round((costDiff / competitorCost) * 100) : 0;
+                        
                         if (Math.abs(costDiff) > 0) {
                           return (
-                            <div className={`mt-4 p-3 rounded-lg flex items-center gap-2 ${costDiff > 0 ? "bg-[#059669]/10" : "bg-[#DC2626]/10"}`}>
-                              {costDiff > 0 ? (
-                                <TrendingUp className="h-4 w-4 text-[#059669]" />
-                              ) : (
-                                <AlertTriangle className="h-4 w-4 text-[#DC2626]" />
-                              )}
-                              <span className={`text-[13px] font-medium ${costDiff > 0 ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                            <div 
+                              className={`mt-6 p-6 rounded-xl text-center ${
+                                costDiff > 0 
+                                  ? "bg-gradient-to-br from-[#d1fae5] to-[#a7f3d0] border-2 border-[#10b981]" 
+                                  : "bg-gradient-to-br from-[#fee2e2] to-[#fecaca] border-2 border-[#DC2626]"
+                              }`}
+                            >
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <DollarSign className={`h-6 w-6 ${costDiff > 0 ? "text-[#065f46]" : "text-[#DC2626]"}`} />
+                                <span className={`text-[14px] font-bold uppercase tracking-wide ${costDiff > 0 ? "text-[#065f46]" : "text-[#DC2626]"}`}>
+                                  Cost Impact
+                                </span>
+                              </div>
+                              <div className={`text-[32px] font-extrabold ${costDiff > 0 ? "text-[#065f46]" : "text-[#DC2626]"}`}>
                                 {costDiff > 0 
-                                  ? `Abridge costs ${formatCurrency(costDiff)} less per year`
-                                  : `Abridge costs ${formatCurrency(Math.abs(costDiff))} more per year`
+                                  ? `Abridge costs ${formatCurrency(costDiff)} LESS per year`
+                                  : `Abridge costs ${formatCurrency(Math.abs(costDiff))} MORE per year`
                                 }
-                              </span>
+                              </div>
+                              <div className={`text-[16px] mt-2 ${costDiff > 0 ? "text-[#047857]" : "text-[#DC2626]"}`}>
+                                {costDiff > 0 
+                                  ? `(${pctSavings}% cost reduction vs ${selectedCompetitor.name})`
+                                  : `but delivers significantly more value`
+                                }
+                              </div>
                             </div>
                           );
                         }
@@ -4863,12 +4945,12 @@ export default function RoiCalculator({
                     {/* What's Next Box */}
                     <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
                       <div className="flex items-start gap-3">
-                        <Lightbulb className="h-4 w-4 text-[#6B7280] mt-0.5 shrink-0" />
+                        <Lightbulb className="h-5 w-5 text-[#E8532F] mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-[14px] font-medium text-[#111827] mb-1">What's Next</p>
-                          <p className="text-[13px] text-[#6B7280]">
-                            In the next step, you'll compare value drivers side-by-side. Enter what {selectedCompetitor.name} delivers per provider, 
-                            and we'll show how Abridge compares based on data from 200+ health system deployments.
+                          <p className="text-[15px] font-bold text-[#111827] mb-1">What's Next</p>
+                          <p className="text-[14px] text-[#6B7280]">
+                            In the next step, compare what <strong>{selectedCompetitor.name}</strong> delivers vs what <strong>Abridge customers</strong> achieve. 
+                            Enter per-provider metrics to see your total opportunity.
                           </p>
                         </div>
                       </div>
@@ -5473,91 +5555,215 @@ export default function RoiCalculator({
                             </div>
                           )}
                         </div>
+                        
+                        {/* Abridge Exclusive Drivers Section */}
+                        {(totalComparison.workforce.active || totalComparison.denials.active || totalComparison.hcc.active) && (
+                          <>
+                            <div className="px-4 py-3 bg-[#E8532F]/5 border-t border-b border-[#E8532F]/20">
+                              <div className="flex items-center gap-2">
+                                <Target className="h-4 w-4 text-[#E8532F]" />
+                                <span className="text-[13px] font-bold text-[#E8532F]">Abridge Exclusive Value</span>
+                                <span className="text-[11px] text-[#6B7280] ml-2">Additional benefits not typically tracked by {selectedCompetitor.name}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Clinician Retention Card */}
+                            {totalComparison.workforce.active && (
+                              <div className="border border-[#E5E7EB] rounded-lg overflow-hidden mx-4 my-3">
+                                <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <Heart className="h-5 w-5 text-[#E8532F]" />
+                                    <div>
+                                      <div className="text-[14px] font-bold text-[#111827]">Clinician Retention</div>
+                                      <p className="text-[12px] text-[#6B7280]">Reduced burnout and turnover from documentation burden</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Badge className="bg-[#E8532F]/10 text-[#E8532F] border-0 text-[11px]">Abridge Only</Badge>
+                                    <span className="text-[14px] font-bold text-[#059669] font-mono">
+                                      +{formatCurrency(totalComparison.workforce.abridgeTotal)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Denial Reduction Card */}
+                            {totalComparison.denials.active && (
+                              <div className="border border-[#E5E7EB] rounded-lg overflow-hidden mx-4 my-3">
+                                <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <FileX className="h-5 w-5 text-[#E8532F]" />
+                                    <div>
+                                      <div className="text-[14px] font-bold text-[#111827]">Denial Reduction</div>
+                                      <p className="text-[12px] text-[#6B7280]">Fewer claims denied due to documentation issues</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Badge className="bg-[#E8532F]/10 text-[#E8532F] border-0 text-[11px]">Abridge Only</Badge>
+                                    <span className="text-[14px] font-bold text-[#059669] font-mono">
+                                      +{formatCurrency(totalComparison.denials.abridgeTotal)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* HCC Capture Card */}
+                            {totalComparison.hcc.active && (
+                              <div className="border border-[#E5E7EB] rounded-lg overflow-hidden mx-4 my-3">
+                                <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <ClipboardList className="h-5 w-5 text-[#E8532F]" />
+                                    <div>
+                                      <div className="text-[14px] font-bold text-[#111827]">HCC Capture</div>
+                                      <p className="text-[12px] text-[#6B7280]">Improved RAF scores through complete documentation</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Badge className="bg-[#E8532F]/10 text-[#E8532F] border-0 text-[11px]">Abridge Only</Badge>
+                                    <span className="text-[14px] font-bold text-[#059669] font-mono">
+                                      +{formatCurrency(totalComparison.hcc.abridgeTotal)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                     
-                    {/* Final Summary */}
-                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                      <h3 className="text-[18px] font-bold text-[#111827] mb-4">
-                        Total Opportunity
-                      </h3>
-                      
-                      {/* Hero Metric */}
-                      <div className="text-center p-6 bg-[#059669]/10 border border-[#059669]/20 rounded-lg mb-6">
-                        <div className="text-[14px] text-[#059669] mb-1">Additional Annual Value with Abridge</div>
-                        <div className="text-[48px] font-bold text-[#059669] font-mono">
+                    {/* Final Summary - TOTAL OPPORTUNITY */}
+                    <div className="space-y-6">
+                      {/* Hero Box */}
+                      <div className="bg-gradient-to-br from-[#d1fae5] via-[#ecfdf5] to-[#d1fae5] border-[3px] border-[#10b981] rounded-2xl p-8 md:p-12 text-center">
+                        <div className="text-[14px] uppercase tracking-[1px] text-[#059669] font-semibold mb-4">
+                          Total Opportunity
+                        </div>
+                        <div className="text-[13px] text-[#047857] mb-2">
+                          Additional Annual Value with Abridge
+                        </div>
+                        <div className="text-[56px] md:text-[72px] font-black text-[#065f46] font-mono leading-none my-6" style={{ fontVariantNumeric: "tabular-nums" }}>
                           {totalComparison.grandTotal > 0 ? "+" : ""}{formatCurrency(totalComparison.grandTotal)}
                         </div>
-                        <p className="text-[13px] text-[#6B7280] mt-2">
+                        <p className="text-[16px] md:text-[18px] text-[#047857]">
                           Based on {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders} providers switching from {selectedCompetitor.name}
                         </p>
                       </div>
                       
-                      {/* Breakdown Table */}
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-[13px]">
-                          <thead>
-                            <tr className="border-b border-[#E5E7EB]">
-                              <th className="text-left py-2 text-[#6B7280] font-medium">Value Driver</th>
-                              <th className="text-right py-2 text-[#6B7280] font-medium">{selectedCompetitor.name}</th>
-                              <th className="text-right py-2 text-[#E8532F] font-medium">Abridge</th>
-                              <th className="text-right py-2 text-[#059669] font-medium">Delta</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr className={`border-b border-[#E5E7EB] ${compDriverInputs.access.skipped ? "opacity-50" : ""}`}>
-                              <td className="py-2 text-[#111827]">
-                                Patient Access
-                                {compDriverInputs.access.skipped && <span className="ml-2 text-[11px] text-[#9CA3AF]">(Skipped)</span>}
-                              </td>
-                              <td className="py-2 text-right font-mono">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.userTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#E8532F]">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.abridgeTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#059669] font-bold">{compDriverInputs.access.skipped ? "—" : `+${formatCurrency(totalComparison.access.deltaTotal)}`}</td>
-                            </tr>
-                            <tr className={`border-b border-[#E5E7EB] ${compDriverInputs.los.skipped ? "opacity-50" : ""}`}>
-                              <td className="py-2 text-[#111827]">
-                                Level of Service
-                                {compDriverInputs.los.skipped && <span className="ml-2 text-[11px] text-[#9CA3AF]">(Skipped)</span>}
-                              </td>
-                              <td className="py-2 text-right font-mono">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.userTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#E8532F]">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.abridgeTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#059669] font-bold">{compDriverInputs.los.skipped ? "—" : `+${formatCurrency(totalComparison.los.deltaTotal)}`}</td>
-                            </tr>
-                            <tr className={`border-b border-[#E5E7EB] ${compDriverInputs.overtime.skipped ? "opacity-50" : ""}`}>
-                              <td className="py-2 text-[#111827]">
-                                Overtime Savings
-                                {compDriverInputs.overtime.skipped && <span className="ml-2 text-[11px] text-[#9CA3AF]">(Skipped)</span>}
-                              </td>
-                              <td className="py-2 text-right font-mono">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.userTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#E8532F]">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.abridgeTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#059669] font-bold">{compDriverInputs.overtime.skipped ? "—" : `+${formatCurrency(totalComparison.overtime.deltaTotal)}`}</td>
-                            </tr>
-                            <tr className="bg-[#F9FAFB]">
-                              <td className="py-3 font-bold text-[#111827]">Total</td>
-                              <td className="py-3 text-right font-mono font-bold">
-                                {formatCurrency(
-                                  (compDriverInputs.access.skipped ? 0 : totalComparison.access.userTotal) + 
-                                  (compDriverInputs.los.skipped ? 0 : totalComparison.los.userTotal) + 
-                                  (compDriverInputs.overtime.skipped ? 0 : totalComparison.overtime.userTotal)
-                                )}
-                              </td>
-                              <td className="py-3 text-right font-mono font-bold text-[#E8532F]">
-                                {formatCurrency(
-                                  (compDriverInputs.access.skipped ? 0 : totalComparison.access.abridgeTotal) + 
-                                  (compDriverInputs.los.skipped ? 0 : totalComparison.los.abridgeTotal) + 
-                                  (compDriverInputs.overtime.skipped ? 0 : totalComparison.overtime.abridgeTotal)
-                                )}
-                              </td>
-                              <td className="py-3 text-right font-mono font-bold text-[#059669]">
-                                +{formatCurrency(totalComparison.grandTotal)}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                      {/* Value Breakdown Section */}
+                      <div className="bg-white border-2 border-[#E5E7EB] rounded-xl overflow-hidden">
+                        <div className="px-6 py-4 bg-[#F9FAFB] border-b-2 border-[#E5E7EB]">
+                          <h3 className="text-[16px] font-bold text-[#111827] uppercase tracking-[0.5px]">
+                            Value Breakdown
+                          </h3>
+                        </div>
+                        
+                        {/* Table */}
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-[16px]">
+                            <thead>
+                              <tr className="bg-[#F9FAFB] border-b-2 border-[#E5E7EB]">
+                                <th className="text-left px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#6B7280] font-semibold">Value Driver</th>
+                                <th className="text-right px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#6B7280] font-semibold">{selectedCompetitor.name}</th>
+                                <th className="text-right px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#E8532F] font-semibold">Abridge</th>
+                                <th className="text-right px-6 py-4 text-[13px] uppercase tracking-[0.5px] text-[#059669] font-semibold">Delta</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr className={`border-b border-[#F3F4F6] ${compDriverInputs.access.skipped ? "opacity-50" : ""}`}>
+                                <td className="px-6 py-4 text-[#111827]">
+                                  Patient Access
+                                  {compDriverInputs.access.skipped && <span className="ml-2 text-[12px] text-[#9CA3AF]">(Skipped)</span>}
+                                </td>
+                                <td className="px-6 py-4 text-right font-mono">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.userTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.abridgeTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">{compDriverInputs.access.skipped ? "—" : `+${formatCurrency(totalComparison.access.deltaTotal)}`}</td>
+                              </tr>
+                              <tr className={`border-b border-[#F3F4F6] ${compDriverInputs.los.skipped ? "opacity-50" : ""}`}>
+                                <td className="px-6 py-4 text-[#111827]">
+                                  Level of Service
+                                  {compDriverInputs.los.skipped && <span className="ml-2 text-[12px] text-[#9CA3AF]">(Skipped)</span>}
+                                </td>
+                                <td className="px-6 py-4 text-right font-mono">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.userTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.abridgeTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">{compDriverInputs.los.skipped ? "—" : `+${formatCurrency(totalComparison.los.deltaTotal)}`}</td>
+                              </tr>
+                              <tr className={`border-b border-[#F3F4F6] ${compDriverInputs.overtime.skipped ? "opacity-50" : ""}`}>
+                                <td className="px-6 py-4 text-[#111827]">
+                                  Overtime Savings
+                                  {compDriverInputs.overtime.skipped && <span className="ml-2 text-[12px] text-[#9CA3AF]">(Skipped)</span>}
+                                </td>
+                                <td className="px-6 py-4 text-right font-mono">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.userTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.abridgeTotal)}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">{compDriverInputs.overtime.skipped ? "—" : `+${formatCurrency(totalComparison.overtime.deltaTotal)}`}</td>
+                              </tr>
+                              {/* Abridge Exclusive Drivers in Breakdown */}
+                              {totalComparison.workforce.active && (
+                                <tr className="border-b border-[#F3F4F6] bg-[#E8532F]/5">
+                                  <td className="px-6 py-4 text-[#111827]">
+                                    Clinician Retention
+                                    <span className="ml-2 text-[11px] text-[#E8532F] font-medium">Abridge Only</span>
+                                  </td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.workforce.abridgeTotal)}</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.workforce.deltaTotal)}</td>
+                                </tr>
+                              )}
+                              {totalComparison.denials.active && (
+                                <tr className="border-b border-[#F3F4F6] bg-[#E8532F]/5">
+                                  <td className="px-6 py-4 text-[#111827]">
+                                    Denial Reduction
+                                    <span className="ml-2 text-[11px] text-[#E8532F] font-medium">Abridge Only</span>
+                                  </td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.denials.abridgeTotal)}</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.denials.deltaTotal)}</td>
+                                </tr>
+                              )}
+                              {totalComparison.hcc.active && (
+                                <tr className="border-b border-[#F3F4F6] bg-[#E8532F]/5">
+                                  <td className="px-6 py-4 text-[#111827]">
+                                    HCC Capture
+                                    <span className="ml-2 text-[11px] text-[#E8532F] font-medium">Abridge Only</span>
+                                  </td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.hcc.abridgeTotal)}</td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.hcc.deltaTotal)}</td>
+                                </tr>
+                              )}
+                              {/* Total Row */}
+                              <tr className="bg-[#F9FAFB] border-t-[3px] border-[#E5E7EB]">
+                                <td className="px-6 py-5 font-bold text-[18px] text-[#111827]">TOTAL</td>
+                                <td className="px-6 py-5 text-right font-mono font-bold text-[18px]">
+                                  {formatCurrency(
+                                    (compDriverInputs.access.skipped ? 0 : totalComparison.access.userTotal) + 
+                                    (compDriverInputs.los.skipped ? 0 : totalComparison.los.userTotal) + 
+                                    (compDriverInputs.overtime.skipped ? 0 : totalComparison.overtime.userTotal)
+                                  )}
+                                </td>
+                                <td className="px-6 py-5 text-right font-mono font-bold text-[18px] text-[#E8532F]">
+                                  {formatCurrency(
+                                    (compDriverInputs.access.skipped ? 0 : totalComparison.access.abridgeTotal) + 
+                                    (compDriverInputs.los.skipped ? 0 : totalComparison.los.abridgeTotal) + 
+                                    (compDriverInputs.overtime.skipped ? 0 : totalComparison.overtime.abridgeTotal) +
+                                    totalComparison.workforce.abridgeTotal +
+                                    totalComparison.denials.abridgeTotal +
+                                    totalComparison.hcc.abridgeTotal
+                                  )}
+                                </td>
+                                <td className="px-6 py-5 text-right font-mono font-bold text-[24px] text-[#059669]">
+                                  +{formatCurrency(totalComparison.grandTotal)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                       
                       {/* How We Calculated This - Confidence Section */}
-                      <div className="mt-6 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                      <div className="p-5 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
                         <div className="flex items-start gap-3">
                           <Info className="h-5 w-5 text-[#6B7280] mt-0.5 shrink-0" />
                           <div>
@@ -5567,7 +5773,7 @@ export default function RoiCalculator({
                                 <strong>Abridge benchmarks</strong> are derived from 200+ health system deployments across diverse specialties and care settings.
                               </p>
                               <p>
-                                <strong>Your inputs</strong> ({[
+                                <strong>Compared drivers</strong> ({[
                                   !compDriverInputs.access.skipped && "Patient Access",
                                   !compDriverInputs.los.skipped && "Level of Service", 
                                   !compDriverInputs.overtime.skipped && "Overtime"
@@ -5579,7 +5785,16 @@ export default function RoiCalculator({
                                     compDriverInputs.access.skipped && "Patient Access",
                                     compDriverInputs.los.skipped && "Level of Service",
                                     compDriverInputs.overtime.skipped && "Overtime"
-                                  ].filter(Boolean).join(", ")}) were excluded because your current vendor doesn't track these metrics.
+                                  ].filter(Boolean).join(", ")}) were excluded because {selectedCompetitor.name} doesn't track these metrics.
+                                </p>
+                              )}
+                              {(totalComparison.workforce.active || totalComparison.denials.active || totalComparison.hcc.active) && (
+                                <p>
+                                  <strong>Abridge-exclusive value</strong> ({[
+                                    totalComparison.workforce.active && "Clinician Retention",
+                                    totalComparison.denials.active && "Denial Reduction",
+                                    totalComparison.hcc.active && "HCC Capture"
+                                  ].filter(Boolean).join(", ")}) represents additional benefits from your baseline that {selectedCompetitor.name} typically doesn't deliver.
                                 </p>
                               )}
                               <p className="text-[12px] text-[#9CA3AF] mt-2">
