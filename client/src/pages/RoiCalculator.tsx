@@ -349,7 +349,7 @@ export default function RoiCalculator({
     denialReduction: { enabled: false, denialsPrevented: 0, avgDenialValue: 500 },
   });
   
-  // NEW: Per-provider comparison inputs for Step 3 "Apples to Apples"
+  // NEW: Per-provider comparison inputs for Step 3 wizard
   const [compDriverInputs, setCompDriverInputs] = useState<{
     access: { visitsPerProvider: number; revenuePerVisit: number; expanded: boolean; skipped: boolean };
     los: { wrvuUpliftPerProvider: number; wrvuRate: number; expanded: boolean; skipped: boolean };
@@ -359,6 +359,30 @@ export default function RoiCalculator({
     los: { wrvuUpliftPerProvider: 0, wrvuRate: 40, expanded: false, skipped: false },
     overtime: { hoursPerProvider: 0, premiumRate: 145, expanded: false, skipped: false },
   });
+  
+  // Wizard step for driver comparison (0 = access, 1 = los, 2 = overtime, 3 = summary)
+  const [currentDriverIndex, setCurrentDriverIndex] = useState(0);
+  
+  // Competitor default values for pre-filling (typical values by competitor)
+  const COMPETITOR_DEFAULTS: Record<string, { access: number; los: number; overtime: number }> = {
+    "dax": { access: 45, los: 30, overtime: 20 },
+    "3m": { access: 30, los: 25, overtime: 15 },
+    "awell": { access: 35, los: 20, overtime: 18 },
+    "augmedix": { access: 50, los: 35, overtime: 22 },
+    "deepscribe": { access: 40, los: 28, overtime: 20 },
+    "nabla": { access: 35, los: 22, overtime: 16 },
+    "suki": { access: 42, los: 30, overtime: 19 },
+    "freed": { access: 38, los: 25, overtime: 17 },
+    "heidi": { access: 36, los: 24, overtime: 16 },
+    "other": { access: 30, los: 20, overtime: 15 },
+  };
+  
+  // Driver definitions for wizard
+  const COMP_DRIVERS = [
+    { id: "access" as const, label: "Patient Access", description: "Additional visits enabled by time savings", unit: "visits", icon: "users" },
+    { id: "los" as const, label: "Level of Service", description: "wRVU capture from better documentation", unit: "wRVUs", icon: "trending" },
+    { id: "overtime" as const, label: "Overtime Savings", description: "Reduced premium labor hours", unit: "hours", icon: "clock" },
+  ];
   
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {
@@ -4967,22 +4991,45 @@ export default function RoiCalculator({
                         Back
                       </Button>
                       <Button
-                        onClick={() => setCompetitorStep(3)}
+                        onClick={() => {
+                          // Reset wizard to first driver
+                          setCurrentDriverIndex(0);
+                          // Pre-fill with competitor defaults
+                          const competitorKey = selectedCompetitor?.id?.toLowerCase() || "other";
+                          const defaults = COMPETITOR_DEFAULTS[competitorKey] || COMPETITOR_DEFAULTS["other"];
+                          setCompDriverInputs(prev => ({
+                            access: { ...prev.access, visitsPerProvider: defaults.access, skipped: false },
+                            los: { ...prev.los, wrvuUpliftPerProvider: defaults.los, skipped: false },
+                            overtime: { ...prev.overtime, hoursPerProvider: defaults.overtime, skipped: false },
+                          }));
+                          setCompetitorStep(3);
+                        }}
                         className="bg-[#E8532F] hover:bg-[#D14729] text-white"
                         data-testid="button-continue-to-value"
                       >
-                        Continue to Value Comparison
+                        Show Me the Difference
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
                     </div>
                   </div>
                 )}
                 
-                {/* Step 3: Value Driver Comparison - "Apples to Apples" */}
+                {/* Step 3: Where the Value Comes From - Wizard Style */}
                 {competitorStep === 3 && selectedCompetitor && (
-                  <div className="space-y-6">
+                  <div className="space-y-0">
+                    {/* Sticky Opportunity Header */}
+                    <div className="sticky top-0 z-[100] bg-gradient-to-br from-[#d1fae5] via-[#ecfdf5] to-[#d1fae5] border-b-[3px] border-[#10b981] px-6 py-4 -mx-6 -mt-6 mb-6">
+                      <div className="text-center">
+                        <div className="text-[13px] uppercase tracking-[0.5px] text-[#059669] font-semibold mb-1">Your Opportunity with Abridge</div>
+                        <div className="text-[48px] font-black text-[#065f46] font-mono leading-none" style={{ fontVariantNumeric: "tabular-nums" }}>
+                          +{formatCurrency(totalComparison.grandTotal)}
+                        </div>
+                        <div className="text-[12px] text-[#047857] mt-1">Updates as you compare below</div>
+                      </div>
+                    </div>
+                    
                     {/* Step indicator */}
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-4">
                       <div className="flex items-center">
                         <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
                         <span className="ml-2 text-[13px] text-[#6B7280]">Competitor</span>
@@ -4995,46 +5042,219 @@ export default function RoiCalculator({
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
                       <div className="flex items-center">
                         <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">3</span>
-                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Value Comparison</span>
+                        <span className="ml-2 text-[13px] text-[#111827] font-medium">What You'll Get</span>
                       </div>
                     </div>
                     
-                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                      <h3 className="text-[18px] font-bold text-[#111827] mb-2">
-                        Compare Value Drivers
-                      </h3>
-                      <p className="text-[14px] text-[#6B7280] mb-6">
-                        Enter what {selectedCompetitor.name} delivers <strong>per provider</strong>. We'll compare to Abridge benchmarks from 200+ health system deployments.
-                      </p>
-                      
-                      {/* Driver Comparison Cards */}
-                      <div className="space-y-4">
-                        {/* Patient Access Card */}
-                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
-                          <button
-                            onClick={() => setCompDriverInputs(prev => ({
-                              ...prev,
-                              access: { ...prev.access, expanded: !prev.access.expanded }
-                            }))}
-                            className="w-full p-4 bg-[#F9FAFB] flex items-center justify-between text-left hover:bg-[#F3F4F6] transition-colors"
-                            data-testid="button-expand-access"
-                          >
-                            <div className="flex items-center gap-3">
-                              <Users className="h-5 w-5 text-[#6B7280]" />
-                              <div>
-                                <div className="text-[14px] font-bold text-[#111827]">Patient Access</div>
-                                <p className="text-[12px] text-[#6B7280]">Additional visits enabled by time savings</p>
+                    {/* Wizard Content */}
+                    {currentDriverIndex < 3 ? (
+                      <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                        {/* Progress indicator */}
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-[13px] text-[#6B7280]">
+                            Benefit {currentDriverIndex + 1} of 3
+                          </span>
+                          <div className="flex gap-1">
+                            {[0, 1, 2].map((i) => (
+                              <div
+                                key={i}
+                                className={`h-1.5 w-8 rounded-full ${i <= currentDriverIndex ? "bg-[#E8532F]" : "bg-[#E5E7EB]"}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Current Driver Content */}
+                        {(() => {
+                          const driverConfig = COMP_DRIVERS[currentDriverIndex];
+                          const driverId = driverConfig.id;
+                          const comparison = totalComparison[driverId];
+                          const driverInputs = compDriverInputs[driverId];
+                          const competitorKey = selectedCompetitor?.id?.toLowerCase() || "other";
+                          const defaults = COMPETITOR_DEFAULTS[competitorKey] || COMPETITOR_DEFAULTS["other"];
+                          
+                          // Get driver-specific values
+                          const userValue = driverId === "access" ? driverInputs.visitsPerProvider :
+                                           driverId === "los" ? driverInputs.wrvuUpliftPerProvider :
+                                           driverInputs.hoursPerProvider;
+                          const abridgeValue = ABRIDGE_BENCHMARKS[driverId].typical;
+                          const unit = driverId === "access" ? "visits" : driverId === "los" ? "wRVUs" : "hours";
+                          const deltaValue = abridgeValue - userValue;
+                          
+                          return (
+                            <div className="space-y-6">
+                              {/* Driver Header */}
+                              <div className="flex items-center gap-3">
+                                {driverId === "access" && <Users className="h-6 w-6 text-[#E8532F]" />}
+                                {driverId === "los" && <TrendingUp className="h-6 w-6 text-[#E8532F]" />}
+                                {driverId === "overtime" && <Clock className="h-6 w-6 text-[#E8532F]" />}
+                                <div>
+                                  <h3 className="text-[18px] font-bold text-[#111827]">{driverConfig.label}</h3>
+                                  <p className="text-[13px] text-[#6B7280]">{driverConfig.description}</p>
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              {totalComparison.access.deltaTotal > 0 && (
-                                <span className="text-[14px] font-bold text-[#059669] font-mono">
-                                  +{formatCurrency(totalComparison.access.deltaTotal)}
-                                </span>
+                              
+                              {/* Skip option */}
+                              <label className="flex items-center gap-2 cursor-pointer p-3 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]" data-testid={`checkbox-skip-${driverId}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={driverInputs.skipped}
+                                  onChange={(e) => setCompDriverInputs(prev => ({
+                                    ...prev,
+                                    [driverId]: { ...prev[driverId], skipped: e.target.checked }
+                                  }))}
+                                  className="w-4 h-4 rounded border-[#D1D5DB] text-[#E8532F] focus:ring-[#E8532F]"
+                                />
+                                <span className="text-[13px] text-[#6B7280]">{selectedCompetitor.name} doesn't measure this</span>
+                              </label>
+                              
+                              {!driverInputs.skipped && (
+                                <>
+                                  {/* Pre-filled input with helper */}
+                                  <div className="space-y-2">
+                                    <label className="block text-[14px] font-medium text-[#111827]">
+                                      What does {selectedCompetitor.name} deliver?
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                      <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={userValue || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === "" || /^[0-9]*$/.test(val)) {
+                                            const numVal = parseInt(val) || 0;
+                                            if (driverId === "access") {
+                                              setCompDriverInputs(prev => ({ ...prev, access: { ...prev.access, visitsPerProvider: numVal } }));
+                                            } else if (driverId === "los") {
+                                              setCompDriverInputs(prev => ({ ...prev, los: { ...prev.los, wrvuUpliftPerProvider: numVal } }));
+                                            } else {
+                                              setCompDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, hoursPerProvider: numVal } }));
+                                            }
+                                          }
+                                        }}
+                                        placeholder={`${defaults[driverId]}`}
+                                        className="w-32 h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] text-center font-mono focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                        data-testid={`input-comp-${driverId}`}
+                                      />
+                                      <span className="text-[14px] text-[#6B7280]">{unit} per provider per year</span>
+                                    </div>
+                                    <p className="text-[12px] text-[#9CA3AF] flex items-center gap-1">
+                                      <Lightbulb className="h-3 w-3" />
+                                      Pre-filled with typical {selectedCompetitor.name} values. Adjust if different.
+                                    </p>
+                                  </div>
+                                  
+                                  {/* Simple 2-Column Comparison */}
+                                  <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                                    <div className="grid grid-cols-2">
+                                      <div className="p-4 bg-[#F9FAFB] border-r border-[#E5E7EB]">
+                                        <div className="text-[12px] text-[#6B7280] mb-1">You ({selectedCompetitor.name})</div>
+                                        <div className="text-[24px] font-bold text-[#111827] font-mono">{userValue} <span className="text-[14px] font-normal text-[#6B7280]">{unit}</span></div>
+                                        <div className="text-[13px] text-[#6B7280] mt-1">{formatCurrency(comparison.userTotal)}/year</div>
+                                      </div>
+                                      <div className="p-4 bg-[#E8532F]/5">
+                                        <div className="text-[12px] text-[#E8532F] mb-1">Abridge Customers</div>
+                                        <div className="text-[24px] font-bold text-[#E8532F] font-mono">{abridgeValue} <span className="text-[14px] font-normal text-[#6B7280]">{unit}</span></div>
+                                        <div className="text-[13px] text-[#E8532F] mt-1">{formatCurrency(comparison.abridgeTotal)}/year</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Delta Statement */}
+                                  <div className="p-4 bg-[#059669]/10 border border-[#059669]/20 rounded-lg">
+                                    <p className="text-[15px] text-[#047857]">
+                                      That's <strong>{deltaValue > 0 ? deltaValue : 0} more</strong> {unit} per provider.
+                                    </p>
+                                    <p className="text-[18px] font-bold text-[#059669] mt-1">
+                                      You could gain: +{formatCurrency(comparison.deltaTotal)}/year
+                                    </p>
+                                  </div>
+                                </>
                               )}
-                              <ChevronDown className={`h-5 w-5 text-[#6B7280] transition-transform ${compDriverInputs.access.expanded ? "rotate-180" : ""}`} />
+                              
+                              {driverInputs.skipped && (
+                                <div className="p-4 bg-[#F9FAFB] rounded-lg text-center">
+                                  <p className="text-[14px] text-[#6B7280]">
+                                    This benefit will be excluded from your comparison.
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                          </button>
+                          );
+                        })()}
+                        
+                        {/* Wizard Navigation */}
+                        <div className="flex items-center justify-between pt-6 mt-6 border-t border-[#E5E7EB]">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              // Skip this driver
+                              const driverId = COMP_DRIVERS[currentDriverIndex].id;
+                              setCompDriverInputs(prev => ({
+                                ...prev,
+                                [driverId]: { ...prev[driverId], skipped: true }
+                              }));
+                              setCurrentDriverIndex(currentDriverIndex + 1);
+                            }}
+                            data-testid="button-skip-driver"
+                          >
+                            Skip This One
+                          </Button>
+                          <Button
+                            onClick={() => setCurrentDriverIndex(currentDriverIndex + 1)}
+                            className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                            data-testid="button-next-driver"
+                          >
+                            {currentDriverIndex < 2 ? "Continue" : "See Your Total"}
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Summary View - After all drivers */
+                      <div className="space-y-6">
+                        {/* Abridge Exclusive Drivers Section */}
+                        {(totalComparison.workforce.active || totalComparison.denials.active || totalComparison.hcc.active) && (
+                          <div className="bg-white border border-neutral-200/60 rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                            <div className="px-6 py-4 bg-[#E8532F]/5 border-b border-[#E8532F]/20">
+                              <div className="flex items-center gap-2">
+                                <Target className="h-5 w-5 text-[#E8532F]" />
+                                <span className="text-[15px] font-bold text-[#111827]">Abridge Exclusive Benefits</span>
+                              </div>
+                              <p className="text-[13px] text-[#6B7280] mt-1">Additional value {selectedCompetitor.name} typically doesn't deliver</p>
+                            </div>
+                            <div className="p-4 space-y-3">
+                              {totalComparison.workforce.active && (
+                                <div className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg">
+                                  <div className="flex items-center gap-3">
+                                    <Heart className="h-5 w-5 text-[#E8532F]" />
+                                    <span className="text-[14px] text-[#111827]">Clinician Retention</span>
+                                  </div>
+                                  <span className="text-[14px] font-bold text-[#059669] font-mono">+{formatCurrency(totalComparison.workforce.abridgeTotal)}</span>
+                                </div>
+                              )}
+                              {totalComparison.denials.active && (
+                                <div className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg">
+                                  <div className="flex items-center gap-3">
+                                    <FileX className="h-5 w-5 text-[#E8532F]" />
+                                    <span className="text-[14px] text-[#111827]">Denial Reduction</span>
+                                  </div>
+                                  <span className="text-[14px] font-bold text-[#059669] font-mono">+{formatCurrency(totalComparison.denials.abridgeTotal)}</span>
+                                </div>
+                              )}
+                              {totalComparison.hcc.active && (
+                                <div className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg">
+                                  <div className="flex items-center gap-3">
+                                    <ClipboardList className="h-5 w-5 text-[#E8532F]" />
+                                    <span className="text-[14px] text-[#111827]">HCC Capture</span>
+                                  </div>
+                                  <span className="text-[14px] font-bold text-[#059669] font-mono">+{formatCurrency(totalComparison.hcc.abridgeTotal)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                           
                           {compDriverInputs.access.expanded && (
                             <div className="p-4 border-t border-[#E5E7EB] space-y-4">

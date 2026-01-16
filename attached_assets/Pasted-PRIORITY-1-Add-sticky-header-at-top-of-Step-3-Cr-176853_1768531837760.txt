@@ -1,0 +1,104 @@
+PRIORITY 1: Add sticky header at top of Step 3
+──────────────────────────────────────────────────
+Create a fixed-position header that stays visible while scrolling:
+
+<div className="sticky-opportunity-header">
+  <div className="opportunity-label">Your Opportunity with Abridge</div>
+  <div className="opportunity-value">+{formatCurrency(runningTotal)}</div>
+  <div className="opportunity-note">Updates as you compare drivers below</div>
+</div>
+
+CSS:
+position: sticky;
+top: 0;
+z-index: 100;
+background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+border-bottom: 3px solid #10b981;
+padding: 16px 24px;
+text-align: center;
+
+.opportunity-value: 
+  font-size: 48px;
+  font-weight: 900;
+  color: #065f46;
+
+
+PRIORITY 2: Change driver cards to wizard
+──────────────────────────────────────────────────
+Replace collapsible accordion with step-by-step wizard:
+
+State: const [currentDriverIndex, setCurrentDriverIndex] = useState(0);
+
+Show only: drivers[currentDriverIndex]
+
+Display: "Driver {currentDriverIndex + 1} of {drivers.length}"
+
+Buttons:
+- [Skip This Driver]
+- [Continue to Next →]
+
+After last driver, show [See Your Total Opportunity →]
+
+
+PRIORITY 3: Pre-fill competitor values
+──────────────────────────────────────────────────
+On initial render, populate input fields with:
+
+const defaultValue = competitorDefaults[selectedCompetitor]?.[driverMetric] || 0;
+
+<input 
+  type="number"
+  defaultValue={defaultValue}
+  placeholder={`Typical: ${defaultValue}`}
+/>
+
+Show helper text: "💡 Pre-filled with typical {competitorName} values. Adjust if different."
+
+
+PRIORITY 4: Simplify comparison display
+──────────────────────────────────────────────────
+Replace 5-column table with 2-column comparison:
+
+┌─────────────────────────────────────┐
+│        You (DAX)    Abridge         │
+│ Metric   {user}      {typical}      │
+│ Value    ${x}        ${y}           │
+│                                      │
+│ YOU COULD GAIN: +${delta}           │
+└─────────────────────────────────────┘
+
+Remove "Per Provider" and "Value/Provider" columns entirely.
+
+
+PRIORITY 5: Replace range bar with text comparison
+──────────────────────────────────────────────────
+Delete the SVG range bar component.
+
+Replace with:
+
+<div className="simple-comparison">
+  <div className="comparison-row">
+    <span className="label">You're getting:</span>
+    <span className="value">{userValue} {unit}</span>
+  </div>
+  <div className="comparison-row highlight">
+    <span className="label">Abridge customers get:</span>
+    <span className="value">{abridgeTypical} {unit}</span>
+  </div>
+  <div className="delta-statement">
+    That's <strong>{delta} MORE</strong> {unit} per provider.
+    At your rate: <strong className="success">+{formatCurrency(dollarDelta)}/year</strong>
+  </div>
+</div>
+
+
+PRIORITY 6: Update all copy to plain language
+──────────────────────────────────────────────────
+Find and replace:
+- "Value Drivers" → "Where the Value Comes From"
+- "Strategic Priorities" → "What Matters to You"
+- "Value Realization" → "Benefits You'll Get"
+- "Continue to Value Comparison" → "Show Me the Difference"
+- "Per provider" → remove or simplify to just show totals
+- "Deliverable" → "You Get"
+- "Benchmark range" → "What Abridge customers typically see"
