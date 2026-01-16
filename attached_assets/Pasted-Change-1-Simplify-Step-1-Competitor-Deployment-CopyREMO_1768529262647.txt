@@ -1,0 +1,113 @@
+Change 1: Simplify Step 1 (Competitor + Deployment)
+CopyREMOVE from Step 1:
+- "Value Metrics" section
+- wRVU uplift input
+- wRVU rate input
+- "Typical range" helpers
+
+KEEP in Step 1:
+- Competitor selection (good)
+- Monthly cost per provider
+- Number of providers
+- Current utilization slider
+- Time saved per encounter
+
+Button text: "Continue to Deployment Info →"
+Change 2: Redesign Step 2 (Confirmation Screen)
+CopyCREATE new layout for Step 2:
+
+LEFT COLUMN: "Current: DAX (Nuance)"
+- Providers: {n}
+- Utilization: {x}%
+- Time saved: {y} min
+- Annual cost: ${z}
+
+RIGHT COLUMN: "Switch to: Abridge"
+- Providers: {n} (same)
+- Utilization: 65% (with note: "Typical Abridge customer")
+- Time saved: 2.5 min (with note: "Typical Abridge customer")
+- Annual investment: ${calculated}
+
+BANNER below:
+If Abridge costs MORE:
+  ⚠️ "Abridge costs ${delta} more per year"
+If Abridge costs LESS:
+  ✓ "Abridge costs ${delta} less per year"
+
+WHAT'S NEXT box:
+"💡 In the next step, you'll compare what value you're getting 
+from DAX versus what Abridge customers typically achieve. 
+Enter your per-provider metrics (wRVUs, visits, hours saved), 
+and we'll show the opportunity."
+
+Button: "Continue to Value Comparison →"
+Change 3: Enhance Step 3 (Keep as-is, but add)
+CopyADD to Step 3:
+
+At the top:
+"Enter what DAX delivers per provider. We'll compare to Abridge 
+benchmarks from 200+ health system deployments."
+
+For each driver card:
+COLLAPSED STATE (default):
+┌──────────────────────────────────────────────┐
+│ 📊 Accurate Level of Service     +$250,000  │
+│ wRVU capture from better documentation       │
+│ [Enter your DAX metrics ▼]                   │
+└──────────────────────────────────────────────┘
+
+EXPANDED STATE (when clicked):
+Shows your current implementation with:
+- Input fields
+- Range bar
+- Comparison table
+- Insight box
+
+ALLOW users to skip drivers:
+☐ "We don't track this metric for DAX"
+   → Grays out driver, doesn't include in total
+
+KEEP:
+- Everything else you have (it's excellent)
+- Range bar with user position
+- Comparison table (Per Provider → Value/Provider → Total)
+- Insight box at bottom
+Change 4: Polish the Summary
+CopyKEEP the "Total Opportunity" section as-is (it's perfect)
+
+ADD a confidence section:
+┌────────────────────────────────────────────────┐
+│  How We Calculated This                        │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                 │
+│  ✓ Your DAX inputs: {n} providers, {metrics}  │
+│  ✓ Abridge benchmarks: 200+ health systems    │
+│  ✓ All comparisons normalized per provider    │
+│  ✓ Your rates used for dollar calculations    │
+│                                                 │
+│  [View detailed methodology →]                 │
+└────────────────────────────────────────────────┘
+
+🎯 The Flow Should Feel Like:
+CopyStep 1: "Tell us about your DAX deployment"
+        → 4 simple questions (cost, providers, utilization, time saved)
+        → 30 seconds
+
+Step 2: "Here's what switching would look like"
+        → Side-by-side comparison (DAX vs Abridge basics)
+        → Shows cost delta upfront (transparency)
+        → Primes them for value comparison
+        → 15 seconds
+
+Step 3: "Now let's compare the value"
+        → Per-driver comparison (your BEST work)
+        → Collapsible cards (reduce overwhelm)
+        → Apples-to-apples per provider
+        → Can skip drivers they don't track
+        → 2-3 minutes
+
+Summary: "Here's your total opportunity"
+         → Big green number
+         → Breakdown table
+         → Confidence indicators
+         → 30 seconds

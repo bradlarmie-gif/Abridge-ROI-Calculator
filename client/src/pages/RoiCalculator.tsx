@@ -351,13 +351,13 @@ export default function RoiCalculator({
   
   // NEW: Per-provider comparison inputs for Step 3 "Apples to Apples"
   const [compDriverInputs, setCompDriverInputs] = useState<{
-    access: { visitsPerProvider: number; revenuePerVisit: number; expanded: boolean };
-    los: { wrvuUpliftPerProvider: number; wrvuRate: number; expanded: boolean };
-    overtime: { hoursPerProvider: number; premiumRate: number; expanded: boolean };
+    access: { visitsPerProvider: number; revenuePerVisit: number; expanded: boolean; skipped: boolean };
+    los: { wrvuUpliftPerProvider: number; wrvuRate: number; expanded: boolean; skipped: boolean };
+    overtime: { hoursPerProvider: number; premiumRate: number; expanded: boolean; skipped: boolean };
   }>({
-    access: { visitsPerProvider: 0, revenuePerVisit: 200, expanded: true },
-    los: { wrvuUpliftPerProvider: 0, wrvuRate: 40, expanded: false },
-    overtime: { hoursPerProvider: 0, premiumRate: 145, expanded: false },
+    access: { visitsPerProvider: 0, revenuePerVisit: 200, expanded: true, skipped: false },
+    los: { wrvuUpliftPerProvider: 0, wrvuRate: 40, expanded: false, skipped: false },
+    overtime: { hoursPerProvider: 0, premiumRate: 145, expanded: false, skipped: false },
   });
   
   // Initialize inputs from seed with a setter for dynamic updates
@@ -433,11 +433,12 @@ export default function RoiCalculator({
   const calculateDriverDelta = (driver: "access" | "los" | "overtime") => {
     const providers = typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders;
     const benchmark = ABRIDGE_BENCHMARKS[driver].typical;
+    const isSkipped = compDriverInputs[driver].skipped;
     
     if (driver === "access") {
-      const userValue = compDriverInputs.access.visitsPerProvider;
+      const userValue = isSkipped ? 0 : compDriverInputs.access.visitsPerProvider;
       const rate = compDriverInputs.access.revenuePerVisit;
-      const deltaPerProvider = benchmark - userValue;
+      const deltaPerProvider = isSkipped ? benchmark : (benchmark - userValue);
       const userValuePerProvider = userValue * rate;
       const abridgeValuePerProvider = benchmark * rate;
       const deltaValuePerProvider = deltaPerProvider * rate;
@@ -450,16 +451,17 @@ export default function RoiCalculator({
         deltaValuePerProvider,
         userTotal: userValuePerProvider * providers,
         abridgeTotal: abridgeValuePerProvider * providers,
-        deltaTotal: deltaValuePerProvider * providers,
+        deltaTotal: isSkipped ? 0 : deltaValuePerProvider * providers,
         unit: "visits",
         rate,
         rateLabel: "/visit",
         providers,
+        skipped: isSkipped,
       };
     } else if (driver === "los") {
-      const userValue = compDriverInputs.los.wrvuUpliftPerProvider;
+      const userValue = isSkipped ? 0 : compDriverInputs.los.wrvuUpliftPerProvider;
       const rate = compDriverInputs.los.wrvuRate;
-      const deltaPerProvider = benchmark - userValue;
+      const deltaPerProvider = isSkipped ? benchmark : (benchmark - userValue);
       const userValuePerProvider = userValue * rate;
       const abridgeValuePerProvider = benchmark * rate;
       const deltaValuePerProvider = deltaPerProvider * rate;
@@ -472,16 +474,17 @@ export default function RoiCalculator({
         deltaValuePerProvider,
         userTotal: userValuePerProvider * providers,
         abridgeTotal: abridgeValuePerProvider * providers,
-        deltaTotal: deltaValuePerProvider * providers,
+        deltaTotal: isSkipped ? 0 : deltaValuePerProvider * providers,
         unit: "wRVUs",
         rate,
         rateLabel: "/wRVU",
         providers,
+        skipped: isSkipped,
       };
     } else {
-      const userValue = compDriverInputs.overtime.hoursPerProvider;
+      const userValue = isSkipped ? 0 : compDriverInputs.overtime.hoursPerProvider;
       const rate = compDriverInputs.overtime.premiumRate;
-      const deltaPerProvider = benchmark - userValue;
+      const deltaPerProvider = isSkipped ? benchmark : (benchmark - userValue);
       const userValuePerProvider = userValue * rate;
       const abridgeValuePerProvider = benchmark * rate;
       const deltaValuePerProvider = deltaPerProvider * rate;
@@ -494,11 +497,12 @@ export default function RoiCalculator({
         deltaValuePerProvider,
         userTotal: userValuePerProvider * providers,
         abridgeTotal: abridgeValuePerProvider * providers,
-        deltaTotal: deltaValuePerProvider * providers,
+        deltaTotal: isSkipped ? 0 : deltaValuePerProvider * providers,
         unit: "hours",
         rate,
         rateLabel: "/hr",
         providers,
+        skipped: isSkipped,
       };
     }
   };
@@ -4679,80 +4683,6 @@ export default function RoiCalculator({
                               </div>
                             </div>
                             
-                            {/* Value Metrics Section */}
-                            <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
-                              <h4 className="text-[14px] font-bold text-[#111827] mb-2">Value Metrics</h4>
-                              <p className="text-[13px] text-[#6B7280] mb-4">Help us understand the value you're currently getting</p>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                  <label className="block text-[14px] text-[#6B7280] mb-2">wRVU Uplift per Provider (annual)</label>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-[14px] text-[#6B7280]">+</span>
-                                    <input
-                                      type="text"
-                                      inputMode="decimal"
-                                      value={rawInputValues["comp_wrvuUplift"] ?? (competitorDrivers.accurateService.wrvuUplift || "")}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                          setRawInputValues(prev => ({ ...prev, "comp_wrvuUplift": val }));
-                                          setCompetitorDrivers(prev => ({
-                                            ...prev,
-                                            accurateService: { ...prev.accurateService, enabled: true, wrvuUplift: parseFloat(val) || 0 }
-                                          }));
-                                        }
-                                      }}
-                                      onBlur={() => {
-                                        setRawInputValues(prev => { const next = { ...prev }; delete next["comp_wrvuUplift"]; return next; });
-                                      }}
-                                      placeholder="e.g., 125"
-                                      className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                      data-testid="input-competitor-wrvu-uplift"
-                                    />
-                                    <span className="text-[14px] text-[#6B7280] whitespace-nowrap">wRVUs</span>
-                                  </div>
-                                  <p className="text-[12px] text-[#9CA3AF] mt-1">Typical range: 50-200 wRVUs/provider/year</p>
-                                </div>
-                                <div>
-                                  <label className="block text-[14px] text-[#6B7280] mb-2">Your wRVU Rate ($)</label>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-[14px] text-[#6B7280]">$</span>
-                                    <input
-                                      type="text"
-                                      inputMode="decimal"
-                                      value={rawInputValues["comp_wrvuRate"] ?? (competitorDrivers.accurateService.wrvuRate || "")}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                          setRawInputValues(prev => ({ ...prev, "comp_wrvuRate": val }));
-                                          setCompetitorDrivers(prev => ({
-                                            ...prev,
-                                            accurateService: { ...prev.accurateService, enabled: true, wrvuRate: parseFloat(val) || 0 }
-                                          }));
-                                        }
-                                      }}
-                                      onBlur={() => {
-                                        setRawInputValues(prev => { const next = { ...prev }; delete next["comp_wrvuRate"]; return next; });
-                                      }}
-                                      placeholder="e.g., 40"
-                                      className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-[16px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                      data-testid="input-competitor-wrvu-rate"
-                                    />
-                                    <span className="text-[14px] text-[#6B7280] whitespace-nowrap">/wRVU</span>
-                                  </div>
-                                  <p className="text-[12px] text-[#9CA3AF] mt-1">Typical range: $35-$65/wRVU</p>
-                                </div>
-                              </div>
-                              {competitorDrivers.accurateService.wrvuUplift > 0 && competitorDrivers.accurateService.wrvuRate > 0 && (
-                                <div className="mt-3 p-3 bg-[#F9FAFB] rounded-lg flex items-center justify-between">
-                                  <span className="text-[13px] text-[#6B7280]">Annual wRVU Value:</span>
-                                  <span className="text-[16px] font-bold text-[#111827] font-mono">
-                                    {formatCurrency(competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1))}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            
                             {/* Competitor cost calculation preview */}
                             <div className="mt-4 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
                               <div className="grid grid-cols-2 gap-4">
@@ -4863,17 +4793,23 @@ export default function RoiCalculator({
                             <span className="text-[14px] font-bold text-[#E8532F]">Switch to: Abridge</span>
                           </div>
                           <div className="space-y-3">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-start">
                               <span className="text-[13px] text-[#6B7280]">Providers</span>
-                              <span className="text-[14px] font-mono text-[#111827]">{inputs.numberOfProviders}</span>
+                              <span className="text-[14px] font-mono text-[#111827]">{typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-start">
                               <span className="text-[13px] text-[#6B7280]">Utilization</span>
-                              <span className="text-[14px] font-mono text-[#111827]">{inputs.abridgeUtilizationPct}%</span>
+                              <div className="text-right">
+                                <span className="text-[14px] font-mono text-[#111827]">65%</span>
+                                <p className="text-[11px] text-[#E8532F]">Typical Abridge customer</p>
+                              </div>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-start">
                               <span className="text-[13px] text-[#6B7280]">Time Saved / Encounter</span>
-                              <span className="text-[14px] font-mono text-[#111827]">{inputs.minutesSavedPerEncounter} min</span>
+                              <div className="text-right">
+                                <span className="text-[14px] font-mono text-[#111827]">2.5 min</span>
+                                <p className="text-[11px] text-[#E8532F]">Typical Abridge customer</p>
+                              </div>
                             </div>
                             <div className="pt-3 border-t border-[#E8532F]/20">
                               <div className="flex justify-between">
@@ -5010,6 +4946,26 @@ export default function RoiCalculator({
                           
                           {compDriverInputs.access.expanded && (
                             <div className="p-4 border-t border-[#E5E7EB] space-y-4">
+                              {/* Skip Checkbox */}
+                              <label className="flex items-center gap-2 cursor-pointer" data-testid="checkbox-skip-access">
+                                <input
+                                  type="checkbox"
+                                  checked={compDriverInputs.access.skipped}
+                                  onChange={(e) => setCompDriverInputs(prev => ({
+                                    ...prev,
+                                    access: { ...prev.access, skipped: e.target.checked }
+                                  }))}
+                                  className="w-4 h-4 rounded border-[#D1D5DB] text-[#E8532F] focus:ring-[#E8532F]"
+                                />
+                                <span className="text-[13px] text-[#6B7280]">{selectedCompetitor.name} doesn't track this metric</span>
+                              </label>
+                              
+                              {compDriverInputs.access.skipped ? (
+                                <div className="p-3 bg-[#F9FAFB] rounded-lg text-center">
+                                  <p className="text-[13px] text-[#6B7280]">This driver will be excluded from the comparison.</p>
+                                </div>
+                              ) : (
+                              <>
                               {/* User Input */}
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -5140,6 +5096,8 @@ export default function RoiCalculator({
                                   </p>
                                 </div>
                               )}
+                              </>
+                              )}
                             </div>
                           )}
                         </div>
@@ -5173,6 +5131,26 @@ export default function RoiCalculator({
                           
                           {compDriverInputs.los.expanded && (
                             <div className="p-4 border-t border-[#E5E7EB] space-y-4">
+                              {/* Skip Checkbox */}
+                              <label className="flex items-center gap-2 cursor-pointer" data-testid="checkbox-skip-los">
+                                <input
+                                  type="checkbox"
+                                  checked={compDriverInputs.los.skipped}
+                                  onChange={(e) => setCompDriverInputs(prev => ({
+                                    ...prev,
+                                    los: { ...prev.los, skipped: e.target.checked }
+                                  }))}
+                                  className="w-4 h-4 rounded border-[#D1D5DB] text-[#E8532F] focus:ring-[#E8532F]"
+                                />
+                                <span className="text-[13px] text-[#6B7280]">{selectedCompetitor.name} doesn't track this metric</span>
+                              </label>
+                              
+                              {compDriverInputs.los.skipped ? (
+                                <div className="p-3 bg-[#F9FAFB] rounded-lg text-center">
+                                  <p className="text-[13px] text-[#6B7280]">This driver will be excluded from the comparison.</p>
+                                </div>
+                              ) : (
+                              <>
                               {/* User Input */}
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -5299,6 +5277,8 @@ export default function RoiCalculator({
                                   </p>
                                 </div>
                               )}
+                              </>
+                              )}
                             </div>
                           )}
                         </div>
@@ -5332,6 +5312,26 @@ export default function RoiCalculator({
                           
                           {compDriverInputs.overtime.expanded && (
                             <div className="p-4 border-t border-[#E5E7EB] space-y-4">
+                              {/* Skip Checkbox */}
+                              <label className="flex items-center gap-2 cursor-pointer" data-testid="checkbox-skip-overtime">
+                                <input
+                                  type="checkbox"
+                                  checked={compDriverInputs.overtime.skipped}
+                                  onChange={(e) => setCompDriverInputs(prev => ({
+                                    ...prev,
+                                    overtime: { ...prev.overtime, skipped: e.target.checked }
+                                  }))}
+                                  className="w-4 h-4 rounded border-[#D1D5DB] text-[#E8532F] focus:ring-[#E8532F]"
+                                />
+                                <span className="text-[13px] text-[#6B7280]">{selectedCompetitor.name} doesn't track this metric</span>
+                              </label>
+                              
+                              {compDriverInputs.overtime.skipped ? (
+                                <div className="p-3 bg-[#F9FAFB] rounded-lg text-center">
+                                  <p className="text-[13px] text-[#6B7280]">This driver will be excluded from the comparison.</p>
+                                </div>
+                              ) : (
+                              <>
                               {/* User Input */}
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -5458,6 +5458,8 @@ export default function RoiCalculator({
                                   </p>
                                 </div>
                               )}
+                              </>
+                              )}
                             </div>
                           )}
                         </div>
@@ -5493,31 +5495,48 @@ export default function RoiCalculator({
                             </tr>
                           </thead>
                           <tbody>
-                            <tr className="border-b border-[#E5E7EB]">
-                              <td className="py-2 text-[#111827]">Patient Access</td>
-                              <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.access.userTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.access.abridgeTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.access.deltaTotal)}</td>
+                            <tr className={`border-b border-[#E5E7EB] ${compDriverInputs.access.skipped ? "opacity-50" : ""}`}>
+                              <td className="py-2 text-[#111827]">
+                                Patient Access
+                                {compDriverInputs.access.skipped && <span className="ml-2 text-[11px] text-[#9CA3AF]">(Skipped)</span>}
+                              </td>
+                              <td className="py-2 text-right font-mono">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.userTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#E8532F]">{compDriverInputs.access.skipped ? "—" : formatCurrency(totalComparison.access.abridgeTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#059669] font-bold">{compDriverInputs.access.skipped ? "—" : `+${formatCurrency(totalComparison.access.deltaTotal)}`}</td>
                             </tr>
-                            <tr className="border-b border-[#E5E7EB]">
-                              <td className="py-2 text-[#111827]">Level of Service</td>
-                              <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.los.userTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.los.abridgeTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.los.deltaTotal)}</td>
+                            <tr className={`border-b border-[#E5E7EB] ${compDriverInputs.los.skipped ? "opacity-50" : ""}`}>
+                              <td className="py-2 text-[#111827]">
+                                Level of Service
+                                {compDriverInputs.los.skipped && <span className="ml-2 text-[11px] text-[#9CA3AF]">(Skipped)</span>}
+                              </td>
+                              <td className="py-2 text-right font-mono">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.userTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#E8532F]">{compDriverInputs.los.skipped ? "—" : formatCurrency(totalComparison.los.abridgeTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#059669] font-bold">{compDriverInputs.los.skipped ? "—" : `+${formatCurrency(totalComparison.los.deltaTotal)}`}</td>
                             </tr>
-                            <tr className="border-b border-[#E5E7EB]">
-                              <td className="py-2 text-[#111827]">Overtime Savings</td>
-                              <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.overtime.userTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.overtime.abridgeTotal)}</td>
-                              <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.overtime.deltaTotal)}</td>
+                            <tr className={`border-b border-[#E5E7EB] ${compDriverInputs.overtime.skipped ? "opacity-50" : ""}`}>
+                              <td className="py-2 text-[#111827]">
+                                Overtime Savings
+                                {compDriverInputs.overtime.skipped && <span className="ml-2 text-[11px] text-[#9CA3AF]">(Skipped)</span>}
+                              </td>
+                              <td className="py-2 text-right font-mono">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.userTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#E8532F]">{compDriverInputs.overtime.skipped ? "—" : formatCurrency(totalComparison.overtime.abridgeTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#059669] font-bold">{compDriverInputs.overtime.skipped ? "—" : `+${formatCurrency(totalComparison.overtime.deltaTotal)}`}</td>
                             </tr>
                             <tr className="bg-[#F9FAFB]">
                               <td className="py-3 font-bold text-[#111827]">Total</td>
                               <td className="py-3 text-right font-mono font-bold">
-                                {formatCurrency(totalComparison.access.userTotal + totalComparison.los.userTotal + totalComparison.overtime.userTotal)}
+                                {formatCurrency(
+                                  (compDriverInputs.access.skipped ? 0 : totalComparison.access.userTotal) + 
+                                  (compDriverInputs.los.skipped ? 0 : totalComparison.los.userTotal) + 
+                                  (compDriverInputs.overtime.skipped ? 0 : totalComparison.overtime.userTotal)
+                                )}
                               </td>
                               <td className="py-3 text-right font-mono font-bold text-[#E8532F]">
-                                {formatCurrency(totalComparison.access.abridgeTotal + totalComparison.los.abridgeTotal + totalComparison.overtime.abridgeTotal)}
+                                {formatCurrency(
+                                  (compDriverInputs.access.skipped ? 0 : totalComparison.access.abridgeTotal) + 
+                                  (compDriverInputs.los.skipped ? 0 : totalComparison.los.abridgeTotal) + 
+                                  (compDriverInputs.overtime.skipped ? 0 : totalComparison.overtime.abridgeTotal)
+                                )}
                               </td>
                               <td className="py-3 text-right font-mono font-bold text-[#059669]">
                                 +{formatCurrency(totalComparison.grandTotal)}
@@ -5527,11 +5546,38 @@ export default function RoiCalculator({
                         </table>
                       </div>
                       
-                      {/* Data Sources Note */}
-                      <div className="mt-4 p-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
-                        <p className="text-[12px] text-[#6B7280]">
-                          Abridge benchmarks based on 200+ health system deployments. Actual results vary by organization size, specialty mix, and implementation maturity.
-                        </p>
+                      {/* How We Calculated This - Confidence Section */}
+                      <div className="mt-6 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Info className="h-5 w-5 text-[#6B7280] mt-0.5 shrink-0" />
+                          <div>
+                            <h4 className="text-[14px] font-bold text-[#111827] mb-2">How We Calculated This</h4>
+                            <div className="space-y-2 text-[13px] text-[#6B7280]">
+                              <p>
+                                <strong>Abridge benchmarks</strong> are derived from 200+ health system deployments across diverse specialties and care settings.
+                              </p>
+                              <p>
+                                <strong>Your inputs</strong> ({[
+                                  !compDriverInputs.access.skipped && "Patient Access",
+                                  !compDriverInputs.los.skipped && "Level of Service", 
+                                  !compDriverInputs.overtime.skipped && "Overtime"
+                                ].filter(Boolean).join(", ") || "None"}) were compared against Abridge's typical performance.
+                              </p>
+                              {(compDriverInputs.access.skipped || compDriverInputs.los.skipped || compDriverInputs.overtime.skipped) && (
+                                <p>
+                                  <strong>Skipped drivers</strong> ({[
+                                    compDriverInputs.access.skipped && "Patient Access",
+                                    compDriverInputs.los.skipped && "Level of Service",
+                                    compDriverInputs.overtime.skipped && "Overtime"
+                                  ].filter(Boolean).join(", ")}) were excluded because your current vendor doesn't track these metrics.
+                                </p>
+                              )}
+                              <p className="text-[12px] text-[#9CA3AF] mt-2">
+                                Actual results vary by organization size, specialty mix, and implementation maturity.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     
