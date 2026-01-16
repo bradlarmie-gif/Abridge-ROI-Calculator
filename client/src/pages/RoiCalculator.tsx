@@ -4783,19 +4783,761 @@ export default function RoiCalculator({
                         className="bg-[#E8532F] hover:bg-[#D14729] text-white"
                         data-testid="button-continue-comparison"
                       >
-                        Continue to Comparison
+                        Continue to Deployment Info
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
                     </div>
                   </div>
                 )}
                 
-                {/* Step 2: Side-by-Side Comparison */}
+                {/* Step 2: Deployment Summary */}
                 {competitorStep === 2 && selectedCompetitor && (
                   <div className="space-y-6">
-                    {/* Scenario Name */}
+                    {/* Step indicator */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Competitor</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">2</span>
+                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Deployment</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E5E7EB] text-[#9CA3AF] text-[12px] font-bold">3</span>
+                        <span className="ml-2 text-[13px] text-[#9CA3AF]">Value Comparison</span>
+                      </div>
+                    </div>
+                    
+                    {/* Deployment Summary Card */}
+                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                      <h3 className="text-[18px] font-bold text-[#111827] mb-4">
+                        Confirm Your {selectedCompetitor.name} Deployment
+                      </h3>
+                      
+                      {/* Two-column summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Left: Current Solution */}
+                        <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Scale className="h-5 w-5 text-[#6B7280]" />
+                            <span className="text-[14px] font-bold text-[#111827]">Current: {selectedCompetitor.name}</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex justify-between">
+                              <span className="text-[13px] text-[#6B7280]">Providers</span>
+                              <span className="text-[14px] font-mono text-[#111827]">
+                                {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[13px] text-[#6B7280]">Utilization</span>
+                              <span className="text-[14px] font-mono text-[#111827]">{competitorUtilization}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[13px] text-[#6B7280]">Time Saved / Encounter</span>
+                              <span className="text-[14px] font-mono text-[#111827]">
+                                {selectedCompetitor.type === "human" ? "N/A" : `${competitorTimeSaved} min`}
+                              </span>
+                            </div>
+                            <div className="pt-3 border-t border-[#E5E7EB]">
+                              <div className="flex justify-between">
+                                <span className="text-[13px] font-medium text-[#6B7280]">Annual Cost</span>
+                                <span className="text-[16px] font-bold font-mono text-[#111827]">
+                                  {selectedCompetitor.type === "human" 
+                                    ? formatCurrency(scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3)
+                                    : formatCurrency(competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12)
+                                  }
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Right: Abridge Comparison */}
+                        <div className="p-4 bg-[#E8532F]/5 border border-[#E8532F]/20 rounded-lg">
+                          <div className="flex items-center gap-2 mb-3">
+                            <img src={abridgeLogo} alt="Abridge" className="h-5" />
+                            <span className="text-[14px] font-bold text-[#E8532F]">Switch to: Abridge</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex justify-between">
+                              <span className="text-[13px] text-[#6B7280]">Providers</span>
+                              <span className="text-[14px] font-mono text-[#111827]">{inputs.numberOfProviders}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[13px] text-[#6B7280]">Utilization</span>
+                              <span className="text-[14px] font-mono text-[#111827]">{inputs.abridgeUtilizationPct}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[13px] text-[#6B7280]">Time Saved / Encounter</span>
+                              <span className="text-[14px] font-mono text-[#111827]">{inputs.minutesSavedPerEncounter} min</span>
+                            </div>
+                            <div className="pt-3 border-t border-[#E8532F]/20">
+                              <div className="flex justify-between">
+                                <span className="text-[13px] font-medium text-[#6B7280]">Annual Investment</span>
+                                <span className="text-[16px] font-bold font-mono text-[#111827]">
+                                  {formatCurrency(results.annualAbridgeCost)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Cost difference callout */}
+                      {(() => {
+                        const competitorCost = selectedCompetitor.type === "human"
+                          ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
+                          : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
+                        const costDiff = competitorCost - results.annualAbridgeCost;
+                        if (Math.abs(costDiff) > 0) {
+                          return (
+                            <div className={`mt-4 p-3 rounded-lg flex items-center gap-2 ${costDiff > 0 ? "bg-[#059669]/10" : "bg-[#DC2626]/10"}`}>
+                              {costDiff > 0 ? (
+                                <TrendingUp className="h-4 w-4 text-[#059669]" />
+                              ) : (
+                                <AlertTriangle className="h-4 w-4 text-[#DC2626]" />
+                              )}
+                              <span className={`text-[13px] font-medium ${costDiff > 0 ? "text-[#059669]" : "text-[#DC2626]"}`}>
+                                {costDiff > 0 
+                                  ? `Abridge costs ${formatCurrency(costDiff)} less per year`
+                                  : `Abridge costs ${formatCurrency(Math.abs(costDiff))} more per year`
+                                }
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                    
+                    {/* What's Next Box */}
+                    <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <Lightbulb className="h-4 w-4 text-[#6B7280] mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[14px] font-medium text-[#111827] mb-1">What's Next</p>
+                          <p className="text-[13px] text-[#6B7280]">
+                            In the next step, you'll compare value drivers side-by-side. Enter what {selectedCompetitor.name} delivers per provider, 
+                            and we'll show how Abridge compares based on data from 200+ health system deployments.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Footer Actions */}
+                    <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCompetitorStep(1)}
+                        data-testid="button-back-to-selection"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back
+                      </Button>
+                      <Button
+                        onClick={() => setCompetitorStep(3)}
+                        className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                        data-testid="button-continue-to-value"
+                      >
+                        Continue to Value Comparison
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Step 3: Value Driver Comparison - "Apples to Apples" */}
+                {competitorStep === 3 && selectedCompetitor && (
+                  <div className="space-y-6">
+                    {/* Step indicator */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Competitor</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">2</span>
+                        <span className="ml-2 text-[13px] text-[#6B7280]">Deployment</span>
+                      </div>
+                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">3</span>
+                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Value Comparison</span>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                      <h3 className="text-[18px] font-bold text-[#111827] mb-2">
+                        Compare Value Drivers
+                      </h3>
+                      <p className="text-[14px] text-[#6B7280] mb-6">
+                        Enter what {selectedCompetitor.name} delivers <strong>per provider</strong>. We'll compare to Abridge benchmarks from 200+ health system deployments.
+                      </p>
+                      
+                      {/* Driver Comparison Cards */}
+                      <div className="space-y-4">
+                        {/* Patient Access Card */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => setCompDriverInputs(prev => ({
+                              ...prev,
+                              access: { ...prev.access, expanded: !prev.access.expanded }
+                            }))}
+                            className="w-full p-4 bg-[#F9FAFB] flex items-center justify-between text-left hover:bg-[#F3F4F6] transition-colors"
+                            data-testid="button-expand-access"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Users className="h-5 w-5 text-[#6B7280]" />
+                              <div>
+                                <div className="text-[14px] font-bold text-[#111827]">Patient Access</div>
+                                <p className="text-[12px] text-[#6B7280]">Additional visits enabled by time savings</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              {totalComparison.access.deltaTotal > 0 && (
+                                <span className="text-[14px] font-bold text-[#059669] font-mono">
+                                  +{formatCurrency(totalComparison.access.deltaTotal)}
+                                </span>
+                              )}
+                              <ChevronDown className={`h-5 w-5 text-[#6B7280] transition-transform ${compDriverInputs.access.expanded ? "rotate-180" : ""}`} />
+                            </div>
+                          </button>
+                          
+                          {compDriverInputs.access.expanded && (
+                            <div className="p-4 border-t border-[#E5E7EB] space-y-4">
+                              {/* User Input */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">
+                                    {selectedCompetitor.name}: Additional visits/provider/year
+                                  </label>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={rawInputValues["comp_access_visits"] ?? (compDriverInputs.access.visitsPerProvider || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_access_visits": val }));
+                                        setCompDriverInputs(prev => ({
+                                          ...prev,
+                                          access: { ...prev.access, visitsPerProvider: parseInt(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_access_visits"]; return next; })}
+                                    placeholder="e.g., 60"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                    data-testid="input-comp-access-visits"
+                                  />
+                                  <p className="text-[11px] text-[#9CA3AF] mt-1">If unknown, try 0-60 visits/provider</p>
+                                </div>
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Revenue per visit ($)</label>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={rawInputValues["comp_access_rate"] ?? (compDriverInputs.access.revenuePerVisit || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_access_rate": val }));
+                                        setCompDriverInputs(prev => ({
+                                          ...prev,
+                                          access: { ...prev.access, revenuePerVisit: parseInt(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_access_rate"]; return next; })}
+                                    placeholder="200"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                    data-testid="input-comp-access-rate"
+                                  />
+                                </div>
+                              </div>
+                              
+                              {/* Benchmark Range Visual */}
+                              <div className="p-3 bg-[#F9FAFB] rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-[12px] font-medium text-[#6B7280]">Abridge Benchmark Range</span>
+                                  <span className="text-[12px] text-[#6B7280]">{ABRIDGE_BENCHMARKS.access.unit}</span>
+                                </div>
+                                <div className="relative h-8 bg-gradient-to-r from-[#E5E7EB] via-[#059669]/30 to-[#059669]/60 rounded-full">
+                                  {/* Conservative marker */}
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "0%" }}>
+                                    <div className="h-full w-px bg-[#6B7280]/50" />
+                                    <span className="text-[10px] text-[#6B7280] mt-1">{ABRIDGE_BENCHMARKS.access.conservative}</span>
+                                  </div>
+                                  {/* Typical marker */}
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "50%" }}>
+                                    <div className="h-full w-0.5 bg-[#059669]" />
+                                    <span className="text-[10px] font-bold text-[#059669] mt-1">{ABRIDGE_BENCHMARKS.access.typical}</span>
+                                  </div>
+                                  {/* Optimistic marker */}
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "100%", transform: "translateX(-100%)" }}>
+                                    <div className="h-full w-px bg-[#059669]" />
+                                    <span className="text-[10px] text-[#059669] mt-1">{ABRIDGE_BENCHMARKS.access.optimistic}</span>
+                                  </div>
+                                  {/* User value marker */}
+                                  {compDriverInputs.access.visitsPerProvider > 0 && (
+                                    <div 
+                                      className="absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-[#111827] border-2 border-white shadow-md"
+                                      style={{ left: `${Math.min(100, (compDriverInputs.access.visitsPerProvider / ABRIDGE_BENCHMARKS.access.optimistic) * 100)}%`, transform: "translate(-50%, -50%)" }}
+                                    />
+                                  )}
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                  <span className="text-[10px] text-[#6B7280]">Conservative</span>
+                                  <span className="text-[10px] text-[#6B7280]">Optimistic</span>
+                                </div>
+                              </div>
+                              
+                              {/* Comparison Table */}
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-[13px]">
+                                  <thead>
+                                    <tr className="border-b border-[#E5E7EB]">
+                                      <th className="text-left py-2 text-[#6B7280] font-medium"></th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Per Provider</th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Value/Provider</th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Total ({totalComparison.access.providers} prov)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr className="border-b border-[#E5E7EB]">
+                                      <td className="py-2 text-[#111827]">{selectedCompetitor.name}</td>
+                                      <td className="py-2 text-right font-mono">{totalComparison.access.userMetric} visits</td>
+                                      <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.access.userValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.access.userTotal)}</td>
+                                    </tr>
+                                    <tr className="border-b border-[#E5E7EB] bg-[#E8532F]/5">
+                                      <td className="py-2 text-[#E8532F] font-medium">Abridge (typical)</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{totalComparison.access.abridgeMetric} visits</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.access.abridgeValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.access.abridgeTotal)}</td>
+                                    </tr>
+                                    <tr className="bg-[#059669]/5">
+                                      <td className="py-2 text-[#059669] font-bold">Delta</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{totalComparison.access.deltaMetric} visits</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.access.deltaValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.access.deltaTotal)}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                              
+                              {/* Insight Box */}
+                              {totalComparison.access.deltaTotal > 0 && (
+                                <div className="p-3 bg-[#059669]/10 border border-[#059669]/20 rounded-lg flex items-start gap-2">
+                                  <Zap className="h-4 w-4 text-[#059669] mt-0.5 shrink-0" />
+                                  <p className="text-[13px] text-[#059669]">
+                                    Switching to Abridge could unlock <strong>{formatCurrency(totalComparison.access.deltaTotal)}</strong> in additional patient access value annually.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Level of Service (wRVU) Card */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => setCompDriverInputs(prev => ({
+                              ...prev,
+                              los: { ...prev.los, expanded: !prev.los.expanded }
+                            }))}
+                            className="w-full p-4 bg-[#F9FAFB] flex items-center justify-between text-left hover:bg-[#F3F4F6] transition-colors"
+                            data-testid="button-expand-los"
+                          >
+                            <div className="flex items-center gap-3">
+                              <TrendingUp className="h-5 w-5 text-[#6B7280]" />
+                              <div>
+                                <div className="text-[14px] font-bold text-[#111827]">Accurate Level of Service</div>
+                                <p className="text-[12px] text-[#6B7280]">wRVU capture from better documentation</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              {totalComparison.los.deltaTotal > 0 && (
+                                <span className="text-[14px] font-bold text-[#059669] font-mono">
+                                  +{formatCurrency(totalComparison.los.deltaTotal)}
+                                </span>
+                              )}
+                              <ChevronDown className={`h-5 w-5 text-[#6B7280] transition-transform ${compDriverInputs.los.expanded ? "rotate-180" : ""}`} />
+                            </div>
+                          </button>
+                          
+                          {compDriverInputs.los.expanded && (
+                            <div className="p-4 border-t border-[#E5E7EB] space-y-4">
+                              {/* User Input */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">
+                                    {selectedCompetitor.name}: wRVU uplift/provider/year
+                                  </label>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={rawInputValues["comp_los_wrvu"] ?? (compDriverInputs.los.wrvuUpliftPerProvider || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_los_wrvu": val }));
+                                        setCompDriverInputs(prev => ({
+                                          ...prev,
+                                          los: { ...prev.los, wrvuUpliftPerProvider: parseInt(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_los_wrvu"]; return next; })}
+                                    placeholder="e.g., 50"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                    data-testid="input-comp-los-wrvu"
+                                  />
+                                  <p className="text-[11px] text-[#9CA3AF] mt-1">If unknown, try 0-50 wRVUs/provider</p>
+                                </div>
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Your wRVU Rate ($/wRVU)</label>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={rawInputValues["comp_los_rate"] ?? (compDriverInputs.los.wrvuRate || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_los_rate": val }));
+                                        setCompDriverInputs(prev => ({
+                                          ...prev,
+                                          los: { ...prev.los, wrvuRate: parseInt(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_los_rate"]; return next; })}
+                                    placeholder="40"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                    data-testid="input-comp-los-rate"
+                                  />
+                                </div>
+                              </div>
+                              
+                              {/* Benchmark Range Visual */}
+                              <div className="p-3 bg-[#F9FAFB] rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-[12px] font-medium text-[#6B7280]">Abridge Benchmark Range</span>
+                                  <span className="text-[12px] text-[#6B7280]">{ABRIDGE_BENCHMARKS.los.unit}</span>
+                                </div>
+                                <div className="relative h-8 bg-gradient-to-r from-[#E5E7EB] via-[#059669]/30 to-[#059669]/60 rounded-full">
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "0%" }}>
+                                    <div className="h-full w-px bg-[#6B7280]/50" />
+                                    <span className="text-[10px] text-[#6B7280] mt-1">{ABRIDGE_BENCHMARKS.los.conservative}</span>
+                                  </div>
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "50%" }}>
+                                    <div className="h-full w-0.5 bg-[#059669]" />
+                                    <span className="text-[10px] font-bold text-[#059669] mt-1">{ABRIDGE_BENCHMARKS.los.typical}</span>
+                                  </div>
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "100%", transform: "translateX(-100%)" }}>
+                                    <div className="h-full w-px bg-[#059669]" />
+                                    <span className="text-[10px] text-[#059669] mt-1">{ABRIDGE_BENCHMARKS.los.optimistic}</span>
+                                  </div>
+                                  {compDriverInputs.los.wrvuUpliftPerProvider > 0 && (
+                                    <div 
+                                      className="absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-[#111827] border-2 border-white shadow-md"
+                                      style={{ left: `${Math.min(100, (compDriverInputs.los.wrvuUpliftPerProvider / ABRIDGE_BENCHMARKS.los.optimistic) * 100)}%`, transform: "translate(-50%, -50%)" }}
+                                    />
+                                  )}
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                  <span className="text-[10px] text-[#6B7280]">Conservative</span>
+                                  <span className="text-[10px] text-[#6B7280]">Optimistic</span>
+                                </div>
+                              </div>
+                              
+                              {/* Comparison Table */}
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-[13px]">
+                                  <thead>
+                                    <tr className="border-b border-[#E5E7EB]">
+                                      <th className="text-left py-2 text-[#6B7280] font-medium"></th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Per Provider</th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Value/Provider</th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Total ({totalComparison.los.providers} prov)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr className="border-b border-[#E5E7EB]">
+                                      <td className="py-2 text-[#111827]">{selectedCompetitor.name}</td>
+                                      <td className="py-2 text-right font-mono">{totalComparison.los.userMetric} wRVUs</td>
+                                      <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.los.userValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.los.userTotal)}</td>
+                                    </tr>
+                                    <tr className="border-b border-[#E5E7EB] bg-[#E8532F]/5">
+                                      <td className="py-2 text-[#E8532F] font-medium">Abridge (typical)</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{totalComparison.los.abridgeMetric} wRVUs</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.los.abridgeValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.los.abridgeTotal)}</td>
+                                    </tr>
+                                    <tr className="bg-[#059669]/5">
+                                      <td className="py-2 text-[#059669] font-bold">Delta</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{totalComparison.los.deltaMetric} wRVUs</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.los.deltaValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.los.deltaTotal)}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                              
+                              {/* Insight Box */}
+                              {totalComparison.los.deltaTotal > 0 && (
+                                <div className="p-3 bg-[#059669]/10 border border-[#059669]/20 rounded-lg flex items-start gap-2">
+                                  <Zap className="h-4 w-4 text-[#059669] mt-0.5 shrink-0" />
+                                  <p className="text-[13px] text-[#059669]">
+                                    Abridge's more complete documentation could capture <strong>{formatCurrency(totalComparison.los.deltaTotal)}</strong> in additional wRVU revenue.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Overtime Savings Card */}
+                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => setCompDriverInputs(prev => ({
+                              ...prev,
+                              overtime: { ...prev.overtime, expanded: !prev.overtime.expanded }
+                            }))}
+                            className="w-full p-4 bg-[#F9FAFB] flex items-center justify-between text-left hover:bg-[#F3F4F6] transition-colors"
+                            data-testid="button-expand-overtime"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Clock className="h-5 w-5 text-[#6B7280]" />
+                              <div>
+                                <div className="text-[14px] font-bold text-[#111827]">Overtime & Locum Savings</div>
+                                <p className="text-[12px] text-[#6B7280]">Reduced premium labor hours</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              {totalComparison.overtime.deltaTotal > 0 && (
+                                <span className="text-[14px] font-bold text-[#059669] font-mono">
+                                  +{formatCurrency(totalComparison.overtime.deltaTotal)}
+                                </span>
+                              )}
+                              <ChevronDown className={`h-5 w-5 text-[#6B7280] transition-transform ${compDriverInputs.overtime.expanded ? "rotate-180" : ""}`} />
+                            </div>
+                          </button>
+                          
+                          {compDriverInputs.overtime.expanded && (
+                            <div className="p-4 border-t border-[#E5E7EB] space-y-4">
+                              {/* User Input */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">
+                                    {selectedCompetitor.name}: Hours saved/provider/year
+                                  </label>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={rawInputValues["comp_ot_hours"] ?? (compDriverInputs.overtime.hoursPerProvider || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_ot_hours": val }));
+                                        setCompDriverInputs(prev => ({
+                                          ...prev,
+                                          overtime: { ...prev.overtime, hoursPerProvider: parseInt(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_ot_hours"]; return next; })}
+                                    placeholder="e.g., 35"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                    data-testid="input-comp-ot-hours"
+                                  />
+                                  <p className="text-[11px] text-[#9CA3AF] mt-1">If unknown, try 0-35 hours/provider</p>
+                                </div>
+                                <div>
+                                  <label className="block text-[13px] text-[#6B7280] mb-1">Premium Rate ($/hour)</label>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={rawInputValues["comp_ot_rate"] ?? (compDriverInputs.overtime.premiumRate || "")}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "" || /^[0-9]*$/.test(val)) {
+                                        setRawInputValues(prev => ({ ...prev, "comp_ot_rate": val }));
+                                        setCompDriverInputs(prev => ({
+                                          ...prev,
+                                          overtime: { ...prev.overtime, premiumRate: parseInt(val) || 0 }
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_ot_rate"]; return next; })}
+                                    placeholder="145"
+                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
+                                    data-testid="input-comp-ot-rate"
+                                  />
+                                </div>
+                              </div>
+                              
+                              {/* Benchmark Range Visual */}
+                              <div className="p-3 bg-[#F9FAFB] rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-[12px] font-medium text-[#6B7280]">Abridge Benchmark Range</span>
+                                  <span className="text-[12px] text-[#6B7280]">{ABRIDGE_BENCHMARKS.overtime.unit}</span>
+                                </div>
+                                <div className="relative h-8 bg-gradient-to-r from-[#E5E7EB] via-[#059669]/30 to-[#059669]/60 rounded-full">
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "0%" }}>
+                                    <div className="h-full w-px bg-[#6B7280]/50" />
+                                    <span className="text-[10px] text-[#6B7280] mt-1">{ABRIDGE_BENCHMARKS.overtime.conservative}</span>
+                                  </div>
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "50%" }}>
+                                    <div className="h-full w-0.5 bg-[#059669]" />
+                                    <span className="text-[10px] font-bold text-[#059669] mt-1">{ABRIDGE_BENCHMARKS.overtime.typical}</span>
+                                  </div>
+                                  <div className="absolute top-0 h-full flex flex-col items-center" style={{ left: "100%", transform: "translateX(-100%)" }}>
+                                    <div className="h-full w-px bg-[#059669]" />
+                                    <span className="text-[10px] text-[#059669] mt-1">{ABRIDGE_BENCHMARKS.overtime.optimistic}</span>
+                                  </div>
+                                  {compDriverInputs.overtime.hoursPerProvider > 0 && (
+                                    <div 
+                                      className="absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-[#111827] border-2 border-white shadow-md"
+                                      style={{ left: `${Math.min(100, (compDriverInputs.overtime.hoursPerProvider / ABRIDGE_BENCHMARKS.overtime.optimistic) * 100)}%`, transform: "translate(-50%, -50%)" }}
+                                    />
+                                  )}
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                  <span className="text-[10px] text-[#6B7280]">Conservative</span>
+                                  <span className="text-[10px] text-[#6B7280]">Optimistic</span>
+                                </div>
+                              </div>
+                              
+                              {/* Comparison Table */}
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-[13px]">
+                                  <thead>
+                                    <tr className="border-b border-[#E5E7EB]">
+                                      <th className="text-left py-2 text-[#6B7280] font-medium"></th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Per Provider</th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Value/Provider</th>
+                                      <th className="text-right py-2 text-[#6B7280] font-medium">Total ({totalComparison.overtime.providers} prov)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr className="border-b border-[#E5E7EB]">
+                                      <td className="py-2 text-[#111827]">{selectedCompetitor.name}</td>
+                                      <td className="py-2 text-right font-mono">{totalComparison.overtime.userMetric} hrs</td>
+                                      <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.overtime.userValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.overtime.userTotal)}</td>
+                                    </tr>
+                                    <tr className="border-b border-[#E5E7EB] bg-[#E8532F]/5">
+                                      <td className="py-2 text-[#E8532F] font-medium">Abridge (typical)</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{totalComparison.overtime.abridgeMetric} hrs</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.overtime.abridgeValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.overtime.abridgeTotal)}</td>
+                                    </tr>
+                                    <tr className="bg-[#059669]/5">
+                                      <td className="py-2 text-[#059669] font-bold">Delta</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{totalComparison.overtime.deltaMetric} hrs</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.overtime.deltaValuePerProvider)}</td>
+                                      <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.overtime.deltaTotal)}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                              
+                              {/* Insight Box */}
+                              {totalComparison.overtime.deltaTotal > 0 && (
+                                <div className="p-3 bg-[#059669]/10 border border-[#059669]/20 rounded-lg flex items-start gap-2">
+                                  <Zap className="h-4 w-4 text-[#059669] mt-0.5 shrink-0" />
+                                  <p className="text-[13px] text-[#059669]">
+                                    Faster documentation with Abridge could save <strong>{formatCurrency(totalComparison.overtime.deltaTotal)}</strong> in overtime and locum costs.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Final Summary */}
+                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                      <h3 className="text-[18px] font-bold text-[#111827] mb-4">
+                        Total Opportunity
+                      </h3>
+                      
+                      {/* Hero Metric */}
+                      <div className="text-center p-6 bg-[#059669]/10 border border-[#059669]/20 rounded-lg mb-6">
+                        <div className="text-[14px] text-[#059669] mb-1">Additional Annual Value with Abridge</div>
+                        <div className="text-[48px] font-bold text-[#059669] font-mono">
+                          {totalComparison.grandTotal > 0 ? "+" : ""}{formatCurrency(totalComparison.grandTotal)}
+                        </div>
+                        <p className="text-[13px] text-[#6B7280] mt-2">
+                          Based on {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders} providers switching from {selectedCompetitor.name}
+                        </p>
+                      </div>
+                      
+                      {/* Breakdown Table */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-[13px]">
+                          <thead>
+                            <tr className="border-b border-[#E5E7EB]">
+                              <th className="text-left py-2 text-[#6B7280] font-medium">Value Driver</th>
+                              <th className="text-right py-2 text-[#6B7280] font-medium">{selectedCompetitor.name}</th>
+                              <th className="text-right py-2 text-[#E8532F] font-medium">Abridge</th>
+                              <th className="text-right py-2 text-[#059669] font-medium">Delta</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="border-b border-[#E5E7EB]">
+                              <td className="py-2 text-[#111827]">Patient Access</td>
+                              <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.access.userTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.access.abridgeTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.access.deltaTotal)}</td>
+                            </tr>
+                            <tr className="border-b border-[#E5E7EB]">
+                              <td className="py-2 text-[#111827]">Level of Service</td>
+                              <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.los.userTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.los.abridgeTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.los.deltaTotal)}</td>
+                            </tr>
+                            <tr className="border-b border-[#E5E7EB]">
+                              <td className="py-2 text-[#111827]">Overtime Savings</td>
+                              <td className="py-2 text-right font-mono">{formatCurrency(totalComparison.overtime.userTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#E8532F]">{formatCurrency(totalComparison.overtime.abridgeTotal)}</td>
+                              <td className="py-2 text-right font-mono text-[#059669] font-bold">+{formatCurrency(totalComparison.overtime.deltaTotal)}</td>
+                            </tr>
+                            <tr className="bg-[#F9FAFB]">
+                              <td className="py-3 font-bold text-[#111827]">Total</td>
+                              <td className="py-3 text-right font-mono font-bold">
+                                {formatCurrency(totalComparison.access.userTotal + totalComparison.los.userTotal + totalComparison.overtime.userTotal)}
+                              </td>
+                              <td className="py-3 text-right font-mono font-bold text-[#E8532F]">
+                                {formatCurrency(totalComparison.access.abridgeTotal + totalComparison.los.abridgeTotal + totalComparison.overtime.abridgeTotal)}
+                              </td>
+                              <td className="py-3 text-right font-mono font-bold text-[#059669]">
+                                +{formatCurrency(totalComparison.grandTotal)}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      {/* Data Sources Note */}
+                      <div className="mt-4 p-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                        <p className="text-[12px] text-[#6B7280]">
+                          Abridge benchmarks based on 200+ health system deployments. Actual results vary by organization size, specialty mix, and implementation maturity.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Scenario Name Input */}
                     <div>
-                      <label className="block text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">
+                      <label className="block text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-2">
                         Scenario Name
                       </label>
                       <input
@@ -4808,737 +5550,15 @@ export default function RoiCalculator({
                       />
                     </div>
                     
-                    {/* Comparison Grid - 3 columns */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      {/* Current Solution Column */}
-                      <div className="bg-white border border-[#E5E7EB] rounded-lg overflow-hidden">
-                        <div className="p-4 bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                          <div className="flex items-center gap-2">
-                            <Scale className="h-5 w-5 text-[#6B7280]" />
-                            <h4 className="text-[16px] font-bold text-[#111827]">Current: {selectedCompetitor.name}</h4>
-                          </div>
-                        </div>
-                        <div className="p-4 space-y-4">
-                          <div>
-                            <div className="text-[13px] text-[#6B7280]">Annual Cost</div>
-                            <div className="text-[18px] font-bold text-[#111827] font-mono">
-                              {selectedCompetitor.type === "human" 
-                                ? formatCurrency(scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3)
-                                : formatCurrency(competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12)
-                              }
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[13px] text-[#6B7280]">Time Saved / Encounter</div>
-                            <div className="text-[18px] font-bold text-[#111827] font-mono">
-                              {selectedCompetitor.type === "human" ? "N/A" : `${competitorTimeSaved} min`}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[13px] text-[#6B7280]">Utilization Rate</div>
-                            <div className="text-[18px] font-bold text-[#111827] font-mono">
-                              {selectedCompetitor.type === "human" ? "N/A" : `${competitorUtilization}%`}
-                            </div>
-                          </div>
-                          <div className="pt-4 border-t border-[#E5E7EB]">
-                            <div className="text-[13px] text-[#6B7280]">Estimated Annual Benefit</div>
-                            {(() => {
-                              const competitorTotalValue = 
-                                (competitorDrivers.patientAccess.enabled 
-                                  ? (competitorDrivers.patientAccess.metric === "direct" 
-                                    ? competitorDrivers.patientAccess.value 
-                                    : competitorDrivers.patientAccess.value * 200)
-                                  : 0) +
-                                (competitorDrivers.accurateService.enabled 
-                                  ? competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1)
-                                  : 0) +
-                                (competitorDrivers.clinicianRetention.enabled 
-                                  ? competitorDrivers.clinicianRetention.departuresPrevented * competitorDrivers.clinicianRetention.replacementCost
-                                  : 0) +
-                                (competitorDrivers.overtimeSavings.enabled 
-                                  ? competitorDrivers.overtimeSavings.hoursReduced * competitorDrivers.overtimeSavings.premiumRate
-                                  : 0) +
-                                (competitorDrivers.denialReduction.enabled 
-                                  ? competitorDrivers.denialReduction.denialsPrevented * competitorDrivers.denialReduction.avgDenialValue
-                                  : 0);
-                              
-                              if (competitorTotalValue > 0) {
-                                return (
-                                  <div className="text-[18px] font-bold text-[#111827] font-mono">
-                                    {formatCurrency(competitorTotalValue)}
-                                  </div>
-                                );
-                              }
-                              return (
-                                <>
-                                  <div className="text-[18px] font-bold text-[#9CA3AF] font-mono">
-                                    {selectedCompetitor.type === "human" ? "Not tracked" : "Enter below"}
-                                  </div>
-                                  <p className="text-[11px] text-[#9CA3AF]">Enable value drivers to compare</p>
-                                </>
-                              );
-                            })()}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Abridge Column */}
-                      <div className="bg-white border-2 border-[#E8532F] rounded-lg overflow-hidden">
-                        <div className="p-4 bg-[#E8532F]/5 border-b border-[#E8532F]/20">
-                          <div className="flex items-center gap-2">
-                            <img src={abridgeLogo} alt="Abridge" className="h-5" />
-                            <h4 className="text-[16px] font-bold text-[#E8532F]">Switch to: Abridge</h4>
-                          </div>
-                        </div>
-                        <div className="p-4 space-y-4">
-                          <div>
-                            <div className="text-[13px] text-[#6B7280]">Annual Investment</div>
-                            <div className="text-[18px] font-bold text-[#111827] font-mono">
-                              {formatCurrency(results.annualAbridgeCost)}
-                            </div>
-                            {(() => {
-                              const competitorCost = selectedCompetitor.type === "human"
-                                ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
-                                : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
-                              const diff = competitorCost - results.annualAbridgeCost;
-                              if (diff > 0) {
-                                return (
-                                  <span className="inline-flex items-center gap-1 text-[12px] text-[#059669] bg-[#059669]/10 px-2 py-0.5 rounded">
-                                    Save {formatCurrency(diff)}/year
-                                  </span>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
-                          <div>
-                            <div className="text-[13px] text-[#6B7280]">Time Saved / Encounter</div>
-                            <div className="text-[18px] font-bold text-[#111827] font-mono">
-                              {inputs.minutesSavedPerEncounter} min
-                            </div>
-                            <span className="text-[12px] text-[#6B7280]">Typical: 2-4 min</span>
-                          </div>
-                          <div>
-                            <div className="text-[13px] text-[#6B7280]">Utilization Rate</div>
-                            <div className="text-[18px] font-bold text-[#111827] font-mono">
-                              {inputs.abridgeUtilizationPct}%
-                            </div>
-                            <span className="text-[12px] text-[#6B7280]">Mature: 75-90%</span>
-                          </div>
-                          <div className="pt-4 border-t border-[#E5E7EB]">
-                            <div className="text-[13px] text-[#6B7280]">Total Annual Benefit</div>
-                            <div className="text-[24px] font-bold text-[#059669] font-mono">
-                              {formatCurrency(results.totalAnnualBenefit)}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[13px] text-[#6B7280]">ROI</div>
-                            <div className="text-[24px] font-bold text-[#E8532F] font-mono">
-                              {results.roiMultiple.toFixed(1)}x
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Improvement Delta Column */}
-                      <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg overflow-hidden">
-                        <div className="p-4 bg-[#059669]/10 border-b border-[#059669]/20">
-                          <div className="flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-[#059669]" />
-                            <h4 className="text-[16px] font-bold text-[#059669]">Net Improvement</h4>
-                          </div>
-                        </div>
-                        <div className="p-4 space-y-4">
-                          {(() => {
-                            const competitorCost = selectedCompetitor.type === "human"
-                              ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
-                              : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
-                            const costDiff = competitorCost - results.annualAbridgeCost;
-                            const scribeSavings = selectedCompetitor.type === "human"
-                              ? competitorCost * (scribeReductionPercent / 100)
-                              : 0;
-                            
-                            // Calculate competitor's total value from value drivers
-                            const competitorTotalValue = 
-                              (competitorDrivers.patientAccess.enabled 
-                                ? (competitorDrivers.patientAccess.metric === "direct" 
-                                  ? competitorDrivers.patientAccess.value 
-                                  : competitorDrivers.patientAccess.value * 200)
-                                : 0) +
-                              (competitorDrivers.accurateService.enabled 
-                                ? competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1)
-                                : 0) +
-                              (competitorDrivers.clinicianRetention.enabled 
-                                ? competitorDrivers.clinicianRetention.departuresPrevented * competitorDrivers.clinicianRetention.replacementCost
-                                : 0) +
-                              (competitorDrivers.overtimeSavings.enabled 
-                                ? competitorDrivers.overtimeSavings.hoursReduced * competitorDrivers.overtimeSavings.premiumRate
-                                : 0) +
-                              (competitorDrivers.denialReduction.enabled 
-                                ? competitorDrivers.denialReduction.denialsPrevented * competitorDrivers.denialReduction.avgDenialValue
-                                : 0);
-                            
-                            // Net value improvement = Abridge value - competitor value + cost savings
-                            const valueImprovement = results.totalAnnualBenefit - competitorTotalValue;
-                            const totalImprovement = valueImprovement + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0);
-                            
-                            return (
-                              <>
-                                <div>
-                                  <div className="text-[13px] text-[#6B7280]">Cost Difference</div>
-                                  <div className={`text-[18px] font-bold font-mono ${costDiff >= 0 ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                    {costDiff >= 0 ? "↓" : "↑"} {formatCurrency(Math.abs(costDiff))}
-                                  </div>
-                                </div>
-                                {selectedCompetitor.type === "human" && (
-                                  <div>
-                                    <div className="text-[13px] text-[#6B7280]">Scribe Cost Savings</div>
-                                    <div className="text-[18px] font-bold text-[#059669] font-mono">
-                                      + {formatCurrency(scribeSavings)}
-                                    </div>
-                                  </div>
-                                )}
-                                <div>
-                                  <div className="text-[13px] text-[#6B7280]">Abridge Value Creation</div>
-                                  <div className="text-[18px] font-bold text-[#059669] font-mono">
-                                    + {formatCurrency(results.totalAnnualBenefit)}
-                                  </div>
-                                </div>
-                                {competitorTotalValue > 0 && (
-                                  <div>
-                                    <div className="text-[13px] text-[#6B7280]">Less: Current {selectedCompetitor.name} Value</div>
-                                    <div className="text-[18px] font-bold text-[#DC2626] font-mono">
-                                      - {formatCurrency(competitorTotalValue)}
-                                    </div>
-                                  </div>
-                                )}
-                                <div className="pt-4 border-t border-[#E5E7EB]">
-                                  <div className="text-[13px] text-[#6B7280]">Net Annual Improvement</div>
-                                  <div className={`text-[24px] font-bold font-mono ${totalImprovement >= 0 ? "text-[#059669]" : "text-[#DC2626]"}`}>
-                                    {totalImprovement >= 0 ? "" : "-"}{formatCurrency(Math.abs(totalImprovement))}
-                                  </div>
-                                  {competitorTotalValue > 0 && (
-                                    <p className="text-[11px] text-[#9CA3AF] mt-1">After accounting for {selectedCompetitor.name}'s current value</p>
-                                  )}
-                                </div>
-                              </>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Value Drivers Comparison */}
-                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                      <h4 className="text-[16px] font-bold text-[#111827] mb-2">Value Drivers Comparison</h4>
-                      <p className="text-[13px] text-[#6B7280] mb-6">Enter the value you're getting from {selectedCompetitor.name} to compare</p>
-                      
-                      {/* Value Driver Cards */}
-                      <div className="space-y-4">
-                        {/* Patient Access */}
-                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
-                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <Checkbox
-                                checked={competitorDrivers.patientAccess.enabled}
-                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
-                                  ...prev,
-                                  patientAccess: { ...prev.patientAccess, enabled: !!checked }
-                                }))}
-                              />
-                              <div>
-                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
-                                  <Users className="h-4 w-4 text-[#6B7280]" />
-                                  Patient Access
-                                </div>
-                                <p className="text-[12px] text-[#6B7280]">Time returned → visit capacity</p>
-                              </div>
-                            </label>
-                            <div className="text-right">
-                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
-                              <div className="text-[16px] font-bold text-[#111827] font-mono">
-                                {formatCurrency(competitorDrivers.patientAccess.enabled 
-                                  ? (competitorDrivers.patientAccess.metric === "direct" 
-                                    ? competitorDrivers.patientAccess.value 
-                                    : competitorDrivers.patientAccess.value * 200)
-                                  : 0)}
-                              </div>
-                            </div>
-                          </div>
-                          {competitorDrivers.patientAccess.enabled && (
-                            <div className="p-4 border-t border-[#E5E7EB]">
-                              <div className="flex gap-2 mb-3">
-                                <Button
-                                  size="sm"
-                                  variant={competitorDrivers.patientAccess.metric === "visits" ? "default" : "outline"}
-                                  onClick={() => setCompetitorDrivers(prev => ({
-                                    ...prev,
-                                    patientAccess: { ...prev.patientAccess, metric: "visits" }
-                                  }))}
-                                  className={competitorDrivers.patientAccess.metric === "visits" ? "bg-[#E8532F] hover:bg-[#D14729]" : ""}
-                                >
-                                  Calculate from visits
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant={competitorDrivers.patientAccess.metric === "direct" ? "default" : "outline"}
-                                  onClick={() => setCompetitorDrivers(prev => ({
-                                    ...prev,
-                                    patientAccess: { ...prev.patientAccess, metric: "direct" }
-                                  }))}
-                                  className={competitorDrivers.patientAccess.metric === "direct" ? "bg-[#E8532F] hover:bg-[#D14729]" : ""}
-                                >
-                                  Enter direct value
-                                </Button>
-                              </div>
-                              {competitorDrivers.patientAccess.metric === "visits" ? (
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">Additional visits per year</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_patientAccess_visits"] ?? (competitorDrivers.patientAccess.value || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_patientAccess_visits": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          patientAccess: { ...prev.patientAccess, value: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_patientAccess_visits"]; return next; })}
-                                    placeholder="e.g., 650"
-                                    className="w-full max-w-xs h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                  <p className="text-[12px] text-[#9CA3AF] mt-1">{competitorDrivers.patientAccess.value} visits x $200/visit</p>
-                                </div>
-                              ) : (
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">Annual value ($)</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_patientAccess_direct"] ?? (competitorDrivers.patientAccess.value || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_patientAccess_direct": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          patientAccess: { ...prev.patientAccess, value: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_patientAccess_direct"]; return next; })}
-                                    placeholder="e.g., 130000"
-                                    className="w-full max-w-xs h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                              )}
-                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
-                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
-                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.patientAccess || 130000)}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Accurate Level of Service (wRVU) */}
-                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
-                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <Checkbox
-                                checked={competitorDrivers.accurateService.enabled}
-                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
-                                  ...prev,
-                                  accurateService: { ...prev.accurateService, enabled: !!checked }
-                                }))}
-                              />
-                              <div>
-                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
-                                  <TrendingUp className="h-4 w-4 text-[#6B7280]" />
-                                  Accurate Level of Service
-                                </div>
-                                <p className="text-[12px] text-[#6B7280]">wRVU capture from better documentation</p>
-                              </div>
-                            </label>
-                            <div className="text-right">
-                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
-                              <div className="text-[16px] font-bold text-[#111827] font-mono">
-                                {formatCurrency(competitorDrivers.accurateService.enabled 
-                                  ? competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1)
-                                  : 0)}
-                              </div>
-                            </div>
-                          </div>
-                          {competitorDrivers.accurateService.enabled && (
-                            <div className="p-4 border-t border-[#E5E7EB]">
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">wRVU uplift/provider/year</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_as_wrvuUplift"] ?? (competitorDrivers.accurateService.wrvuUplift || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_as_wrvuUplift": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          accurateService: { ...prev.accurateService, wrvuUplift: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_as_wrvuUplift"]; return next; })}
-                                    placeholder="e.g., 125"
-                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">wRVU rate ($/wRVU)</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_as_wrvuRate"] ?? (competitorDrivers.accurateService.wrvuRate || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_as_wrvuRate": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          accurateService: { ...prev.accurateService, wrvuRate: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_as_wrvuRate"]; return next; })}
-                                    placeholder="e.g., 40"
-                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                              </div>
-                              <p className="text-[12px] text-[#9CA3AF] mt-2">
-                                {competitorDrivers.accurateService.wrvuUplift} wRVUs x ${competitorDrivers.accurateService.wrvuRate}/wRVU x {typeof competitorProviderCount === "number" ? competitorProviderCount : 1} providers
-                              </p>
-                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
-                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
-                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.wrvu || 136500)}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Clinician Retention */}
-                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
-                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <Checkbox
-                                checked={competitorDrivers.clinicianRetention.enabled}
-                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
-                                  ...prev,
-                                  clinicianRetention: { ...prev.clinicianRetention, enabled: !!checked }
-                                }))}
-                              />
-                              <div>
-                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
-                                  <Heart className="h-4 w-4 text-[#6B7280]" />
-                                  Clinician Retention
-                                </div>
-                                <p className="text-[12px] text-[#6B7280]">Reduced turnover from lower admin burden</p>
-                              </div>
-                            </label>
-                            <div className="text-right">
-                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
-                              <div className="text-[16px] font-bold text-[#111827] font-mono">
-                                {formatCurrency(competitorDrivers.clinicianRetention.enabled 
-                                  ? competitorDrivers.clinicianRetention.departuresPrevented * competitorDrivers.clinicianRetention.replacementCost
-                                  : 0)}
-                              </div>
-                            </div>
-                          </div>
-                          {competitorDrivers.clinicianRetention.enabled && (
-                            <div className="p-4 border-t border-[#E5E7EB]">
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">Departures prevented/year</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_cr_departures"] ?? (competitorDrivers.clinicianRetention.departuresPrevented || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_cr_departures": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          clinicianRetention: { ...prev.clinicianRetention, departuresPrevented: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_cr_departures"]; return next; })}
-                                    placeholder="e.g., 0.24"
-                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">Replacement cost ($)</label>
-                                  <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    value={rawInputValues["comp_cr_cost"] ?? (competitorDrivers.clinicianRetention.replacementCost || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_cr_cost": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          clinicianRetention: { ...prev.clinicianRetention, replacementCost: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_cr_cost"]; return next; })}
-                                    placeholder="e.g., 250000"
-                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                              </div>
-                              <p className="text-[12px] text-[#9CA3AF] mt-2">
-                                {competitorDrivers.clinicianRetention.departuresPrevented} departures x {formatCurrency(competitorDrivers.clinicianRetention.replacementCost)}
-                              </p>
-                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
-                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
-                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.workforce || 60000)}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Overtime Savings */}
-                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
-                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <Checkbox
-                                checked={competitorDrivers.overtimeSavings.enabled}
-                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
-                                  ...prev,
-                                  overtimeSavings: { ...prev.overtimeSavings, enabled: !!checked }
-                                }))}
-                              />
-                              <div>
-                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-[#6B7280]" />
-                                  Overtime & Locum Savings
-                                </div>
-                                <p className="text-[12px] text-[#6B7280]">Reduced premium labor hours</p>
-                              </div>
-                            </label>
-                            <div className="text-right">
-                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
-                              <div className="text-[16px] font-bold text-[#111827] font-mono">
-                                {formatCurrency(competitorDrivers.overtimeSavings.enabled 
-                                  ? competitorDrivers.overtimeSavings.hoursReduced * competitorDrivers.overtimeSavings.premiumRate
-                                  : 0)}
-                              </div>
-                            </div>
-                          </div>
-                          {competitorDrivers.overtimeSavings.enabled && (
-                            <div className="p-4 border-t border-[#E5E7EB]">
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">Premium hours reduced/year</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_ot_hours"] ?? (competitorDrivers.overtimeSavings.hoursReduced || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_ot_hours": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          overtimeSavings: { ...prev.overtimeSavings, hoursReduced: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_ot_hours"]; return next; })}
-                                    placeholder="e.g., 65"
-                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">Premium rate ($/hour)</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_ot_rate"] ?? (competitorDrivers.overtimeSavings.premiumRate || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_ot_rate": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          overtimeSavings: { ...prev.overtimeSavings, premiumRate: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_ot_rate"]; return next; })}
-                                    placeholder="e.g., 145"
-                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                              </div>
-                              <p className="text-[12px] text-[#9CA3AF] mt-2">
-                                {competitorDrivers.overtimeSavings.hoursReduced} hours x ${competitorDrivers.overtimeSavings.premiumRate}/hour
-                              </p>
-                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
-                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
-                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.overtime || 9425)}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Denial Reduction */}
-                        <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
-                          <div className="p-4 bg-[#F9FAFB] flex items-center justify-between">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <Checkbox
-                                checked={competitorDrivers.denialReduction.enabled}
-                                onCheckedChange={(checked) => setCompetitorDrivers(prev => ({
-                                  ...prev,
-                                  denialReduction: { ...prev.denialReduction, enabled: !!checked }
-                                }))}
-                              />
-                              <div>
-                                <div className="text-[14px] font-bold text-[#111827] flex items-center gap-2">
-                                  <AlertTriangle className="h-4 w-4 text-[#6B7280]" />
-                                  Documentation Related Denials
-                                </div>
-                                <p className="text-[12px] text-[#6B7280]">Reduced denials from better documentation</p>
-                              </div>
-                            </label>
-                            <div className="text-right">
-                              <div className="text-[12px] text-[#6B7280]">{selectedCompetitor.name}</div>
-                              <div className="text-[16px] font-bold text-[#111827] font-mono">
-                                {formatCurrency(competitorDrivers.denialReduction.enabled 
-                                  ? competitorDrivers.denialReduction.denialsPrevented * competitorDrivers.denialReduction.avgDenialValue
-                                  : 0)}
-                              </div>
-                            </div>
-                          </div>
-                          {competitorDrivers.denialReduction.enabled && (
-                            <div className="p-4 border-t border-[#E5E7EB]">
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">Denials prevented/year</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_dr_denials"] ?? (competitorDrivers.denialReduction.denialsPrevented || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_dr_denials": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          denialReduction: { ...prev.denialReduction, denialsPrevented: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_dr_denials"]; return next; })}
-                                    placeholder="e.g., 117"
-                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[13px] text-[#6B7280] mb-1">Average denial value ($)</label>
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={rawInputValues["comp_dr_value"] ?? (competitorDrivers.denialReduction.avgDenialValue || "")}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
-                                        setRawInputValues(prev => ({ ...prev, "comp_dr_value": val }));
-                                        setCompetitorDrivers(prev => ({
-                                          ...prev,
-                                          denialReduction: { ...prev.denialReduction, avgDenialValue: parseFloat(val) || 0 }
-                                        }));
-                                      }
-                                    }}
-                                    onBlur={() => setRawInputValues(prev => { const next = { ...prev }; delete next["comp_dr_value"]; return next; })}
-                                    placeholder="e.g., 500"
-                                    className="w-full h-10 px-3 border border-[#E5E7EB] rounded-md text-[14px] focus:border-[#E8532F] focus:ring-[3px] focus:ring-[#E8532F]/10 focus:outline-none"
-                                  />
-                                </div>
-                              </div>
-                              <p className="text-[12px] text-[#9CA3AF] mt-2">
-                                {competitorDrivers.denialReduction.denialsPrevented} denials x {formatCurrency(competitorDrivers.denialReduction.avgDenialValue)}
-                              </p>
-                              <div className="mt-3 p-2 bg-[#059669]/10 rounded flex items-center justify-between">
-                                <span className="text-[12px] text-[#059669]">Abridge typical:</span>
-                                <span className="text-[14px] font-bold text-[#059669] font-mono">{formatCurrency(driverValues.denials || 58500)}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Totals Comparison */}
-                      <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
-                        <div className="grid grid-cols-2 gap-6">
-                          <div className="p-4 bg-[#F9FAFB] rounded-lg">
-                            <div className="text-[13px] text-[#6B7280] mb-1">{selectedCompetitor.name} Total Value</div>
-                            <div className="text-[24px] font-bold text-[#111827] font-mono">
-                              {formatCurrency(
-                                (competitorDrivers.patientAccess.enabled 
-                                  ? (competitorDrivers.patientAccess.metric === "direct" 
-                                    ? competitorDrivers.patientAccess.value 
-                                    : competitorDrivers.patientAccess.value * 200)
-                                  : 0) +
-                                (competitorDrivers.accurateService.enabled 
-                                  ? competitorDrivers.accurateService.wrvuUplift * competitorDrivers.accurateService.wrvuRate * (typeof competitorProviderCount === "number" ? competitorProviderCount : 1)
-                                  : 0) +
-                                (competitorDrivers.clinicianRetention.enabled 
-                                  ? competitorDrivers.clinicianRetention.departuresPrevented * competitorDrivers.clinicianRetention.replacementCost
-                                  : 0) +
-                                (competitorDrivers.overtimeSavings.enabled 
-                                  ? competitorDrivers.overtimeSavings.hoursReduced * competitorDrivers.overtimeSavings.premiumRate
-                                  : 0) +
-                                (competitorDrivers.denialReduction.enabled 
-                                  ? competitorDrivers.denialReduction.denialsPrevented * competitorDrivers.denialReduction.avgDenialValue
-                                  : 0)
-                              )}
-                            </div>
-                          </div>
-                          <div className="p-4 bg-[#059669]/10 rounded-lg">
-                            <div className="text-[13px] text-[#059669] mb-1">Abridge Total Value</div>
-                            <div className="text-[24px] font-bold text-[#059669] font-mono">
-                              {formatCurrency(results.totalAnnualBenefit)}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Data Sources Note */}
-                    <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
-                      <p className="text-[13px] text-[#6B7280]">
-                        Abridge ranges based on 200+ health system partners. Actual results vary by organization size, specialty mix, and implementation maturity.
-                      </p>
-                    </div>
-                    
                     {/* Footer Actions */}
                     <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
                       <Button
                         variant="outline"
-                        onClick={() => setCompetitorStep(1)}
-                        data-testid="button-back-to-selection"
+                        onClick={() => setCompetitorStep(2)}
+                        data-testid="button-back-to-deployment"
                       >
                         <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Selection
+                        Back
                       </Button>
                       <div className="flex gap-3">
                         <Button
@@ -5550,16 +5570,6 @@ export default function RoiCalculator({
                         </Button>
                         <Button
                           onClick={() => {
-                            // Create scenario from competitor comparison
-                            const competitorCost = selectedCompetitor.type === "human"
-                              ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
-                              : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
-                            const scribeSavings = selectedCompetitor.type === "human"
-                              ? competitorCost * (scribeReductionPercent / 100)
-                              : 0;
-                            const costDiff = competitorCost - results.annualAbridgeCost;
-                            const totalImprovement = results.totalAnnualBenefit + (selectedCompetitor.type === "human" ? scribeSavings : 0) + (costDiff > 0 ? costDiff : 0);
-                            
                             const newScenario: Scenario = {
                               id: `competitor-${Date.now()}`,
                               name: competitorScenarioName || `Switch from ${selectedCompetitor.name}`,
@@ -5574,13 +5584,14 @@ export default function RoiCalculator({
                               revenuePerVisitOverride: null,
                               visitLengthOverride: null,
                               investment: results.annualAbridgeCost,
-                              totalBenefit: results.totalAnnualBenefit,
-                              netGain: results.netValueCreated,
+                              totalBenefit: totalComparison.access.abridgeTotal + totalComparison.los.abridgeTotal + totalComparison.overtime.abridgeTotal,
+                              netGain: totalComparison.grandTotal,
                               roiMultiple: results.roiMultiple,
                               driverValues: Object.fromEntries(results.levers.map(l => [l.id, l.value])) as Record<LeverId, number>,
                             };
                             setScenarios([...scenarios, newScenario]);
                             setShowCompetitorComparison(false);
+                            setCompetitorStep(1);
                             toast({
                               title: "Scenario created",
                               description: `"${newScenario.name}" has been added to your scenarios.`,
