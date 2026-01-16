@@ -47,7 +47,7 @@ function createEdInputs(enabledLevers: LeverId[]): RoiInputs {
     pctDocDenialsRecovered: 40,
     baselineAttritionRate: 5,
     pctTurnoverFromBurnout: 31,
-    pctBurnoutReduction: 45,
+    pctBurnoutReduction: 25,
     costPerDeparture: 350000,
   };
   
