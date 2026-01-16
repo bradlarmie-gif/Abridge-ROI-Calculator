@@ -1,0 +1,431 @@
+The Key Insight You're Driving At
+It's not just about showing them a bigger number. It's about showing them:
+
+Current state gap - "At 50 providers, you're leaving $154K/year on the table"
+Expansion state gap - "At 500 providers, you're leaving $1.54M/year on the table"
+Over time - "And every year you wait, that gap compounds"
+
+The emotional journey:
+
+"Oh, that's interesting" (current state)
+"Oh shit" (expansion state)
+"I can't afford to wait" (multi-year view)
+
+
+Here's the Replit Prompt to Make This Happen
+Copy this:
+
+Step 4 - Rebuild as "Current vs Expansion" Comparison Tool
+The current Step 4 is close but missing the key narrative. Here's what it should do:
+
+THE STRUCTURE
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  SECTION 1: YOUR CURRENT STATE GAP                                          │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  At your comparison baseline:                                               │
+│  50 providers · 100,000 encounters/year                                     │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  ANNUAL GAP: +$294,000/year                                         │   │
+│  │                                                                     │   │
+│  │  [Driver breakdown - 2 drivers selected]                            │   │
+│  │  Patient Access:  +$160K/year                                       │   │
+│  │  Level of Service: +$134K/year                                      │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  [See what this looks like at your full scale →]                           │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  SECTION 2: YOUR EXPANSION STATE (toggle/expand)                            │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  What's your total outpatient footprint?                                    │
+│                                                                             │
+│  Total Providers: [─────●─────] 500                                         │
+│  Annual Encounters: [───●─────] 1M                                          │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  AT THIS SCALE:                                                     │   │
+│  │  ANNUAL GAP: +$2,940,000/year                                       │   │
+│  │                                                                     │   │
+│  │  That's 10x what you're currently missing                          │   │
+│  │                                                                     │   │
+│  │  [Driver breakdown - scaled]                                        │   │
+│  │  Patient Access:  +$1.6M/year                                       │   │
+│  │  Level of Service: +$1.34M/year                                     │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  SECTION 3: THE MULTI-YEAR IMPACT                                           │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  [Toggle: Current Scale / Expansion Scale]                                  │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  [AREA CHART]                                                       │   │
+│  │  Two lines showing cumulative value over 3 years                    │   │
+│  │  - Abridge line (orange, growing with ramp-up)                      │   │
+│  │  - DAX line (gray, flat)                                            │   │
+│  │  Shaded gap between them                                            │   │
+│  │                                                                     │   │
+│  │  Chart updates based on toggle (current vs expansion)               │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐                            │
+│  │ Year 1     │  │ Year 2     │  │ Year 3     │                            │
+│  │ Gap: +$58K │  │ Gap: +$317K│  │ Gap: +$474K│  (at current scale)        │
+│  └────────────┘  └────────────┘  └────────────┘                            │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  SECTION 4: THE BOTTOM LINE                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  3-YEAR VALUE LEFT ON THE TABLE                                     │   │
+│  │                                                                     │   │
+│  │  At current scale:    +$849K                                        │   │
+│  │  At expansion scale:  +$8.49M                                       │   │
+│  │                                                                     │   │
+│  │  by staying with DAX (Nuance)                                       │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+SECTION 1: Current State Gap (Always Visible)
+tsxCopy<section className="mb-8">
+  <div className="mb-6">
+    <h2 className="text-xl font-semibold text-gray-900">Your Current State</h2>
+    <p className="text-sm text-gray-500 mt-1">
+      Based on your comparison: {baselineProviders} providers · {baselineEncounters.toLocaleString()} encounters/year
+    </p>
+  </div>
+  
+  <div className="bg-white border border-gray-200 rounded-xl p-6">
+    <div className="text-center mb-6">
+      <div className="text-sm text-gray-500 mb-2">Annual Gap</div>
+      <div className="text-4xl font-bold text-orange-600">
+        +{formatCurrency(currentStateGap)}
+      </div>
+      <div className="text-sm text-gray-500 mt-1">per year</div>
+    </div>
+    
+    {/* Driver breakdown */}
+    <div className="space-y-2 mb-6">
+      {selectedDrivers.map(driver => (
+        <div key={driver.id} className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+            <span className="text-gray-700">{driver.label}</span>
+          </div>
+          <span className="font-medium text-gray-900 tabular-nums">
+            +{formatCurrency(driver.gap)}
+          </span>
+        </div>
+      ))}
+    </div>
+    
+    <button
+      onClick={() => setShowExpansion(!showExpansion)}
+      className="w-full py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-medium transition-colors"
+    >
+      {showExpansion ? 'Hide expansion view' : 'See what this looks like at your full scale →'}
+    </button>
+  </div>
+</section>
+
+SECTION 2: Expansion State (Toggleable)
+tsxCopy{showExpansion && (
+  <section className="mb-8">
+    <div className="mb-6">
+      <h2 className="text-xl font-semibold text-gray-900">Your Full Scale</h2>
+      <p className="text-sm text-gray-500 mt-1">
+        What's your total outpatient footprint?
+      </p>
+    </div>
+    
+    <div className="bg-white border border-gray-200 rounded-xl p-6">
+      {/* Scale sliders */}
+      <div className="space-y-6 mb-6">
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-gray-700">Total Providers</label>
+            <span className="text-lg font-semibold text-gray-900">{providers}</span>
+          </div>
+          <input
+            type="range"
+            min={baselineProviders}
+            max={2000}
+            step={10}
+            value={providers}
+            onChange={(e) => setProviders(Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
+        
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-gray-700">Annual Encounters</label>
+            <span className="text-lg font-semibold text-gray-900">{encounters.toLocaleString()}</span>
+          </div>
+          <input
+            type="range"
+            min={baselineEncounters}
+            max={5000000}
+            step={10000}
+            value={encounters}
+            onChange={(e) => setEncounters(Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
+      </div>
+      
+      {/* Scaled gap */}
+      <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 text-center">
+        <div className="text-sm text-orange-600 mb-2">At this scale, the annual gap is:</div>
+        <div className="text-4xl font-bold text-gray-900 mb-2">
+          +{formatCurrency(scaledGap)}
+        </div>
+        <div className="text-sm text-gray-600 mb-4">per year</div>
+        
+        {scaleFactor > 1 && (
+          <div className="text-sm text-gray-500">
+            That's {scaleFactor.toFixed(1)}x what you're currently missing
+          </div>
+        )}
+        
+        {/* Scaled driver breakdown */}
+        <div className="mt-4 pt-4 border-t border-orange-200 space-y-2">
+          {scaledDrivers.map(driver => (
+            <div key={driver.id} className="flex items-center justify-between text-sm">
+              <span className="text-gray-700">{driver.label}</span>
+              <span className="font-semibold text-orange-600 tabular-nums">
+                +{formatCurrency(driver.gap)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+SECTION 3: Multi-Year Impact with Toggle
+tsxCopy<section className="mb-8">
+  <div className="mb-6">
+    <h2 className="text-xl font-semibold text-gray-900">The Multi-Year Impact</h2>
+    <p className="text-sm text-gray-500 mt-1">
+      And it compounds over time
+    </p>
+  </div>
+  
+  <div className="bg-white border border-gray-200 rounded-xl p-6">
+    {/* Toggle for current vs expansion */}
+    <div className="flex items-center justify-center mb-6">
+      <div className="inline-flex items-center bg-gray-100 rounded-lg p-1">
+        <button
+          onClick={() => setChartView('current')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            chartView === 'current'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Current Scale
+        </button>
+        <button
+          onClick={() => setChartView('expansion')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            chartView === 'expansion'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Expansion Scale
+        </button>
+      </div>
+    </div>
+    
+    {/* Chart */}
+    <div className="h-64 mb-6">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartView === 'current' ? currentChartData : expansionChartData}>
+          <defs>
+            <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#E85D3F" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="#E85D3F" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          
+          <XAxis dataKey="year" axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v) => formatCurrency(v)} axisLine={false} tickLine={false} />
+          
+          {/* Abridge area (cumulative, with ramp-up) */}
+          <Area
+            type="monotone"
+            dataKey="abridgeCumulative"
+            stroke="#E85D3F"
+            strokeWidth={3}
+            fill="url(#gapGradient)"
+          />
+          
+          {/* DAX line (cumulative, flat growth) */}
+          <Area
+            type="monotone"
+            dataKey="daxCumulative"
+            stroke="#9CA3AF"
+            strokeWidth={2}
+            strokeDasharray="4 4"
+            fill="transparent"
+          />
+          
+          <Tooltip content={<CustomTooltip />} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+    
+    {/* Year-by-year cards */}
+    <div className="grid grid-cols-3 gap-4">
+      {[1, 2, 3].map(year => {
+        const data = chartView === 'current' ? currentYearData : expansionYearData;
+        return (
+          <div key={year} className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm font-medium text-gray-400 mb-3">Year {year}</div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">DAX (Nuance)</span>
+                <span className="font-semibold text-gray-700 tabular-nums">
+                  {formatCurrency(data[year].dax)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-orange-500">Abridge</span>
+                <span className="font-semibold text-orange-600 tabular-nums">
+                  {formatCurrency(data[year].abridge)}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-200 flex justify-between">
+                <span className="text-gray-600">Gap</span>
+                <span className="font-bold text-orange-600 tabular-nums">
+                  +{formatCurrency(data[year].gap)}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+SECTION 4: The Bottom Line (Shows Both)
+tsxCopy<section>
+  <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-xl p-8">
+    <div className="text-center">
+      <div className="text-sm text-gray-400 uppercase tracking-wide mb-4">
+        3-Year Value Left on the Table
+      </div>
+      
+      <div className="grid grid-cols-2 gap-8 max-w-2xl mx-auto mb-6">
+        <div>
+          <div className="text-xs text-gray-400 mb-2">At Current Scale</div>
+          <div className="text-3xl font-bold">
+            +{formatCurrency(currentThreeYearGap)}
+          </div>
+        </div>
+        <div className="border-l border-gray-700 pl-8">
+          <div className="text-xs text-gray-400 mb-2">At Expansion Scale</div>
+          <div className="text-3xl font-bold text-orange-400">
+            +{formatCurrency(expansionThreeYearGap)}
+          </div>
+        </div>
+      </div>
+      
+      <div className="text-gray-400 mb-8">
+        by staying with {competitor.name}
+      </div>
+      
+      <div className="flex items-center justify-center gap-4">
+        <button className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg font-medium">
+          Save This Analysis
+        </button>
+        <button className="px-6 py-3 bg-orange-500 hover:bg-orange-600 rounded-lg font-medium">
+          Let's Talk →
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  {/* Context note */}
+  <div className="mt-6 text-center">
+    <p className="text-sm text-gray-500">
+      At this scale: {chartView === 'current' 
+        ? `${baselineProviders} providers · ${baselineEncounters.toLocaleString()} encounters/year`
+        : `${providers} providers · ${encounters.toLocaleString()} encounters/year`
+      }
+    </p>
+  </div>
+</section>
+
+THE CALCULATION LOGIC
+typescriptCopy// State
+const [showExpansion, setShowExpansion] = useState(false);
+const [providers, setProviders] = useState(baselineProviders);
+const [encounters, setEncounters] = useState(baselineEncounters);
+const [chartView, setChartView] = useState<'current' | 'expansion'>('current');
+
+// Scale factor
+const scaleFactor = encounters / baselineEncounters;
+
+// Current state (baseline)
+const currentStateGap = selectedDrivers.reduce((sum, d) => sum + d.gap, 0);
+const currentStateDax = selectedDrivers.reduce((sum, d) => sum + d.competitorValue, 0);
+const currentStateAbridge = selectedDrivers.reduce((sum, d) => sum + d.abridgeValue, 0);
+
+// Scaled state
+const scaledDrivers = selectedDrivers.map(d => ({
+  ...d,
+  competitorValue: d.competitorValue * scaleFactor,
+  abridgeValue: d.abridgeValue * scaleFactor,
+  gap: d.gap * scaleFactor,
+}));
+const scaledGap = scaledDrivers.reduce((sum, d) => sum + d.gap, 0);
+
+// Multi-year projections (Abridge ramps up: 20%, 50%, 85% of full value)
+const currentChartData = [
+  { year: 'Today', daxCumulative: 0, abridgeCumulative: 0 },
+  { year: 'Year 1', daxCumulative: currentStateDax, abridgeCumulative: currentStateAbridge * 0.2 },
+  { year: 'Year 2', daxCumulative: currentStateDax * 2, abridgeCumulative: (currentStateAbridge * 0.2) + (currentStateAbridge * 0.5) },
+  { year: 'Year 3', daxCumulative: currentStateDax * 3, abridgeCumulative: (currentStateAbridge * 0.2) + (currentStateAbridge * 0.5) + (currentStateAbridge * 0.85) },
+];
+
+const expansionChartData = [
+  { year: 'Today', daxCumulative: 0, abridgeCumulative: 0 },
+  { year: 'Year 1', daxCumulative: scaledDrivers.reduce((s,d) => s + d.competitorValue, 0), abridgeCumulative: scaledDrivers.reduce((s,d) => s + d.abridgeValue, 0) * 0.2 },
+  // ... similar for Y2, Y3
+];
+
+const currentThreeYearGap = currentChartData[3].abridgeCumulative - currentChartData[3].daxCumulative;
+const expansionThreeYearGap = expansionChartData[3].abridgeCumulative - expansionChartData[3].daxCumulative;
+
+Summary of the Flow
+
+They land on Step 4 → See their current state gap immediately
+Click "See what this looks like at full scale" → Expansion section appears with sliders
+Adjust sliders → See the scaled gap update in real-time
+Multi-year chart has toggle → Can switch between "Current Scale" and "Expansion Scale" views
+Bottom line shows BOTH → Current 3-year gap vs Expansion 3-year gap side by side
+
+This creates the "oh shit" moment when they see the expansion numbers, while keeping the current state as the anchor point.

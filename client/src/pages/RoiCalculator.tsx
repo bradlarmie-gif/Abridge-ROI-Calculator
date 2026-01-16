@@ -5515,9 +5515,9 @@ export default function RoiCalculator({
                                     setActiveDriverId(driver.id);
                                   }}
                                   className={`
-                                    w-full text-left p-4 rounded-xl border-2 transition-all
+                                    w-full text-left p-4 rounded-xl border transition-all
                                     ${isConfigured 
-                                      ? 'border-[#FDBA74] bg-white shadow-sm' 
+                                      ? 'border-[#E85D3F]/30 bg-[#FEF2F0]/50 shadow-sm' 
                                       : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'}
                                   `}
                                   data-testid={`driver-mini-card-${driver.id}`}
@@ -5553,10 +5553,181 @@ export default function RoiCalculator({
                           {/* Configuration Modal - Proper overlay */}
                           {activeDriverId && (() => {
                             const activeDriver = ALL_DRIVERS.find(d => d.id === activeDriverId);
-                            const calc = driverCalculations[activeDriverId];
-                            if (!activeDriver || !calc) return null;
+                            if (!activeDriver) return null;
                             const ActiveIcon = activeDriver.Icon;
                             const isAlreadyConfigured = !!configuredDrivers[activeDriverId];
+                            
+                            // Calculate driver value using current modal assumptions
+                            const calculateDriverValue = (driverId: string, assumptions: Record<string, number>) => {
+                              const annualEncounters = inputs.annualOutpatientEncounters;
+                              const providerCount = typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders;
+                              const compUtil = competitorUtilization / 100;
+                              const compTimeSaved = competitorTimeSaved;
+                              const compDocEncounters = Math.round(annualEncounters * compUtil);
+                              const abridgeUtil = 0.65;
+                              const abridgeTimeSaved = 3;
+                              const abridgeDocEncounters = Math.round(annualEncounters * abridgeUtil);
+                              const compHoursReturned = (compDocEncounters * compTimeSaved) / 60;
+                              const abridgeHoursReturned = (abridgeDocEncounters * abridgeTimeSaved) / 60;
+                              
+                              switch(driverId) {
+                                case 'patient_access': {
+                                  const realizationFactor = (assumptions.realizationFactor ?? 20) / 100;
+                                  const revenuePerVisit = assumptions.revenuePerVisit ?? 200;
+                                  const compUsableHours = compHoursReturned * realizationFactor;
+                                  const compAdditionalVisits = Math.round(compUsableHours / 0.5);
+                                  const compAccessValue = compAdditionalVisits * revenuePerVisit;
+                                  const abridgeUsableHours = abridgeHoursReturned * realizationFactor;
+                                  const abridgeAdditionalVisits = Math.round(abridgeUsableHours / 0.5);
+                                  const abridgeAccessValue = abridgeAdditionalVisits * revenuePerVisit;
+                                  return {
+                                    gap: abridgeAccessValue - compAccessValue,
+                                    competitorValue: compAccessValue,
+                                    abridgeValue: abridgeAccessValue,
+                                    competitorSteps: [
+                                      { label: 'Documented encounters', value: compDocEncounters.toLocaleString() },
+                                      { label: 'Time saved per encounter', value: `${compTimeSaved} min` },
+                                      { label: 'Hours returned', value: `${compHoursReturned.toLocaleString()} hrs` },
+                                      { label: 'Realization factor', value: `${Math.round(realizationFactor * 100)}%` },
+                                      { label: 'Additional visits', value: compAdditionalVisits.toLocaleString() },
+                                      { label: 'Revenue per visit', value: `$${revenuePerVisit}` },
+                                    ],
+                                    abridgeSteps: [
+                                      { label: 'Documented encounters', value: abridgeDocEncounters.toLocaleString() },
+                                      { label: 'Time saved per encounter', value: `${abridgeTimeSaved} min` },
+                                      { label: 'Hours returned', value: `${abridgeHoursReturned.toLocaleString()} hrs` },
+                                      { label: 'Realization factor', value: `${Math.round(realizationFactor * 100)}%` },
+                                      { label: 'Additional visits', value: abridgeAdditionalVisits.toLocaleString() },
+                                      { label: 'Revenue per visit', value: `$${revenuePerVisit}` },
+                                    ]
+                                  };
+                                }
+                                case 'overtime': {
+                                  const afterHoursPercent = (assumptions.afterHoursPercent ?? 30) / 100;
+                                  const overtimeRate = assumptions.overtimeRate ?? 75;
+                                  const compPremiumHours = Math.round(compHoursReturned * afterHoursPercent);
+                                  const compOvertimeValue = compPremiumHours * overtimeRate;
+                                  const abridgePremiumHours = Math.round(abridgeHoursReturned * afterHoursPercent);
+                                  const abridgeOvertimeValue = abridgePremiumHours * overtimeRate;
+                                  return {
+                                    gap: abridgeOvertimeValue - compOvertimeValue,
+                                    competitorValue: compOvertimeValue,
+                                    abridgeValue: abridgeOvertimeValue,
+                                    competitorSteps: [
+                                      { label: 'Hours returned', value: `${compHoursReturned.toLocaleString()} hrs` },
+                                      { label: 'After-hours %', value: `${Math.round(afterHoursPercent * 100)}%` },
+                                      { label: 'Premium hours', value: compPremiumHours.toLocaleString() },
+                                      { label: 'Overtime rate', value: `$${overtimeRate}/hr` },
+                                    ],
+                                    abridgeSteps: [
+                                      { label: 'Hours returned', value: `${abridgeHoursReturned.toLocaleString()} hrs` },
+                                      { label: 'After-hours %', value: `${Math.round(afterHoursPercent * 100)}%` },
+                                      { label: 'Premium hours', value: abridgePremiumHours.toLocaleString() },
+                                      { label: 'Overtime rate', value: `$${overtimeRate}/hr` },
+                                    ]
+                                  };
+                                }
+                                case 'level_of_service': {
+                                  const baselineWrvu = assumptions.baselineWrvuPerEncounter ?? 1.5;
+                                  const wrvuRate = assumptions.wrvuRate ?? 45;
+                                  const abridgeQualityLift = 0.05;
+                                  const compQualityLift = 0.02;
+                                  const compBaseWrvus = compDocEncounters * baselineWrvu;
+                                  const compWrvuUplift = Math.round(compBaseWrvus * compQualityLift);
+                                  const compLosValue = compWrvuUplift * wrvuRate;
+                                  const abridgeBaseWrvus = abridgeDocEncounters * baselineWrvu;
+                                  const abridgeWrvuUplift = Math.round(abridgeBaseWrvus * abridgeQualityLift);
+                                  const abridgeLosValue = abridgeWrvuUplift * wrvuRate;
+                                  return {
+                                    gap: abridgeLosValue - compLosValue,
+                                    competitorValue: compLosValue,
+                                    abridgeValue: abridgeLosValue,
+                                    competitorSteps: [
+                                      { label: 'Base wRVUs', value: compBaseWrvus.toLocaleString() },
+                                      { label: 'Quality lift', value: `${Math.round(compQualityLift * 100)}%` },
+                                      { label: 'wRVU uplift', value: compWrvuUplift.toLocaleString() },
+                                      { label: 'wRVU rate', value: `$${wrvuRate}` },
+                                    ],
+                                    abridgeSteps: [
+                                      { label: 'Base wRVUs', value: abridgeBaseWrvus.toLocaleString() },
+                                      { label: 'Quality lift', value: `${Math.round(abridgeQualityLift * 100)}%` },
+                                      { label: 'wRVU uplift', value: abridgeWrvuUplift.toLocaleString() },
+                                      { label: 'wRVU rate', value: `$${wrvuRate}` },
+                                    ]
+                                  };
+                                }
+                                case 'retention': {
+                                  const turnoverReduction = (assumptions.turnoverReduction ?? 2) / 100;
+                                  const replacementCost = assumptions.replacementCost ?? 250000;
+                                  const compRetention = 0;
+                                  const abridgeRetention = Math.round(providerCount * turnoverReduction * replacementCost);
+                                  return {
+                                    gap: abridgeRetention,
+                                    competitorValue: compRetention,
+                                    abridgeValue: abridgeRetention,
+                                    competitorSteps: [
+                                      { label: 'Providers', value: providerCount.toString() },
+                                      { label: 'Turnover reduction', value: '0%' },
+                                      { label: 'Value impact', value: '$0' },
+                                    ],
+                                    abridgeSteps: [
+                                      { label: 'Providers', value: providerCount.toString() },
+                                      { label: 'Turnover reduction', value: `${Math.round(turnoverReduction * 100)}%` },
+                                      { label: 'Replacement cost', value: `$${replacementCost.toLocaleString()}` },
+                                    ]
+                                  };
+                                }
+                                case 'hcc': {
+                                  const captureImprovement = (assumptions.captureImprovement ?? 5) / 100;
+                                  const avgHccValue = assumptions.avgHccValue ?? 1500;
+                                  const baselineHccs = Math.round(annualEncounters * 0.15);
+                                  const compHccValue = 0;
+                                  const abridgeHccValue = Math.round(baselineHccs * captureImprovement * avgHccValue);
+                                  return {
+                                    gap: abridgeHccValue,
+                                    competitorValue: compHccValue,
+                                    abridgeValue: abridgeHccValue,
+                                    competitorSteps: [
+                                      { label: 'Baseline HCCs', value: baselineHccs.toLocaleString() },
+                                      { label: 'Capture improvement', value: '0%' },
+                                      { label: 'Value impact', value: '$0' },
+                                    ],
+                                    abridgeSteps: [
+                                      { label: 'Baseline HCCs', value: baselineHccs.toLocaleString() },
+                                      { label: 'Capture improvement', value: `${Math.round(captureImprovement * 100)}%` },
+                                      { label: 'Avg HCC value', value: `$${avgHccValue.toLocaleString()}` },
+                                    ]
+                                  };
+                                }
+                                case 'denials': {
+                                  const denialReduction = (assumptions.denialReduction ?? 25) / 100;
+                                  const avgDenialValue = assumptions.avgDenialValue ?? 500;
+                                  const baselineDenials = Math.round(annualEncounters * 0.05);
+                                  const compDenialValue = 0;
+                                  const abridgeDenialValue = Math.round(baselineDenials * denialReduction * avgDenialValue);
+                                  return {
+                                    gap: abridgeDenialValue,
+                                    competitorValue: compDenialValue,
+                                    abridgeValue: abridgeDenialValue,
+                                    competitorSteps: [
+                                      { label: 'Baseline denials', value: baselineDenials.toLocaleString() },
+                                      { label: 'Denial reduction', value: '0%' },
+                                      { label: 'Value impact', value: '$0' },
+                                    ],
+                                    abridgeSteps: [
+                                      { label: 'Baseline denials', value: baselineDenials.toLocaleString() },
+                                      { label: 'Denial reduction', value: `${Math.round(denialReduction * 100)}%` },
+                                      { label: 'Avg denial cost', value: `$${avgDenialValue}` },
+                                    ]
+                                  };
+                                }
+                                default:
+                                  return { gap: 0, competitorValue: 0, abridgeValue: 0, competitorSteps: [], abridgeSteps: [] };
+                              }
+                            };
+                            
+                            // Calculate current value based on modal assumptions
+                            const currentCalc = calculateDriverValue(activeDriverId, modalAssumptions);
                             
                             // Get editable fields based on driver type
                             const getEditableFieldsForDriver = (driverId: string) => {
@@ -5663,11 +5834,11 @@ export default function RoiCalculator({
                                     </div>
                                     
                                     {/* Preview Value */}
-                                    <div className="mt-6 p-4 bg-[#FEF2F0] rounded-xl">
+                                    <div className="mt-6 p-4 bg-[#FEF2F0] rounded-xl border border-[#E85D3F]/20">
                                       <div className="flex items-baseline justify-between">
                                         <span className="text-sm text-gray-600">Estimated annual gap value</span>
                                         <span className="text-2xl font-bold text-[#E85D3F] tabular-nums">
-                                          +${calc.gap.toLocaleString()}
+                                          +${currentCalc.gap.toLocaleString()}
                                         </span>
                                       </div>
                                     </div>
@@ -5675,26 +5846,32 @@ export default function RoiCalculator({
                                   
                                   {/* Footer */}
                                   <div className="p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                                    <button 
+                                    <Button 
+                                      variant="ghost"
                                       onClick={() => setActiveDriverId(null)}
-                                      className="text-sm text-gray-500 hover:text-gray-700"
                                       data-testid="button-cancel-config"
                                     >
                                       Cancel
-                                    </button>
+                                    </Button>
                                     <Button
                                       onClick={() => {
-                                        // Save with current modal assumptions
+                                        // Save with current modal assumptions and calculated values
                                         setConfiguredDrivers(prev => ({
                                           ...prev,
                                           [activeDriverId]: {
-                                            ...calc,
+                                            id: activeDriverId,
+                                            label: activeDriver.label,
+                                            gap: currentCalc.gap,
+                                            competitorValue: currentCalc.competitorValue,
+                                            abridgeValue: currentCalc.abridgeValue,
+                                            competitorSteps: currentCalc.competitorSteps,
+                                            abridgeSteps: currentCalc.abridgeSteps,
                                             assumptions: { ...modalAssumptions }
                                           }
                                         }));
                                         setActiveDriverId(null);
                                       }}
-                                      className="px-6 py-2.5 bg-[#E85D3F] hover:bg-[#D14729] text-white"
+                                      className="bg-[#E85D3F] hover:bg-[#D14729] text-white"
                                       data-testid="button-calculate-value"
                                     >
                                       Calculate Value
@@ -5715,13 +5892,13 @@ export default function RoiCalculator({
                               return (
                                 <div 
                                   key={driverCalc.id} 
-                                  className="bg-white border-2 border-[#FDBA74] rounded-xl overflow-hidden"
+                                  className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm"
                                   data-testid={`driver-result-card-${driverCalc.id}`}
                                 >
-                                  {/* Header - Orange accent background */}
-                                  <div className="p-6 bg-[#FEF2F0] flex items-center justify-between">
+                                  {/* Header - Clean white with subtle accent */}
+                                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                      <div className="w-10 h-10 rounded-lg bg-[#FFEDD5] flex items-center justify-center">
+                                      <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center">
                                         <DriverIcon className="w-5 h-5 text-[#E85D3F]" />
                                       </div>
                                       <div>
