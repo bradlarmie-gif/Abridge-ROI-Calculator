@@ -5015,39 +5015,104 @@ export default function RoiCalculator({
                   </div>
                 )}
                 
-                {/* Step 3: Where the Value Comes From - Wizard Style */}
+                {/* Step 3: THE COMPARISON - Split Screen View */}
                 {competitorStep === 3 && selectedCompetitor && (
-                  <div className="space-y-0">
-                    {/* Sticky Opportunity Header */}
-                    <div className="sticky top-0 z-[100] bg-gradient-to-br from-[#d1fae5] via-[#ecfdf5] to-[#d1fae5] border-b-[3px] border-[#10b981] px-6 py-4 -mx-6 -mt-6 mb-6">
-                      <div className="text-center">
-                        <div className="text-[13px] uppercase tracking-[0.5px] text-[#059669] font-semibold mb-1">Your Opportunity with Abridge</div>
-                        <div className="text-[48px] font-black text-[#065f46] font-mono leading-none" style={{ fontVariantNumeric: "tabular-nums" }}>
-                          +{formatCurrency(totalComparison.grandTotal)}
-                        </div>
-                        <div className="text-[12px] text-[#047857] mt-1">Updates as you compare below</div>
+                  <div className="space-y-6">
+                    {/* Context Header */}
+                    <div className="text-center py-2 border-b border-[#E5E7EB]">
+                      <div className="text-[14px] text-[#6B7280]">
+                        {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders} providers | {inputs.annualOutpatientEncounters.toLocaleString()} encounters | Switching from {selectedCompetitor.name}
                       </div>
                     </div>
                     
-                    {/* Step indicator */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
-                        <span className="ml-2 text-[13px] text-[#6B7280]">Competitor</span>
-                      </div>
-                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">2</span>
-                        <span className="ml-2 text-[13px] text-[#6B7280]">Deployment</span>
-                      </div>
-                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">3</span>
-                        <span className="ml-2 text-[13px] text-[#111827] font-medium">What You'll Get</span>
+                    {/* THE COMPARISON - Split Screen */}
+                    <CompetitorComparison
+                      providers={typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
+                      encounters={inputs.annualOutpatientEncounters}
+                      competitor={{
+                        name: selectedCompetitor.name,
+                        costPerProvider: competitorCostPerProvider,
+                        utilization: competitorUtilization,
+                        minutesSaved: competitorTimeSaved,
+                        patientAccessVisits: compDriverInputs.access.visitsPerProvider || 30,
+                        losWrvus: compDriverInputs.los.wrvuUpliftPerProvider || 20,
+                        overtimeHours: compDriverInputs.overtime.hoursPerProvider || 15,
+                      }}
+                      abridge={{
+                        costPerProvider: inputs.monthlyCostPerProvider,
+                        utilization: inputs.abridgeUtilizationPct,
+                        minutesSaved: 7,
+                        patientAccessVisits: 60,
+                        losWrvus: 50,
+                        overtimeHours: 25,
+                      }}
+                      revenuePerVisit={compDriverInputs.access.revenuePerVisit}
+                      wrvuRate={compDriverInputs.los.wrvuRate}
+                      hourlyRate={compDriverInputs.overtime.premiumRate}
+                    />
+                    
+                    {/* Footer Actions */}
+                    <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCompetitorStep(2)}
+                        data-testid="button-back-to-deployment"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back
+                      </Button>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowCompetitorComparison(false)}
+                          data-testid="button-cancel-competitor"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            const newScenario: Scenario = {
+                              id: `competitor-${Date.now()}`,
+                              name: competitorScenarioName || `Switch from ${selectedCompetitor.name}`,
+                              type: "expand",
+                              createdAt: new Date(),
+                              providers: typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders,
+                              encounters: inputs.annualOutpatientEncounters,
+                              utilizationRate: inputs.abridgeUtilizationPct,
+                              maPopulationPct: 0,
+                              newPatientPct: 20,
+                              specialtyPct: 100,
+                              revenuePerVisitOverride: null,
+                              visitLengthOverride: null,
+                              investment: results.annualAbridgeCost,
+                              totalBenefit: totalComparison.access.abridgeTotal + totalComparison.los.abridgeTotal + totalComparison.overtime.abridgeTotal,
+                              netGain: totalComparison.grandTotal,
+                              roiMultiple: results.roiMultiple,
+                              driverValues: Object.fromEntries(results.levers.map(l => [l.id, l.value])) as Record<LeverId, number>,
+                            };
+                            setScenarios([...scenarios, newScenario]);
+                            setShowCompetitorComparison(false);
+                            setCompetitorStep(1);
+                            toast({
+                              title: "Scenario created",
+                              description: `"${newScenario.name}" has been added to your scenarios.`,
+                            });
+                          }}
+                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                          data-testid="button-save-competitor-scenario"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Save as Scenario
+                        </Button>
                       </div>
                     </div>
-                    
-                    {/* Wizard Content */}
+                  </div>
+                )}
+                
+                {/* OLD Step 3 Wizard Content - Now Hidden */}
+                {false && selectedCompetitor && (
+                  <div className="space-y-0 hidden">
+                    {/* This content is now replaced by the direct split-screen comparison above */}
                     {currentDriverIndex < 3 ? (
                       <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
                         {/* Progress indicator */}
