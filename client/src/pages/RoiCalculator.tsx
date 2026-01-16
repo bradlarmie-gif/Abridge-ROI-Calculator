@@ -28,6 +28,7 @@ import {
 import { ExpansionCalculator } from "@/components/expansion";
 import type { ExpansionResults, ExpansionInputs } from "@/components/expansion";
 import { NewCareSettingFlow } from "@/components/expansion/NewCareSettingFlow";
+import { CompetitorComparison } from "@/components/CompetitorComparison";
 import type { CombinedDeploymentModel } from "@/components/expansion/newCareSettingCalculations";
 import {
   CARE_SETTING_LABELS,
@@ -5424,6 +5425,37 @@ export default function RoiCalculator({
                             </div>
                           </div>
                         </div>
+                      </div>
+                      
+                      {/* Split-Screen Comparison View */}
+                      <div className="mt-6">
+                        <div className="text-[14px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">
+                          Side-by-Side Comparison
+                        </div>
+                        <CompetitorComparison
+                          providers={typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
+                          encounters={inputs.annualOutpatientEncounters}
+                          competitor={{
+                            name: selectedCompetitor.name,
+                            costPerProvider: competitorCostPerProvider,
+                            utilization: competitorUtilization,
+                            minutesSaved: competitorTimeSaved,
+                            patientAccessVisits: compDriverInputs.access.skipped ? 0 : compDriverInputs.access.visitsPerProvider,
+                            losWrvus: compDriverInputs.los.skipped ? 0 : compDriverInputs.los.wrvuUpliftPerProvider,
+                            overtimeHours: compDriverInputs.overtime.skipped ? 0 : compDriverInputs.overtime.hoursPerProvider,
+                          }}
+                          abridge={{
+                            costPerProvider: inputs.monthlyCostPerProvider,
+                            utilization: inputs.abridgeUtilizationPct,
+                            minutesSaved: 7,
+                            patientAccessVisits: compDriverInputs.access.skipped ? 0 : 60,
+                            losWrvus: compDriverInputs.los.skipped ? 0 : 50,
+                            overtimeHours: compDriverInputs.overtime.skipped ? 0 : 25,
+                          }}
+                          revenuePerVisit={compDriverInputs.access.revenuePerVisit}
+                          wrvuRate={compDriverInputs.los.wrvuRate}
+                          hourlyRate={compDriverInputs.overtime.premiumRate}
+                        />
                       </div>
                     </div>
                       </div>
