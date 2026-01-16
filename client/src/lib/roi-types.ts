@@ -159,7 +159,7 @@ export const defaultInputs: RoiInputs = {
     providerCount: 100,
     baselineAttritionRate: 5,
     pctAttritionLinkedToBurnout: 40,
-    pctBurnoutExitsAvoided: 40,
+    pctBurnoutExitsAvoided: 25,
     costPerDeparture: 250000,
   },
   wrvu: {

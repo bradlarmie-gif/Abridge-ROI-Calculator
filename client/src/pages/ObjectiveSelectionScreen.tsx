@@ -1348,19 +1348,19 @@ export default function ObjectiveSelectionScreen({
       hccRecaptureRate: 40,
       denialPreventionRate: 50,
       overtimeReduction: 15,
-      retentionPrevention: 30,
+      retentionPrevention: 15,
     },
     typical: {
       hccRecaptureRate: 50,
       denialPreventionRate: 66,
       overtimeReduction: 20,
-      retentionPrevention: 40,
+      retentionPrevention: 25,
     },
     aggressive: {
       hccRecaptureRate: 60,
       denialPreventionRate: 80,
       overtimeReduction: 30,
-      retentionPrevention: 50,
+      retentionPrevention: 35,
     },
   };
 
@@ -1388,9 +1388,9 @@ export default function ObjectiveSelectionScreen({
 
   // Get current retention prevention percentage based on posture
   const getRetentionPreventionPct = () => {
-    if (valuePosture === "conservative") return 30;
-    if (valuePosture === "aggressive") return 50;
-    return 40; // typical
+    if (valuePosture === "conservative") return 15;
+    if (valuePosture === "aggressive") return 35;
+    return 25; // typical
   };
 
   // Track customizations from current posture defaults
