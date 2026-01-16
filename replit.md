@@ -23,7 +23,12 @@ The application guides users through a multi-step process:
 -   **Nursing Flow**: Features dedicated strategic priorities with up to 8 drivers, a Value Methodology page explaining driver impact with reference scenarios, and a specialized Value Posture step with predefined presets and fine-tuning options.
 -   **Expansion Calculator**: A 4-step wizard for modeling ROI in provider expansion scenarios, including baseline review, expansion planning, a "Reality Check" for driver validation, and 3-year maturity model projections.
 -   **New Care Setting Flow**: A two-step process to explore adding new care settings to an existing deployment, offering educational insights and a "Combined Preview" with real-time ROI calculations for integrated deployments, considering volume discounts and driver inheritance.
--   **Competitor Comparison Wizard**: A 3-step wizard enabling users to compare the incremental value of Abridge against other ambient documentation vendors, allowing for detailed deployment metrics, side-by-side comparisons, and driver-specific value comparisons with skip functionality.
+-   **Competitor Comparison Wizard**: A 4-step wizard enabling users to compare the incremental value of Abridge against other ambient documentation vendors. Features:
+    - **Step 3 Driver Math Cards**: Side-by-side visual calculation waterfalls showing competitor (gray) vs Abridge (green) flows
+    - **Editable Assumptions**: Inline editable fields with pencil icons for key assumptions (realization factor, revenue per visit, overtime rate, wRVU rate, etc.)
+    - **Progressive Driver Reveal**: "Add Driver" button to progressively add Overtime Savings and Level of Service cards
+    - **Total Gap Summary**: Aggregated view showing breakdown of all enabled driver gaps
+    - **Critical Benchmark**: Abridge saves 3 minutes per encounter (documented benchmark)
 
 ### Frontend Architecture
 -   **Framework**: React 18 with TypeScript.

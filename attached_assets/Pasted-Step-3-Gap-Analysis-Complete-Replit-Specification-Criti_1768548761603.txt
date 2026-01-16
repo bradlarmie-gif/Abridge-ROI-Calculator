@@ -1,0 +1,304 @@
+Step 3: Gap Analysis - Complete Replit Specification
+Critical Fix First
+Abridge time savings average is 3 min, NOT 7 min. Update this throughout.
+
+Page Structure
+Step 3 has two main sections:
+
+"The Gap at a Glance" - The side-by-side comparison card (already good)
+"How the Gap Translates to Value" - The driver math cards (needs editable fields + summary at bottom)
+
+
+Section 1: The Gap at a Glance
+Status: Good, but update the time savings
+Change the TIME SAVINGS row on the Abridge side:
+
+Was: 7 min +250%
+Should be: 3 min +50% (if competitor entered 2 min)
+
+The percentage should be calculated dynamically:
+Copy((abridgeTimeSaved - competitorTimeSaved) / competitorTimeSaved) * 100
+
+Section 2: How the Gap Translates to Value
+Update Abridge Benchmarks (Global Constants)
+typescriptCopyconst ABRIDGE_BENCHMARKS = {
+  utilization: 65, // % of providers using daily
+  timeSavedPerEncounter: 3, // minutes (NOT 7)
+  costPerProviderPerMonth: 180, // $
+  wrvuLift: 5, // % improvement
+  hccRecaptureRate: 50, // %
+  denialPreventionRate: 66, // %
+  burnoutPreventionRate: 40, // %
+};
+
+Driver Card Structure
+Each driver card should:
+
+Show the header with icon, title, subtitle, and gap amount
+Show the side-by-side math flow
+Mark editable fields with a pencil icon
+Show the comparison bar at the bottom
+Show the insight text
+
+
+DRIVER 1: Patient Access
+Header:
+
+Icon: User+ icon (orange background)
+Title: "Patient Access"
+Subtitle: "Turn documentation efficiency into additional visit capacity"
+Gap: "+$XXX,XXX additional value" (calculated, green text)
+
+Math Flow - Left Side (With DAX/Competitor):
+StepLabelValueEditable?Notes●Annual encounters100,000NOFrom baseline1At your utilization45%NOFrom Step 2100,000 × 45%Formula shown in gray2Documented encounters45,000NOCalculated●Time saved/encounter2 minNOFrom Step 23Hours returned1,500 hrsNOCalculated45,000 × 2 min ÷ 60Formula shown●Realization factor20%YESEditable with pencil4Usable hours300 hrsNOCalculated●Revenue per visit$200YESEditable with pencil5Additional visits possible600NOCalculated300 usable hrs ÷ 0.5 hrs/visitFormula shownResultAnnual Value$120,000NOBold, in box
+Math Flow - Right Side (With Abridge):
+StepLabelValueEditable?Notes●Annual encounters100,000NOSame as left1At Abridge utilization65%NOAbridge benchmark100,000 × 65%Green formula text2Documented encounters65,000NOCalculated●Time saved/encounter3 minNOAbridge benchmarkAbridge averageGreen subtext3Hours returned3,250 hrsNOCalculated65,000 × 3 min ÷ 60Green formula●Realization factor20%NOSame as left4Usable hours650 hrsNOCalculated●Revenue per visit$200NOSame as left5Additional visits possible1,300NOCalculated650 usable hrs ÷ 0.5 hrs/visitGreen formulaResultAnnual Value$260,000NOBold green, in box
+Comparison Bar:
+
+Abridge bar: Full width, green, shows "$260,000"
+Current bar: Shorter, gray, shows "$120,000"
+Gap callout: "↑ +$140,000 gap" (green text, right-aligned)
+
+Insight:
+
+Lightbulb icon
+Text: "The 1.5x difference in time savings (3 min vs 2 min) combined with 44% higher utilization means 2x more visits enabled."
+
+
+DRIVER 2: Overtime Savings
+Header:
+
+Icon: Clock icon (amber/yellow background)
+Title: "Overtime Savings"
+Subtitle: "Reduce after-hours documentation burden"
+Gap: "+$XXX,XXX additional savings"
+
+Math Flow - Left Side (With DAX/Competitor):
+StepLabelValueEditable?1Hours returned1,500 hrsNO●% after-hours work15%YES2Premium hours avoided225 hrsNO●Overtime rate$145/hrYESResultAnnual Savings$32,625NO
+Math Flow - Right Side (With Abridge):
+StepLabelValueEditable?1Hours returned3,250 hrsNO●% after-hours work15%NO2Premium hours avoided488 hrsNO●Overtime rate$145/hrNOResultAnnual Savings$70,763NO
+Insight:
+"More time saved per encounter means less after-hours documentation, reducing costly overtime by 263 additional hours."
+
+DRIVER 3: Level of Service
+Header:
+
+Icon: Chart/trending up icon (purple background)
+Title: "Level of Service"
+Subtitle: "Capture accurate wRVU through complete documentation"
+Gap: "+$XXX,XXX additional value"
+
+Math Flow - Left Side (With DAX/Competitor):
+StepLabelValueEditable?1Documented encounters45,000NO●Baseline wRVU/encounter1.75YES2Baseline wRVUs78,750NO●Quality lift (current)2%YES3wRVU uplift1,575NO●wRVU rate$34YESResultAnnual Value$53,550NO
+Math Flow - Right Side (With Abridge):
+StepLabelValueEditable?1Documented encounters65,000NO●Baseline wRVU/encounter1.75NO2Baseline wRVUs113,750NO●Quality lift5%NOAbridge typical3wRVU uplift5,688NO●wRVU rate$34NOResultAnnual Value$193,375NO
+Insight:
+"Higher quality documentation (5% vs 2% lift) across more encounters captures 4,113 additional wRVUs annually."
+
+DRIVER 4: Clinician Retention (if selected)
+Header:
+
+Icon: Heart/users icon
+Title: "Clinician Retention"
+Subtitle: "Reduce burnout-driven turnover"
+
+Math Flow - Left Side:
+StepLabelValueEditable?●Total providers50NO●Annual turnover rate5%YES1Expected departures2.5NO●% due to burnout40%YES2Burnout departures1.0NO●Current prevention rate15%YES3Departures avoided0.15NO●Replacement cost$250,000YESResultAnnual Savings$37,500NO
+Math Flow - Right Side:
+StepLabelValueEditable?●Total providers50NO●Annual turnover rate5%NO1Expected departures2.5NO●% due to burnout40%NO2Burnout departures1.0NO●Prevention rate40%NO3Departures avoided0.40NO●Replacement cost$250,000NOResultAnnual Savings$100,000NO
+
+DRIVER 5: HCC Capture (if selected)
+Math Flow - Left Side:
+StepLabelValueEditable?●Annual encounters100,000NO●Visits per unique patient2.5YES1Unique patients40,000NO●% Medicare Advantage15%YES2MA patients6,000NO●Conditions per MA patient2.5YES3Expected HCC conditions15,000NO●Current capture rate70%YES4Conditions missed4,500NO●Current recapture rate20%YES5New conditions captured900NO●Avg RAF weight0.25YES6RAF points added225NO●PMPM$1,000YESResultAnnual Value$2,700,000NO
+Math Flow - Right Side:
+Same structure, but:
+
+Recapture rate: 50% (Abridge benchmark)
+New conditions captured: 2,250
+RAF points added: 562.5
+Annual Value: $6,750,000
+
+
+DRIVER 6: Documentation-Related Denials (if selected)
+Math Flow - Left Side:
+StepLabelValueEditable?●Total annual revenue$10,000,000YES●Denial rate5%YES1Revenue denied$500,000NO●% documentation-related30%YES2Doc-related denials$150,000NO●Current prevention rate30%YESResultAnnual Value$45,000NO
+Math Flow - Right Side:
+Same, but:
+
+Prevention rate: 66% (Abridge benchmark)
+Annual Value: $99,000
+
+
+Editable Field UI Specification
+When a field is editable, show it like this:
+Copy┌─────────────────────────────────────────────────────────────┐
+│  ●  Revenue per visit            $200  ✎                    │
+└─────────────────────────────────────────────────────────────┘
+The pencil icon (✎) should:
+
+Be a small, subtle gray icon
+On hover: turn slightly darker, show tooltip "Click to edit"
+On click: transform the value into an inline input field
+
+When editing:
+Copy┌─────────────────────────────────────────────────────────────┐
+│  ●  Revenue per visit            $ [200    ]                │
+└─────────────────────────────────────────────────────────────┘
+
+Input should be focused automatically
+On blur or Enter key: save and recalculate all downstream values
+On Escape: cancel edit
+
+
+Section 3: Total Gap Summary (NEW - Add at bottom of page)
+After all driver cards, add a summary section:
+Copy┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                         │
+│  TOTAL VALUE GAP SUMMARY                                                │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                                                                 │   │
+│  │  Patient Access                              +$140,000          │   │
+│  │  ─────────────────────────────────────────────────────────────  │   │
+│  │  Overtime Savings                            +$38,138           │   │
+│  │  ─────────────────────────────────────────────────────────────  │   │
+│  │  Level of Service                            +$139,825          │   │
+│  │  ═════════════════════════════════════════════════════════════  │   │
+│  │  TOTAL ADDITIONAL VALUE                      +$317,963/year     │   │
+│  │                                              (bold, large, green)│   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                                                                 │   │
+│  │  Ready to see how this compounds over time?                     │   │
+│  │                                                                 │   │
+│  │                [See the Full Opportunity →]                     │   │
+│  │                                                                 │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Complete Calculation Formulas (for reference)
+Patient Access
+javascriptCopy// Left side (competitor)
+const compDocumentedEncounters = annualEncounters * (competitorUtilization / 100);
+const compHoursReturned = (compDocumentedEncounters * competitorTimeSaved) / 60;
+const compUsableHours = compHoursReturned * (realizationFactor / 100);
+const compAdditionalVisits = compUsableHours / 0.5; // 30 min per visit
+const compPatientAccessValue = compAdditionalVisits * revenuePerVisit;
+
+// Right side (Abridge)
+const abridgeDocumentedEncounters = annualEncounters * (65 / 100); // 65% utilization
+const abridgeHoursReturned = (abridgeDocumentedEncounters * 3) / 60; // 3 min saved
+const abridgeUsableHours = abridgeHoursReturned * (realizationFactor / 100);
+const abridgeAdditionalVisits = abridgeUsableHours / 0.5;
+const abridgePatientAccessValue = abridgeAdditionalVisits * revenuePerVisit;
+
+const patientAccessGap = abridgePatientAccessValue - compPatientAccessValue;
+Overtime Savings
+javascriptCopy// Uses hours returned from Patient Access calculation
+const compPremiumHours = compHoursReturned * (afterHoursPercent / 100);
+const compOvertimeValue = compPremiumHours * overtimeRate;
+
+const abridgePremiumHours = abridgeHoursReturned * (afterHoursPercent / 100);
+const abridgeOvertimeValue = abridgePremiumHours * overtimeRate;
+
+const overtimeGap = abridgeOvertimeValue - compOvertimeValue;
+Level of Service
+javascriptCopyconst compBaseWrvus = compDocumentedEncounters * baselineWrvuPerEncounter;
+const compWrvuUplift = compBaseWrvus * (competitorQualityLift / 100);
+const compLosValue = compWrvuUplift * wrvuRate;
+
+const abridgeBaseWrvus = abridgeDocumentedEncounters * baselineWrvuPerEncounter;
+const abridgeWrvuUplift = abridgeBaseWrvus * (5 / 100); // 5% Abridge benchmark
+const abridgeLosValue = abridgeWrvuUplift * wrvuRate;
+
+const losGap = abridgeLosValue - compLosValue;
+Clinician Retention
+javascriptCopyconst expectedDepartures = providers * (turnoverRate / 100);
+const burnoutDepartures = expectedDepartures * (burnoutPercent / 100);
+
+const compDeparturesAvoided = burnoutDepartures * (competitorPreventionRate / 100);
+const compRetentionValue = compDeparturesAvoided * replacementCost;
+
+const abridgeDeparturesAvoided = burnoutDepartures * (40 / 100); // 40% Abridge benchmark
+const abridgeRetentionValue = abridgeDeparturesAvoided * replacementCost;
+
+const retentionGap = abridgeRetentionValue - compRetentionValue;
+HCC Capture
+javascriptCopyconst uniquePatients = annualEncounters / visitsPerPatient;
+const maPatients = uniquePatients * (maPercent / 100);
+const expectedConditions = maPatients * conditionsPerPatient;
+const missedConditions = expectedConditions * (1 - currentCaptureRate / 100);
+
+const compNewConditions = missedConditions * (competitorRecaptureRate / 100);
+const compRafPoints = compNewConditions * avgRafWeight;
+const compHccValue = compRafPoints * pmpm * 12;
+
+const abridgeNewConditions = missedConditions * (50 / 100); // 50% Abridge benchmark
+const abridgeRafPoints = abridgeNewConditions * avgRafWeight;
+const abridgeHccValue = abridgeRafPoints * pmpm * 12;
+
+const hccGap = abridgeHccValue - compHccValue;
+Denials
+javascriptCopyconst revenueDenied = totalAnnualRevenue * (denialRate / 100);
+const docRelatedDenials = revenueDenied * (docRelatedPercent / 100);
+
+const compDenialsValue = docRelatedDenials * (competitorPreventionRate / 100);
+const abridgeDenialsValue = docRelatedDenials * (66 / 100); // 66% Abridge benchmark
+
+const denialsGap = abridgeDenialsValue - compDenialsValue;
+
+Default Values for Editable Fields
+typescriptCopyconst EDITABLE_DEFAULTS = {
+  // Patient Access
+  realizationFactor: 20, // %
+  revenuePerVisit: 200, // $
+  
+  // Overtime
+  afterHoursPercent: 15, // %
+  overtimeRate: 145, // $/hr
+  
+  // Level of Service
+  baselineWrvuPerEncounter: 1.75,
+  competitorQualityLift: 2, // %
+  wrvuRate: 34, // $
+  
+  // Retention
+  turnoverRate: 5, // %
+  burnoutPercent: 40, // %
+  competitorPreventionRate: 15, // %
+  replacementCost: 250000, // $
+  
+  // HCC
+  visitsPerPatient: 2.5,
+  maPercent: 15, // %
+  conditionsPerPatient: 2.5,
+  currentCaptureRate: 70, // %
+  competitorRecaptureRate: 20, // %
+  avgRafWeight: 0.25,
+  pmpm: 1000, // $
+  
+  // Denials
+  totalAnnualRevenue: 10000000, // $
+  denialRate: 5, // %
+  docRelatedPercent: 30, // %
+  competitorDenialPrevention: 30, // %
+};
+
+Summary of Changes Needed
+
+Change Abridge time savings from 7 min to 3 min everywhere
+Add pencil icons to editable fields in each driver card:
+
+Patient Access: Realization factor, Revenue per visit
+Overtime: % after-hours work, Overtime rate
+Level of Service: Baseline wRVU, Quality lift (current), wRVU rate
+Retention: Turnover rate, % burnout, Prevention rate (current), Replacement cost
+HCC: Visits per patient, % MA, Conditions per patient, Capture rate, Recapture rate (current), RAF weight, PMPM
+Denials: Total revenue, Denial rate, % doc-related, Prevention rate (current)
+
+
+Add Total Gap Summary section at the bottom of the page with driver breakdown and CTA button
+Update insight text at the bottom of each card to reflect the 3 min number
+Recalculate all values when any editable field changes

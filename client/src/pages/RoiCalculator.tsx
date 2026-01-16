@@ -86,6 +86,7 @@ import {
   CheckCircle,
   UserPlus,
   ArrowUp,
+  Pencil,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -372,6 +373,19 @@ export default function RoiCalculator({
     overtime: boolean;
     los: boolean;
   }>({ access: true, overtime: false, los: false });
+  
+  // Editable fields for driver math cards
+  const [driverEditableFields, setDriverEditableFields] = useState({
+    realizationFactor: 20, // % of time returned that's usable
+    revenuePerVisit: 200,
+    afterHoursPercent: 15, // % of time saved that reduces overtime
+    overtimeRate: 145,
+    baselineWrvuPerEncounter: 1.75,
+    competitorQualityLift: 2, // % wRVU improvement from current solution
+    wrvuRate: 34,
+  });
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [tempEditValue, setTempEditValue] = useState<string>("");
   
   // Wizard step for driver comparison (0 = access, 1 = los, 2 = overtime, 3 = summary)
   const [currentDriverIndex, setCurrentDriverIndex] = useState(0);
@@ -5091,27 +5105,134 @@ export default function RoiCalculator({
                       const compTimeSaved = competitorTimeSaved;
                       const compDocEncounters = Math.round(annualEncounters * compUtil);
                       
-                      // Abridge metrics (benchmarks)
+                      // Abridge metrics (benchmarks) - UPDATED: 3 min not 7
                       const abridgeUtil = 0.65;
-                      const abridgeTimeSaved = 7;
+                      const abridgeTimeSaved = 3; // Correct Abridge benchmark
                       const abridgeDocEncounters = Math.round(annualEncounters * abridgeUtil);
                       
-                      // Patient Access calculations
-                      const compHoursReturned = Math.round(compDocEncounters * compTimeSaved / 60);
-                      const compUsableHours = Math.round(compHoursReturned * 0.20);
+                      // Patient Access calculations using editable fields
+                      const realizationFactor = driverEditableFields.realizationFactor / 100;
+                      const revenuePerVisit = driverEditableFields.revenuePerVisit;
+                      
+                      const compHoursReturned = (compDocEncounters * compTimeSaved) / 60;
+                      const compUsableHours = compHoursReturned * realizationFactor;
                       const compAdditionalVisits = Math.round(compUsableHours / 0.5);
-                      const revenuePerVisit = 200;
                       const compAccessValue = compAdditionalVisits * revenuePerVisit;
                       
-                      const abridgeHoursReturned = Math.round(abridgeDocEncounters * abridgeTimeSaved / 60);
-                      const abridgeUsableHours = Math.round(abridgeHoursReturned * 0.20);
+                      const abridgeHoursReturned = (abridgeDocEncounters * abridgeTimeSaved) / 60;
+                      const abridgeUsableHours = abridgeHoursReturned * realizationFactor;
                       const abridgeAdditionalVisits = Math.round(abridgeUsableHours / 0.5);
                       const abridgeAccessValue = abridgeAdditionalVisits * revenuePerVisit;
                       const accessGap = abridgeAccessValue - compAccessValue;
                       
-                      // Time savings multiplier for insight
-                      const timeSavingsMultiplier = compTimeSaved > 0 ? Math.round(abridgeTimeSaved / compTimeSaved) : 0;
+                      // Time savings ratio for insight
+                      const timeSavingsRatio = compTimeSaved > 0 ? (abridgeTimeSaved / compTimeSaved).toFixed(1) : "0";
                       const utilizationLift = Math.round((abridgeUtil - compUtil) * 100);
+                      const visitsMultiplier = compAdditionalVisits > 0 ? Math.round(abridgeAdditionalVisits / compAdditionalVisits) : 0;
+                      
+                      // Overtime calculations using editable fields
+                      const afterHoursPercent = driverEditableFields.afterHoursPercent / 100;
+                      const overtimeRate = driverEditableFields.overtimeRate;
+                      const compPremiumHours = Math.round(compHoursReturned * afterHoursPercent);
+                      const compOvertimeValue = compPremiumHours * overtimeRate;
+                      const abridgePremiumHours = Math.round(abridgeHoursReturned * afterHoursPercent);
+                      const abridgeOvertimeValue = abridgePremiumHours * overtimeRate;
+                      const overtimeGap = abridgeOvertimeValue - compOvertimeValue;
+                      
+                      // Level of Service calculations using editable fields
+                      const baselineWrvu = driverEditableFields.baselineWrvuPerEncounter;
+                      const compQualityLift = driverEditableFields.competitorQualityLift / 100;
+                      const abridgeQualityLift = 0.05; // 5% Abridge benchmark
+                      const wrvuRate = driverEditableFields.wrvuRate;
+                      
+                      const compBaseWrvus = compDocEncounters * baselineWrvu;
+                      const compWrvuUplift = Math.round(compBaseWrvus * compQualityLift);
+                      const compLosValue = compWrvuUplift * wrvuRate;
+                      
+                      const abridgeBaseWrvus = abridgeDocEncounters * baselineWrvu;
+                      const abridgeWrvuUplift = Math.round(abridgeBaseWrvus * abridgeQualityLift);
+                      const abridgeLosValue = abridgeWrvuUplift * wrvuRate;
+                      const losGap = abridgeLosValue - compLosValue;
+                      
+                      // Total gap
+                      const totalGap = accessGap + 
+                        (enabledDriverCards.overtime ? overtimeGap : 0) + 
+                        (enabledDriverCards.los ? losGap : 0);
+                      
+                      // Editable field component
+                      const EditableField = ({ 
+                        fieldKey, 
+                        label, 
+                        value, 
+                        prefix = "", 
+                        suffix = "",
+                        isInput = true 
+                      }: { 
+                        fieldKey: keyof typeof driverEditableFields; 
+                        label: string; 
+                        value: number; 
+                        prefix?: string; 
+                        suffix?: string;
+                        isInput?: boolean;
+                      }) => {
+                        const isEditing = editingField === fieldKey;
+                        return (
+                          <div className="flex items-start gap-3 relative">
+                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                              <span className="text-white text-xs">●</span>
+                            </div>
+                            <div className="flex-1 pb-2">
+                              <div className="flex items-baseline justify-between gap-2">
+                                <span className="text-sm text-[#6B7280]">{label}</span>
+                                {isEditing ? (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[#374151]">{prefix}</span>
+                                    <input
+                                      type="number"
+                                      value={tempEditValue}
+                                      onChange={(e) => setTempEditValue(e.target.value)}
+                                      onBlur={() => {
+                                        const newVal = parseFloat(tempEditValue);
+                                        if (!isNaN(newVal) && newVal >= 0) {
+                                          setDriverEditableFields(prev => ({ ...prev, [fieldKey]: newVal }));
+                                        }
+                                        setEditingField(null);
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          const newVal = parseFloat(tempEditValue);
+                                          if (!isNaN(newVal) && newVal >= 0) {
+                                            setDriverEditableFields(prev => ({ ...prev, [fieldKey]: newVal }));
+                                          }
+                                          setEditingField(null);
+                                        } else if (e.key === 'Escape') {
+                                          setEditingField(null);
+                                        }
+                                      }}
+                                      className="w-16 px-1 py-0.5 text-right border border-[#D1D5DB] rounded text-sm font-semibold"
+                                      autoFocus
+                                      data-testid={`input-edit-${fieldKey}`}
+                                    />
+                                    <span className="text-[#374151]">{suffix}</span>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setEditingField(fieldKey);
+                                      setTempEditValue(value.toString());
+                                    }}
+                                    className="flex items-center gap-1.5 group"
+                                    data-testid={`button-edit-${fieldKey}`}
+                                  >
+                                    <span className="font-semibold text-[#374151]">{prefix}{value}{suffix}</span>
+                                    <Pencil className="w-3 h-3 text-[#9CA3AF] group-hover:text-[#6B7280] transition-colors" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      };
                       
                       return (
                         <div className="space-y-6 mt-8" data-testid="driver-math-section">
@@ -5209,21 +5330,46 @@ export default function RoiCalculator({
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                            <span className="font-semibold text-[#374151]">{compHoursReturned.toLocaleString()} hrs</span>
+                                            <span className="font-semibold text-[#374151]">{Math.round(compHoursReturned).toLocaleString()} hrs</span>
                                           </div>
                                           <div className="text-xs text-[#9CA3AF] mt-0.5">{compDocEncounters.toLocaleString()} × {compTimeSaved} min ÷ 60</div>
                                         </div>
                                       </div>
+                                      {/* Editable: Realization Factor */}
+                                      <EditableField 
+                                        fieldKey="realizationFactor" 
+                                        label="Realization factor" 
+                                        value={driverEditableFields.realizationFactor} 
+                                        suffix="%" 
+                                      />
                                       <div className="flex items-start gap-3 relative">
                                         <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
                                           <span className="text-white text-xs">4</span>
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Usable hours</span>
+                                            <span className="font-semibold text-[#374151]">{Math.round(compUsableHours).toLocaleString()} hrs</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      {/* Editable: Revenue per visit */}
+                                      <EditableField 
+                                        fieldKey="revenuePerVisit" 
+                                        label="Revenue per visit" 
+                                        value={driverEditableFields.revenuePerVisit} 
+                                        prefix="$" 
+                                      />
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">5</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Additional visits possible</span>
                                             <span className="font-semibold text-[#374151]">{compAdditionalVisits.toLocaleString()}</span>
                                           </div>
-                                          <div className="text-xs text-[#9CA3AF] mt-0.5">{compUsableHours.toLocaleString()} usable hrs ÷ 0.5 hrs/visit</div>
+                                          <div className="text-xs text-[#9CA3AF] mt-0.5">{Math.round(compUsableHours).toLocaleString()} hrs ÷ 0.5 hrs/visit</div>
                                         </div>
                                       </div>
                                     </div>
@@ -5286,7 +5432,7 @@ export default function RoiCalculator({
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Time saved/encounter</span>
-                                            <span className="font-semibold text-[#059669]">7 min</span>
+                                            <span className="font-semibold text-[#059669]">3 min</span>
                                           </div>
                                           <div className="text-xs text-[#6EE7B7] mt-0.5">Abridge average</div>
                                         </div>
@@ -5298,9 +5444,20 @@ export default function RoiCalculator({
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                            <span className="font-semibold text-[#059669]">{abridgeHoursReturned.toLocaleString()} hrs</span>
+                                            <span className="font-semibold text-[#059669]">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
                                           </div>
-                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{abridgeDocEncounters.toLocaleString()} × 7 min ÷ 60</div>
+                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{abridgeDocEncounters.toLocaleString()} × 3 min ÷ 60</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">●</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Realization factor</span>
+                                            <span className="font-semibold text-[#059669]">{driverEditableFields.realizationFactor}%</span>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="flex items-start gap-3 relative">
@@ -5309,10 +5466,32 @@ export default function RoiCalculator({
                                         </div>
                                         <div className="flex-1 pb-2">
                                           <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Usable hours</span>
+                                            <span className="font-semibold text-[#059669]">{Math.round(abridgeUsableHours).toLocaleString()} hrs</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">●</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Revenue per visit</span>
+                                            <span className="font-semibold text-[#059669]">${driverEditableFields.revenuePerVisit}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">5</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
                                             <span className="text-sm text-[#6B7280]">Additional visits possible</span>
                                             <span className="font-semibold text-[#059669]">{abridgeAdditionalVisits.toLocaleString()}</span>
                                           </div>
-                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{abridgeUsableHours.toLocaleString()} usable hrs ÷ 0.5 hrs/visit</div>
+                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{Math.round(abridgeUsableHours).toLocaleString()} hrs ÷ 0.5 hrs/visit</div>
                                         </div>
                                       </div>
                                     </div>
@@ -5369,10 +5548,7 @@ export default function RoiCalculator({
                                   <div className="flex items-start gap-2">
                                     <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
                                     <p className="text-sm text-[#065F46]">
-                                      {timeSavingsMultiplier > 1 
-                                        ? `The ${timeSavingsMultiplier}x difference in time savings (${abridgeTimeSaved} min vs ${compTimeSaved} min) combined with ${utilizationLift}% higher utilization means ${Math.round(abridgeAdditionalVisits / Math.max(compAdditionalVisits, 1))}x more visits enabled.`
-                                        : `Higher utilization (65% vs ${competitorUtilization}%) and time savings (7 min vs ${compTimeSaved} min) translate to significantly more patient capacity.`
-                                      }
+                                      The {timeSavingsRatio}x difference in time savings ({abridgeTimeSaved} min vs {compTimeSaved} min) combined with {utilizationLift}% higher utilization means {visitsMultiplier > 0 ? visitsMultiplier : "significantly more"}x visits enabled.
                                     </p>
                                   </div>
                                 </div>
@@ -5381,19 +5557,7 @@ export default function RoiCalculator({
                           </div>
                           
                           {/* Overtime Savings Driver Card */}
-                          {enabledDriverCards.overtime && (() => {
-                            // Overtime calculations
-                            const compOvertimeHoursReturned = Math.round(compDocEncounters * compTimeSaved / 60);
-                            const compOvertimeReduction = Math.round(compOvertimeHoursReturned * 0.15); // 15% goes to overtime reduction
-                            const overtimeRate = 145;
-                            const compOvertimeValue = compOvertimeReduction * overtimeRate;
-                            
-                            const abridgeOvertimeHoursReturned = Math.round(abridgeDocEncounters * abridgeTimeSaved / 60);
-                            const abridgeOvertimeReduction = Math.round(abridgeOvertimeHoursReturned * 0.15);
-                            const abridgeOvertimeValue = abridgeOvertimeReduction * overtimeRate;
-                            const overtimeGap = abridgeOvertimeValue - compOvertimeValue;
-                            
-                            return (
+                          {enabledDriverCards.overtime && (
                               <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mt-4" data-testid="driver-card-overtime">
                                 <div className="p-5 flex items-center justify-between">
                                   <div className="flex items-center gap-3">
@@ -5431,32 +5595,36 @@ export default function RoiCalculator({
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                                <span className="font-semibold text-[#374151]">{compOvertimeHoursReturned.toLocaleString()} hrs</span>
+                                                <span className="font-semibold text-[#374151]">{Math.round(compHoursReturned).toLocaleString()} hrs</span>
                                               </div>
                                             </div>
                                           </div>
+                                          {/* Editable: % after-hours work */}
+                                          <EditableField 
+                                            fieldKey="afterHoursPercent" 
+                                            label="% after-hours work" 
+                                            value={driverEditableFields.afterHoursPercent} 
+                                            suffix="%" 
+                                          />
                                           <div className="flex items-start gap-3 relative">
                                             <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">2</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Overtime reduction (15%)</span>
-                                                <span className="font-semibold text-[#374151]">{compOvertimeReduction.toLocaleString()} hrs</span>
+                                                <span className="text-sm text-[#6B7280]">Premium hours avoided</span>
+                                                <span className="font-semibold text-[#374151]">{compPremiumHours.toLocaleString()} hrs</span>
                                               </div>
                                             </div>
                                           </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">●</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Overtime rate</span>
-                                                <span className="font-semibold text-[#374151]">${overtimeRate}/hr</span>
-                                              </div>
-                                            </div>
-                                          </div>
+                                          {/* Editable: Overtime rate */}
+                                          <EditableField 
+                                            fieldKey="overtimeRate" 
+                                            label="Overtime rate" 
+                                            value={driverEditableFields.overtimeRate} 
+                                            prefix="$" 
+                                            suffix="/hr" 
+                                          />
                                         </div>
                                         <div className="ml-9 p-3 rounded-lg border bg-[#F3F4F6] border-[#D1D5DB] mt-3">
                                           <div className="flex items-baseline justify-between">
@@ -5483,7 +5651,18 @@ export default function RoiCalculator({
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                                <span className="font-semibold text-[#059669]">{abridgeOvertimeHoursReturned.toLocaleString()} hrs</span>
+                                                <span className="font-semibold text-[#059669]">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">●</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">% after-hours work</span>
+                                                <span className="font-semibold text-[#059669]">{driverEditableFields.afterHoursPercent}%</span>
                                               </div>
                                             </div>
                                           </div>
@@ -5493,8 +5672,8 @@ export default function RoiCalculator({
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Overtime reduction (15%)</span>
-                                                <span className="font-semibold text-[#059669]">{abridgeOvertimeReduction.toLocaleString()} hrs</span>
+                                                <span className="text-sm text-[#6B7280]">Premium hours avoided</span>
+                                                <span className="font-semibold text-[#059669]">{abridgePremiumHours.toLocaleString()} hrs</span>
                                               </div>
                                             </div>
                                           </div>
@@ -5505,7 +5684,7 @@ export default function RoiCalculator({
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">Overtime rate</span>
-                                                <span className="font-semibold text-[#059669]">${overtimeRate}/hr</span>
+                                                <span className="font-semibold text-[#059669]">${driverEditableFields.overtimeRate}/hr</span>
                                               </div>
                                             </div>
                                           </div>
@@ -5555,31 +5734,17 @@ export default function RoiCalculator({
                                       <div className="flex items-start gap-2">
                                         <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
                                         <p className="text-sm text-[#065F46]">
-                                          More time saved per encounter means less after-hours documentation, reducing costly overtime by {abridgeOvertimeReduction - compOvertimeReduction} additional hours.
+                                          More time saved per encounter means less after-hours documentation, reducing costly overtime by {abridgePremiumHours - compPremiumHours} additional hours.
                                         </p>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })()}
+                          )}
                           
                           {/* Level of Service Driver Card */}
-                          {enabledDriverCards.los && (() => {
-                            // Level of Service calculations - wRVU uplift from better documentation
-                            const baseWrvuRate = 45;
-                            const compQualityLift = 0.02; // 2% improvement
-                            const abridgeQualityLift = 0.06; // 6% improvement
-                            
-                            const compWrvuUplift = Math.round(compDocEncounters * compQualityLift * 100) / 100;
-                            const compLosValue = Math.round(compWrvuUplift * baseWrvuRate);
-                            
-                            const abridgeWrvuUplift = Math.round(abridgeDocEncounters * abridgeQualityLift * 100) / 100;
-                            const abridgeLosValue = Math.round(abridgeWrvuUplift * baseWrvuRate);
-                            const losGap = abridgeLosValue - compLosValue;
-                            
-                            return (
+                          {enabledDriverCards.los && (
                               <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mt-4" data-testid="driver-card-los">
                                 <div className="p-5 flex items-center justify-between">
                                   <div className="flex items-center gap-3">
@@ -5621,20 +5786,22 @@ export default function RoiCalculator({
                                               </div>
                                             </div>
                                           </div>
+                                          {/* Editable: Baseline wRVU */}
+                                          <EditableField 
+                                            fieldKey="baselineWrvuPerEncounter" 
+                                            label="Baseline wRVU/encounter" 
+                                            value={driverEditableFields.baselineWrvuPerEncounter} 
+                                          />
+                                          {/* Editable: Competitor Quality Lift */}
+                                          <EditableField 
+                                            fieldKey="competitorQualityLift" 
+                                            label="Quality lift" 
+                                            value={driverEditableFields.competitorQualityLift} 
+                                            suffix="%" 
+                                          />
                                           <div className="flex items-start gap-3 relative">
                                             <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
                                               <span className="text-white text-xs">2</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Quality lift</span>
-                                                <span className="font-semibold text-[#374151]">{Math.round(compQualityLift * 100)}%</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">3</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
@@ -5643,17 +5810,13 @@ export default function RoiCalculator({
                                               </div>
                                             </div>
                                           </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">●</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">wRVU rate</span>
-                                                <span className="font-semibold text-[#374151]">${baseWrvuRate}</span>
-                                              </div>
-                                            </div>
-                                          </div>
+                                          {/* Editable: wRVU rate */}
+                                          <EditableField 
+                                            fieldKey="wrvuRate" 
+                                            label="wRVU rate" 
+                                            value={driverEditableFields.wrvuRate} 
+                                            prefix="$" 
+                                          />
                                         </div>
                                         <div className="ml-9 p-3 rounded-lg border bg-[#F3F4F6] border-[#D1D5DB] mt-3">
                                           <div className="flex items-baseline justify-between">
@@ -5686,7 +5849,18 @@ export default function RoiCalculator({
                                           </div>
                                           <div className="flex items-start gap-3 relative">
                                             <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">2</span>
+                                              <span className="text-white text-xs">●</span>
+                                            </div>
+                                            <div className="flex-1 pb-2">
+                                              <div className="flex items-baseline justify-between gap-2">
+                                                <span className="text-sm text-[#6B7280]">Baseline wRVU/encounter</span>
+                                                <span className="font-semibold text-[#059669]">{driverEditableFields.baselineWrvuPerEncounter}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-start gap-3 relative">
+                                            <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                              <span className="text-white text-xs">●</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
@@ -5697,7 +5871,7 @@ export default function RoiCalculator({
                                           </div>
                                           <div className="flex items-start gap-3 relative">
                                             <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">3</span>
+                                              <span className="text-white text-xs">2</span>
                                             </div>
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
@@ -5713,7 +5887,7 @@ export default function RoiCalculator({
                                             <div className="flex-1 pb-2">
                                               <div className="flex items-baseline justify-between gap-2">
                                                 <span className="text-sm text-[#6B7280]">wRVU rate</span>
-                                                <span className="font-semibold text-[#059669]">${baseWrvuRate}</span>
+                                                <span className="font-semibold text-[#059669]">${driverEditableFields.wrvuRate}</span>
                                               </div>
                                             </div>
                                           </div>
@@ -5763,15 +5937,48 @@ export default function RoiCalculator({
                                       <div className="flex items-start gap-2">
                                         <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
                                         <p className="text-sm text-[#065F46]">
-                                          Higher quality documentation (6% vs 2% lift) across more encounters captures {Math.round(abridgeWrvuUplift - compWrvuUplift).toLocaleString()} additional wRVUs annually.
+                                          Higher quality documentation ({Math.round(abridgeQualityLift * 100)}% vs {driverEditableFields.competitorQualityLift}% lift) across more encounters captures {(abridgeWrvuUplift - compWrvuUplift).toLocaleString()} additional wRVUs annually.
                                         </p>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })()}
+                          )}
+                          
+                          {/* Total Gap Summary */}
+                          {(enabledDriverCards.overtime || enabledDriverCards.los) && (
+                            <div className="mt-6 p-5 bg-gradient-to-r from-[#ECFDF5] to-[#D1FAE5] rounded-xl border border-[#A7F3D0]" data-testid="total-gap-summary">
+                              <div className="flex items-center justify-between mb-4">
+                                <h4 className="font-semibold text-[#065F46]">Total Incremental Value with Abridge</h4>
+                                <div className="text-2xl font-bold text-[#059669]">${totalGap.toLocaleString()}</div>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-sm" data-testid="text-gap-access">
+                                  <span className="text-[#065F46]">Patient Access Gap</span>
+                                  <span className="font-medium text-[#059669]">+${accessGap.toLocaleString()}</span>
+                                </div>
+                                {enabledDriverCards.overtime && (
+                                  <div className="flex items-center justify-between text-sm" data-testid="text-gap-overtime">
+                                    <span className="text-[#065F46]">Overtime Savings Gap</span>
+                                    <span className="font-medium text-[#059669]">+${overtimeGap.toLocaleString()}</span>
+                                  </div>
+                                )}
+                                {enabledDriverCards.los && (
+                                  <div className="flex items-center justify-between text-sm" data-testid="text-gap-los">
+                                    <span className="text-[#065F46]">Level of Service Gap</span>
+                                    <span className="font-medium text-[#059669]">+${losGap.toLocaleString()}</span>
+                                  </div>
+                                )}
+                                <div className="border-t border-[#A7F3D0] pt-2 mt-2">
+                                  <div className="flex items-center justify-between text-sm font-semibold" data-testid="text-gap-total">
+                                    <span className="text-[#065F46]">Total Annual Incremental Gap</span>
+                                    <span className="text-[#059669]">${totalGap.toLocaleString()}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                           
                           {/* Add More Drivers Button */}
                           {(!enabledDriverCards.overtime || !enabledDriverCards.los) && (
