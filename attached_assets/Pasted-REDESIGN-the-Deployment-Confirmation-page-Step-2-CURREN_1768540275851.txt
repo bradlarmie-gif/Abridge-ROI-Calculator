@@ -1,0 +1,140 @@
+REDESIGN the Deployment Confirmation page (Step 2):
+
+CURRENT STATE: Boring table confirming DAX inputs
+NEW STATE: "The Gap at a Glance" - visceral acknowledgment of the difference
+
+LAYOUT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 1: Page Header
+- Title: "COMPETITOR COMPARISON" (16px, $ef4444)
+- Subtitle: "Compare ROI of switching from your current solution to Abridge"
+- Baseline bar: Light gray bg, small text showing their Abridge baseline
+
+SECTION 2: The Gap at a Glance (THE MAIN CONTENT)
+- Large box, white background, subtle border
+- Title: "The Gap at a Glance" (24px, semibold)
+- Opening statement: "You're paying [X]% MORE for [Competitor] and getting:"
+- 3 bullet points, LARGE (20px):
+  ↓ [X]% lower adoption (50% vs 65%)
+  ↓ [X]% less time saved (1.5 min vs 2.5 min)  
+  ↑ [X]% higher cost ($144K vs $90K)
+- Question: "Want to see the financial impact of closing this gap?"
+- CTA button: "Yes, Show Me the Numbers →" (red, prominent)
+
+SECTION 3: Deployment Comparison (COLLAPSED)
+- Accordion/details element
+- Label: "View detailed deployment comparison"
+- When expanded: Shows your current comparison table
+- Default state: CLOSED
+
+CALCULATIONS FOR "THE GAP":
+- Adoption gap: (abridgeUtil - daxUtil) / daxUtil * 100
+- Time gap: (abridgeTime - daxTime) / daxTime * 100
+- Cost gap: (daxCost - abridgeCost) / abridgeCost * 100
+
+LOGIC:
+- If Abridge costs MORE: Say "paying [X]% more BUT getting:"
+  Then flip the benefits to show it's worth it
+- If Abridge costs LESS: Say "paying [X]% LESS and getting:"
+  Then show better benefits
+
+COLORS:
+- Use muted tones, not bright green
+- Downward arrows: #dc2626 (red)
+- Upward arrows: #059669 (green)
+- Background: #f9fafb (light gray)
+- CTA button: #ef4444 (Abridge red)
+
+REMOVE:
+- "Confirm Your DAX (Nuance) Deployment" title
+- Default-open comparison table
+- "Typical" labels (move to next page)
+- Green banner about cost savings (move to comparison page)
+- Generic "What's Next" section
+
+ADD:
+- Calculated percentages for each gap
+- Visual weight on the gap, not the table
+- Single clear CTA
+- Make table optional viewing (collapsed)
+
+🎨 VISUAL MOCKUP
+Copy┌────────────────────────────────────────────────────────────────┐
+│  COMPETITOR COMPARISON                                         │
+│  Compare ROI of switching from your current solution to Abridge│
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                                 │
+│  📊 Your Abridge baseline: 50 providers | 100K encounters      │
+│      | $126,667 net gain                                       │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│                    The Gap at a Glance                         │
+│                                                                 │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                                 │
+│  You're paying 62% MORE for DAX (Nuance) and getting:         │
+│                                                                 │
+│                                                                 │
+│      ↓  30% lower adoption                                     │
+│          DAX: 50% utilization  vs  Abridge typical: 65%       │
+│                                                                 │
+│      ↓  40% less time saved per encounter                      │
+│          DAX: 1.5 min  vs  Abridge typical: 2.5 min           │
+│                                                                 │
+│      ↑  62% higher annual cost                                 │
+│          DAX: $144,720  vs  Abridge: $90,000                  │
+│                                                                 │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                                                                 │
+│  Want to see the financial impact of closing this gap?        │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────┐     │
+│  │     Yes, Show Me the Numbers →                       │     │
+│  └──────────────────────────────────────────────────────┘     │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│  📋 View detailed deployment comparison ▼                      │
+│     (Collapsed by default)                                     │
+└────────────────────────────────────────────────────────────────┘
+
+💬 THE EXACT COPY
+Scenario 1: Abridge Costs Less
+CopyThe Gap at a Glance
+
+You're paying 62% MORE for DAX (Nuance) and getting:
+
+  ↓ 30% lower adoption
+     DAX: 50% utilization  vs  Abridge typical: 65%
+  
+  ↓ 40% less time saved per encounter
+     DAX: 1.5 min  vs  Abridge typical: 2.5 min
+  
+  ↑ 62% higher annual cost
+     DAX: $144,720  vs  Abridge: $90,000
+
+Want to see the financial impact of closing this gap?
+
+[Yes, Show Me the Numbers →]
+Scenario 2: Abridge Costs More (Less Common)
+CopyThe Gap at a Glance
+
+DAX (Nuance) costs 15% less than Abridge, but you're getting:
+
+  ↓ 30% lower adoption
+     DAX: 50% utilization  vs  Abridge typical: 65%
+  
+  ↓ 40% less time saved per encounter
+     DAX: 1.5 min  vs  Abridge typical: 2.5 min
+  
+  ↓ Significantly lower ROI
+     DAX: 3.2x  vs  Abridge typical: 12.5x
+
+Want to see if the improved outcomes justify the investment?
+
+[Yes, Show Me the Numbers →]
