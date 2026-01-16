@@ -100,7 +100,6 @@ import {
   Briefcase,
   ShieldCheck,
   FileWarning,
-  Lightbulb,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
