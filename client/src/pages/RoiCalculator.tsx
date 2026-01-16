@@ -593,6 +593,16 @@ export default function RoiCalculator({
     }
   }, [showExpandProviders, inputs.numberOfProviders, targetProviders]);
 
+  // Scroll to top on mount and when major navigation states change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+  
+  // Scroll to top when navigating between major views/wizards
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [showExpandProviders, showExpansionWizard, showAddDrivers, showNewCareSettingFlow, showCompetitorComparison, competitorStep, activeTab]);
+
   // Expansion calculation memo
   const expansionCalculation = useMemo(() => {
     const baselineProviders = inputs.numberOfProviders;
