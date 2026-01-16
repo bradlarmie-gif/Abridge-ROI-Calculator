@@ -1,4 +1,13 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 import { Button } from "@/components/ui/button";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
@@ -386,6 +395,10 @@ export default function RoiCalculator({
   });
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempEditValue, setTempEditValue] = useState<string>("");
+  
+  // Step 4: Opportunity at Scale - scale input state
+  const [scaleProviders, setScaleProviders] = useState<number>(50);
+  const [scaleEncounters, setScaleEncounters] = useState<number>(100000);
   
   // Wizard step for driver comparison (0 = access, 1 = los, 2 = overtime, 3 = summary)
   const [currentDriverIndex, setCurrentDriverIndex] = useState(0);
@@ -6045,122 +6058,406 @@ export default function RoiCalculator({
                   </div>
                 )}
                 
-                {/* Step 4: The Opportunity - Results View */}
-                {competitorStep === 4 && selectedCompetitor && (
-                  <div className="space-y-6">
-                    {/* 4-Step Progress Indicator */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
-                        <span className="ml-2 text-[13px] text-[#6B7280]">Solution</span>
+                {/* Step 4: The Opportunity at Scale */}
+                {competitorStep === 4 && selectedCompetitor && (() => {
+                  // Get baseline values from Step 2
+                  const originalProviders = typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders;
+                  const originalEncounters = inputs.annualOutpatientEncounters;
+                  
+                  // Scale factor for calculations
+                  const scaleFactor = scaleEncounters / originalEncounters;
+                  
+                  // Calculate base annual values from Step 3 gap analysis
+                  const baseAbridgeAnnualValue = totalComparison.access.abridgeTotal + 
+                    (enabledDriverCards.overtime ? totalComparison.overtime.abridgeTotal : 0) + 
+                    (enabledDriverCards.los ? totalComparison.los.abridgeTotal : 0);
+                  const baseCompAnnualValue = totalComparison.access.competitorTotal + 
+                    (enabledDriverCards.overtime ? totalComparison.overtime.competitorTotal : 0) + 
+                    (enabledDriverCards.los ? totalComparison.los.competitorTotal : 0);
+                  
+                  // Scale values
+                  const scaledAbridgeAnnualValue = baseAbridgeAnnualValue * scaleFactor;
+                  const scaledCompAnnualValue = baseCompAnnualValue * scaleFactor;
+                  
+                  // Ramp factors (Abridge ramps up, competitor stays flat)
+                  const RAMP_FACTORS = { year1: 0.4, year2: 0.7, year3: 1.0 };
+                  
+                  // Year-by-year calculations
+                  const yearlyData = {
+                    year1: {
+                      abridge: scaledAbridgeAnnualValue * RAMP_FACTORS.year1,
+                      competitor: scaledCompAnnualValue,
+                      gap: (scaledAbridgeAnnualValue * RAMP_FACTORS.year1) - scaledCompAnnualValue,
+                    },
+                    year2: {
+                      abridge: scaledAbridgeAnnualValue * RAMP_FACTORS.year2,
+                      competitor: scaledCompAnnualValue,
+                      gap: (scaledAbridgeAnnualValue * RAMP_FACTORS.year2) - scaledCompAnnualValue,
+                    },
+                    year3: {
+                      abridge: scaledAbridgeAnnualValue * RAMP_FACTORS.year3,
+                      competitor: scaledCompAnnualValue,
+                      gap: (scaledAbridgeAnnualValue * RAMP_FACTORS.year3) - scaledCompAnnualValue,
+                    },
+                  };
+                  
+                  // Cumulative chart data
+                  const chartData = [
+                    { year: 'Today', abridgeCumulative: 0, compCumulative: 0 },
+                    { year: 'Year 1', abridgeCumulative: yearlyData.year1.abridge, compCumulative: yearlyData.year1.competitor },
+                    { year: 'Year 2', abridgeCumulative: yearlyData.year1.abridge + yearlyData.year2.abridge, compCumulative: yearlyData.year1.competitor + yearlyData.year2.competitor },
+                    { year: 'Year 3', abridgeCumulative: yearlyData.year1.abridge + yearlyData.year2.abridge + yearlyData.year3.abridge, compCumulative: yearlyData.year1.competitor + yearlyData.year2.competitor + yearlyData.year3.competitor },
+                  ];
+                  
+                  const threeYearGap = chartData[3].abridgeCumulative - chartData[3].compCumulative;
+                  const maxYearlyValue = Math.max(yearlyData.year3.abridge, yearlyData.year3.competitor);
+                  
+                  // Format currency helper
+                  const formatCurrency = (value: number): string => {
+                    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+                    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+                    return `$${value.toFixed(0)}`;
+                  };
+                  
+                  return (
+                    <div className="space-y-6" data-testid="step-4-opportunity">
+                      {/* 4-Step Progress Indicator */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                          <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">1</span>
+                          <span className="ml-2 text-[13px] text-[#6B7280]">Solution</span>
+                        </div>
+                        <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                        <div className="flex items-center">
+                          <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">2</span>
+                          <span className="ml-2 text-[13px] text-[#6B7280]">Your Usage</span>
+                        </div>
+                        <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                        <div className="flex items-center">
+                          <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">3</span>
+                          <span className="ml-2 text-[13px] text-[#6B7280]">Gap Analysis</span>
+                        </div>
+                        <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
+                        <div className="flex items-center">
+                          <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">4</span>
+                          <span className="ml-2 text-[13px] text-[#111827] font-medium">Opportunity</span>
+                        </div>
                       </div>
-                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">2</span>
-                        <span className="ml-2 text-[13px] text-[#6B7280]">Your Usage</span>
-                      </div>
-                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#059669] text-white text-[12px] font-bold">3</span>
-                        <span className="ml-2 text-[13px] text-[#6B7280]">Gap Analysis</span>
-                      </div>
-                      <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E8532F] text-white text-[12px] font-bold">4</span>
-                        <span className="ml-2 text-[13px] text-[#111827] font-medium">Opportunity</span>
-                      </div>
+                      
+                      {/* Section 1: Scale Input */}
+                      <section className="mb-8">
+                        <div className="mb-6">
+                          <h2 className="text-xl font-semibold text-[#111827]">The Opportunity at Scale</h2>
+                          <p className="text-[#6B7280] mt-1">See how the value changes as you expand</p>
+                        </div>
+                        
+                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-6">
+                          <div className="text-sm font-medium text-[#6B7280] uppercase tracking-wide mb-6">Your Scale</div>
+                          
+                          <div className="grid grid-cols-2 gap-8">
+                            {/* Providers Slider */}
+                            <div>
+                              <div className="flex items-center justify-between mb-3">
+                                <label className="text-sm font-medium text-[#374151]">Total Providers</label>
+                                <span className="text-lg font-semibold text-[#111827]">{scaleProviders.toLocaleString()}</span>
+                              </div>
+                              <input
+                                type="range"
+                                min={10}
+                                max={2000}
+                                step={10}
+                                value={scaleProviders}
+                                onChange={(e) => setScaleProviders(Number(e.target.value))}
+                                className="w-full h-2 bg-[#E5E7EB] rounded-lg appearance-none cursor-pointer slider-orange"
+                                data-testid="slider-providers"
+                              />
+                              <div className="flex justify-between text-xs text-[#9CA3AF] mt-1">
+                                <span>10</span>
+                                <span>500</span>
+                                <span>1,000</span>
+                                <span>2,000</span>
+                              </div>
+                            </div>
+                            
+                            {/* Encounters Slider */}
+                            <div>
+                              <div className="flex items-center justify-between mb-3">
+                                <label className="text-sm font-medium text-[#374151]">Annual Outpatient Encounters</label>
+                                <span className="text-lg font-semibold text-[#111827]">{scaleEncounters.toLocaleString()}</span>
+                              </div>
+                              <input
+                                type="range"
+                                min={10000}
+                                max={5000000}
+                                step={10000}
+                                value={scaleEncounters}
+                                onChange={(e) => setScaleEncounters(Number(e.target.value))}
+                                className="w-full h-2 bg-[#E5E7EB] rounded-lg appearance-none cursor-pointer slider-orange"
+                                data-testid="slider-encounters"
+                              />
+                              <div className="flex justify-between text-xs text-[#9CA3AF] mt-1">
+                                <span>10K</span>
+                                <span>1M</span>
+                                <span>2.5M</span>
+                                <span>5M</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 pt-4 border-t border-[#F3F4F6]">
+                            <p className="text-sm text-[#6B7280]">
+                              <span className="text-[#9CA3AF]">Your comparison baseline:</span>{' '}
+                              {originalProviders} providers · {originalEncounters.toLocaleString()} encounters
+                            </p>
+                          </div>
+                        </div>
+                      </section>
+                      
+                      {/* Section 2: The Divergence Chart */}
+                      <section className="mb-8">
+                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-6">
+                          <div className="text-sm font-medium text-[#6B7280] uppercase tracking-wide mb-6">Cumulative Value Over 3 Years</div>
+                          
+                          <div className="h-80">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                <defs>
+                                  <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#E8532F" stopOpacity={0.2}/>
+                                    <stop offset="95%" stopColor="#E8532F" stopOpacity={0.02}/>
+                                  </linearGradient>
+                                  <linearGradient id="compGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#9CA3AF" stopOpacity={0.15}/>
+                                    <stop offset="95%" stopColor="#9CA3AF" stopOpacity={0.02}/>
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                                <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} dy={10} />
+                                <YAxis tickFormatter={(value) => formatCurrency(value)} axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} width={80} />
+                                <Tooltip 
+                                  content={({ active, payload, label }) => {
+                                    if (!active || !payload || !payload.length) return null;
+                                    const abridge = payload.find(p => p.dataKey === 'abridgeCumulative');
+                                    const comp = payload.find(p => p.dataKey === 'compCumulative');
+                                    const gap = (Number(abridge?.value) || 0) - (Number(comp?.value) || 0);
+                                    return (
+                                      <div className="bg-white shadow-lg rounded-xl border border-[#E5E7EB] p-4 min-w-[200px]">
+                                        <div className="text-sm font-medium text-[#111827] mb-3">{label}</div>
+                                        <div className="space-y-2">
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                              <div className="w-3 h-3 rounded-full bg-[#E8532F]" />
+                                              <span className="text-sm text-[#6B7280]">Abridge</span>
+                                            </div>
+                                            <span className="text-sm font-semibold text-[#111827]">{formatCurrency(Number(abridge?.value) || 0)}</span>
+                                          </div>
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                              <div className="w-3 h-3 rounded-full bg-[#9CA3AF]" />
+                                              <span className="text-sm text-[#6B7280]">{selectedCompetitor.name}</span>
+                                            </div>
+                                            <span className="text-sm font-semibold text-[#111827]">{formatCurrency(Number(comp?.value) || 0)}</span>
+                                          </div>
+                                          <div className="pt-2 mt-2 border-t border-[#F3F4F6] flex items-center justify-between">
+                                            <span className="text-sm font-medium text-[#6B7280]">Gap</span>
+                                            <span className="text-sm font-bold text-[#E8532F]">+{formatCurrency(gap)}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  }}
+                                />
+                                <Area type="monotone" dataKey="abridgeCumulative" stroke="#E8532F" strokeWidth={3} fill="url(#abridgeGradient)" dot={{ fill: '#E8532F', strokeWidth: 2, r: 5 }} activeDot={{ r: 7, fill: '#E8532F' }} />
+                                <Area type="monotone" dataKey="compCumulative" stroke="#9CA3AF" strokeWidth={2} strokeDasharray="6 4" fill="url(#compGradient)" dot={{ fill: '#9CA3AF', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#9CA3AF' }} />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+                          
+                          <div className="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-[#F3F4F6]">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-1 bg-[#E8532F] rounded" />
+                              <span className="text-sm text-[#6B7280]">Abridge</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-1 bg-[#9CA3AF] rounded" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #9CA3AF, #9CA3AF 6px, transparent 6px, transparent 10px)' }} />
+                              <span className="text-sm text-[#6B7280]">{selectedCompetitor.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-[#FEF3F2] rounded border border-[#FED7D7]" />
+                              <span className="text-sm text-[#6B7280]">The Gap</span>
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+                      
+                      {/* Section 3: Year-by-Year Breakdown Cards */}
+                      <section className="mb-8">
+                        <div className="grid grid-cols-3 gap-4">
+                          {/* Year 1 */}
+                          <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
+                            <div className="text-sm font-medium text-[#9CA3AF] mb-4">Year 1</div>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-[#6B7280]">Abridge</span>
+                                <span className="text-lg font-semibold text-[#E8532F]">{formatCurrency(yearlyData.year1.abridge)}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-[#6B7280]">{selectedCompetitor.name}</span>
+                                <span className="text-lg font-semibold text-[#6B7280]">{formatCurrency(yearlyData.year1.competitor)}</span>
+                              </div>
+                              <div className="pt-3 mt-3 border-t border-[#F3F4F6]">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium text-[#6B7280]">Gap</span>
+                                  <span className="text-lg font-bold text-[#E8532F]">+{formatCurrency(yearlyData.year1.gap)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-4 space-y-1">
+                              <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
+                                <div className="h-full bg-[#E8532F] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year1.abridge / maxYearlyValue) * 100 : 0}%` }} />
+                              </div>
+                              <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
+                                <div className="h-full bg-[#9CA3AF] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year1.competitor / maxYearlyValue) * 100 : 0}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Year 2 */}
+                          <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
+                            <div className="text-sm font-medium text-[#9CA3AF] mb-4">Year 2</div>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-[#6B7280]">Abridge</span>
+                                <span className="text-lg font-semibold text-[#E8532F]">{formatCurrency(yearlyData.year2.abridge)}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-[#6B7280]">{selectedCompetitor.name}</span>
+                                <span className="text-lg font-semibold text-[#6B7280]">{formatCurrency(yearlyData.year2.competitor)}</span>
+                              </div>
+                              <div className="pt-3 mt-3 border-t border-[#F3F4F6]">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium text-[#6B7280]">Gap</span>
+                                  <span className="text-lg font-bold text-[#E8532F]">+{formatCurrency(yearlyData.year2.gap)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-4 space-y-1">
+                              <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
+                                <div className="h-full bg-[#E8532F] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year2.abridge / maxYearlyValue) * 100 : 0}%` }} />
+                              </div>
+                              <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
+                                <div className="h-full bg-[#9CA3AF] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year2.competitor / maxYearlyValue) * 100 : 0}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Year 3 - Highlighted */}
+                          <div className="bg-[#FEF3F2] border border-[#FECACA] rounded-xl p-5">
+                            <div className="text-sm font-medium text-[#E8532F] mb-4">Year 3</div>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-[#E8532F]/70">Abridge</span>
+                                <span className="text-lg font-semibold text-[#E8532F]">{formatCurrency(yearlyData.year3.abridge)}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-[#6B7280]">{selectedCompetitor.name}</span>
+                                <span className="text-lg font-semibold text-[#6B7280]">{formatCurrency(yearlyData.year3.competitor)}</span>
+                              </div>
+                              <div className="pt-3 mt-3 border-t border-[#FECACA]">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium text-[#DC2626]">Gap</span>
+                                  <span className="text-lg font-bold text-[#DC2626]">+{formatCurrency(yearlyData.year3.gap)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-4 space-y-1">
+                              <div className="h-2 bg-[#FECACA] rounded-full overflow-hidden">
+                                <div className="h-full bg-[#E8532F] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year3.abridge / maxYearlyValue) * 100 : 0}%` }} />
+                              </div>
+                              <div className="h-2 bg-[#FECACA] rounded-full overflow-hidden">
+                                <div className="h-full bg-[#9CA3AF] rounded-full transition-all duration-300" style={{ width: `${maxYearlyValue > 0 ? (yearlyData.year3.competitor / maxYearlyValue) * 100 : 0}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+                      
+                      {/* Section 4: Summary + CTA */}
+                      <section>
+                        <div className="bg-gradient-to-br from-[#FEF3F2] to-[#FECACA]/50 border border-[#FECACA] rounded-xl p-8 mb-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-sm font-medium text-[#E8532F] uppercase tracking-wide mb-1">At This Scale</div>
+                              <div className="text-sm text-[#6B7280]">{scaleProviders.toLocaleString()} providers · {scaleEncounters.toLocaleString()} encounters/year</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm text-[#6B7280] mb-1">3-Year Difference</div>
+                              <div className="text-4xl font-bold text-[#111827]">+{formatCurrency(threeYearGap)}</div>
+                              <div className="text-sm text-[#6B7280] mt-1">{formatCurrency(threeYearGap / 3)}/year · {formatCurrency(threeYearGap / 36)}/month</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-8 text-center">
+                          <h3 className="text-lg font-semibold text-[#111827] mb-2">Want to explore this further?</h3>
+                          <p className="text-[#6B7280] mb-6 max-w-md mx-auto">Save this analysis to revisit later, or talk to our team about what a pilot could look like for your organization.</p>
+                          <div className="flex items-center justify-center gap-4">
+                            <Button variant="outline" className="px-6 py-3" data-testid="button-save-analysis">Save This Analysis</Button>
+                            <Button className="px-6 py-3 bg-[#E8532F] hover:bg-[#D14729] text-white" data-testid="button-talk-to-team">
+                              Talk to Our Team
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Navigation */}
+                        <div className="flex items-center justify-between mt-6 pt-6 border-t border-[#F3F4F6]">
+                          <Button variant="ghost" onClick={() => setCompetitorStep(3)} className="text-[#6B7280] hover:text-[#374151]" data-testid="button-back-to-gap-analysis">
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back to Gap Analysis
+                          </Button>
+                          <div className="flex items-center gap-3">
+                            <Button variant="ghost" onClick={() => setShowCompetitorComparison(false)} className="text-[#6B7280]" data-testid="button-cancel-competitor">Cancel</Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                const newScenario: Scenario = {
+                                  id: `competitor-${Date.now()}`,
+                                  name: competitorScenarioName || `Switch from ${selectedCompetitor.name}`,
+                                  type: "expand",
+                                  createdAt: new Date(),
+                                  providers: scaleProviders,
+                                  encounters: scaleEncounters,
+                                  utilizationRate: inputs.abridgeUtilizationPct,
+                                  maPopulationPct: 0,
+                                  newPatientPct: 20,
+                                  specialtyPct: 100,
+                                  revenuePerVisitOverride: null,
+                                  visitLengthOverride: null,
+                                  investment: results.annualAbridgeCost,
+                                  totalBenefit: totalComparison.access.abridgeTotal + totalComparison.los.abridgeTotal + totalComparison.overtime.abridgeTotal,
+                                  netGain: totalComparison.grandTotal,
+                                  roiMultiple: results.roiMultiple,
+                                  driverValues: Object.fromEntries(results.levers.map(l => [l.id, l.value])) as Record<LeverId, number>,
+                                };
+                                setScenarios([...scenarios, newScenario]);
+                                setShowCompetitorComparison(false);
+                                setCompetitorStep(1);
+                                toast({
+                                  title: "Scenario created",
+                                  description: `"${newScenario.name}" has been added to your scenarios.`,
+                                });
+                              }}
+                              data-testid="button-save-competitor-scenario"
+                            >
+                              Save as Scenario
+                            </Button>
+                          </div>
+                        </div>
+                      </section>
                     </div>
-                    
-                    {/* Context Header */}
-                    <div className="text-center py-2 border-b border-[#E5E7EB]">
-                      <div className="text-[14px] text-[#6B7280]">
-                        {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders} providers | {inputs.annualOutpatientEncounters.toLocaleString()} encounters | Switching from {selectedCompetitor.name}
-                      </div>
-                    </div>
-                    
-                    {/* THE COMPARISON - Split Screen */}
-                    <CompetitorComparison
-                      providers={typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
-                      encounters={inputs.annualOutpatientEncounters}
-                      competitor={{
-                        name: selectedCompetitor.name,
-                        costPerProvider: competitorCostPerProvider,
-                        utilization: competitorUtilization,
-                        minutesSaved: competitorTimeSaved,
-                        patientAccessVisits: compDriverInputs.access.visitsPerProvider || 30,
-                        losWrvus: compDriverInputs.los.wrvuUpliftPerProvider || 20,
-                        overtimeHours: compDriverInputs.overtime.hoursPerProvider || 15,
-                      }}
-                      abridge={{
-                        costPerProvider: inputs.monthlyCostPerProvider,
-                        utilization: inputs.abridgeUtilizationPct,
-                        minutesSaved: 7,
-                        patientAccessVisits: 60,
-                        losWrvus: 50,
-                        overtimeHours: 25,
-                      }}
-                      revenuePerVisit={compDriverInputs.access.revenuePerVisit}
-                      wrvuRate={compDriverInputs.los.wrvuRate}
-                      hourlyRate={compDriverInputs.overtime.premiumRate}
-                    />
-                    
-                    {/* Footer Actions */}
-                    <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
-                      <Button
-                        variant="outline"
-                        onClick={() => setCompetitorStep(3)}
-                        data-testid="button-back-to-gap-analysis"
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back
-                      </Button>
-                      <div className="flex gap-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowCompetitorComparison(false)}
-                          data-testid="button-cancel-competitor"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            const newScenario: Scenario = {
-                              id: `competitor-${Date.now()}`,
-                              name: competitorScenarioName || `Switch from ${selectedCompetitor.name}`,
-                              type: "expand",
-                              createdAt: new Date(),
-                              providers: typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders,
-                              encounters: inputs.annualOutpatientEncounters,
-                              utilizationRate: inputs.abridgeUtilizationPct,
-                              maPopulationPct: 0,
-                              newPatientPct: 20,
-                              specialtyPct: 100,
-                              revenuePerVisitOverride: null,
-                              visitLengthOverride: null,
-                              investment: results.annualAbridgeCost,
-                              totalBenefit: totalComparison.access.abridgeTotal + totalComparison.los.abridgeTotal + totalComparison.overtime.abridgeTotal,
-                              netGain: totalComparison.grandTotal,
-                              roiMultiple: results.roiMultiple,
-                              driverValues: Object.fromEntries(results.levers.map(l => [l.id, l.value])) as Record<LeverId, number>,
-                            };
-                            setScenarios([...scenarios, newScenario]);
-                            setShowCompetitorComparison(false);
-                            setCompetitorStep(1);
-                            toast({
-                              title: "Scenario created",
-                              description: `"${newScenario.name}" has been added to your scenarios.`,
-                            });
-                          }}
-                          className="bg-[#E8532F] hover:bg-[#D14729] text-white"
-                          data-testid="button-save-competitor-scenario"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Save as Scenario
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
                 
                 {/* OLD Step 3 Wizard Content - Now Hidden */}
                 {false && selectedCompetitor && (

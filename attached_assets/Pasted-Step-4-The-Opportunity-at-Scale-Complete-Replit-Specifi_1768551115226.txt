@@ -1,0 +1,657 @@
+Step 4: The Opportunity at Scale - Complete Replit Specification
+Page Overview
+Step 4 is a single, focused page with one interactive visualization that lets users explore the value gap at their full organizational scale.
+Design Principle: Let them discover the impact themselves through exploration. No pushy language. The math speaks for itself.
+
+Page Structure
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│  Header: Progress indicator (Step 4 of 4 active)                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Section 1: Scale Input (sliders)                                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Section 2: The Divergence Chart                                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Section 3: Year-by-Year Breakdown Cards                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Section 4: Summary + CTA                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Section 1: Scale Input
+Purpose: Let them explore what happens at their full organizational scale.
+tsxCopy<section className="mb-8">
+  <div className="mb-6">
+    <h2 className="text-xl font-semibold text-gray-900">
+      The Opportunity at Scale
+    </h2>
+    <p className="text-gray-500 mt-1">
+      See how the value changes as you expand
+    </p>
+  </div>
+  
+  <div className="bg-white border border-gray-200 rounded-xl p-6">
+    <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-6">
+      Your Scale
+    </div>
+    
+    <div className="grid grid-cols-2 gap-8">
+      {/* Providers Slider */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Total Providers
+          </label>
+          <span className="text-lg font-semibold text-gray-900">
+            {providers.toLocaleString()}
+          </span>
+        </div>
+        <input
+          type="range"
+          min={10}
+          max={2000}
+          step={10}
+          value={providers}
+          onChange={(e) => setProviders(Number(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-orange"
+        />
+        <div className="flex justify-between text-xs text-gray-400 mt-1">
+          <span>10</span>
+          <span>500</span>
+          <span>1,000</span>
+          <span>2,000</span>
+        </div>
+      </div>
+      
+      {/* Encounters Slider */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Annual Outpatient Encounters
+          </label>
+          <span className="text-lg font-semibold text-gray-900">
+            {encounters.toLocaleString()}
+          </span>
+        </div>
+        <input
+          type="range"
+          min={10000}
+          max={5000000}
+          step={10000}
+          value={encounters}
+          onChange={(e) => setEncounters(Number(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-orange"
+        />
+        <div className="flex justify-between text-xs text-gray-400 mt-1">
+          <span>10K</span>
+          <span>1M</span>
+          <span>2.5M</span>
+          <span>5M</span>
+        </div>
+      </div>
+    </div>
+    
+    {/* Context note */}
+    <div className="mt-4 pt-4 border-t border-gray-100">
+      <p className="text-sm text-gray-500">
+        <span className="text-gray-400">Your comparison baseline:</span>{' '}
+        {originalProviders} providers · {originalEncounters.toLocaleString()} encounters
+      </p>
+    </div>
+  </div>
+</section>
+Slider Styling (CSS):
+cssCopy/* Custom slider with Abridge orange */
+.slider-orange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #E85D3F;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.slider-orange::-webkit-slider-track {
+  background: linear-gradient(to right, #E85D3F 0%, #E85D3F var(--progress), #E5E7EB var(--progress), #E5E7EB 100%);
+}
+
+.slider-orange::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #E85D3F;
+  cursor: pointer;
+  border: 2px solid white;
+}
+
+Section 2: The Divergence Chart
+Purpose: Visual representation of cumulative value over 3 years. The shaded gap area is the hero.
+tsxCopy<section className="mb-8">
+  <div className="bg-white border border-gray-200 rounded-xl p-6">
+    <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-6">
+      Cumulative Value Over 3 Years
+    </div>
+    
+    <div className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <defs>
+            {/* Abridge area gradient */}
+            <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.2}/>
+              <stop offset="95%" stopColor="#E85D3F" stopOpacity={0.02}/>
+            </linearGradient>
+            
+            {/* DAX area gradient */}
+            <linearGradient id="daxGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#9CA3AF" stopOpacity={0.15}/>
+              <stop offset="95%" stopColor="#9CA3AF" stopOpacity={0.02}/>
+            </linearGradient>
+            
+            {/* Gap area gradient (the shaded difference) */}
+            <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.15}/>
+              <stop offset="95%" stopColor="#E85D3F" stopOpacity={0.05}/>
+            </linearGradient>
+          </defs>
+          
+          <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+          
+          <XAxis 
+            dataKey="year" 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#6B7280', fontSize: 12 }}
+            dy={10}
+          />
+          
+          <YAxis 
+            tickFormatter={(value) => formatCurrency(value)}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={80}
+          />
+          
+          <Tooltip content={<CustomTooltip />} />
+          
+          {/* Abridge area (on top) */}
+          <Area
+            type="monotone"
+            dataKey="abridgeCumulative"
+            stroke="#E85D3F"
+            strokeWidth={3}
+            fill="url(#abridgeGradient)"
+            dot={{ fill: '#E85D3F', strokeWidth: 2, r: 5 }}
+            activeDot={{ r: 7, fill: '#E85D3F' }}
+          />
+          
+          {/* DAX area (below) */}
+          <Area
+            type="monotone"
+            dataKey="daxCumulative"
+            stroke="#9CA3AF"
+            strokeWidth={2}
+            strokeDasharray="6 4"
+            fill="url(#daxGradient)"
+            dot={{ fill: '#9CA3AF', strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, fill: '#9CA3AF' }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+    
+    {/* Legend */}
+    <div className="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-gray-100">
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-1 bg-orange-500 rounded"></div>
+        <span className="text-sm text-gray-600">Abridge</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-1 bg-gray-400 rounded" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #9CA3AF, #9CA3AF 6px, transparent 6px, transparent 10px)' }}></div>
+        <span className="text-sm text-gray-600">{competitor.name}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 bg-orange-100 rounded border border-orange-200"></div>
+        <span className="text-sm text-gray-600">The Gap</span>
+      </div>
+    </div>
+  </div>
+</section>
+Custom Tooltip:
+tsxCopyfunction CustomTooltip({ active, payload, label }: TooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+  
+  const abridge = payload.find(p => p.dataKey === 'abridgeCumulative');
+  const dax = payload.find(p => p.dataKey === 'daxCumulative');
+  const gap = (abridge?.value || 0) - (dax?.value || 0);
+  
+  return (
+    <div className="bg-white shadow-lg rounded-xl border border-gray-200 p-4 min-w-[200px]">
+      <div className="text-sm font-medium text-gray-900 mb-3">{label}</div>
+      
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+            <span className="text-sm text-gray-600">Abridge</span>
+          </div>
+          <span className="text-sm font-semibold text-gray-900">
+            {formatCurrency(abridge?.value || 0)}
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+            <span className="text-sm text-gray-600">{competitor.name}</span>
+          </div>
+          <span className="text-sm font-semibold text-gray-900">
+            {formatCurrency(dax?.value || 0)}
+          </span>
+        </div>
+        
+        <div className="pt-2 mt-2 border-t border-gray-100 flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-600">Gap</span>
+          <span className="text-sm font-bold text-orange-600">
+            +{formatCurrency(gap)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Section 3: Year-by-Year Breakdown Cards
+Purpose: Clear numbers for each year. Updates in real-time as sliders move.
+tsxCopy<section className="mb-8">
+  <div className="grid grid-cols-3 gap-4">
+    {/* Year 1 */}
+    <div className="bg-white border border-gray-200 rounded-xl p-5">
+      <div className="text-sm font-medium text-gray-400 mb-4">Year 1</div>
+      
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500">Abridge</span>
+          <span className="text-lg font-semibold text-orange-600">
+            {formatCurrency(yearlyData.year1.abridge)}
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500">{competitor.name}</span>
+          <span className="text-lg font-semibold text-gray-600">
+            {formatCurrency(yearlyData.year1.dax)}
+          </span>
+        </div>
+        
+        <div className="pt-3 mt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-600">Gap</span>
+            <span className="text-lg font-bold text-orange-600">
+              +{formatCurrency(yearlyData.year1.gap)}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Mini comparison bar */}
+      <div className="mt-4 space-y-1">
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-orange-500 rounded-full transition-all duration-300"
+            style={{ width: `${(yearlyData.year1.abridge / maxYearlyValue) * 100}%` }}
+          />
+        </div>
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gray-400 rounded-full transition-all duration-300"
+            style={{ width: `${(yearlyData.year1.dax / maxYearlyValue) * 100}%` }}
+          />
+        </div>
+      </div>
+    </div>
+    
+    {/* Year 2 */}
+    <div className="bg-white border border-gray-200 rounded-xl p-5">
+      <div className="text-sm font-medium text-gray-400 mb-4">Year 2</div>
+      
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500">Abridge</span>
+          <span className="text-lg font-semibold text-orange-600">
+            {formatCurrency(yearlyData.year2.abridge)}
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500">{competitor.name}</span>
+          <span className="text-lg font-semibold text-gray-600">
+            {formatCurrency(yearlyData.year2.dax)}
+          </span>
+        </div>
+        
+        <div className="pt-3 mt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-600">Gap</span>
+            <span className="text-lg font-bold text-orange-600">
+              +{formatCurrency(yearlyData.year2.gap)}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-4 space-y-1">
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-orange-500 rounded-full transition-all duration-300"
+            style={{ width: `${(yearlyData.year2.abridge / maxYearlyValue) * 100}%` }}
+          />
+        </div>
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gray-400 rounded-full transition-all duration-300"
+            style={{ width: `${(yearlyData.year2.dax / maxYearlyValue) * 100}%` }}
+          />
+        </div>
+      </div>
+    </div>
+    
+    {/* Year 3 - Highlighted */}
+    <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
+      <div className="text-sm font-medium text-orange-600 mb-4">Year 3</div>
+      
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-orange-600/70">Abridge</span>
+          <span className="text-lg font-semibold text-orange-600">
+            {formatCurrency(yearlyData.year3.abridge)}
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500">{competitor.name}</span>
+          <span className="text-lg font-semibold text-gray-600">
+            {formatCurrency(yearlyData.year3.dax)}
+          </span>
+        </div>
+        
+        <div className="pt-3 mt-3 border-t border-orange-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-orange-700">Gap</span>
+            <span className="text-lg font-bold text-orange-700">
+              +{formatCurrency(yearlyData.year3.gap)}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-4 space-y-1">
+        <div className="h-2 bg-orange-200 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-orange-500 rounded-full transition-all duration-300"
+            style={{ width: `${(yearlyData.year3.abridge / maxYearlyValue) * 100}%` }}
+          />
+        </div>
+        <div className="h-2 bg-orange-200 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gray-400 rounded-full transition-all duration-300"
+            style={{ width: `${(yearlyData.year3.dax / maxYearlyValue) * 100}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+Section 4: Summary + CTA
+Purpose: Clean summary of the total gap and soft call to action.
+tsxCopy<section>
+  {/* Summary Card */}
+  <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200 rounded-xl p-8 mb-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-sm font-medium text-orange-600 uppercase tracking-wide mb-1">
+          At This Scale
+        </div>
+        <div className="text-sm text-gray-600">
+          {providers.toLocaleString()} providers · {encounters.toLocaleString()} encounters/year
+        </div>
+      </div>
+      
+      <div className="text-right">
+        <div className="text-sm text-gray-500 mb-1">3-Year Difference</div>
+        <div className="text-4xl font-bold text-gray-900">
+          +{formatCurrency(threeYearGap)}
+        </div>
+        <div className="text-sm text-gray-500 mt-1">
+          {formatCurrency(threeYearGap / 3)}/year · {formatCurrency(threeYearGap / 36)}/month
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {/* CTA */}
+  <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      Want to explore this further?
+    </h3>
+    <p className="text-gray-500 mb-6 max-w-md mx-auto">
+      Save this analysis to revisit later, or talk to our team about what a pilot could look like for your organization.
+    </p>
+    
+    <div className="flex items-center justify-center gap-4">
+      <button 
+        onClick={onSave}
+        className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+      >
+        Save This Analysis
+      </button>
+      <button 
+        onClick={onContact}
+        className="px-6 py-3 bg-orange-500 hover:bg-orange-600 rounded-lg text-white font-medium transition-colors flex items-center gap-2"
+      >
+        Talk to Our Team
+        <ArrowRightIcon className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+  
+  {/* Navigation */}
+  <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-100">
+    <button 
+      onClick={onBack}
+      className="text-gray-500 hover:text-gray-700 flex items-center gap-2"
+    >
+      <ArrowLeftIcon className="w-4 h-4" />
+      Back to Gap Analysis
+    </button>
+    
+    <div className="flex items-center gap-3">
+      <button 
+        onClick={onCancel}
+        className="px-4 py-2 text-gray-500 hover:text-gray-700"
+      >
+        Cancel
+      </button>
+      <button 
+        onClick={onSaveScenario}
+        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+      >
+        Save as Scenario
+      </button>
+    </div>
+  </div>
+</section>
+
+Calculation Logic
+typescriptCopy// Constants
+const ABRIDGE_BENCHMARKS = {
+  utilization: 65,
+  timeSavedPerEncounter: 3, // minutes
+  costPerProviderPerMonth: 180,
+};
+
+// Ramp-up factors (% of full value achieved each year)
+const RAMP_FACTORS = {
+  year1: 0.4,  // 40% of full value
+  year2: 0.7,  // 70% of full value
+  year3: 1.0,  // 100% of full value
+};
+
+// Main calculation function
+function calculateAtScale(
+  providers: number,
+  encounters: number,
+  originalCalculations: Calculations,
+  originalProviders: number,
+  originalEncounters: number
+) {
+  // Scale factor based on encounters (primary driver of value)
+  const scaleFactor = encounters / originalEncounters;
+  
+  // Scale the annual values
+  const scaledAbridgeAnnualValue = originalCalculations.totalAbridgeValue * scaleFactor;
+  const scaledDaxAnnualValue = originalCalculations.totalCompetitorValue * scaleFactor;
+  
+  // Calculate year-by-year (Abridge ramps up, DAX stays flat)
+  const year1 = {
+    abridge: scaledAbridgeAnnualValue * RAMP_FACTORS.year1,
+    dax: scaledDaxAnnualValue,
+    gap: (scaledAbridgeAnnualValue * RAMP_FACTORS.year1) - scaledDaxAnnualValue,
+  };
+  
+  const year2 = {
+    abridge: scaledAbridgeAnnualValue * RAMP_FACTORS.year2,
+    dax: scaledDaxAnnualValue,
+    gap: (scaledAbridgeAnnualValue * RAMP_FACTORS.year2) - scaledDaxAnnualValue,
+  };
+  
+  const year3 = {
+    abridge: scaledAbridgeAnnualValue * RAMP_FACTORS.year3,
+    dax: scaledDaxAnnualValue,
+    gap: (scaledAbridgeAnnualValue * RAMP_FACTORS.year3) - scaledDaxAnnualValue,
+  };
+  
+  // Cumulative values for the chart
+  const chartData = [
+    {
+      year: 'Today',
+      abridgeCumulative: 0,
+      daxCumulative: 0,
+    },
+    {
+      year: 'Year 1',
+      abridgeCumulative: year1.abridge,
+      daxCumulative: year1.dax,
+    },
+    {
+      year: 'Year 2',
+      abridgeCumulative: year1.abridge + year2.abridge,
+      daxCumulative: year1.dax + year2.dax,
+    },
+    {
+      year: 'Year 3',
+      abridgeCumulative: year1.abridge + year2.abridge + year3.abridge,
+      daxCumulative: year1.dax + year2.dax + year3.dax,
+    },
+  ];
+  
+  // Total 3-year gap
+  const threeYearGap = chartData[3].abridgeCumulative - chartData[3].daxCumulative;
+  
+  return {
+    yearlyData: { year1, year2, year3 },
+    chartData,
+    threeYearGap,
+    scaledAbridgeAnnualValue,
+    scaledDaxAnnualValue,
+  };
+}
+
+// Format currency helper
+function formatCurrency(value: number): string {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  } else if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}K`;
+  }
+  return `$${value.toFixed(0)}`;
+}
+
+React Component State
+tsxCopyfunction OpportunityStep({ 
+  originalCalculations,
+  originalProviders,
+  originalEncounters,
+  competitor,
+  onSave,
+  onContact,
+  onBack,
+}: Props) {
+  // Scale inputs - start with original values
+  const [providers, setProviders] = useState(originalProviders);
+  const [encounters, setEncounters] = useState(originalEncounters);
+  
+  // Recalculate whenever scale changes
+  const scaledData = useMemo(() => {
+    return calculateAtScale(
+      providers,
+      encounters,
+      originalCalculations,
+      originalProviders,
+      originalEncounters
+    );
+  }, [providers, encounters, originalCalculations, originalProviders, originalEncounters]);
+  
+  const { yearlyData, chartData, threeYearGap } = scaledData;
+  
+  // For scaling the mini comparison bars
+  const maxYearlyValue = Math.max(
+    yearlyData.year1.abridge,
+    yearlyData.year2.abridge,
+    yearlyData.year3.abridge
+  );
+  
+  return (
+    // ... render sections
+  );
+}
+
+Color Reference
+cssCopy/* Abridge Orange */
+--orange-50: #FFF7ED;
+--orange-100: #FFEDD5;
+--orange-200: #FED7AA;
+--orange-500: #E85D3F; /* Primary Abridge orange */
+--orange-600: #DC4A2C;
+--orange-700: #C73E22;
+
+/* Grays (for competitor/DAX) */
+--gray-100: #F3F4F6;
+--gray-200: #E5E7EB;
+--gray-400: #9CA3AF;
+--gray-500: #6B7280;
+--gray-600: #4B5563;
+--gray-700: #374151;
+--gray-900: #111827;
+
+Animation/Transition Notes
+
+Sliders: Smooth thumb movement, track fills with orange as it moves right
+Chart: When data updates, lines should animate smoothly to new positions (use transition-all duration-300)
+Cards: Numbers should transition smoothly when they change (consider a subtle fade or count-up animation)
+Bars: Width changes should animate (transition-all duration-300)
+
+
+Summary
+This Step 4 design:
+
+Lets them explore via sliders (not pushy)
+Shows the divergence visually via the chart (the shaded gap area)
+Provides clear numbers via the year-by-year cards
+Summarizes simply without dramatic language
+Soft CTA that respects their curiosity
+
+The magic moment is when they slide from 50 providers to 500 and watch the gap explode. They discover it themselves. No manipulation needed.

@@ -481,3 +481,47 @@
 .dark .cumulative-highlight {
   background: linear-gradient(135deg, rgba(14, 159, 110, 0.15) 0%, rgba(14, 159, 110, 0.05) 100%);
 }
+
+/* Custom slider with Abridge orange */
+.slider-orange {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  background: #E5E7EB;
+  border-radius: 4px;
+  outline: none;
+}
+
+.slider-orange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #E8532F;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider-orange::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.slider-orange::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #E8532F;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.slider-orange::-moz-range-track {
+  height: 8px;
+  background: #E5E7EB;
+  border-radius: 4px;
+}
