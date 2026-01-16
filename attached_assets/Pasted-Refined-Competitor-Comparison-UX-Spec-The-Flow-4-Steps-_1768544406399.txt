@@ -1,0 +1,1242 @@
+Refined Competitor Comparison UX Spec
+The Flow (4 Steps)
+Copy┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ● Solution ───────── ○ Your Usage ───────── ○ The Gap ───────── ○ Opportunity │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+STEP 1: Solution Selection
+Clean, visual, instant recognition.
+tsxCopy// CompetitorSelection.tsx
+
+interface Competitor {
+  id: 'dax' | 'suki' | 'ambience' | 'nabla' | 'human_scribe' | 'other';
+  name: string;
+  logo: string; // URL or component
+  type: 'Ambient AI' | 'In-person documentation';
+}
+
+const competitors: Competitor[] = [
+  { id: 'dax', name: 'DAX (Nuance)', logo: '/logos/dax.svg', type: 'Ambient AI' },
+  { id: 'suki', name: 'Suki', logo: '/logos/suki.svg', type: 'Ambient AI' },
+  { id: 'ambience', name: 'Ambience Healthcare', logo: '/logos/ambience.svg', type: 'Ambient AI' },
+  { id: 'nabla', name: 'Nabla', logo: '/logos/nabla.svg', type: 'Ambient AI' },
+  { id: 'human_scribe', name: 'Human Scribe', logo: '/logos/scribe.svg', type: 'In-person documentation' },
+  { id: 'other', name: 'Other AI Solution', logo: '/logos/other.svg', type: 'Ambient AI' },
+];
+
+export function CompetitorSelection({ onSelect, selected }: Props) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">
+          What solution are you currently using?
+        </h2>
+      </div>
+      
+      <div className="grid grid-cols-3 gap-4">
+        {competitors.map((comp) => (
+          <button
+            key={comp.id}
+            onClick={() => onSelect(comp.id)}
+            className={`
+              relative p-6 rounded-xl border-2 transition-all duration-200
+              hover:border-gray-300 hover:shadow-md
+              ${selected === comp.id 
+                ? 'border-orange-500 bg-orange-50 shadow-md' 
+                : 'border-gray-200 bg-white'}
+            `}
+          >
+            <div className="flex flex-col items-center space-y-3">
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img src={comp.logo} alt={comp.name} className="max-w-full max-h-full" />
+              </div>
+              <div className="text-center">
+                <div className="font-medium text-gray-900">{comp.name}</div>
+                <div className="text-sm text-gray-500">{comp.type}</div>
+              </div>
+            </div>
+            
+            {selected === comp.id && (
+              <div className="absolute top-3 right-3">
+                <CheckCircleIcon className="w-5 h-5 text-orange-500" />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+STEP 2: Current Usage Details
+Key insight: Different inputs for AI solutions vs Human Scribe. Show calculated summaries in real-time.
+tsxCopy// CurrentUsageForm.tsx
+
+interface UsageInputs {
+  // For AI solutions
+  providers: number;
+  monthlyEncounters: number;
+  monthlyCostPerProvider: number;
+  utilizationRate: number; // 0-100
+  timeSavedPerEncounter: number; // minutes
+  
+  // Optional refinements
+  baselineWrvu?: number;
+  wrvuChange?: number;
+}
+
+interface ScribeInputs {
+  numberOfScribes: number;
+  hourlyRate: number;
+  hoursPerWeek: number;
+  providersCovered: number;
+  encountersCovered: number;
+  coveragePercent: number;
+  reductionPercent: number;
+}
+
+export function CurrentUsageForm({ competitor, onComplete }: Props) {
+  const [inputs, setInputs] = useState<UsageInputs>(getDefaults(competitor));
+  
+  // Real-time calculations
+  const annualCost = inputs.providers * inputs.monthlyCostPerProvider * 12;
+  const annualEncounters = inputs.monthlyEncounters * 12;
+  const documentedEncounters = annualEncounters * (inputs.utilizationRate / 100);
+  const hoursReturned = (inputs.timeSavedPerEncounter * documentedEncounters) / 60;
+  
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">
+          Tell us about your {competitor.name} deployment
+        </h2>
+      </div>
+      
+      {/* Core Metrics Section */}
+      <div className="space-y-6">
+        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+          Core Metrics
+        </div>
+        
+        <div className="grid grid-cols-2 gap-6">
+          <InputField
+            label="Total Providers Using"
+            value={inputs.providers}
+            onChange={(v) => setInputs({ ...inputs, providers: v })}
+            suffix="providers"
+          />
+          
+          <InputField
+            label="Monthly Cost per Provider"
+            value={inputs.monthlyCostPerProvider}
+            onChange={(v) => setInputs({ ...inputs, monthlyCostPerProvider: v })}
+            prefix="$"
+            suffix="/mo"
+          />
+        </div>
+        
+        <InputField
+          label="Monthly Outpatient Encounters"
+          value={inputs.monthlyEncounters}
+          onChange={(v) => setInputs({ ...inputs, monthlyEncounters: v })}
+          hint={`~${Math.round(inputs.monthlyEncounters / inputs.providers)} encounters/provider/month`}
+        />
+      </div>
+      
+      {/* Performance Section */}
+      <div className="space-y-6">
+        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+          Current Performance
+        </div>
+        
+        <SliderField
+          label="Current Utilization Rate"
+          description="What % of providers actively use this daily?"
+          value={inputs.utilizationRate}
+          onChange={(v) => setInputs({ ...inputs, utilizationRate: v })}
+          min={0}
+          max={100}
+          hint={`Industry average for ${competitor.name}: ${competitor.typicalUtilization.min}-${competitor.typicalUtilization.max}%`}
+        />
+        
+        <SliderField
+          label="Time Saved per Encounter"
+          description="How much documentation time is saved per visit?"
+          value={inputs.timeSavedPerEncounter}
+          onChange={(v) => setInputs({ ...inputs, timeSavedPerEncounter: v })}
+          min={0}
+          max={10}
+          step={0.5}
+          unit="min"
+          hint={`${competitor.name} customers typically report ${competitor.typicalTimeSaved.min}-${competitor.typicalTimeSaved.max} min`}
+        />
+      </div>
+      
+      {/* Calculated Summary */}
+      <div className="bg-gray-50 rounded-xl p-6">
+        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
+          Calculated Summary
+        </div>
+        
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <div className="text-sm text-gray-500">Annual {competitor.name} Cost</div>
+            <div className="text-2xl font-semibold text-gray-900">
+              ${annualCost.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-400">
+              ${inputs.monthlyCostPerProvider}/provider × {inputs.providers} × 12
+            </div>
+          </div>
+          
+          <div>
+            <div className="text-sm text-gray-500">Annual Time Saved</div>
+            <div className="text-2xl font-semibold text-gray-900">
+              {hoursReturned.toLocaleString()} hours
+            </div>
+            <div className="text-sm text-gray-400">
+              @ {inputs.utilizationRate}% utilization
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex justify-end">
+        <Button onClick={() => onComplete(inputs)}>
+          Analyze the Gap →
+        </Button>
+      </div>
+    </div>
+  );
+}
+For Human Scribe (different form):
+tsxCopyexport function ScribeUsageForm({ onComplete }: Props) {
+  const [inputs, setInputs] = useState<ScribeInputs>({
+    numberOfScribes: 25,
+    hourlyRate: 18,
+    hoursPerWeek: 32,
+    providersCovered: 50,
+    encountersCovered: 8333,
+    coveragePercent: 60,
+    reductionPercent: 75,
+  });
+  
+  const annualScribeCost = inputs.numberOfScribes * inputs.hourlyRate * inputs.hoursPerWeek * 52;
+  const potentialSavings = annualScribeCost * (inputs.reductionPercent / 100);
+  
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">
+          Tell us about your Human Scribe operation
+        </h2>
+      </div>
+      
+      {/* Scribe Workforce */}
+      <div className="space-y-6">
+        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+          Scribe Workforce
+        </div>
+        
+        <div className="grid grid-cols-2 gap-6">
+          <InputField
+            label="Number of Scribes"
+            value={inputs.numberOfScribes}
+            onChange={(v) => setInputs({ ...inputs, numberOfScribes: v })}
+          />
+          
+          <InputField
+            label="Average Hourly Rate"
+            value={inputs.hourlyRate}
+            onChange={(v) => setInputs({ ...inputs, hourlyRate: v })}
+            prefix="$"
+            suffix="/hr"
+          />
+        </div>
+        
+        <InputField
+          label="Average Hours per Scribe per Week"
+          value={inputs.hoursPerWeek}
+          onChange={(v) => setInputs({ ...inputs, hoursPerWeek: v })}
+          suffix="hrs/week"
+        />
+      </div>
+      
+      {/* Potential Reduction */}
+      <div className="space-y-6">
+        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+          Potential Reduction
+        </div>
+        
+        <SliderField
+          label="% of scribe hours you could reduce with AI"
+          value={inputs.reductionPercent}
+          onChange={(v) => setInputs({ ...inputs, reductionPercent: v })}
+          min={0}
+          max={100}
+          hint="Most organizations reduce 60-80% of scribe hours"
+        />
+      </div>
+      
+      {/* Calculated Summary */}
+      <div className="bg-gray-50 rounded-xl p-6">
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <div className="text-sm text-gray-500">Annual Scribe Cost</div>
+            <div className="text-2xl font-semibold text-gray-900">
+              ${annualScribeCost.toLocaleString()}
+            </div>
+          </div>
+          
+          <div>
+            <div className="text-sm text-gray-500">Potential Annual Savings</div>
+            <div className="text-2xl font-semibold text-emerald-600">
+              ${potentialSavings.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-400">
+              @ {inputs.reductionPercent}% reduction
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+STEP 3: The Gap at a Glance
+This is the "aha moment" - show them clearly what they're getting vs what they could be getting.
+tsxCopy// GapAnalysis.tsx
+
+interface GapAnalysisProps {
+  competitor: Competitor;
+  competitorInputs: UsageInputs;
+  selectedDrivers: string[]; // from their strategic priorities
+}
+
+export function GapAnalysis({ competitor, competitorInputs, selectedDrivers }: Props) {
+  // Calculate the gap using Abridge benchmarks
+  const calculations = useGapCalculations(competitor, competitorInputs, selectedDrivers);
+  
+  return (
+    <div className="space-y-8">
+      {/* The Main Comparison */}
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <div className="p-8 text-center border-b border-gray-100">
+          <h2 className="text-lg font-medium text-gray-500 mb-2">The Gap at a Glance</h2>
+        </div>
+        
+        <div className="grid grid-cols-2 divide-x divide-gray-100">
+          {/* Competitor Side */}
+          <div className="p-8 bg-gray-50">
+            <div className="flex items-center justify-center mb-6">
+              <img src={competitor.logo} className="h-10" alt={competitor.name} />
+            </div>
+            <div className="text-center text-gray-500 text-sm mb-1">Your Current</div>
+          </div>
+          
+          {/* Abridge Side */}
+          <div className="p-8 bg-emerald-50">
+            <div className="flex items-center justify-center mb-6">
+              <AbridgeLogo className="h-10" />
+            </div>
+            <div className="text-center text-emerald-600 text-sm mb-1">The Opportunity</div>
+          </div>
+        </div>
+        
+        {/* Metric Comparisons */}
+        <div className="divide-y divide-gray-100">
+          {/* Adoption */}
+          <MetricRow
+            label="ADOPTION"
+            competitor={{
+              value: `${competitorInputs.utilizationRate}%`,
+              subtext: 'Your utilization'
+            }}
+            abridge={{
+              value: '65%',
+              subtext: 'Abridge average',
+              delta: `+${65 - competitorInputs.utilizationRate}%`
+            }}
+          />
+          
+          {/* Time Savings */}
+          <MetricRow
+            label="TIME SAVINGS"
+            competitor={{
+              value: `${competitorInputs.timeSavedPerEncounter} min`,
+              subtext: 'per encounter'
+            }}
+            abridge={{
+              value: '7 min',
+              subtext: 'per encounter',
+              delta: `+${Math.round((7 / competitorInputs.timeSavedPerEncounter - 1) * 100)}%`
+            }}
+          />
+          
+          {/* Annual Cost */}
+          <MetricRow
+            label="ANNUAL COST"
+            competitor={{
+              value: `$${calculations.competitorAnnualCost.toLocaleString()}`,
+              subtext: `$${competitorInputs.monthlyCostPerProvider}/provider/mo`
+            }}
+            abridge={{
+              value: `$${calculations.abridgeAnnualCost.toLocaleString()}`,
+              subtext: '$180/provider/mo',
+              delta: calculations.costDelta > 0 
+                ? `Save $${calculations.costDelta.toLocaleString()}`
+                : null
+            }}
+          />
+        </div>
+      </div>
+      
+      {/* Driver-Specific Inputs */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium text-gray-900">
+          Refine Your Strategic Priorities
+        </h3>
+        <p className="text-gray-500">
+          Based on your selections, we need a few more inputs to calculate your specific opportunity.
+        </p>
+        
+        {selectedDrivers.includes('patient_access') && (
+          <DriverInputCard
+            icon={<UserPlusIcon />}
+            title="Patient Access"
+            description="Additional visits enabled by freeing up documentation time"
+          >
+            <InputField
+              label="Additional encounters enabled per provider per month (with current solution)"
+              value={calculations.driverInputs.patientAccess.currentEncountersEnabled}
+              onChange={(v) => updateDriverInput('patientAccess', 'currentEncountersEnabled', v)}
+              hint="At 7 min saved vs 1.5 min, Abridge enables ~3.3x more encounters"
+            />
+            <GapPreview
+              competitor={calculations.patientAccessCompetitor}
+              abridge={calculations.patientAccessAbridge}
+              delta={calculations.patientAccessDelta}
+            />
+          </DriverInputCard>
+        )}
+        
+        {selectedDrivers.includes('overtime') && (
+          <DriverInputCard
+            icon={<ClockIcon />}
+            title="Overtime & Locum Savings"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                label="Avg overtime hours per provider per week"
+                value={calculations.driverInputs.overtime.hoursPerWeek}
+                onChange={(v) => updateDriverInput('overtime', 'hoursPerWeek', v)}
+              />
+              <InputField
+                label="Overtime/Locum rate ($/hr)"
+                value={calculations.driverInputs.overtime.rate}
+                onChange={(v) => updateDriverInput('overtime', 'rate', v)}
+                prefix="$"
+              />
+            </div>
+            <SliderField
+              label="% of overtime that is documentation-driven"
+              value={calculations.driverInputs.overtime.docDrivenPercent}
+              onChange={(v) => updateDriverInput('overtime', 'docDrivenPercent', v)}
+            />
+            <GapPreview
+              competitor={calculations.overtimeCompetitor}
+              abridge={calculations.overtimeAbridge}
+              delta={calculations.overtimeDelta}
+            />
+          </DriverInputCard>
+        )}
+        
+        {selectedDrivers.includes('level_of_service') && (
+          <DriverInputCard
+            icon={<ChartBarIcon />}
+            title="Accurate Level of Service"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                label="Baseline wRVU per encounter"
+                value={calculations.driverInputs.los.baselineWrvu}
+                onChange={(v) => updateDriverInput('los', 'baselineWrvu', v)}
+              />
+              <SelectField
+                label="wRVU improvement with current solution"
+                value={calculations.driverInputs.los.currentImprovement}
+                options={['0%', '+2%', '+4%', '+6%', '+8%']}
+                onChange={(v) => updateDriverInput('los', 'currentImprovement', v)}
+              />
+            </div>
+            <div className="text-sm text-gray-500 mt-2">
+              Abridge's complete documentation capture typically drives 4-8% wRVU improvement
+            </div>
+            <GapPreview
+              competitor={calculations.losCompetitor}
+              abridge={calculations.losAbridge}
+              delta={calculations.losDelta}
+            />
+          </DriverInputCard>
+        )}
+        
+        {selectedDrivers.includes('hcc') && (
+          <DriverInputCard
+            icon={<HeartIcon />}
+            title="HCC & Chronic Condition Capture"
+          >
+            <InputField
+              label="Total patients with chronic conditions in your panel"
+              value={calculations.driverInputs.hcc.chronicPatients}
+              onChange={(v) => updateDriverInput('hcc', 'chronicPatients', v)}
+            />
+            <SliderField
+              label="Current suspected HCC capture rate"
+              value={calculations.driverInputs.hcc.currentCaptureRate}
+              onChange={(v) => updateDriverInput('hcc', 'currentCaptureRate', v)}
+              hint="Abridge typically achieves 15-25% lift in capture rates"
+            />
+            <GapPreview
+              competitor={calculations.hccCompetitor}
+              abridge={calculations.hccAbridge}
+              delta={calculations.hccDelta}
+            />
+          </DriverInputCard>
+        )}
+        
+        {selectedDrivers.includes('denials') && (
+          <DriverInputCard
+            icon={<ExclamationTriangleIcon />}
+            title="Documentation-Related Denials"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                label="Current denial rate"
+                value={calculations.driverInputs.denials.denialRate}
+                onChange={(v) => updateDriverInput('denials', 'denialRate', v)}
+                suffix="%"
+              />
+              <InputField
+                label="Chart closure time"
+                value={calculations.driverInputs.denials.chartClosureDays}
+                onChange={(v) => updateDriverInput('denials', 'chartClosureDays', v)}
+                suffix="days"
+              />
+            </div>
+            <div className="text-sm text-gray-500 mt-2">
+              Faster chart closure = faster payment. Abridge averages same-day closure.
+            </div>
+            <GapPreview
+              competitor={calculations.denialsCompetitor}
+              abridge={calculations.denialsAbridge}
+              delta={calculations.denialsDelta}
+            />
+          </DriverInputCard>
+        )}
+        
+        {selectedDrivers.includes('retention') && (
+          <DriverInputCard
+            icon={<UserGroupIcon />}
+            title="Clinician Retention"
+          >
+            <SliderField
+              label="Hours/week providers spend on documentation after hours"
+              value={calculations.driverInputs.retention.afterHoursPerWeek}
+              onChange={(v) => updateDriverInput('retention', 'afterHoursPerWeek', v)}
+              max={20}
+              hint="Burnout risk increases 40% when after-hours work exceeds 5 hrs/week"
+            />
+            <GapPreview
+              competitor={calculations.retentionCompetitor}
+              abridge={calculations.retentionAbridge}
+              delta={calculations.retentionDelta}
+              note="Abridge reduces after-hours work by avg 60%"
+            />
+          </DriverInputCard>
+        )}
+      </div>
+      
+      <div className="flex justify-between">
+        <Button variant="secondary" onClick={onBack}>
+          ← Back
+        </Button>
+        <Button onClick={onContinue}>
+          See the Full Opportunity →
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// Sub-components
+
+function MetricRow({ label, competitor, abridge }: MetricRowProps) {
+  return (
+    <div className="grid grid-cols-2 divide-x divide-gray-100">
+      <div className="p-6">
+        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">
+          {label}
+        </div>
+        <div className="flex items-baseline">
+          <div className="w-full bg-gray-200 rounded-full h-2 mr-4">
+            <div 
+              className="bg-gray-400 h-2 rounded-full" 
+              style={{ width: `${competitor.barPercent || 50}%` }}
+            />
+          </div>
+        </div>
+        <div className="mt-2">
+          <div className="text-lg font-semibold text-gray-700">{competitor.value}</div>
+          <div className="text-sm text-gray-400">{competitor.subtext}</div>
+        </div>
+      </div>
+      
+      <div className="p-6 bg-emerald-50/50">
+        <div className="text-xs font-medium text-emerald-600 uppercase tracking-wide mb-2">
+          {label}
+        </div>
+        <div className="flex items-baseline">
+          <div className="w-full bg-emerald-200 rounded-full h-2 mr-4">
+            <div 
+              className="bg-emerald-500 h-2 rounded-full" 
+              style={{ width: `${abridge.barPercent || 75}%` }}
+            />
+          </div>
+        </div>
+        <div className="mt-2">
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-semibold text-emerald-700">{abridge.value}</span>
+            {abridge.delta && (
+              <span className="text-sm font-medium text-emerald-600">{abridge.delta}</span>
+            )}
+          </div>
+          <div className="text-sm text-emerald-600/70">{abridge.subtext}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DriverInputCard({ icon, title, description, children }: DriverInputCardProps) {
+  return (
+    <div className="border border-gray-200 rounded-xl p-6 space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
+          {icon}
+        </div>
+        <div>
+          <h4 className="font-medium text-gray-900">{title}</h4>
+          {description && <p className="text-sm text-gray-500">{description}</p>}
+        </div>
+      </div>
+      <div className="space-y-4 pl-11">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function GapPreview({ competitor, abridge, delta, note }: GapPreviewProps) {
+  return (
+    <div className="bg-gray-50 rounded-lg p-4 mt-4">
+      <div className="flex items-center justify-between text-sm">
+        <div>
+          <span className="text-gray-500">Current: </span>
+          <span className="font-medium text-gray-700">${competitor.toLocaleString()}</span>
+        </div>
+        <div className="text-gray-300">→</div>
+        <div>
+          <span className="text-emerald-600">Abridge: </span>
+          <span className="font-medium text-emerald-700">${abridge.toLocaleString()}</span>
+        </div>
+        <div className="font-medium text-emerald-600">
+          +${delta.toLocaleString()}
+        </div>
+      </div>
+      {note && <div className="text-xs text-gray-400 mt-2">{note}</div>}
+    </div>
+  );
+}
+
+STEP 4: The Switching Opportunity
+The payoff. Show them what they're leaving on the table.
+tsxCopy// SwitchingOpportunity.tsx
+
+export function SwitchingOpportunity({ calculations, competitor }: Props) {
+  const totalGap = calculations.totalAbridgeValue - calculations.totalCompetitorValue;
+  
+  return (
+    <div className="space-y-8">
+      {/* Hero Number */}
+      <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-10 text-center text-white">
+        <div className="text-emerald-100 text-sm font-medium uppercase tracking-wide mb-2">
+          The Switching Opportunity
+        </div>
+        <div className="text-5xl font-bold mb-2">
+          +${totalGap.toLocaleString()}<span className="text-2xl font-normal">/year</span>
+        </div>
+        <div className="text-emerald-100">
+          Additional value by switching to Abridge
+        </div>
+      </div>
+      
+      {/* Summary Table */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="grid grid-cols-4 text-sm font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
+          <div className="p-4"></div>
+          <div className="p-4 text-center">{competitor.name}</div>
+          <div className="p-4 text-center text-emerald-600">Abridge</div>
+          <div className="p-4 text-center text-emerald-600">Delta</div>
+        </div>
+        
+        <div className="divide-y divide-gray-50">
+          <SummaryRow
+            label="Annual Investment"
+            competitor={`$${calculations.competitorAnnualCost.toLocaleString()}`}
+            abridge={`$${calculations.abridgeAnnualCost.toLocaleString()}`}
+            delta={calculations.costDelta > 0 
+              ? `Save $${calculations.costDelta.toLocaleString()}` 
+              : `-$${Math.abs(calculations.costDelta).toLocaleString()}`}
+            deltaPositive={calculations.costDelta > 0}
+          />
+          
+          <SummaryRow
+            label="Value Created"
+            competitor={`$${calculations.totalCompetitorValue.toLocaleString()}`}
+            abridge={`$${calculations.totalAbridgeValue.toLocaleString()}`}
+            delta={`+$${(calculations.totalAbridgeValue - calculations.totalCompetitorValue).toLocaleString()}`}
+            deltaPositive={true}
+          />
+          
+          <SummaryRow
+            label="Net Annual Gain"
+            competitor={`$${calculations.competitorNetGain.toLocaleString()}`}
+            abridge={`$${calculations.abridgeNetGain.toLocaleString()}`}
+            delta={`+$${(calculations.abridgeNetGain - calculations.competitorNetGain).toLocaleString()}`}
+            deltaPositive={true}
+            highlight
+          />
+          
+          <SummaryRow
+            label="ROI"
+            competitor={`${calculations.competitorROI.toFixed(1)}x`}
+            abridge={`${calculations.abridgeROI.toFixed(1)}x`}
+            delta={`+${(calculations.abridgeROI - calculations.competitorROI).toFixed(1)}x`}
+            deltaPositive={true}
+          />
+        </div>
+      </div>
+      
+      {/* Driver Breakdown */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium text-gray-900">Where the Value Comes From</h3>
+        
+        <div className="space-y-3">
+          {calculations.driverBreakdown.map((driver) => (
+            <DriverGapBar
+              key={driver.id}
+              icon={driver.icon}
+              label={driver.label}
+              competitorValue={driver.competitorValue}
+              abridgeValue={driver.abridgeValue}
+              gap={driver.gap}
+              explanation={driver.explanation}
+            />
+          ))}
+        </div>
+      </div>
+      
+      {/* The Gap Over Time Visualization */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          The Widening Gap
+        </h3>
+        <p className="text-sm text-gray-500 mb-6">
+          The gap compounds over time as Abridge reaches full maturity.
+        </p>
+        
+        <GapChart
+          competitorName={competitor.name}
+          competitorAnnualValue={calculations.competitorNetGain}
+          abridgeYear1={calculations.abridgeNetGain * 0.4}
+          abridgeYear2={calculations.abridgeNetGain * 0.7}
+          abridgeYear3={calculations.abridgeNetGain}
+        />
+        
+        <div className="mt-6 p-4 bg-emerald-50 rounded-lg">
+          <div className="text-sm text-emerald-800">
+            <span className="font-semibold">3-Year Cumulative Advantage: </span>
+            +${calculations.threeYearGap.toLocaleString()} more value vs staying with {competitor.name}
+          </div>
+        </div>
+      </div>
+      
+      {/* Time to Value Callout */}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="p-2 bg-amber-100 rounded-lg">
+            <ClockIcon className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <div className="font-medium text-amber-900">
+              This assumes mature Abridge performance (65%+ utilization)
+            </div>
+            <div className="text-sm text-amber-700 mt-1">
+              Reality: It takes 18-24 months to get there. But even during ramp-up, you're ahead.
+            </div>
+            <button 
+              className="mt-3 text-sm font-medium text-amber-700 hover:text-amber-800 flex items-center gap-1"
+              onClick={() => setShowTimeline(true)}
+            >
+              Show Me the Realistic Timeline
+              <ArrowRightIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Actions */}
+      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <Button variant="secondary" onClick={onBack}>
+          ← Back to Gap Analysis
+        </Button>
+        
+        <div className="flex gap-3">
+          <Button variant="secondary" onClick={onExport}>
+            Export PDF
+          </Button>
+          <Button onClick={onSave}>
+            Save as Scenario
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// The Gap Visualization Component
+function GapChart({ competitorName, competitorAnnualValue, abridgeYear1, abridgeYear2, abridgeYear3 }: Props) {
+  const data = [
+    { 
+      year: 'Year 1', 
+      competitor: competitorAnnualValue, 
+      abridge: abridgeYear1,
+      competitorCumulative: competitorAnnualValue,
+      abridgeCumulative: abridgeYear1
+    },
+    { 
+      year: 'Year 2', 
+      competitor: competitorAnnualValue, 
+      abridge: abridgeYear2,
+      competitorCumulative: competitorAnnualValue * 2,
+      abridgeCumulative: abridgeYear1 + abridgeYear2
+    },
+    { 
+      year: 'Year 3', 
+      competitor: competitorAnnualValue, 
+      abridge: abridgeYear3,
+      competitorCumulative: competitorAnnualValue * 3,
+      abridgeCumulative: abridgeYear1 + abridgeYear2 + abridgeYear3
+    },
+  ];
+  
+  return (
+    <div className="h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="competitorGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#94A3B8" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#94A3B8" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <XAxis 
+            dataKey="year" 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#64748B', fontSize: 12 }}
+          />
+          <YAxis 
+            tickFormatter={(v) => `$${(v/1000).toFixed(0)}K`}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#64748B', fontSize: 12 }}
+          />
+          <Tooltip 
+            formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+            contentStyle={{ 
+              borderRadius: 8, 
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+            }}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="abridgeCumulative" 
+            name="Abridge"
+            stroke="#10B981" 
+            strokeWidth={2}
+            fill="url(#abridgeGradient)" 
+          />
+          <Area 
+            type="monotone" 
+            dataKey="competitorCumulative" 
+            name={competitorName}
+            stroke="#94A3B8" 
+            strokeWidth={2}
+            fill="url(#competitorGradient)" 
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+// Driver Gap Bar
+function DriverGapBar({ icon, label, competitorValue, abridgeValue, gap, explanation }: Props) {
+  const maxValue = Math.max(competitorValue, abridgeValue);
+  const competitorWidth = (competitorValue / maxValue) * 100;
+  const abridgeWidth = (abridgeValue / maxValue) * 100;
+  
+  return (
+    <div className="bg-gray-50 rounded-xl p-4">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="text-gray-400">{icon}</div>
+        <div className="font-medium text-gray-900">{label}</div>
+        <div className="ml-auto text-sm font-medium text-emerald-600">
+          +${gap.toLocaleString()}
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        {/* Abridge bar */}
+        <div className="flex items-center gap-3">
+          <div className="w-16 text-xs text-gray-500 text-right">Abridge</div>
+          <div className="flex-1 h-6 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+              style={{ width: `${abridgeWidth}%` }}
+            />
+          </div>
+          <div className="w-20 text-sm font-medium text-emerald-700 text-right">
+            ${abridgeValue.toLocaleString()}
+          </div>
+        </div>
+        
+        {/* Competitor bar */}
+        <div className="flex items-center gap-3">
+          <div className="w-16 text-xs text-gray-400 text-right">Current</div>
+          <div className="flex-1 h-6 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gray-400 rounded-full transition-all duration-500"
+              style={{ width: `${competitorWidth}%` }}
+            />
+          </div>
+          <div className="w-20 text-sm text-gray-500 text-right">
+            ${competitorValue.toLocaleString()}
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-2 text-xs text-gray-500">
+        {explanation}
+      </div>
+    </div>
+  );
+}
+
+Realistic Timeline Modal
+tsxCopy// TimelineModal.tsx
+
+export function TimelineModal({ calculations, competitor, onClose }: Props) {
+  const phases = [
+    {
+      label: 'M6',
+      percent: 20,
+      title: 'Year 1: The Ramp-Up',
+      description: 'Onboarding & training (Months 1-3) → Building habits & workflows (Months 4-8) → Early adopters succeeding (Months 9-12)',
+      utilization: 26,
+      value: calculations.abridgeNetGain * 0.4,
+      competitorValue: calculations.competitorNetGain,
+    },
+    {
+      label: 'M12',
+      percent: 40,
+      title: 'Year 2: The Acceleration',
+      description: 'Utilization climbing (65%+) → Workflows optimized → Retention benefits starting to materialize',
+      utilization: 55,
+      value: calculations.abridgeNetGain * 0.7,
+      competitorValue: calculations.competitorNetGain,
+    },
+    {
+      label: 'M18',
+      percent: 80,
+      title: 'Year 3: The Payoff',
+      description: 'Full maturity achieved → Compounding benefits delivering → Provider satisfaction high',
+      utilization: 70,
+      value: calculations.abridgeNetGain,
+      competitorValue: calculations.competitorNetGain,
+    },
+  ];
+  
+  return (
+    <Modal onClose={onClose} size="lg">
+      <div className="p-6 space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            The Realistic Path to ${calculations.abridgeNetGain.toLocaleString()}
+          </h2>
+          <p className="text-gray-500 mt-1">
+            Value doesn't happen overnight. Here's the realistic journey.
+          </p>
+        </div>
+        
+        {/* Progress dots */}
+        <div className="flex items-center justify-between px-8">
+          {[20, 40, 80, 100].map((pct, i) => (
+            <div key={pct} className="flex flex-col items-center">
+              <div className={`
+                w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
+                ${i < 3 ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-600'}
+              `}>
+                {pct}%
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {['M6', 'M12', 'M18', 'M24+'][i]}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Phase cards */}
+        <div className="space-y-4">
+          {phases.map((phase, i) => (
+            <div 
+              key={phase.label}
+              className={`
+                rounded-xl p-5 border-l-4
+                ${i === 0 ? 'bg-blue-50 border-blue-500' : ''}
+                ${i === 1 ? 'bg-emerald-50 border-emerald-500' : ''}
+                ${i === 2 ? 'bg-emerald-100 border-emerald-600' : ''}
+              `}
+            >
+              <div className="font-medium text-gray-900 mb-1">{phase.title}</div>
+              <div className="text-sm text-gray-600 mb-3">{phase.description}</div>
+              
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs text-gray-500">Utilization:</span>
+                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-emerald-500 rounded-full"
+                    style={{ width: `${phase.utilization}%` }}
+                  />
+                </div>
+                <span className="text-xs font-medium text-gray-700">{phase.utilization}% avg</span>
+              </div>
+              
+              <div className="grid grid-cols-4 gap-4 p-3 bg-white/60 rounded-lg">
+                <div>
+                  <div className="text-xs text-gray-500">Investment</div>
+                  <div className="font-semibold text-gray-900">
+                    -${calculations.abridgeAnnualCost.toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Value</div>
+                  <div className="font-semibold text-emerald-600">
+                    +${Math.round(phase.value + calculations.abridgeAnnualCost).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Net Gain</div>
+                  <div className="font-semibold text-emerald-600">
+                    +${Math.round(phase.value).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">ROI</div>
+                  <div className="font-semibold text-gray-900">
+                    {((phase.value + calculations.abridgeAnnualCost) / calculations.abridgeAnnualCost).toFixed(1)}x
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-sm text-emerald-700 mt-2">
+                {phase.value > phase.competitorValue 
+                  ? `Still ${((phase.value / phase.competitorValue - 1) * 100).toFixed(0)}% better than ${competitor.name}'s ${(phase.competitorValue / calculations.competitorAnnualCost).toFixed(1)}x ROI`
+                  : `ROI now ${(phase.value / phase.competitorValue * 100).toFixed(0)}% of ${competitor.name}`
+                }
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Cumulative comparison */}
+        <div className="bg-emerald-50 rounded-xl p-5">
+          <div className="font-medium text-gray-900 mb-3">3-Year Cumulative Comparison</div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-gray-500">
+                <th className="text-left py-2">Year</th>
+                <th className="text-right py-2">Abridge ROI</th>
+                <th className="text-right py-2">{competitor.name} ROI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-2">Year 1</td>
+                <td className="text-right font-medium text-emerald-600">
+                  {((phases[0].value + calculations.abridgeAnnualCost) / calculations.abridgeAnnualCost).toFixed(1)}x
+                </td>
+                <td className="text-right text-gray-500">
+                  {calculations.competitorROI.toFixed(1)}x
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2">Year 2</td>
+                <td className="text-right font-medium text-emerald-600">
+                  {((phases[1].value + calculations.abridgeAnnualCost) / calculations.abridgeAnnualCost).toFixed(1)}x
+                </td>
+                <td className="text-right text-gray-500">
+                  {calculations.competitorROI.toFixed(1)}x
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2">Year 3</td>
+                <td className="text-right font-medium text-emerald-600">
+                  {((phases[2].value + calculations.abridgeAnnualCost) / calculations.abridgeAnnualCost).toFixed(1)}x
+                </td>
+                <td className="text-right text-gray-500">
+                  {calculations.competitorROI.toFixed(1)}x
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <div className="mt-4 pt-4 border-t border-emerald-200">
+            <div className="text-center">
+              <div className="text-sm text-emerald-700">3-Year Cumulative Advantage</div>
+              <div className="text-2xl font-bold text-emerald-700">
+                +${calculations.threeYearGap.toLocaleString()}
+              </div>
+              <div className="text-sm text-emerald-600">
+                more value vs. staying with {competitor.name}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex justify-end">
+          <Button onClick={onClose}>Close</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+The Calculation Hook
+tsxCopy// useGapCalculations.ts
+
+export function useGapCalculations(
+  competitor: Competitor,
+  inputs: UsageInputs,
+  selectedDrivers: string[]
+) {
+  const competitorBenchmarks = COMPETITOR_ESTIMATES[competitor.id];
+  const abridgeBenchmarks = ABRIDGE_BENCHMARKS;
+  
+  // Base calculations
+  const annualEncounters = inputs.monthlyEncounters * 12;
+  const competitorAnnualCost = inputs.providers * inputs.monthlyCostPerProvider * 12;
+  const abridgeAnnualCost = inputs.providers * 180 * 12; // $180/provider/mo
+  const costDelta = competitorAnnualCost - abridgeAnnualCost;
+  
+  // Driver calculations
+  const patientAccess = useMemo(() => {
+    if (!selectedDrivers.includes('patient_access')) return null;
+    return calculatePatientAccess(
+      annualEncounters,
+      inputs.utilizationRate,
+      inputs.timeSavedPerEncounter,
+      abridgeBenchmarks.utilization.typical,
+      abridgeBenchmarks.timeSavedPerEncounter.typical
+    );
+  }, [annualEncounters, inputs, selectedDrivers]);
+  
+  const overtime = useMemo(() => {
+    if (!selectedDrivers.includes('overtime')) return null;
+    return calculateOvertime(
+      annualEncounters,
+      inputs.utilizationRate,
+      inputs.timeSavedPerEncounter,
+      abridgeBenchmarks.utilization.typical,
+      abridgeBenchmarks.timeSavedPerEncounter.typical
+    );
+  }, [annualEncounters, inputs, selectedDrivers]);
+  
+  // ... similar for other drivers
+  
+  // Totals
+  const totalCompetitorValue = [
+    patientAccess?.competitorValue,
+    overtime?.competitorValue,
+    levelOfService?.competitorValue,
+    hcc?.competitorValue,
+    denials?.competitorValue,
+    retention?.competitorValue,
+  ].filter(Boolean).reduce((sum, v) => sum + v, 0);
+  
+  const totalAbridgeValue = [
+    patientAccess?.abridgeValue,
+    overtime?.abridgeValue,
+    levelOfService?.abridgeValue,
+    hcc?.abridgeValue,
+    denials?.abridgeValue,
+    retention?.abridgeValue,
+  ].filter(Boolean).reduce((sum, v) => sum + v, 0);
+  
+  const competitorNetGain = totalCompetitorValue - competitorAnnualCost;
+  const abridgeNetGain = totalAbridgeValue - abridgeAnnualCost;
+  
+  const competitorROI = totalCompetitorValue / competitorAnnualCost;
+  const abridgeROI = totalAbridgeValue / abridgeAnnualCost;
+  
+  // 3-year with ramp
+  const threeYearAbridgeValue = (abridgeNetGain * 0.4) + (abridgeNetGain * 0.7) + abridgeNetGain;
+  const threeYearCompetitorValue = competitorNetGain * 3;
+  const threeYearGap = threeYearAbridgeValue - threeYearCompetitorValue;
+  
+  return {
+    competitorAnnualCost,
+    abridgeAnnualCost,
+    costDelta,
+    totalCompetitorValue,
+    totalAbridgeValue,
+    competitorNetGain,
+    abridgeNetGain,
+    competitorROI,
+    abridgeROI,
+    threeYearGap,
+    driverBreakdown: [
+      patientAccess && { 
+        id: 'patient_access', 
+        label: 'Patient Access', 
+        icon: <UserPlusIcon />,
+        ...patientAccess 
+      },
+      overtime && { 
+        id: 'overtime', 
+        label: 'Overtime & Locum Savings', 
+        icon: <ClockIcon />,
+        ...overtime 
+      },
+      // ... etc
+    ].filter(Boolean),
+  };
+}

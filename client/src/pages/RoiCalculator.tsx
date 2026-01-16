@@ -81,6 +81,10 @@ import {
   GitCompareArrows,
   Scale,
   Info,
+  Mic,
+  UserCircle,
+  CheckCircle,
+  UserPlus,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -4547,42 +4551,60 @@ export default function RoiCalculator({
                       </div>
                     </div>
                     
-                    <div className="bg-white border border-neutral-200/60 rounded-lg p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                      <h3 className="text-[18px] font-bold text-[#111827] mb-4">
+                    <div className="bg-white border border-neutral-200/60 rounded-xl p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
+                      <h3 className="text-xl font-semibold text-[#111827] mb-6">
                         What solution are you currently using?
                       </h3>
                       
-                      {/* Competitor Options */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Competitor Options - Clean centered cards */}
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                         {[
-                          { name: "DAX (Nuance)", type: "ambient" as const, icon: "🎙️" },
-                          { name: "Suki", type: "ambient" as const, icon: "🤖" },
-                          { name: "Ambience Healthcare", type: "ambient" as const, icon: "💡" },
-                          { name: "Nabla", type: "ambient" as const, icon: "📝" },
-                          { name: "Human Scribe", type: "human" as const, icon: "👤" },
-                          { name: "Other AI Solution", type: "custom" as const, icon: "⚙️" },
+                          { id: "dax", name: "DAX (Nuance)", type: "ambient" as const },
+                          { id: "suki", name: "Suki", type: "ambient" as const },
+                          { id: "ambience", name: "Ambience Healthcare", type: "ambient" as const },
+                          { id: "nabla", name: "Nabla", type: "ambient" as const },
+                          { id: "human_scribe", name: "Human Scribe", type: "human" as const },
+                          { id: "other", name: "Other AI Solution", type: "custom" as const },
                         ].map((competitor) => (
                           <button
-                            key={competitor.name}
+                            key={competitor.id}
                             onClick={() => setSelectedCompetitor({ name: competitor.name, type: competitor.type })}
-                            className={`p-4 border rounded-lg text-left transition-all ${
+                            className={`relative p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
                               selectedCompetitor?.name === competitor.name
-                                ? "border-[#E8532F] bg-[#E8532F]/5 ring-2 ring-[#E8532F]/20"
-                                : "border-[#E5E7EB] hover:border-[#E8532F]/50"
+                                ? "border-[#E8532F] bg-[#E8532F]/5 shadow-md"
+                                : "border-[#E5E7EB] bg-white hover:border-[#9CA3AF]"
                             }`}
-                            data-testid={`button-competitor-${competitor.name.toLowerCase().replace(/\s+/g, '-')}`}
+                            data-testid={`button-competitor-${competitor.id}`}
                           >
-                            <div className="text-2xl mb-2">{competitor.icon}</div>
-                            <div className="font-semibold text-[#111827]">{competitor.name}</div>
-                            <div className="text-[13px] text-[#6B7280]">
-                              {competitor.type === "human" ? "In-person documentation" : "Ambient AI"}
+                            <div className="flex flex-col items-center space-y-3">
+                              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[#F3F4F6]">
+                                {competitor.type === "human" ? (
+                                  <UserCircle className="h-6 w-6 text-[#6B7280]" />
+                                ) : competitor.id === "other" ? (
+                                  <Settings className="h-6 w-6 text-[#6B7280]" />
+                                ) : (
+                                  <Mic className="h-6 w-6 text-[#6B7280]" />
+                                )}
+                              </div>
+                              <div className="text-center">
+                                <div className="font-medium text-[#111827]">{competitor.name}</div>
+                                <div className="text-sm text-[#6B7280]">
+                                  {competitor.type === "human" ? "In-person documentation" : "Ambient AI"}
+                                </div>
+                              </div>
                             </div>
+                            
+                            {selectedCompetitor?.name === competitor.name && (
+                              <div className="absolute top-3 right-3">
+                                <CheckCircle className="w-5 h-5 text-[#E8532F]" />
+                              </div>
+                            )}
                           </button>
                         ))}
                       </div>
                       
                       {/* Continue Button */}
-                      <div className="flex justify-end pt-6 border-t border-[#E5E7EB] mt-6">
+                      <div className="flex justify-end pt-6 mt-6">
                         <Button
                           onClick={() => setCompetitorStep(2)}
                           disabled={!selectedCompetitor}
@@ -4925,7 +4947,7 @@ export default function RoiCalculator({
                       </div>
                     </div>
                     
-                    {/* THE GAP AT A GLANCE */}
+                    {/* THE GAP AT A GLANCE - Side-by-Side Comparison */}
                     {(() => {
                       const competitorCost = selectedCompetitor.type === "human"
                         ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
@@ -4933,241 +4955,149 @@ export default function RoiCalculator({
                       const abridgeCost = results.annualAbridgeCost;
                       const costDiff = competitorCost - abridgeCost;
                       
-                      // Gap calculations
-                      const abridgeUtil = 65; // Typical Abridge utilization
-                      const abridgeTimeSaved = 2.5; // Typical Abridge time saved
+                      // Abridge benchmarks
+                      const abridgeUtil = 65;
+                      const abridgeTimeSaved = 7; // 7 min per encounter
                       
-                      const adoptionGap = competitorUtilization > 0 
-                        ? Math.round(((abridgeUtil - competitorUtilization) / competitorUtilization) * 100)
-                        : 0;
-                      const timeGap = competitorTimeSaved > 0 
-                        ? Math.round(((abridgeTimeSaved - competitorTimeSaved) / competitorTimeSaved) * 100)
-                        : 0;
-                      const costGap = abridgeCost > 0 
-                        ? Math.round(((competitorCost - abridgeCost) / abridgeCost) * 100)
-                        : 0;
+                      // Calculate percentages for progress bars
+                      const compUtilPct = Math.min(competitorUtilization, 100);
+                      const abridgeUtilPct = Math.min(abridgeUtil, 100);
+                      const compTimePct = Math.min((competitorTimeSaved / 10) * 100, 100);
+                      const abridgeTimePct = Math.min((abridgeTimeSaved / 10) * 100, 100);
                       
-                      const abridgeCostsMore = costDiff < 0;
+                      const adoptionDelta = abridgeUtil - competitorUtilization;
+                      const timeDelta = abridgeTimeSaved - competitorTimeSaved;
+                      const timeDeltaPct = competitorTimeSaved > 0 ? Math.round((timeDelta / competitorTimeSaved) * 100) : 0;
                       
                       return (
-                        <div 
-                          className="bg-white border-2 border-[#e5e7eb] rounded-xl p-12 text-center"
-                          data-testid="gap-at-a-glance"
-                        >
-                          {/* Title */}
-                          <h2 className="text-[24px] font-semibold text-[#111827] mb-6">
-                            The Gap at a Glance
-                          </h2>
+                        <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden" data-testid="gap-at-a-glance">
+                          {/* Header */}
+                          <div className="p-8 text-center border-b border-[#F3F4F6]">
+                            <h2 className="text-lg font-medium text-[#6B7280]">The Gap at a Glance</h2>
+                          </div>
                           
-                          {/* Opening Statement */}
-                          <p className="text-[18px] font-medium text-[#374151] mb-8">
-                            {abridgeCostsMore ? (
-                              <>
-                                {selectedCompetitor.name} costs {Math.abs(costGap)}% less than Abridge, but you're getting:
-                              </>
-                            ) : (
-                              <>
-                                You're paying <span className="font-bold">{costGap}% MORE</span> for {selectedCompetitor.name} and getting:
-                              </>
-                            )}
-                          </p>
-                          
-                          {/* Gap Items */}
-                          <div className="max-w-md mx-auto">
-                            {/* Adoption Gap */}
-                            <div className="flex flex-col items-center py-5 border-b border-[#f3f4f6]" data-testid="gap-item-adoption">
-                              <div className="text-[20px] font-semibold text-[#111827] mb-2">
-                                <span className="text-[24px] mr-2 text-[#dc2626]">↓</span>
-                                {Math.abs(adoptionGap)}% lower adoption
+                          {/* Two Column Headers */}
+                          <div className="grid grid-cols-2 divide-x divide-[#F3F4F6]">
+                            <div className="p-6 bg-[#F9FAFB] text-center">
+                              <div className="text-sm text-[#6B7280] font-medium">Your Current</div>
+                              <div className="text-lg font-semibold text-[#374151] mt-1">{selectedCompetitor.name}</div>
+                            </div>
+                            <div className="p-6 bg-[#ECFDF5] text-center">
+                              <div className="text-sm text-[#059669] font-medium">The Opportunity</div>
+                              <div className="flex items-center justify-center mt-1">
+                                <img src={abridgeLogo} alt="Abridge" className="h-5" />
                               </div>
-                              <div className="text-[15px] text-[#6b7280]">
-                                <span className="text-[#dc2626] font-semibold">{selectedCompetitor.name}: {competitorUtilization}% utilization</span>
-                                {" vs "}
-                                <span className="text-[#059669] font-semibold">Abridge: {abridgeUtil}%</span>
+                            </div>
+                          </div>
+                          
+                          {/* Metric Rows */}
+                          <div className="divide-y divide-[#F3F4F6]">
+                            {/* Adoption Row */}
+                            <div className="grid grid-cols-2 divide-x divide-[#F3F4F6]">
+                              <div className="p-6">
+                                <div className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide mb-3">Adoption</div>
+                                <div className="w-full bg-[#E5E7EB] rounded-full h-2 mb-3">
+                                  <div className="bg-[#9CA3AF] h-2 rounded-full transition-all" style={{ width: `${compUtilPct}%` }} />
+                                </div>
+                                <div className="text-lg font-semibold text-[#374151]">{competitorUtilization}%</div>
+                                <div className="text-sm text-[#9CA3AF]">Your utilization</div>
+                              </div>
+                              <div className="p-6 bg-[#ECFDF5]/30">
+                                <div className="text-xs font-medium text-[#059669] uppercase tracking-wide mb-3">Adoption</div>
+                                <div className="w-full bg-[#A7F3D0] rounded-full h-2 mb-3">
+                                  <div className="bg-[#10B981] h-2 rounded-full transition-all" style={{ width: `${abridgeUtilPct}%` }} />
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-lg font-semibold text-[#059669]">{abridgeUtil}%</span>
+                                  {adoptionDelta > 0 && (
+                                    <span className="text-sm font-medium text-[#059669]">+{adoptionDelta}%</span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-[#059669]/70">Abridge average</div>
                               </div>
                             </div>
                             
-                            {/* Time Saved Gap */}
+                            {/* Time Savings Row - Only for AI solutions */}
                             {selectedCompetitor.type !== "human" && (
-                              <div className="flex flex-col items-center py-5 border-b border-[#f3f4f6]" data-testid="gap-item-time">
-                                <div className="text-[20px] font-semibold text-[#111827] mb-2">
-                                  <span className="text-[24px] mr-2 text-[#dc2626]">↓</span>
-                                  {Math.abs(timeGap)}% less time saved per encounter
+                              <div className="grid grid-cols-2 divide-x divide-[#F3F4F6]">
+                                <div className="p-6">
+                                  <div className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide mb-3">Time Savings</div>
+                                  <div className="w-full bg-[#E5E7EB] rounded-full h-2 mb-3">
+                                    <div className="bg-[#9CA3AF] h-2 rounded-full transition-all" style={{ width: `${compTimePct}%` }} />
+                                  </div>
+                                  <div className="text-lg font-semibold text-[#374151]">{competitorTimeSaved} min</div>
+                                  <div className="text-sm text-[#9CA3AF]">per encounter</div>
                                 </div>
-                                <div className="text-[15px] text-[#6b7280]">
-                                  <span className="text-[#dc2626] font-semibold">{selectedCompetitor.name}: {competitorTimeSaved} min</span>
-                                  {" vs "}
-                                  <span className="text-[#059669] font-semibold">Abridge: {abridgeTimeSaved} min</span>
+                                <div className="p-6 bg-[#ECFDF5]/30">
+                                  <div className="text-xs font-medium text-[#059669] uppercase tracking-wide mb-3">Time Savings</div>
+                                  <div className="w-full bg-[#A7F3D0] rounded-full h-2 mb-3">
+                                    <div className="bg-[#10B981] h-2 rounded-full transition-all" style={{ width: `${abridgeTimePct}%` }} />
+                                  </div>
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-lg font-semibold text-[#059669]">{abridgeTimeSaved} min</span>
+                                    {timeDeltaPct > 0 && (
+                                      <span className="text-sm font-medium text-[#059669]">+{timeDeltaPct}%</span>
+                                    )}
+                                  </div>
+                                  <div className="text-sm text-[#059669]/70">per encounter</div>
                                 </div>
                               </div>
                             )}
                             
-                            {/* Cost Gap */}
-                            <div className="flex flex-col items-center py-5" data-testid="gap-item-cost">
-                              <div className="text-[20px] font-semibold text-[#111827] mb-2">
-                                {abridgeCostsMore ? (
-                                  <>
-                                    <span className="text-[24px] mr-2 text-[#dc2626]">↓</span>
-                                    Significantly lower ROI
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="text-[24px] mr-2 text-[#059669]">↑</span>
-                                    {costGap}% higher annual cost
-                                  </>
-                                )}
+                            {/* Annual Cost Row */}
+                            <div className="grid grid-cols-2 divide-x divide-[#F3F4F6]">
+                              <div className="p-6">
+                                <div className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide mb-3">Annual Cost</div>
+                                <div className="text-lg font-semibold text-[#374151]">{formatCurrency(competitorCost)}</div>
+                                <div className="text-sm text-[#9CA3AF]">
+                                  {selectedCompetitor.type === "human" 
+                                    ? `${scribeCount} scribes × $${scribeHourlyRate}/hr`
+                                    : `$${competitorCostPerProvider}/provider/mo`
+                                  }
+                                </div>
                               </div>
-                              <div className="text-[15px] text-[#6b7280]">
-                                <span className="text-[#dc2626] font-semibold">{selectedCompetitor.name}: {formatCurrency(competitorCost)}</span>
-                                {" vs "}
-                                <span className="text-[#059669] font-semibold">Abridge: {formatCurrency(abridgeCost)}</span>
+                              <div className="p-6 bg-[#ECFDF5]/30">
+                                <div className="text-xs font-medium text-[#059669] uppercase tracking-wide mb-3">Annual Cost</div>
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-lg font-semibold text-[#059669]">{formatCurrency(abridgeCost)}</span>
+                                  {costDiff > 0 && (
+                                    <span className="text-sm font-medium text-[#059669]">Save {formatCurrency(costDiff)}</span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-[#059669]/70">$180/provider/mo</div>
                               </div>
                             </div>
                           </div>
                           
                           {/* CTA Section */}
-                          <div className="mt-10 pt-8 border-t-2 border-[#f3f4f6]">
-                            <p className="text-[16px] text-[#374151] mb-5">
-                              {abridgeCostsMore 
-                                ? "Want to see if the improved outcomes justify the investment?"
-                                : "Want to see the financial impact of closing this gap?"
-                              }
-                            </p>
-                            <Button
-                              onClick={() => {
-                                setCurrentDriverIndex(0);
-                                const competitorKey = selectedCompetitor?.id?.toLowerCase() || "other";
-                                const defaults = COMPETITOR_DEFAULTS[competitorKey] || COMPETITOR_DEFAULTS["other"];
-                                setCompDriverInputs(prev => ({
-                                  access: { ...prev.access, visitsPerProvider: defaults.access, skipped: false },
-                                  los: { ...prev.los, wrvuUpliftPerProvider: defaults.los, skipped: false },
-                                  overtime: { ...prev.overtime, hoursPerProvider: defaults.overtime, skipped: false },
-                                }));
-                                setCompetitorStep(4);
-                              }}
-                              className="bg-[#ef4444] hover:bg-[#dc2626] text-white px-12 py-4 text-[16px] font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                              data-testid="button-show-opportunity"
-                            >
-                              See Your Opportunity
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
+                          <div className="p-8 bg-[#F9FAFB] border-t border-[#E5E7EB]">
+                            <div className="flex flex-col items-center text-center">
+                              <p className="text-[16px] text-[#374151] mb-5">
+                                Ready to see the full financial impact of switching to Abridge?
+                              </p>
+                              <Button
+                                onClick={() => {
+                                  setCurrentDriverIndex(0);
+                                  const competitorKey = selectedCompetitor?.name?.toLowerCase().replace(/\s+/g, '_') || "other";
+                                  const defaults = COMPETITOR_DEFAULTS[competitorKey] || COMPETITOR_DEFAULTS["other"];
+                                  setCompDriverInputs(prev => ({
+                                    access: { ...prev.access, visitsPerProvider: defaults.access, skipped: false },
+                                    los: { ...prev.los, wrvuUpliftPerProvider: defaults.los, skipped: false },
+                                    overtime: { ...prev.overtime, hoursPerProvider: defaults.overtime, skipped: false },
+                                  }));
+                                  setCompetitorStep(4);
+                                }}
+                                className="bg-[#E8532F] hover:bg-[#D14729] text-white px-10 py-3 text-[16px] font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                                data-testid="button-show-opportunity"
+                              >
+                                See the Full Opportunity
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       );
                     })()}
-                    
-                    {/* Collapsed Deployment Details */}
-                    <details className="mt-8" data-testid="deployment-details">
-                      <summary className="cursor-pointer p-4 bg-[#f9fafb] rounded-lg text-[14px] text-[#6b7280] hover:bg-[#f3f4f6] select-none">
-                        View detailed deployment comparison
-                      </summary>
-                      <div className="mt-4 bg-white border border-neutral-200/60 rounded-lg p-6">
-                        {/* Column Headers */}
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="flex-1" />
-                          <div className="w-32 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <Scale className="h-4 w-4 text-[#6B7280]" />
-                              <span className="text-[13px] font-bold text-[#6B7280]">{selectedCompetitor.name}</span>
-                            </div>
-                          </div>
-                          <div className="w-8 text-center text-[#9CA3AF]">→</div>
-                          <div className="w-40 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <img src={abridgeLogo} alt="Abridge" className="h-4" />
-                            </div>
-                          </div>
-                          <div className="w-32 text-right text-[13px] font-bold text-[#059669]">Delta</div>
-                        </div>
-                        
-                        {/* Comparison Table */}
-                        <div className="border-2 border-[#E5E7EB] rounded-xl overflow-hidden">
-                          {/* Providers Row */}
-                          <div className="flex items-center gap-4 px-4 py-4 border-b border-[#F3F4F6]">
-                            <div className="flex-1 text-[15px] font-medium text-[#374151]">Providers</div>
-                            <div className="w-32 text-center text-[16px] font-mono text-[#111827]">
-                              {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
-                            </div>
-                            <div className="w-8 text-center text-[#9CA3AF]">→</div>
-                            <div className="w-40 text-center text-[16px] font-mono text-[#111827]">
-                              {typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders}
-                            </div>
-                            <div className="w-32 text-right text-[14px] text-[#9CA3AF]">—</div>
-                          </div>
-                          
-                          {/* Utilization Row */}
-                          <div className="flex items-center gap-4 px-4 py-4 border-b border-[#F3F4F6]">
-                            <div className="flex-1 text-[15px] font-medium text-[#374151]">Utilization</div>
-                            <div className="w-32 text-center text-[16px] font-mono text-[#111827]">{competitorUtilization}%</div>
-                            <div className="w-8 text-center text-[#9CA3AF]">→</div>
-                            <div className="w-40 text-center">
-                              <span className="text-[16px] font-mono text-[#111827]">65%</span>
-                            </div>
-                            <div className="w-32 text-right">
-                              {65 - competitorUtilization > 0 ? (
-                                <span className="text-[14px] font-bold text-[#059669]">+{65 - competitorUtilization}%</span>
-                              ) : 65 - competitorUtilization < 0 ? (
-                                <span className="text-[14px] font-bold text-[#DC2626]">{65 - competitorUtilization}%</span>
-                              ) : (
-                                <span className="text-[14px] text-[#9CA3AF]">—</span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Time Saved Row */}
-                          <div className="flex items-center gap-4 px-4 py-4 border-b border-[#F3F4F6]">
-                            <div className="flex-1 text-[15px] font-medium text-[#374151]">Time Saved / Encounter</div>
-                            <div className="w-32 text-center text-[16px] font-mono text-[#111827]">
-                              {selectedCompetitor.type === "human" ? "N/A" : `${competitorTimeSaved} min`}
-                            </div>
-                            <div className="w-8 text-center text-[#9CA3AF]">→</div>
-                            <div className="w-40 text-center">
-                              <span className="text-[16px] font-mono text-[#111827]">2.5 min</span>
-                            </div>
-                            <div className="w-32 text-right">
-                              {selectedCompetitor.type !== "human" && (2.5 - competitorTimeSaved) !== 0 ? (
-                                (2.5 - competitorTimeSaved) > 0 ? (
-                                  <span className="text-[14px] font-bold text-[#059669]">+{(2.5 - competitorTimeSaved).toFixed(1)} min</span>
-                                ) : (
-                                  <span className="text-[14px] font-bold text-[#DC2626]">{(2.5 - competitorTimeSaved).toFixed(1)} min</span>
-                                )
-                              ) : (
-                                <span className="text-[14px] text-[#9CA3AF]">—</span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Annual Cost Row */}
-                          {(() => {
-                            const competitorCost = selectedCompetitor.type === "human"
-                              ? scribeCount * scribeHourlyRate * scribeHoursPerWeek * 52 * 1.3
-                              : competitorCostPerProvider * (typeof competitorProviderCount === "number" ? competitorProviderCount : 0) * 12;
-                            const costDiff = competitorCost - results.annualAbridgeCost;
-                            return (
-                              <div className="flex items-center gap-4 px-4 py-4 bg-[#F9FAFB]">
-                                <div className="flex-1 text-[15px] font-bold text-[#374151]">Annual Cost</div>
-                                <div className="w-32 text-center text-[16px] font-mono font-bold text-[#111827]">
-                                  {formatCurrency(competitorCost)}
-                                </div>
-                                <div className="w-8 text-center text-[#9CA3AF]">→</div>
-                                <div className="w-40 text-center text-[16px] font-mono font-bold text-[#111827]">
-                                  {formatCurrency(results.annualAbridgeCost)}
-                                </div>
-                                <div className="w-32 text-right">
-                                  {costDiff > 0 ? (
-                                    <span className="text-[14px] font-bold text-[#059669]">Save {formatCurrency(costDiff)}</span>
-                                  ) : costDiff < 0 ? (
-                                    <span className="text-[14px] font-bold text-[#DC2626]">+{formatCurrency(Math.abs(costDiff))}</span>
-                                  ) : (
-                                    <span className="text-[14px] text-[#9CA3AF]">—</span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </details>
                     
                     {/* Footer Actions */}
                     <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
