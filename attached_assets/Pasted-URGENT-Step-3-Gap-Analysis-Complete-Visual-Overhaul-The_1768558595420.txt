@@ -1,0 +1,374 @@
+URGENT: Step 3 Gap Analysis - Complete Visual Overhaul
+The current Step 3 looks amateur and inconsistent. It needs to match the clean, professional aesthetic of Step 4 (The Opportunity at Scale). Think Stripe-level design: clean, minimal, lots of whitespace, subtle colors, perfect typography.
+
+DESIGN SYSTEM TO FOLLOW
+Colors:
+
+Primary backgrounds: white and #FAFAFA (very light gray)
+Borders: #E5E7EB (gray-200)
+Text primary: #111827 (gray-900)
+Text secondary: #6B7280 (gray-500)
+Text muted: #9CA3AF (gray-400)
+Accent (Abridge): #E85D3F - use SPARINGLY, only for key numbers and CTAs
+Success/positive: Keep using the orange, NOT green
+
+Typography:
+
+Headers: font-semibold, not bold
+Numbers: tabular-nums for alignment
+Lots of breathing room between elements
+
+Borders & Cards:
+
+Border radius: rounded-xl (12px)
+Border color: border-gray-200
+No heavy shadows - use shadow-sm at most
+Cards should feel light, not chunky
+
+
+SECTION 1: "The Gap at a Glance" - THIS IS FINE
+Keep it as is. It looks decent.
+
+SECTION 2: "How the Gap Translates to Value" - COMPLETE REDO
+2A: The 6 Driver Mini Cards (3x2 grid)
+tsxCopy// Clean mini card design
+function DriverMiniCard({ driver, isConfigured, gapValue, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        w-full text-left p-5 rounded-xl border transition-all
+        ${isConfigured 
+          ? 'border-gray-300 bg-white' 
+          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'}
+      `}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`
+            w-10 h-10 rounded-lg flex items-center justify-center text-lg
+            ${isConfigured ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'}
+          `}>
+            {driver.icon}
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">{driver.label}</div>
+            {isConfigured ? (
+              <div className="text-sm font-semibold text-orange-600">
+                +{formatCurrency(gapValue)}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-400">Click to configure</div>
+            )}
+          </div>
+        </div>
+        {isConfigured && (
+          <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
+            <CheckIcon className="w-3 h-3 text-white" />
+          </div>
+        )}
+      </div>
+    </button>
+  );
+}
+
+2B: When User Clicks a Driver - Configuration Panel
+This is the KEY change. When they click, show a clean configuration form FIRST, then show results.
+tsxCopyfunction DriverConfigPanel({ driver, onCalculate, onClose }) {
+  // Get the editable fields for this driver
+  const editableFields = getEditableFields(driver.id);
+  const [values, setValues] = useState(getDefaults(driver.id));
+  
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg">
+              {driver.icon}
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">{driver.label}</h3>
+              <p className="text-sm text-gray-500">{driver.subtitle}</p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+      
+      {/* Configuration Form */}
+      <div className="p-6">
+        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
+          Adjust assumptions for your organization
+        </div>
+        
+        <div className="space-y-4">
+          {editableFields.map(field => (
+            <div key={field.id} className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  {field.label}
+                </label>
+                {field.hint && (
+                  <p className="text-xs text-gray-400 mt-0.5">{field.hint}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {field.prefix && <span className="text-gray-400">{field.prefix}</span>}
+                <input
+                  type="number"
+                  value={values[field.id]}
+                  onChange={(e) => setValues({...values, [field.id]: Number(e.target.value)})}
+                  className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-right text-sm font-medium focus:border-orange-300 focus:ring-1 focus:ring-orange-300 outline-none"
+                />
+                {field.suffix && <span className="text-gray-400">{field.suffix}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <div className="p-6 bg-gray-50 border-t border-gray-100">
+        <button
+          onClick={() => onCalculate(values)}
+          className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors"
+        >
+          Calculate Value
+        </button>
+      </div>
+    </div>
+  );
+}
+
+2C: After Calculation - Show the Result Card
+Clean, minimal comparison. NO ugly segmented bar.
+tsxCopyfunction DriverResultCard({ driver, calculations, competitor, onEdit, onRemove }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="p-6 flex items-center justify-between border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-lg">
+            {driver.icon}
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">{driver.label}</h3>
+            <p className="text-sm text-gray-500">{driver.subtitle}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-semibold text-orange-600">
+            +{formatCurrency(calculations.gap)}
+          </div>
+          <div className="text-xs text-gray-400">additional value / year</div>
+        </div>
+      </div>
+      
+      {/* Comparison - Clean two column layout */}
+      <div className="grid grid-cols-2 divide-x divide-gray-100">
+        {/* Left: Current/Competitor */}
+        <div className="p-6">
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">
+            With {competitor.name}
+          </div>
+          <div className="space-y-3">
+            {calculations.competitorSteps.map((step, i) => (
+              <div key={i} className="flex justify-between text-sm">
+                <span className="text-gray-500">{step.label}</span>
+                <span className="font-medium text-gray-700 tabular-nums">{step.value}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex justify-between">
+              <span className="text-sm font-medium text-gray-600">Annual Value</span>
+              <span className="text-xl font-semibold text-gray-900">
+                {formatCurrency(calculations.competitorValue)}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Right: Abridge */}
+        <div className="p-6 bg-orange-50/30">
+          <div className="text-xs font-medium text-orange-600 uppercase tracking-wide mb-4">
+            With Abridge
+          </div>
+          <div className="space-y-3">
+            {calculations.abridgeSteps.map((step, i) => (
+              <div key={i} className="flex justify-between text-sm">
+                <span className="text-gray-600">{step.label}</span>
+                <span className="font-medium text-orange-700 tabular-nums">{step.value}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t border-orange-100">
+            <div className="flex justify-between">
+              <span className="text-sm font-medium text-orange-600">Annual Value</span>
+              <span className="text-xl font-semibold text-orange-600">
+                {formatCurrency(calculations.abridgeValue)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Gap Visualization - SIMPLE, CLEAN */}
+      <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+              <span>{formatCurrency(calculations.competitorValue)}</span>
+              <span>{formatCurrency(calculations.abridgeValue)}</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-orange-500 rounded-full"
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-1">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-gray-300" />
+                <span className="text-xs text-gray-400">Current</span>
+              </div>
+              <span className="text-xs font-medium text-orange-600">
+                +{formatCurrency(calculations.gap)} gap
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Actions */}
+      <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+        <button 
+          onClick={onEdit}
+          className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+        >
+          <PencilIcon className="w-4 h-4" />
+          Edit assumptions
+        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onRemove}
+            className="text-sm text-gray-400 hover:text-gray-600"
+          >
+            Remove
+          </button>
+          <span className="text-sm text-orange-600 font-medium flex items-center gap-1">
+            <CheckIcon className="w-4 h-4" />
+            Added
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+SECTION 3: Summary at Bottom
+tsxCopyfunction DriverSummary({ selectedDrivers, totalGap, onContinue }) {
+  if (selectedDrivers.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        Select at least one value driver above to see your total opportunity
+      </div>
+    );
+  }
+  
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+            Your Value Drivers
+          </div>
+          <div className="space-y-2">
+            {selectedDrivers.map(d => (
+              <div key={d.id} className="flex items-center justify-between gap-8">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                  <span className="text-sm text-gray-700">{d.label}</span>
+                </div>
+                <span className="text-sm font-medium text-gray-900 tabular-nums">
+                  +{formatCurrency(d.gap)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="text-right pl-8 border-l border-gray-100">
+          <div className="text-xs text-gray-400 mb-1">Total Annual Gap</div>
+          <div className="text-3xl font-semibold text-gray-900">
+            +{formatCurrency(totalGap)}
+          </div>
+          <div className="text-xs text-gray-400 mt-1">per year</div>
+        </div>
+      </div>
+      
+      <div className="mt-6 pt-6 border-t border-gray-100 flex justify-end">
+        <button 
+          onClick={onContinue}
+          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+        >
+          See Opportunity at Scale →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+KEY CHANGES SUMMARY
+
+Remove ALL orange backgrounds except very subtle bg-orange-50/30 on Abridge column
+Use white and light gray backgrounds - much cleaner
+Remove the ugly segmented comparison bar - replace with simple single bar
+Add "Edit assumptions" button on each configured driver card
+Configuration panel first - user edits inputs BEFORE seeing results
+Consistent spacing - use p-6 padding throughout
+Subtle borders - border-gray-200, not thick or colorful
+Typography hierarchy - use text-xs uppercase tracking-wide for labels
+Tabular numbers - add tabular-nums class to all numbers
+
+
+EDITABLE FIELDS PER DRIVER
+typescriptCopyconst EDITABLE_FIELDS = {
+  patient_access: [
+    { id: 'realizationFactor', label: 'Realization factor', suffix: '%', default: 20, hint: '% of time saved that converts to visits' },
+    { id: 'revenuePerVisit', label: 'Revenue per visit', prefix: '$', default: 200 },
+  ],
+  overtime: [
+    { id: 'afterHoursPercent', label: 'After-hours work', suffix: '%', default: 15, hint: '% of documentation done after hours' },
+    { id: 'overtimeRate', label: 'Overtime rate', prefix: '$', suffix: '/hr', default: 145 },
+  ],
+  level_of_service: [
+    { id: 'baselineWrvu', label: 'Baseline wRVU/encounter', default: 1.75 },
+    { id: 'competitorQualityLift', label: 'Current quality lift', suffix: '%', default: 2 },
+    { id: 'wrvuRate', label: 'Revenue per wRVU', prefix: '$', default: 34 },
+  ],
+  retention: [
+    { id: 'turnoverRate', label: 'Annual turnover rate', suffix: '%', default: 5 },
+    { id: 'burnoutPercent', label: 'Burnout-driven turnover', suffix: '%', default: 40 },
+    { id: 'replacementCost', label: 'Replacement cost', prefix: '$', default: 250000 },
+  ],
+  hcc: [
+    { id: 'maPercent', label: 'Medicare Advantage %', suffix: '%', default: 15 },
+    { id: 'currentCaptureRate', label: 'Current HCC capture rate', suffix: '%', default: 70 },
+    { id: 'pmpm', label: 'PMPM value', prefix: '$', default: 1000 },
+  ],
+  denials: [
+    { id: 'totalRevenue', label: 'Total annual revenue', prefix: '$', default: 10000000 },
+    { id: 'denialRate', label: 'Denial rate', suffix: '%', default: 5 },
+    { id: 'docRelatedPercent', label: 'Documentation-related', suffix: '%', default: 30 },
+  ],
+};
+
+This should make Step 3 look professional and match the quality of Step 4.

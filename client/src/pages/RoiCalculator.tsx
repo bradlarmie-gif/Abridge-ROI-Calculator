@@ -5018,7 +5018,7 @@ export default function RoiCalculator({
                       
                       // Abridge benchmarks
                       const abridgeUtil = 65;
-                      const abridgeTimeSaved = 7; // 7 min per encounter
+                      const abridgeTimeSaved = 3; // 3 min per encounter (correct benchmark)
                       
                       // Calculate percentages for progress bars
                       const compUtilPct = Math.min(competitorUtilization, 100);
@@ -5427,40 +5427,43 @@ export default function RoiCalculator({
                               const DriverIcon = driver.Icon;
                               
                               return (
-                                <div
+                                <button
                                   key={driver.id}
                                   onClick={() => setActiveDriverId(driver.id)}
                                   className={`
-                                    p-4 rounded-xl border-2 cursor-pointer transition-all
+                                    w-full text-left p-5 rounded-xl border transition-all
                                     ${isConfigured 
-                                      ? 'border-[#FDBA74] bg-[#FFF7ED]' 
-                                      : 'border-[#E5E7EB] bg-white hover:border-[#FDBA74] hover:bg-[#FFF7ED]/30'}
+                                      ? 'border-gray-300 bg-white' 
+                                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'}
                                   `}
                                   data-testid={`driver-mini-card-${driver.id}`}
                                 >
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div className="p-2 bg-[#FFF7ED] rounded-lg text-[#EA580C]">
-                                      <DriverIcon className="w-5 h-5" />
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className={`
+                                        w-10 h-10 rounded-lg flex items-center justify-center
+                                        ${isConfigured ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'}
+                                      `}>
+                                        <DriverIcon className="w-5 h-5" />
+                                      </div>
+                                      <div>
+                                        <div className="font-medium text-gray-900">{driver.label}</div>
+                                        {isConfigured ? (
+                                          <div className="text-sm font-semibold text-orange-600 tabular-nums">
+                                            +${gapValue.toLocaleString()}
+                                          </div>
+                                        ) : (
+                                          <div className="text-sm text-gray-400">Click to configure</div>
+                                        )}
+                                      </div>
                                     </div>
                                     {isConfigured && (
-                                      <span className="text-xs font-medium text-[#EA580C] bg-[#FFEDD5] px-2 py-0.5 rounded-full flex items-center gap-1">
-                                        <Check className="w-3 h-3" /> Added
-                                      </span>
+                                      <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
+                                        <Check className="w-3 h-3 text-white" />
+                                      </div>
                                     )}
                                   </div>
-                                  
-                                  <h4 className="font-semibold text-[#111827] mb-1">{driver.label}</h4>
-                                  
-                                  {isConfigured ? (
-                                    <div className="text-lg font-bold text-[#EA580C] tabular-nums">
-                                      +${gapValue.toLocaleString()}
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm text-[#9CA3AF]">
-                                      Click to configure
-                                    </div>
-                                  )}
-                                </div>
+                                </button>
                               );
                             })}
                           </div>
@@ -5473,47 +5476,61 @@ export default function RoiCalculator({
                             const ActiveIcon = activeDriver.Icon;
                             
                             return (
-                              <div className="bg-white border border-[#E5E7EB] rounded-xl p-6" data-testid="driver-config-panel">
-                                <div className="flex items-center justify-between mb-6">
-                                  <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-[#FFF7ED] rounded-lg text-[#EA580C]">
-                                      <ActiveIcon className="w-5 h-5" />
+                              <div className="bg-white border border-gray-200 rounded-xl overflow-hidden" data-testid="driver-config-panel">
+                                {/* Header */}
+                                <div className="p-6 border-b border-gray-100">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                                        <ActiveIcon className="w-5 h-5 text-gray-600" />
+                                      </div>
+                                      <div>
+                                        <h3 className="font-semibold text-gray-900">{activeDriver.label}</h3>
+                                        <p className="text-sm text-gray-500">{activeDriver.subtitle}</p>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <h3 className="font-semibold text-[#111827]">{activeDriver.label}</h3>
-                                      <p className="text-sm text-[#6B7280]">{activeDriver.subtitle}</p>
+                                    <button 
+                                      onClick={() => setActiveDriverId(null)} 
+                                      className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600"
+                                      data-testid="button-close-config"
+                                    >
+                                      <X className="w-5 h-5" />
+                                    </button>
+                                  </div>
+                                </div>
+                                
+                                {/* Preview calculation */}
+                                <div className="p-6">
+                                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
+                                    Estimated Value for Your Organization
+                                  </div>
+                                  
+                                  <div className="p-4 bg-gray-50 rounded-lg mb-6">
+                                    <div className="flex items-baseline justify-between">
+                                      <span className="text-sm text-gray-500">Annual gap value</span>
+                                      <span className="text-2xl font-semibold text-orange-600 tabular-nums">
+                                        +${calc.gap.toLocaleString()}
+                                      </span>
                                     </div>
                                   </div>
+                                </div>
+                                
+                                {/* Footer */}
+                                <div className="p-6 bg-gray-50 border-t border-gray-100">
                                   <button 
-                                    onClick={() => setActiveDriverId(null)} 
-                                    className="text-[#9CA3AF] hover:text-[#6B7280]"
-                                    data-testid="button-close-config"
+                                    onClick={() => {
+                                      setConfiguredDrivers(prev => ({
+                                        ...prev,
+                                        [activeDriverId]: calc
+                                      }));
+                                      setActiveDriverId(null);
+                                    }}
+                                    className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors"
+                                    data-testid="button-add-driver"
                                   >
-                                    <X className="w-5 h-5" />
+                                    Calculate Value
                                   </button>
                                 </div>
-                                
-                                {/* Preview of calculation */}
-                                <div className="mb-6 p-4 bg-[#F9FAFB] rounded-lg">
-                                  <div className="text-sm text-[#6B7280] mb-2">Estimated annual gap value</div>
-                                  <div className="text-2xl font-bold text-[#EA580C] tabular-nums">
-                                    +${calc.gap.toLocaleString()}
-                                  </div>
-                                </div>
-                                
-                                <button 
-                                  onClick={() => {
-                                    setConfiguredDrivers(prev => ({
-                                      ...prev,
-                                      [activeDriverId]: calc
-                                    }));
-                                    setActiveDriverId(null);
-                                  }}
-                                  className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-medium rounded-lg transition-colors"
-                                  data-testid="button-add-driver"
-                                >
-                                  Add to Analysis
-                                </button>
                               </div>
                             );
                           })()}
@@ -5528,123 +5545,133 @@ export default function RoiCalculator({
                               return (
                                 <div 
                                   key={driverCalc.id} 
-                                  className="bg-white border border-[#FDBA74] rounded-xl overflow-hidden"
+                                  className="bg-white border border-gray-200 rounded-xl overflow-hidden"
                                   data-testid={`driver-result-card-${driverCalc.id}`}
                                 >
                                   {/* Header */}
-                                  <div className="p-5 bg-[#FFF7ED] flex items-center justify-between">
+                                  <div className="p-6 flex items-center justify-between border-b border-gray-100">
                                     <div className="flex items-center gap-3">
-                                      <div className="p-2 bg-white rounded-lg text-[#EA580C]">
-                                        <DriverIcon className="w-5 h-5" />
+                                      <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                                        <DriverIcon className="w-5 h-5 text-orange-600" />
                                       </div>
                                       <div>
-                                        <h3 className="font-semibold text-[#111827]">{driverCalc.label}</h3>
-                                        <p className="text-sm text-[#6B7280]">{driverDef.subtitle}</p>
+                                        <h3 className="font-semibold text-gray-900">{driverCalc.label}</h3>
+                                        <p className="text-sm text-gray-500">{driverDef.subtitle}</p>
                                       </div>
                                     </div>
                                     <div className="text-right">
-                                      <div className="text-2xl font-bold text-[#EA580C] tabular-nums">
+                                      <div className="text-2xl font-semibold text-orange-600 tabular-nums">
                                         +${driverCalc.gap.toLocaleString()}
                                       </div>
-                                      <div className="text-sm text-[#9CA3AF]">additional value</div>
+                                      <div className="text-xs text-gray-400">additional value / year</div>
                                     </div>
                                   </div>
                                   
-                                  {/* Math comparison */}
-                                  <div className="p-5">
-                                    <div className="grid grid-cols-2 gap-8">
-                                      {/* Left: Competitor */}
-                                      <div>
-                                        <div className="text-sm font-medium text-[#9CA3AF] mb-3">
-                                          With {selectedCompetitor?.name}
-                                        </div>
-                                        <div className="space-y-2 text-sm">
-                                          {driverCalc.competitorSteps.map((step, i) => (
-                                            <div key={i} className="flex justify-between">
-                                              <span className="text-[#6B7280]">{step.label}</span>
-                                              <span className="text-[#374151] font-medium tabular-nums">{step.value}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                        <div className="mt-3 pt-3 border-t border-[#E5E7EB] flex justify-between">
-                                          <span className="font-medium text-[#6B7280]">Annual Value</span>
-                                          <span className="text-xl font-bold text-[#374151] tabular-nums">
-                                            ${driverCalc.competitorValue.toLocaleString()}
-                                          </span>
-                                        </div>
+                                  {/* Comparison - Clean two column layout */}
+                                  <div className="grid grid-cols-2 divide-x divide-gray-100">
+                                    {/* Left: Current/Competitor */}
+                                    <div className="p-6">
+                                      <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">
+                                        With {selectedCompetitor?.name}
                                       </div>
-                                      
-                                      {/* Right: Abridge */}
-                                      <div className="bg-[#FFF7ED]/50 rounded-lg p-4 -m-2">
-                                        <div className="text-sm font-medium text-[#EA580C] mb-3">
-                                          With Abridge
-                                        </div>
-                                        <div className="space-y-2 text-sm">
-                                          {driverCalc.abridgeSteps.map((step, i) => (
-                                            <div key={i} className="flex justify-between">
-                                              <span className="text-[#78716C]">{step.label}</span>
-                                              <span className="text-[#EA580C] font-medium tabular-nums">{step.value}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                        <div className="mt-3 pt-3 border-t border-[#FDBA74] flex justify-between">
-                                          <span className="font-medium text-[#EA580C]">Annual Value</span>
-                                          <span className="text-xl font-bold text-[#EA580C] tabular-nums">
-                                            ${driverCalc.abridgeValue.toLocaleString()}
+                                      <div className="space-y-3">
+                                        {driverCalc.competitorSteps.map((step, i) => (
+                                          <div key={i} className="flex justify-between text-sm">
+                                            <span className="text-gray-500">{step.label}</span>
+                                            <span className="font-medium text-gray-700 tabular-nums">{step.value}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                      <div className="mt-4 pt-4 border-t border-gray-100">
+                                        <div className="flex justify-between">
+                                          <span className="text-sm font-medium text-gray-600">Annual Value</span>
+                                          <span className="text-xl font-semibold text-gray-900 tabular-nums">
+                                            ${driverCalc.competitorValue.toLocaleString()}
                                           </span>
                                         </div>
                                       </div>
                                     </div>
                                     
-                                    {/* Gap bar */}
-                                    <div className="mt-6 pt-4 border-t border-[#F3F4F6]">
-                                      <div className="flex items-center gap-3">
-                                        <span className="text-sm text-[#9CA3AF] w-20 text-right tabular-nums">
-                                          ${driverCalc.competitorValue.toLocaleString()}
-                                        </span>
-                                        <div className="flex-1 h-2 bg-[#F3F4F6] rounded-full relative overflow-hidden">
-                                          <div 
-                                            className="absolute inset-y-0 left-0 bg-[#D1D5DB] rounded-full"
-                                            style={{ width: `${driverCalc.abridgeValue > 0 ? (driverCalc.competitorValue / driverCalc.abridgeValue) * 100 : 0}%` }}
-                                          />
-                                          <div 
-                                            className="absolute inset-y-0 bg-[#EA580C] rounded-full"
-                                            style={{ 
-                                              left: `${driverCalc.abridgeValue > 0 ? (driverCalc.competitorValue / driverCalc.abridgeValue) * 100 : 0}%`,
-                                              right: 0
-                                            }}
-                                          />
-                                        </div>
-                                        <span className="text-sm font-semibold text-[#EA580C] w-20 tabular-nums">
-                                          ${driverCalc.abridgeValue.toLocaleString()}
-                                        </span>
+                                    {/* Right: Abridge */}
+                                    <div className="p-6 bg-orange-50/30">
+                                      <div className="text-xs font-medium text-orange-600 uppercase tracking-wide mb-4">
+                                        With Abridge
                                       </div>
-                                      <div className="text-right mt-1">
-                                        <span className="text-sm text-[#EA580C] font-medium tabular-nums">
-                                          +${driverCalc.gap.toLocaleString()} gap
-                                        </span>
+                                      <div className="space-y-3">
+                                        {driverCalc.abridgeSteps.map((step, i) => (
+                                          <div key={i} className="flex justify-between text-sm">
+                                            <span className="text-gray-600">{step.label}</span>
+                                            <span className="font-medium text-orange-700 tabular-nums">{step.value}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                      <div className="mt-4 pt-4 border-t border-orange-100">
+                                        <div className="flex justify-between">
+                                          <span className="text-sm font-medium text-orange-600">Annual Value</span>
+                                          <span className="text-xl font-semibold text-orange-600 tabular-nums">
+                                            ${driverCalc.abridgeValue.toLocaleString()}
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
                                   
-                                  {/* Footer */}
-                                  <div className="px-5 py-3 bg-[#F9FAFB] border-t border-[#F3F4F6] flex justify-end gap-3">
+                                  {/* Gap Visualization - SIMPLE, CLEAN */}
+                                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                                    <div className="flex items-center gap-4">
+                                      <div className="flex-1">
+                                        <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                                          <span>${driverCalc.competitorValue.toLocaleString()}</span>
+                                          <span>${driverCalc.abridgeValue.toLocaleString()}</span>
+                                        </div>
+                                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                          <div 
+                                            className="h-full bg-orange-500 rounded-full"
+                                            style={{ width: '100%' }}
+                                          />
+                                        </div>
+                                        <div className="flex items-center justify-between mt-1">
+                                          <div className="flex items-center gap-1">
+                                            <div className="w-2 h-2 rounded-full bg-gray-300" />
+                                            <span className="text-xs text-gray-400">Current</span>
+                                          </div>
+                                          <span className="text-xs font-medium text-orange-600 tabular-nums">
+                                            +${driverCalc.gap.toLocaleString()} gap
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Actions */}
+                                  <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
                                     <button 
-                                      onClick={() => {
-                                        setConfiguredDrivers(prev => {
-                                          const next = {...prev};
-                                          delete next[driverCalc.id];
-                                          return next;
-                                        });
-                                      }}
-                                      className="text-sm text-[#6B7280] hover:text-[#374151]"
-                                      data-testid={`button-remove-driver-${driverCalc.id}`}
+                                      onClick={() => setActiveDriverId(driverCalc.id)}
+                                      className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                                      data-testid={`button-edit-driver-${driverCalc.id}`}
                                     >
-                                      Remove
+                                      <Pencil className="w-4 h-4" />
+                                      Edit assumptions
                                     </button>
-                                    <span className="text-sm text-[#EA580C] font-medium flex items-center gap-1">
-                                      <Check className="w-3 h-3" /> Added to total
-                                    </span>
+                                    <div className="flex items-center gap-4">
+                                      <button 
+                                        onClick={() => {
+                                          setConfiguredDrivers(prev => {
+                                            const next = {...prev};
+                                            delete next[driverCalc.id];
+                                            return next;
+                                          });
+                                        }}
+                                        className="text-sm text-gray-400 hover:text-gray-600"
+                                        data-testid={`button-remove-driver-${driverCalc.id}`}
+                                      >
+                                        Remove
+                                      </button>
+                                      <span className="text-sm text-orange-600 font-medium flex items-center gap-1">
+                                        <Check className="w-4 h-4" />
+                                        Added
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
                               );
@@ -5652,19 +5679,27 @@ export default function RoiCalculator({
                           </div>
                           
                           {/* Summary Section */}
+                          {selectedDriversList.length === 0 && !activeDriverId && (
+                            <div className="text-center py-12 text-gray-400">
+                              Select at least one value driver above to see your total opportunity
+                            </div>
+                          )}
+                          
                           {selectedDriversList.length > 0 && (
-                            <div className="bg-white border border-[#E5E7EB] rounded-xl p-6" data-testid="summary-section">
+                            <div className="bg-white border border-gray-200 rounded-xl p-6" data-testid="summary-section">
                               <div className="flex items-start justify-between">
                                 <div>
-                                  <div className="text-sm font-medium text-[#9CA3AF] uppercase tracking-wide mb-3">
-                                    Selected Drivers
+                                  <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+                                    Your Value Drivers
                                   </div>
                                   <div className="space-y-2">
                                     {selectedDriversList.map(d => (
-                                      <div key={d.id} className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-[#EA580C]" />
-                                        <span className="text-[#374151]">{d.label}</span>
-                                        <span className="text-[#EA580C] font-medium ml-auto tabular-nums">
+                                      <div key={d.id} className="flex items-center justify-between gap-8">
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                          <span className="text-sm text-gray-700">{d.label}</span>
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-900 tabular-nums">
                                           +${d.gap.toLocaleString()}
                                         </span>
                                       </div>
@@ -5672,26 +5707,25 @@ export default function RoiCalculator({
                                   </div>
                                 </div>
                                 
-                                <div className="text-right pl-8 border-l border-[#F3F4F6]">
-                                  <div className="text-sm text-[#9CA3AF] mb-1">Total Annual Gap</div>
-                                  <div className="text-3xl font-bold text-[#111827] tabular-nums">
+                                <div className="text-right pl-8 border-l border-gray-100">
+                                  <div className="text-xs text-gray-400 mb-1">Total Annual Gap</div>
+                                  <div className="text-3xl font-semibold text-gray-900 tabular-nums">
                                     +${configuredTotalGap.toLocaleString()}
                                   </div>
-                                  <div className="text-sm text-[#9CA3AF] mt-1">per year</div>
+                                  <div className="text-xs text-gray-400 mt-1">per year</div>
                                 </div>
                               </div>
                               
-                              <div className="mt-6 pt-6 border-t border-[#F3F4F6] flex justify-end">
-                                <Button 
+                              <div className="mt-6 pt-6 border-t border-gray-100 flex justify-end">
+                                <button 
                                   onClick={() => {
                                     setCompetitorStep(4);
                                   }}
-                                  className="px-6 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-medium"
+                                  className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
                                   data-testid="button-continue-to-step4"
                                 >
-                                  See Opportunity at Scale
-                                  <ArrowRight className="ml-2 w-4 h-4" />
-                                </Button>
+                                  See Opportunity at Scale →
+                                </button>
                               </div>
                             </div>
                           )}
