@@ -4998,7 +4998,7 @@ export default function RoiCalculator({
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
                       <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#EA580C] text-white text-[12px] font-bold">3</span>
+                        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#E85D3F] text-white text-[12px] font-bold">3</span>
                         <span className="ml-2 text-[13px] text-[#111827] font-medium">Gap Analysis</span>
                       </div>
                       <div className="h-px flex-1 bg-[#E5E7EB] mx-2" />
@@ -5442,14 +5442,14 @@ export default function RoiCalculator({
                                     <div className="flex items-center gap-3">
                                       <div className={`
                                         w-10 h-10 rounded-lg flex items-center justify-center
-                                        ${isConfigured ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'}
+                                        ${isConfigured ? 'bg-[#FEF2F0] text-[#E85D3F]' : 'bg-gray-100 text-gray-400'}
                                       `}>
                                         <DriverIcon className="w-5 h-5" />
                                       </div>
                                       <div>
                                         <div className="font-medium text-gray-900">{driver.label}</div>
                                         {isConfigured ? (
-                                          <div className="text-sm font-semibold text-orange-600 tabular-nums">
+                                          <div className="text-sm font-semibold text-[#E85D3F] tabular-nums">
                                             +${gapValue.toLocaleString()}
                                           </div>
                                         ) : (
@@ -5458,7 +5458,7 @@ export default function RoiCalculator({
                                       </div>
                                     </div>
                                     {isConfigured && (
-                                      <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
+                                      <div className="w-5 h-5 rounded-full bg-[#E85D3F] flex items-center justify-center">
                                         <Check className="w-3 h-3 text-white" />
                                       </div>
                                     )}
@@ -5508,7 +5508,7 @@ export default function RoiCalculator({
                                   <div className="p-4 bg-gray-50 rounded-lg mb-6">
                                     <div className="flex items-baseline justify-between">
                                       <span className="text-sm text-gray-500">Annual gap value</span>
-                                      <span className="text-2xl font-semibold text-orange-600 tabular-nums">
+                                      <span className="text-2xl font-semibold text-[#E85D3F] tabular-nums">
                                         +${calc.gap.toLocaleString()}
                                       </span>
                                     </div>
@@ -5551,8 +5551,8 @@ export default function RoiCalculator({
                                   {/* Header */}
                                   <div className="p-6 flex items-center justify-between border-b border-gray-100">
                                     <div className="flex items-center gap-3">
-                                      <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                                        <DriverIcon className="w-5 h-5 text-orange-600" />
+                                      <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center">
+                                        <DriverIcon className="w-5 h-5 text-[#E85D3F]" />
                                       </div>
                                       <div>
                                         <h3 className="font-semibold text-gray-900">{driverCalc.label}</h3>
@@ -5560,7 +5560,7 @@ export default function RoiCalculator({
                                       </div>
                                     </div>
                                     <div className="text-right">
-                                      <div className="text-2xl font-semibold text-orange-600 tabular-nums">
+                                      <div className="text-2xl font-semibold text-[#E85D3F] tabular-nums">
                                         +${driverCalc.gap.toLocaleString()}
                                       </div>
                                       <div className="text-xs text-gray-400">additional value / year</div>
@@ -5593,22 +5593,22 @@ export default function RoiCalculator({
                                     </div>
                                     
                                     {/* Right: Abridge */}
-                                    <div className="p-6 bg-orange-50/30">
-                                      <div className="text-xs font-medium text-orange-600 uppercase tracking-wide mb-4">
+                                    <div className="p-6 bg-[#FEF2F0]/30">
+                                      <div className="text-xs font-medium text-[#E85D3F] uppercase tracking-wide mb-4">
                                         With Abridge
                                       </div>
                                       <div className="space-y-3">
                                         {driverCalc.abridgeSteps.map((step, i) => (
                                           <div key={i} className="flex justify-between text-sm">
                                             <span className="text-gray-600">{step.label}</span>
-                                            <span className="font-medium text-orange-700 tabular-nums">{step.value}</span>
+                                            <span className="font-medium text-[#E85D3F] tabular-nums">{step.value}</span>
                                           </div>
                                         ))}
                                       </div>
-                                      <div className="mt-4 pt-4 border-t border-orange-100">
+                                      <div className="mt-4 pt-4 border-t border-[#FFEDD5]">
                                         <div className="flex justify-between">
-                                          <span className="text-sm font-medium text-orange-600">Annual Value</span>
-                                          <span className="text-xl font-semibold text-orange-600 tabular-nums">
+                                          <span className="text-sm font-medium text-[#E85D3F]">Annual Value</span>
+                                          <span className="text-xl font-semibold text-[#E85D3F] tabular-nums">
                                             ${driverCalc.abridgeValue.toLocaleString()}
                                           </span>
                                         </div>
@@ -5626,7 +5626,7 @@ export default function RoiCalculator({
                                         </div>
                                         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                                           <div 
-                                            className="h-full bg-orange-500 rounded-full"
+                                            className="h-full bg-[#E85D3F] rounded-full"
                                             style={{ width: '100%' }}
                                           />
                                         </div>
@@ -5635,7 +5635,7 @@ export default function RoiCalculator({
                                             <div className="w-2 h-2 rounded-full bg-gray-300" />
                                             <span className="text-xs text-gray-400">Current</span>
                                           </div>
-                                          <span className="text-xs font-medium text-orange-600 tabular-nums">
+                                          <span className="text-xs font-medium text-[#E85D3F] tabular-nums">
                                             +${driverCalc.gap.toLocaleString()} gap
                                           </span>
                                         </div>
@@ -5667,7 +5667,7 @@ export default function RoiCalculator({
                                       >
                                         Remove
                                       </button>
-                                      <span className="text-sm text-orange-600 font-medium flex items-center gap-1">
+                                      <span className="text-sm text-[#E85D3F] font-medium flex items-center gap-1">
                                         <Check className="w-4 h-4" />
                                         Added
                                       </span>
@@ -5696,7 +5696,7 @@ export default function RoiCalculator({
                                     {selectedDriversList.map(d => (
                                       <div key={d.id} className="flex items-center justify-between gap-8">
                                         <div className="flex items-center gap-2">
-                                          <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                          <div className="w-1.5 h-1.5 rounded-full bg-[#E85D3F]" />
                                           <span className="text-sm text-gray-700">{d.label}</span>
                                         </div>
                                         <span className="text-sm font-medium text-gray-900 tabular-nums">
@@ -5721,7 +5721,7 @@ export default function RoiCalculator({
                                   onClick={() => {
                                     setCompetitorStep(4);
                                   }}
-                                  className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+                                  className="px-6 py-3 bg-[#E85D3F] hover:bg-[#D14729] text-white font-medium rounded-lg transition-colors"
                                   data-testid="button-continue-to-step4"
                                 >
                                   See Opportunity at Scale →
