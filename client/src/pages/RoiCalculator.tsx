@@ -360,6 +360,53 @@ export default function RoiCalculator({
     overtime: { hoursPerProvider: 0, premiumRate: 145, expanded: false },
   });
   
+  // Initialize inputs from seed with a setter for dynamic updates
+  const [inputs, setInputs] = useState<RoiInputs>(() => {
+    const initial: RoiInputs = JSON.parse(JSON.stringify(defaultInputs));
+    if (seedInputs) {
+      Object.assign(initial, seedInputs);
+      if (seedInputs.levers) {
+        initial.levers = { ...initial.levers, ...seedInputs.levers };
+      }
+    }
+    const allLeverIds: LeverId[] = ["patientAccess", "overtime", "workforce", "wrvu", "denials", "hcc"];
+    allLeverIds.forEach((id) => {
+      const seeded = seedInputs?.levers?.[id];
+      initial.levers[id] = typeof seeded === "boolean" ? seeded : selectedLevers.some((l) => l.leverId === id && l.active);
+    });
+    return initial;
+  });
+
+  // Calculate results
+  const results = useMemo(() => calculateRoi(inputs), [inputs]);
+
+  // Driver values directly from calculateRoi results (already filtered by inputs.levers)
+  const driverValues = useMemo(() => {
+    const values: Record<LeverId, number> = {
+      patientAccess: 0,
+      overtime: 0,
+      workforce: 0,
+      wrvu: 0,
+      denials: 0,
+      hcc: 0,
+      edThroughput: 0,
+      edLevelOfService: 0,
+      edDenialReduction: 0,
+      edRetention: 0,
+      rnDocTime: 0,
+      rnCommunication: 0,
+      rnSafetyReduction: 0,
+      rnDiagnosisSeverity: 0,
+    };
+    results.levers.forEach((lever) => {
+      // Only include if the lever is enabled in inputs
+      if (lever.enabled) {
+        values[lever.id] = lever.value;
+      }
+    });
+    return values;
+  }, [results]);
+
   // Abridge benchmark constants (from 200+ health system deployments)
   const ABRIDGE_BENCHMARKS = {
     access: {
@@ -455,8 +502,8 @@ export default function RoiCalculator({
       };
     }
   };
-  
-  // Calculate total comparison across all drivers
+
+  // Calculate total comparison across all drivers (for competitor comparison)
   const totalComparison = useMemo(() => {
     const accessDelta = calculateDriverDelta("access");
     const losDelta = calculateDriverDelta("los");
@@ -471,53 +518,6 @@ export default function RoiCalculator({
       grandTotal,
     };
   }, [compDriverInputs, competitorProviderCount, inputs.numberOfProviders]);
-
-  // Initialize inputs from seed with a setter for dynamic updates
-  const [inputs, setInputs] = useState<RoiInputs>(() => {
-    const initial: RoiInputs = JSON.parse(JSON.stringify(defaultInputs));
-    if (seedInputs) {
-      Object.assign(initial, seedInputs);
-      if (seedInputs.levers) {
-        initial.levers = { ...initial.levers, ...seedInputs.levers };
-      }
-    }
-    const allLeverIds: LeverId[] = ["patientAccess", "overtime", "workforce", "wrvu", "denials", "hcc"];
-    allLeverIds.forEach((id) => {
-      const seeded = seedInputs?.levers?.[id];
-      initial.levers[id] = typeof seeded === "boolean" ? seeded : selectedLevers.some((l) => l.leverId === id && l.active);
-    });
-    return initial;
-  });
-
-  // Calculate results
-  const results = useMemo(() => calculateRoi(inputs), [inputs]);
-
-  // Driver values directly from calculateRoi results (already filtered by inputs.levers)
-  const driverValues = useMemo(() => {
-    const values: Record<LeverId, number> = {
-      patientAccess: 0,
-      overtime: 0,
-      workforce: 0,
-      wrvu: 0,
-      denials: 0,
-      hcc: 0,
-      edThroughput: 0,
-      edLevelOfService: 0,
-      edDenialReduction: 0,
-      edRetention: 0,
-      rnDocTime: 0,
-      rnCommunication: 0,
-      rnSafetyReduction: 0,
-      rnDiagnosisSeverity: 0,
-    };
-    results.levers.forEach((lever) => {
-      // Only include if the lever is enabled in inputs
-      if (lever.enabled) {
-        values[lever.id] = lever.value;
-      }
-    });
-    return values;
-  }, [results]);
 
   // Total annual benefit from calculateRoi (authoritative source)
   const totalAnnualBenefit = results.totalAnnualBenefit;
