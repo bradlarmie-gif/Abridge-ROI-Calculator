@@ -6064,16 +6064,17 @@ export default function RoiCalculator({
                   const originalProviders = typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders;
                   const originalEncounters = inputs.annualOutpatientEncounters;
                   
-                  // Scale factor for calculations
-                  const scaleFactor = scaleEncounters / originalEncounters;
+                  // Scale factor for calculations (with protection against division by zero)
+                  const scaleFactor = originalEncounters > 0 ? scaleEncounters / originalEncounters : 1;
                   
                   // Calculate base annual values from Step 3 gap analysis
+                  // Note: userTotal represents the competitor's value (what user currently gets from their existing solution)
                   const baseAbridgeAnnualValue = totalComparison.access.abridgeTotal + 
                     (enabledDriverCards.overtime ? totalComparison.overtime.abridgeTotal : 0) + 
                     (enabledDriverCards.los ? totalComparison.los.abridgeTotal : 0);
-                  const baseCompAnnualValue = totalComparison.access.competitorTotal + 
-                    (enabledDriverCards.overtime ? totalComparison.overtime.competitorTotal : 0) + 
-                    (enabledDriverCards.los ? totalComparison.los.competitorTotal : 0);
+                  const baseCompAnnualValue = totalComparison.access.userTotal + 
+                    (enabledDriverCards.overtime ? totalComparison.overtime.userTotal : 0) + 
+                    (enabledDriverCards.los ? totalComparison.los.userTotal : 0);
                   
                   // Scale values
                   const scaledAbridgeAnnualValue = baseAbridgeAnnualValue * scaleFactor;
@@ -6112,8 +6113,12 @@ export default function RoiCalculator({
                   const threeYearGap = chartData[3].abridgeCumulative - chartData[3].compCumulative;
                   const maxYearlyValue = Math.max(yearlyData.year3.abridge, yearlyData.year3.competitor);
                   
-                  // Format currency helper
+                  // Format currency helper with NaN protection
                   const formatCurrency = (value: number): string => {
+                    // Handle NaN, undefined, null, or non-finite values
+                    if (value === undefined || value === null || !isFinite(value) || isNaN(value)) {
+                      return '$0';
+                    }
                     if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
                     if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
                     return `$${value.toFixed(0)}`;

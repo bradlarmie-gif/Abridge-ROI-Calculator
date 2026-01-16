@@ -1,0 +1,108 @@
+1. Check if the original DAX/competitor values are being passed correctly
+In the calculation function, add console logs to debug:
+typescriptCopyfunction calculateAtScale(
+  providers: number,
+  encounters: number,
+  originalCalculations: Calculations,
+  originalProviders: number,
+  originalEncounters: number
+) {
+  // DEBUG: Log what we're receiving
+  console.log('Original Calculations:', originalCalculations);
+  console.log('Original Competitor Value:', originalCalculations.totalCompetitorValue);
+  console.log('Original Abridge Value:', originalCalculations.totalAbridgeValue);
+  console.log('Original Providers:', originalProviders);
+  console.log('Original Encounters:', originalEncounters);
+  
+  // Scale factor
+  const scaleFactor = encounters / originalEncounters;
+  console.log('Scale Factor:', scaleFactor);
+  
+  // ... rest of calculation
+}
+2. The likely fix
+The issue is probably that originalCalculations.totalCompetitorValue is undefined or the property name is different.
+Check what the actual property names are in the calculations object coming from Step 3. It might be:
+
+totalCompetitorValue vs competitorValue vs totalDaxValue
+totalAbridgeValue vs abridgeValue
+
+3. Update the calculation to handle missing values
+typescriptCopyfunction calculateAtScale(
+  providers: number,
+  encounters: number,
+  originalCalculations: Calculations,
+  originalProviders: number,
+  originalEncounters: number
+) {
+  // Safely get values with fallbacks
+  const originalAbridgeValue = originalCalculations?.totalAbridgeValue || 
+                               originalCalculations?.abridgeValue || 
+                               0;
+  
+  const originalDaxValue = originalCalculations?.totalCompetitorValue || 
+                           originalCalculations?.competitorValue || 
+                           originalCalculations?.totalDaxValue ||
+                           0;
+  
+  // Prevent division by zero
+  const scaleFactor = originalEncounters > 0 
+    ? encounters / originalEncounters 
+    : 1;
+  
+  // Scale the annual values
+  const scaledAbridgeAnnualValue = originalAbridgeValue * scaleFactor;
+  const scaledDaxAnnualValue = originalDaxValue * scaleFactor;
+  
+  // Year-by-year (Abridge ramps up, DAX stays flat)
+  const year1 = {
+    abridge: scaledAbridgeAnnualValue * 0.4,
+    dax: scaledDaxAnnualValue,
+    gap: (scaledAbridgeAnnualValue * 0.4) - scaledDaxAnnualValue,
+  };
+  
+  const year2 = {
+    abridge: scaledAbridgeAnnualValue * 0.7,
+    dax: scaledDaxAnnualValue,
+    gap: (scaledAbridgeAnnualValue * 0.7) - scaledDaxAnnualValue,
+  };
+  
+  const year3 = {
+    abridge: scaledAbridgeAnnualValue * 1.0,
+    dax: scaledDaxAnnualValue,
+    gap: scaledAbridgeAnnualValue - scaledDaxAnnualValue,
+  };
+  
+  // Cumulative for chart
+  const chartData = [
+    { year: 'Today', abridgeCumulative: 0, daxCumulative: 0 },
+    { year: 'Year 1', abridgeCumulative: year1.abridge, daxCumulative: year1.dax },
+    { year: 'Year 2', abridgeCumulative: year1.abridge + year2.abridge, daxCumulative: year1.dax + year2.dax },
+    { year: 'Year 3', abridgeCumulative: year1.abridge + year2.abridge + year3.abridge, daxCumulative: year1.dax + year2.dax + year3.dax },
+  ];
+  
+  const threeYearGap = chartData[3].abridgeCumulative - chartData[3].daxCumulative;
+  
+  return {
+    yearlyData: { year1, year2, year3 },
+    chartData,
+    threeYearGap,
+    scaledAbridgeAnnualValue,
+    scaledDaxAnnualValue,
+  };
+}
+4. Also check the formatCurrency function
+Make sure it handles NaN:
+typescriptCopyfunction formatCurrency(value: number): string {
+  // Handle NaN or undefined
+  if (value === undefined || value === null || isNaN(value)) {
+    return '$0';
+  }
+  
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  } else if (value >= 1000) {
+    return `$${Math.round(value / 1000)}K`;
+  }
+  return `$${Math.round(value).toLocaleString()}`;
+}
