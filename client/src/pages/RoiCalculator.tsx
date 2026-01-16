@@ -5349,17 +5349,17 @@ export default function RoiCalculator({
                         retention: {
                           id: 'retention',
                           label: 'Clinician Retention',
-                          gap: Math.round(0.02 * providers * 250000), // 2% retention improvement * avg replacement cost
+                          gap: Math.round(0.02 * providerCount * 250000), // 2% retention improvement * avg replacement cost
                           competitorValue: 0,
-                          abridgeValue: Math.round(0.02 * providers * 250000),
+                          abridgeValue: Math.round(0.02 * providerCount * 250000),
                           competitorSteps: [
-                            { label: 'Provider count', value: providers.toLocaleString() },
+                            { label: 'Provider count', value: providerCount.toLocaleString() },
                             { label: 'Baseline turnover rate', value: '15%' },
                             { label: 'Replacement cost', value: '$250,000' },
                             { label: 'Retention improvement', value: '0%' },
                           ],
                           abridgeSteps: [
-                            { label: 'Provider count', value: providers.toLocaleString() },
+                            { label: 'Provider count', value: providerCount.toLocaleString() },
                             { label: 'Baseline turnover rate', value: '15%' },
                             { label: 'Replacement cost', value: '$250,000' },
                             { label: 'Retention improvement', value: '2%' },
