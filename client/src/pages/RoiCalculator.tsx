@@ -5258,747 +5258,559 @@ export default function RoiCalculator({
                             </p>
                           </div>
                           
-                          {/* Patient Access Driver Card */}
+                          {/* Patient Access Driver Card - Clean Design */}
                           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden" data-testid="driver-card-access">
                             {/* Card Header */}
-                            <div className="p-5 flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 bg-[#FEF2F0] rounded-lg text-[#E8532F]">
+                            <div className="flex items-start justify-between p-5 border-b border-[#F3F4F6]">
+                              <div className="flex items-center gap-4">
+                                <div className="p-3 bg-[#FFF7ED] rounded-xl text-[#EA580C]">
                                   <UserPlus className="w-5 h-5" />
                                 </div>
                                 <div>
-                                  <h4 className="font-semibold text-[#111827]">Patient Access</h4>
-                                  <p className="text-sm text-[#6B7280]">Turn documentation efficiency into additional visit capacity</p>
+                                  <h3 className="font-semibold text-[#111827] text-lg">Patient Access</h3>
+                                  <p className="text-sm text-[#6B7280]">Turn documentation efficiency into visit capacity</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="text-2xl font-bold text-[#E8532F]">
+                                <div className="text-2xl font-bold text-[#EA580C]">
                                   +${accessGap.toLocaleString()}
                                 </div>
-                                <div className="text-sm text-[#6B7280]">additional value</div>
+                                <div className="text-sm text-[#9CA3AF]">additional value</div>
                               </div>
                             </div>
                             
-                            {/* Expanded Content - Side by Side Math Flow */}
-                            <div className="border-t border-[#F3F4F6] p-6 bg-[#F9FAFB]">
+                            {/* Clean Math Flow Columns */}
+                            <div className="p-6">
                               <div className="grid grid-cols-2 gap-8">
-                                {/* Competitor Flow */}
+                                {/* Left column - Competitor */}
                                 <div>
-                                  <div className="text-sm font-medium text-[#6B7280] mb-4 flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#9CA3AF]" />
+                                  <div className="text-sm font-medium text-[#9CA3AF] mb-4 pb-2 border-b border-[#F3F4F6]">
                                     With {selectedCompetitor?.name}
                                   </div>
-                                  <div className="relative">
-                                    <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#D1D5DB]" />
-                                    <div className="space-y-3">
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">●</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Annual encounters</span>
-                                            <span className="font-semibold text-[#374151]">{annualEncounters.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">1</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">At your utilization</span>
-                                            <span className="font-semibold text-[#374151]">{competitorUtilization}%</span>
-                                          </div>
-                                          <div className="text-xs text-[#9CA3AF] mt-0.5">{annualEncounters.toLocaleString()} × {competitorUtilization}%</div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">2</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Documented encounters</span>
-                                            <span className="font-semibold text-[#374151]">{compDocEncounters.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">●</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Time saved/encounter</span>
-                                            <span className="font-semibold text-[#374151]">{compTimeSaved} min</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">3</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                            <span className="font-semibold text-[#374151]">{Math.round(compHoursReturned).toLocaleString()} hrs</span>
-                                          </div>
-                                          <div className="text-xs text-[#9CA3AF] mt-0.5">{compDocEncounters.toLocaleString()} × {compTimeSaved} min ÷ 60</div>
-                                        </div>
-                                      </div>
-                                      {/* Editable: Realization Factor */}
-                                      <EditableField 
-                                        fieldKey="realizationFactor" 
-                                        label="Realization factor" 
-                                        value={driverEditableFields.realizationFactor} 
-                                        suffix="%" 
-                                      />
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">4</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Usable hours</span>
-                                            <span className="font-semibold text-[#374151]">{Math.round(compUsableHours).toLocaleString()} hrs</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      {/* Editable: Revenue per visit */}
-                                      <EditableField 
-                                        fieldKey="revenuePerVisit" 
-                                        label="Revenue per visit" 
-                                        value={driverEditableFields.revenuePerVisit} 
-                                        prefix="$" 
-                                      />
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">5</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Additional visits possible</span>
-                                            <span className="font-semibold text-[#374151]">{compAdditionalVisits.toLocaleString()}</span>
-                                          </div>
-                                          <div className="text-xs text-[#9CA3AF] mt-0.5">{Math.round(compUsableHours).toLocaleString()} hrs ÷ 0.5 hrs/visit</div>
-                                        </div>
-                                      </div>
+                                  
+                                  <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#6B7280]">Annual encounters</span>
+                                      <span className="font-medium text-[#374151] tabular-nums">{annualEncounters.toLocaleString()}</span>
                                     </div>
-                                    <div className="ml-9 p-3 rounded-lg border bg-[#F3F4F6] border-[#D1D5DB] mt-3">
-                                      <div className="flex items-baseline justify-between">
-                                        <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
-                                        <span className="text-xl font-bold text-[#374151]">${compAccessValue.toLocaleString()}</span>
-                                      </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#6B7280]">Utilization rate</span>
+                                      <span className="font-medium text-[#374151] tabular-nums">{competitorUtilization}%</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#6B7280]">Documented encounters</span>
+                                      <span className="font-medium text-[#374151] tabular-nums">{compDocEncounters.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#6B7280]">Time saved/encounter</span>
+                                      <span className="font-medium text-[#374151] tabular-nums">{compTimeSaved} min</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#6B7280]">Hours returned</span>
+                                      <span className="font-medium text-[#374151] tabular-nums">{Math.round(compHoursReturned).toLocaleString()} hrs</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#6B7280]">Realization factor</span>
+                                      <button 
+                                        onClick={() => {
+                                          setEditingField("realizationFactor");
+                                          setTempEditValue(driverEditableFields.realizationFactor.toString());
+                                        }}
+                                        className="flex items-center gap-1 group"
+                                        data-testid="button-edit-realizationFactor"
+                                      >
+                                        <span className="font-medium text-[#374151] tabular-nums">{driverEditableFields.realizationFactor}%</span>
+                                        <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
+                                      </button>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#6B7280]">Revenue per visit</span>
+                                      <button 
+                                        onClick={() => {
+                                          setEditingField("revenuePerVisit");
+                                          setTempEditValue(driverEditableFields.revenuePerVisit.toString());
+                                        }}
+                                        className="flex items-center gap-1 group"
+                                        data-testid="button-edit-revenuePerVisit"
+                                      >
+                                        <span className="font-medium text-[#374151] tabular-nums">${driverEditableFields.revenuePerVisit}</span>
+                                        <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
+                                      </button>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#6B7280]">Additional visits</span>
+                                      <span className="font-medium text-[#374151] tabular-nums">{compAdditionalVisits.toLocaleString()}</span>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="font-medium text-[#6B7280]">Annual Value</span>
+                                      <span className="text-xl font-bold text-[#374151] tabular-nums">
+                                        ${compAccessValue.toLocaleString()}
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
                                 
-                                {/* Abridge Flow */}
-                                <div>
-                                  <div className="text-sm font-medium text-[#E8532F] mb-4 flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#E8532F]" />
+                                {/* Right column - Abridge with subtle orange bg */}
+                                <div className="bg-[#FFF7ED]/50 rounded-xl p-4 -m-4">
+                                  <div className="text-sm font-medium text-[#EA580C] mb-4 pb-2 border-b border-[#FFEDD5]">
                                     With Abridge
                                   </div>
-                                  <div className="relative">
-                                    <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#FED7AA]" />
-                                    <div className="space-y-3">
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">●</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Annual encounters</span>
-                                            <span className="font-semibold text-[#E8532F]">{annualEncounters.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">1</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">At Abridge utilization</span>
-                                            <span className="font-semibold text-[#E8532F]">65%</span>
-                                          </div>
-                                          <div className="text-xs text-[#F97316] mt-0.5">{annualEncounters.toLocaleString()} × 65%</div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">2</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Documented encounters</span>
-                                            <span className="font-semibold text-[#E8532F]">{abridgeDocEncounters.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">●</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Time saved/encounter</span>
-                                            <span className="font-semibold text-[#E8532F]">3 min</span>
-                                          </div>
-                                          <div className="text-xs text-[#F97316] mt-0.5">Abridge average</div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">3</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                            <span className="font-semibold text-[#E8532F]">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
-                                          </div>
-                                          <div className="text-xs text-[#F97316] mt-0.5">{abridgeDocEncounters.toLocaleString()} × 3 min ÷ 60</div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">●</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Realization factor</span>
-                                            <span className="font-semibold text-[#E8532F]">{driverEditableFields.realizationFactor}%</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">4</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Usable hours</span>
-                                            <span className="font-semibold text-[#E8532F]">{Math.round(abridgeUsableHours).toLocaleString()} hrs</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">●</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Revenue per visit</span>
-                                            <span className="font-semibold text-[#E8532F]">${driverEditableFields.revenuePerVisit}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-start gap-3 relative">
-                                        <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                          <span className="text-white text-xs">5</span>
-                                        </div>
-                                        <div className="flex-1 pb-2">
-                                          <div className="flex items-baseline justify-between gap-2">
-                                            <span className="text-sm text-[#6B7280]">Additional visits possible</span>
-                                            <span className="font-semibold text-[#E8532F]">{abridgeAdditionalVisits.toLocaleString()}</span>
-                                          </div>
-                                          <div className="text-xs text-[#F97316] mt-0.5">{Math.round(abridgeUsableHours).toLocaleString()} hrs ÷ 0.5 hrs/visit</div>
-                                        </div>
-                                      </div>
+                                  
+                                  <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#78716C]">Annual encounters</span>
+                                      <span className="font-medium text-[#EA580C] tabular-nums">{annualEncounters.toLocaleString()}</span>
                                     </div>
-                                    <div className="ml-9 p-3 rounded-lg border bg-[#FEF2F0] border-[#FED7AA] mt-3">
-                                      <div className="flex items-baseline justify-between">
-                                        <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
-                                        <span className="text-xl font-bold text-[#E8532F]">${abridgeAccessValue.toLocaleString()}</span>
-                                      </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#78716C]">Utilization rate</span>
+                                      <span className="font-medium text-[#EA580C] tabular-nums">65%</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#78716C]">Documented encounters</span>
+                                      <span className="font-medium text-[#EA580C] tabular-nums">{abridgeDocEncounters.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#78716C]">Time saved/encounter</span>
+                                      <span className="font-medium text-[#EA580C] tabular-nums">3 min</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#78716C]">Hours returned</span>
+                                      <span className="font-medium text-[#EA580C] tabular-nums">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#78716C]">Realization factor</span>
+                                      <span className="font-medium text-[#EA580C] tabular-nums">{driverEditableFields.realizationFactor}%</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#78716C]">Revenue per visit</span>
+                                      <span className="font-medium text-[#EA580C] tabular-nums">${driverEditableFields.revenuePerVisit}</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[#78716C]">Additional visits</span>
+                                      <span className="font-medium text-[#EA580C] tabular-nums">{abridgeAdditionalVisits.toLocaleString()}</span>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="mt-4 pt-4 border-t border-[#FDBA74]">
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="font-medium text-[#EA580C]">Annual Value</span>
+                                      <span className="text-xl font-bold text-[#EA580C] tabular-nums">
+                                        ${abridgeAccessValue.toLocaleString()}
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
                               </div>
                               
-                              {/* The Difference Bar */}
-                              <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
-                                <div className="space-y-2">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-20 text-sm text-[#6B7280] text-right">Abridge</div>
-                                    <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
-                                      <div 
-                                        className="absolute inset-y-0 left-0 bg-[#10B981] rounded-lg transition-all duration-700"
-                                        style={{ width: '100%' }}
-                                      />
-                                      <div className="absolute inset-0 flex items-center px-3">
-                                        <span className="text-white font-semibold text-sm drop-shadow">${abridgeAccessValue.toLocaleString()}</span>
-                                      </div>
-                                    </div>
+                              {/* Thin horizontal gap bar */}
+                              <div className="mt-6 pt-6 border-t border-[#F3F4F6]">
+                                <div className="flex items-center gap-4">
+                                  <span className="text-sm text-[#9CA3AF] w-20 tabular-nums">${compAccessValue.toLocaleString()}</span>
+                                  <div className="flex-1 h-3 bg-[#F3F4F6] rounded-full overflow-hidden relative">
+                                    <div 
+                                      className="absolute inset-y-0 left-0 bg-[#D1D5DB] rounded-full"
+                                      style={{ width: `${abridgeAccessValue > 0 ? Math.round((compAccessValue / abridgeAccessValue) * 100) : 0}%` }}
+                                    />
+                                    <div 
+                                      className="absolute inset-y-0 bg-[#EA580C] rounded-r-full"
+                                      style={{ 
+                                        left: `${abridgeAccessValue > 0 ? Math.round((compAccessValue / abridgeAccessValue) * 100) : 0}%`,
+                                        right: 0
+                                      }}
+                                    />
                                   </div>
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-20 text-sm text-[#9CA3AF] text-right">Current</div>
-                                    <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
-                                      <div 
-                                        className="absolute inset-y-0 left-0 bg-[#9CA3AF] rounded-lg transition-all duration-700"
-                                        style={{ width: `${abridgeAccessValue > 0 ? Math.round((compAccessValue / abridgeAccessValue) * 100) : 0}%` }}
-                                      />
-                                      <div className="absolute inset-0 flex items-center px-3">
-                                        <span className="text-white font-semibold text-sm drop-shadow">${compAccessValue.toLocaleString()}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-20" />
-                                    <div className="flex-1 flex justify-end">
-                                      <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#FEF2F0] rounded-full">
-                                        <ArrowUp className="w-3 h-3 text-[#E8532F]" />
-                                        <span className="text-sm font-semibold text-[#E8532F]">+${accessGap.toLocaleString()} gap</span>
-                                      </div>
-                                    </div>
-                                  </div>
+                                  <span className="text-sm font-semibold text-[#EA580C] w-20 text-right tabular-nums">
+                                    ${abridgeAccessValue.toLocaleString()}
+                                  </span>
                                 </div>
-                                
-                                {/* Key Insight */}
-                                <div className="mt-4 p-3 bg-[#FEF2F0] rounded-lg">
-                                  <div className="flex items-start gap-2">
-                                    <Lightbulb className="w-4 h-4 text-[#E8532F] mt-0.5 flex-shrink-0" />
-                                    <p className="text-sm text-[#9A3412]">
-                                      The {timeSavingsRatio}x difference in time savings ({abridgeTimeSaved} min vs {compTimeSaved} min) combined with {utilizationLift}% higher utilization means {visitsMultiplier > 0 ? visitsMultiplier : "significantly more"}x visits enabled.
-                                    </p>
-                                  </div>
+                                <div className="flex justify-between mt-2 text-xs text-[#9CA3AF]">
+                                  <span>Current</span>
+                                  <span className="text-[#EA580C] font-medium">+${accessGap.toLocaleString()} gap</span>
                                 </div>
                               </div>
+                            </div>
+                            
+                            {/* Subtle insight footer */}
+                            <div className="px-6 py-4 bg-[#FAFAFA] border-t border-[#F3F4F6]">
+                              <p className="text-sm text-[#6B7280]">
+                                <span className="text-[#EA580C] mr-2">Insight:</span>
+                                {timeSavingsRatio}x more time savings ({abridgeTimeSaved} min vs {compTimeSaved} min) + {utilizationLift}% higher utilization = {visitsMultiplier > 0 ? visitsMultiplier : "significantly more"}x visits enabled.
+                              </p>
                             </div>
                           </div>
                           
-                          {/* Overtime Savings Driver Card */}
+                          {/* Overtime Savings Driver Card - Clean Design */}
                           {enabledDriverCards.overtime && (
-                              <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mt-4" data-testid="driver-card-overtime">
-                                <div className="p-5 flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-[#FEF3C7] rounded-lg text-[#D97706]">
-                                      <Clock className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                      <h4 className="font-semibold text-[#111827]">Overtime Savings</h4>
-                                      <p className="text-sm text-[#6B7280]">Reduce after-hours documentation burden</p>
-                                    </div>
+                            <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mt-4" data-testid="driver-card-overtime">
+                              {/* Card Header */}
+                              <div className="flex items-start justify-between p-5 border-b border-[#F3F4F6]">
+                                <div className="flex items-center gap-4">
+                                  <div className="p-3 bg-[#FFF7ED] rounded-xl text-[#EA580C]">
+                                    <Clock className="w-5 h-5" />
                                   </div>
-                                  <div className="text-right">
-                                    <div className="text-2xl font-bold text-[#E8532F]">
-                                      +${overtimeGap.toLocaleString()}
-                                    </div>
-                                    <div className="text-sm text-[#6B7280]">additional savings</div>
+                                  <div>
+                                    <h3 className="font-semibold text-[#111827] text-lg">Overtime Savings</h3>
+                                    <p className="text-sm text-[#6B7280]">Reduce after-hours documentation burden</p>
                                   </div>
                                 </div>
-                                
-                                <div className="border-t border-[#F3F4F6] p-6 bg-[#F9FAFB]">
-                                  <div className="grid grid-cols-2 gap-8">
-                                    {/* Competitor Flow */}
-                                    <div>
-                                      <div className="text-sm font-medium text-[#6B7280] mb-4 flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#9CA3AF]" />
-                                        With {selectedCompetitor?.name}
+                                <div className="text-right">
+                                  <div className="text-2xl font-bold text-[#EA580C]">
+                                    +${overtimeGap.toLocaleString()}
+                                  </div>
+                                  <div className="text-sm text-[#9CA3AF]">additional savings</div>
+                                </div>
+                              </div>
+                              
+                              {/* Clean Math Flow Columns */}
+                              <div className="p-6">
+                                <div className="grid grid-cols-2 gap-8">
+                                  {/* Left column - Competitor */}
+                                  <div>
+                                    <div className="text-sm font-medium text-[#9CA3AF] mb-4 pb-2 border-b border-[#F3F4F6]">
+                                      With {selectedCompetitor?.name}
+                                    </div>
+                                    
+                                    <div className="space-y-3 text-sm">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">Hours returned</span>
+                                        <span className="font-medium text-[#374151] tabular-nums">{Math.round(compHoursReturned).toLocaleString()} hrs</span>
                                       </div>
-                                      <div className="relative">
-                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#D1D5DB]" />
-                                        <div className="space-y-3">
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">1</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                                <span className="font-semibold text-[#374151]">{Math.round(compHoursReturned).toLocaleString()} hrs</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          {/* Editable: % after-hours work */}
-                                          <EditableField 
-                                            fieldKey="afterHoursPercent" 
-                                            label="% after-hours work" 
-                                            value={driverEditableFields.afterHoursPercent} 
-                                            suffix="%" 
-                                          />
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">2</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Premium hours avoided</span>
-                                                <span className="font-semibold text-[#374151]">{compPremiumHours.toLocaleString()} hrs</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          {/* Editable: Overtime rate */}
-                                          <EditableField 
-                                            fieldKey="overtimeRate" 
-                                            label="Overtime rate" 
-                                            value={driverEditableFields.overtimeRate} 
-                                            prefix="$" 
-                                            suffix="/hr" 
-                                          />
-                                        </div>
-                                        <div className="ml-9 p-3 rounded-lg border bg-[#F3F4F6] border-[#D1D5DB] mt-3">
-                                          <div className="flex items-baseline justify-between">
-                                            <span className="text-sm font-medium text-[#6B7280]">Annual Savings</span>
-                                            <span className="text-xl font-bold text-[#374151]">${compOvertimeValue.toLocaleString()}</span>
-                                          </div>
-                                        </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">% after-hours work</span>
+                                        <button 
+                                          onClick={() => {
+                                            setEditingField("afterHoursPercent");
+                                            setTempEditValue(driverEditableFields.afterHoursPercent.toString());
+                                          }}
+                                          className="flex items-center gap-1 group"
+                                          data-testid="button-edit-afterHoursPercent"
+                                        >
+                                          <span className="font-medium text-[#374151] tabular-nums">{driverEditableFields.afterHoursPercent}%</span>
+                                          <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
+                                        </button>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">Premium hours avoided</span>
+                                        <span className="font-medium text-[#374151] tabular-nums">{compPremiumHours.toLocaleString()} hrs</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">Overtime rate</span>
+                                        <button 
+                                          onClick={() => {
+                                            setEditingField("overtimeRate");
+                                            setTempEditValue(driverEditableFields.overtimeRate.toString());
+                                          }}
+                                          className="flex items-center gap-1 group"
+                                          data-testid="button-edit-overtimeRate"
+                                        >
+                                          <span className="font-medium text-[#374151] tabular-nums">${driverEditableFields.overtimeRate}/hr</span>
+                                          <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
+                                        </button>
                                       </div>
                                     </div>
                                     
-                                    {/* Abridge Flow */}
-                                    <div>
-                                      <div className="text-sm font-medium text-[#E8532F] mb-4 flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#E8532F]" />
-                                        With Abridge
-                                      </div>
-                                      <div className="relative">
-                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#FED7AA]" />
-                                        <div className="space-y-3">
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">1</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Hours returned</span>
-                                                <span className="font-semibold text-[#E8532F]">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">●</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">% after-hours work</span>
-                                                <span className="font-semibold text-[#E8532F]">{driverEditableFields.afterHoursPercent}%</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">2</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Premium hours avoided</span>
-                                                <span className="font-semibold text-[#E8532F]">{abridgePremiumHours.toLocaleString()} hrs</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">●</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Overtime rate</span>
-                                                <span className="font-semibold text-[#E8532F]">${driverEditableFields.overtimeRate}/hr</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="ml-9 p-3 rounded-lg border bg-[#FEF2F0] border-[#FED7AA] mt-3">
-                                          <div className="flex items-baseline justify-between">
-                                            <span className="text-sm font-medium text-[#6B7280]">Annual Savings</span>
-                                            <span className="text-xl font-bold text-[#E8532F]">${abridgeOvertimeValue.toLocaleString()}</span>
-                                          </div>
-                                        </div>
+                                    <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="font-medium text-[#6B7280]">Annual Savings</span>
+                                        <span className="text-xl font-bold text-[#374151] tabular-nums">
+                                          ${compOvertimeValue.toLocaleString()}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
                                   
-                                  {/* Difference Bar */}
-                                  <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
-                                    <div className="space-y-2">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-20 text-sm text-[#6B7280] text-right">Abridge</div>
-                                        <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
-                                          <div className="absolute inset-y-0 left-0 bg-[#E8532F] rounded-lg" style={{ width: '100%' }} />
-                                          <div className="absolute inset-0 flex items-center px-3">
-                                            <span className="text-white font-semibold text-sm drop-shadow">${abridgeOvertimeValue.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-20 text-sm text-[#9CA3AF] text-right">Current</div>
-                                        <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
-                                          <div className="absolute inset-y-0 left-0 bg-[#9CA3AF] rounded-lg" style={{ width: `${abridgeOvertimeValue > 0 ? Math.round((compOvertimeValue / abridgeOvertimeValue) * 100) : 0}%` }} />
-                                          <div className="absolute inset-0 flex items-center px-3">
-                                            <span className="text-white font-semibold text-sm drop-shadow">${compOvertimeValue.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-20" />
-                                        <div className="flex-1 flex justify-end">
-                                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#FEF2F0] rounded-full">
-                                            <ArrowUp className="w-3 h-3 text-[#E8532F]" />
-                                            <span className="text-sm font-semibold text-[#E8532F]">+${overtimeGap.toLocaleString()} gap</span>
-                                          </div>
-                                        </div>
-                                      </div>
+                                  {/* Right column - Abridge with subtle orange bg */}
+                                  <div className="bg-[#FFF7ED]/50 rounded-xl p-4 -m-4">
+                                    <div className="text-sm font-medium text-[#EA580C] mb-4 pb-2 border-b border-[#FFEDD5]">
+                                      With Abridge
                                     </div>
-                                    <div className="mt-4 p-3 bg-[#FEF2F0] rounded-lg">
-                                      <div className="flex items-start gap-2">
-                                        <Lightbulb className="w-4 h-4 text-[#E8532F] mt-0.5 flex-shrink-0" />
-                                        <p className="text-sm text-[#9A3412]">
-                                          More time saved per encounter means less after-hours documentation, reducing costly overtime by {abridgePremiumHours - compPremiumHours} additional hours.
-                                        </p>
+                                    
+                                    <div className="space-y-3 text-sm">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">Hours returned</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">{Math.round(abridgeHoursReturned).toLocaleString()} hrs</span>
                                       </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                          )}
-                          
-                          {/* Level of Service Driver Card */}
-                          {enabledDriverCards.los && (
-                              <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mt-4" data-testid="driver-card-los">
-                                <div className="p-5 flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-[#EDE9FE] rounded-lg text-[#7C3AED]">
-                                      <TrendingUp className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                      <h4 className="font-semibold text-[#111827]">Level of Service</h4>
-                                      <p className="text-sm text-[#6B7280]">Capture accurate wRVU through complete documentation</p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-2xl font-bold text-[#E8532F]">
-                                      +${losGap.toLocaleString()}
-                                    </div>
-                                    <div className="text-sm text-[#6B7280]">additional value</div>
-                                  </div>
-                                </div>
-                                
-                                <div className="border-t border-[#F3F4F6] p-6 bg-[#F9FAFB]">
-                                  <div className="grid grid-cols-2 gap-8">
-                                    {/* Competitor Flow */}
-                                    <div>
-                                      <div className="text-sm font-medium text-[#6B7280] mb-4 flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#9CA3AF]" />
-                                        With {selectedCompetitor?.name}
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">% after-hours work</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">{driverEditableFields.afterHoursPercent}%</span>
                                       </div>
-                                      <div className="relative">
-                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#D1D5DB]" />
-                                        <div className="space-y-3">
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">1</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Documented encounters</span>
-                                                <span className="font-semibold text-[#374151]">{compDocEncounters.toLocaleString()}</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          {/* Editable: Baseline wRVU */}
-                                          <EditableField 
-                                            fieldKey="baselineWrvuPerEncounter" 
-                                            label="Baseline wRVU/encounter" 
-                                            value={driverEditableFields.baselineWrvuPerEncounter} 
-                                          />
-                                          {/* Editable: Competitor Quality Lift */}
-                                          <EditableField 
-                                            fieldKey="competitorQualityLift" 
-                                            label="Quality lift" 
-                                            value={driverEditableFields.competitorQualityLift} 
-                                            suffix="%" 
-                                          />
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">2</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">wRVU uplift</span>
-                                                <span className="font-semibold text-[#374151]">{compWrvuUplift.toLocaleString()}</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          {/* Editable: wRVU rate */}
-                                          <EditableField 
-                                            fieldKey="wrvuRate" 
-                                            label="wRVU rate" 
-                                            value={driverEditableFields.wrvuRate} 
-                                            prefix="$" 
-                                          />
-                                        </div>
-                                        <div className="ml-9 p-3 rounded-lg border bg-[#F3F4F6] border-[#D1D5DB] mt-3">
-                                          <div className="flex items-baseline justify-between">
-                                            <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
-                                            <span className="text-xl font-bold text-[#374151]">${compLosValue.toLocaleString()}</span>
-                                          </div>
-                                        </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">Premium hours avoided</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">{abridgePremiumHours.toLocaleString()} hrs</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">Overtime rate</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">${driverEditableFields.overtimeRate}/hr</span>
                                       </div>
                                     </div>
                                     
-                                    {/* Abridge Flow */}
-                                    <div>
-                                      <div className="text-sm font-medium text-[#E8532F] mb-4 flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#E8532F]" />
-                                        With Abridge
-                                      </div>
-                                      <div className="relative">
-                                        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#FED7AA]" />
-                                        <div className="space-y-3">
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">1</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Documented encounters</span>
-                                                <span className="font-semibold text-[#E8532F]">{abridgeDocEncounters.toLocaleString()}</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">●</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Baseline wRVU/encounter</span>
-                                                <span className="font-semibold text-[#E8532F]">{driverEditableFields.baselineWrvuPerEncounter}</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">●</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">Quality lift</span>
-                                                <span className="font-semibold text-[#E8532F]">{Math.round(abridgeQualityLift * 100)}%</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">2</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">wRVU uplift</span>
-                                                <span className="font-semibold text-[#E8532F]">{abridgeWrvuUplift.toLocaleString()}</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-start gap-3 relative">
-                                            <div className="w-6 h-6 rounded-full bg-[#E8532F] flex items-center justify-center z-10">
-                                              <span className="text-white text-xs">●</span>
-                                            </div>
-                                            <div className="flex-1 pb-2">
-                                              <div className="flex items-baseline justify-between gap-2">
-                                                <span className="text-sm text-[#6B7280]">wRVU rate</span>
-                                                <span className="font-semibold text-[#E8532F]">${driverEditableFields.wrvuRate}</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="ml-9 p-3 rounded-lg border bg-[#FEF2F0] border-[#FED7AA] mt-3">
-                                          <div className="flex items-baseline justify-between">
-                                            <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
-                                            <span className="text-xl font-bold text-[#E8532F]">${abridgeLosValue.toLocaleString()}</span>
-                                          </div>
-                                        </div>
+                                    <div className="mt-4 pt-4 border-t border-[#FDBA74]">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="font-medium text-[#EA580C]">Annual Savings</span>
+                                        <span className="text-xl font-bold text-[#EA580C] tabular-nums">
+                                          ${abridgeOvertimeValue.toLocaleString()}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
-                                  
-                                  {/* Difference Bar */}
-                                  <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
-                                    <div className="space-y-2">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-20 text-sm text-[#6B7280] text-right">Abridge</div>
-                                        <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
-                                          <div className="absolute inset-y-0 left-0 bg-[#E8532F] rounded-lg" style={{ width: '100%' }} />
-                                          <div className="absolute inset-0 flex items-center px-3">
-                                            <span className="text-white font-semibold text-sm drop-shadow">${abridgeLosValue.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-20 text-sm text-[#9CA3AF] text-right">Current</div>
-                                        <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
-                                          <div className="absolute inset-y-0 left-0 bg-[#9CA3AF] rounded-lg" style={{ width: `${abridgeLosValue > 0 ? Math.round((compLosValue / abridgeLosValue) * 100) : 0}%` }} />
-                                          <div className="absolute inset-0 flex items-center px-3">
-                                            <span className="text-white font-semibold text-sm drop-shadow">${compLosValue.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-20" />
-                                        <div className="flex-1 flex justify-end">
-                                          <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#FEF2F0] rounded-full">
-                                            <ArrowUp className="w-3 h-3 text-[#E8532F]" />
-                                            <span className="text-sm font-semibold text-[#E8532F]">+${losGap.toLocaleString()} gap</span>
-                                          </div>
-                                        </div>
-                                      </div>
+                                </div>
+                                
+                                {/* Thin horizontal gap bar */}
+                                <div className="mt-6 pt-6 border-t border-[#F3F4F6]">
+                                  <div className="flex items-center gap-4">
+                                    <span className="text-sm text-[#9CA3AF] w-20 tabular-nums">${compOvertimeValue.toLocaleString()}</span>
+                                    <div className="flex-1 h-3 bg-[#F3F4F6] rounded-full overflow-hidden relative">
+                                      <div 
+                                        className="absolute inset-y-0 left-0 bg-[#D1D5DB] rounded-full"
+                                        style={{ width: `${abridgeOvertimeValue > 0 ? Math.round((compOvertimeValue / abridgeOvertimeValue) * 100) : 0}%` }}
+                                      />
+                                      <div 
+                                        className="absolute inset-y-0 bg-[#EA580C] rounded-r-full"
+                                        style={{ 
+                                          left: `${abridgeOvertimeValue > 0 ? Math.round((compOvertimeValue / abridgeOvertimeValue) * 100) : 0}%`,
+                                          right: 0
+                                        }}
+                                      />
                                     </div>
-                                    <div className="mt-4 p-3 bg-[#FEF2F0] rounded-lg">
-                                      <div className="flex items-start gap-2">
-                                        <Lightbulb className="w-4 h-4 text-[#E8532F] mt-0.5 flex-shrink-0" />
-                                        <p className="text-sm text-[#9A3412]">
-                                          Higher quality documentation ({Math.round(abridgeQualityLift * 100)}% vs {driverEditableFields.competitorQualityLift}% lift) across more encounters captures {(abridgeWrvuUplift - compWrvuUplift).toLocaleString()} additional wRVUs annually.
-                                        </p>
-                                      </div>
-                                    </div>
+                                    <span className="text-sm font-semibold text-[#EA580C] w-20 text-right tabular-nums">
+                                      ${abridgeOvertimeValue.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between mt-2 text-xs text-[#9CA3AF]">
+                                    <span>Current</span>
+                                    <span className="text-[#EA580C] font-medium">+${overtimeGap.toLocaleString()} gap</span>
                                   </div>
                                 </div>
                               </div>
-                          )}
-                          
-                          {/* Total Gap Summary */}
-                          {(enabledDriverCards.overtime || enabledDriverCards.los) && (
-                            <div className="mt-6 p-5 bg-gradient-to-r from-[#FEF2F0] to-[#FFEDD5] rounded-xl border border-[#FED7AA]" data-testid="total-gap-summary">
-                              <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-semibold text-[#9A3412]">Total Incremental Value with Abridge</h4>
-                                <div className="text-2xl font-bold text-[#E8532F]">${totalGap.toLocaleString()}</div>
-                              </div>
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between text-sm" data-testid="text-gap-access">
-                                  <span className="text-[#9A3412]">Patient Access Gap</span>
-                                  <span className="font-medium text-[#E8532F]">+${accessGap.toLocaleString()}</span>
-                                </div>
-                                {enabledDriverCards.overtime && (
-                                  <div className="flex items-center justify-between text-sm" data-testid="text-gap-overtime">
-                                    <span className="text-[#9A3412]">Overtime Savings Gap</span>
-                                    <span className="font-medium text-[#E8532F]">+${overtimeGap.toLocaleString()}</span>
-                                  </div>
-                                )}
-                                {enabledDriverCards.los && (
-                                  <div className="flex items-center justify-between text-sm" data-testid="text-gap-los">
-                                    <span className="text-[#9A3412]">Level of Service Gap</span>
-                                    <span className="font-medium text-[#E8532F]">+${losGap.toLocaleString()}</span>
-                                  </div>
-                                )}
-                                <div className="border-t border-[#FED7AA] pt-2 mt-2">
-                                  <div className="flex items-center justify-between text-sm font-semibold" data-testid="text-gap-total">
-                                    <span className="text-[#9A3412]">Total Annual Incremental Gap</span>
-                                    <span className="text-[#E8532F]">${totalGap.toLocaleString()}</span>
-                                  </div>
-                                </div>
+                              
+                              {/* Subtle insight footer */}
+                              <div className="px-6 py-4 bg-[#FAFAFA] border-t border-[#F3F4F6]">
+                                <p className="text-sm text-[#6B7280]">
+                                  <span className="text-[#EA580C] mr-2">Insight:</span>
+                                  More time saved = less after-hours work, reducing overtime by {abridgePremiumHours - compPremiumHours} additional hours.
+                                </p>
                               </div>
                             </div>
                           )}
                           
-                          {/* Add More Drivers Button */}
-                          {(!enabledDriverCards.overtime || !enabledDriverCards.los) && (
-                            <div className="flex items-center justify-center pt-4">
-                              <div className="relative">
-                                <Button
-                                  variant="outline"
+                          {/* Level of Service Driver Card - Clean Design */}
+                          {enabledDriverCards.los && (
+                            <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mt-4" data-testid="driver-card-los">
+                              {/* Card Header */}
+                              <div className="flex items-start justify-between p-5 border-b border-[#F3F4F6]">
+                                <div className="flex items-center gap-4">
+                                  <div className="p-3 bg-[#FFF7ED] rounded-xl text-[#EA580C]">
+                                    <TrendingUp className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <h3 className="font-semibold text-[#111827] text-lg">Level of Service</h3>
+                                    <p className="text-sm text-[#6B7280]">Capture accurate wRVU through complete documentation</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-2xl font-bold text-[#EA580C]">
+                                    +${losGap.toLocaleString()}
+                                  </div>
+                                  <div className="text-sm text-[#9CA3AF]">additional value</div>
+                                </div>
+                              </div>
+                              
+                              {/* Clean Math Flow Columns */}
+                              <div className="p-6">
+                                <div className="grid grid-cols-2 gap-8">
+                                  {/* Left column - Competitor */}
+                                  <div>
+                                    <div className="text-sm font-medium text-[#9CA3AF] mb-4 pb-2 border-b border-[#F3F4F6]">
+                                      With {selectedCompetitor?.name}
+                                    </div>
+                                    
+                                    <div className="space-y-3 text-sm">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">Documented encounters</span>
+                                        <span className="font-medium text-[#374151] tabular-nums">{compDocEncounters.toLocaleString()}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">Baseline wRVU/encounter</span>
+                                        <button 
+                                          onClick={() => {
+                                            setEditingField("baselineWrvuPerEncounter");
+                                            setTempEditValue(driverEditableFields.baselineWrvuPerEncounter.toString());
+                                          }}
+                                          className="flex items-center gap-1 group"
+                                          data-testid="button-edit-baselineWrvuPerEncounter"
+                                        >
+                                          <span className="font-medium text-[#374151] tabular-nums">{driverEditableFields.baselineWrvuPerEncounter}</span>
+                                          <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
+                                        </button>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">Quality lift</span>
+                                        <button 
+                                          onClick={() => {
+                                            setEditingField("competitorQualityLift");
+                                            setTempEditValue(driverEditableFields.competitorQualityLift.toString());
+                                          }}
+                                          className="flex items-center gap-1 group"
+                                          data-testid="button-edit-competitorQualityLift"
+                                        >
+                                          <span className="font-medium text-[#374151] tabular-nums">{driverEditableFields.competitorQualityLift}%</span>
+                                          <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
+                                        </button>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">wRVU uplift</span>
+                                        <span className="font-medium text-[#374151] tabular-nums">{compWrvuUplift.toLocaleString()}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#6B7280]">wRVU rate</span>
+                                        <button 
+                                          onClick={() => {
+                                            setEditingField("wrvuRate");
+                                            setTempEditValue(driverEditableFields.wrvuRate.toString());
+                                          }}
+                                          className="flex items-center gap-1 group"
+                                          data-testid="button-edit-wrvuRate"
+                                        >
+                                          <span className="font-medium text-[#374151] tabular-nums">${driverEditableFields.wrvuRate}</span>
+                                          <Pencil className="w-3 h-3 text-[#D1D5DB] group-hover:text-[#6B7280]" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="font-medium text-[#6B7280]">Annual Value</span>
+                                        <span className="text-xl font-bold text-[#374151] tabular-nums">
+                                          ${compLosValue.toLocaleString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Right column - Abridge with subtle orange bg */}
+                                  <div className="bg-[#FFF7ED]/50 rounded-xl p-4 -m-4">
+                                    <div className="text-sm font-medium text-[#EA580C] mb-4 pb-2 border-b border-[#FFEDD5]">
+                                      With Abridge
+                                    </div>
+                                    
+                                    <div className="space-y-3 text-sm">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">Documented encounters</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">{abridgeDocEncounters.toLocaleString()}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">Baseline wRVU/encounter</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">{driverEditableFields.baselineWrvuPerEncounter}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">Quality lift</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">{Math.round(abridgeQualityLift * 100)}%</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">wRVU uplift</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">{abridgeWrvuUplift.toLocaleString()}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[#78716C]">wRVU rate</span>
+                                        <span className="font-medium text-[#EA580C] tabular-nums">${driverEditableFields.wrvuRate}</span>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="mt-4 pt-4 border-t border-[#FDBA74]">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="font-medium text-[#EA580C]">Annual Value</span>
+                                        <span className="text-xl font-bold text-[#EA580C] tabular-nums">
+                                          ${abridgeLosValue.toLocaleString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Thin horizontal gap bar */}
+                                <div className="mt-6 pt-6 border-t border-[#F3F4F6]">
+                                  <div className="flex items-center gap-4">
+                                    <span className="text-sm text-[#9CA3AF] w-20 tabular-nums">${compLosValue.toLocaleString()}</span>
+                                    <div className="flex-1 h-3 bg-[#F3F4F6] rounded-full overflow-hidden relative">
+                                      <div 
+                                        className="absolute inset-y-0 left-0 bg-[#D1D5DB] rounded-full"
+                                        style={{ width: `${abridgeLosValue > 0 ? Math.round((compLosValue / abridgeLosValue) * 100) : 0}%` }}
+                                      />
+                                      <div 
+                                        className="absolute inset-y-0 bg-[#EA580C] rounded-r-full"
+                                        style={{ 
+                                          left: `${abridgeLosValue > 0 ? Math.round((compLosValue / abridgeLosValue) * 100) : 0}%`,
+                                          right: 0
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-sm font-semibold text-[#EA580C] w-20 text-right tabular-nums">
+                                      ${abridgeLosValue.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between mt-2 text-xs text-[#9CA3AF]">
+                                    <span>Current</span>
+                                    <span className="text-[#EA580C] font-medium">+${losGap.toLocaleString()} gap</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Subtle insight footer */}
+                              <div className="px-6 py-4 bg-[#FAFAFA] border-t border-[#F3F4F6]">
+                                <p className="text-sm text-[#6B7280]">
+                                  <span className="text-[#EA580C] mr-2">Insight:</span>
+                                  Higher quality ({Math.round(abridgeQualityLift * 100)}% vs {driverEditableFields.competitorQualityLift}%) + more encounters = {(abridgeWrvuUplift - compWrvuUplift).toLocaleString()} additional wRVUs.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Clean Summary Section */}
+                          <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 mt-6" data-testid="total-gap-summary">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="text-sm font-medium text-[#9CA3AF] uppercase tracking-wide mb-4">
+                                  Selected Value Drivers
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-[#EA580C]" />
+                                    <span className="text-[#374151]">Patient Access</span>
+                                    <span className="font-semibold text-[#EA580C] tabular-nums ml-auto">+${accessGap.toLocaleString()}</span>
+                                  </div>
+                                  {enabledDriverCards.overtime && (
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-2 h-2 rounded-full bg-[#EA580C]" />
+                                      <span className="text-[#374151]">Overtime Savings</span>
+                                      <span className="font-semibold text-[#EA580C] tabular-nums ml-auto">+${overtimeGap.toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                  {enabledDriverCards.los && (
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-2 h-2 rounded-full bg-[#EA580C]" />
+                                      <span className="text-[#374151]">Level of Service</span>
+                                      <span className="font-semibold text-[#EA580C] tabular-nums ml-auto">+${losGap.toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="text-right pl-8 border-l border-[#F3F4F6]">
+                                <div className="text-sm text-[#9CA3AF] mb-1">Total Annual Gap</div>
+                                <div className="text-3xl font-bold text-[#111827] tabular-nums">
+                                  +${totalGap.toLocaleString()}
+                                </div>
+                                <div className="text-sm text-[#9CA3AF] mt-1">per year</div>
+                              </div>
+                            </div>
+                            
+                            <div className="mt-6 pt-6 border-t border-[#F3F4F6] flex items-center justify-between">
+                              {/* Add more drivers button */}
+                              {(!enabledDriverCards.overtime || !enabledDriverCards.los) ? (
+                                <button 
                                   onClick={() => {
                                     if (!enabledDriverCards.overtime) {
                                       setEnabledDriverCards(prev => ({ ...prev, overtime: true }));
@@ -6006,43 +5818,40 @@ export default function RoiCalculator({
                                       setEnabledDriverCards(prev => ({ ...prev, los: true }));
                                     }
                                   }}
-                                  className="border-dashed border-2 border-[#D1D5DB] text-[#6B7280] hover:border-[#E8532F] hover:text-[#E8532F] px-6 py-2"
+                                  className="text-sm text-[#6B7280] hover:text-[#374151] flex items-center gap-1"
                                   data-testid="button-add-driver"
                                 >
-                                  <Plus className="w-4 h-4 mr-2" />
-                                  Add {!enabledDriverCards.overtime ? "Overtime Savings" : "Level of Service"} Driver
-                                </Button>
-                              </div>
+                                  <Plus className="w-4 h-4" />
+                                  Add more drivers ({(!enabledDriverCards.overtime ? 1 : 0) + (!enabledDriverCards.los ? 1 : 0)} available)
+                                </button>
+                              ) : (
+                                <div />
+                              )}
+                              
+                              <Button 
+                                onClick={() => {
+                                  setCurrentDriverIndex(0);
+                                  const competitorKey = selectedCompetitor?.name?.toLowerCase().replace(/\s+/g, '_') || "other";
+                                  const defaults = COMPETITOR_DEFAULTS[competitorKey] || COMPETITOR_DEFAULTS["other"];
+                                  setCompDriverInputs(prev => ({
+                                    access: { ...prev.access, visitsPerProvider: defaults.access, skipped: false },
+                                    los: { ...prev.los, wrvuUpliftPerProvider: defaults.los, skipped: false },
+                                    overtime: { ...prev.overtime, hoursPerProvider: defaults.overtime, skipped: false },
+                                  }));
+                                  setCompetitorStep(4);
+                                }}
+                                className="px-6 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-medium"
+                                data-testid="button-continue-to-step4"
+                              >
+                                See Opportunity at Scale
+                                <ArrowRight className="ml-2 w-4 h-4" />
+                              </Button>
                             </div>
-                          )}
+                          </div>
+                          
                         </div>
                       );
                     })()}
-                    
-                    {/* CTA Section */}
-                    <div className="bg-[#F9FAFB] rounded-xl p-6 text-center border border-[#E5E7EB]">
-                      <p className="text-[16px] text-[#374151] mb-5">
-                        Ready to see the full financial impact of switching to Abridge?
-                      </p>
-                      <Button
-                        onClick={() => {
-                          setCurrentDriverIndex(0);
-                          const competitorKey = selectedCompetitor?.name?.toLowerCase().replace(/\s+/g, '_') || "other";
-                          const defaults = COMPETITOR_DEFAULTS[competitorKey] || COMPETITOR_DEFAULTS["other"];
-                          setCompDriverInputs(prev => ({
-                            access: { ...prev.access, visitsPerProvider: defaults.access, skipped: false },
-                            los: { ...prev.los, wrvuUpliftPerProvider: defaults.los, skipped: false },
-                            overtime: { ...prev.overtime, hoursPerProvider: defaults.overtime, skipped: false },
-                          }));
-                          setCompetitorStep(4);
-                        }}
-                        className="bg-[#E8532F] hover:bg-[#D14729] text-white px-10 py-3 text-[16px] font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                        data-testid="button-show-opportunity"
-                      >
-                        See the Full Opportunity
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </div>
                     
                     {/* Footer Actions */}
                     <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">

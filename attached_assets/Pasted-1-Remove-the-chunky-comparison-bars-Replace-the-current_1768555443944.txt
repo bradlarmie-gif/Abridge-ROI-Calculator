@@ -1,0 +1,219 @@
+1. Remove the chunky comparison bars
+Replace the current green/gray stacked bars with a single horizontal bar that shows the gap:
+tsxCopy// REMOVE THIS:
+<div className="space-y-2">
+  <div className="flex items-center gap-3">
+    <span>Abridge</span>
+    <div className="h-8 bg-green-500">$260,000</div>
+  </div>
+  <div className="flex items-center gap-3">
+    <span>Current</span>
+    <div className="h-8 bg-gray-400">$100,000</div>
+  </div>
+</div>
+
+// REPLACE WITH:
+<div className="mt-6 pt-6 border-t border-gray-100">
+  <div className="flex items-center gap-4">
+    <span className="text-sm text-gray-500 w-16">{formatCurrency(competitorValue)}</span>
+    <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden relative">
+      {/* Competitor portion */}
+      <div 
+        className="absolute inset-y-0 left-0 bg-gray-300 rounded-full"
+        style={{ width: `${(competitorValue / abridgeValue) * 100}%` }}
+      />
+      {/* Abridge full bar */}
+      <div 
+        className="absolute inset-y-0 left-0 bg-orange-500 rounded-full"
+        style={{ width: '100%', opacity: 0.3 }}
+      />
+      {/* Gap portion highlighted */}
+      <div 
+        className="absolute inset-y-0 bg-orange-500 rounded-r-full"
+        style={{ 
+          left: `${(competitorValue / abridgeValue) * 100}%`,
+          right: 0
+        }}
+      />
+    </div>
+    <span className="text-sm font-semibold text-orange-600 w-16 text-right">
+      {formatCurrency(abridgeValue)}
+    </span>
+  </div>
+  <div className="flex justify-between mt-2 text-xs text-gray-400">
+    <span>Current</span>
+    <span className="text-orange-500 font-medium">+{formatCurrency(gap)} gap</span>
+  </div>
+</div>
+
+2. Clean up the math flow columns
+Make them cleaner with better typography hierarchy:
+tsxCopy// Math flow - cleaner version
+<div className="grid grid-cols-2 gap-8 mt-6">
+  {/* Left column - Competitor */}
+  <div>
+    <div className="text-sm font-medium text-gray-400 mb-4 pb-2 border-b border-gray-100">
+      With {competitor.name}
+    </div>
+    
+    <div className="space-y-3 text-sm">
+      {competitorSteps.map((step, i) => (
+        <div key={i} className="flex justify-between items-baseline">
+          <span className="text-gray-500">{step.label}</span>
+          <span className="font-medium text-gray-700 tabular-nums">
+            {step.value}
+            {step.editable && (
+              <button className="ml-1 text-gray-300 hover:text-gray-500">
+                <PencilIcon className="w-3 h-3 inline" />
+              </button>
+            )}
+          </span>
+        </div>
+      ))}
+    </div>
+    
+    <div className="mt-4 pt-4 border-t border-gray-200">
+      <div className="flex justify-between items-baseline">
+        <span className="font-medium text-gray-600">Annual Value</span>
+        <span className="text-xl font-bold text-gray-800">
+          {formatCurrency(competitorValue)}
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  {/* Right column - Abridge */}
+  <div className="bg-orange-50/50 rounded-xl p-4 -m-4">
+    <div className="text-sm font-medium text-orange-600 mb-4 pb-2 border-b border-orange-100">
+      With Abridge
+    </div>
+    
+    <div className="space-y-3 text-sm">
+      {abridgeSteps.map((step, i) => (
+        <div key={i} className="flex justify-between items-baseline">
+          <span className="text-gray-600">{step.label}</span>
+          <span className="font-medium text-orange-700 tabular-nums">
+            {step.value}
+          </span>
+        </div>
+      ))}
+    </div>
+    
+    <div className="mt-4 pt-4 border-t border-orange-200">
+      <div className="flex justify-between items-baseline">
+        <span className="font-medium text-orange-600">Annual Value</span>
+        <span className="text-xl font-bold text-orange-600">
+          {formatCurrency(abridgeValue)}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+3. Fix the summary section
+tsxCopy// Summary at bottom - clean version
+<div className="bg-white border border-gray-200 rounded-xl p-6 mt-8">
+  <div className="flex items-start justify-between">
+    <div>
+      <div className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">
+        Selected Value Drivers
+      </div>
+      <div className="space-y-2">
+        {selectedDrivers.map(driver => (
+          <div key={driver.id} className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-orange-500" />
+              <span className="text-gray-700">{driver.label}</span>
+            </div>
+            <span className="font-semibold text-orange-600 tabular-nums">
+              +{formatCurrency(driver.gap)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+    
+    <div className="text-right pl-8 border-l border-gray-100">
+      <div className="text-sm text-gray-400 mb-1">Total Annual Gap</div>
+      <div className="text-3xl font-bold text-gray-900">
+        +{formatCurrency(totalGap)}
+      </div>
+      <div className="text-sm text-gray-400 mt-1">per year</div>
+    </div>
+  </div>
+  
+  <div className="mt-6 pt-6 border-t border-gray-100 flex items-center justify-between">
+    {/* Add more drivers button */}
+    {unselectedDrivers.length > 0 && (
+      <button className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+        <PlusIcon className="w-4 h-4" />
+        Add more drivers ({unselectedDrivers.length} available)
+      </button>
+    )}
+    
+    <button 
+      onClick={onContinue}
+      className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+    >
+      See Opportunity at Scale →
+    </button>
+  </div>
+</div>
+
+4. Remove all green colors
+Search and replace:
+
+bg-green-50 → bg-orange-50
+bg-green-100 → bg-orange-100
+bg-green-500 → bg-orange-500
+text-green-500 → text-orange-500
+text-green-600 → text-orange-600
+text-green-700 → text-orange-700
+border-green-* → border-orange-*
+
+
+5. Fix the driver card header
+tsxCopy// Driver card header - cleaner
+<div className="flex items-start justify-between p-5 border-b border-gray-100">
+  <div className="flex items-center gap-4">
+    <div className="p-3 bg-orange-100 rounded-xl text-orange-600">
+      {driver.icon}
+    </div>
+    <div>
+      <h3 className="font-semibold text-gray-900 text-lg">{driver.label}</h3>
+      <p className="text-sm text-gray-500">{driver.subtitle}</p>
+    </div>
+  </div>
+  
+  <div className="text-right">
+    <div className="text-2xl font-bold text-orange-600">
+      +{formatCurrency(gap)}
+    </div>
+    <div className="text-sm text-gray-400">additional value</div>
+  </div>
+</div>
+
+6. Fix the insight box
+tsxCopy// Insight at bottom of card - subtle, not chunky
+<div className="px-5 py-4 bg-gray-50 border-t border-gray-100">
+  <p className="text-sm text-gray-600">
+    <span className="text-orange-500 mr-2">💡</span>
+    {insight}
+  </p>
+</div>
+
+Summary of Fixes
+ProblemFixGreen barsSingle horizontal bar, orange onlyChunky stacked barsThin, elegant gap visualizationInconsistent boxesClean left/right columns, right side has subtle orange bgBad summary sectionClean layout with total on right, CTA buttonSalmon/peach colorsPure Abridge orange (#E85D3F)Amateur typographyBetter hierarchy, tabular numbers, consistent spacingNumbered circlesSimpler - just clean rows without circles, or much subtler
+
+Tell Replit:
+
+The Step 3 driver cards look terrible compared to Step 4. Fix these specific things:
+
+Remove the green stacked bars - replace with a single thin horizontal bar showing the gap (orange for Abridge portion, gray for competitor)
+Clean up the math columns - remove the numbered circles, use simple rows with label on left and value on right. Right column (Abridge) should have subtle orange background (bg-orange-50/50)
+Fix the summary section - white background, border, clean layout with selected drivers on left and total gap (large) on right. "See Opportunity at Scale" button on right side.
+Remove ALL green colors - replace with Abridge orange (#E85D3F and its variants)
+Typography - use tabular-nums for numbers, consistent sizing, better hierarchy
+Match Step 4 quality - Step 4 looks clean and professional. Step 3 should match that aesthetic.
+
+Add to Conversation
