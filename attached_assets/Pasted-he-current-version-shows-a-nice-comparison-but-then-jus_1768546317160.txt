@@ -1,0 +1,896 @@
+he current version shows a nice comparison but then just lists text. We need to visualize the gap for each driver with the actual math flowing through.
+The Vision
+After showing "The Gap at a Glance" comparison, we should show each strategic driver as a visual waterfall or comparison that shows:
+
+What they input → 2. What they're getting → 3. What they could get → 4. The gap
+
+
+Spec for Replit: Step 3 Redesign
+tsxCopy// GapAnalysisStep.tsx
+
+export function GapAnalysisStep({ competitor, inputs, selectedDrivers }: Props) {
+  const calculations = useGapCalculations(competitor, inputs, selectedDrivers);
+  
+  return (
+    <div className="space-y-8">
+      {/* The Gap at a Glance - Keep this, it's good */}
+      <GapAtAGlanceCard 
+        competitor={competitor}
+        inputs={inputs}
+        calculations={calculations}
+      />
+      
+      {/* NEW: Value Driver Deep Dives with Visual Math */}
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            How the Gap Translates to Value
+          </h3>
+          <p className="text-gray-500 text-sm mt-1">
+            Based on your strategic priorities, here's where the numbers diverge
+          </p>
+        </div>
+        
+        {/* Each driver gets a visual math card */}
+        {selectedDrivers.includes('patient_access') && (
+          <DriverMathCard
+            driver="patient_access"
+            icon={<UserPlusIcon className="w-5 h-5" />}
+            title="Patient Access"
+            subtitle="Turn documentation efficiency into additional visit capacity"
+            calculations={calculations.patientAccess}
+            competitor={competitor}
+            inputs={inputs}
+          />
+        )}
+        
+        {selectedDrivers.includes('overtime') && (
+          <DriverMathCard
+            driver="overtime"
+            icon={<ClockIcon className="w-5 h-5" />}
+            title="Overtime & Locum Savings"
+            subtitle="Reduce premium labor costs from documentation backlog"
+            calculations={calculations.overtime}
+            competitor={competitor}
+            inputs={inputs}
+          />
+        )}
+        
+        {selectedDrivers.includes('level_of_service') && (
+          <DriverMathCard
+            driver="level_of_service"
+            icon={<ChartBarIcon className="w-5 h-5" />}
+            title="Accurate Level of Service"
+            subtitle="Capture the full complexity of care delivered"
+            calculations={calculations.levelOfService}
+            competitor={competitor}
+            inputs={inputs}
+          />
+        )}
+        
+        {/* ... other drivers */}
+      </div>
+      
+      {/* NEW: The Cumulative Visual */}
+      <CumulativeGapVisualization calculations={calculations} competitor={competitor} />
+      
+      {/* CTA */}
+      <div className="bg-gray-50 rounded-xl p-6 text-center">
+        <p className="text-gray-600 mb-4">
+          Ready to see the full financial impact of switching to Abridge?
+        </p>
+        <Button onClick={onContinue} size="lg">
+          See the Full Opportunity →
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+The Driver Math Card - Visual Formula Flow
+This is the key component. It shows the math visually like a waterfall/flow.
+tsxCopy// DriverMathCard.tsx
+
+interface DriverMathCardProps {
+  driver: string;
+  icon: ReactNode;
+  title: string;
+  subtitle: string;
+  calculations: DriverCalculation;
+  competitor: Competitor;
+  inputs: UsageInputs;
+}
+
+export function DriverMathCard({ 
+  driver, 
+  icon, 
+  title, 
+  subtitle, 
+  calculations,
+  competitor,
+  inputs 
+}: DriverMathCardProps) {
+  const [expanded, setExpanded] = useState(true);
+  
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div 
+        className="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
+            {icon}
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-900">{title}</h4>
+            <p className="text-sm text-gray-500">{subtitle}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <div className="text-2xl font-bold text-emerald-600">
+              +${calculations.gap.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-500">additional value</div>
+          </div>
+          <ChevronDownIcon 
+            className={`w-5 h-5 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`} 
+          />
+        </div>
+      </div>
+      
+      {/* Expanded Content - The Visual Math */}
+      {expanded && (
+        <div className="border-t border-gray-100 p-6 bg-gray-50">
+          {/* Side by Side Flow Comparison */}
+          <div className="grid grid-cols-2 gap-8">
+            {/* Competitor Flow */}
+            <div>
+              <div className="text-sm font-medium text-gray-500 mb-4 flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-gray-400" />
+                With {competitor.name}
+              </div>
+              <MathFlow 
+                steps={calculations.competitorSteps}
+                finalValue={calculations.competitorValue}
+                color="gray"
+              />
+            </div>
+            
+            {/* Abridge Flow */}
+            <div>
+              <div className="text-sm font-medium text-emerald-600 mb-4 flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                With Abridge
+              </div>
+              <MathFlow 
+                steps={calculations.abridgeSteps}
+                finalValue={calculations.abridgeValue}
+                color="emerald"
+              />
+            </div>
+          </div>
+          
+          {/* The Difference Bar */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <DifferenceBar
+                  competitorValue={calculations.competitorValue}
+                  abridgeValue={calculations.abridgeValue}
+                  gap={calculations.gap}
+                />
+              </div>
+            </div>
+            
+            {/* Key Insight */}
+            <div className="mt-4 p-3 bg-emerald-50 rounded-lg">
+              <div className="flex items-start gap-2">
+                <LightBulbIcon className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-emerald-800">
+                  {calculations.insight}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+The Math Flow Component - The Visual Formula
+tsxCopy// MathFlow.tsx - Shows the calculation as a visual waterfall
+
+interface MathStep {
+  label: string;
+  value: string | number;
+  formula?: string;
+  isInput?: boolean;
+  isResult?: boolean;
+}
+
+interface MathFlowProps {
+  steps: MathStep[];
+  finalValue: number;
+  color: 'gray' | 'emerald';
+}
+
+export function MathFlow({ steps, finalValue, color }: MathFlowProps) {
+  const colorClasses = {
+    gray: {
+      line: 'bg-gray-300',
+      dot: 'bg-gray-400',
+      value: 'text-gray-700',
+      result: 'bg-gray-100 border-gray-300',
+      resultText: 'text-gray-900',
+    },
+    emerald: {
+      line: 'bg-emerald-300',
+      dot: 'bg-emerald-500',
+      value: 'text-emerald-700',
+      result: 'bg-emerald-100 border-emerald-300',
+      resultText: 'text-emerald-700',
+    },
+  }[color];
+  
+  return (
+    <div className="relative">
+      {/* Vertical connection line */}
+      <div className={`absolute left-3 top-3 bottom-3 w-0.5 ${colorClasses.line}`} />
+      
+      <div className="space-y-3">
+        {steps.map((step, i) => (
+          <div key={i} className="flex items-start gap-3 relative">
+            {/* Dot */}
+            <div className={`w-6 h-6 rounded-full ${colorClasses.dot} flex items-center justify-center z-10`}>
+              {step.isInput && <span className="text-white text-xs">●</span>}
+              {step.isResult && <span className="text-white text-xs">✓</span>}
+              {!step.isInput && !step.isResult && <span className="text-white text-xs">{i + 1}</span>}
+            </div>
+            
+            {/* Content */}
+            <div className={`flex-1 ${step.isResult ? 'pb-0' : 'pb-2'}`}>
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm text-gray-600">{step.label}</span>
+                <span className={`font-semibold ${colorClasses.value}`}>
+                  {typeof step.value === 'number' 
+                    ? step.value.toLocaleString() 
+                    : step.value}
+                </span>
+              </div>
+              {step.formula && (
+                <div className="text-xs text-gray-400 mt-0.5">{step.formula}</div>
+              )}
+            </div>
+          </div>
+        ))}
+        
+        {/* Final Result */}
+        <div className={`ml-9 p-3 rounded-lg border ${colorClasses.result}`}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-medium text-gray-600">Annual Value</span>
+            <span className={`text-xl font-bold ${colorClasses.resultText}`}>
+              ${finalValue.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+The Difference Bar - Visual Gap
+tsxCopy// DifferenceBar.tsx
+
+interface DifferenceBarProps {
+  competitorValue: number;
+  abridgeValue: number;
+  gap: number;
+}
+
+export function DifferenceBar({ competitorValue, abridgeValue, gap }: DifferenceBarProps) {
+  const maxValue = Math.max(competitorValue, abridgeValue);
+  const competitorWidth = (competitorValue / maxValue) * 100;
+  const abridgeWidth = (abridgeValue / maxValue) * 100;
+  
+  return (
+    <div className="space-y-2">
+      {/* Abridge bar */}
+      <div className="flex items-center gap-3">
+        <div className="w-20 text-sm text-gray-500 text-right">Abridge</div>
+        <div className="flex-1 h-8 bg-gray-100 rounded-lg overflow-hidden relative">
+          <div 
+            className="absolute inset-y-0 left-0 bg-emerald-500 rounded-lg transition-all duration-700 ease-out"
+            style={{ width: `${abridgeWidth}%` }}
+          />
+          {/* The gap portion highlighted */}
+          <div 
+            className="absolute inset-y-0 bg-emerald-300 rounded-r-lg transition-all duration-700 ease-out opacity-50"
+            style={{ 
+              left: `${competitorWidth}%`, 
+              width: `${abridgeWidth - competitorWidth}%` 
+            }}
+          />
+          <div className="absolute inset-0 flex items-center px-3">
+            <span className="text-white font-semibold text-sm drop-shadow">
+              ${abridgeValue.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Competitor bar */}
+      <div className="flex items-center gap-3">
+        <div className="w-20 text-sm text-gray-400 text-right">Current</div>
+        <div className="flex-1 h-8 bg-gray-100 rounded-lg overflow-hidden relative">
+          <div 
+            className="absolute inset-y-0 left-0 bg-gray-400 rounded-lg transition-all duration-700 ease-out"
+            style={{ width: `${competitorWidth}%` }}
+          />
+          <div className="absolute inset-0 flex items-center px-3">
+            <span className="text-white font-semibold text-sm drop-shadow">
+              ${competitorValue.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Gap callout */}
+      <div className="flex items-center gap-3">
+        <div className="w-20" />
+        <div className="flex-1 flex justify-end">
+          <div className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 rounded-full">
+            <ArrowUpIcon className="w-3 h-3 text-emerald-600" />
+            <span className="text-sm font-semibold text-emerald-700">
+              +${gap.toLocaleString()} gap
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Example: Patient Access Driver Math
+Here's how the math flows visually for Patient Access:
+tsxCopy// Patient Access calculation steps
+
+const patientAccessSteps = {
+  competitor: [
+    { 
+      label: 'Annual encounters', 
+      value: '80,000',
+      isInput: true 
+    },
+    { 
+      label: 'At your utilization', 
+      value: '45%',
+      formula: '80,000 × 45%' 
+    },
+    { 
+      label: 'Documented encounters', 
+      value: '36,000' 
+    },
+    { 
+      label: 'Time saved/encounter', 
+      value: '1 min',
+      isInput: true 
+    },
+    { 
+      label: 'Hours returned', 
+      value: '600 hrs',
+      formula: '36,000 × 1 min ÷ 60' 
+    },
+    { 
+      label: 'Usable for visits (20%)', 
+      value: '120 hrs',
+      formula: '600 × 20%' 
+    },
+    { 
+      label: 'Additional visits possible', 
+      value: '240 visits',
+      formula: '120 hrs ÷ 0.5 hrs/visit' 
+    },
+    { 
+      label: 'Revenue per visit', 
+      value: '$200',
+      isInput: true 
+    },
+  ],
+  competitorValue: 48000, // 240 × $200
+  
+  abridge: [
+    { 
+      label: 'Annual encounters', 
+      value: '80,000',
+      isInput: true 
+    },
+    { 
+      label: 'At Abridge utilization', 
+      value: '65%',
+      formula: '80,000 × 65%' 
+    },
+    { 
+      label: 'Documented encounters', 
+      value: '52,000' 
+    },
+    { 
+      label: 'Time saved/encounter', 
+      value: '7 min',
+      formula: 'Abridge average' 
+    },
+    { 
+      label: 'Hours returned', 
+      value: '6,067 hrs',
+      formula: '52,000 × 7 min ÷ 60' 
+    },
+    { 
+      label: 'Usable for visits (20%)', 
+      value: '1,213 hrs',
+      formula: '6,067 × 20%' 
+    },
+    { 
+      label: 'Additional visits possible', 
+      value: '2,427 visits',
+      formula: '1,213 hrs ÷ 0.5 hrs/visit' 
+    },
+    { 
+      label: 'Revenue per visit', 
+      value: '$200',
+      isInput: true 
+    },
+  ],
+  abridgeValue: 485400, // 2,427 × $200
+  
+  gap: 437400,
+  insight: "The 7x difference in time savings (7 min vs 1 min) combined with 44% higher utilization means 10x more visits enabled."
+};
+
+Cumulative Gap Visualization
+After showing each driver, show how they all add up with a stacked area chart:
+tsxCopy// CumulativeGapVisualization.tsx
+
+export function CumulativeGapVisualization({ calculations, competitor }: Props) {
+  // Prepare data for stacked chart
+  const drivers = calculations.driverBreakdown;
+  
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        The Complete Picture
+      </h3>
+      <p className="text-sm text-gray-500 mb-6">
+        How each driver contributes to the total gap
+      </p>
+      
+      {/* Stacked Horizontal Bar */}
+      <div className="space-y-6">
+        {/* Abridge Total */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-emerald-600">Abridge Total Value</span>
+            <span className="text-lg font-bold text-emerald-700">
+              ${calculations.totalAbridgeValue.toLocaleString()}
+            </span>
+          </div>
+          <div className="h-12 bg-gray-100 rounded-lg overflow-hidden flex">
+            {drivers.map((driver, i) => {
+              const width = (driver.abridgeValue / calculations.totalAbridgeValue) * 100;
+              const colors = [
+                'bg-emerald-500',
+                'bg-emerald-400',
+                'bg-teal-500',
+                'bg-teal-400',
+                'bg-cyan-500',
+                'bg-cyan-400',
+              ];
+              return (
+                <div
+                  key={driver.id}
+                  className={`${colors[i % colors.length]} relative group transition-all hover:opacity-90`}
+                  style={{ width: `${width}%` }}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs text-white font-medium truncate px-1">
+                      {width > 15 ? `$${(driver.abridgeValue / 1000).toFixed(0)}K` : ''}
+                    </span>
+                  </div>
+                  
+                  {/* Tooltip on hover */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                      {driver.label}: ${driver.abridgeValue.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Competitor Total */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-500">{competitor.name} Total Value</span>
+            <span className="text-lg font-bold text-gray-600">
+              ${calculations.totalCompetitorValue.toLocaleString()}
+            </span>
+          </div>
+          <div className="h-12 bg-gray-100 rounded-lg overflow-hidden flex">
+            {drivers.map((driver, i) => {
+              const width = (driver.competitorValue / calculations.totalAbridgeValue) * 100; // Same scale
+              const colors = [
+                'bg-gray-500',
+                'bg-gray-400',
+                'bg-slate-500',
+                'bg-slate-400',
+                'bg-zinc-500',
+                'bg-zinc-400',
+              ];
+              return (
+                <div
+                  key={driver.id}
+                  className={`${colors[i % colors.length]} relative group`}
+                  style={{ width: `${width}%` }}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs text-white font-medium truncate px-1">
+                      {width > 15 ? `$${(driver.competitorValue / 1000).toFixed(0)}K` : ''}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* The Gap */}
+        <div className="pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-900">Total Value Gap</span>
+            <span className="text-2xl font-bold text-emerald-600">
+              +${(calculations.totalAbridgeValue - calculations.totalCompetitorValue).toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Legend */}
+      <div className="mt-6 pt-4 border-t border-gray-100">
+        <div className="flex flex-wrap gap-4">
+          {drivers.map((driver, i) => {
+            const colors = [
+              'bg-emerald-500',
+              'bg-emerald-400',
+              'bg-teal-500',
+              'bg-teal-400',
+              'bg-cyan-500',
+              'bg-cyan-400',
+            ];
+            return (
+              <div key={driver.id} className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded ${colors[i % colors.length]}`} />
+                <span className="text-sm text-gray-600">{driver.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Step 4: Opportunity - Redesigned
+Now Step 4 should carry the same visual momentum. Instead of just showing "Why the Difference" as text, show it as a visual story.
+tsxCopy// OpportunityStep.tsx
+
+export function OpportunityStep({ calculations, competitor }: Props) {
+  return (
+    <div className="space-y-8">
+      {/* Hero: The Switching Opportunity - Keep this */}
+      <HeroOpportunityCard totalGap={calculations.totalGap} />
+      
+      {/* The Investment vs Return Visual */}
+      <InvestmentReturnComparison calculations={calculations} competitor={competitor} />
+      
+      {/* The Widening Gap Over Time - Area Chart */}
+      <WideningGapChart calculations={calculations} competitor={competitor} />
+      
+      {/* Driver-by-Driver Summary */}
+      <DriverSummaryTable calculations={calculations} competitor={competitor} />
+      
+      {/* Time to Value CTA */}
+      <TimeToValueCard calculations={calculations} competitor={competitor} />
+      
+      {/* Actions */}
+      <ActionBar />
+    </div>
+  );
+}
+
+The Widening Gap Chart - Premium Visualization
+tsxCopy// WideningGapChart.tsx
+
+export function WideningGapChart({ calculations, competitor }: Props) {
+  // Year-by-year projections
+  const data = [
+    {
+      year: 'Year 1',
+      month: 12,
+      competitorCumulative: calculations.competitorNetGain,
+      abridgeCumulative: calculations.abridgeNetGain * 0.4, // Ramp-up
+      gap: (calculations.abridgeNetGain * 0.4) - calculations.competitorNetGain,
+    },
+    {
+      year: 'Year 2',
+      month: 24,
+      competitorCumulative: calculations.competitorNetGain * 2,
+      abridgeCumulative: (calculations.abridgeNetGain * 0.4) + (calculations.abridgeNetGain * 0.7),
+      gap: ((calculations.abridgeNetGain * 0.4) + (calculations.abridgeNetGain * 0.7)) - (calculations.competitorNetGain * 2),
+    },
+    {
+      year: 'Year 3',
+      month: 36,
+      competitorCumulative: calculations.competitorNetGain * 3,
+      abridgeCumulative: (calculations.abridgeNetGain * 0.4) + (calculations.abridgeNetGain * 0.7) + calculations.abridgeNetGain,
+      gap: calculations.threeYearGap,
+    },
+  ];
+  
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            The Widening Gap
+          </h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Cumulative value over time — the gap compounds every year
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-sm text-gray-500">3-Year Advantage</div>
+          <div className="text-2xl font-bold text-emerald-600">
+            +${calculations.threeYearGap.toLocaleString()}
+          </div>
+        </div>
+      </div>
+      
+      {/* The Chart */}
+      <div className="h-64 relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10B981" stopOpacity={0.4}/>
+                <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+              </linearGradient>
+              <linearGradient id="competitorGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#94A3B8" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#94A3B8" stopOpacity={0.05}/>
+              </linearGradient>
+              {/* Gap area gradient */}
+              <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10B981" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+              </linearGradient>
+            </defs>
+            
+            <XAxis 
+              dataKey="year" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748B', fontSize: 12 }}
+            />
+            <YAxis 
+              tickFormatter={(v) => `$${(v/1000000).toFixed(1)}M`}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748B', fontSize: 11 }}
+              width={60}
+            />
+            <Tooltip content={<CustomTooltip competitor={competitor} />} />
+            
+            {/* Abridge area */}
+            <Area 
+              type="monotone" 
+              dataKey="abridgeCumulative" 
+              name="Abridge"
+              stroke="#10B981" 
+              strokeWidth={3}
+              fill="url(#abridgeGradient)" 
+            />
+            
+            {/* Competitor area */}
+            <Area 
+              type="monotone" 
+              dataKey="competitorCumulative" 
+              name={competitor.name}
+              stroke="#94A3B8" 
+              strokeWidth={2}
+              fill="url(#competitorGradient)" 
+              strokeDasharray="5 5"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+        
+        {/* Gap annotation */}
+        <div className="absolute right-16 top-8 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+          <div className="text-xs text-emerald-600 font-medium">THE GAP</div>
+          <div className="text-sm font-bold text-emerald-700">
+            ${calculations.threeYearGap.toLocaleString()}
+          </div>
+        </div>
+      </div>
+      
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-0.5 bg-emerald-500 rounded" />
+          <span className="text-sm text-gray-600">Abridge (with ramp-up)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-0.5 bg-gray-400 rounded border-dashed" style={{ borderStyle: 'dashed' }} />
+          <span className="text-sm text-gray-600">{competitor.name} (stays flat)</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CustomTooltip({ active, payload, label, competitor }: any) {
+  if (!active || !payload) return null;
+  
+  const abridge = payload.find((p: any) => p.name === 'Abridge');
+  const comp = payload.find((p: any) => p.name === competitor.name);
+  
+  return (
+    <div className="bg-white shadow-lg rounded-lg border border-gray-200 p-3">
+      <div className="text-sm font-medium text-gray-900 mb-2">{label}</div>
+      <div className="space-y-1">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-sm text-emerald-600">Abridge</span>
+          <span className="font-semibold text-emerald-700">
+            ${abridge?.value?.toLocaleString()}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-sm text-gray-500">{competitor.name}</span>
+          <span className="font-semibold text-gray-600">
+            ${comp?.value?.toLocaleString()}
+          </span>
+        </div>
+        <div className="pt-1 mt-1 border-t border-gray-100 flex items-center justify-between gap-4">
+          <span className="text-sm text-gray-600">Gap</span>
+          <span className="font-bold text-emerald-600">
+            +${(abridge?.value - comp?.value)?.toLocaleString()}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Driver Summary Table - Clean Visual
+Replace the "Why the Difference" text section with a visual table:
+tsxCopy// DriverSummaryTable.tsx
+
+export function DriverSummaryTable({ calculations, competitor }: Props) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="p-5 border-b border-gray-100">
+        <h3 className="text-lg font-semibold text-gray-900">
+          Value Breakdown by Driver
+        </h3>
+      </div>
+      
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="text-left py-3 px-5 text-sm font-medium text-gray-500">Driver</th>
+              <th className="text-right py-3 px-5 text-sm font-medium text-gray-500">{competitor.name}</th>
+              <th className="text-right py-3 px-5 text-sm font-medium text-emerald-600">Abridge</th>
+              <th className="text-right py-3 px-5 text-sm font-medium text-emerald-600">Delta</th>
+              <th className="py-3 px-5 w-40"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {calculations.driverBreakdown.map((driver, i) => {
+              const maxValue = Math.max(driver.competitorValue, driver.abridgeValue);
+              const compWidth = (driver.competitorValue / maxValue) * 100;
+              const abridgeWidth = (driver.abridgeValue / maxValue) * 100;
+              
+              return (
+                <tr key={driver.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                  <td className="py-4 px-5">
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 bg-gray-100 rounded text-gray-600">
+                        {driver.icon}
+                      </div>
+                      <span className="font-medium text-gray-900">{driver.label}</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-right font-medium text-gray-600">
+                    ${driver.competitorValue.toLocaleString()}
+                  </td>
+                  <td className="py-4 px-5 text-right font-medium text-emerald-700">
+                    ${driver.abridgeValue.toLocaleString()}
+                  </td>
+                  <td className="py-4 px-5 text-right">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 rounded-full text-sm font-semibold text-emerald-700">
+                      +${driver.gap.toLocaleString()}
+                    </span>
+                  </td>
+                  <td className="py-4 px-5">
+                    {/* Mini comparison bar */}
+                    <div className="space-y-1">
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-emerald-500 rounded-full"
+                          style={{ width: `${abridgeWidth}%` }}
+                        />
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gray-400 rounded-full"
+                          style={{ width: `${compWidth}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="bg-emerald-50 border-t-2 border-emerald-200">
+              <td className="py-4 px-5 font-semibold text-gray-900">Total Annual Value</td>
+              <td className="py-4 px-5 text-right font-bold text-gray-700">
+                ${calculations.totalCompetitorValue.toLocaleString()}
+              </td>
+              <td className="py-4 px-5 text-right font-bold text-emerald-700">
+                ${calculations.totalAbridgeValue.toLocaleString()}
+              </td>
+              <td className="py-4 px-5 text-right">
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 rounded-full text-sm font-bold text-white">
+                  +${(calculations.totalAbridgeValue - calculations.totalCompetitorValue).toLocaleString()}
+                </span>
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+Key Visual Improvements Summary
+
+Step 3 (Gap Analysis):
+
+Keep "Gap at a Glance" comparison card
+Add DriverMathCard for each strategic priority with visual formula flow
+Add CumulativeGapVisualization with stacked bars
+
+
+Step 4 (Opportunity):
+
+Keep hero switching opportunity number
+Replace text "Why the Difference" with DriverSummaryTable with mini comparison bars
+Add WideningGapChart area chart showing cumulative value over 3 years
+Improve "Realistic Timeline" modal to match the design language
+
+
+Design Principles Throughout:
+
+Show the math flowing visually, not just the result
+Use comparison bars everywhere to make gaps tangible
+Use shaded areas to show the gap portion
+Keep the same color system (gray = competitor, emerald = Abridge)
+Every number should be explainable with a tooltip or subtext

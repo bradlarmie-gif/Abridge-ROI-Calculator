@@ -85,6 +85,7 @@ import {
   UserCircle,
   CheckCircle,
   UserPlus,
+  ArrowUp,
 } from "lucide-react";
 
 interface RoiCalculatorProps {
@@ -5069,35 +5070,336 @@ export default function RoiCalculator({
                             </div>
                           </div>
                           
-                          {/* CTA Section */}
-                          <div className="p-8 bg-[#F9FAFB] border-t border-[#E5E7EB]">
-                            <div className="flex flex-col items-center text-center">
-                              <p className="text-[16px] text-[#374151] mb-5">
-                                Ready to see the full financial impact of switching to Abridge?
-                              </p>
-                              <Button
-                                onClick={() => {
-                                  setCurrentDriverIndex(0);
-                                  const competitorKey = selectedCompetitor?.name?.toLowerCase().replace(/\s+/g, '_') || "other";
-                                  const defaults = COMPETITOR_DEFAULTS[competitorKey] || COMPETITOR_DEFAULTS["other"];
-                                  setCompDriverInputs(prev => ({
-                                    access: { ...prev.access, visitsPerProvider: defaults.access, skipped: false },
-                                    los: { ...prev.los, wrvuUpliftPerProvider: defaults.los, skipped: false },
-                                    overtime: { ...prev.overtime, hoursPerProvider: defaults.overtime, skipped: false },
-                                  }));
-                                  setCompetitorStep(4);
-                                }}
-                                className="bg-[#E8532F] hover:bg-[#D14729] text-white px-10 py-3 text-[16px] font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                                data-testid="button-show-opportunity"
-                              >
-                                See the Full Opportunity
-                                <ArrowRight className="h-4 w-4 ml-2" />
-                              </Button>
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* HOW THE GAP TRANSLATES TO VALUE - Driver Math Cards */}
+                    {(() => {
+                      const providerCount = typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders;
+                      const annualEncounters = inputs.annualOutpatientEncounters;
+                      
+                      // Competitor metrics
+                      const compUtil = competitorUtilization / 100;
+                      const compTimeSaved = competitorTimeSaved;
+                      const compDocEncounters = Math.round(annualEncounters * compUtil);
+                      
+                      // Abridge metrics (benchmarks)
+                      const abridgeUtil = 0.65;
+                      const abridgeTimeSaved = 7;
+                      const abridgeDocEncounters = Math.round(annualEncounters * abridgeUtil);
+                      
+                      // Patient Access calculations
+                      const compHoursReturned = Math.round(compDocEncounters * compTimeSaved / 60);
+                      const compUsableHours = Math.round(compHoursReturned * 0.20);
+                      const compAdditionalVisits = Math.round(compUsableHours / 0.5);
+                      const revenuePerVisit = 200;
+                      const compAccessValue = compAdditionalVisits * revenuePerVisit;
+                      
+                      const abridgeHoursReturned = Math.round(abridgeDocEncounters * abridgeTimeSaved / 60);
+                      const abridgeUsableHours = Math.round(abridgeHoursReturned * 0.20);
+                      const abridgeAdditionalVisits = Math.round(abridgeUsableHours / 0.5);
+                      const abridgeAccessValue = abridgeAdditionalVisits * revenuePerVisit;
+                      const accessGap = abridgeAccessValue - compAccessValue;
+                      
+                      // Time savings multiplier for insight
+                      const timeSavingsMultiplier = compTimeSaved > 0 ? Math.round(abridgeTimeSaved / compTimeSaved) : 0;
+                      const utilizationLift = Math.round((abridgeUtil - compUtil) * 100);
+                      
+                      return (
+                        <div className="space-y-6 mt-8" data-testid="driver-math-section">
+                          <div>
+                            <h3 className="text-lg font-semibold text-[#111827]">
+                              How the Gap Translates to Value
+                            </h3>
+                            <p className="text-[#6B7280] text-sm mt-1">
+                              Based on your strategic priorities, here's where the numbers diverge
+                            </p>
+                          </div>
+                          
+                          {/* Patient Access Driver Card */}
+                          <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden" data-testid="driver-card-access">
+                            {/* Card Header */}
+                            <div className="p-5 flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-[#FEF2F0] rounded-lg text-[#E8532F]">
+                                  <UserPlus className="w-5 h-5" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-[#111827]">Patient Access</h4>
+                                  <p className="text-sm text-[#6B7280]">Turn documentation efficiency into additional visit capacity</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-2xl font-bold text-[#059669]">
+                                  +${accessGap.toLocaleString()}
+                                </div>
+                                <div className="text-sm text-[#6B7280]">additional value</div>
+                              </div>
+                            </div>
+                            
+                            {/* Expanded Content - Side by Side Math Flow */}
+                            <div className="border-t border-[#F3F4F6] p-6 bg-[#F9FAFB]">
+                              <div className="grid grid-cols-2 gap-8">
+                                {/* Competitor Flow */}
+                                <div>
+                                  <div className="text-sm font-medium text-[#6B7280] mb-4 flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-[#9CA3AF]" />
+                                    With {selectedCompetitor?.name}
+                                  </div>
+                                  <div className="relative">
+                                    <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#D1D5DB]" />
+                                    <div className="space-y-3">
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">●</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Annual encounters</span>
+                                            <span className="font-semibold text-[#374151]">{annualEncounters.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">1</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">At your utilization</span>
+                                            <span className="font-semibold text-[#374151]">{competitorUtilization}%</span>
+                                          </div>
+                                          <div className="text-xs text-[#9CA3AF] mt-0.5">{annualEncounters.toLocaleString()} × {competitorUtilization}%</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">2</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Documented encounters</span>
+                                            <span className="font-semibold text-[#374151]">{compDocEncounters.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">●</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Time saved/encounter</span>
+                                            <span className="font-semibold text-[#374151]">{compTimeSaved} min</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">3</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Hours returned</span>
+                                            <span className="font-semibold text-[#374151]">{compHoursReturned.toLocaleString()} hrs</span>
+                                          </div>
+                                          <div className="text-xs text-[#9CA3AF] mt-0.5">{compDocEncounters.toLocaleString()} × {compTimeSaved} min ÷ 60</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#9CA3AF] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">4</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Additional visits possible</span>
+                                            <span className="font-semibold text-[#374151]">{compAdditionalVisits.toLocaleString()}</span>
+                                          </div>
+                                          <div className="text-xs text-[#9CA3AF] mt-0.5">{compUsableHours.toLocaleString()} usable hrs ÷ 0.5 hrs/visit</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="ml-9 p-3 rounded-lg border bg-[#F3F4F6] border-[#D1D5DB] mt-3">
+                                      <div className="flex items-baseline justify-between">
+                                        <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
+                                        <span className="text-xl font-bold text-[#374151]">${compAccessValue.toLocaleString()}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Abridge Flow */}
+                                <div>
+                                  <div className="text-sm font-medium text-[#059669] mb-4 flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-[#10B981]" />
+                                    With Abridge
+                                  </div>
+                                  <div className="relative">
+                                    <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-[#A7F3D0]" />
+                                    <div className="space-y-3">
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">●</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Annual encounters</span>
+                                            <span className="font-semibold text-[#059669]">{annualEncounters.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">1</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">At Abridge utilization</span>
+                                            <span className="font-semibold text-[#059669]">65%</span>
+                                          </div>
+                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{annualEncounters.toLocaleString()} × 65%</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">2</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Documented encounters</span>
+                                            <span className="font-semibold text-[#059669]">{abridgeDocEncounters.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">●</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Time saved/encounter</span>
+                                            <span className="font-semibold text-[#059669]">7 min</span>
+                                          </div>
+                                          <div className="text-xs text-[#6EE7B7] mt-0.5">Abridge average</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">3</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Hours returned</span>
+                                            <span className="font-semibold text-[#059669]">{abridgeHoursReturned.toLocaleString()} hrs</span>
+                                          </div>
+                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{abridgeDocEncounters.toLocaleString()} × 7 min ÷ 60</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-start gap-3 relative">
+                                        <div className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center z-10">
+                                          <span className="text-white text-xs">4</span>
+                                        </div>
+                                        <div className="flex-1 pb-2">
+                                          <div className="flex items-baseline justify-between gap-2">
+                                            <span className="text-sm text-[#6B7280]">Additional visits possible</span>
+                                            <span className="font-semibold text-[#059669]">{abridgeAdditionalVisits.toLocaleString()}</span>
+                                          </div>
+                                          <div className="text-xs text-[#6EE7B7] mt-0.5">{abridgeUsableHours.toLocaleString()} usable hrs ÷ 0.5 hrs/visit</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="ml-9 p-3 rounded-lg border bg-[#ECFDF5] border-[#A7F3D0] mt-3">
+                                      <div className="flex items-baseline justify-between">
+                                        <span className="text-sm font-medium text-[#6B7280]">Annual Value</span>
+                                        <span className="text-xl font-bold text-[#059669]">${abridgeAccessValue.toLocaleString()}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* The Difference Bar */}
+                              <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-20 text-sm text-[#6B7280] text-right">Abridge</div>
+                                    <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
+                                      <div 
+                                        className="absolute inset-y-0 left-0 bg-[#10B981] rounded-lg transition-all duration-700"
+                                        style={{ width: '100%' }}
+                                      />
+                                      <div className="absolute inset-0 flex items-center px-3">
+                                        <span className="text-white font-semibold text-sm drop-shadow">${abridgeAccessValue.toLocaleString()}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-20 text-sm text-[#9CA3AF] text-right">Current</div>
+                                    <div className="flex-1 h-8 bg-[#F3F4F6] rounded-lg overflow-hidden relative">
+                                      <div 
+                                        className="absolute inset-y-0 left-0 bg-[#9CA3AF] rounded-lg transition-all duration-700"
+                                        style={{ width: `${abridgeAccessValue > 0 ? Math.round((compAccessValue / abridgeAccessValue) * 100) : 0}%` }}
+                                      />
+                                      <div className="absolute inset-0 flex items-center px-3">
+                                        <span className="text-white font-semibold text-sm drop-shadow">${compAccessValue.toLocaleString()}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-20" />
+                                    <div className="flex-1 flex justify-end">
+                                      <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#ECFDF5] rounded-full">
+                                        <ArrowUp className="w-3 h-3 text-[#059669]" />
+                                        <span className="text-sm font-semibold text-[#059669]">+${accessGap.toLocaleString()} gap</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Key Insight */}
+                                <div className="mt-4 p-3 bg-[#ECFDF5] rounded-lg">
+                                  <div className="flex items-start gap-2">
+                                    <Lightbulb className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
+                                    <p className="text-sm text-[#065F46]">
+                                      {timeSavingsMultiplier > 1 
+                                        ? `The ${timeSavingsMultiplier}x difference in time savings (${abridgeTimeSaved} min vs ${compTimeSaved} min) combined with ${utilizationLift}% higher utilization means ${Math.round(abridgeAdditionalVisits / Math.max(compAdditionalVisits, 1))}x more visits enabled.`
+                                        : `Higher utilization (65% vs ${competitorUtilization}%) and time savings (7 min vs ${compTimeSaved} min) translate to significantly more patient capacity.`
+                                      }
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
                       );
                     })()}
+                    
+                    {/* CTA Section */}
+                    <div className="bg-[#F9FAFB] rounded-xl p-6 text-center border border-[#E5E7EB]">
+                      <p className="text-[16px] text-[#374151] mb-5">
+                        Ready to see the full financial impact of switching to Abridge?
+                      </p>
+                      <Button
+                        onClick={() => {
+                          setCurrentDriverIndex(0);
+                          const competitorKey = selectedCompetitor?.name?.toLowerCase().replace(/\s+/g, '_') || "other";
+                          const defaults = COMPETITOR_DEFAULTS[competitorKey] || COMPETITOR_DEFAULTS["other"];
+                          setCompDriverInputs(prev => ({
+                            access: { ...prev.access, visitsPerProvider: defaults.access, skipped: false },
+                            los: { ...prev.los, wrvuUpliftPerProvider: defaults.los, skipped: false },
+                            overtime: { ...prev.overtime, hoursPerProvider: defaults.overtime, skipped: false },
+                          }));
+                          setCompetitorStep(4);
+                        }}
+                        className="bg-[#E8532F] hover:bg-[#D14729] text-white px-10 py-3 text-[16px] font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                        data-testid="button-show-opportunity"
+                      >
+                        See the Full Opportunity
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </div>
                     
                     {/* Footer Actions */}
                     <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB]">
