@@ -317,7 +317,7 @@ export default function RoiCalculator({
 
   // Competitor Comparison state
   const [showCompetitorComparison, setShowCompetitorComparison] = useState(false);
-  const [competitorStep, setCompetitorStep] = useState<1 | 2>(1); // 1=selection, 2=comparison
+  const [competitorStep, setCompetitorStep] = useState<1 | 2 | 3>(1); // 1=selection, 2=deployment, 3=value comparison
   const [selectedCompetitor, setSelectedCompetitor] = useState<{
     name: string;
     type: "ambient" | "human" | "custom";
@@ -334,7 +334,7 @@ export default function RoiCalculator({
   const [competitorTimeSaved, setCompetitorTimeSaved] = useState<number>(1.5);
   // Competitor scenario name
   const [competitorScenarioName, setCompetitorScenarioName] = useState("");
-  // Competitor value drivers state
+  // Competitor value drivers state (legacy - kept for backward compatibility)
   const [competitorDrivers, setCompetitorDrivers] = useState<{
     patientAccess: { enabled: boolean; value: number; metric: "visits" | "direct" };
     accurateService: { enabled: boolean; wrvuUplift: number; wrvuRate: number };
@@ -348,6 +348,129 @@ export default function RoiCalculator({
     overtimeSavings: { enabled: false, hoursReduced: 0, premiumRate: 145 },
     denialReduction: { enabled: false, denialsPrevented: 0, avgDenialValue: 500 },
   });
+  
+  // NEW: Per-provider comparison inputs for Step 3 "Apples to Apples"
+  const [compDriverInputs, setCompDriverInputs] = useState<{
+    access: { visitsPerProvider: number; revenuePerVisit: number; expanded: boolean };
+    los: { wrvuUpliftPerProvider: number; wrvuRate: number; expanded: boolean };
+    overtime: { hoursPerProvider: number; premiumRate: number; expanded: boolean };
+  }>({
+    access: { visitsPerProvider: 0, revenuePerVisit: 200, expanded: true },
+    los: { wrvuUpliftPerProvider: 0, wrvuRate: 40, expanded: false },
+    overtime: { hoursPerProvider: 0, premiumRate: 145, expanded: false },
+  });
+  
+  // Abridge benchmark constants (from 200+ health system deployments)
+  const ABRIDGE_BENCHMARKS = {
+    access: {
+      conservative: 60,
+      typical: 120,
+      optimistic: 200,
+      unit: "visits/provider/year",
+    },
+    los: {
+      conservative: 50,
+      typical: 125,
+      optimistic: 200,
+      unit: "wRVUs/provider/year",
+    },
+    overtime: {
+      conservative: 35,
+      typical: 65,
+      optimistic: 95,
+      unit: "hours/provider/year",
+    },
+  };
+  
+  // Calculate per-driver deltas for comparison
+  const calculateDriverDelta = (driver: "access" | "los" | "overtime") => {
+    const providers = typeof competitorProviderCount === "number" ? competitorProviderCount : inputs.numberOfProviders;
+    const benchmark = ABRIDGE_BENCHMARKS[driver].typical;
+    
+    if (driver === "access") {
+      const userValue = compDriverInputs.access.visitsPerProvider;
+      const rate = compDriverInputs.access.revenuePerVisit;
+      const deltaPerProvider = benchmark - userValue;
+      const userValuePerProvider = userValue * rate;
+      const abridgeValuePerProvider = benchmark * rate;
+      const deltaValuePerProvider = deltaPerProvider * rate;
+      return {
+        userMetric: userValue,
+        abridgeMetric: benchmark,
+        deltaMetric: deltaPerProvider,
+        userValuePerProvider,
+        abridgeValuePerProvider,
+        deltaValuePerProvider,
+        userTotal: userValuePerProvider * providers,
+        abridgeTotal: abridgeValuePerProvider * providers,
+        deltaTotal: deltaValuePerProvider * providers,
+        unit: "visits",
+        rate,
+        rateLabel: "/visit",
+        providers,
+      };
+    } else if (driver === "los") {
+      const userValue = compDriverInputs.los.wrvuUpliftPerProvider;
+      const rate = compDriverInputs.los.wrvuRate;
+      const deltaPerProvider = benchmark - userValue;
+      const userValuePerProvider = userValue * rate;
+      const abridgeValuePerProvider = benchmark * rate;
+      const deltaValuePerProvider = deltaPerProvider * rate;
+      return {
+        userMetric: userValue,
+        abridgeMetric: benchmark,
+        deltaMetric: deltaPerProvider,
+        userValuePerProvider,
+        abridgeValuePerProvider,
+        deltaValuePerProvider,
+        userTotal: userValuePerProvider * providers,
+        abridgeTotal: abridgeValuePerProvider * providers,
+        deltaTotal: deltaValuePerProvider * providers,
+        unit: "wRVUs",
+        rate,
+        rateLabel: "/wRVU",
+        providers,
+      };
+    } else {
+      const userValue = compDriverInputs.overtime.hoursPerProvider;
+      const rate = compDriverInputs.overtime.premiumRate;
+      const deltaPerProvider = benchmark - userValue;
+      const userValuePerProvider = userValue * rate;
+      const abridgeValuePerProvider = benchmark * rate;
+      const deltaValuePerProvider = deltaPerProvider * rate;
+      return {
+        userMetric: userValue,
+        abridgeMetric: benchmark,
+        deltaMetric: deltaPerProvider,
+        userValuePerProvider,
+        abridgeValuePerProvider,
+        deltaValuePerProvider,
+        userTotal: userValuePerProvider * providers,
+        abridgeTotal: abridgeValuePerProvider * providers,
+        deltaTotal: deltaValuePerProvider * providers,
+        unit: "hours",
+        rate,
+        rateLabel: "/hr",
+        providers,
+      };
+    }
+  };
+  
+  // Calculate total comparison across all drivers
+  const totalComparison = useMemo(() => {
+    const accessDelta = calculateDriverDelta("access");
+    const losDelta = calculateDriverDelta("los");
+    const overtimeDelta = calculateDriverDelta("overtime");
+    
+    const grandTotal = accessDelta.deltaTotal + losDelta.deltaTotal + overtimeDelta.deltaTotal;
+    
+    return {
+      access: accessDelta,
+      los: losDelta,
+      overtime: overtimeDelta,
+      grandTotal,
+    };
+  }, [compDriverInputs, competitorProviderCount, inputs.numberOfProviders]);
 
   // Initialize inputs from seed with a setter for dynamic updates
   const [inputs, setInputs] = useState<RoiInputs>(() => {

@@ -1,0 +1,398 @@
+STEP 1: Competitor Selection
+(You already have this - looks good, keep it)
+STEP 2: Basic Deployment Info
+(You already have this - keep the current/utilization/time saved inputs)
+STEP 3: Value Driver Comparison ← THIS IS WHERE WE REDESIGN
+
+🎨 Step 3 Redesign: "Apples to Apples" Per Driver
+The Pattern (repeat for EACH active driver):
+Copy┌─────────────────────────────────────────────────────────────────┐
+│  1. "What are YOU getting from DAX?" (per provider metric)      │
+│  2. Show Abridge benchmark range (same per provider metric)     │
+│  3. Visual: Where you sit on the range                          │
+│  4. Comparison table: DAX vs Abridge (apples to apples)         │
+│  5. Punchline: "The gap is worth $X"                            │
+└─────────────────────────────────────────────────────────────────┘
+
+📝 Detailed UX Specs for Replit
+Component Structure:
+CopyComparisonView.jsx
+├─ CompetitorInputs (Step 1-2, you have this)
+└─ ValueDriverComparison (Step 3, NEW)
+   └─ For each active driver:
+      ├─ DriverComparisonCard
+      │  ├─ UserInputSection
+      │  ├─ BenchmarkRangeVisual
+      │  ├─ ComparisonTable
+      │  └─ InsightBox
+      └─ FinalSummary
+
+🎨 Driver 1: Patient Access (Full Example)
+Tell Replit:
+CopyCreate a DriverComparisonCard component for Patient Access with these sections:
+
+SECTION 1: USER INPUT (Top of card)
+─────────────────────────────────────────────
+Heading: "Your Current DAX Performance"
+Subheading: "How many additional patient visits per provider per year does DAX enable?"
+
+Input field:
+- Type: number
+- Placeholder: "e.g., 30"
+- Label: "Additional visits per provider per year"
+- Show live calculation below: "{value} visits × ${revenuePerVisit}/visit = ${calculated}/provider"
+
+Help text (expandable):
+"💡 Not sure? Calculate from time savings:
+- If DAX saves 1.5 min per encounter
+- And you have 2,000 encounters per provider per year
+- And average visit is 15 minutes
+→ (1.5 × 2,000) ÷ 15 = 200 potential additional visits"
+
+If user enters 0:
+Show warning: "⚠️ Zero visits means DAX isn't creating additional capacity, OR you don't have patient demand to fill the saved time."
+
+SECTION 2: ABRIDGE BENCHMARK RANGE (Middle)
+─────────────────────────────────────────────
+Heading: "Abridge Customer Benchmarks"
+Subheading: "Additional visits per provider per year (from 200+ health systems)"
+
+Visual: Horizontal range bar with 3 segments
+├─────────────┼──────────────┼───────────────┤
+0           100           150            250
+
+Conservative: 60 visits
+Typical: 120 visits  ← highlighted
+Optimistic: 200 visits
+
+User's position: Marker showing their DAX value on this range
+"Your DAX: {userValue} visits" with arrow pointing to position
+
+SECTION 3: COMPARISON TABLE (Below range)
+─────────────────────────────────────────────
+Table with 4 columns:
+           | DAX         | Abridge     | Delta
+           | (your data) | (typical)   |
+─────────────────────────────────────────────
+Per Provider | {user} visits | 120 visits | +{delta} visits
+× Your Rate  | ${rate}/visit | ${rate}/visit | —
+= Per Provider Value | ${daxValue} | ${abridgeValue} | +${deltaValue}
+× {n} Providers | ${daxTotal} | ${abridgeTotal} | +${deltaTotal} ← BOLD, GREEN
+
+Styling:
+- Abridge column: light green background
+- Delta column: values in green with + prefix
+- Last row: larger font, bold
+
+SECTION 4: INSIGHT BOX (Bottom)
+─────────────────────────────────────────────
+Icon: 💡
+Bold text: "The Opportunity"
+Body: "Abridge customers enable {delta} MORE visits per provider per year than you're 
+getting from DAX. At your revenue of ${rate}/visit across {n} providers, that's 
+{totalDelta} in additional annual capacity revenue."
+
+Optional expandable: "Show me how Abridge gets to 120 visits/provider →"
+Reveals: Methodology calculation breakdown
+
+🎨 Driver 2: Level of Service (Pattern Variant)
+Tell Replit:
+CopySame structure as Patient Access, but:
+
+USER INPUT:
+- Question: "How many additional wRVUs per provider per year does DAX capture?"
+- Input: wRVU uplift per provider
+- Help text: "Typical from better documentation: 50-150 wRVUs/provider/year"
+- Calculation: "{wrvus} wRVUs × ${rate}/wRVU = ${value}/provider"
+
+BENCHMARK RANGE:
+Conservative: 50 wRVUs
+Typical: 125 wRVUs
+Optimistic: 200 wRVUs
+
+COMPARISON TABLE:
+Per Provider | {user} wRVUs | 125 wRVUs | +{delta} wRVUs
+× Your wRVU Rate | ${rate}/wRVU | ${rate}/wRVU | —
+= Per Provider Value | ${value} | ${value} | +${delta}
+× {n} Providers | ${total} | ${total} | +${deltaTotal}
+
+INSIGHT:
+"Abridge customers capture {delta} more wRVUs per provider per year through better 
+documentation accuracy. At ${rate}/wRVU, that's {totalDelta} in additional revenue."
+
+🎨 Driver 3: Overtime Savings (Pattern Variant)
+Tell Replit:
+CopyUSER INPUT:
+- Question: "How many premium labor hours per provider per year does DAX save?"
+- Input: hours saved per provider
+- Help text: "Premium hours = after-hours documentation + locum coverage avoided"
+- Calculation: "{hours} hrs × ${premiumRate}/hr = ${value}/provider"
+
+BENCHMARK RANGE:
+Conservative: 35 hours
+Typical: 65 hours
+Optimistic: 95 hours
+
+COMPARISON TABLE:
+Per Provider | {user} hrs | 65 hrs | +{delta} hrs
+× Premium Rate | ${rate}/hr | ${rate}/hr | —
+= Per Provider Value | ${value} | ${value} | +${delta}
+× {n} Providers | ${total} | ${total} | +${deltaTotal}
+
+INSIGHT:
+"Abridge customers save {delta} more premium labor hours per provider per year. At your 
+rate of ${rate}/hour, that's {totalDelta} in cost avoidance annually."
+
+📊 Final Summary Component
+Tell Replit:
+CopyCreate FinalSummary component that appears after all driver comparisons:
+
+LAYOUT:
+Hero section at top
+Detailed table below
+Confidence indicators at bottom
+
+HERO SECTION:
+Large centered box with:
+- Label: "Your Total Opportunity"
+- Value: +${totalDelta} (huge, green, bold)
+- Subtitle: "Additional annual value by switching from DAX to Abridge"
+
+DETAILED TABLE:
+Headers: Value Driver | DAX (per provider) | Abridge (per provider) | Delta (per provider) | Your Total Delta
+
+Rows (one per active driver):
+Patient Access    | {user} visits  | 120 visits  | +{delta} visits  | +${totalDelta}
+Level of Service  | {user} wRVUs   | 125 wRVUs   | +{delta} wRVUs   | +${totalDelta}
+Overtime Savings  | {user} hours   | 65 hours    | +{delta} hours   | +${totalDelta}
+[... other drivers]
+
+Total row: Bold, larger font, green background
+TOTAL | — | — | — | +${grandTotal}
+
+CONFIDENCE INDICATORS (bottom):
+Three checkmarks:
+✓ All comparisons normalized per provider (apples to apples)
+✓ Abridge benchmarks from 200+ health system deployments
+✓ Calculated using YOUR rates, YOUR provider count, YOUR revenue metrics
+
+Disclaimer:
+"Abridge results vary by organization size, specialty mix, and implementation maturity. 
+These comparisons use your deployment parameters and typical Abridge customer performance."
+
+🎨 Visual Design System
+Tell Replit to use these patterns:
+cssCopy/* Color Palette */
+DAX values: text-slate-700, bg-slate-50
+Abridge values: text-green-700, bg-green-50
+Delta values: text-green-600, font-semibold
+Negative/zero: text-amber-600
+
+/* Range Bar Styling */
+.range-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.segment.conservative { background: #fef3c7; }
+.segment.typical { background: #bbf7d0; border: 2px solid #10b981; }
+.segment.optimistic { background: #dbeafe; }
+
+.user-marker {
+  position: absolute;
+  bottom: -30px;
+  /* position calculated based on value */
+}
+
+/* Comparison Table */
+.comparison-table {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.comparison-table th {
+  background: #f9fafb;
+  padding: 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.comparison-table .abridge-col {
+  background: #f0fdf4;
+  font-weight: 600;
+}
+
+.comparison-table .delta-col {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.comparison-table .total-row {
+  background: #f9fafb;
+  font-weight: 700;
+  font-size: 18px;
+  border-top: 2px solid #e5e7eb;
+}
+
+.comparison-table .total-row .delta-col {
+  font-size: 24px;
+  color: #059669;
+}
+
+/* Insight Box */
+.insight-box {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.insight-icon { font-size: 24px; }
+
+/* Hero Metric */
+.hero-metric-value {
+  font-size: 56px;
+  font-weight: 800;
+  color: #10b981;
+  line-height: 1;
+}
+
+🔄 State Management Logic
+Tell Replit:
+javascriptCopy// State structure for comparison
+const [comparisonData, setComparisonData] = useState({
+  competitor: 'dax',
+  deployment: {
+    providers: 50,
+    costPerProvider: 150,
+    utilization: 0.50,
+    timeSaved: 1.5 // minutes per encounter
+  },
+  
+  // User inputs per driver (normalized per provider)
+  driverInputs: {
+    access: {
+      visitsPerProvider: 0,
+      revenuePerVisit: 200
+    },
+    los: {
+      wrvuUpliftPerProvider: 0,
+      wrvuRate: 40
+    },
+    overtime: {
+      hoursPerProvider: 0,
+      premiumRate: 145
+    }
+    // ... other drivers
+  },
+  
+  // Abridge benchmarks (from constants)
+  abridgeBenchmarks: {
+    access: {
+      conservative: 60,
+      typical: 120,
+      optimistic: 200,
+      unit: 'visits/provider/year'
+    },
+    los: {
+      conservative: 50,
+      typical: 125,
+      optimistic: 200,
+      unit: 'wRVUs/provider/year'
+    },
+    overtime: {
+      conservative: 35,
+      typical: 65,
+      optimistic: 95,
+      unit: 'hours/provider/year'
+    }
+  }
+});
+
+// Calculation function
+const calculateDriverDelta = (driver) => {
+  const userValue = comparisonData.driverInputs[driver];
+  const benchmark = comparisonData.abridgeBenchmarks[driver].typical;
+  const providers = comparisonData.deployment.providers;
+  
+  // Per provider delta
+  const deltaPerProvider = benchmark - userValue.metric;
+  
+  // Per provider dollar value
+  const userValuePerProvider = userValue.metric * userValue.rate;
+  const abridgeValuePerProvider = benchmark * userValue.rate;
+  const deltaValuePerProvider = deltaPerProvider * userValue.rate;
+  
+  // Total across all providers
+  const deltaTotal = deltaValuePerProvider * providers;
+  
+  return {
+    deltaMetric: deltaPerProvider,
+    deltaValue: deltaValuePerProvider,
+    deltaTotal,
+    userValuePerProvider,
+    abridgeValuePerProvider,
+    userTotal: userValuePerProvider * providers,
+    abridgeTotal: abridgeValuePerProvider * providers
+  };
+};
+
+// Calculate all drivers and sum
+const totalComparison = useMemo(() => {
+  const activeDrivers = Object.keys(comparisonData.driverInputs);
+  
+  const driverDeltas = activeDrivers.map(driver => ({
+    name: driver,
+    ...calculateDriverDelta(driver)
+  }));
+  
+  const grandTotal = driverDeltas.reduce((sum, d) => sum + d.deltaTotal, 0);
+  
+  return { driverDeltas, grandTotal };
+}, [comparisonData]);
+
+🎯 Interaction Patterns
+1. Live Calculations
+CopyUser types in input → calculation updates immediately
+No "Calculate" button needed
+Show "0 × $200 = $0" even when 0 (transparency)
+2. Range Position Animation
+CopyWhen user enters value → marker smoothly animates to position on range bar
+If value > max range → show marker at edge with ">{max}" label
+If value < 0 → validation error
+3. Progressive Disclosure
+CopyEach driver card collapsed by default showing just:
+- Driver name
+- User's value vs Abridge typical
+- Delta in dollars
+
+Click to expand → shows full comparison table + range + methodology
+4. Validation & Warnings
+CopyIf user enters 0 for all drivers:
+→ Show banner: "⚠️ Zero values suggest you're not measuring DAX's impact, or it's not 
+delivering value. Enter your best estimates or select 'Not tracking this metric'."
+
+If user enters values HIGHER than Abridge optimistic:
+→ Show badge: "🎉 Your DAX performance exceeds typical Abridge results for this metric!"
+→ Delta shows negative (you're already doing better)
+
+✅ Final Checklist for Replit
+Tell Replit to create:
+
+ DriverComparisonCard.jsx - Reusable component for each driver
+ ComparisonRangeBar.jsx - Visual range with user marker
+ ComparisonTable.jsx - The apples-to-apples table
+ FinalSummary.jsx - Grand total view
+ driverBenchmarks.js - Constants file with Abridge typical ranges
+ calculateComparison.js - Utility functions for math
+ Hook up to existing CompetitorInputs flow
+
+Key instruction:
+"Make everything per-provider normalized. User inputs a per-provider metric, we show Abridge per-provider benchmark, then multiply both by their provider count to get totals. This makes it apples-to-apples comparison."
