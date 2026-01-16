@@ -2470,7 +2470,7 @@ export default function RoiCalculator({
                         How many providers do you want to expand to?
                       </label>
                       
-                      <div className="flex items-center gap-3 mb-4">
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
                         <input
                           type="text"
                           inputMode="numeric"
@@ -2495,10 +2495,10 @@ export default function RoiCalculator({
                               return next;
                             });
                           }}
-                          className="flex-1 text-[24px] font-semibold text-center py-3 px-4 border-2 border-[#E5E7EB] rounded-lg focus:border-[#E8532F] focus:outline-none"
+                          className="flex-1 min-w-[120px] text-[24px] font-semibold text-center py-3 px-4 border-2 border-[#E5E7EB] rounded-lg focus:border-[#E8532F] focus:outline-none"
                           data-testid="input-target-providers"
                         />
-                        <span className="text-[14px] text-[#6B7280] font-medium">providers</span>
+                        <span className="text-[14px] text-[#6B7280] font-medium whitespace-nowrap">providers</span>
                       </div>
                       
                       <input
