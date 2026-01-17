@@ -4863,7 +4863,7 @@ export default function RoiCalculator({
                           {/* Calculated Summary */}
                           <div className="p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
                             <div className="text-[13px] font-bold text-[#6B7280] uppercase tracking-[0.05em] mb-3">Calculated Summary</div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
                                 <div className="text-[13px] text-[#6B7280]">Annual Scribe Cost</div>
                                 <div className="text-[20px] font-bold text-[#111827] font-mono">
@@ -4986,7 +4986,7 @@ export default function RoiCalculator({
                           {/* Calculated Summary */}
                           <div className="p-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
                             <div className="text-[11px] font-bold text-[#6B7280] uppercase tracking-[0.1em] mb-5">Calculated Summary</div>
-                            <div className="grid grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                               <div>
                                 <div className="text-[13px] text-[#6B7280] mb-2">Annual {selectedCompetitor.name} Cost</div>
                                 <div className="text-[28px] font-bold text-[#111827] tabular-nums mb-1">
@@ -5090,12 +5090,12 @@ export default function RoiCalculator({
                           </div>
                           
                           {/* Two Column Headers */}
-                          <div className="grid grid-cols-2">
-                            <div className="p-6 bg-white text-center border-r border-[#E5E7EB]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2">
+                            <div className="p-4 sm:p-6 bg-white text-center sm:border-r border-b sm:border-b-0 border-[#E5E7EB]">
                               <div className="text-sm text-[#6B7280] font-medium">Your Current</div>
                               <div className="text-lg font-semibold text-[#374151] mt-1">{selectedCompetitor.name}</div>
                             </div>
-                            <div className="p-6 bg-white text-center">
+                            <div className="p-4 sm:p-6 bg-white text-center">
                               <div className="text-sm text-[#E85D3F] font-medium">The Opportunity</div>
                               <div className="flex items-center justify-center mt-1">
                                 <img src={abridgeLogo} alt="Abridge" className="h-5" />
@@ -5106,8 +5106,8 @@ export default function RoiCalculator({
                           {/* Metric Rows */}
                           <div className="divide-y divide-[#E5E7EB]">
                             {/* Adoption Row */}
-                            <div className="grid grid-cols-2">
-                              <div className="p-6 bg-white border-r border-[#E5E7EB]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2">
+                              <div className="p-4 sm:p-6 bg-white sm:border-r border-b sm:border-b-0 border-[#E5E7EB]">
                                 <div className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide mb-3">Adoption</div>
                                 <div className="w-full bg-[#E5E7EB] rounded-full h-2 mb-3">
                                   <div className="bg-[#9CA3AF] h-2 rounded-full transition-all" style={{ width: `${compUtilPct}%` }} />
@@ -5115,12 +5115,12 @@ export default function RoiCalculator({
                                 <div className="text-lg font-semibold text-[#374151] tabular-nums">{competitorUtilization}%</div>
                                 <div className="text-sm text-[#9CA3AF]">Your utilization</div>
                               </div>
-                              <div className="p-6 bg-white">
+                              <div className="p-4 sm:p-6 bg-white">
                                 <div className="text-xs font-medium text-[#E85D3F] uppercase tracking-wide mb-3">Adoption</div>
                                 <div className="w-full bg-[#FEE2E2] rounded-full h-2 mb-3">
                                   <div className="bg-[#E85D3F] h-2 rounded-full transition-all" style={{ width: `${abridgeUtilPct}%` }} />
                                 </div>
-                                <div className="flex items-baseline gap-2">
+                                <div className="flex items-baseline gap-2 flex-wrap">
                                   <span className="text-lg font-semibold text-[#E85D3F] tabular-nums">{abridgeUtil}%</span>
                                   {adoptionDelta > 0 && (
                                     <span className="text-sm font-medium text-[#E85D3F] tabular-nums">+{adoptionDelta}%</span>
@@ -5132,8 +5132,8 @@ export default function RoiCalculator({
                             
                             {/* Time Savings Row - Only for AI solutions */}
                             {selectedCompetitor.type !== "human" && (
-                              <div className="grid grid-cols-2">
-                                <div className="p-6 bg-white border-r border-[#E5E7EB]">
+                              <div className="grid grid-cols-1 sm:grid-cols-2">
+                                <div className="p-4 sm:p-6 bg-white sm:border-r border-b sm:border-b-0 border-[#E5E7EB]">
                                   <div className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide mb-3">Time Savings</div>
                                   <div className="w-full bg-[#E5E7EB] rounded-full h-2 mb-3">
                                     <div className="bg-[#9CA3AF] h-2 rounded-full transition-all" style={{ width: `${compTimePct}%` }} />
@@ -5141,12 +5141,12 @@ export default function RoiCalculator({
                                   <div className="text-lg font-semibold text-[#374151] tabular-nums">{competitorTimeSaved} min</div>
                                   <div className="text-sm text-[#9CA3AF]">per encounter</div>
                                 </div>
-                                <div className="p-6 bg-white">
+                                <div className="p-4 sm:p-6 bg-white">
                                   <div className="text-xs font-medium text-[#E85D3F] uppercase tracking-wide mb-3">Time Savings</div>
                                   <div className="w-full bg-[#FEE2E2] rounded-full h-2 mb-3">
                                     <div className="bg-[#E85D3F] h-2 rounded-full transition-all" style={{ width: `${abridgeTimePct}%` }} />
                                   </div>
-                                  <div className="flex items-baseline gap-2">
+                                  <div className="flex items-baseline gap-2 flex-wrap">
                                     <span className="text-lg font-semibold text-[#E85D3F] tabular-nums">{abridgeTimeSaved} min</span>
                                     {timeDeltaPct > 0 && (
                                       <span className="text-sm font-medium text-[#E85D3F] tabular-nums">+{timeDeltaPct}%</span>
@@ -5158,8 +5158,8 @@ export default function RoiCalculator({
                             )}
                             
                             {/* Annual Cost Row */}
-                            <div className="grid grid-cols-2">
-                              <div className="p-6 bg-white border-r border-[#E5E7EB]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2">
+                              <div className="p-4 sm:p-6 bg-white sm:border-r border-b sm:border-b-0 border-[#E5E7EB]">
                                 <div className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide mb-3">Annual Cost</div>
                                 <div className="text-lg font-semibold text-[#374151] tabular-nums">{formatCurrency(competitorCost)}</div>
                                 <div className="text-sm text-[#9CA3AF]">
@@ -5169,9 +5169,9 @@ export default function RoiCalculator({
                                   }
                                 </div>
                               </div>
-                              <div className="p-6 bg-white">
+                              <div className="p-4 sm:p-6 bg-white">
                                 <div className="text-xs font-medium text-[#E85D3F] uppercase tracking-wide mb-3">Annual Cost</div>
-                                <div className="flex items-baseline gap-2">
+                                <div className="flex items-baseline gap-2 flex-wrap">
                                   <span className="text-lg font-semibold text-[#E85D3F] tabular-nums">{formatCurrency(abridgeCost)}</span>
                                   {costDiff > 0 && (
                                     <span className="text-sm font-medium text-[#E85D3F] tabular-nums">Save {formatCurrency(costDiff)}</span>
@@ -5517,7 +5517,7 @@ export default function RoiCalculator({
                           </div>
                           
                           {/* 6 Driver Mini Cards Grid */}
-                          <div className="grid grid-cols-3 gap-4" data-testid="driver-grid">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4" data-testid="driver-grid">
                             {ALL_DRIVERS.map((driver) => {
                               const isConfigured = !!configuredDrivers[driver.id];
                               const gapValue = configuredDrivers[driver.id]?.gap || driverCalculations[driver.id]?.gap || 0;
@@ -5924,25 +5924,25 @@ export default function RoiCalculator({
                                     </div>
                                   </div>
                                   
-                                  {/* Comparison - Clean two column layout */}
-                                  <div className="grid grid-cols-2">
+                                  {/* Comparison - Responsive layout */}
+                                  <div className="grid grid-cols-1 sm:grid-cols-2">
                                     {/* Left: Current/Competitor */}
-                                    <div className="p-6 bg-white border-r border-[#E5E7EB]">
+                                    <div className="p-4 sm:p-6 bg-white sm:border-r border-b sm:border-b-0 border-[#E5E7EB]">
                                       <div className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide mb-4">
                                         With {selectedCompetitor?.name}
                                       </div>
-                                      <div className="space-y-3">
+                                      <div className="space-y-2 sm:space-y-3">
                                         {driverCalc.competitorSteps.map((step, i) => (
-                                          <div key={i} className="flex justify-between text-sm py-1">
-                                            <span className="text-[#6B7280]">{step.label}</span>
-                                            <span className="font-medium text-[#374151] tabular-nums text-right">{step.value}</span>
+                                          <div key={i} className="flex justify-between text-sm py-1 gap-2">
+                                            <span className="text-[#6B7280] text-xs sm:text-sm">{step.label}</span>
+                                            <span className="font-medium text-[#374151] tabular-nums text-right text-xs sm:text-sm">{step.value}</span>
                                           </div>
                                         ))}
                                       </div>
-                                      <div className="mt-5 pt-4 border-t border-[#E5E7EB]">
-                                        <div className="bg-[#F9FAFB] rounded-lg p-4 flex justify-between items-center">
-                                          <span className="text-sm font-semibold text-[#374151]">Annual Value</span>
-                                          <span className="text-2xl font-bold text-[#374151] tabular-nums">
+                                      <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-[#E5E7EB]">
+                                        <div className="bg-[#F9FAFB] rounded-lg p-3 sm:p-4 flex justify-between items-center gap-2">
+                                          <span className="text-xs sm:text-sm font-semibold text-[#374151]">Annual Value</span>
+                                          <span className="text-xl sm:text-2xl font-bold text-[#374151] tabular-nums">
                                             ${driverCalc.competitorValue.toLocaleString()}
                                           </span>
                                         </div>
@@ -5950,22 +5950,22 @@ export default function RoiCalculator({
                                     </div>
                                     
                                     {/* Right: Abridge */}
-                                    <div className="p-6 bg-white">
+                                    <div className="p-4 sm:p-6 bg-white">
                                       <div className="text-xs font-medium text-[#E85D3F] uppercase tracking-wide mb-4">
                                         With Abridge
                                       </div>
-                                      <div className="space-y-3">
+                                      <div className="space-y-2 sm:space-y-3">
                                         {driverCalc.abridgeSteps.map((step, i) => (
-                                          <div key={i} className="flex justify-between text-sm py-1">
-                                            <span className="text-[#6B7280]">{step.label}</span>
-                                            <span className="font-medium text-[#E85D3F] tabular-nums text-right">{step.value}</span>
+                                          <div key={i} className="flex justify-between text-sm py-1 gap-2">
+                                            <span className="text-[#6B7280] text-xs sm:text-sm">{step.label}</span>
+                                            <span className="font-medium text-[#E85D3F] tabular-nums text-right text-xs sm:text-sm">{step.value}</span>
                                           </div>
                                         ))}
                                       </div>
-                                      <div className="mt-5 pt-4 border-t border-[#E5E7EB]">
-                                        <div className="bg-[#FEF2F0] rounded-lg p-4 flex justify-between items-center">
-                                          <span className="text-sm font-semibold text-[#E85D3F]">Annual Value</span>
-                                          <span className="text-2xl font-bold text-[#E85D3F] tabular-nums">
+                                      <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-[#E5E7EB]">
+                                        <div className="bg-[#FEF2F0] rounded-lg p-3 sm:p-4 flex justify-between items-center gap-2">
+                                          <span className="text-xs sm:text-sm font-semibold text-[#E85D3F]">Annual Value</span>
+                                          <span className="text-xl sm:text-2xl font-bold text-[#E85D3F] tabular-nums">
                                             ${driverCalc.abridgeValue.toLocaleString()}
                                           </span>
                                         </div>
@@ -6511,8 +6511,8 @@ export default function RoiCalculator({
                             </ResponsiveContainer>
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-6">
-                            <div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            <div className="bg-[#F0FDF4] rounded-lg p-4">
                               <div className="text-sm font-medium text-[#374151] mb-3">If you switch today:</div>
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
@@ -6530,7 +6530,7 @@ export default function RoiCalculator({
                               </div>
                             </div>
                             
-                            <div>
+                            <div className="bg-[#FEF2F2] rounded-lg p-4">
                               <div className="text-sm font-medium text-[#374151] mb-3">If you wait 6 months:</div>
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
@@ -6574,14 +6574,14 @@ export default function RoiCalculator({
                         
                         return (
                           <section>
-                            <div className="bg-gradient-to-br from-[#1F2937] to-[#111827] text-white rounded-xl p-8">
-                              <div className="text-center mb-8">
+                            <div className="bg-gradient-to-br from-[#1F2937] to-[#111827] text-white rounded-xl p-4 sm:p-8">
+                              <div className="text-center mb-6 sm:mb-8">
                                 <div className="text-sm text-[#9CA3AF] uppercase tracking-wide mb-2">The Choice</div>
                               </div>
                               
-                              <div className="grid grid-cols-2 gap-8 max-w-3xl mx-auto mb-8">
-                                <div className="text-center">
-                                  <div className="text-[#9CA3AF] mb-4">Stay with {selectedCompetitor?.name || "competitor"}</div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 max-w-3xl mx-auto mb-6 sm:mb-8">
+                                <div className="text-center bg-white/5 rounded-xl p-4 sm:p-6">
+                                  <div className="text-[#9CA3AF] mb-3 sm:mb-4 text-sm sm:text-base">Stay with {selectedCompetitor?.name || "competitor"}</div>
                                   <div className="space-y-2 text-sm mb-4">
                                     <div className="flex justify-between">
                                       <span className="text-[#9CA3AF]">Year 1:</span>
@@ -6598,12 +6598,12 @@ export default function RoiCalculator({
                                   </div>
                                   <div className="pt-3 border-t border-[#4B5563]">
                                     <div className="text-xs text-[#9CA3AF]">3-year total</div>
-                                    <div className="text-2xl font-bold tabular-nums">{formatCurrency(competitorTotal)}</div>
+                                    <div className="text-xl sm:text-2xl font-bold tabular-nums">{formatCurrency(competitorTotal)}</div>
                                   </div>
                                 </div>
                                 
-                                <div className="text-center">
-                                  <div className="text-[#E85D3F] mb-4">Switch to Abridge</div>
+                                <div className="text-center bg-[#E85D3F]/10 rounded-xl p-4 sm:p-6">
+                                  <div className="text-[#E85D3F] mb-3 sm:mb-4 text-sm sm:text-base">Switch to Abridge</div>
                                   <div className="space-y-2 text-sm mb-4">
                                     <div className="flex justify-between">
                                       <span className="text-[#9CA3AF]">Year 1:</span>
@@ -6620,7 +6620,7 @@ export default function RoiCalculator({
                                   </div>
                                   <div className="pt-3 border-t border-[#E85D3F]/50">
                                     <div className="text-xs text-[#E85D3F]">3-year total</div>
-                                    <div className="text-2xl font-bold text-[#E85D3F] tabular-nums">{formatCurrency(abridgeTotal)}</div>
+                                    <div className="text-xl sm:text-2xl font-bold text-[#E85D3F] tabular-nums">{formatCurrency(abridgeTotal)}</div>
                                   </div>
                                 </div>
                               </div>
