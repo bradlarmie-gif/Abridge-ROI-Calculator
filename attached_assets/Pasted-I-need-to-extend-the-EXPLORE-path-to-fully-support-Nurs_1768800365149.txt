@@ -1,0 +1,292 @@
+I need to extend the EXPLORE path to fully support Nursing with nursing-specific drivers, inputs, and per-staffed-bed pricing model. Nursing is fundamentally different from other settings because nurses don't bill and pricing is per bed, not per user.
+
+---
+
+CARE SETTING: Nursing
+
+When user selects "Nursing" in Step 1, the entire flow should use Nursing-specific configuration.
+
+---
+
+STEP 2: STRATEGIC PRIORITIES (Nursing Version)
+
+Show these drivers for Nursing (in this order):
+
+⏱️ TIME SAVED BENEFITS:
+
+1. OVERTIME REDUCTION
+   - Subtitle: "Eliminate end-of-shift documentation catch-up"
+   - Context: "⚡ Most directly measurable—shows up in payroll data"
+   - Typical range: "$400K-900K for 200 staffed beds"
+
+2. DOCUMENTATION TIME SAVINGS
+   - Subtitle: "Return hours to bedside care"
+   - Context: "✓ Immediate impact on nurse workflow"
+   - Typical range: "$300K-700K for 200 staffed beds"
+
+3. AGENCY & TRAVEL NURSE REDUCTION
+   - Subtitle: "Convert expensive agency spend to staff positions"
+   - Context: "💰 Agency nurses cost 2-3x staff nurses"
+   - Typical range: "$200K-500K for 200 staffed beds"
+
+4. NURSE RETENTION
+   - Subtitle: "Address the top driver of nursing burnout"
+   - Context: "🕐 Long-term impact—12+ months to measure fully"
+   - Typical range: "$100K-250K for 200 staffed beds"
+
+📋 DOCUMENTATION QUALITY BENEFITS:
+
+5. DOCUMENTATION TIMELINESS & COMPLETENESS
+   - Subtitle: "Real-time documentation, regulatory compliance"
+   - Context: "⚠️ Harder to monetize but important for compliance"
+   - Typical range: "$30K-75K for 200 staffed beds"
+
+ADD TWO CALLOUT BOXES:
+
+Box 1: "💡 A NOTE ON NURSING ROI
+Nurses don't bill—there's no wRVU or E/M coding to optimize.
+
+Nursing ROI is about protecting your workforce:
+- Real budget savings (overtime, agency)
+- Workforce sustainability (retention, satisfaction)
+- Compliance and quality (documentation completeness)
+
+These are REAL dollars that hit the same budget line."
+
+Box 2: "📋 WHAT WE DON'T CLAIM
+We intentionally exclude:
+- Falls/pressure injury reduction (too indirect)
+- Revenue support via CDI (nursing notes rarely drive DRG)
+- Patient satisfaction lift (hard to attribute)
+
+We focus on what's measurable and defensible."
+
+---
+
+STEP 3: MODEL BUILDER (Nursing Version)
+
+YOUR ORGANIZATION section:
+
+Label: "How many staffed beds are in scope?"
+- Input: Number field, placeholder "e.g., 200"
+- Helper: "💡 This is your billing unit for Abridge Nursing"
+
+Label: "How many nurse FTEs support these beds?"
+- Input: Number field, placeholder "e.g., 300"
+- Helper: "💡 ~1.5 FTEs per bed is typical for med-surg. Higher for ICU (~2.5-3.0)"
+- Smart default: beds × 1.5
+
+Label: "What type of unit(s)?"
+- Input: [Med-Surg] [ICU/Critical Care] [Mixed]
+- Helper: "Unit type affects documentation burden and staffing ratios"
+
+Label: "Annual documentation events?"
+- Input: Number field, placeholder "e.g., 150,000"
+- Helper: "💡 Assessments, vitals, flowsheet entries. ~500/nurse/year or ~750/bed/year"
+- Smart default: nurses × 500
+
+Label: "Expected utilization rate?"
+- Input: [Early 45%] [Typical 60%] [Aggressive 75%]
+- Helper: "Nursing adoption can be slower than provider adoption"
+
+Show scenario calculation:
+"200 beds │ 300 nurses │ Med-Surg
+150,000 events × 60% = 90,000 Abridge-documented events/year"
+
+Add pricing note:
+"💰 Abridge Nursing is priced per staffed bed, not per nurse.
+This means your ROI scales as utilization increases."
+
+---
+
+DRIVER-SPECIFIC INPUTS:
+
+OVERTIME REDUCTION:
+───────────────────
+
+STEP 1: Current overtime
+- Input: Slider 1-8 hrs/week, default 4
+- Helper: "Per nurse per week. National average: 3-5 hours"
+- Calculation: [nurses] × [hrs] × 50 weeks = OT hours/year
+
+STEP 2: Documentation portion
+- Input: Slider 20%-70%, default 45%
+- Helper: "Industry research shows 40-55% of nursing OT is charting"
+- Calculation: [OT hours] × [%] = doc-related OT
+
+STEP 3: Reduction rate
+- Input: [Conservative 45%] [Typical 60%] [Aggressive 75%]
+- Helper: "Real-time charting eliminates end-of-shift catch-up"
+- Calculation: [doc OT] × [reduction%] × [adoption%] = hours eliminated
+
+STEP 4: Base rate and savings
+- Input: Currency field, default $45/hr
+- Auto-calculate OT rate: base × 1.5
+- Calculation: [hours eliminated] × [OT rate] = $RESULT
+
+Add callout: "This is DIRECT, MEASURABLE savings. Track month-over-month in payroll data."
+
+---
+
+DOCUMENTATION TIME SAVINGS:
+───────────────────────────
+
+STEP 1: Documentation burden
+- Input: [Light 2.0 hrs] [Moderate 2.5 hrs] [Heavy 3.5 hrs] per shift
+- Helper: "Per 12-hour shift. Studies show 25-35% of shift on documentation."
+- Calculation: [nurses] × [hrs] × 3 shifts/wk × 50 wks = hours/year
+
+STEP 2: Time reduction
+- Input: [Conservative 25%] [Typical 35%] [Aggressive 45%]
+- Helper: "Flowsheet auto-population, voice-to-text assessments"
+- Calculation: [hours] × [reduction%] × [adoption%] = hours returned
+
+STEP 3: Value (with important caveat)
+- Add callout explaining time doesn't disappear from payroll but gets redirected
+- Use 50% realization factor
+- Calculation: [hours] × $[base rate] × 50% = $RESULT
+
+Show practical meaning: "X hours = Y hours/nurse/year = ~Z hours/week"
+
+---
+
+AGENCY & TRAVEL NURSE REDUCTION:
+────────────────────────────────
+
+STEP 1: Agency utilization
+- Input: Slider 5%-30%, default 15%
+- Helper: "% of nursing hours filled by agency/travelers"
+- Calculation: [nurse FTEs] × [%] = agency FTEs
+
+STEP 2: Cost comparison
+- Input: Staff nurse cost, default $85,000/year
+- Input: Agency nurse cost, default $150,000/year
+- Show premium calculation: agency - staff = $65,000 per FTE
+
+STEP 3: Agency reduction
+- Input: [Conservative 5%] [Typical 10%] [Aggressive 20%]
+- Helper: "% reduction in agency utilization from improved retention"
+- Calculation: [agency FTEs] × [reduction%] = FTEs converted
+
+STEP 4: Savings
+- Calculation: [FTEs converted] × [premium] = $RESULT
+
+Add note about attribution being indirect but logic chain being sound.
+
+---
+
+NURSE RETENTION:
+────────────────
+
+STEP 1: Turnover rate
+- Input: Slider 10%-30%, default 18%
+- Helper: "National nursing turnover: 15-25%"
+- Calculation: [nurses] × [%] = departures/year
+
+STEP 2: Burnout portion
+- Input: Slider 30%-70%, default 55%
+- Helper: "50-60% of nursing turnover is burnout-related"
+- Calculation: [departures] × [%] = burnout departures
+
+STEP 3: Documentation attribution
+- Input: Slider 15%-40%, default 25%
+- Helper: "Documentation is significant but not sole burnout driver"
+- Calculation: [burnout] × [%] = doc-related departures
+
+STEP 4: Prevention rate
+- Input: [Conservative 30%] [Typical 40%] [Aggressive 55%]
+- Calculation: [doc-related] × [%] = avoided
+
+STEP 5: Replacement cost
+- Input: Currency field, default $50,000
+- Helper: "Includes recruiting ($5-10K), training ($10-15K), productivity ramp"
+- Calculation: [avoided] × $[cost] = $RESULT
+
+Note: "⚠️ Retention impact typically measurable after 12+ months"
+
+---
+
+DOCUMENTATION TIMELINESS & COMPLETENESS:
+────────────────────────────────────────
+
+STEP 1: Current compliance gaps
+- Input: Late documentation %, default 20%
+- Input: Incomplete fields %, default 15%
+
+STEP 2: Improvement (show auto-calculated)
+- Late: 20% → 5%
+- Incomplete: 15% → 5%
+
+STEP 3: Value (with honest note)
+- Add callout explaining this is hard to monetize
+- Input: Conservative operational value, default $50,000
+- Helper: "Includes avoided remediation, audit prep, risk value"
+- Note: "If compliance is a major priority, you may value this higher"
+
+---
+
+INVESTMENT SECTION (Per Staffed Bed):
+
+Show pricing model explanation:
+"Abridge Nursing is priced per staffed bed, not per nurse.
+- Predictable cost regardless of staffing changes
+- ROI improves as more nurses adopt
+- Scaling to new units is straightforward"
+
+Input: Cost per bed per month
+- Default: $75
+- Helper: "Typical range: $60-100/bed/month"
+
+Contract term: [1 yr] [2 yrs] [3 yrs] [Custom]
+
+Optional: Implementation fee
+
+Show calculation:
+"200 beds × $75/month × 12 = $180,000/year
+Cost per nurse: $180,000 ÷ 300 = $600/nurse/year
+Cost per event: $180,000 ÷ 90,000 = $2/event"
+
+---
+
+LIVE SIDEBAR for Nursing:
+- "Staffed Beds" as primary metric
+- "Nurse FTEs" as secondary
+- "Documentation Events" instead of "Encounters"
+- Show "Per Bed" and "Per Nurse" value calculations
+
+---
+
+VALUE STORY for Nursing Summary:
+
+Show insight: "97% of nursing value comes from time savings and workforce protection—not documentation quality improvements. This makes sense: nurses don't bill. The value is in protecting your most expensive and scarce resource."
+
+Add: "Cost avoidance IS real money—it hits the same budget line."
+
+---
+
+SUMMARY PAGE for Nursing:
+
+Show:
+- "ROI MODEL: Nursing"
+- "200 staffed beds │ 300 nurses │ 90,000 documented events/year"
+
+Metrics to display:
+- Value per staffed bed: ~$8,401/bed/year
+- Value per nurse: ~$5,600/nurse/year
+
+Value Story cards:
+- ⏱️ TIME SAVED: "9,720 OT hours eliminated │ 4.5 agency FTEs converted │ 3 departures avoided"
+- 📋 DOC QUALITY: "75% improvement in timeliness │ 67% improvement in completeness"
+
+Scenario Builder for Nursing:
+- "What if we expanded to 400 beds?"
+- "What if overtime reduced by 75%?"
+- "What if agency utilization dropped to 5%?"
+
+---
+
+DESIGN:
+- Same visual design as other settings
+- Emphasize "per staffed bed" pricing prominently
+- "What we don't claim" section builds credibility
+- Value story should emphasize cost avoidance = real money

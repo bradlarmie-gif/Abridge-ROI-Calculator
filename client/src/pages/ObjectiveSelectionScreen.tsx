@@ -837,14 +837,14 @@ const SETTING_DRIVERS: Record<string, string[]> = {
   outpatient: ["Patient access expansion", "Level of service accuracy", "Clinician retention"],
   ed: ["Patient throughput", "Patient capture", "Denial reduction"],
   nursing: ["Time savings", "Overtime reduction", "Documentation quality"],
-  inpatient: [],
+  inpatient: ["Rounding efficiency", "CC/MCC capture", "Hospitalist retention"],
 };
 
 const SETTING_FOOTERS: Record<string, { iconType: "trending" | "zap" | "users" | null; text: string }> = {
   outpatient: { iconType: "trending", text: "Most common for initial ROI modeling" },
   ed: { iconType: "zap", text: "High-impact documentation workflows" },
   nursing: { iconType: "users", text: "Workforce-focused value drivers" },
-  inpatient: { iconType: null, text: "" },
+  inpatient: { iconType: "trending", text: "High-acuity documentation optimization" },
 };
 
 function CareSettingRow({
@@ -2040,9 +2040,6 @@ export default function ObjectiveSelectionScreen({
   // Handlers
   // ============================================
   const handleSettingSelect = (setting: AllSettingType) => {
-    if (setting === "inpatient") {
-      return;
-    }
     if (selectedSetting === setting) {
       setSelectedSetting(null);
       setSelectedLeverIds(new Set());
@@ -2436,7 +2433,6 @@ export default function ObjectiveSelectionScreen({
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {ALL_SETTINGS.map((setting) => {
-                    const isInpatient = setting === "inpatient";
                     return (
                       <CareSettingRow
                         key={setting}
@@ -2444,7 +2440,7 @@ export default function ObjectiveSelectionScreen({
                         label={CARE_SETTING_LABELS[setting]}
                         settingKey={setting}
                         selected={selectedSetting === setting}
-                        disabled={isInpatient}
+                        disabled={false}
                         onClick={() => handleSettingSelect(setting)}
                       />
                     );

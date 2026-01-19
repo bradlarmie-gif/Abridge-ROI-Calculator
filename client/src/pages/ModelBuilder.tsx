@@ -28,6 +28,7 @@ import {
   AlertTriangle,
   Check,
   Zap,
+  FileText,
 } from "lucide-react";
 
 interface ModelBuilderProps {
@@ -117,6 +118,29 @@ interface DriverInputs {
     denialRate: number;
     avgClaimValue: number;
   };
+  // Inpatient (Hospitalist) drivers
+  inpatientRounding: {
+    minutesSavedPerAdmission: number;
+    hourlyWage: number;
+    fteValuedHours: boolean;
+  };
+  inpatientRetention: {
+    turnoverRate: number;
+    replacementCost: number;
+  };
+  inpatientCCMCC: {
+    pctWithMissedCC: number;
+    avgDRGUplift: number;
+  };
+  inpatientCDI: {
+    queriesPerAdmission: number;
+    costPerQuery: number;
+    reductionPct: number;
+  };
+  inpatientDenials: {
+    denialRate: number;
+    avgClaimValue: number;
+  };
 }
 
 const DRIVER_ICONS: Record<string, typeof Clock> = {
@@ -132,6 +156,12 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
   edRetention: Heart,
   edLevelOfService: BarChart3,
   edDenials: FileX,
+  // Inpatient drivers
+  inpatientRounding: Clock,
+  inpatientRetention: Heart,
+  inpatientCCMCC: DollarSign,
+  inpatientCDI: FileText,
+  inpatientDenials: FileX,
 };
 
 const DRIVER_NAMES: Record<string, string> = {
@@ -147,6 +177,12 @@ const DRIVER_NAMES: Record<string, string> = {
   edRetention: "Physician Retention",
   edLevelOfService: "Level-of-Service Accuracy",
   edDenials: "Documentation-Related Denials",
+  // Inpatient drivers
+  inpatientRounding: "Rounding Efficiency & Time Savings",
+  inpatientRetention: "Hospitalist Retention",
+  inpatientCCMCC: "CC/MCC Capture (DRG Optimization)",
+  inpatientCDI: "CDI Query Reduction",
+  inpatientDenials: "Documentation-Related Denials",
 };
 
 const DRIVER_THEORIES: Record<string, string> = {
@@ -162,6 +198,12 @@ const DRIVER_THEORIES: Record<string, string> = {
   edRetention: "ED physicians face some of the highest burnout rates in medicine. Documentation burden is a major contributor. Reducing this burden helps retain expensive-to-replace ED talent.",
   edLevelOfService: "ED visits are complex and fast-paced. Under-documentation is common, leading to under-coding. AI-assisted documentation captures the full clinical picture for accurate E/M levels.",
   edDenials: "ED claims face intense payer scrutiny. Complete, clear documentation at the point of care reduces denials for insufficient clinical rationale and medical necessity.",
+  // Inpatient drivers
+  inpatientRounding: "Hospitalists spend significant time on documentation during and after rounds. Saving 3-5 minutes per admission returns hours to bedside care, teaching, and discharge planning.",
+  inpatientRetention: "Hospitalist medicine has some of the highest turnover in healthcare (15-20% typical). Documentation burden is a primary contributor to burnout and departures.",
+  inpatientCCMCC: "Complete documentation of complications and comorbidities drives DRG weight and reimbursement. Many CC/MCC opportunities go uncaptured due to rushed documentation.",
+  inpatientCDI: "Better initial documentation means fewer CDI queries. Each avoided query saves time for both the CDI team and the hospitalist—operational efficiency everyone appreciates.",
+  inpatientDenials: "Inpatient denials are high-dollar events. Medical necessity and clinical rationale documentation gaps are primary drivers of preventable denials.",
 };
 
 export default function ModelBuilder({
@@ -172,8 +214,9 @@ export default function ModelBuilder({
   initialResults,
 }: ModelBuilderProps) {
   const isEDSettingInit = selectedSettings.includes("ed");
-  const defaultProviders = initialResults?.providers ?? (isEDSettingInit ? 25 : 50);
-  const defaultEncounters = initialResults?.encounters ?? (defaultProviders * (isEDSettingInit ? 1800 : 2000));
+  const isInpatientSettingInit = selectedSettings.includes("inpatient");
+  const defaultProviders = initialResults?.providers ?? (isInpatientSettingInit ? 20 : isEDSettingInit ? 25 : 50);
+  const defaultEncounters = initialResults?.encounters ?? (defaultProviders * (isInpatientSettingInit ? 400 : isEDSettingInit ? 1800 : 2000));
   const defaultUtilization = initialResults?.utilizationRate ?? (isEDSettingInit ? 70 : 65);
   
   const [providers, setProviders] = useState<number>(defaultProviders);
@@ -253,13 +296,43 @@ export default function ModelBuilder({
       denialRate: 10,
       avgClaimValue: 650,
     },
+    // Inpatient defaults
+    inpatientRounding: {
+      minutesSavedPerAdmission: 4,
+      hourlyWage: 150,
+      fteValuedHours: false,
+    },
+    inpatientRetention: {
+      turnoverRate: 15,
+      replacementCost: 750000,
+    },
+    inpatientCCMCC: {
+      pctWithMissedCC: 18,
+      avgDRGUplift: 2500,
+    },
+    inpatientCDI: {
+      queriesPerAdmission: 0.15,
+      costPerQuery: 45,
+      reductionPct: 40,
+    },
+    inpatientDenials: {
+      denialRate: 6,
+      avgClaimValue: 4500,
+    },
   });
   
+  const isInpatientSetting = selectedSettings.includes("inpatient");
+  
   useEffect(() => {
-    // ED typically has ~1,800 encounters per physician, outpatient ~2,000
-    const encountersPerProvider = isEDSetting ? 1800 : 2000;
+    // Inpatient uses admissions, ED uses encounters, outpatient uses encounters
+    let encountersPerProvider = 2000;
+    if (isEDSetting) {
+      encountersPerProvider = 1800;
+    } else if (isInpatientSetting) {
+      encountersPerProvider = 400;
+    }
     setEncounters(providers * encountersPerProvider);
-  }, [providers, isEDSetting]);
+  }, [providers, isEDSetting, isInpatientSetting]);
   
   const eligibleEncounters = Math.round(encounters * (utilizationRate / 100));
   
@@ -281,6 +354,12 @@ export default function ModelBuilder({
       edRetention: "edRetention",
       edLevelOfService: "edLevelOfService",
       edDenials: "edDenials",
+      // Inpatient mappings
+      inpatientRounding: "inpatientRounding",
+      inpatientRetention: "inpatientRetention",
+      inpatientCCMCC: "inpatientCCMCC",
+      inpatientCDI: "inpatientCDI",
+      inpatientDenials: "inpatientDenials",
     };
     
     const active = new Set<string>();
@@ -297,11 +376,14 @@ export default function ModelBuilder({
       if (isEDSetting) {
         return ["edThroughput", "edLevelOfService", "edDenials"];
       }
+      if (isInpatientSetting) {
+        return ["inpatientRounding", "inpatientCCMCC", "inpatientDenials"];
+      }
       return ["overtime", "patientAccess", "levelOfService"];
     }
     
     return Array.from(active);
-  }, [selectedLevers, isEDSetting]);
+  }, [selectedLevers, isEDSetting, isInpatientSetting]);
   
   const calculateDriverValue = useCallback((driverId: string): number => {
     switch (driverId) {
@@ -394,6 +476,47 @@ export default function ModelBuilder({
         const prevented = docRelated * 0.45 * (utilizationRate / 100); // ED prevention is 45% vs 50%
         return Math.round(prevented * avgClaimValue);
       }
+      // Inpatient Drivers
+      case "inpatientRounding": {
+        const { minutesSavedPerAdmission, hourlyWage, fteValuedHours } = driverInputs.inpatientRounding;
+        const totalMinutes = eligibleEncounters * minutesSavedPerAdmission;
+        const hoursSaved = totalMinutes / 60;
+        if (fteValuedHours) {
+          // Value as FTE savings (hospitalist costs ~$300K fully loaded)
+          const fteSaved = hoursSaved / 2000;
+          return Math.round(fteSaved * 300000);
+        }
+        // Value as time savings at hourly rate
+        return Math.round(hoursSaved * hourlyWage);
+      }
+      case "inpatientRetention": {
+        const { turnoverRate, replacementCost } = driverInputs.inpatientRetention;
+        const departures = providers * (turnoverRate / 100);
+        const burnoutRelated = departures * 0.55; // Hospitalists have higher burnout-driven turnover
+        const docDriven = burnoutRelated * 0.35;
+        const prevented = docDriven * 0.35 * (utilizationRate / 100);
+        return Math.round(prevented * replacementCost);
+      }
+      case "inpatientCCMCC": {
+        const { pctWithMissedCC, avgDRGUplift } = driverInputs.inpatientCCMCC;
+        const admissionsWithMissed = eligibleEncounters * (pctWithMissedCC / 100);
+        // Abridge captures ~40% of previously missed CC/MCC
+        const captured = admissionsWithMissed * 0.40;
+        return Math.round(captured * avgDRGUplift);
+      }
+      case "inpatientCDI": {
+        const { queriesPerAdmission, costPerQuery, reductionPct } = driverInputs.inpatientCDI;
+        const totalQueries = eligibleEncounters * queriesPerAdmission;
+        const queriesAvoided = totalQueries * (reductionPct / 100);
+        return Math.round(queriesAvoided * costPerQuery);
+      }
+      case "inpatientDenials": {
+        const { denialRate, avgClaimValue } = driverInputs.inpatientDenials;
+        const totalDenials = encounters * (denialRate / 100);
+        const docRelated = totalDenials * 0.45; // Inpatient denials are often documentation-related
+        const prevented = docRelated * 0.40 * (utilizationRate / 100);
+        return Math.round(prevented * avgClaimValue);
+      }
       default:
         return 0;
     }
@@ -401,7 +524,7 @@ export default function ModelBuilder({
   
   const driverResults = useMemo(() => {
     const results: Record<string, { name: string; value: number; category: "time" | "quality" }> = {};
-    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention"];
+    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRounding", "inpatientRetention"];
     activeDrivers.forEach(id => {
       results[id] = {
         name: DRIVER_NAMES[id],
@@ -515,6 +638,34 @@ export default function ModelBuilder({
             denialRate: driverInputs.edDenials.denialRate,
             avgClaimValue: driverInputs.edDenials.avgClaimValue,
           };
+        // Inpatient drivers
+        case "inpatientRounding":
+          return {
+            minutesSavedPerAdmission: driverInputs.inpatientRounding.minutesSavedPerAdmission,
+            hourlyWage: driverInputs.inpatientRounding.hourlyWage,
+            fteValuedHours: driverInputs.inpatientRounding.fteValuedHours,
+          };
+        case "inpatientRetention":
+          return {
+            turnoverRate: driverInputs.inpatientRetention.turnoverRate,
+            replacementCost: driverInputs.inpatientRetention.replacementCost,
+          };
+        case "inpatientCCMCC":
+          return {
+            pctWithMissedCC: driverInputs.inpatientCCMCC.pctWithMissedCC,
+            avgDRGUplift: driverInputs.inpatientCCMCC.avgDRGUplift,
+          };
+        case "inpatientCDI":
+          return {
+            queriesPerAdmission: driverInputs.inpatientCDI.queriesPerAdmission,
+            costPerQuery: driverInputs.inpatientCDI.costPerQuery,
+            reductionPct: driverInputs.inpatientCDI.reductionPct,
+          };
+        case "inpatientDenials":
+          return {
+            denialRate: driverInputs.inpatientDenials.denialRate,
+            avgClaimValue: driverInputs.inpatientDenials.avgClaimValue,
+          };
         default:
           return {};
       }
@@ -622,6 +773,17 @@ export default function ModelBuilder({
         return renderEdLevelOfServiceInputs();
       case "edDenials":
         return renderEdDenialsInputs();
+      // Inpatient drivers
+      case "inpatientRounding":
+        return renderInpatientRoundingInputs();
+      case "inpatientRetention":
+        return renderInpatientRetentionInputs();
+      case "inpatientCCMCC":
+        return renderInpatientCCMCCInputs();
+      case "inpatientCDI":
+        return renderInpatientCDIInputs();
+      case "inpatientDenials":
+        return renderInpatientDenialsInputs();
       default:
         return null;
     }
@@ -1524,6 +1686,368 @@ export default function ModelBuilder({
     );
   };
   
+  // Inpatient render functions
+  const renderInpatientRoundingInputs = () => {
+    const { minutesSavedPerAdmission, hourlyWage, fteValuedHours } = driverInputs.inpatientRounding;
+    const totalMinutes = eligibleEncounters * minutesSavedPerAdmission;
+    const hoursSaved = totalMinutes / 60;
+    
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Minutes saved per admission</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{minutesSavedPerAdmission} min</span>
+          </div>
+          <Slider
+            value={[minutesSavedPerAdmission]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientRounding: { ...prev.inpatientRounding, minutesSavedPerAdmission: val } }))}
+            min={2}
+            max={8}
+            step={1}
+            className="w-full"
+            data-testid="inpatient-rounding-minutes-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Hospitalists typically save 3-5 minutes per admission with ambient documentation</p>
+        </div>
+        
+        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
+          <p className="text-xs text-neutral-400 font-mono">
+            {eligibleEncounters.toLocaleString()} admissions × {minutesSavedPerAdmission} min = {Math.round(totalMinutes).toLocaleString()} min = {Math.round(hoursSaved).toLocaleString()} hours
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">How do you want to value time savings?</label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDriverInputs(prev => ({ ...prev, inpatientRounding: { ...prev.inpatientRounding, fteValuedHours: false } }))}
+              className={`flex-1 p-3 rounded-lg border text-sm transition-all ${!fteValuedHours ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]" : "border-neutral-200 text-[#6B7280]"}`}
+              data-testid="inpatient-hourly-value"
+            >
+              Hourly Rate
+            </button>
+            <button
+              onClick={() => setDriverInputs(prev => ({ ...prev, inpatientRounding: { ...prev.inpatientRounding, fteValuedHours: true } }))}
+              className={`flex-1 p-3 rounded-lg border text-sm transition-all ${fteValuedHours ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]" : "border-neutral-200 text-[#6B7280]"}`}
+              data-testid="inpatient-fte-value"
+            >
+              FTE Value
+            </button>
+          </div>
+        </div>
+        
+        {!fteValuedHours && (
+          <div className="space-y-3">
+            <label className="text-sm text-[#111827] font-medium">Hospitalist hourly wage</label>
+            <div className="flex items-center gap-2">
+              <span className="text-[#6B7280]">$</span>
+              <Input
+                type="number"
+                value={hourlyWage}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRounding: { ...prev.inpatientRounding, hourlyWage: Number(e.target.value) || 0 } }))}
+                className="w-32 font-mono"
+                data-testid="inpatient-hourly-wage-input"
+              />
+              <span className="text-[#6B7280]">/ hour</span>
+            </div>
+            <p className="text-xs text-[#6B7280]">$130-180/hr is typical for hospitalists</p>
+          </div>
+        )}
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(calculateDriverValue("inpatientRounding"))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {Math.round(hoursSaved).toLocaleString()} hours × {fteValuedHours ? "FTE cost" : `$${hourlyWage}/hr`}
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderInpatientRetentionInputs = () => {
+    const { turnoverRate, replacementCost } = driverInputs.inpatientRetention;
+    const departures = providers * (turnoverRate / 100);
+    const burnoutRelated = departures * 0.55;
+    const docDriven = burnoutRelated * 0.35;
+    const prevented = docDriven * 0.35 * (utilizationRate / 100);
+    
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Current annual hospitalist turnover rate</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{turnoverRate}%</span>
+          </div>
+          <Slider
+            value={[turnoverRate]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, turnoverRate: val } }))}
+            min={8}
+            max={25}
+            step={1}
+            className="w-full"
+            data-testid="inpatient-retention-turnover-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Hospitalist turnover is typically 15-20% (among highest in medicine)</p>
+        </div>
+        
+        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
+          <p className="text-xs text-[#6B7280]">Calculation breakdown:</p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {providers} hospitalists × {turnoverRate}% = {departures.toFixed(1)} departures
+          </p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {departures.toFixed(1)} × 55% burnout-related × 35% doc-driven = {docDriven.toFixed(2)} doc-related
+          </p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {docDriven.toFixed(2)} × 35% prevention × {utilizationRate}% adoption = {prevented.toFixed(2)} prevented
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Hospitalist replacement cost</label>
+          <div className="flex items-center gap-2">
+            <span className="text-[#6B7280]">$</span>
+            <Input
+              type="number"
+              value={replacementCost}
+              onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, replacementCost: Number(e.target.value) || 0 } }))}
+              className="w-40 font-mono"
+              data-testid="inpatient-retention-cost-input"
+            />
+          </div>
+          <p className="text-xs text-[#6B7280]">Hospitalist replacement costs $600K-900K including recruiting, onboarding, and lost productivity</p>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(Math.round(prevented * replacementCost))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {prevented.toFixed(2)} prevented × ${replacementCost.toLocaleString()}
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderInpatientCCMCCInputs = () => {
+    const { pctWithMissedCC, avgDRGUplift } = driverInputs.inpatientCCMCC;
+    const admissionsWithMissed = eligibleEncounters * (pctWithMissedCC / 100);
+    const captured = admissionsWithMissed * 0.40;
+    
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">% of admissions with missed CC/MCC opportunities</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{pctWithMissedCC}%</span>
+          </div>
+          <Slider
+            value={[pctWithMissedCC]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, pctWithMissedCC: val } }))}
+            min={10}
+            max={30}
+            step={2}
+            className="w-full"
+            data-testid="inpatient-ccmcc-pct-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Studies suggest 15-25% of admissions have undocumented CC/MCC</p>
+        </div>
+        
+        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
+          <p className="text-xs text-[#6B7280]">Calculation breakdown:</p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {eligibleEncounters.toLocaleString()} admissions × {pctWithMissedCC}% = {Math.round(admissionsWithMissed).toLocaleString()} with missed CC/MCC
+          </p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {Math.round(admissionsWithMissed).toLocaleString()} × 40% capture rate = {Math.round(captured).toLocaleString()} newly captured
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Average DRG uplift per CC/MCC capture</label>
+          <div className="flex items-center gap-2">
+            <span className="text-[#6B7280]">$</span>
+            <Input
+              type="number"
+              value={avgDRGUplift}
+              onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, avgDRGUplift: Number(e.target.value) || 0 } }))}
+              className="w-32 font-mono"
+              data-testid="inpatient-ccmcc-uplift-input"
+            />
+          </div>
+          <p className="text-xs text-[#6B7280]">Typical CC adds $1,500-2,500; MCC adds $3,000-5,000 to reimbursement</p>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(Math.round(captured * avgDRGUplift))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {Math.round(captured).toLocaleString()} captured × ${avgDRGUplift.toLocaleString()}
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderInpatientCDIInputs = () => {
+    const { queriesPerAdmission, costPerQuery, reductionPct } = driverInputs.inpatientCDI;
+    const totalQueries = eligibleEncounters * queriesPerAdmission;
+    const queriesAvoided = totalQueries * (reductionPct / 100);
+    
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Average CDI queries per admission</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{queriesPerAdmission.toFixed(2)}</span>
+          </div>
+          <Slider
+            value={[queriesPerAdmission * 100]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, queriesPerAdmission: val / 100 } }))}
+            min={5}
+            max={30}
+            step={5}
+            className="w-full"
+            data-testid="inpatient-cdi-queries-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Typical range is 0.10-0.25 queries per admission</p>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Expected query reduction</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{reductionPct}%</span>
+          </div>
+          <Slider
+            value={[reductionPct]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, reductionPct: val } }))}
+            min={20}
+            max={60}
+            step={10}
+            className="w-full"
+            data-testid="inpatient-cdi-reduction-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Better initial documentation typically reduces queries by 30-50%</p>
+        </div>
+        
+        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
+          <p className="text-xs text-neutral-400 font-mono">
+            {eligibleEncounters.toLocaleString()} × {queriesPerAdmission.toFixed(2)} = {Math.round(totalQueries).toLocaleString()} queries
+          </p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {Math.round(totalQueries).toLocaleString()} × {reductionPct}% = {Math.round(queriesAvoided).toLocaleString()} queries avoided
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Cost per CDI query (time + overhead)</label>
+          <div className="flex items-center gap-2">
+            <span className="text-[#6B7280]">$</span>
+            <Input
+              type="number"
+              value={costPerQuery}
+              onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, costPerQuery: Number(e.target.value) || 0 } }))}
+              className="w-32 font-mono"
+              data-testid="inpatient-cdi-cost-input"
+            />
+          </div>
+          <p className="text-xs text-[#6B7280]">Includes CDI specialist time, physician response time, and overhead ($30-60 typical)</p>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(Math.round(queriesAvoided * costPerQuery))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {Math.round(queriesAvoided).toLocaleString()} avoided × ${costPerQuery}
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderInpatientDenialsInputs = () => {
+    const { denialRate, avgClaimValue } = driverInputs.inpatientDenials;
+    const totalDenials = encounters * (denialRate / 100);
+    const docRelated = totalDenials * 0.45;
+    const prevented = docRelated * 0.40 * (utilizationRate / 100);
+    
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Current inpatient denial rate</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{denialRate}%</span>
+          </div>
+          <Slider
+            value={[denialRate]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, denialRate: val } }))}
+            min={3}
+            max={12}
+            step={1}
+            className="w-full"
+            data-testid="inpatient-denials-rate-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Inpatient denial rates are typically 5-8%</p>
+        </div>
+        
+        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
+          <p className="text-xs text-[#6B7280]">Doc-related portion:</p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {Math.round(totalDenials).toLocaleString()} denials × 45% doc-related = {Math.round(docRelated).toLocaleString()} doc denials
+          </p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {Math.round(docRelated).toLocaleString()} × 40% prevention × {utilizationRate}% adoption = {Math.round(prevented).toLocaleString()} prevented
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Average inpatient claim value</label>
+          <div className="flex items-center gap-2">
+            <span className="text-[#6B7280]">$</span>
+            <Input
+              type="number"
+              value={avgClaimValue}
+              onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, avgClaimValue: Number(e.target.value) || 0 } }))}
+              className="w-32 font-mono"
+              data-testid="inpatient-denials-claim-input"
+            />
+          </div>
+          <p className="text-xs text-[#6B7280]">Inpatient claims are high-value: $3,500-6,000 typical</p>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(Math.round(prevented * avgClaimValue))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {Math.round(prevented).toLocaleString()} prevented × ${avgClaimValue.toLocaleString()}
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
       <div
@@ -1571,37 +2095,45 @@ export default function ModelBuilder({
               <div className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-[#111827]">
-                    {isEDSetting ? "How many ED physicians are in scope?" : "How many providers are in scope?"}
+                    {isInpatientSetting ? "How many hospitalists are in scope?" : isEDSetting ? "How many ED physicians are in scope?" : "How many providers are in scope?"}
                   </label>
                   <Input
                     type="number"
                     value={providers}
                     onChange={(e) => setProviders(Number(e.target.value) || 0)}
-                    placeholder={isEDSetting ? "e.g., 25" : "e.g., 50"}
+                    placeholder={isInpatientSetting ? "e.g., 20" : isEDSetting ? "e.g., 25" : "e.g., 50"}
                     className="max-w-xs font-mono"
                     data-testid="input-providers"
                   />
                   <p className="text-xs text-[#6B7280]">
-                    {isEDSetting 
-                      ? "Include attendings and mid-levels who will use Abridge" 
-                      : "This is your starting point. Could be a pilot or full deployment."}
+                    {isInpatientSetting
+                      ? "Include all hospitalists who will use Abridge for documentation"
+                      : isEDSetting 
+                        ? "Include attendings and mid-levels who will use Abridge" 
+                        : "This is your starting point. Could be a pilot or full deployment."}
                   </p>
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#111827]">Annual encounters for these {isEDSetting ? "physicians" : "providers"}?</label>
+                  <label className="text-sm font-medium text-[#111827]">
+                    {isInpatientSetting 
+                      ? `Annual admissions for these hospitalists?` 
+                      : `Annual encounters for these ${isEDSetting ? "physicians" : "providers"}?`}
+                  </label>
                   <Input
                     type="number"
                     value={encounters}
                     onChange={(e) => setEncounters(Number(e.target.value) || 0)}
-                    placeholder={isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
+                    placeholder={isInpatientSetting ? "e.g., 8,000" : isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
                     className="max-w-xs font-mono"
                     data-testid="input-encounters"
                   />
                   <p className="text-xs text-[#6B7280]">
-                    {isEDSetting 
-                      ? "~1,800/physician is typical for a community ED"
-                      : "~2,000/provider is typical for primary care, ~1,500 for specialty"}
+                    {isInpatientSetting
+                      ? "~400/hospitalist is typical for a hospitalist program"
+                      : isEDSetting 
+                        ? "~1,800/physician is typical for a community ED"
+                        : "~2,000/provider is typical for primary care, ~1,500 for specialty"}
                   </p>
                 </div>
                 
@@ -1610,10 +2142,12 @@ export default function ModelBuilder({
                   <p className="text-xs text-[#6B7280] mb-2">
                     {isEDSetting 
                       ? "ED adoption is typically higher than outpatient"
-                      : "What percentage of encounters will use Abridge?"}
+                      : isInpatientSetting 
+                        ? "What percentage of admissions will use Abridge?"
+                        : "What percentage of encounters will use Abridge?"}
                   </p>
                   <div className="flex gap-2">
-                    {(isEDSetting ? [55, 70, 85] as const : [50, 65, 80] as const).map(rate => (
+                    {(isEDSetting ? [55, 70, 85] as const : isInpatientSetting ? [50, 65, 80] as const : [50, 65, 80] as const).map(rate => (
                       <button
                         key={rate}
                         onClick={() => setUtilizationRate(rate)}
@@ -1624,7 +2158,13 @@ export default function ModelBuilder({
                         }`}
                         data-testid={`utilization-${rate}`}
                       >
-                        {isEDSetting ? (
+                        {isInpatientSetting ? (
+                          <>
+                            {rate === 50 && "Conservative 50%"}
+                            {rate === 65 && "Typical 65%"}
+                            {rate === 80 && "Aggressive 80%"}
+                          </>
+                        ) : isEDSetting ? (
                           <>
                             {rate === 55 && "Early 55%"}
                             {rate === 70 && "Typical 70%"}
@@ -1645,10 +2185,10 @@ export default function ModelBuilder({
                 <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
                   <p className="text-sm text-[#111827]">
                     <span className="font-medium">→</span>{" "}
-                    <span className="font-mono">{providers.toLocaleString()}</span> {isEDSetting ? "physicians" : "providers"} ×{" "}
-                    <span className="font-mono">{encounters.toLocaleString()}</span> encounters ×{" "}
+                    <span className="font-mono">{providers.toLocaleString()}</span> {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} ×{" "}
+                    <span className="font-mono">{encounters.toLocaleString()}</span> {isInpatientSetting ? "admissions" : "encounters"} ×{" "}
                     <span className="font-mono">{utilizationRate}%</span> ={" "}
-                    <span className="font-mono font-semibold text-[#E85D3F]">{eligibleEncounters.toLocaleString()}</span> eligible encounters
+                    <span className="font-mono font-semibold text-[#E85D3F]">{eligibleEncounters.toLocaleString()}</span> eligible {isInpatientSetting ? "admissions" : "encounters"}
                   </p>
                 </div>
               </div>
@@ -1802,9 +2342,9 @@ export default function ModelBuilder({
                 <div className="space-y-2">
                   <h4 className="text-xs font-medium text-[#6B7280] uppercase tracking-wider">Your Inputs</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-[#6B7280]">{isEDSetting ? "ED Physicians" : "Providers"}</span>
+                    <span className="text-[#6B7280]">{isInpatientSetting ? "Hospitalists" : isEDSetting ? "ED Physicians" : "Providers"}</span>
                     <span className="font-mono text-right text-[#111827]">{providers.toLocaleString()}</span>
-                    <span className="text-[#6B7280]">Encounters</span>
+                    <span className="text-[#6B7280]">{isInpatientSetting ? "Admissions" : "Encounters"}</span>
                     <span className="font-mono text-right text-[#111827]">{encounters.toLocaleString()}</span>
                     <span className="text-[#6B7280]">Utilization</span>
                     <span className="font-mono text-right text-[#111827]">{utilizationRate}%</span>

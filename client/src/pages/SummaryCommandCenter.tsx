@@ -20,6 +20,7 @@ import {
   BarChart3,
   Lightbulb,
   Info,
+  Heart,
 } from "lucide-react";
 import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
@@ -305,6 +306,114 @@ const DRIVER_METADATA: Record<string, {
         decrease: ["Low denial rates", "Denials not documentation-related", "Strong existing processes"],
       },
       validation: ["Analyze ED-specific denial reasons", "Review documentation-related denials", "Calculate rework costs"],
+    },
+  },
+  // Inpatient (Hospitalist) Drivers
+  inpatientRounding: {
+    name: "Rounding Efficiency & Time Savings",
+    category: "time",
+    categoryLabel: "Time & Efficiency",
+    icon: Clock,
+    description: "Time returned to bedside care, teaching, and discharge planning",
+    methodology: {
+      logic: "Hospitalists spend significant time on documentation during and after rounds. Saving 3-5 minutes per admission compounds across daily census to return hours to patient care.",
+      formula: "Hours Saved = Eligible Admissions × Minutes Saved / 60\nAnnual Value = Hours Saved × Hourly Wage (or FTE Value)",
+      assumptions: [
+        { label: "Minutes saved per admission", value: "3-5 min", source: "Hospitalist time studies" },
+        { label: "Average daily census", value: "12-18 patients", source: "SHM benchmarks" },
+        { label: "Hospitalist hourly wage", value: "$130-180/hr", source: "Organization data" },
+      ],
+      factors: {
+        increase: ["High documentation burden", "Teaching responsibilities", "Complex patient mix"],
+        decrease: ["Existing dictation efficiency", "Low admission volume", "Strong scribe support"],
+      },
+      validation: ["Track rounding time pre/post", "Survey hospitalist satisfaction", "Monitor discharge timing"],
+    },
+  },
+  inpatientRetention: {
+    name: "Hospitalist Retention",
+    category: "time",
+    categoryLabel: "Workforce Sustainability",
+    icon: Heart,
+    description: "Reduced hospitalist turnover through documentation burden relief",
+    methodology: {
+      logic: "Hospitalist medicine has among the highest turnover in healthcare (15-20% typical). Documentation burden is a primary contributor to burnout and departures.",
+      formula: "Departures Avoided = Hospitalists × Turnover Rate × Burnout Factor × Prevention Rate\nAnnual Savings = Departures Avoided × Replacement Cost",
+      assumptions: [
+        { label: "Hospitalist turnover rate", value: "15-20%", source: "SHM data" },
+        { label: "Burnout-driven departures", value: "55%", source: "Industry studies" },
+        { label: "Documentation-related burnout", value: "35%", source: "Hospitalist surveys" },
+        { label: "Replacement cost", value: "$600,000-900,000", source: "MGMA + hospitalist-specific data" },
+      ],
+      factors: {
+        increase: ["High current turnover", "Exit interviews citing documentation", "Competitive market"],
+        decrease: ["Low baseline turnover", "Other retention initiatives", "Small group size"],
+      },
+      validation: ["Review exit interview data", "Calculate current replacement costs", "Survey hospitalist satisfaction"],
+    },
+  },
+  inpatientCCMCC: {
+    name: "CC/MCC Capture (DRG Optimization)",
+    category: "quality",
+    categoryLabel: "Revenue & Risk",
+    icon: DollarSign,
+    description: "Improved DRG weight through complete complication/comorbidity documentation",
+    methodology: {
+      logic: "Complete documentation of complications and comorbidities directly impacts DRG weight and reimbursement. Many CC/MCC opportunities go uncaptured due to rushed documentation.",
+      formula: "CC/MCC Captured = Admissions × Missed CC Rate × Capture Improvement\nAnnual Value = CC/MCC Captured × Average DRG Uplift",
+      assumptions: [
+        { label: "Admissions with missed CC/MCC", value: "15-25%", source: "CDI audit data" },
+        { label: "Capture improvement rate", value: "40%", source: "Customer experience" },
+        { label: "Average DRG uplift", value: "$1,500-3,500", source: "Case mix analysis" },
+      ],
+      factors: {
+        increase: ["High complexity patient mix", "Current CDI query rate", "Under-documented specialties"],
+        decrease: ["Strong existing CDI", "Simple patient mix", "Already optimized capture"],
+      },
+      validation: ["Review CC/MCC capture rates", "Analyze CDI query patterns", "Compare to CMI benchmarks"],
+    },
+  },
+  inpatientCDI: {
+    name: "CDI Query Reduction",
+    category: "quality",
+    categoryLabel: "Operational Efficiency",
+    icon: FileText,
+    description: "Fewer CDI queries through complete initial documentation",
+    methodology: {
+      logic: "Better initial documentation means fewer CDI queries. Each avoided query saves time for both the CDI team and the hospitalist—operational efficiency everyone appreciates.",
+      formula: "Queries Avoided = Admissions × Query Rate × Reduction Rate\nAnnual Value = Queries Avoided × Cost per Query",
+      assumptions: [
+        { label: "Queries per admission", value: "0.10-0.25", source: "CDI operational data" },
+        { label: "Expected reduction", value: "30-50%", source: "Customer experience" },
+        { label: "Cost per query", value: "$30-60", source: "CDI team analysis" },
+      ],
+      factors: {
+        increase: ["High query volume", "Documentation gaps common", "CDI team capacity constraints"],
+        decrease: ["Low current query rate", "Strong documentation culture", "Small admission volume"],
+      },
+      validation: ["Track query volume and types", "Measure response time impact", "Survey CDI team satisfaction"],
+    },
+  },
+  inpatientDenials: {
+    name: "Documentation-Related Denials",
+    category: "quality",
+    categoryLabel: "Revenue & Risk",
+    icon: AlertCircle,
+    description: "Reduced high-dollar inpatient claim denials through complete documentation",
+    methodology: {
+      logic: "Inpatient denials are high-dollar events. Medical necessity and clinical rationale documentation gaps are primary drivers of preventable denials.",
+      formula: "Denials Avoided = Admissions × Denial Rate × Doc-Related % × Prevention Rate\nAnnual Value = Denials Avoided × Average Claim Value",
+      assumptions: [
+        { label: "Inpatient denial rate", value: "5-8%", source: "Hospital billing data" },
+        { label: "Documentation-related %", value: "45%", source: "Denial analysis" },
+        { label: "Prevention rate", value: "40%", source: "Revenue cycle studies" },
+        { label: "Average inpatient claim", value: "$3,500-6,000", source: "Organization data" },
+      ],
+      factors: {
+        increase: ["High denial rate", "Medical necessity challenges", "Complex payer mix"],
+        decrease: ["Low denial rates", "Denials not doc-related", "Strong utilization review"],
+      },
+      validation: ["Analyze denial reasons", "Review medical necessity denials", "Calculate appeals rate"],
     },
   },
 };
