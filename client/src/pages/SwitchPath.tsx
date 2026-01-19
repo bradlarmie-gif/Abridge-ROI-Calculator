@@ -180,8 +180,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   const [selectedSolution, setSelectedSolution] = useState<SolutionType | null>(null);
   const [selectedSetting, setSelectedSetting] = useState<CareSetting>("outpatient");
   
-  const [providers, setProviders] = useState<number>(50);
-  const [annualEncounters, setAnnualEncounters] = useState<number>(100000);
+  const [providers, setProviders] = useState<number>(0);
+  const [annualEncounters, setAnnualEncounters] = useState<number>(0);
   const [utilization, setUtilization] = useState<number>(50);
   const [timeSavings, setTimeSavings] = useState<number>(1.5);
   const [timeSavingsKnown, setTimeSavingsKnown] = useState(true);
@@ -659,29 +659,32 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <Lightbulb className="w-4 h-4 text-amber-500" />
                   ~2,000 per provider is typical
                 </p>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={annualEncounters === 0 ? "" : annualEncounters.toString()}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9]/g, '');
-                    setAnnualEncounters(val === "" ? 0 : parseInt(val, 10));
-                  }}
-                  placeholder="e.g., 100,000"
-                  className="w-full px-5 py-4 rounded-xl border border-neutral-200 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F] transition-all"
-                  data-testid="input-encounters"
-                />
-                {providers > 0 && (
-                  <button
-                    onClick={() => setAnnualEncounters(providers * 2000)}
-                    className="mt-3 text-sm text-[#E85D3F] hover:underline font-medium"
-                    data-testid="button-auto-calculate"
-                  >
-                    Auto-calculate: {providers} x 2,000 = {(providers * 2000).toLocaleString()}
-                  </button>
-                )}
+                <div className="flex gap-3 items-center">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={annualEncounters === 0 ? "" : annualEncounters.toLocaleString()}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setAnnualEncounters(val === "" ? 0 : parseInt(val, 10));
+                    }}
+                    placeholder="e.g., 100,000"
+                    className="flex-1 px-5 py-4 rounded-xl border border-neutral-200 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F] transition-all"
+                    data-testid="input-encounters"
+                  />
+                  {providers > 0 && (
+                    <button
+                      onClick={() => setAnnualEncounters(providers * 2000)}
+                      className="px-4 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-medium rounded-xl transition-colors whitespace-nowrap"
+                      data-testid="button-auto-calculate"
+                      title={`Auto-fill: ${providers} providers × 2,000 = ${(providers * 2000).toLocaleString()}`}
+                    >
+                      Auto-populate
+                    </button>
+                  )}
+                </div>
                 {annualEncounters > 0 && providers > 0 && (
-                  <p className="mt-2 text-sm text-neutral-500">
+                  <p className="mt-3 text-sm text-neutral-500">
                     That's {Math.round(annualEncounters / providers).toLocaleString()} per provider
                     {Math.round(annualEncounters / providers) >= 500 && Math.round(annualEncounters / providers) <= 5000 
                       ? " - looks right" 
