@@ -1,0 +1,328 @@
+I need to redesign the EXPLORE path to be a sales-led ROI modeling experience. The key insight: this is used on live calls where a sales rep guides the client through building their model.
+
+---
+
+OVERALL STRUCTURE:
+
+STEP 1: Care Setting (keep existing)
+STEP 2: Strategic Priorities (enhance existing)
+STEP 3: Model Builder (NEW - the main event)
+STEP 4: Summary (enhance existing)
+
+---
+
+STEP 2: STRATEGIC PRIORITIES (Enhance)
+
+Update the priorities selection screen with these changes:
+
+1. Add context tags to each driver:
+   - Overtime: "⚡ Quick win—measurable in 30 days"
+   - Patient Access: "⚠️ Requires patient demand"
+   - Retention: "🕐 Long-term—12+ months"
+   - Level of Service: "✓ Universal—applies to every practice"
+   - Denials: "💰 Rev cycle teams love this"
+   - HCC: "⚠️ Only relevant if you have MA/risk volume"
+
+2. Add typical value ranges for each:
+   "📊 Typical range: $80K-200K for 50 providers"
+   (Scale these based on provider count if possible)
+
+3. Keep the sticky sidebar showing selections
+
+4. Change button text to "Build Your Model →"
+
+---
+
+STEP 3: MODEL BUILDER (New Design)
+
+This is a single-page experience with three main sections and a live sidebar.
+
+LAYOUT:
+- Left side (65% width): Scrollable content area
+- Right side (35% width): Sticky "Live Model" sidebar
+
+---
+
+LEFT SIDE CONTENT:
+
+SECTION 1: YOUR ORGANIZATION
+─────────────────────────────
+
+Header: "Your Organization"
+Subheader: "Let's start with the basics"
+
+Input 1: Provider count
+- Label: "How many providers are in scope?"
+- Input: Number field, placeholder "e.g., 50"
+- Helper: "This is your starting point. Could be a pilot or full deployment."
+
+Input 2: Annual encounters
+- Label: "Annual encounters for these providers?"
+- Input: Number field, placeholder "e.g., 100,000"
+- Helper: "💡 ~2,000/provider is typical for primary care, ~1,500 for specialty"
+- Smart default: Auto-calculate as providers × 2,000 when they enter providers
+
+Input 3: Utilization rate
+- Label: "Expected utilization rate?"
+- Input: Three-button toggle [Early 50%] [Typical 65%] [Aggressive 80%]
+- Helper: "% of encounters that will use Abridge"
+
+Live calculation shown below inputs:
+"→ [X] providers × [Y] encounters × [Z]% = [N] eligible encounters"
+
+---
+
+SECTION 2: YOUR VALUE DRIVERS
+─────────────────────────────
+
+Show only the drivers they selected in Step 2.
+Each driver is an expandable accordion.
+
+ACCORDION STRUCTURE (for each driver):
+
+HEADER (always visible):
+- Icon + Driver name
+- Calculated value (e.g., "$189,500")
+- Expand/collapse chevron
+
+EXPANDED CONTENT:
+
+1. "💡 The Theory" box
+   - Light gray background
+   - 2-3 sentences explaining WHY this creates value
+   - Same content as LEARN path
+
+2. "🧮 Your Calculation" section
+   - Shows the step-by-step math WITH THEIR NUMBERS
+   - Each step has inputs where needed
+
+---
+
+DRIVER-SPECIFIC INPUTS:
+
+OVERTIME & LOCUM SAVINGS:
+─────────────────────────
+STEP 1: Current overtime situation
+- Question: "What's your after-hours documentation situation?"
+- Input: Three options [Minimal <2hrs/wk] [Moderate 2-5hrs/wk] [Significant >5hrs/wk]
+- Shows calculation: X providers × Y% with OT × Z hrs × 50 wks = [Result]
+
+STEP 2: Documentation portion
+- Question: "What % of overtime is documentation catch-up?"
+- Input: Slider, 20% to 70%, default 45%
+- Helper: "💡 Abridge customers typically see 40-55%"
+- Shows: [Baseline OT] × [%] = [Doc-related OT]
+
+STEP 3: Reduction (auto-calculated)
+- Shows: [Doc OT] × 70% reduction × [adoption] = [Hours eliminated]
+
+STEP 4: Cost savings
+- Question: "What's your overtime rate?"
+- Input: Currency field, default $150
+- Helper: "1.5× base rate is typical"
+- Shows: [Hours] × $[rate] = $[RESULT]
+
+[Advanced: Show/hide locum option]
+
+---
+
+PATIENT ACCESS:
+───────────────
+STEP 1: Time returned (auto from base inputs)
+- Shows: 2.5 min × [encounters] = [hours]
+
+STEP 2: Demand qualifier
+- Question: "Do you have patient demand to fill new slots?"
+- Input: [Yes, waitlists] [Probably yes] [Not sure]
+- If "Not sure": Show note "We'll use a conservative realization rate"
+
+STEP 3: Realization rate
+- Question: "What portion of time savings can realistically become visits?"
+- Input: [Conservative 15%] [Typical 20%] [Optimistic 30%]
+- Helper: "💡 This accounts for scheduling constraints, room availability, etc."
+
+STEP 4: Revenue per visit
+- Question: "What's your average net revenue per visit?"
+- Input: Currency field, default $200
+- Helper: "Primary care: $150-200 | Specialty: $250-400"
+
+Result: [usable hours] ÷ 30 min × $[revenue] = $[RESULT]
+
+---
+
+CLINICIAN RETENTION:
+────────────────────
+STEP 1: Baseline turnover
+- Question: "What's your current annual turnover rate?"
+- Input: Slider, 3% to 15%, default 6%
+- Shows: [providers] × [%] = [departures/year]
+
+STEP 2: Burnout portion (auto)
+- Shows: [departures] × 45% burnout-related = [preventable]
+
+STEP 3: Attribution (auto)
+- Shows: [preventable] × 30% documentation-driven = [attributed]
+
+STEP 4: Replacement cost
+- Question: "What does it cost to replace a provider?"
+- Input: Currency field, default $500,000
+- Helper: "Include recruiting, onboarding, ramp-up, lost revenue"
+
+Note: "⚠️ Retention impact typically measurable after 12-18 months"
+
+Result: [departures avoided] × $[cost] = $[RESULT]
+
+---
+
+ACCURATE LEVEL OF SERVICE:
+──────────────────────────
+STEP 1: E/M encounters (auto)
+- Shows: [eligible] × 80% E/M = [E/M encounters]
+
+STEP 2: Under-coding rate
+- Question: "What's your estimated under-coding rate?"
+- Input: Slider, 5% to 20%, default 10%
+- Helper: "💡 Most organizations under-code 8-15% of visits"
+
+STEP 3: wRVU value
+- Question: "What's your wRVU conversion factor?"
+- Input: Currency field, default $45
+- Helper: "Check with your finance team—typically $40-55"
+
+Result: [under-coded] × 0.7 wRVU × $[value] = $[RESULT]
+
+---
+
+HCC & CHRONIC CONDITION CAPTURE:
+────────────────────────────────
+STEP 1: Risk-based volume qualifier
+- Question: "What % of your patients are in risk-based contracts?"
+- Input: Slider, 0% to 80%, default 35%
+- Helper: "Medicare Advantage, ACO, capitated arrangements"
+- If <10%: Show note "HCC capture may not be a primary driver for you"
+
+STEP 2: Current capture rate
+- Question: "What's your current HCC capture rate?"
+- Input: Slider, 50% to 90%, default 70%
+- Helper: "Your quality team or risk adjustment vendor may know this"
+
+STEP 3: Improvement & value (auto)
+- Shows the calculation with conservative assumptions
+
+Result: [improvement] × [value per HCC] = $[RESULT]
+
+---
+
+DOCUMENTATION-RELATED DENIALS:
+──────────────────────────────
+STEP 1: Denial rate
+- Question: "What's your current claim denial rate?"
+- Input: Slider, 3% to 15%, default 7%
+- Helper: "Check with revenue cycle—typically 5-10%"
+
+STEP 2: Doc-related portion (auto)
+- Shows: [denials] × 35% doc-related = [doc denials]
+
+STEP 3: Average claim value
+- Question: "What's your average claim value?"
+- Input: Currency field, default $250
+- Helper: "For outpatient E/M visits"
+
+Result: [prevented] × $[value] = $[RESULT]
+
+---
+
+SECTION 3: YOUR INVESTMENT
+──────────────────────────
+
+Header: "Your Investment"
+
+Input 1: Pricing model
+- [Per clinician/month] or [Enterprise annual]
+
+Input 2: Cost (based on model)
+- Per clinician: $[___]/month, default $140
+- Enterprise: $[___]/year
+
+Input 3: Contract term
+- [1 yr] [2 yrs] [3 yrs] [Custom]
+
+Input 4: Implementation fee (optional checkbox)
+- [_] Add implementation fee: $[___]
+
+Live calculation:
+"[providers] × $[cost] × 12 = $[annual investment]"
+
+---
+
+RIGHT SIDE SIDEBAR: LIVE MODEL
+──────────────────────────────
+
+Sticky sidebar that scrolls with the page.
+
+Structure:
+
+SECTION: YOUR INPUTS
+- Providers: [value]
+- Encounters: [value]
+- Utilization: [value]%
+- Eligible: [calculated]
+
+SECTION: YOUR VALUE (updates live)
+- ⏱️ Time Saved
+  - Driver 1: $[value]
+  - Driver 2: $[value]
+  - Subtotal: $[value]
+  
+- 📋 Doc Quality
+  - Driver 3: $[value]
+  - Subtotal: $[value]
+
+SECTION: TOTAL BENEFIT
+- $[total] /year
+
+SECTION: INVESTMENT
+- $[cost] /year
+
+SECTION: NET GAIN
+- Large, prominent: $[net] /year
+- ROI: [X.X]x
+- Payback: [X.X] months
+
+BUTTON: [View Full Summary →]
+
+---
+
+DESIGN NOTES:
+
+1. Sidebar values update in real-time as inputs change
+2. Use subtle animations for number changes (count up/down)
+3. Highlight which section is currently being edited
+4. Show validation errors inline (not blocking)
+5. "💡" hints should be collapsible/dismissible
+6. Sliders should show the current value prominently
+7. Currency inputs should auto-format with commas
+8. Mobile: Sidebar becomes a collapsible bottom sheet
+
+---
+
+INTERACTIONS:
+
+1. When user changes a base input (providers, encounters, utilization):
+   - All driver calculations update immediately
+   - Sidebar totals update
+   - Subtle animation on changed values
+
+2. When user adjusts a driver-specific input:
+   - That driver's result updates
+   - Sidebar updates
+   - Show the math changing in real-time
+
+3. Accordion behavior:
+   - Only one driver expanded at a time (optional: allow multiple)
+   - Clicking another driver collapses current, expands new
+   - Collapsed state shows: [Icon] [Name] [$Value] [Chevron]
+
+4. Scroll behavior:
+   - Sidebar stays visible while scrolling left content
+   - When reaching Investment section, sidebar scrolls with it

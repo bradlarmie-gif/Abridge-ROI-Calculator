@@ -153,6 +153,36 @@ const LEVER_KEY_METRICS: Record<string, string> = {
   ccmcc_support: "CC/MCC capture support",
 };
 
+const LEVER_CONTEXT_TAGS: Record<string, { icon: string; text: string; color: string }> = {
+  overtime: { icon: "zap", text: "Quick win—measurable in 30 days", color: "amber" },
+  patientAccess: { icon: "alert", text: "Requires patient demand", color: "orange" },
+  retention: { icon: "clock", text: "Long-term—12+ months", color: "slate" },
+  workforce: { icon: "clock", text: "Long-term—12+ months", color: "slate" },
+  wrvu: { icon: "check", text: "Universal—applies to every practice", color: "green" },
+  edLevelOfService: { icon: "check", text: "Universal—applies to every ED", color: "green" },
+  denials: { icon: "dollar", text: "Rev cycle teams love this", color: "emerald" },
+  denialReduction: { icon: "dollar", text: "Rev cycle teams love this", color: "emerald" },
+  hcc: { icon: "alert", text: "Only relevant with MA/risk volume", color: "orange" },
+  hccCapture: { icon: "alert", text: "Only relevant with MA/risk volume", color: "orange" },
+  edThroughput: { icon: "zap", text: "Quick win—measurable in 30 days", color: "amber" },
+  edRetention: { icon: "clock", text: "Long-term—12+ months", color: "slate" },
+};
+
+const LEVER_VALUE_RANGES: Record<string, { min: number; max: number; perProviders: number }> = {
+  overtime: { min: 80000, max: 200000, perProviders: 50 },
+  patientAccess: { min: 150000, max: 350000, perProviders: 50 },
+  retention: { min: 50000, max: 150000, perProviders: 50 },
+  workforce: { min: 40000, max: 120000, perProviders: 50 },
+  wrvu: { min: 100000, max: 250000, perProviders: 50 },
+  denials: { min: 50000, max: 150000, perProviders: 50 },
+  hcc: { min: 150000, max: 400000, perProviders: 50 },
+  edThroughput: { min: 200000, max: 500000, perProviders: 25 },
+  edLevelOfService: { min: 150000, max: 350000, perProviders: 25 },
+  edRetention: { min: 100000, max: 300000, perProviders: 25 },
+  denialReduction: { min: 75000, max: 200000, perProviders: 25 },
+  hccCapture: { min: 100000, max: 300000, perProviders: 50 },
+};
+
 const ALL_SETTINGS: AllSettingType[] = [
   "outpatient",
   "ed",
@@ -890,6 +920,35 @@ function PriorityCard({
 }) {
   const LeverIcon = LEVER_ICONS[lever.id] || FileText;
   const keyMetric = LEVER_KEY_METRICS[lever.id];
+  const contextTag = LEVER_CONTEXT_TAGS[lever.id];
+  const valueRange = LEVER_VALUE_RANGES[lever.id];
+  
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    return `$${(value / 1000).toFixed(0)}K`;
+  };
+
+  const getTagColors = (color: string) => {
+    switch (color) {
+      case "amber": return "bg-amber-50 text-amber-700 border-amber-200";
+      case "orange": return "bg-orange-50 text-orange-700 border-orange-200";
+      case "green": return "bg-green-50 text-green-700 border-green-200";
+      case "emerald": return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "slate": return "bg-slate-50 text-slate-600 border-slate-200";
+      default: return "bg-neutral-50 text-neutral-600 border-neutral-200";
+    }
+  };
+
+  const getTagIcon = (icon: string) => {
+    switch (icon) {
+      case "zap": return <Zap className="w-3 h-3" />;
+      case "alert": return <AlertTriangle className="w-3 h-3" />;
+      case "clock": return <Clock className="w-3 h-3" />;
+      case "check": return <Check className="w-3 h-3" />;
+      case "dollar": return <DollarSign className="w-3 h-3" />;
+      default: return null;
+    }
+  };
 
   return (
     <div
@@ -922,15 +981,24 @@ function PriorityCard({
               <LeverIcon className={`w-5 h-5 ${isSelected ? "text-[#E8532F]" : "text-neutral-600"}`} />
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
-              <h4 className="text-base font-medium text-[#111827] leading-snug">
-                {lever.label}
-              </h4>
-              <p className="mt-2 text-sm text-[#6B7280] leading-relaxed">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h4 className="text-base font-medium text-[#111827] leading-snug">
+                  {lever.label}
+                </h4>
+                {contextTag && (
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${getTagColors(contextTag.color)}`}>
+                    {getTagIcon(contextTag.icon)}
+                    {contextTag.text}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-sm text-[#6B7280] leading-relaxed">
                 {lever.description}
               </p>
-              {keyMetric && (
-                <p className="mt-2 text-[13px] text-[#6B7280] italic">
-                  Key metric: {keyMetric}
+              {valueRange && (
+                <p className="mt-2 text-[12px] text-[#6B7280] flex items-center gap-1.5 font-mono">
+                  <BarChart3 className="w-3.5 h-3.5 text-[#9CA3AF]" />
+                  Typical range: {formatCurrency(valueRange.min)}–{formatCurrency(valueRange.max)} for {valueRange.perProviders} providers
                 </p>
               )}
             </div>
@@ -1997,6 +2065,16 @@ export default function ObjectiveSelectionScreen({
     if (!selectedSetting || selectedLeverIds.size === 0) return;
     setCurrentPage("value-blueprint");
   };
+  
+  const handleBuildYourModel = () => {
+    if (!selectedSetting || selectedLeverIds.size < 2) return;
+    const selectedLevers: SelectedLever[] = Array.from(selectedLeverIds).map(id => ({
+      settingId: selectedSetting,
+      leverId: id,
+      active: true,
+    }));
+    onComplete([selectedSetting], selectedLevers);
+  };
 
   const handleBackToPage2 = () => {
     setCurrentPage("priorities");
@@ -2555,16 +2633,16 @@ export default function ObjectiveSelectionScreen({
                     <button
                       type="button"
                       disabled={!canContinuePage2}
-                      onClick={handleContinueToPage3}
+                      onClick={handleBuildYourModel}
                       className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
                         canContinuePage2
                           ? "bg-[#111827] text-white hover:bg-[#E8532F]"
                           : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
                       }`}
-                      data-testid="button-continue-to-blueprint"
+                      data-testid="button-build-your-model"
                     >
-                      Continue
-                      <ChevronRight className="h-5 w-5" />
+                      Build Your Model
+                      <ArrowRight className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
@@ -2584,16 +2662,16 @@ export default function ObjectiveSelectionScreen({
                 <button
                   type="button"
                   disabled={!canContinuePage2}
-                  onClick={handleContinueToPage3}
+                  onClick={handleBuildYourModel}
                   className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                     canContinuePage2
                       ? "bg-[#111827] text-white hover:bg-[#E8532F]"
                       : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
                   }`}
-                  data-testid="button-continue-to-blueprint-mobile"
+                  data-testid="button-build-your-model-mobile"
                 >
-                  Continue
-                  <ChevronRight className="h-4 w-4" />
+                  Build Your Model
+                  <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </div>

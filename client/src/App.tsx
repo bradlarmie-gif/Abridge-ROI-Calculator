@@ -10,6 +10,7 @@ import ObjectiveSelectionScreen, {
   type SelectedLever,
 } from "@/pages/ObjectiveSelectionScreen";
 import RoiCalculator from "@/pages/RoiCalculator";
+import ModelBuilder, { type ModelResults } from "@/pages/ModelBuilder";
 import ExpandPath from "@/pages/ExpandPath";
 import SwitchPath from "@/pages/SwitchPath";
 import LearnPath from "@/pages/LearnPath";
@@ -17,7 +18,7 @@ import LearnPath from "@/pages/LearnPath";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "journey" | "explore" | "calculator" | "expand" | "switch" | "learn";
+type AppView = "journey" | "explore" | "model-builder" | "calculator" | "expand" | "switch" | "learn";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -33,6 +34,7 @@ export default function App() {
   });
 
   const [seedInputs, setSeedInputs] = useState<Partial<RoiInputs>>({});
+  const [modelResults, setModelResults] = useState<ModelResults | null>(null);
 
   const handleSelectionComplete = (
     selectedSettings: CareSettingType[],
@@ -41,11 +43,20 @@ export default function App() {
   ) => {
     setSelectionState({ selectedSettings, selectedLevers });
     setSeedInputs(seed);
+    setCurrentView("model-builder");
+  };
+
+  const handleModelComplete = (results: ModelResults) => {
+    setModelResults(results);
     setCurrentView("calculator");
   };
 
   const handleBackToExplore = () => {
     setCurrentView("explore");
+  };
+
+  const handleBackToModelBuilder = () => {
+    setCurrentView("model-builder");
   };
 
   const handleBackToJourney = () => {
@@ -77,12 +88,21 @@ export default function App() {
           />
         )}
 
+        {currentView === "model-builder" && hasSelection && (
+          <ModelBuilder
+            selectedSettings={selectionState.selectedSettings}
+            selectedLevers={selectionState.selectedLevers}
+            onBack={handleBackToExplore}
+            onComplete={handleModelComplete}
+          />
+        )}
+
         {currentView === "calculator" && hasSelection && (
           <RoiCalculator
             selectedSettings={selectionState.selectedSettings}
             selectedLevers={selectionState.selectedLevers}
             seedInputs={seedInputs}
-            onBack={handleBackToExplore}
+            onBack={handleBackToModelBuilder}
           />
         )}
 
