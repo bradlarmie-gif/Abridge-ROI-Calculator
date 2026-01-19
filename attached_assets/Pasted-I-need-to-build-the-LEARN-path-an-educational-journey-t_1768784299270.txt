@@ -1,0 +1,269 @@
+I need to build the LEARN path - an educational journey that teaches users the ROI methodology for ambient documentation. Users select a care setting and then learn about the specific ROI drivers for that setting.
+
+THE CORE FRAMEWORK:
+Ambient documentation creates TWO types of value:
+1. ⏱️ TIME SAVED - Minutes/hours returned to clinicians
+2. 📋 DOCUMENTATION QUALITY - Better, more complete notes
+
+Each care setting has DIFFERENT drivers within these two lanes.
+
+---
+
+ROUTES:
+- /learn (setting selection)
+- /learn/methodology (driver education for selected setting)
+
+DESIGN: Match the landing page style exactly - #E85D3F coral/red accent, clean/minimal, Stripe-like feel, generous spacing.
+
+---
+
+SCREEN 1: /learn
+---
+
+HEADER:
+- "← Back to Home" link (top left)
+- ABRIDGE logo + "ROI Calculator" (top right)
+
+HERO (centered):
+- Headline: "How Ambient ROI Actually Works"
+- Subheadline: "Most ROI calculators give you a number. We'll show you the methodology—so you can defend it in any meeting."
+
+SETTING SELECTOR CARD:
+- Card with white background, subtle shadow, 16px rounded corners
+- Inside:
+  - Label: "Select a care setting to explore"
+  - Description: "Each setting has unique workflows and value drivers. We'll show you exactly how ROI is calculated for your environment."
+  
+  - 2x2 grid of setting cards (clickable, radio-button behavior):
+  
+    OUTPATIENT:
+    - Icon: Stethoscope
+    - Title: "Outpatient"
+    - Subtitle: "Primary care, specialty visits, clinics"
+    - On select: coral border, checkmark
+    
+    EMERGENCY DEPARTMENT:
+    - Icon: Zap/Lightning
+    - Title: "Emergency Department"
+    - Subtitle: "High-volume, fast-paced encounters"
+    
+    NURSING:
+    - Icon: Heart/HeartPulse
+    - Title: "Nursing"
+    - Subtitle: "Bedside documentation, care coordination"
+    
+    INPATIENT:
+    - Icon: Building/Hospital
+    - Title: "Inpatient"
+    - Subtitle: "Hospital admissions, rounding"
+    - Style: Slightly grayed, show "Coming soon" badge
+    - Not clickable yet
+    
+  - Button: "Show Me the Math →" (coral filled, disabled until selection)
+
+---
+
+SCREEN 2: /learn/methodology?setting=[selected]
+---
+
+HEADER:
+- "← Back" link
+- ABRIDGE logo
+- Small pill showing selected setting: "Outpatient" (with icon)
+
+PAGE TITLE:
+- "The ROI Framework for [Setting Name]"
+- Subtitle: "Understanding where value actually comes from"
+
+---
+
+VISUAL FRAMEWORK SECTION:
+
+Create a visual diagram showing the two-lane framework with setting-specific drivers.
+
+TOP ROW:
+- Centered label: "AMBIENT DOCUMENTATION"
+- Two branch boxes below:
+
+LEFT BRANCH:
+- Box with clock icon: "⏱️ Time Saved"
+- Subtitle based on setting:
+  - Outpatient: "2.5 min returned per encounter"
+  - ED: "Faster documentation, more throughput"
+  - Nursing: "Hours returned per shift"
+
+RIGHT BRANCH:
+- Box with document icon: "📋 Documentation Quality"
+- Subtitle based on setting:
+  - Outpatient: "More complete, accurate notes"
+  - ED: "Real-time capture during fast encounters"
+  - Nursing: "Point-of-care documentation"
+
+CHILD BOXES (setting-specific):
+Draw connecting lines from each branch to its child driver boxes.
+
+---
+
+SETTING-SPECIFIC DRIVER CONFIGURATIONS:
+
+OUTPATIENT DRIVERS:
+Time Saved lane:
+1. Patient Access - "More visits possible"
+2. Overtime & Locum Savings - "Less premium labor"
+3. Clinician Retention - "Reduced burnout"
+
+Documentation Quality lane:
+4. Accurate Level of Service - "wRVU accuracy"
+5. HCC & Chronic Condition Capture - "RAF score improvement"
+6. Documentation-Related Denials - "Fewer rejected claims"
+
+---
+
+EMERGENCY DEPARTMENT DRIVERS:
+Time Saved lane:
+1. Patient Throughput - "LWBS reduction, more patients seen"
+2. Scribe Cost Reduction - "Replace or reduce scribes" (optional - show if relevant)
+3. Workforce Retention - "Reduced ED burnout"
+
+Documentation Quality lane:
+4. Level-of-Service Accuracy - "wRVU capture"
+5. Documentation-Related Denials - "Fewer rejected claims"
+
+---
+
+NURSING DRIVERS:
+Time Saved lane:
+1. Documentation Time Savings - "Hours returned to bedside care"
+2. Overtime Reduction - "Eliminate end-of-shift charting"
+3. Nurse Retention - "Reduced burnout and turnover"
+
+Documentation Quality lane:
+4. Documentation Timeliness - "Real-time vs. end-of-shift"
+5. Documentation Completeness - "Required fields captured"
+
+---
+
+DRIVER ACCORDION SECTION:
+
+Below the visual diagram, show two sections:
+
+SECTION HEADER: "⏱️ TIME SAVED BENEFITS"
+- Light gray background band
+- Contains accordions for Time Saved drivers (setting-specific)
+
+SECTION HEADER: "📋 DOCUMENTATION QUALITY BENEFITS"
+- Light gray background band
+- Contains accordions for Doc Quality drivers (setting-specific)
+
+---
+
+ACCORDION STRUCTURE (for each driver):
+
+COLLAPSED STATE:
+- Icon (setting-specific)
+- Driver name
+- One-line description
+- Reference value in coral: "$XXX,XXX"
+- Chevron to expand
+
+EXPANDED STATE:
+
+1. "💡 The Theory" section:
+   - 2-3 sentences explaining WHY this creates value
+   - Written conversationally, like explaining to a CFO
+   
+2. "🧮 How We Calculate It" section:
+   - Step-by-step calculation in visual boxes
+   - Each step shows: [Input] × [Input] = [Output]
+   - Assumptions labeled "(typical)" in coral
+   - Final result emphasized in larger coral text
+   
+3. "🎛️ What You'd Customize" section:
+   - Row of pill/tags showing variables
+   - Example: [Provider count] [Visit volume] [Revenue/visit]
+   
+4. "📊 Range Across Customers" section:
+   - Single line: "Conservative: $XX-XX | Typical: $XX-XX"
+
+---
+
+REFERENCE SCENARIO CARD (above accordions):
+
+Show setting-specific reference scenario:
+
+OUTPATIENT:
+- "Reference: Typical mid-sized outpatient practice"
+- 40 providers | 80,000 annual visits | 65% adoption
+- "~52,000 Abridge-documented encounters/year"
+
+EMERGENCY DEPARTMENT:
+- "Reference: Mid-sized emergency department"
+- 25 physicians | 45,000 annual visits | 70% adoption
+- "~31,500 Abridge-documented encounters/year"
+
+NURSING:
+- "Reference: 200-bed hospital nursing deployment"
+- 150 nurses | 180,000 documentation events/year | 60% adoption
+- "~108,000 Abridge-documented events/year"
+
+---
+
+BOTTOM BRIDGE SECTION:
+
+After user has expanded at least 2 accordions, show:
+
+Card with light coral background (#FEF2F0):
+- Headline: "Now You Understand the Framework"
+- Checkmarks for drivers they've explored
+- Text: "Ready to build a model with YOUR organization's numbers?"
+- Primary button: "Build My ROI Model →"
+  - Click: Navigate to /calculator/care-setting with setting pre-selected
+- Secondary link: "← Explore more drivers"
+
+---
+
+SPECIFIC DRIVER CONTENT:
+
+I'll provide the detailed calculation steps for each driver. Pull the existing calculation logic from the ObjectiveSelection.tsx and related drawer components, but restructure it for educational display.
+
+For each driver, show the math step-by-step, not just the final number.
+
+Example for PATIENT ACCESS (Outpatient):
+
+STEP 1: TIME RETURNED
+┌─────────────────────────────────────────────────────┐
+│ Minutes saved × Documented encounters = Hours back │
+│ 2.5 min × 52,000 = 2,167 hours                     │
+└─────────────────────────────────────────────────────┘
+
+STEP 2: REALITY CHECK
+┌─────────────────────────────────────────────────────┐
+│ Not all time converts to visits                     │
+│ Realization factor: 20% (typical)                   │
+│ 2,167 hrs × 20% = 433 usable hours                 │
+└─────────────────────────────────────────────────────┘
+
+STEP 3: NEW VISITS
+┌─────────────────────────────────────────────────────┐
+│ Usable hours ÷ Visit duration = New visits         │
+│ 433 hrs ÷ 30 min = 866 additional visits           │
+└─────────────────────────────────────────────────────┘
+
+STEP 4: REVENUE IMPACT
+┌─────────────────────────────────────────────────────┐
+│ New visits × Revenue per visit = Annual value      │
+│ 866 × $200 = $173,200                              │
+└─────────────────────────────────────────────────────┘
+
+---
+
+ANIMATIONS:
+- Accordion expand: smooth 300ms transition
+- Calculation steps: fade in sequentially when expanded
+- Diagram boxes: subtle hover effect (scale 1.02)
+- Bridge section: fade in when condition met
+
+RESPONSIVE:
+- Diagram branches stack vertically on mobile
+- Accordions full-width on mobile
+- Good touch targets

@@ -95,7 +95,13 @@ export default function App() {
         )}
 
         {currentView === "learn" && (
-          <LearnPath onBack={handleBackToJourney} />
+          <LearnPath 
+            onBack={handleBackToJourney} 
+            onStartCalculator={(setting) => {
+              setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
+              setCurrentView("explore");
+            }}
+          />
         )}
       </TooltipProvider>
     </QueryClientProvider>
