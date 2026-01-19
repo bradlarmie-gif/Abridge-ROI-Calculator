@@ -2,7 +2,7 @@
 
 ## Overview
 
-Abridge ROI Studio is a single-page web application designed to calculate the return on investment (ROI) for implementing Abridge (an AI documentation tool) in various healthcare care settings (Outpatient, Emergency Department, Nursing). The application enables users to select a care setting, choose ROI levers, input practice-specific assumptions, and receive real-time financial impact calculations, including ROI multiple, total annual benefit, investment costs, and net value created. The primary goal is to empower healthcare organizations to make data-driven decisions about adopting AI for documentation, streamlining operations, and improving financial outcomes.
+Abridge ROI Studio is a single-page web application designed to calculate the return on investment (ROI) for implementing Abridge (an AI documentation tool) in various healthcare care settings (Outpatient, Emergency Department, Nursing, Inpatient). The application enables users to select a care setting, choose ROI levers, input practice-specific assumptions, and receive real-time financial impact calculations, including ROI multiple, total annual benefit, investment costs, and net value created. The primary goal is to empower healthcare organizations to make data-driven decisions about adopting AI for documentation, streamlining operations, and improving financial outcomes.
 
 The application operates entirely client-side, providing a responsive and interactive experience with a two-panel layout: inputs on the left and results (KPIs, waterfall charts, lever tables) on the right.
 
@@ -18,6 +18,13 @@ The application operates entirely client-side, providing a responsive and intera
   - Level-of-Service Accuracy (edLevelOfService)
   - Documentation-Related Denials (edDenials)
 - **ED-Specific Defaults**: 25 physicians (vs 50 providers), 1,800 encounters/physician (vs 2,000), utilization rates 55/70/85% (vs 50/65/80%)
+- **Inpatient (Hospitalist) Support**: Full Inpatient support with 5 hospitalist-specific drivers:
+  - Rounding Efficiency & Time Savings (inpatientRounding)
+  - Hospitalist Retention (inpatientRetention)
+  - CC/MCC Capture / DRG Optimization (inpatientCCMCC)
+  - CDI Query Reduction (inpatientCDI)
+  - Documentation-Related Denials (inpatientDenials)
+- **Inpatient-Specific Defaults**: 20 hospitalists (vs 50 providers), 400 admissions/hospitalist (8,000 total), uses "hospitalists" and "admissions" terminology, hospitalist-specific burnout rates (55%) and denial patterns (45% doc-related)
 - **State Persistence**: Model Builder state now persists when navigating to Summary and back via initialResults prop
 
 ## User Preferences
@@ -28,7 +35,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Application Flow
 The application guides users through a multi-step process:
-1.  **Care Setting Selection**: Users choose a healthcare environment (Outpatient, ED, Nursing).
+1.  **Care Setting Selection**: Users choose a healthcare environment (Outpatient, ED, Nursing, Inpatient).
 2.  **Strategic Priorities Selection**: Users identify relevant ROI levers, grouped by categories like 'Time Savings' or 'Documentation Quality'.
 3.  **Baseline Assumptions Wizard**: A three-step process to define adoption rates, value posture (Conservative, Typical, Aggressive), and investment details.
 4.  **Calculator Screen**: The main interface displaying inputs, KPIs, a waterfall chart visualizing financial impact, and a detailed lever table.
