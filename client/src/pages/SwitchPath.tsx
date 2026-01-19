@@ -252,6 +252,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   
   const [selectedDrivers, setSelectedDrivers] = useState<DriverId[]>([]);
   const [expandedDrivers, setExpandedDrivers] = useState<DriverId[]>([]);
+  const [showAllDrivers, setShowAllDrivers] = useState(false);
   const [chartAnimationStage, setChartAnimationStage] = useState(0);
   const [gapRevealStage, setGapRevealStage] = useState(0);
 
@@ -302,6 +303,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
+
+  // Pre-select common drivers when entering step 6 for the first time
+  useEffect(() => {
+    if (step === 6 && selectedDrivers.length === 0) {
+      setSelectedDrivers(["patient_access", "denials", "level_of_service"]);
+    }
+  }, [step, selectedDrivers.length]);
 
   const getRampMultipliers = (drivers: DriverId[]) => {
     const rampSpeeds = drivers.map(id => DRIVERS.find(d => d.id === id)?.rampSpeed || "medium");
@@ -855,11 +863,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 mt-6">
-                    <div className="bg-neutral-100 rounded-xl p-4 text-center border border-neutral-200">
-                      <p className="text-sm text-neutral-500 mb-1">Industry Avg</p>
-                      <p className="text-2xl font-bold text-neutral-600">45%</p>
+                    <div className="bg-[#F3F4F6] rounded-xl p-4 text-center border border-[#E5E7EB]">
+                      <p className="text-sm text-[#9CA3AF] mb-1">Industry Avg</p>
+                      <p className="text-2xl font-bold text-[#6B7280]">45%</p>
                     </div>
-                    <div className="bg-[#E85D3F]/5 rounded-xl p-4 text-center border border-[#E85D3F]/20">
+                    <div className="bg-[#FEF2F2] rounded-xl p-4 text-center border border-[#E85D3F]/20">
                       <p className="text-sm text-[#E85D3F]/70 mb-1">Abridge Avg</p>
                       <p className="text-2xl font-bold text-[#E85D3F]">65%</p>
                     </div>
@@ -980,23 +988,23 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 relative">
-              <div className="relative bg-[#F5F5F5] rounded-2xl p-6 border border-neutral-200">
-                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Your Current</p>
-                <p className="text-sm text-neutral-500 mb-1">At {utilization}% utilization</p>
-                <p className="text-4xl font-bold text-neutral-700 mb-1 tabular-nums">{calculations.theirDocumentedEncounters.toLocaleString()}</p>
-                <p className="text-sm text-neutral-500">encounters documented/year</p>
+              <div className="relative bg-[#F3F4F6] rounded-2xl p-6 border border-neutral-200">
+                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Your Current</p>
+                <p className="text-sm text-[#9CA3AF] mb-1">At {utilization}% utilization</p>
+                <p className="text-4xl font-bold text-[#6B7280] mb-1 tabular-nums">{calculations.theirDocumentedEncounters.toLocaleString()}</p>
+                <p className="text-sm text-[#9CA3AF]">encounters documented/year</p>
               </div>
               
               <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full border-2 border-[#E85D3F] items-center justify-center shadow-lg">
                 <ArrowRight className="w-5 h-5 text-[#E85D3F]" />
               </div>
               
-              <div className="relative rounded-2xl p-6 border-2 border-[#E85D3F]/30" style={{ backgroundColor: "rgba(232, 93, 63, 0.05)" }}>
+              <div className="relative bg-[#FEF2F2] rounded-2xl p-6 border-2 border-[#E85D3F]/20">
                 <div className="absolute top-4 right-4 text-[#E85D3F]/10 font-bold text-4xl">A</div>
                 <p className="text-xs font-semibold text-[#E85D3F] uppercase tracking-wide mb-2">With Abridge</p>
-                <p className="text-sm text-[#E85D3F]/70 mb-1">At {ABRIDGE_BENCHMARKS.utilization}% utilization</p>
-                <p className="text-4xl font-bold text-[#E85D3F] mb-1 tabular-nums">{calculations.abridgeDocumentedEncounters.toLocaleString()}</p>
-                <p className="text-sm text-neutral-500">encounters documented/year</p>
+                <p className="text-sm text-[#1F2937]/60 mb-1">At {ABRIDGE_BENCHMARKS.utilization}% utilization</p>
+                <p className="text-4xl font-bold text-[#1F2937] mb-1 tabular-nums">{calculations.abridgeDocumentedEncounters.toLocaleString()}</p>
+                <p className="text-sm text-[#1F2937]/70">encounters documented/year</p>
                 <div className="mt-3 inline-flex items-center gap-1.5 bg-[#E85D3F]/10 text-[#E85D3F] text-sm font-semibold px-3 py-1 rounded-full">
                   <ArrowRight className="w-3 h-3 rotate-[-45deg]" />
                   +{Math.round(((calculations.abridgeDocumentedEncounters - calculations.theirDocumentedEncounters) / calculations.theirDocumentedEncounters) * 100)}% more
@@ -1359,128 +1367,118 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step6-title">
               Where would better performance create value?
             </h1>
-            <p className="text-lg text-neutral-500 mb-8">Select 2-4 areas where improvement matters most.</p>
+            <p className="text-lg text-neutral-500 mb-8">We've pre-selected the most common drivers. Adjust as needed.</p>
 
-            <div className="bg-blue-50 rounded-xl p-5 border border-blue-200/50 mb-10">
-              <p className="text-sm font-semibold text-blue-900 mb-3">We've established three types of gaps:</p>
-              <div className="space-y-2 text-sm text-blue-800">
-                <div className="flex items-start gap-2">
-                  <BarChart3 className="w-4 h-4 mt-0.5 text-blue-600" />
-                  <div>
-                    <strong>Adoption Gap:</strong> You're at {utilization}% utilization, Abridge averages {ABRIDGE_BENCHMARKS.utilization}% = {calculations.utilizationGapEncounters.toLocaleString()} more encounters
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Clock className="w-4 h-4 mt-0.5 text-blue-600" />
-                  <div>
-                    <strong>Efficiency Gap:</strong> You're getting {timeSavings} min/encounter, Abridge gets {ABRIDGE_BENCHMARKS.timeSavings} min = {calculations.efficiencyGapHours.toLocaleString()} more hours
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Target className="w-4 h-4 mt-0.5 text-blue-600" />
-                  <div>
-                    <strong>Performance Gaps:</strong> wRVU ({wrvuUplift}% vs {ABRIDGE_BENCHMARKS.wrvuUplift}%), Denial prevention ({denialPrevention}% vs {ABRIDGE_BENCHMARKS.denialPrevention}%)
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-blue-900 mt-4 font-medium">Now let's focus on where these gaps matter most for YOU.</p>
-            </div>
-            
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Time Saved Benefits
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {DRIVERS.filter(d => d.category === "time").map((driver) => {
-                  const Icon = driver.icon;
-                  const isSelected = selectedDrivers.includes(driver.id);
-                  const isCommon = driver.id === "patient_access" || driver.id === "overtime";
-                  
-                  return (
-                    <button
-                      key={driver.id}
-                      onClick={() => toggleDriver(driver.id)}
-                      className={`p-6 rounded-xl border-2 text-left transition-all duration-200 relative ${
-                        isSelected
-                          ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
-                          : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
-                      }`}
-                      data-testid={`driver-${driver.id}`}
-                    >
-                      {isCommon && (
-                        <span className="absolute -top-2 left-4 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          Most common
-                        </span>
-                      )}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
-                        }`}>
-                          <Icon className={`w-6 h-6 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
-                        </div>
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
-                        }`}>
-                          {isSelected && <Check className="w-4 h-4 text-white" />}
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {DRIVERS.filter(d => ["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
+                const Icon = driver.icon;
+                const isSelected = selectedDrivers.includes(driver.id);
+                
+                return (
+                  <button
+                    key={driver.id}
+                    onClick={() => toggleDriver(driver.id)}
+                    className={`p-5 rounded-xl border-2 text-left transition-all duration-200 relative ${
+                      isSelected
+                        ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
+                        : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
+                    }`}
+                    data-testid={`driver-${driver.id}`}
+                  >
+                    <span className="absolute -top-2 left-4 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                      Most common
+                    </span>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
+                      }`}>
+                        <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
                       </div>
-                      <h3 className="font-semibold text-neutral-900 mb-1">{driver.name}</h3>
-                      <p className="text-sm text-neutral-500 mb-2">{driver.description}</p>
-                      <p className="text-xs text-neutral-400 mb-3">{driver.context}</p>
-                      <p className="text-sm font-semibold text-[#E85D3F]">Typical gap: {driver.typicalGap}</p>
-                    </button>
-                  );
-                })}
-              </div>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                        isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
+                      }`}>
+                        {isSelected && <Check className="w-4 h-4 text-white" />}
+                      </div>
+                    </div>
+                    <h3 className="font-semibold text-neutral-900 mb-1 text-sm">{driver.name}</h3>
+                    <p className="text-xs text-neutral-500 mb-2 line-clamp-2">{driver.description}</p>
+                    <p className="text-sm font-semibold text-emerald-600">{driver.typicalGap}</p>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="mb-8">
-              <p className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-                <FileCheck className="w-4 h-4" /> Documentation Quality Benefits
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {DRIVERS.filter(d => d.category === "quality").map((driver) => {
-                  const Icon = driver.icon;
-                  const isSelected = selectedDrivers.includes(driver.id);
-                  const isCommon = driver.id === "denials";
-                  
-                  return (
-                    <button
-                      key={driver.id}
-                      onClick={() => toggleDriver(driver.id)}
-                      className={`p-6 rounded-xl border-2 text-left transition-all duration-200 relative ${
-                        isSelected
-                          ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
-                          : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
-                      }`}
-                      data-testid={`driver-${driver.id}`}
-                    >
-                      {isCommon && (
-                        <span className="absolute -top-2 left-4 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          Most common
-                        </span>
-                      )}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
-                        }`}>
-                          <Icon className={`w-6 h-6 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
+            {!showAllDrivers ? (
+              <button 
+                onClick={() => setShowAllDrivers(true)}
+                className="w-full py-3 border-2 border-dashed border-neutral-300 rounded-xl text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2 mb-8"
+                data-testid="button-show-more-drivers"
+              >
+                <ChevronDown className="w-4 h-4" />
+                Show 3 more drivers
+              </button>
+            ) : (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm font-semibold text-neutral-500 uppercase tracking-wide">Additional Drivers</p>
+                  <button 
+                    onClick={() => setShowAllDrivers(false)}
+                    className="text-xs text-neutral-400 hover:text-neutral-600"
+                  >
+                    Hide
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {DRIVERS.filter(d => !["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
+                    const Icon = driver.icon;
+                    const isSelected = selectedDrivers.includes(driver.id);
+                    
+                    return (
+                      <button
+                        key={driver.id}
+                        onClick={() => toggleDriver(driver.id)}
+                        className={`p-5 rounded-xl border-2 text-left transition-all duration-200 ${
+                          isSelected
+                            ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
+                            : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
+                        }`}
+                        data-testid={`driver-${driver.id}`}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                            isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
+                          }`}>
+                            <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
+                          </div>
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
+                          }`}>
+                            {isSelected && <Check className="w-4 h-4 text-white" />}
+                          </div>
                         </div>
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
-                        }`}>
-                          {isSelected && <Check className="w-4 h-4 text-white" />}
-                        </div>
-                      </div>
-                      <h3 className="font-semibold text-neutral-900 mb-1">{driver.name}</h3>
-                      <p className="text-sm text-neutral-500 mb-2">{driver.description}</p>
-                      <p className="text-xs text-neutral-400 mb-3">{driver.context}</p>
-                      <p className="text-sm font-semibold text-[#E85D3F]">Typical gap: {driver.typicalGap}</p>
-                    </button>
-                  );
-                })}
+                        <h3 className="font-semibold text-neutral-900 mb-1 text-sm">{driver.name}</h3>
+                        <p className="text-xs text-neutral-500 mb-2 line-clamp-2">{driver.description}</p>
+                        <p className="text-sm font-semibold text-emerald-600">{driver.typicalGap}</p>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
+
+            {selectedDrivers.length > 0 && (
+              <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200 mb-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-emerald-700 font-medium">Estimated Annual Gap</p>
+                    <p className="text-xs text-emerald-600/70">{selectedDrivers.length} driver{selectedDrivers.length !== 1 ? "s" : ""} selected</p>
+                  </div>
+                  <p className="text-2xl font-bold text-emerald-600 tabular-nums">
+                    {formatCurrency(calculations.totalGap)}/year
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-neutral-200 -mx-6 px-6 py-5 mt-8 shadow-xl z-10">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1536,7 +1534,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 {selectedDrivers.map((id, i) => (
                   <span key={id}>
                     {i > 0 && " • "}
-                    <span className="text-[#E85D3F] font-medium">{DRIVERS.find(d => d.id === id)?.name}</span>
+                    <span className="text-neutral-900 font-medium">{DRIVERS.find(d => d.id === id)?.name}</span>
                   </span>
                 ))}
               </p>
@@ -1548,7 +1546,6 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 const values = calculations.driverValues[driverId];
                 const isExpanded = expandedDrivers.includes(driverId);
                 const Icon = driver?.icon || Users;
-                const barPercent = values && values.abridge > 0 ? Math.min((values.their / values.abridge) * 100, 100) : 0;
                 
                 if (!driver || !values) return null;
                 
@@ -1556,7 +1553,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <div 
                     key={driverId} 
                     className={`border-2 rounded-2xl overflow-hidden bg-white transition-all duration-300 ${
-                      isExpanded ? "border-[#E85D3F]/30 shadow-lg" : "border-neutral-200 hover:border-neutral-300"
+                      isExpanded ? "border-emerald-300 shadow-lg" : "border-neutral-200 hover:border-neutral-300"
                     }`}
                   >
                     <button
@@ -1566,18 +1563,18 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     >
                       <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                          isExpanded ? "bg-[#E85D3F]/10" : "bg-neutral-100"
+                          isExpanded ? "bg-emerald-100" : "bg-neutral-100"
                         }`}>
-                          <Icon className={`w-6 h-6 transition-colors ${isExpanded ? "text-[#E85D3F]" : "text-neutral-600"}`} />
+                          <Icon className={`w-6 h-6 transition-colors ${isExpanded ? "text-emerald-600" : "text-neutral-600"}`} />
                         </div>
                         <span className="font-semibold text-lg text-neutral-900">{driver.name}</span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-xl font-bold text-[#E85D3F]">+{formatCurrency(values.gap)}/year</span>
+                        <span className="text-xl font-bold text-emerald-600">+{formatCurrency(values.gap)}/year</span>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                          isExpanded ? "bg-[#E85D3F]/10 rotate-180" : "bg-neutral-100"
+                          isExpanded ? "bg-emerald-100 rotate-180" : "bg-neutral-100"
                         }`}>
-                          <ChevronDown className={`w-5 h-5 transition-colors ${isExpanded ? "text-[#E85D3F]" : "text-neutral-400"}`} />
+                          <ChevronDown className={`w-5 h-5 transition-colors ${isExpanded ? "text-emerald-600" : "text-neutral-400"}`} />
                         </div>
                       </div>
                     </button>
@@ -1588,50 +1585,35 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         style={{ animation: "slideDown 0.4s ease-out forwards" }}
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-                          <div className="relative bg-neutral-100 rounded-2xl p-6 border-2 border-neutral-300 overflow-hidden">
-                            <Mic className="absolute top-4 right-4 w-6 h-6 text-neutral-300" />
-                            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4">Your Current</p>
-                            <div className="space-y-1.5 text-sm text-neutral-600 font-mono">
+                          <div className="relative bg-[#F3F4F6] rounded-2xl p-6 border border-[#E5E7EB] overflow-hidden">
+                            <Mic className="absolute top-4 right-4 w-6 h-6 text-[#D1D5DB]" />
+                            <p className="text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-4">Your Current</p>
+                            <div className="space-y-1.5 text-sm text-[#6B7280] font-mono">
                               {values.theirCalc.map((line, i) => (
                                 <p key={i} style={{ animation: `fadeIn 0.3s ease-out ${0.1 * i}s both` }}>{line}</p>
                               ))}
                             </div>
-                            <div className="mt-5 h-3 bg-neutral-200 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-neutral-400 rounded-full"
-                                style={{ 
-                                  width: `${barPercent}%`,
-                                  animation: "growWidth 0.6s ease-out 0.3s both"
-                                }}
-                              />
-                            </div>
-                            <p className="mt-3 text-2xl font-bold text-neutral-700">{formatCurrency(values.their)}/year</p>
+                            <p className="mt-5 text-2xl font-bold text-[#6B7280]">{formatCurrency(values.their)}/year</p>
                           </div>
                           
-                          <div className="relative bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-400 overflow-hidden">
-                            <div className="absolute top-4 right-4 text-emerald-200 font-bold text-3xl opacity-40">A</div>
-                            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-4">With Abridge</p>
-                            <div className="space-y-1.5 text-sm text-emerald-800 font-mono">
+                          <div className="relative bg-[#FEF2F2] rounded-2xl p-6 border-2 border-[#E85D3F]/20 overflow-hidden">
+                            <div className="absolute top-4 right-4 text-[#E85D3F]/10 font-bold text-3xl">A</div>
+                            <p className="text-xs font-bold text-[#E85D3F] uppercase tracking-wider mb-4">With Abridge</p>
+                            <div className="space-y-1.5 text-sm text-[#1F2937] font-mono">
                               {values.abridgeCalc.map((line, i) => (
                                 <p key={i} style={{ animation: `fadeIn 0.3s ease-out ${0.1 * i}s both` }}>{line}</p>
                               ))}
                             </div>
-                            <div className="mt-5 h-3 bg-emerald-200 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-emerald-500 rounded-full"
-                                style={{ animation: "growWidth 0.6s ease-out 0.3s both", width: "100%" }}
-                              />
-                            </div>
-                            <p className="mt-3 text-2xl font-bold text-emerald-600">{formatCurrency(values.abridge)}/year</p>
+                            <p className="mt-5 text-2xl font-bold text-[#1F2937]">{formatCurrency(values.abridge)}/year</p>
                           </div>
                         </div>
                         
                         <div 
-                          className="mt-6 text-center py-4 bg-[#E85D3F]/5 rounded-xl border border-[#E85D3F]/20"
+                          className="mt-6 text-center py-4 bg-emerald-50 rounded-xl border border-emerald-200"
                           style={{ animation: "countUp 0.5s ease-out 0.5s both" }}
                         >
-                          <p className="text-sm font-medium text-[#E85D3F]/70 uppercase tracking-wide mb-1">Annual Value Gap</p>
-                          <p className="text-3xl font-bold text-[#E85D3F]">+{formatCurrency(values.gap)}/year</p>
+                          <p className="text-sm font-medium text-emerald-600 uppercase tracking-wide mb-1">Annual Value Gap</p>
+                          <p className="text-3xl font-bold text-emerald-600">+{formatCurrency(values.gap)}/year</p>
                         </div>
                       </div>
                     )}
@@ -1640,7 +1622,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               })}
             </div>
 
-            <div className="bg-white rounded-xl p-6 border-2 border-[#E85D3F] shadow-lg">
+            <div className="bg-white rounded-xl p-6 border-2 border-emerald-400 shadow-lg">
               <div className="space-y-2 mb-4">
                 {selectedDrivers.map((driverId) => {
                   const driver = DRIVERS.find(d => d.id === driverId);
@@ -1648,7 +1630,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   return (
                     <div key={driverId} className="flex justify-between text-sm">
                       <span className="text-neutral-600">{driver?.name}</span>
-                      <span className="font-medium text-neutral-900">+{formatCurrency(values?.gap || 0)}</span>
+                      <span className="font-medium text-emerald-600">+{formatCurrency(values?.gap || 0)}</span>
                     </div>
                   );
                 })}
@@ -1656,12 +1638,12 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <div className="border-t border-neutral-200 pt-4">
                 <div className="flex justify-between items-baseline">
                   <span className="font-semibold text-neutral-900">TOTAL ANNUAL GAP</span>
-                  <span className="text-3xl font-bold text-[#E85D3F]">
+                  <span className="text-3xl font-bold text-emerald-600">
                     <AnimatedNumber value={calculations.totalGap} />
                   </span>
                 </div>
                 <p className="text-sm text-neutral-500 text-center mt-3">
-                  That's <strong className="text-neutral-700">{formatCurrency(calculations.monthlyGap)}</strong> every month you're not capturing with your current solution.
+                  That's <strong className="text-emerald-600">{formatCurrency(calculations.monthlyGap)}</strong> every month you're not capturing with your current solution.
                 </p>
               </div>
             </div>
@@ -2006,9 +1988,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     <span className="font-bold text-red-800 text-sm uppercase tracking-wide">3-Year Total</span>
                     <span className="text-4xl font-bold text-red-500 tabular-nums tracking-tight">{formatCurrency(calculations.waitThreeYearTotal)}</span>
                   </div>
-                  <div className="bg-red-100 rounded-lg p-3 text-center">
-                    <p className="text-xl font-bold text-red-600">
-                      Value left behind: {formatCurrency(calculations.costOfWaiting)}
+                  <div className="bg-[#FEE2E2] rounded-lg p-3 text-center border border-[#FECACA]">
+                    <p className="text-sm text-[#991B1B]/70 mb-1">The gap if you wait</p>
+                    <p className="text-xl font-bold text-[#991B1B]">
+                      {formatCurrency(calculations.costOfWaiting)}
                     </p>
                   </div>
                 </div>
