@@ -37,16 +37,18 @@ The application operates entirely client-side, providing a responsive and intera
 - **Nursing Utilization Rates**: 45/60/75% (vs 50/65/80% for providers)
 - **Nursing ROI Philosophy**: Focus on measurable workforce protection (overtime, agency, retention) rather than billing optimization since nurses don't bill
 - **Nursing Calculation Architecture**: The `calculateDriverValues` function in ObjectiveSelectionScreen.tsx includes dedicated nursing driver calculations that use nursing-specific state (staffedBeds, nurseFTEs) rather than provider-centric values (eligibleEncounters). Nursing driver IDs in the return object include both Explore-style (overtime_reduction) and ModelBuilder-style (nursingOvertime) keys for compatibility across flows.
-- **SWITCH Path (Complete - Rebuilt)**: 7-step diagnostic conversation for prospects using other AI solutions:
-  - **Step 1 - Solution Selection**: 3 options (Ambient AI, Human Scribes, Manual Documentation) + care setting
-  - **Step 2 - Your Baseline**: Providers, annual encounters input, utilization with live calculation
-  - **Step 3 - Understanding "Great"**: Conceptual utilization gap visualization with spectrum before showing numbers
-  - **Step 4 - The Efficiency Gap**: Time savings conceptual understanding before quantifying
-  - **Step 5 - Which Drivers Matter**: Customer selects 2-6 drivers that matter to them (Patient Access, Overtime, Retention, Level of Service, Denials, HCC)
-  - **Step 6 - The Value Gap**: Quantified based on selected drivers with expandable comparison cards
-  - **Step 7 - Cost of Waiting**: Realistic 3-year projection with ramp-up (Year 1 = 75%, not linear)
+- **SWITCH Path (Complete - Premium 8-Step Rebuild)**: 8-step premium diagnostic conversation for prospects switching from other AI solutions:
+  - **Step 1 - Solution Selection**: 3 ultra-clean cards (Ambient AI, Human Scribes, No Solution Yet) + care setting pills
+  - **Step 2 - Your Baseline**: Providers, annual encounters, utilization slider with gradient and emoji zones
+  - **Step 3 - Adoption Gap**: Beautiful spectrum visual with YOU vs ABRIDGE pointers and gap bracket
+  - **Step 4 - Efficiency Gap**: Time savings input with 3.0 min Abridge benchmark, side-by-side comparison cards
+  - **Step 5 - Performance Inputs (NEW)**: Progressive disclosure for wRVU uplift, undercoding %, denial prevention %, HCC improvement metrics
+  - **Step 6 - Driver Selection**: Premium card-based UI with large icons, typical gap ranges ($60-120K format), recap box showing three gap types
+  - **Step 7 - Value Gap Analysis**: Expandable accordions with side-by-side calculation cards (YOUR CURRENT vs WITH ABRIDGE) showing step-by-step math with proportional bars
+  - **Step 8 - Cost of Waiting**: S-curve area chart with driver-aware ramp-up based on driver speed (fast/medium/slow), switch now vs wait 6 months comparison cards
+- **SWITCH Driver Ramp Speeds**: Fast (Overtime, Level of Service, Denials: 50% at 3mo), Medium (Patient Access: 35% at 3mo), Slow (Retention, HCC: 15% at 3mo)
 - **SWITCH Philosophy**: Build conceptual understanding BEFORE showing dollar amounts; let customer choose which drivers matter; show realistic non-linear projections
-- **SWITCH Abridge Benchmarks**: 65% utilization, 2.5 min time savings
+- **SWITCH Abridge Benchmarks**: 65% utilization, 3.0 min time savings, 6% wRVU uplift, 12% undercoding, 45% denial prevention, 15% HCC improvement
 
 ## User Preferences
 
