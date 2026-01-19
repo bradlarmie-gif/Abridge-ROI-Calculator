@@ -1,0 +1,233 @@
+I need to completely redesign the Summary page to be a "Command Center" with multiple view modes. This is not an endpoint—it's where the real conversation happens.
+
+---
+
+OVERALL CONCEPT:
+
+The Summary page has 5 VIEW MODES accessible via tabs:
+1. Executive Summary (default)
+2. Detailed Breakdown
+3. Methodology
+4. Scenario Builder
+5. Sensitivity Analysis
+
+All modes share a persistent header showing the key metrics.
+
+---
+
+PERSISTENT HEADER (always visible):
+
+- Back link: "← Back to Model Builder"
+- Model summary: "Outpatient │ 50 providers │ $379,802 net value │ 5.5x ROI"
+- Action buttons: [✏️ Edit Model] [📄 Export ▼] [📧 Share]
+
+Export dropdown options:
+- Export as PDF (Executive Summary)
+- Export as PDF (Full Detail)
+- Export as Slides
+- Copy Link
+
+---
+
+TAB NAVIGATION:
+
+[Executive Summary] [Detailed Breakdown] [Methodology] [Scenarios] [Sensitivity]
+
+Style: Clean tabs, active tab has coral underline, inactive are gray
+
+---
+
+MODE 1: EXECUTIVE SUMMARY (default view)
+
+Purpose: CFO-ready overview, 2-minute scan
+
+SECTION 1: Hero Metrics
+- Three large numbers in a row:
+  - Net Annual Value: $379,802
+  - Return on Investment: 5.5x
+  - Payback Period: 3.7 months
+- Below: "Total Annual Benefit: $463,802 │ Annual Investment: $84,000"
+
+SECTION 2: The Value Story
+- Two cards side by side:
+
+  ⏱️ TIME SAVED │ $216,302 (57%)
+  • 1,640 OT hours eliminated
+  • 1,083 new visits enabled
+  
+  📋 DOC QUALITY │ $163,500 (43%)
+  • 4,160 visits properly coded
+  • $131K in wRVU capture
+
+- Visual: Small horizontal bar showing 57% / 43% split
+
+SECTION 3: Multi-Year View
+- Table showing Year 1, Year 2, Year 3, Total
+- Rows: Value, Cost, Net
+- Highlight the Total column
+
+SECTION 4: Key Assumptions (collapsible)
+- 3-4 bullet points of the most important assumptions
+- Links: [See full methodology →] [Adjust assumptions →]
+
+---
+
+MODE 2: DETAILED BREAKDOWN
+
+Purpose: Full transparency, every calculation visible
+
+SECTION 1: Your Baseline
+- Card showing: Providers, Encounters, Utilization, Eligible Encounters
+- [✏️ Edit] button to go back to Model Builder
+
+SECTION 2: Time Saved Benefits
+- Section header with subtotal
+- Accordion for each Time Saved driver they selected
+
+DRIVER ACCORDION (expanded):
+- Left column: YOUR INPUTS
+  - Shows what they entered
+  - [✏️ Change] button
+  
+- Right column: YOUR CALCULATION
+  - Shows the step-by-step math with their numbers
+  
+- Bottom: ABRIDGE ASSUMPTIONS
+  - Shows our benchmark data used (e.g., "70% reduction rate")
+  - Source note: "Based on 200+ deployments"
+  - Link: [See how this compares →]
+
+SECTION 3: Documentation Quality Benefits
+- Same accordion structure as above
+
+SECTION 4: Add Another Driver
+- Card showing drivers they DIDN'T select
+- Each shows: Driver name, typical range
+- [+ Add Driver] button
+
+---
+
+MODE 3: METHODOLOGY
+
+Purpose: Defend the numbers internally
+
+SECTION 1: The Core Framework
+- Visual showing Time Saved / Doc Quality split
+- Brief explanation of the two value streams
+
+SECTION 2: Driver Methodology (for each driver in their model)
+- THE LOGIC: 2-3 sentences
+- THE FORMULA: Shown explicitly in a code-style box
+- KEY ASSUMPTIONS & SOURCES:
+  - Each Abridge assumption with source
+  - Range observed across customers
+- WHAT WOULD CHANGE THIS NUMBER:
+  - Factors that would increase/decrease
+- HOW TO VALIDATE:
+  - Questions they can ask internally
+
+SECTION 3: What We Don't Include
+- List of benefits we intentionally exclude
+- Explanation: "Our goal is defensible, not inflated"
+
+SECTION 4: Export Methodology
+- [Download as PDF] [Copy to Clipboard]
+
+---
+
+MODE 4: SCENARIO BUILDER
+
+Purpose: Compare different deployment scenarios
+
+SECTION 1: Comparison Table
+- Columns: Current Model, Pilot, Full Deployment, Custom
+- Rows: Providers, Encounters, Utilization, Annual Benefit, Investment, Net Value, ROI, Per-Provider Value
+- Custom column has editable inputs
+
+SECTION 2: Insight Callout
+- Automatically generated insight based on the comparison
+- Example: "Per-provider value increases with scale..."
+
+SECTION 3: Quick Scenarios
+- Buttons for common "what if" questions:
+  - [What if we added ED?]
+  - [What if utilization reached 80%?]
+  - [What if we included [unselected driver]?]
+
+---
+
+MODE 5: SENSITIVITY ANALYSIS
+
+Purpose: Stress-test the model for skeptics
+
+SECTION 1: Current Model Reference
+- Card showing: "$379,802 net annual value (5.5x ROI)"
+
+SECTION 2: Variable Sensitivity
+- For each key variable (Utilization, Time Savings, etc.):
+  - Show Low / Current / High values
+  - Show resulting Value and ROI for each
+  - Visual indicator showing current position
+
+SECTION 3: Breakeven Analysis
+- "Your model breaks even (ROI = 1x) if:"
+- List the extreme conditions needed to break even
+- Punchline: "The model would need to be X% wrong to not deliver positive ROI"
+
+SECTION 4: Bottom Line
+- Callout box with summary statement
+- "This model is robust. Even under pessimistic assumptions..."
+
+---
+
+DESIGN SPECIFICATIONS:
+
+1. Use the same design language as the rest of the app
+   - Coral (#E85D3F) for accents, important numbers, CTAs
+   - White backgrounds, subtle gray borders
+   - Clean typography, generous whitespace
+
+2. Tabs should feel like a native part of the page
+   - Smooth transitions between modes
+   - Remember which mode they were in if they navigate away and back
+
+3. Numbers should be easy to scan
+   - Large, bold for headline metrics
+   - Monospace or tabular for calculations
+   - Proper comma formatting for large numbers
+
+4. Expandable sections should animate smoothly
+
+5. Export functionality:
+   - PDF should look presentation-ready
+   - Include Abridge branding
+   - Different PDF templates for Executive vs. Full Detail
+
+6. Mobile considerations:
+   - Tabs become a dropdown on small screens
+   - Tables scroll horizontally
+   - Comparison view stacks vertically
+
+---
+
+INTERACTIONS:
+
+1. "Edit Model" button returns to Model Builder with all data preserved
+
+2. "Add Driver" in Detailed Breakdown:
+   - Opens a modal to select additional drivers
+   - Asks for driver-specific inputs
+   - Updates all calculations without leaving Summary
+
+3. Export buttons:
+   - Show loading state while generating
+   - PDF opens in new tab
+   - Share link copies to clipboard with toast confirmation
+
+4. Scenario Builder custom column:
+   - Inputs update calculations in real-time
+   - Can save custom scenario for comparison
+
+5. Sensitivity sliders (if we add interactive sliders):
+   - Drag to see values change in real-time
+   - Snap back to "current" on release (or option to apply)

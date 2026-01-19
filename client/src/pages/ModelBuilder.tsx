@@ -48,13 +48,15 @@ export interface ModelResults {
   netGain: number;
   roiMultiple: number;
   paybackMonths: number;
+  costPerMonth?: number;
+  pricingModel?: string;
 }
 
 interface DriverResult {
   id: string;
   name: string;
   value: number;
-  inputs: Record<string, number | string>;
+  inputs: Record<string, number | string | boolean>;
 }
 
 interface DriverInputs {
@@ -306,6 +308,48 @@ export default function ModelBuilder({
   };
   
   const handleComplete = () => {
+    const getDriverInputs = (driverId: string): Record<string, number | string | boolean> => {
+      switch (driverId) {
+        case "overtime":
+          return {
+            situation: driverInputs.overtime.situation,
+            docPortion: driverInputs.overtime.docPortion,
+            overtimeRate: driverInputs.overtime.overtimeRate,
+            includeLocum: driverInputs.overtime.includeLocum,
+            locumHours: driverInputs.overtime.locumHours,
+            locumRate: driverInputs.overtime.locumRate,
+          };
+        case "patientAccess":
+          return {
+            demand: driverInputs.patientAccess.demand,
+            realizationRate: driverInputs.patientAccess.realizationRate,
+            revenuePerVisit: driverInputs.patientAccess.revenuePerVisit,
+          };
+        case "retention":
+          return {
+            turnoverRate: driverInputs.retention.turnoverRate,
+            replacementCost: driverInputs.retention.replacementCost,
+          };
+        case "levelOfService":
+          return {
+            underCodingRate: driverInputs.levelOfService.underCodingRate,
+            wrvuFactor: driverInputs.levelOfService.wrvuFactor,
+          };
+        case "hcc":
+          return {
+            riskBasedPct: driverInputs.hcc.riskBasedPct,
+            captureRate: driverInputs.hcc.captureRate,
+          };
+        case "denials":
+          return {
+            denialRate: driverInputs.denials.denialRate,
+            avgClaimValue: driverInputs.denials.avgClaimValue,
+          };
+        default:
+          return {};
+      }
+    };
+
     const results: ModelResults = {
       providers,
       encounters,
@@ -314,7 +358,7 @@ export default function ModelBuilder({
       driverResults: Object.fromEntries(
         Object.entries(driverResults).map(([id, data]) => [
           id,
-          { id, name: data.name, value: data.value, inputs: {} },
+          { id, name: data.name, value: data.value, inputs: getDriverInputs(id) },
         ])
       ),
       totalBenefit,
@@ -322,6 +366,8 @@ export default function ModelBuilder({
       netGain,
       roiMultiple,
       paybackMonths,
+      costPerMonth,
+      pricingModel,
     };
     onComplete(results);
   };
