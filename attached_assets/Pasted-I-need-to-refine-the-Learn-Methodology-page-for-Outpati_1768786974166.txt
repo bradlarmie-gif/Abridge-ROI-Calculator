@@ -1,0 +1,261 @@
+I need to refine the Learn Methodology page for Outpatient. The current version is functional but doesn't feel like it was designed by the "ROI expert" who has the definitive framework. Let's fix the hierarchy, color scheme, framing, and order.
+
+---
+
+HIERARCHY CHANGES:
+
+1. ADD A FRAMING HEADLINE after the page title:
+
+Current:
+"The ROI Framework for Outpatient"
+"Understanding where value actually comes from"
+
+New:
+"The ROI Framework for Outpatient"
+"Understanding where value actually comes from"
+
+Then add a framing statement in a subtle callout box:
+┌─────────────────────────────────────────────────────────────────────┐
+│ 💡 THE INSIGHT                                                      │
+│                                                                     │
+│ Most people think ambient just saves time. That's true—but          │
+│ incomplete. Time saved is only HALF the value. The other half?      │
+│ Documentation that's actually better than manual notes.             │
+│                                                                     │
+│ Two value streams. One technology. Here's how the math works.       │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style: Light gray background (#F8F9FA), coral left border (4px), comfortable padding
+
+2. MOVE the Framework Diagram ABOVE the Reference Scenario:
+
+New order:
+- Page title + subtitle
+- Framing statement (new)
+- Framework diagram (Time Saved | Doc Quality)
+- Reference Scenario card
+- Driver accordions
+
+3. REDESIGN the Framework Diagram:
+
+Remove the "AMBIENT DOCUMENTATION" pill - it's redundant.
+
+New design:
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│     ┌─────────────────────────┐    ┌─────────────────────────┐     │
+│     │                         │    │                         │     │
+│     │      ⏱️ TIME SAVED      │    │   📋 DOC QUALITY        │     │
+│     │                         │    │                         │     │
+│     │   When clinicians       │    │   AI captures more      │     │
+│     │   document faster,      │    │   complete information  │     │
+│     │   that time can be      │    │   than rushed manual    │     │
+│     │   redirected to care    │    │   documentation         │     │
+│     │   or recovered as       │    │                         │     │
+│     │   cost savings.         │    │   Better notes drive    │     │
+│     │                         │    │   downstream revenue.   │     │
+│     │   • Overtime Reduction  │    │                         │     │
+│     │   • Patient Access      │    │   • Level of Service    │     │
+│     │   • Retention           │    │   • Denial Reduction    │     │
+│     │                         │    │   • HCC Capture         │     │
+│     └─────────────────────────┘    └─────────────────────────┘     │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style:
+- Both cards: White background, subtle border (#E5E7EB), rounded corners (12px)
+- Equal width, equal visual weight
+- Icon in coral color
+- Title in bold, dark text
+- Description in gray text
+- Driver list as bullet points, smaller text
+- Subtle hover effect (shadow increase)
+- Click on either card to scroll to that section below
+
+4. IMPROVE the Reference Scenario card:
+
+Current design is okay but can be elevated:
+┌─────────────────────────────────────────────────────────────────────┐
+│  REFERENCE SCENARIO                                                 │
+│                                                                     │
+│  The math below uses a typical mid-sized outpatient practice:       │
+│                                                                     │
+│  ┌───────────────┬───────────────┬───────────────┐                 │
+│  │      40       │    80,000     │      65%      │                 │
+│  │   providers   │ annual visits │   adoption    │                 │
+│  └───────────────┴───────────────┴───────────────┘                 │
+│                                                                     │
+│  ═══════════════════════════════════════════════                   │
+│  → ~52,000 Abridge-documented encounters/year                       │
+│                                                                     │
+│  This is your multiplier. Everything below builds from this.        │
+└─────────────────────────────────────────────────────────────────────┘
+
+Changes:
+- Remove the "In the calculator you'll input YOUR numbers" - save that for the bridge
+- Add "This is your multiplier" framing
+- Make the 52,000 number more prominent (it's the foundation)
+
+---
+
+COLOR SCHEME CHANGES:
+
+1. REMOVE the mint green and light blue from the framework boxes
+   - Both should be white with subtle gray border
+   - Icons should be coral (#E85D3F)
+
+2. Keep coral (#E85D3F) for:
+   - Icons
+   - Important numbers (results)
+   - CTAs and buttons
+   - Left borders on callout boxes
+
+3. Use these neutrals:
+   - Background: White (#FFFFFF)
+   - Secondary background: #F8F9FA
+   - Borders: #E5E7EB
+   - Primary text: #111827
+   - Secondary text: #6B7280
+
+4. Section headers ("Time Saved Benefits", "Documentation Quality Benefits"):
+   - Currently they have colored backgrounds - REMOVE
+   - Make them simpler: just bold text with an icon
+   - Add a subtle divider line above each section
+
+---
+
+DRIVER ORDER CHANGES:
+
+Reorder the drivers in each section:
+
+TIME SAVED BENEFITS (in this order):
+1. Overtime & Locum Savings - "The quick win. Measurable in 30 days."
+2. Patient Access - "The big opportunity. Requires demand."
+3. Clinician Retention - "The long game. 12+ months to measure."
+
+DOCUMENTATION QUALITY BENEFITS (in this order):
+1. Accurate Level of Service - "Universal. Every practice has E/M."
+2. Documentation-Related Denials - "Operational. Rev cycle loves this."
+3. HCC & Chronic Condition Capture - "Strategic. For risk-based contracts."
+
+---
+
+DRIVER ACCORDION IMPROVEMENTS:
+
+For each driver, add a small "why this matters" phrase under the title:
+
+Current:
+"Overtime & Locum Savings"
+"Less premium labor needed"
+
+New:
+"Overtime & Locum Savings"
+"The quick win—measurable impact in 30 days"
+
+Do this for each:
+- Patient Access: "Convert time into additional visits—if demand exists"
+- Clinician Retention: "The long game—12+ months to see full impact"
+- Level of Service: "Capture the complexity you're already delivering"
+- Denials: "Better notes, fewer rejections, faster payment"
+- HCC Capture: "For risk contracts: document what's discussed"
+
+---
+
+CALCULATION STEP IMPROVEMENTS:
+
+Make the math feel more like a whiteboard explanation:
+
+Current step format:
+┌─────────────────────────────────────────┐
+│ STEP 1: TIME RETURNED                   │
+│ 2.5 min × 52,000 = 2,167 hours          │
+└─────────────────────────────────────────┘
+
+New step format:
+┌─────────────────────────────────────────────────────────────────────┐
+│ STEP 1: TIME RETURNED                                               │
+│                                                                     │
+│ How much time does Abridge give back?                               │
+│                                                                     │
+│    2.5 min      ×     52,000        =      2,167 hours             │
+│    ────────           ──────────           ────────────             │
+│    saved per          documented           returned                 │
+│    encounter          encounters           annually                 │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Key changes:
+- Add a plain-English question that this step answers
+- Show the math with labels BELOW the numbers
+- Make the result (right side) larger and in coral
+- Use a monospace or tabular font for alignment
+
+---
+
+COMBINED VALUE SECTION:
+
+After all accordions, add a "total" section:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  COMBINED REFERENCE VALUE                                           │
+│                                                                     │
+│  ⏱️ Time Saved Benefits                                             │
+│     Overtime & Locum Savings                      $151,200          │
+│     Patient Access                                $173,200          │
+│     Clinician Retention                           $160,000          │
+│                                                   ─────────         │
+│     Subtotal                                      $484,400          │
+│                                                                     │
+│  📋 Documentation Quality Benefits                                   │
+│     Accurate Level of Service                     $131,040          │
+│     Documentation-Related Denials                 $127,500          │
+│     HCC & Chronic Condition Capture               $524,160          │
+│                                                   ─────────         │
+│     Subtotal                                      $782,700          │
+│                                                                     │
+│  ════════════════════════════════════════════════════════════       │
+│                                                                     │
+│  TOTAL POTENTIAL VALUE                          $1,267,100          │
+│  For 40 providers at 65% adoption                                   │
+│                                                                     │
+│  That's ~$31,678 per provider per year                              │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style:
+- White card with subtle shadow
+- Line items in gray
+- Subtotals in medium weight
+- Total in large, bold, coral
+- Per-provider calc at bottom (helps them do mental math)
+
+---
+
+BRIDGE SECTION (at bottom):
+
+Update the "Now You Understand the Framework" section:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│  You've seen the framework.                                         │
+│                                                                     │
+│  The reference scenario showed potential value of $1.27M for a      │
+│  40-provider practice. But your organization is different.          │
+│                                                                     │
+│  Different provider count. Different volumes. Different payer mix.  │
+│                                                                     │
+│  Ready to see what Abridge could mean for YOU?                      │
+│                                                                     │
+│          ┌────────────────────────────────────┐                    │
+│          │     Build My ROI Model    →        │                    │
+│          └────────────────────────────────────┘                    │
+│                                                                     │
+│  ← Or explore another care setting                                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style:
+- Larger card
+- Centered text
+- Primary CTA button (coral filled)
+- Secondary link below

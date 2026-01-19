@@ -39,6 +39,7 @@ type LearnScreen = "selection" | "methodology";
 interface CalculationStep {
   stepNumber: number;
   stepLabel: string;
+  question: string;
   inputs: {
     label: string;
     value: string;
@@ -53,9 +54,11 @@ interface Driver {
   id: string;
   name: string;
   description: string;
+  whyItMatters: string;
   referenceValue: number;
   icon: React.ElementType;
   lane: "time" | "quality";
+  order: number;
   theory: string;
   calculationSteps: CalculationStep[];
   caveat?: string;
@@ -97,64 +100,20 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     docQualitySubtitle: "More complete, accurate notes",
     drivers: [
       {
-        id: "patient-access",
-        name: "Patient Access",
-        description: "More visits possible with time returned",
-        referenceValue: 173200,
-        icon: Users,
-        lane: "time",
-        theory: "When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and other factors limit realization—but even a modest portion creates meaningful revenue.",
-        calculationSteps: [
-          {
-            stepNumber: 1,
-            stepLabel: "TIME RETURNED",
-            inputs: [
-              { label: "Time saved per encounter", value: "2.5 min" },
-              { label: "Eligible encounters", value: "52,000" }
-            ],
-            output: { label: "Hours returned", value: "2,167 hrs" }
-          },
-          {
-            stepNumber: 2,
-            stepLabel: "REALITY CHECK",
-            inputs: [
-              { label: "Hours returned", value: "2,167 hrs" },
-              { label: "Realization factor", value: "20%" }
-            ],
-            output: { label: "Usable hours", value: "433 hrs" }
-          },
-          {
-            stepNumber: 3,
-            stepLabel: "NEW VISITS",
-            inputs: [
-              { label: "Usable hours", value: "433 hrs" },
-              { label: "Time per visit", value: "30 min" }
-            ],
-            output: { label: "Additional visits", value: "866 visits" }
-          },
-          {
-            stepNumber: 4,
-            stepLabel: "REVENUE",
-            inputs: [
-              { label: "Additional visits", value: "866" },
-              { label: "Revenue per visit", value: "$200" }
-            ],
-            output: { label: "Annual value", value: "$173,200" }
-          }
-        ]
-      },
-      {
         id: "overtime-locum",
         name: "Overtime & Locum Savings",
         description: "Less premium labor needed",
+        whyItMatters: "The quick win—measurable impact in 30 days",
         referenceValue: 151200,
         icon: DollarSign,
         lane: "time",
+        order: 1,
         theory: "Documentation often extends past scheduled hours, triggering overtime pay. By returning time to clinicians, organizations reduce the need for after-hours work and expensive locum coverage to maintain access.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "AFTER-HOURS BASELINE",
+            question: "How much overtime exists today?",
             inputs: [
               { label: "Providers with OT", value: "40 × 60%" },
               { label: "Hours/week × weeks", value: "4 × 50" }
@@ -164,6 +123,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "HOURS ELIMINATED",
+            question: "How much can Abridge reduce?",
             inputs: [
               { label: "Baseline OT hours", value: "4,800 hrs" },
               { label: "Reduction rate", value: "70%" }
@@ -173,6 +133,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "PREMIUM LABOR PORTION",
+            question: "What portion is premium pay?",
             inputs: [
               { label: "Hours saved", value: "3,360 hrs" },
               { label: "Premium rate %", value: "30%" }
@@ -182,6 +143,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 4,
             stepLabel: "COST SAVINGS",
+            question: "What's the dollar value?",
             inputs: [
               { label: "Premium hours", value: "1,008 hrs" },
               { label: "OT rate", value: "$150/hr" }
@@ -192,17 +154,73 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         caveat: "Some organizations see higher impact if using locums ($275/hr)"
       },
       {
+        id: "patient-access",
+        name: "Patient Access",
+        description: "More visits possible with time returned",
+        whyItMatters: "Convert time into additional visits—if demand exists",
+        referenceValue: 173200,
+        icon: Users,
+        lane: "time",
+        order: 2,
+        theory: "When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and other factors limit realization—but even a modest portion creates meaningful revenue.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "TIME RETURNED",
+            question: "How much time does Abridge give back?",
+            inputs: [
+              { label: "Time saved per encounter", value: "2.5 min" },
+              { label: "Eligible encounters", value: "52,000" }
+            ],
+            output: { label: "Hours returned", value: "2,167 hrs" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "REALITY CHECK",
+            question: "How much can realistically convert to visits?",
+            inputs: [
+              { label: "Hours returned", value: "2,167 hrs" },
+              { label: "Realization factor", value: "20%" }
+            ],
+            output: { label: "Usable hours", value: "433 hrs" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "NEW VISITS",
+            question: "How many additional visits is that?",
+            inputs: [
+              { label: "Usable hours", value: "433 hrs" },
+              { label: "Time per visit", value: "30 min" }
+            ],
+            output: { label: "Additional visits", value: "866 visits" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "REVENUE",
+            question: "What's the revenue impact?",
+            inputs: [
+              { label: "Additional visits", value: "866" },
+              { label: "Revenue per visit", value: "$200" }
+            ],
+            output: { label: "Annual value", value: "$173,200" }
+          }
+        ]
+      },
+      {
         id: "clinician-retention",
         name: "Clinician Retention",
         description: "Reduced burnout, lower turnover costs",
+        whyItMatters: "The long game—12+ months to see full impact",
         referenceValue: 160000,
         icon: UserCheck,
         lane: "time",
+        order: 3,
         theory: "Documentation burden is the #1 driver of physician burnout. Reducing this burden improves satisfaction and retention. Replacing a physician costs $500K-1M when you factor in recruiting, onboarding, and lost revenue.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "BASELINE TURNOVER",
+            question: "What's the current turnover situation?",
             inputs: [
               { label: "Providers", value: "40" },
               { label: "Annual turnover", value: "6%" }
@@ -212,6 +230,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "BURNOUT-RELATED",
+            question: "How much is burnout-driven?",
             inputs: [
               { label: "Annual departures", value: "2.4" },
               { label: "Burnout attribution", value: "45%" }
@@ -221,6 +240,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "ABRIDGE ATTRIBUTION",
+            question: "What can Abridge prevent?",
             inputs: [
               { label: "Preventable departures", value: "1.08" },
               { label: "Abridge impact", value: "30%" }
@@ -230,6 +250,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 4,
             stepLabel: "COST SAVINGS",
+            question: "What's the dollar value?",
             inputs: [
               { label: "Departures avoided", value: "0.32" },
               { label: "Replacement cost", value: "$500,000" }
@@ -243,14 +264,17 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         id: "level-of-service",
         name: "Accurate Level of Service",
         description: "Capture appropriate wRVU value",
+        whyItMatters: "Capture the complexity you're already delivering",
         referenceValue: 131040,
         icon: TrendingUp,
         lane: "quality",
+        order: 1,
         theory: "Physicians under time pressure often undercode visits—documenting a Level 3 when the encounter truly warranted Level 4. AI documentation captures the full clinical picture, ensuring accurate E/M coding.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "E/M ENCOUNTERS",
+            question: "How many E/M visits are there?",
             inputs: [
               { label: "Eligible encounters", value: "52,000" },
               { label: "E/M portion", value: "80%" }
@@ -260,6 +284,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "UNDER-CODED",
+            question: "How many are being under-coded?",
             inputs: [
               { label: "E/M visits", value: "41,600" },
               { label: "Undercode rate", value: "10%" }
@@ -269,6 +294,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "wRVU LIFT",
+            question: "What's the revenue opportunity?",
             inputs: [
               { label: "Affected visits", value: "4,160" },
               { label: "wRVU delta × rate", value: "0.7 × $45" }
@@ -278,64 +304,20 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         ]
       },
       {
-        id: "hcc-capture",
-        name: "HCC & Chronic Condition Capture",
-        description: "RAF score improvement",
-        referenceValue: 524160,
-        icon: ShieldCheck,
-        lane: "quality",
-        theory: "Risk adjustment relies on complete documentation of chronic conditions. AI ensures conditions mentioned in conversation get documented, improving RAF scores for value-based contracts.",
-        calculationSteps: [
-          {
-            stepNumber: 1,
-            stepLabel: "RISK-BASED ENCOUNTERS",
-            inputs: [
-              { label: "Eligible encounters", value: "52,000" },
-              { label: "In risk contracts", value: "35%" }
-            ],
-            output: { label: "Risk encounters", value: "18,200" }
-          },
-          {
-            stepNumber: 2,
-            stepLabel: "HCC GAP",
-            inputs: [
-              { label: "Risk encounters", value: "18,200" },
-              { label: "Capture gap", value: "30%" }
-            ],
-            output: { label: "Opportunities", value: "5,460" }
-          },
-          {
-            stepNumber: 3,
-            stepLabel: "ABRIDGE IMPROVEMENT",
-            inputs: [
-              { label: "HCC opportunities", value: "5,460" },
-              { label: "Improvement rate", value: "20%" }
-            ],
-            output: { label: "HCCs captured", value: "1,092" }
-          },
-          {
-            stepNumber: 4,
-            stepLabel: "REVENUE",
-            inputs: [
-              { label: "HCCs × value × audit", value: "1,092 × $800 × 60%" }
-            ],
-            output: { label: "Annual value", value: "$524,160" }
-          }
-        ],
-        caveat: "Varies significantly based on payer mix and current capture rates"
-      },
-      {
         id: "denials-reduction",
         name: "Documentation-Related Denials",
         description: "Fewer rejected claims",
+        whyItMatters: "Better notes, fewer rejections, faster payment",
         referenceValue: 127500,
         icon: FileX,
         lane: "quality",
+        order: 2,
         theory: "Incomplete documentation leads to claim denials and costly rework. AI-generated notes are more comprehensive, reducing the denial rate for documentation-related issues.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "TOTAL DENIALS",
+            question: "How many claims are denied today?",
             inputs: [
               { label: "Eligible encounters", value: "52,000" },
               { label: "Denial rate", value: "7%" }
@@ -345,6 +327,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "DOC-RELATED",
+            question: "How many are documentation-related?",
             inputs: [
               { label: "Total denials", value: "3,640" },
               { label: "Doc-related %", value: "35%" }
@@ -354,6 +337,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "PREVENTED",
+            question: "How many can Abridge prevent?",
             inputs: [
               { label: "Doc denials", value: "1,274" },
               { label: "Improvement", value: "40%" }
@@ -363,6 +347,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 4,
             stepLabel: "VALUE",
+            question: "What's the dollar value?",
             inputs: [
               { label: "Prevented denials", value: "510" },
               { label: "Avg claim value", value: "$250" }
@@ -370,6 +355,59 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
             output: { label: "Annual value", value: "$127,500" }
           }
         ]
+      },
+      {
+        id: "hcc-capture",
+        name: "HCC & Chronic Condition Capture",
+        description: "RAF score improvement",
+        whyItMatters: "For risk contracts: document what's discussed",
+        referenceValue: 524160,
+        icon: ShieldCheck,
+        lane: "quality",
+        order: 3,
+        theory: "Risk adjustment relies on complete documentation of chronic conditions. AI ensures conditions mentioned in conversation get documented, improving RAF scores for value-based contracts.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "RISK-BASED ENCOUNTERS",
+            question: "How many encounters are in risk contracts?",
+            inputs: [
+              { label: "Eligible encounters", value: "52,000" },
+              { label: "In risk contracts", value: "35%" }
+            ],
+            output: { label: "Risk encounters", value: "18,200" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "HCC GAP",
+            question: "How many HCCs are being missed?",
+            inputs: [
+              { label: "Risk encounters", value: "18,200" },
+              { label: "Capture gap", value: "30%" }
+            ],
+            output: { label: "Opportunities", value: "5,460" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "ABRIDGE IMPROVEMENT",
+            question: "How many can Abridge capture?",
+            inputs: [
+              { label: "HCC opportunities", value: "5,460" },
+              { label: "Improvement rate", value: "20%" }
+            ],
+            output: { label: "HCCs captured", value: "1,092" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "REVENUE",
+            question: "What's the risk-adjusted revenue?",
+            inputs: [
+              { label: "HCCs × value × audit", value: "1,092 × $800 × 60%" }
+            ],
+            output: { label: "Annual value", value: "$524,160" }
+          }
+        ],
+        caveat: "Varies significantly based on payer mix and current capture rates"
       }
     ]
   },
@@ -393,14 +431,17 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         id: "throughput",
         name: "Patient Throughput",
         description: "LWBS reduction, more patients seen",
+        whyItMatters: "The quick win—faster disposition, more revenue",
         referenceValue: 315000,
         icon: Activity,
         lane: "time",
+        order: 1,
         theory: "In the ED, every minute of documentation time affects throughput. Reducing documentation burden lets physicians disposition patients faster, reducing Left Without Being Seen (LWBS) rates and capturing additional revenue.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "TIME SAVINGS",
+            question: "How much time does Abridge give back?",
             inputs: [
               { label: "Time per encounter", value: "3 min" },
               { label: "Eligible encounters", value: "31,500" }
@@ -410,6 +451,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "ADDITIONAL CAPACITY",
+            question: "How many more patients can be seen?",
             inputs: [
               { label: "Hours returned", value: "1,575 hrs" },
               { label: "Utilization rate", value: "40%" }
@@ -419,6 +461,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "REVENUE CAPTURED",
+            question: "What's the revenue impact?",
             inputs: [
               { label: "Additional patients", value: "630" },
               { label: "Avg ED visit", value: "$500" }
@@ -431,14 +474,17 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         id: "scribe-reduction",
         name: "Scribe Cost Reduction",
         description: "Replace or reduce scribe coverage",
+        whyItMatters: "Direct labor savings—visible on day one",
         referenceValue: 180000,
         icon: Users,
         lane: "time",
+        order: 2,
         theory: "Many EDs employ scribes to handle documentation. Ambient AI can reduce or replace scribe needs, providing significant labor savings while maintaining documentation quality.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "CURRENT SCRIBE COVERAGE",
+            question: "How many scribes are used today?",
             inputs: [
               { label: "Physicians", value: "25" },
               { label: "With scribes", value: "40%" }
@@ -448,6 +494,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "SCRIBE REDUCTION",
+            question: "How many can Abridge replace?",
             inputs: [
               { label: "Current FTEs", value: "10" },
               { label: "Reduction rate", value: "50%" }
@@ -457,6 +504,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "LABOR SAVINGS",
+            question: "What's the dollar value?",
             inputs: [
               { label: "FTEs saved", value: "5" },
               { label: "Annual cost", value: "$36,000" }
@@ -469,14 +517,17 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         id: "ed-retention",
         name: "Workforce Retention",
         description: "Reduced ED burnout and turnover",
+        whyItMatters: "The long game—12+ months to see full impact",
         referenceValue: 195000,
         icon: UserCheck,
         lane: "time",
+        order: 3,
         theory: "ED physicians face extreme burnout rates. Documentation burden compounds the stress of high-acuity care. Reducing this burden improves retention in a specialty where replacement is costly and difficult.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "BASELINE TURNOVER",
+            question: "What's the current turnover situation?",
             inputs: [
               { label: "ED physicians", value: "25" },
               { label: "Annual turnover", value: "8%" }
@@ -486,6 +537,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "BURNOUT ATTRIBUTION",
+            question: "How much is burnout-driven?",
             inputs: [
               { label: "Annual departures", value: "2.0" },
               { label: "Burnout-related", value: "50%" }
@@ -495,6 +547,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "RETENTION BENEFIT",
+            question: "What can Abridge prevent?",
             inputs: [
               { label: "Preventable", value: "1.0" },
               { label: "Abridge impact", value: "30%" }
@@ -504,6 +557,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 4,
             stepLabel: "REPLACEMENT SAVINGS",
+            question: "What's the dollar value?",
             inputs: [
               { label: "FTE retained", value: "0.3" },
               { label: "Replacement cost", value: "$650,000" }
@@ -517,14 +571,17 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         id: "ed-los",
         name: "Level-of-Service Accuracy",
         description: "Capture true acuity in wRVUs",
+        whyItMatters: "Capture the complexity of high-acuity encounters",
         referenceValue: 157500,
         icon: TrendingUp,
         lane: "quality",
+        order: 1,
         theory: "ED encounters are complex and fast-moving. Documentation often misses elements that support higher E/M levels. AI captures the full clinical picture in real-time.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "DOCUMENTED ENCOUNTERS",
+            question: "How many ED encounters are documented?",
             inputs: [
               { label: "Eligible ED visits", value: "31,500" }
             ],
@@ -533,6 +590,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "CODING IMPROVEMENT",
+            question: "How many are being under-coded?",
             inputs: [
               { label: "ED visits", value: "31,500" },
               { label: "Undercode rate", value: "10%" }
@@ -542,6 +600,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "wRVU CAPTURE",
+            question: "What's the revenue opportunity?",
             inputs: [
               { label: "Affected visits", value: "3,150" },
               { label: "wRVU delta", value: "$50" }
@@ -554,14 +613,17 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         id: "ed-denials",
         name: "Documentation-Related Denials",
         description: "Reduce claim rejections",
+        whyItMatters: "Better notes, fewer rejections, faster payment",
         referenceValue: 94500,
         icon: FileX,
         lane: "quality",
+        order: 2,
         theory: "ED claims face high scrutiny. Incomplete or inconsistent documentation leads to denials. Real-time AI capture ensures thorough documentation that withstands payer review.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "TOTAL DENIALS",
+            question: "How many claims are denied today?",
             inputs: [
               { label: "ED encounters", value: "31,500" },
               { label: "Denial rate", value: "8%" }
@@ -571,6 +633,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "DOC-RELATED",
+            question: "How many are documentation-related?",
             inputs: [
               { label: "Total denials", value: "2,520" },
               { label: "Doc-related", value: "30%" }
@@ -580,6 +643,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "PREVENTED",
+            question: "How many can Abridge prevent?",
             inputs: [
               { label: "Doc denials", value: "756" },
               { label: "Improvement", value: "25%" }
@@ -589,6 +653,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 4,
             stepLabel: "VALUE",
+            question: "What's the dollar value?",
             inputs: [
               { label: "Prevented", value: "189" },
               { label: "Avg claim", value: "$500" }
@@ -616,63 +681,20 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     docQualitySubtitle: "Point-of-care documentation",
     drivers: [
       {
-        id: "doc-time-savings",
-        name: "Documentation Time Savings",
-        description: "Hours returned to direct patient care",
-        referenceValue: 486000,
-        icon: Timer,
-        lane: "time",
-        theory: "Nurses spend up to 35% of their shift on documentation. Ambient AI captures care activities in real-time, returning hours to the bedside where they improve patient outcomes and satisfaction.",
-        calculationSteps: [
-          {
-            stepNumber: 1,
-            stepLabel: "DOCUMENTATION EVENTS",
-            inputs: [
-              { label: "Annual events", value: "108,000" }
-            ],
-            output: { label: "Total events", value: "108,000" }
-          },
-          {
-            stepNumber: 2,
-            stepLabel: "TIME SAVINGS",
-            inputs: [
-              { label: "Events", value: "108,000" },
-              { label: "Time saved", value: "2.5 min" }
-            ],
-            output: { label: "Hours returned", value: "4,500 hrs" }
-          },
-          {
-            stepNumber: 3,
-            stepLabel: "DIRECT VALUE",
-            inputs: [
-              { label: "Hours returned", value: "4,500" },
-              { label: "Hourly rate", value: "$45" }
-            ],
-            output: { label: "Direct value", value: "$202,500" }
-          },
-          {
-            stepNumber: 4,
-            stepLabel: "PRODUCTIVITY MULTIPLIER",
-            inputs: [
-              { label: "Direct value", value: "$202,500" },
-              { label: "Multiplier", value: "2.4x" }
-            ],
-            output: { label: "Annual value", value: "$486,000" }
-          }
-        ]
-      },
-      {
         id: "nursing-overtime",
         name: "Overtime Reduction",
         description: "Eliminate end-of-shift charting overtime",
+        whyItMatters: "The quick win—immediate payroll savings",
         referenceValue: 162000,
         icon: DollarSign,
         lane: "time",
+        order: 1,
         theory: "End-of-shift documentation frequently pushes nurses into overtime. Real-time documentation eliminates this burden, reducing premium labor costs.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "BASELINE OVERTIME",
+            question: "How much overtime exists today?",
             inputs: [
               { label: "Nurses", value: "150" },
               { label: "OT hrs/week × weeks", value: "3 × 52" }
@@ -682,6 +704,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "REDUCTION",
+            question: "How much can Abridge reduce?",
             inputs: [
               { label: "OT hours", value: "23,400" },
               { label: "Reduction rate", value: "30%" }
@@ -691,6 +714,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "COST SAVINGS",
+            question: "What's the dollar value?",
             inputs: [
               { label: "Hours eliminated", value: "7,020" },
               { label: "OT premium", value: "$23/hr" }
@@ -700,17 +724,72 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         ]
       },
       {
+        id: "doc-time-savings",
+        name: "Documentation Time Savings",
+        description: "Hours returned to direct patient care",
+        whyItMatters: "More time at the bedside—where care happens",
+        referenceValue: 486000,
+        icon: Timer,
+        lane: "time",
+        order: 2,
+        theory: "Nurses spend up to 35% of their shift on documentation. Ambient AI captures care activities in real-time, returning hours to the bedside where they improve patient outcomes and satisfaction.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "DOCUMENTATION EVENTS",
+            question: "How many documentation events happen?",
+            inputs: [
+              { label: "Annual events", value: "108,000" }
+            ],
+            output: { label: "Total events", value: "108,000" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "TIME SAVINGS",
+            question: "How much time does Abridge give back?",
+            inputs: [
+              { label: "Events", value: "108,000" },
+              { label: "Time saved", value: "2.5 min" }
+            ],
+            output: { label: "Hours returned", value: "4,500 hrs" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "DIRECT VALUE",
+            question: "What's the direct labor value?",
+            inputs: [
+              { label: "Hours returned", value: "4,500" },
+              { label: "Hourly rate", value: "$45" }
+            ],
+            output: { label: "Direct value", value: "$202,500" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "PRODUCTIVITY MULTIPLIER",
+            question: "What's the total productivity impact?",
+            inputs: [
+              { label: "Direct value", value: "$202,500" },
+              { label: "Multiplier", value: "2.4x" }
+            ],
+            output: { label: "Annual value", value: "$486,000" }
+          }
+        ]
+      },
+      {
         id: "nurse-retention",
         name: "Nurse Retention",
         description: "Reduced burnout and turnover",
+        whyItMatters: "The long game—12+ months to see full impact",
         referenceValue: 270000,
         icon: UserCheck,
         lane: "time",
+        order: 3,
         theory: "Documentation burden is a top driver of nursing burnout and turnover. With replacement costs of $50K-80K per nurse, even modest retention improvements create significant value.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "CURRENT TURNOVER",
+            question: "What's the current turnover situation?",
             inputs: [
               { label: "Nurses", value: "150" },
               { label: "Turnover rate", value: "18%" }
@@ -720,6 +799,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "RETENTION IMPACT",
+            question: "How many can Abridge help retain?",
             inputs: [
               { label: "Departures", value: "27" },
               { label: "Improvement", value: "15%" }
@@ -729,6 +809,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "REPLACEMENT SAVINGS",
+            question: "What's the dollar value?",
             inputs: [
               { label: "Retained", value: "4" },
               { label: "Replacement cost", value: "$67,500" }
@@ -742,14 +823,17 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         id: "doc-timeliness",
         name: "Documentation Timeliness",
         description: "Real-time vs. end-of-shift documentation",
+        whyItMatters: "Real-time notes support better clinical decisions",
         referenceValue: 108000,
         icon: ClipboardCheck,
         lane: "quality",
+        order: 1,
         theory: "Delayed documentation leads to errors and omissions. Real-time capture ensures accuracy and supports clinical decision-making during the care episode.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "DOCUMENTED EVENTS",
+            question: "How many events are documented?",
             inputs: [
               { label: "Annual events", value: "108,000" }
             ],
@@ -758,6 +842,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "TIMELINESS IMPROVEMENT",
+            question: "How much faster is real-time capture?",
             inputs: [
               { label: "Current lag", value: "4+ hours" },
               { label: "New lag", value: "<15 min" }
@@ -767,6 +852,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "ERROR REDUCTION VALUE",
+            question: "What's the value of fewer errors?",
             inputs: [
               { label: "Events improved", value: "108,000" },
               { label: "Value per event", value: "$1" }
@@ -779,14 +865,17 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         id: "doc-completeness",
         name: "Documentation Completeness",
         description: "All required elements captured",
+        whyItMatters: "Complete notes mean better compliance",
         referenceValue: 135000,
         icon: FileText,
         lane: "quality",
+        order: 2,
         theory: "Rushed documentation often misses required fields, leading to compliance issues and downstream problems. AI ensures comprehensive capture of all care activities.",
         calculationSteps: [
           {
             stepNumber: 1,
             stepLabel: "DOCUMENTATION EVENTS",
+            question: "How many events need documentation?",
             inputs: [
               { label: "Annual events", value: "108,000" }
             ],
@@ -795,6 +884,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 2,
             stepLabel: "COMPLETENESS IMPROVEMENT",
+            question: "How much more complete are AI notes?",
             inputs: [
               { label: "Events", value: "108,000" },
               { label: "Improvement rate", value: "5%" }
@@ -804,6 +894,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           {
             stepNumber: 3,
             stepLabel: "COMPLIANCE VALUE",
+            question: "What's the compliance value?",
             inputs: [
               { label: "Improved events", value: "5,400" },
               { label: "Value per event", value: "$25" }
@@ -820,8 +911,11 @@ function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: 
   return (
     <div className="relative">
       <div className="bg-[#F8F9FA] rounded-lg p-5 animate-in fade-in duration-300">
-        <div className="text-xs font-bold text-[#6B7280] tracking-wide mb-4">
-          STEP {step.stepNumber}: {step.stepLabel}
+        <div className="mb-4">
+          <div className="text-xs font-bold text-[#6B7280] tracking-wide mb-1">
+            STEP {step.stepNumber}: {step.stepLabel}
+          </div>
+          <div className="text-sm text-[#6B7280] italic">{step.question}</div>
         </div>
         
         <div className="flex items-end justify-between gap-4 flex-wrap">
@@ -893,7 +987,7 @@ function DriverAccordion({
           </div>
           <div className="text-left">
             <h4 className="font-semibold text-[#111827]">{driver.name}</h4>
-            <p className="text-sm text-[#6B7280]">{driver.description}</p>
+            <p className="text-sm text-[#6B7280]">{driver.whyItMatters}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -994,8 +1088,8 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
   };
 
   const config = selectedSetting ? SETTING_CONFIGS[selectedSetting] : null;
-  const timeDrivers = config?.drivers.filter(d => d.lane === "time") || [];
-  const qualityDrivers = config?.drivers.filter(d => d.lane === "quality") || [];
+  const timeDrivers = config?.drivers.filter(d => d.lane === "time").sort((a, b) => a.order - b.order) || [];
+  const qualityDrivers = config?.drivers.filter(d => d.lane === "quality").sort((a, b) => a.order - b.order) || [];
   const showBridge = viewedDrivers.size >= 2;
 
   if (screen === "selection") {
@@ -1124,19 +1218,73 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8 md:py-12">
-        <div className="mb-10">
+        <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-[#111827] tracking-tight mb-2">
             The ROI Framework for {config?.name}
           </h1>
           <p className="text-[#6B7280]">Understanding where value actually comes from</p>
         </div>
 
-        {/* Reference Scenario Card - Now at top */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-8" data-testid="reference-scenario-card">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart2 className="w-5 h-5 text-[#E85D3F]" />
-            <h3 className="text-sm font-bold text-[#111827] tracking-wide">REFERENCE SCENARIO</h3>
+        {/* THE INSIGHT - Framing Statement */}
+        <div className="bg-[#F8F9FA] border-l-4 border-[#E85D3F] rounded-r-lg p-5 mb-8" data-testid="insight-callout">
+          <div className="flex items-center gap-2 mb-2">
+            <Lightbulb className="w-4 h-4 text-[#E85D3F]" />
+            <span className="text-xs font-bold text-[#111827] tracking-wide">THE INSIGHT</span>
           </div>
+          <p className="text-[#111827] mb-3">
+            Most people think ambient just saves time. That's true—but incomplete. Time saved is only <span className="font-semibold">HALF</span> the value. The other half? Documentation that's actually better than manual notes.
+          </p>
+          <p className="text-[#6B7280] text-sm">
+            Two value streams. One technology. Here's how the math works.
+          </p>
+        </div>
+
+        {/* Visual Framework - Now ABOVE Reference Scenario */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <button
+            onClick={() => document.getElementById('time-section')?.scrollIntoView({ behavior: 'smooth' })}
+            className="p-6 bg-white border border-[#E5E7EB] rounded-xl text-left hover-elevate"
+            data-testid="framework-time-card"
+          >
+            <Clock className="w-8 h-8 text-[#E85D3F] mb-3" />
+            <h3 className="font-bold text-[#111827] text-lg mb-2">Time Saved</h3>
+            <p className="text-sm text-[#6B7280] mb-4">
+              When clinicians document faster, that time can be redirected to care or recovered as cost savings.
+            </p>
+            <ul className="text-sm text-[#6B7280] space-y-1">
+              {timeDrivers.map(d => (
+                <li key={d.id} className="flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-[#6B7280]"></span>
+                  {d.name}
+                </li>
+              ))}
+            </ul>
+          </button>
+          
+          <button
+            onClick={() => document.getElementById('quality-section')?.scrollIntoView({ behavior: 'smooth' })}
+            className="p-6 bg-white border border-[#E5E7EB] rounded-xl text-left hover-elevate"
+            data-testid="framework-quality-card"
+          >
+            <FileText className="w-8 h-8 text-[#E85D3F] mb-3" />
+            <h3 className="font-bold text-[#111827] text-lg mb-2">Doc Quality</h3>
+            <p className="text-sm text-[#6B7280] mb-4">
+              AI captures more complete information than rushed manual documentation. Better notes drive downstream revenue.
+            </p>
+            <ul className="text-sm text-[#6B7280] space-y-1">
+              {qualityDrivers.map(d => (
+                <li key={d.id} className="flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-[#6B7280]"></span>
+                  {d.name}
+                </li>
+              ))}
+            </ul>
+          </button>
+        </div>
+
+        {/* Reference Scenario Card */}
+        <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-10" data-testid="reference-scenario-card">
+          <h3 className="text-sm font-bold text-[#111827] tracking-wide mb-4">REFERENCE SCENARIO</h3>
           
           <p className="text-[#6B7280] mb-6">{config?.referenceScenario.description}</p>
           
@@ -1155,47 +1303,25 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             </div>
           </div>
           
-          <p className="text-sm text-[#111827] font-medium mb-3">
-            This creates ~{config?.referenceScenario.eligibleEncounters.toLocaleString()} Abridge-documented encounters/year
-          </p>
-          
-          <div className="flex items-start gap-2 text-sm text-[#6B7280] bg-[#FEF2F0] rounded-lg p-3">
-            <Lightbulb className="w-4 h-4 text-[#E85D3F] mt-0.5 flex-shrink-0" />
-            <span>In the calculator, you'll input YOUR numbers</span>
-          </div>
-        </div>
-
-        {/* Visual Framework */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-8">
-          <div className="text-center mb-8">
-            <span className="inline-block px-4 py-2 bg-[#111827] text-white text-sm font-semibold rounded-full mb-6">
-              AMBIENT DOCUMENTATION
-            </span>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                  <Clock className="w-6 h-6 text-blue-600" />
-                </div>
-                <h3 className="font-bold text-[#111827] mb-1">Time Saved</h3>
-                <p className="text-sm text-[#6B7280]">{config?.timeSavedSubtitle}</p>
-              </div>
-              
-              <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-xl">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
-                  <FileText className="w-6 h-6 text-emerald-600" />
-                </div>
-                <h3 className="font-bold text-[#111827] mb-1">Documentation Quality</h3>
-                <p className="text-sm text-[#6B7280]">{config?.docQualitySubtitle}</p>
-              </div>
+          <div className="border-t border-neutral-200 pt-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[#6B7280]">→</span>
+              <span className="text-lg font-bold text-[#E85D3F]">~{config?.referenceScenario.eligibleEncounters.toLocaleString()}</span>
+              <span className="text-[#111827]">Abridge-documented encounters/year</span>
             </div>
+            <p className="text-sm text-[#6B7280] mt-2">
+              This is your multiplier. Everything below builds from this.
+            </p>
           </div>
         </div>
 
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 rounded-lg">
-            <Clock className="w-5 h-5 text-blue-600" />
-            <span className="font-semibold text-[#111827]">Time Saved Benefits</span>
+        {/* Time Saved Section */}
+        <div className="mb-10" id="time-section">
+          <div className="border-t border-neutral-200 pt-6 mb-4">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-[#E85D3F]" />
+              <span className="font-bold text-[#111827]">Time Saved Benefits</span>
+            </div>
           </div>
           <div className="space-y-3">
             {timeDrivers.map(driver => (
@@ -1210,10 +1336,13 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           </div>
         </div>
 
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-4 p-3 bg-emerald-50 rounded-lg">
-            <FileText className="w-5 h-5 text-emerald-600" />
-            <span className="font-semibold text-[#111827]">Documentation Quality Benefits</span>
+        {/* Documentation Quality Section */}
+        <div className="mb-10" id="quality-section">
+          <div className="border-t border-neutral-200 pt-6 mb-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[#E85D3F]" />
+              <span className="font-bold text-[#111827]">Documentation Quality Benefits</span>
+            </div>
           </div>
           <div className="space-y-3">
             {qualityDrivers.map(driver => (
@@ -1228,67 +1357,96 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           </div>
         </div>
 
-        {/* Combined Reference Value Summary */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-10" data-testid="value-summary-card">
+        {/* Combined Reference Value Summary - Itemized */}
+        <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-10 shadow-sm" data-testid="value-summary-card">
           <h3 className="text-sm font-bold text-[#111827] tracking-wide mb-6">COMBINED REFERENCE VALUE</h3>
           
-          <div className="space-y-4 mb-6">
-            <div className="flex justify-between items-center">
-              <span className="text-[#6B7280]">Time Saved Benefits:</span>
-              <span className="font-mono font-bold text-[#111827]">
-                ${timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0).toLocaleString()}
-              </span>
+          <div className="space-y-6">
+            {/* Time Saved Breakdown */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-4 h-4 text-[#E85D3F]" />
+                <span className="text-sm font-semibold text-[#111827]">Time Saved Benefits</span>
+              </div>
+              <div className="space-y-2 pl-6">
+                {timeDrivers.map(d => (
+                  <div key={d.id} className="flex justify-between items-center">
+                    <span className="text-sm text-[#6B7280]">{d.name}</span>
+                    <span className="font-mono text-sm text-[#111827]">${d.referenceValue.toLocaleString()}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center border-t border-neutral-100 pt-2 mt-2">
+                  <span className="text-sm font-medium text-[#111827]">Subtotal</span>
+                  <span className="font-mono font-semibold text-[#111827]">
+                    ${timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#6B7280]">Documentation Quality:</span>
-              <span className="font-mono font-bold text-[#111827]">
-                ${qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0).toLocaleString()}
-              </span>
+            
+            {/* Quality Breakdown */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-[#E85D3F]" />
+                <span className="text-sm font-semibold text-[#111827]">Documentation Quality Benefits</span>
+              </div>
+              <div className="space-y-2 pl-6">
+                {qualityDrivers.map(d => (
+                  <div key={d.id} className="flex justify-between items-center">
+                    <span className="text-sm text-[#6B7280]">{d.name}</span>
+                    <span className="font-mono text-sm text-[#111827]">${d.referenceValue.toLocaleString()}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center border-t border-neutral-100 pt-2 mt-2">
+                  <span className="text-sm font-medium text-[#111827]">Subtotal</span>
+                  <span className="font-mono font-semibold text-[#111827]">
+                    ${qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="border-t border-neutral-200 pt-4">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-[#111827]">Total Potential:</span>
-                <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            
+            {/* Total */}
+            <div className="border-t-2 border-neutral-200 pt-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-bold text-[#111827]">TOTAL POTENTIAL VALUE</span>
+                <span className="font-mono font-bold text-[#E85D3F] text-2xl">
                   ${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-[#6B7280]">
+                <span>For {config?.referenceScenario.providers} {config?.referenceScenario.providerLabel} at {config?.referenceScenario.adoption}% adoption</span>
+                <span className="font-mono">
+                  ~${Math.round((timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)) / (config?.referenceScenario.providers || 1)).toLocaleString()} per provider/year
                 </span>
               </div>
             </div>
           </div>
-          
-          <p className="text-sm text-[#6B7280]">
-            For {config?.referenceScenario.providers} {config?.referenceScenario.providerLabel} with {config?.referenceScenario.adoption}% adoption
-          </p>
         </div>
 
         {showBridge && (
-          <div className="bg-[#FEF2F0] border border-[#E85D3F]/20 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h3 className="text-xl font-bold text-[#111827] mb-4">Now You Understand the Framework</h3>
-            
-            <div className="mb-4">
-              <p className="text-sm text-[#6B7280] mb-3">Drivers you've explored:</p>
-              <div className="flex flex-wrap gap-2">
-                {Array.from(viewedDrivers).map(id => {
-                  const driver = config?.drivers.find(d => d.id === id);
-                  if (!driver) return null;
-                  return (
-                    <span key={id} className="flex items-center gap-1 px-3 py-1 bg-white border border-[#E85D3F]/30 rounded-full text-sm text-[#111827]">
-                      <Check className="w-3 h-3 text-[#E85D3F]" />
-                      {driver.name}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-            
-            <p className="text-[#6B7280] mb-6">
-              Ready to build a model with YOUR organization's numbers?
+          <div className="bg-white border border-neutral-200 rounded-2xl p-8 md:p-12 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 shadow-sm">
+            <p className="text-lg text-[#111827] mb-4">
+              You've seen the framework.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-3">
+            <p className="text-[#6B7280] mb-4 max-w-xl mx-auto">
+              The reference scenario showed potential value of <span className="font-semibold text-[#E85D3F]">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-provider practice. But your organization is different.
+            </p>
+            
+            <p className="text-[#6B7280] mb-8">
+              Different provider count. Different volumes. Different payer mix.
+            </p>
+            
+            <p className="text-[#111827] font-semibold mb-6">
+              Ready to see what Abridge could mean for YOU?
+            </p>
+            
+            <div className="flex flex-col items-center gap-4">
               <Button
                 onClick={handleStartCalculator}
                 size="lg"
-                className="bg-[#E85D3F] border-[#E85D3F] text-white font-semibold"
+                className="bg-[#E85D3F] border-[#E85D3F] text-white font-semibold px-8"
                 data-testid="button-build-roi"
               >
                 Build My ROI Model
@@ -1296,10 +1454,12 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => setExpandedDrivers(new Set())}
+                onClick={handleBackToSelection}
+                className="text-[#6B7280]"
                 data-testid="button-explore-more"
               >
-                Explore more drivers
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Or explore another care setting
               </Button>
             </div>
           </div>
