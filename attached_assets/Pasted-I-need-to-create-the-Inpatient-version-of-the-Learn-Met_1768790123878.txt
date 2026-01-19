@@ -1,0 +1,218 @@
+I need to create the Inpatient version of the Learn Methodology page. This follows the same design pattern as Outpatient and ED, but with a different value story that's honest about how inpatient ROI works.
+
+---
+
+SETTING: Inpatient (Hospitalist Program)
+
+REFERENCE SCENARIO:
+- 20 hospitalists
+- 8,000 admissions/year
+- 65% adoption
+- Average LOS: 4.5 days
+- = ~5,200 Abridge-documented admissions/year
+
+---
+
+THE INSIGHT (for Inpatient - this is critical):
+
+"Inpatient ROI works differently. Hospitalists don't see MORE patients when they document faster—the census is driven by admissions, not rounding speed.
+
+But the value is real: physicians get their lives back (protecting your workforce), and documentation quality drives revenue integrity (protecting your reimbursement).
+
+Two value streams. Different from outpatient. Here's how the math works."
+
+---
+
+FRAMEWORK DIAGRAM:
+
+TIME SAVED box:
+- "Hospitalists spend 2+ hours daily on documentation—often after hours or at home. Returning that time improves quality of life and reduces the burnout decimating hospitalist programs."
+- Bullet points: Rounding Efficiency, Hospitalist Retention
+
+DOC QUALITY box:
+- "Inpatient documentation directly drives DRG assignment and CC/MCC capture. Better notes = appropriate reimbursement for the complexity you're managing."
+- Bullet points: CC/MCC Capture, CDI Query Reduction, Denial Prevention
+
+---
+
+INPATIENT DRIVERS (in this order):
+
+TIME SAVED BENEFITS:
+
+1. ROUNDING EFFICIENCY & TIME SAVINGS
+   Subtitle: "Give hospitalists their time back"
+   
+   The Theory:
+   "Hospitalists spend 2+ hours per day on documentation—much of it after rounds or at home. Abridge captures notes in real-time at the bedside, returning that time to patient care, teaching, discharge planning, or personal life."
+   
+   How We Calculate It:
+   
+   STEP 1: DOCUMENTATION BURDEN
+   "How much time is spent documenting?"
+   20 hospitalists × 2.5 hrs/day × 250 days = 12,500 hours/year
+   
+   STEP 2: TIME RETURNED
+   "How much can Abridge give back?"
+   12,500 hrs × 40% reduction × 65% adoption = 3,250 hours returned
+   
+   STEP 3: VALUE OF TIME
+   "What's that time worth?"
+   3,250 hours × $75/hr opportunity cost = $243,750
+   
+   Note: "This is 'time value'—it doesn't directly generate revenue, but it affects retention, quality of life, and capacity for complex cases."
+
+2. HOSPITALIST RETENTION
+   Subtitle: "Address the #1 driver of hospitalist turnover"
+   
+   The Theory:
+   "Hospitalist programs face a retention crisis—turnover rates of 15-20% are common. Documentation burden is the #1 cited frustration. Replacing a hospitalist costs $400-600K."
+   
+   How We Calculate It:
+   
+   STEP 1: BASELINE TURNOVER
+   "What's the current situation?"
+   20 hospitalists × 15% turnover = 3.0 departures/year
+   
+   STEP 2: BURNOUT-RELATED
+   "How much is burnout-driven?"
+   3.0 × 60% burnout-related = 1.8 preventable departures
+   
+   STEP 3: DOCUMENTATION ATTRIBUTION
+   "How much is documentation's fault?"
+   1.8 × 35% documentation-driven = 0.63 departures
+   
+   STEP 4: ABRIDGE IMPACT
+   "What can Abridge prevent?"
+   0.63 × 50% = 0.32 departures avoided
+   
+   STEP 5: COST SAVINGS
+   "What's the dollar value?"
+   0.32 × $500,000 = $160,000
+   
+   Note: "⚠️ Hospitalist turnover is significantly higher than other specialties. Retention impact measurable after 12-18 months."
+
+---
+
+DOCUMENTATION QUALITY BENEFITS:
+
+1. CC/MCC CAPTURE (DRG OPTIMIZATION)
+   Subtitle: "Document the complexity you're managing"
+   
+   The Theory:
+   "DRG reimbursement depends on documented comorbidities. Conditions discussed at bedside but not captured in notes mean missed CC/MCC assignments and lower DRG weights. Abridge ensures what's discussed gets documented."
+   
+   How We Calculate It:
+   
+   STEP 1: ADMISSIONS WITH OPPORTUNITY
+   "How many admissions have documentation gaps?"
+   5,200 documented admissions × 40% with gaps = 2,080 opportunities
+   
+   STEP 2: CAPTURE IMPROVEMENT
+   "How much can Abridge help?"
+   2,080 × 15% improvement = 312 admissions improved
+   
+   STEP 3: DRG WEIGHT IMPACT
+   "What's the revenue impact?"
+   312 × 0.4 weight increase × $6,000 = $748,800
+   
+   STEP 4: REALITY CHECK
+   "What passes audit?"
+   $748,800 × 50% realization = $374,400
+   
+   Note: "Work with your CDI team to validate capture rates for your specific case mix."
+
+2. CDI QUERY REDUCTION
+   Subtitle: "Better initial documentation = less rework"
+   
+   The Theory:
+   "CDI teams spend enormous effort querying physicians for clarification. Better initial documentation reduces query volume—saving CDI time and reducing physician interruptions."
+   
+   How We Calculate It:
+   
+   STEP 1: CURRENT QUERY VOLUME
+   "How many queries happen today?"
+   8,000 admissions × 30% query rate = 2,400 queries/year
+   
+   STEP 2: QUERIES AVOIDED
+   "How many can better documentation prevent?"
+   2,400 × 25% reduction = 600 queries avoided
+   
+   STEP 3: VALUE
+   "What's the operational savings?"
+   600 queries × $50/query = $30,000
+   
+   Note: "Additional benefit: Faster DRG finalization → faster billing cycles"
+
+3. DOCUMENTATION-RELATED DENIALS
+   Subtitle: "Protect your reimbursement"
+   
+   The Theory:
+   "Inpatient claims face rigorous payer review. Medical necessity, level of care, and clinical indicators must be clearly documented. Incomplete notes lead to costly denials and appeals."
+   
+   How We Calculate It:
+   
+   STEP 1: DENIAL VOLUME
+   "How many claims are denied?"
+   8,000 admissions × 5% denial rate = 400 denials
+   
+   STEP 2: DOCUMENTATION-RELATED
+   "How many are doc-related?"
+   400 × 35% = 140 doc-related denials
+   
+   STEP 3: PREVENTION
+   "How many can better documentation prevent?"
+   140 × 40% = 56 denials prevented
+   
+   STEP 4: VALUE
+   "What's the revenue impact?"
+   56 × $12,000 avg claim = $672,000
+   
+   STEP 5: CONSERVATIVE ADJUSTMENT
+   "What's the permanent save rate?"
+   $672,000 × 40% = $268,800
+   
+   Note: "Many denials are eventually overturned on appeal—this counts only permanent saves."
+
+---
+
+COMBINED REFERENCE VALUE:
+
+Time Saved Benefits:
+- Rounding Efficiency              $243,750
+- Hospitalist Retention            $160,000
+Subtotal:                          $403,750
+
+Documentation Quality Benefits:
+- CC/MCC Capture (DRG)             $374,400
+- CDI Query Reduction              $30,000
+- Documentation-Related Denials    $268,800
+Subtotal:                          $673,200
+
+TOTAL POTENTIAL VALUE:             $1,076,950
+For 20 hospitalists at 65% adoption
+~$53,848 per hospitalist/year
+
+---
+
+BRIDGE SECTION:
+
+"You've seen the framework.
+
+The reference scenario showed potential value of $1,076,950 for a 20-hospitalist program. But your program is different.
+
+Different hospitalist count. Different turnover rates. Different case mix.
+
+Ready to see what Abridge could mean for YOUR inpatient program?"
+
+[Build My ROI Model →]
+
+← Or explore another care setting
+
+---
+
+DESIGN:
+- Use exact same visual design as Outpatient and ED pages
+- Same color scheme, same calculation step format
+- Same hierarchy: Insight → Framework → Reference → Drivers → Total → Bridge
+- The insight callout should emphasize that inpatient ROI is "different but real"
+- When user selects "Inpatient" from the Learn entry page, route to this version

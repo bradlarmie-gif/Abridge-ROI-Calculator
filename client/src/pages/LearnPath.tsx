@@ -33,7 +33,7 @@ interface LearnPathProps {
   onStartCalculator?: (setting: CareSettingType) => void;
 }
 
-type CareSettingType = "outpatient" | "ed" | "nursing";
+type CareSettingType = "outpatient" | "ed" | "nursing" | "inpatient";
 type LearnScreen = "selection" | "methodology";
 
 interface CalculationStep {
@@ -927,6 +927,297 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         ]
       }
     ]
+  },
+  inpatient: {
+    name: "Inpatient",
+    icon: Building2,
+    subtitle: "Hospital admissions, rounding",
+    insightText: {
+      main: "Inpatient ROI works differently. Hospitalists don't see MORE patients when they document faster—the census is driven by admissions, not rounding speed. But the value is real: physicians get their lives back (protecting your workforce), and documentation quality drives revenue integrity (protecting your reimbursement). Two value streams.",
+      highlight: "DIFFERENT",
+      followup: "Different from outpatient. Here's how the math works."
+    },
+    referenceScenario: {
+      providers: 20,
+      providerLabel: "hospitalists",
+      annualVisits: 8000,
+      visitLabel: "admissions/year",
+      adoption: 65,
+      eligibleEncounters: 5200,
+      description: "We'll walk through the math using a typical hospitalist program as an example:"
+    },
+    timeSavedSubtitle: "Hospitalists spend 2+ hours daily on documentation—often after hours or at home",
+    docQualitySubtitle: "Inpatient documentation directly drives DRG assignment and CC/MCC capture",
+    drivers: [
+      {
+        id: "rounding-efficiency",
+        name: "Rounding Efficiency & Time Savings",
+        description: "Give hospitalists their time back",
+        whyItMatters: "Give hospitalists their time back",
+        referenceValue: 243750,
+        icon: Timer,
+        lane: "time",
+        order: 1,
+        theory: "Hospitalists spend 2+ hours per day on documentation—much of it after rounds or at home. Abridge captures notes in real-time at the bedside, returning that time to patient care, teaching, discharge planning, or personal life.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "DOCUMENTATION BURDEN",
+            question: "How much time is spent documenting?",
+            inputs: [
+              { label: "Hospitalists × hrs/day × days", value: "20 × 2.5 × 250" }
+            ],
+            output: { label: "Annual doc hours", value: "12,500 hrs" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "TIME RETURNED",
+            question: "How much can Abridge give back?",
+            inputs: [
+              { label: "Doc hours", value: "12,500" },
+              { label: "Reduction × adoption", value: "40% × 65%" }
+            ],
+            output: { label: "Hours returned", value: "3,250 hrs" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "VALUE OF TIME",
+            question: "What's that time worth?",
+            inputs: [
+              { label: "Hours returned", value: "3,250" },
+              { label: "Opportunity cost", value: "$75/hr" }
+            ],
+            output: { label: "Annual value", value: "$243,750" }
+          }
+        ],
+        caveat: "This is 'time value'—it doesn't directly generate revenue, but it affects retention, quality of life, and capacity for complex cases."
+      },
+      {
+        id: "hospitalist-retention",
+        name: "Hospitalist Retention",
+        description: "Address the #1 driver of hospitalist turnover",
+        whyItMatters: "Address the #1 driver of hospitalist turnover",
+        referenceValue: 160000,
+        icon: UserCheck,
+        lane: "time",
+        order: 2,
+        theory: "Hospitalist programs face a retention crisis—turnover rates of 15-20% are common. Documentation burden is the #1 cited frustration. Replacing a hospitalist costs $400-600K.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "BASELINE TURNOVER",
+            question: "What's the current situation?",
+            inputs: [
+              { label: "Hospitalists", value: "20" },
+              { label: "Turnover rate", value: "15%" }
+            ],
+            output: { label: "Departures/year", value: "3.0" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "BURNOUT-RELATED",
+            question: "How much is burnout-driven?",
+            inputs: [
+              { label: "Departures", value: "3.0" },
+              { label: "Burnout-related", value: "60%" }
+            ],
+            output: { label: "Preventable", value: "1.8" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "DOCUMENTATION ATTRIBUTION",
+            question: "How much is documentation's fault?",
+            inputs: [
+              { label: "Preventable", value: "1.8" },
+              { label: "Doc-driven", value: "35%" }
+            ],
+            output: { label: "Doc-related departures", value: "0.63" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "ABRIDGE IMPACT",
+            question: "What can Abridge prevent?",
+            inputs: [
+              { label: "Doc-related", value: "0.63" },
+              { label: "Prevention rate", value: "50%" }
+            ],
+            output: { label: "Departures avoided", value: "0.32" }
+          },
+          {
+            stepNumber: 5,
+            stepLabel: "COST SAVINGS",
+            question: "What's the dollar value?",
+            inputs: [
+              { label: "Departures avoided", value: "0.32" },
+              { label: "Replacement cost", value: "$500,000" }
+            ],
+            output: { label: "Annual savings", value: "$160,000" }
+          }
+        ],
+        caveat: "Hospitalist turnover is significantly higher than other specialties. Retention impact measurable after 12-18 months."
+      },
+      {
+        id: "cc-mcc-capture",
+        name: "CC/MCC Capture (DRG Optimization)",
+        description: "Document the complexity you're managing",
+        whyItMatters: "Document the complexity you're managing",
+        referenceValue: 374400,
+        icon: TrendingUp,
+        lane: "quality",
+        order: 1,
+        theory: "DRG reimbursement depends on documented comorbidities. Conditions discussed at bedside but not captured in notes mean missed CC/MCC assignments and lower DRG weights. Abridge ensures what's discussed gets documented.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "ADMISSIONS WITH OPPORTUNITY",
+            question: "How many admissions have documentation gaps?",
+            inputs: [
+              { label: "Documented admissions", value: "5,200" },
+              { label: "With gaps", value: "40%" }
+            ],
+            output: { label: "Opportunities", value: "2,080" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "CAPTURE IMPROVEMENT",
+            question: "How much can Abridge help?",
+            inputs: [
+              { label: "Opportunities", value: "2,080" },
+              { label: "Improvement rate", value: "15%" }
+            ],
+            output: { label: "Admissions improved", value: "312" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "DRG WEIGHT IMPACT",
+            question: "What's the revenue impact?",
+            inputs: [
+              { label: "Admissions × weight × base", value: "312 × 0.4 × $6,000" }
+            ],
+            output: { label: "Gross impact", value: "$748,800" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "REALITY CHECK",
+            question: "What passes audit?",
+            inputs: [
+              { label: "Gross impact", value: "$748,800" },
+              { label: "Realization rate", value: "50%" }
+            ],
+            output: { label: "Annual value", value: "$374,400" }
+          }
+        ],
+        caveat: "Work with your CDI team to validate capture rates for your specific case mix."
+      },
+      {
+        id: "cdi-query-reduction",
+        name: "CDI Query Reduction",
+        description: "Better initial documentation = less rework",
+        whyItMatters: "Better initial documentation = less rework",
+        referenceValue: 30000,
+        icon: ClipboardCheck,
+        lane: "quality",
+        order: 2,
+        theory: "CDI teams spend enormous effort querying physicians for clarification. Better initial documentation reduces query volume—saving CDI time and reducing physician interruptions.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "CURRENT QUERY VOLUME",
+            question: "How many queries happen today?",
+            inputs: [
+              { label: "Admissions", value: "8,000" },
+              { label: "Query rate", value: "30%" }
+            ],
+            output: { label: "Queries/year", value: "2,400" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "QUERIES AVOIDED",
+            question: "How many can better documentation prevent?",
+            inputs: [
+              { label: "Queries", value: "2,400" },
+              { label: "Reduction rate", value: "25%" }
+            ],
+            output: { label: "Queries avoided", value: "600" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "VALUE",
+            question: "What's the operational savings?",
+            inputs: [
+              { label: "Queries avoided", value: "600" },
+              { label: "Cost per query", value: "$50" }
+            ],
+            output: { label: "Annual savings", value: "$30,000" }
+          }
+        ],
+        caveat: "Additional benefit: Faster DRG finalization → faster billing cycles"
+      },
+      {
+        id: "inpatient-denials",
+        name: "Documentation-Related Denials",
+        description: "Protect your reimbursement",
+        whyItMatters: "Protect your reimbursement",
+        referenceValue: 268800,
+        icon: FileX,
+        lane: "quality",
+        order: 3,
+        theory: "Inpatient claims face rigorous payer review. Medical necessity, level of care, and clinical indicators must be clearly documented. Incomplete notes lead to costly denials and appeals.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "DENIAL VOLUME",
+            question: "How many claims are denied?",
+            inputs: [
+              { label: "Admissions", value: "8,000" },
+              { label: "Denial rate", value: "5%" }
+            ],
+            output: { label: "Annual denials", value: "400" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "DOCUMENTATION-RELATED",
+            question: "How many are doc-related?",
+            inputs: [
+              { label: "Denials", value: "400" },
+              { label: "Doc-related", value: "35%" }
+            ],
+            output: { label: "Doc denials", value: "140" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "PREVENTION",
+            question: "How many can better documentation prevent?",
+            inputs: [
+              { label: "Doc denials", value: "140" },
+              { label: "Prevention rate", value: "40%" }
+            ],
+            output: { label: "Denials prevented", value: "56" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "VALUE",
+            question: "What's the revenue impact?",
+            inputs: [
+              { label: "Prevented", value: "56" },
+              { label: "Avg claim", value: "$12,000" }
+            ],
+            output: { label: "Gross value", value: "$672,000" }
+          },
+          {
+            stepNumber: 5,
+            stepLabel: "CONSERVATIVE ADJUSTMENT",
+            question: "What's the permanent save rate?",
+            inputs: [
+              { label: "Gross value", value: "$672,000" },
+              { label: "Permanent rate", value: "40%" }
+            ],
+            output: { label: "Annual value", value: "$268,800" }
+          }
+        ],
+        caveat: "Many denials are eventually overturned on appeal—this counts only permanent saves."
+      }
+    ]
   }
 };
 
@@ -1187,16 +1478,23 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                 );
               })}
               
-              <div className="relative p-5 rounded-xl border-2 border-neutral-200 bg-neutral-50 opacity-60 cursor-not-allowed">
-                <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-200 rounded text-xs text-neutral-600 font-medium">
-                  Coming soon
+              <button
+                onClick={() => handleSettingSelect("inpatient")}
+                className={`p-5 rounded-xl border-2 text-left transition-all ${
+                  selectedSetting === "inpatient"
+                    ? "border-[#E85D3F] bg-[#FEF2F0]"
+                    : "border-neutral-200 bg-white hover-elevate"
+                }`}
+                data-testid="card-inpatient"
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
+                  selectedSetting === "inpatient" ? "bg-[#E85D3F]" : "bg-[#FEF2F0]"
+                }`}>
+                  <Building2 className={`w-5 h-5 ${selectedSetting === "inpatient" ? "text-white" : "text-[#E85D3F]"}`} />
                 </div>
-                <div className="w-10 h-10 rounded-lg bg-neutral-200 flex items-center justify-center mb-3">
-                  <Building2 className="w-5 h-5 text-neutral-400" />
-                </div>
-                <h3 className="font-semibold text-neutral-500 mb-1">Inpatient</h3>
-                <p className="text-sm text-neutral-400">Hospital admissions, rounding</p>
-              </div>
+                <h3 className="font-semibold text-[#111827] mb-1">Inpatient</h3>
+                <p className="text-sm text-[#6B7280]">Hospital admissions, rounding</p>
+              </button>
             </div>
 
             <Button
@@ -1454,7 +1752,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             </p>
             
             <p className="text-[#6B7280] mb-4 max-w-xl mx-auto">
-              The reference scenario showed potential value of <span className="font-semibold text-[#E85D3F]">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-{config?.referenceScenario.providerLabel === "physicians" ? "physician ED" : config?.referenceScenario.providerLabel === "nurses" ? "nurse unit" : "provider practice"}. But your organization is different.
+              The reference scenario showed potential value of <span className="font-semibold text-[#E85D3F]">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-{config?.referenceScenario.providerLabel === "physicians" ? "physician ED" : config?.referenceScenario.providerLabel === "nurses" ? "nurse unit" : config?.referenceScenario.providerLabel === "hospitalists" ? "hospitalist program" : "provider practice"}. But your {selectedSetting === "inpatient" ? "program" : "organization"} is different.
             </p>
             
             <p className="text-[#6B7280] mb-8">
@@ -1462,11 +1760,13 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                 ? "Different physician count. Different LWBS rates. Different scribe situation."
                 : selectedSetting === "nursing"
                 ? "Different nurse count. Different documentation workflows. Different overtime patterns."
+                : selectedSetting === "inpatient"
+                ? "Different hospitalist count. Different turnover rates. Different case mix."
                 : "Different provider count. Different volumes. Different payer mix."}
             </p>
             
             <p className="text-[#111827] font-semibold mb-6">
-              Ready to see what Abridge could mean for YOUR {selectedSetting === "ed" ? "ED" : selectedSetting === "nursing" ? "unit" : "practice"}?
+              Ready to see what Abridge could mean for YOUR {selectedSetting === "ed" ? "ED" : selectedSetting === "nursing" ? "unit" : selectedSetting === "inpatient" ? "inpatient program" : "practice"}?
             </p>
             
             <div className="flex flex-col items-center gap-4">
