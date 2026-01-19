@@ -1,0 +1,421 @@
+I need to completely rebuild the SWITCH path with a fundamentally different approach. The current version jumps to numbers too quickly without building alignment. The new version should feel like a diagnostic conversation where we build understanding BEFORE showing dollar amounts.
+
+---
+
+CORE PHILOSOPHY:
+
+The SWITCH path should:
+1. Be honest about what we know (not pretend we have all competitors' data)
+2. Build conceptual understanding of gaps BEFORE quantifying them
+3. Let the customer choose which drivers matter to them
+4. Show realistic, non-linear projections
+5. Feel like alignment and discovery, not a sales pitch
+
+---
+
+ROUTE: /switch
+
+This is a 7-step flow that builds progressively:
+1. Simple solution choice (2-3 options)
+2. Baseline reality (providers, encounters, utilization)
+3. Understanding "Great" utilization (conceptual gap #1)
+4. Understanding efficiency (conceptual gap #2)
+5. Which drivers matter to you? (alignment)
+6. The value gap (quantified)
+7. Cost of waiting (realistic projection)
+
+---
+
+STEP 1: SOLUTION SELECTION
+───────────────────────────
+
+Route: /switch
+
+HEADER:
+- "← Back to Home"
+- ABRIDGE logo
+
+CONTENT (centered, clean):
+
+Headline: "What solution are you using today?"
+
+3 large cards in a row:
+
+CARD 1: "Ambient AI"
+- Subtext: "(DAX, Suki, Nabla, others)"
+- Icon: Microphone
+- Description: "AI-powered ambient documentation"
+
+CARD 2: "Human Scribes"
+- Subtext: "(In-person or virtual)"
+- Icon: Person
+- Description: "Medical scribe services"
+
+CARD 3: "Manual Documentation"
+- Subtext: "(No scribes or AI)"
+- Icon: Keyboard
+- Description: "Provider types everything"
+
+Cards should:
+- Single-select radio behavior
+- Coral border when selected
+- Hover effect
+
+Below cards:
+"Select a care setting:"
+[● Outpatient] [○ ED] [○ Inpatient*] [○ Nursing*]
+*Grayed out with "Coming soon" tooltip
+
+Button: "Continue →" (disabled until both selections made)
+
+---
+
+STEP 2: YOUR BASELINE
+─────────────────────
+
+Route: /switch/baseline
+
+Headline: "Tell us about your current situation"
+Subheadline: "We'll help you understand where you stand."
+
+FORM (clean, generous spacing):
+
+Input 1: Provider count
+- Label: "How many providers?"
+- Input: Number field, placeholder "50"
+
+Input 2: Annual encounters
+- Label: "Annual outpatient encounters (total)?"
+- Input: Number field, placeholder "100,000"
+- Helper text: "💡 ~2,000 per provider is typical"
+- Auto-suggest: [provider count] × 2,000
+
+Input 3: Current utilization
+- Label: "What's your current utilization?"
+- Sublabel: "How often do providers actually use your ambient solution?"
+- Input: Slider with emoji feedback
+  - Range: 0% to 100%
+  - Emoji indicators at:
+    - 😔 Low (<40%)
+    - 😐 Average (40-55%)
+    - 😊 Good (55-65%)
+    - 🎉 Great (65%+)
+- Show real-time status below slider:
+  "You're at: [Average]"
+  "💡 Abridge average: 65% (Great)"
+
+Show live calculation:
+"At these numbers, you're documenting ~[X] encounters/year"
+Calculation: providers × encounters × (utilization / providers)
+
+Button: "Continue →"
+
+---
+
+STEP 3: UNDERSTANDING "GREAT"
+─────────────────────────────
+
+Route: /switch/utilization-gap
+
+This is NEW—build conceptual understanding before numbers.
+
+Headline: "What does 'Great' utilization mean?"
+Subheadline: "Let's compare where you are to where top performers are."
+
+SECTION 1: Visual Spectrum
+
+Show a horizontal spectrum with:
+- Emoji indicators (😔 😐 😊 🎉)
+- Labels: Low, Average, Good, Great
+- % ranges: <40%, 40-55%, 55-65%, 65%+
+- Arrow showing "YOU" at their position (e.g., 50%)
+- Arrow showing "ABRIDGE" at 65%
+- Visual gap indicator between the two
+
+Style: Clean, modern, like a Bloomberg graphic
+
+SECTION 2: What This Gap Means (conceptual)
+
+Two cards side by side:
+
+LEFT CARD: "At your 50% utilization"
+- Show: [calculated] encounters documented/year
+- Label: "That's your current reach"
+
+RIGHT CARD: "At Abridge 65%"
+- Show: [calculated] encounters documented/year
+- Label: "That's [X] MORE encounters documented"
+
+Below cards:
+"That [X]% utilization gap = [Y]% more encounters being documented"
+"This is where value leaks."
+
+Button: "Next: See the other gap →"
+
+---
+
+STEP 4: THE EFFICIENCY GAP
+──────────────────────────
+
+Route: /switch/efficiency-gap
+
+Headline: "The second gap: Time efficiency"
+Subheadline: "It's not just how often it's used—it's how much time it saves."
+
+SECTION 1: Time Savings Input
+
+Label: "How much time does your solution save per encounter?"
+
+Slider:
+- Range: 0.5 min to 5 min
+- Default based on competitor selection (e.g., 1.5 for DAX)
+- Show value prominently
+
+Below slider:
+"You're getting: [X] min/encounter"
+"💡 Abridge average: 2.5 min/encounter"
+
+Checkbox:
+"☐ Not sure / Haven't measured"
+If checked, use competitor benchmark
+
+SECTION 2: What This Difference Means
+
+Two cards side by side:
+
+LEFT CARD: "At your 1.5 min savings"
+- [encounters] × 1.5 min = [hours] returned
+- Label: "That's your current impact"
+
+RIGHT CARD: "At Abridge 2.5 min"
+- [encounters] × 2.5 min = [hours] returned
+- Label: "That's [X] MORE hours returned"
+
+Below cards:
+"The efficiency gap = [X]% more time returned per encounter"
+"Between the two gaps, you're leaving significant value on the table."
+
+Button: "Show me the impact →"
+
+---
+
+STEP 5: WHICH DRIVERS MATTER?
+─────────────────────────────
+
+Route: /switch/drivers
+
+Headline: "Where would this extra capacity create value for you?"
+Subheadline: "Select the outcomes that matter most to your organization."
+
+Show recap:
+"We've established:"
+"• [X]% utilization gap → [Y] more encounters documented"
+"• [Z]% efficiency gap → [A] more hours returned"
+"Now let's focus on what this means for YOU."
+
+DRIVER SELECTION (checkboxes):
+
+Section: "⏱️ TIME SAVED BENEFITS"
+Subtext: "(From those [A] extra hours returned)"
+
+☐ Patient Access
+   Subtitle: "Convert time into seeing more patients"
+   Context: "Requires: Patient demand + scheduling capacity"
+
+☐ Overtime & Locum Savings
+   Subtitle: "Reduce premium labor costs"
+   Context: "Easiest to measure—shows up in payroll"
+
+☐ Clinician Retention
+   Subtitle: "Better work-life balance → less turnover"
+   Context: "Long-term impact (12+ months)"
+
+Section: "📋 DOCUMENTATION QUALITY BENEFITS"
+Subtext: "(From those [Y] more complete encounters)"
+
+☐ Level of Service Accuracy
+   Subtitle: "More complete documentation → proper E/M coding"
+   Context: "Universal—applies to everyone"
+
+☐ Documentation-Related Denials
+   Subtitle: "Better notes → fewer claim rejections"
+   Context: "Revenue cycle teams care about this"
+
+☐ HCC & Chronic Condition Capture
+   Subtitle: "Capture conditions discussed → RAF improvement"
+   Context: "Only relevant if you have MA/risk contracts"
+
+Instructions:
+"Select 2-6 drivers that align with your current priorities."
+
+Button: "Calculate the gap →" (disabled until 2+ selected)
+
+---
+
+STEP 6: THE VALUE GAP
+─────────────────────
+
+Route: /switch/value
+
+Headline: "Your value gap"
+Subheadline: "Based on what you selected, here's what you're leaving on the table."
+
+Show selected drivers:
+"You selected: ✓ [Driver 1] ✓ [Driver 2] ✓ [Driver 3]"
+
+FOR EACH SELECTED DRIVER:
+
+Show expandable card with:
+
+HEADER:
+- Driver name
+- Icon
+- Gap amount (e.g., "+$58,400/year")
+
+EXPANDED CONTENT:
+Side-by-side comparison:
+
+LEFT SIDE: "YOUR CURRENT [DRIVER]"
+- Show their calculated value
+- Visual bar (gray, proportional)
+- Key metrics
+
+RIGHT SIDE: "WITH ABRIDGE"
+- Show Abridge calculated value
+- Visual bar (coral, proportional)
+- Key metrics
+
+BELOW:
+"Gap: +$[X]/year"
+
+Style: Clean, modern, easy to scan
+
+BOTTOM SECTION: Total Summary
+
+Line items for each driver gap
+─────────────────────────────
+TOTAL ANNUAL GAP: $[X]
+
+"That's $[monthly] every month you're not capturing."
+
+Button: "What does waiting cost? →"
+
+---
+
+STEP 7: COST OF WAITING
+───────────────────────
+
+Route: /switch/decision
+
+Headline: "The cost of waiting"
+Subheadline: "Every month you delay is value you'll never recapture."
+
+SECTION 1: Realistic 3-Year Chart
+
+Show line chart with:
+- X-axis: Today, 6mo, Year 1, Year 2, Year 3
+- Y-axis: $0 to [max value]
+- Gray line: "Stay with [Current]" (flat or slight growth)
+- Coral line: "Switch to Abridge" (realistic ramp-up, NOT linear)
+
+Key features of Abridge line:
+- Slower growth first 6 months (ramp-up period)
+- Reaches full value at 12 months
+- Maintains full value Years 2-3
+
+Add annotation callout:
+"Year 1 includes 6-month ramp to full adoption"
+
+SECTION 2: Switch Now vs Wait 6 Months
+
+Two cards side by side:
+
+LEFT CARD: "IF YOU SWITCH TODAY"
+- 6 months: +$[50% of annual]
+  (Note: "50% of annual during ramp")
+- Year 1: +$[75% of annual]
+  (Note: "includes 6mo ramp")
+- Year 2: +$[100% of annual]
+- Year 3: +$[100% of annual]
+────────────────────
+3-year total: $[sum]
+
+RIGHT CARD: "IF YOU WAIT 6 MONTHS"
+- 6 months: $0
+  (Note: "still on current solution")
+- Year 1: +$[50% of annual]
+  (Note: "only 6mo at full value")
+- Year 2: +$[100% of annual]
+- Year 3: +$[100% of annual]
+────────────────────
+3-year total: $[sum]
+You lose: $[difference]
+
+SECTION 3: Urgency Message
+
+Yellow/gold callout box:
+"Every month you delay = $[monthly gap] in value you'll never recapture."
+
+SECTION 4: CTAs
+
+Two buttons:
+- [📥 Save This Analysis] (secondary, outlined)
+- [Let's Talk →] (primary, coral filled)
+
+---
+
+DESIGN SPECIFICATIONS:
+
+1. Clean, Stripe-like aesthetic
+   - Generous whitespace
+   - Clear typography hierarchy
+   - Subtle shadows and borders
+   - Coral (#E85D3F) for accents only
+
+2. Visual comparisons should be clean
+   - Side-by-side cards with equal visual weight
+   - Horizontal bars show proportional difference
+   - NOT dramatic/dark—professional and trustworthy
+
+3. Progressive disclosure
+   - Each step builds on previous
+   - No jumping ahead
+   - Clear "Continue" flow
+
+4. Realistic projections
+   - Ramp-up period acknowledged
+   - NOT linear growth
+   - Conservative assumptions visible
+
+5. Mobile responsive
+   - Stack cards vertically
+   - Maintain clarity
+   - Touch-friendly inputs
+
+---
+
+CALCULATIONS:
+
+Utilization gap:
+- Their encounters: providers × 2000 × their_util
+- Abridge encounters: providers × 2000 × 0.65
+- Gap encounters: Abridge - Their
+
+Efficiency gap:
+- Their hours: their_encounters × their_time_savings
+- Abridge hours: abridge_encounters × 2.5
+- Gap hours: Abridge - Their
+
+Value gap (for each selected driver):
+- Calculate value with THEIR metrics
+- Calculate value with ABRIDGE metrics
+- Gap = Abridge - Their
+
+3-year realistic projection:
+- Year 1: Annual gap × 0.75 (6-month ramp)
+- Year 2: Annual gap × 1.0
+- Year 3: Annual gap × 1.0
+
+Cost of waiting 6 months:
+- Lose 6 months of ramp value
+- Effective loss = Annual gap × 0.5
