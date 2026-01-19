@@ -1153,10 +1153,11 @@ export default function ObjectiveSelectionScreen({
   onBackToJourney,
 }: ObjectiveSelectionScreenProps) {
   // If returning from calculator with existing selections, go directly to priorities page
+  // Otherwise, skip orientation and go directly to care setting selection
   const [currentPage, setCurrentPage] = useState<Page>(
     initialSelectedSettings.length > 0 && initialSelectedLevers.length > 0
       ? "priorities"
-      : "orientation"
+      : "setting"
   );
   const [selectedSetting, setSelectedSetting] =
     useState<CareSettingType | null>(
