@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
@@ -839,71 +839,75 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 )}
               </div>
 
-              <div className="border-t border-neutral-200 pt-6 md:pt-8">
-                <p className="text-base md:text-xl text-neutral-700 mb-4 md:mb-6">
-                  And your current utilization is:
-                </p>
-                
-                <div className="relative">
-                  <div className="mb-3 md:mb-4 text-center">
-                    <span className="inline-flex items-baseline gap-1 bg-white border-2 border-neutral-200 rounded-xl px-4 md:px-5 py-2.5 md:py-3 shadow-sm">
-                      <span className="text-3xl md:text-4xl font-bold text-neutral-900">{utilization}</span>
-                      <span className="text-base md:text-lg text-neutral-400">%</span>
-                    </span>
-                  </div>
+              {!isScribePath && (
+                <div className="border-t border-neutral-200 pt-6 md:pt-8">
+                  <p className="text-base md:text-xl text-neutral-700 mb-4 md:mb-6">
+                    And your current utilization is:
+                  </p>
                   
                   <div className="relative">
-                    <div className="relative rounded-full bg-gradient-to-r from-neutral-200 via-neutral-300 to-neutral-400 h-3">
-                      <div 
-                        className="absolute top-1/2 -translate-y-1/2 w-0.5 h-6 bg-neutral-400"
-                        style={{ left: `${((45 - 10) / 80) * 100}%` }}
-                        title="Industry Average: 45%"
-                      />
-                      <div 
-                        className="absolute top-1/2 -translate-y-1/2 w-0.5 h-6 bg-neutral-600"
-                        style={{ left: `${((65 - 10) / 80) * 100}%` }}
-                        title="Abridge Average: 65%"
+                    <div className="mb-3 md:mb-4 text-center">
+                      <span className="inline-flex items-baseline gap-1 bg-white border-2 border-neutral-200 rounded-xl px-4 md:px-5 py-2.5 md:py-3 shadow-sm">
+                        <span className="text-3xl md:text-4xl font-bold text-neutral-900">{utilization}</span>
+                        <span className="text-base md:text-lg text-neutral-400">%</span>
+                      </span>
+                    </div>
+                    
+                    <div className="relative">
+                      <div className="relative rounded-full bg-gradient-to-r from-neutral-200 via-neutral-300 to-neutral-400 h-3">
+                        <div 
+                          className="absolute top-1/2 -translate-y-1/2 w-0.5 h-6 bg-neutral-400"
+                          style={{ left: `${((45 - 10) / 80) * 100}%` }}
+                          title="Industry Average: 45%"
+                        />
+                        <div 
+                          className="absolute top-1/2 -translate-y-1/2 w-0.5 h-6 bg-neutral-600"
+                          style={{ left: `${((65 - 10) / 80) * 100}%` }}
+                          title="Abridge Average: 65%"
+                        />
+                      </div>
+                      
+                      <Slider
+                        value={[utilization]}
+                        onValueChange={(v) => setUtilization(v[0])}
+                        min={10}
+                        max={90}
+                        step={5}
+                        className="absolute inset-0 [&_[role=slider]]:w-10 [&_[role=slider]]:h-10 [&_[role=slider]]:bg-white [&_[role=slider]]:border-2 [&_[role=slider]]:border-neutral-400 [&_[role=slider]]:shadow-lg [&_[role=slider]]:rounded-full [&_[role=slider]]:cursor-grab [&_[role=slider]]:active:cursor-grabbing [&_[role=slider]]:hover:border-[#E85D3F] [&_[role=slider]]:focus-visible:ring-2 [&_[role=slider]]:focus-visible:ring-[#E85D3F]/30 [&_.relative]:bg-transparent [&_.relative]:h-3 [&_[class*='bg-primary']]:bg-transparent"
+                        data-testid="slider-utilization"
                       />
                     </div>
                     
-                    <Slider
-                      value={[utilization]}
-                      onValueChange={(v) => setUtilization(v[0])}
-                      min={10}
-                      max={90}
-                      step={5}
-                      className="absolute inset-0 [&_[role=slider]]:w-10 [&_[role=slider]]:h-10 [&_[role=slider]]:bg-white [&_[role=slider]]:border-2 [&_[role=slider]]:border-neutral-400 [&_[role=slider]]:shadow-lg [&_[role=slider]]:rounded-full [&_[role=slider]]:cursor-grab [&_[role=slider]]:active:cursor-grabbing [&_[role=slider]]:hover:border-[#E85D3F] [&_[role=slider]]:focus-visible:ring-2 [&_[role=slider]]:focus-visible:ring-[#E85D3F]/30 [&_.relative]:bg-transparent [&_.relative]:h-3 [&_[class*='bg-primary']]:bg-transparent"
-                      data-testid="slider-utilization"
-                    />
-                  </div>
-                  
-                  <div className="flex justify-between text-xs text-neutral-400 mt-4 px-2">
-                    <span>10%</span>
-                    <span>90%</span>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6">
-                    <div className="bg-[#F3F4F6] rounded-xl p-3 md:p-4 text-center border border-[#E5E7EB]">
-                      <p className="text-xs md:text-sm text-[#9CA3AF] mb-0.5 md:mb-1">Industry Avg</p>
-                      <p className="text-xl md:text-2xl font-bold text-[#6B7280]">45%</p>
+                    <div className="flex justify-between text-xs text-neutral-400 mt-4 px-2">
+                      <span>10%</span>
+                      <span>90%</span>
                     </div>
-                    <div className="bg-[#F3F4F6] rounded-xl p-3 md:p-4 text-center border border-[#E5E7EB]">
-                      <p className="text-xs md:text-sm text-[#9CA3AF] mb-0.5 md:mb-1">Abridge Avg</p>
-                      <p className="text-xl md:text-2xl font-bold text-[#6B7280]">65%</p>
+                    
+                    <div className="grid grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6">
+                      <div className="bg-[#F3F4F6] rounded-xl p-3 md:p-4 text-center border border-[#E5E7EB]">
+                        <p className="text-xs md:text-sm text-[#9CA3AF] mb-0.5 md:mb-1">Industry Avg</p>
+                        <p className="text-xl md:text-2xl font-bold text-[#6B7280]">45%</p>
+                      </div>
+                      <div className="bg-[#F3F4F6] rounded-xl p-3 md:p-4 text-center border border-[#E5E7EB]">
+                        <p className="text-xs md:text-sm text-[#9CA3AF] mb-0.5 md:mb-1">Abridge Avg</p>
+                        <p className="text-xl md:text-2xl font-bold text-[#6B7280]">65%</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200/50">
-              <p className="text-lg text-amber-900 flex items-center gap-3">
-                <BarChart3 className="w-6 h-6 text-amber-600" />
-                <span>
-                  At these numbers, you're documenting <strong className="text-amber-950 font-semibold">{calculations.theirDocumentedEncounters.toLocaleString()}</strong> encounters/year
-                </span>
-              </p>
-            </div>
+            {!isScribePath && (
+              <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200/50">
+                <p className="text-lg text-amber-900 flex items-center gap-3">
+                  <BarChart3 className="w-6 h-6 text-amber-600" />
+                  <span>
+                    At these numbers, you're documenting <strong className="text-amber-950 font-semibold">{calculations.theirDocumentedEncounters.toLocaleString()}</strong> encounters/year
+                  </span>
+                </p>
+              </div>
+            )}
 
             <div className="mt-12 flex justify-end">
               <Button
@@ -919,7 +923,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 3 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
             <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step3-title">
               What does "Great" utilization mean?
@@ -1059,7 +1063,128 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 4 && (
+        {/* Human Scribes Step 3: Your Scribe Program */}
+        {step === 3 && isScribePath && (
+          <div className="animate-in fade-in duration-300">
+            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step3-scribe-title">
+              Tell us about your scribe program
+            </h1>
+            <p className="text-lg text-neutral-500 mb-10">We'll calculate the full cost comparison.</p>
+
+            <div className="bg-neutral-50 rounded-2xl p-6 md:p-8 space-y-8">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-neutral-900">
+                  How many providers currently have scribes?
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={providersWithScribes === 0 ? "" : providersWithScribes.toString()}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      const num = val === "" ? 0 : Math.min(parseInt(val, 10), providers);
+                      setProvidersWithScribes(num);
+                    }}
+                    placeholder="20"
+                    className="w-24 px-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                    data-testid="input-providers-with-scribes"
+                  />
+                  <span className="text-lg text-neutral-600">of {providers} providers</span>
+                </div>
+                <Slider
+                  value={[providersWithScribes]}
+                  onValueChange={(v) => setProvidersWithScribes(v[0])}
+                  min={0}
+                  max={providers}
+                  step={1}
+                  className="mt-4"
+                  data-testid="slider-providers-with-scribes"
+                />
+                <div className="mt-4 bg-white rounded-xl p-4 border border-neutral-200">
+                  <p className="text-neutral-700">
+                    That's <strong className="text-neutral-900">{coveragePercent}%</strong> of your providers with scribe support.
+                  </p>
+                  <p className="text-neutral-500 mt-1">
+                    <strong className="text-neutral-700">{100 - coveragePercent}%</strong> have no documentation help.
+                  </p>
+                </div>
+              </div>
+
+              <div className="border-t border-neutral-200 pt-6 space-y-2">
+                <label className="block text-sm font-semibold text-neutral-900">
+                  Average hourly cost per scribe
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-neutral-400">$</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={scribeHourlyCost === 0 ? "" : scribeHourlyCost.toString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setScribeHourlyCost(val === "" ? 0 : parseInt(val, 10));
+                      }}
+                      placeholder="25"
+                      className="w-28 pl-8 pr-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                      data-testid="input-scribe-hourly-cost"
+                    />
+                  </div>
+                  <span className="text-lg text-neutral-600">/hour</span>
+                  <span className="text-sm text-neutral-400">(typical range: $18-40)</span>
+                </div>
+              </div>
+
+              <div className="border-t border-neutral-200 pt-6 space-y-2">
+                <label className="block text-sm font-semibold text-neutral-900">
+                  Hours per week per scribe
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={scribeHoursPerWeek === 0 ? "" : scribeHoursPerWeek.toString()}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setScribeHoursPerWeek(val === "" ? 0 : parseInt(val, 10));
+                    }}
+                    placeholder="40"
+                    className="w-24 px-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                    data-testid="input-scribe-hours"
+                  />
+                  <span className="text-lg text-neutral-600">hours/week</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200/50">
+              <p className="text-lg text-blue-900 flex items-center gap-3">
+                <User className="w-6 h-6 text-blue-600" />
+                <span>
+                  Your annual scribe spend: <strong className="text-blue-950 font-semibold">{formatCurrency(annualScribeCost)}</strong>
+                </span>
+              </p>
+              <p className="text-sm text-blue-700 mt-2 ml-9">
+                {providersWithScribes} scribes × ${scribeHourlyCost}/hr × {scribeHoursPerWeek} hrs/week × 50 weeks
+              </p>
+            </div>
+
+            <div className="mt-12 flex justify-end">
+              <Button
+                onClick={handleContinue}
+                disabled={providersWithScribes === 0 || scribeHourlyCost === 0}
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl disabled:opacity-40"
+                data-testid="button-continue-step3-scribe"
+              >
+                See the coverage gap
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
             <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step4-title">
               The efficiency gap
@@ -1167,7 +1292,243 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 6 && (
+        {/* Human Scribes Step 4: Coverage Gap */}
+        {step === 4 && isScribePath && (
+          <div className="animate-in fade-in duration-300">
+            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step4-scribe-title">
+              The coverage gap
+            </h1>
+            <p className="text-lg text-neutral-500 mb-10">Scribes can only scale so far.</p>
+
+            <div className="bg-neutral-50 rounded-2xl p-6 md:p-8 space-y-8">
+              <div>
+                <p className="text-sm font-semibold text-neutral-600 uppercase tracking-wide mb-4">Your Current Coverage</p>
+                <div className="relative h-10 rounded-full overflow-hidden bg-neutral-200">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-neutral-500 flex items-center justify-end pr-3"
+                    style={{ width: `${coveragePercent}%` }}
+                  >
+                    {coveragePercent > 15 && (
+                      <span className="text-xs font-bold text-white">{providersWithScribes} with scribes</span>
+                    )}
+                  </div>
+                  <div 
+                    className="absolute inset-y-0 right-0 bg-neutral-300 flex items-center justify-start pl-3"
+                    style={{ width: `${100 - coveragePercent}%` }}
+                  >
+                    {100 - coveragePercent > 15 && (
+                      <span className="text-xs font-semibold text-neutral-600">{providersWithoutScribes} without scribes</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between mt-3 text-sm">
+                  <span className="text-neutral-600"><strong className="text-neutral-900">{coveragePercent}%</strong> covered</span>
+                  <span className="text-neutral-500"><strong className="text-neutral-700">{100 - coveragePercent}%</strong> no support</span>
+                </div>
+              </div>
+
+              <div className="border-t border-neutral-200 pt-6">
+                <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-4">With Abridge</p>
+                <div className="relative h-10 rounded-full overflow-hidden bg-emerald-500">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">All {providers} providers covered</span>
+                  </div>
+                </div>
+                <p className="text-center text-sm text-emerald-600 mt-3 font-medium">
+                  100% coverage at a fraction of the cost
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 bg-amber-50 rounded-xl p-5 border border-amber-200/50">
+              <p className="text-amber-900 font-semibold mb-2">The {providersWithoutScribes} providers without scribes are:</p>
+              <ul className="space-y-2 text-sm text-amber-800">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                  Spending extra time on documentation
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                  Potentially seeing fewer patients
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                  More likely to burn out
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-12 flex justify-end">
+              <Button
+                onClick={handleContinue}
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                data-testid="button-continue-step4-scribe"
+              >
+                See the cost comparison
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Human Scribes Step 5: Cost Comparison */}
+        {step === 5 && isScribePath && (
+          <div className="animate-in fade-in duration-300">
+            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step5-scribe-title">
+              The cost comparison
+            </h1>
+            <p className="text-lg text-neutral-500 mb-10">Scribes vs. Abridge — the full picture.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <div className="bg-neutral-100 rounded-2xl p-6 border border-neutral-200">
+                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-4">Your Current Scribe Program</p>
+                <p className="text-4xl font-bold text-neutral-700 mb-2 tabular-nums">{formatCurrency(annualScribeCost)}</p>
+                <p className="text-sm text-neutral-500 mb-4">annual cost</p>
+                <div className="border-t border-neutral-200 pt-4 space-y-2">
+                  <p className="text-sm text-neutral-600 flex justify-between">
+                    <span>Providers covered:</span>
+                    <span className="font-semibold">{providersWithScribes} of {providers}</span>
+                  </p>
+                  <p className="text-sm text-neutral-500">
+                    {providersWithScribes} scribes × ${scribeHourlyCost}/hr × {scribeHoursPerWeek} hrs/week × 50 weeks
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-200">
+                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-4">With Abridge</p>
+                <p className="text-4xl font-bold text-emerald-700 mb-2 tabular-nums">
+                  {abridgeCostPerProvider === 0 ? "Contact for pricing" : formatCurrency(annualAbridgeCost)}
+                </p>
+                <p className="text-sm text-emerald-600/80 mb-4">annual cost</p>
+                <div className="border-t border-emerald-200 pt-4 space-y-2">
+                  <p className="text-sm text-emerald-700 flex justify-between">
+                    <span>Providers covered:</span>
+                    <span className="font-semibold">All {providers}</span>
+                  </p>
+                  <p className="text-sm text-emerald-600/70">
+                    Unlimited encounters • No per-hour costs
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {directCostSavings > 0 && (
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200 text-center">
+                <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-2">Direct Cost Difference</p>
+                <p className="text-4xl font-bold text-emerald-600 mb-2 tabular-nums">{formatCurrency(directCostSavings)}/year</p>
+                <p className="text-emerald-700">
+                  savings + <strong>{providersWithoutScribes} more providers</strong> covered
+                </p>
+              </div>
+            )}
+
+            <div className="mt-12 flex justify-end">
+              <Button
+                onClick={handleContinue}
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                data-testid="button-continue-step5-scribe"
+              >
+                See hidden costs
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Human Scribes Step 6: Hidden Costs */}
+        {step === 6 && isScribePath && (
+          <div className="animate-in fade-in duration-300">
+            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step6-scribe-title">
+              The costs you don't see
+            </h1>
+            <p className="text-lg text-neutral-500 mb-10">Scribes come with operational overhead.</p>
+
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-neutral-900 mb-2">Turnover & Training</h3>
+                    <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
+                      <p className="text-sm text-neutral-600">Average scribe turnover: <strong>35% annually</strong></p>
+                      <p className="text-sm text-neutral-600">Your {providersWithScribes} scribes = <strong>~{Math.round(providersWithScribes * 0.35)} replacements/year</strong></p>
+                      <p className="text-sm text-neutral-600">Cost to recruit + train: <strong>$4,000 each</strong></p>
+                      <div className="border-t border-neutral-200 pt-3 mt-3">
+                        <p className="text-lg font-bold text-amber-700">Annual turnover cost: {formatCurrency(annualTurnoverCost)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <Settings className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-neutral-900 mb-2">Management Overhead</h3>
+                    <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
+                      <p className="text-sm text-neutral-600">Scribe coordinator/manager time</p>
+                      <p className="text-sm text-neutral-600">Scheduling, QA, HR issues</p>
+                      <div className="border-t border-neutral-200 pt-3 mt-3">
+                        <p className="text-lg font-bold text-blue-700">Estimated: {formatCurrency(managementOverhead)}/year</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-6 h-6 text-neutral-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-neutral-900 mb-2">Coverage Gaps</h3>
+                    <div className="bg-neutral-50 rounded-xl p-4">
+                      <p className="text-sm text-neutral-700 font-medium mb-3">Scribes don't cover:</p>
+                      <ul className="space-y-1.5 text-sm text-neutral-600">
+                        <li>• Night shifts</li>
+                        <li>• Weekends</li>
+                        <li>• Sick days / PTO</li>
+                        <li>• All locations</li>
+                      </ul>
+                      <div className="border-t border-neutral-200 pt-3 mt-3">
+                        <p className="text-sm font-semibold text-emerald-600 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4" />
+                          Abridge works 24/7, every location, no exceptions.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200 text-center">
+              <p className="text-sm font-semibold text-amber-600 uppercase tracking-wide mb-2">Total Hidden Costs</p>
+              <p className="text-4xl font-bold text-amber-700 tabular-nums">{formatCurrency(hiddenCosts)}/year</p>
+              <p className="text-sm text-amber-600 mt-1">(Turnover + Management overhead)</p>
+            </div>
+
+            <div className="mt-12 flex justify-end">
+              <Button
+                onClick={handleContinue}
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                data-testid="button-continue-step6-scribe"
+              >
+                See total value
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 6 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
             <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step6-title">
               Refine your assumptions
@@ -1566,7 +1927,214 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 7 && (
+        {/* Human Scribes Step 7: Summary Dashboard */}
+        {step === 7 && isScribePath && (
+          <div className="animate-in fade-in duration-300">
+            {/* YOUR INPUTS BAR */}
+            <div className="bg-neutral-100 rounded-xl p-4 border border-neutral-200 mb-8 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-neutral-600">
+                <strong>{providers}</strong> providers • <strong>{providersWithScribes}</strong> with scribes • <strong>${scribeHourlyCost}</strong>/hr • <strong>{scribeHoursPerWeek}</strong> hrs/week
+              </p>
+              <button
+                onClick={() => setStep(3)}
+                className="text-sm text-[#E85D3F] hover:underline font-medium"
+                data-testid="button-edit-inputs-scribe"
+              >
+                Edit
+              </button>
+            </div>
+
+            {/* HERO SECTION */}
+            <div className="text-center mb-10">
+              <p className="text-lg md:text-xl text-neutral-500 font-medium mb-3">
+                By switching from scribes to Abridge, you could capture
+              </p>
+              <div className="mb-3">
+                <span className="text-5xl md:text-7xl font-bold text-emerald-600 tabular-nums tracking-tight">
+                  <AnimatedNumber value={totalScribeValue} duration={1800} />
+                </span>
+              </div>
+              <p className="text-xl md:text-2xl font-bold text-neutral-900">
+                in annual value.
+              </p>
+            </div>
+
+            {/* VALUE BREAKDOWN */}
+            <div className="space-y-3 mb-8">
+              <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider px-1">Value Breakdown</h3>
+              
+              <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
+                <button
+                  onClick={() => setExpandedDrivers(prev => prev.includes("direct_savings" as DriverId) ? prev.filter(d => d !== "direct_savings") : [...prev, "direct_savings" as DriverId])}
+                  className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
+                  data-testid="accordion-direct-savings"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-neutral-900">Direct Cost Savings</p>
+                      <p className="text-xs text-neutral-500">Scribe spend eliminated minus Abridge cost</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-emerald-600">+{formatCurrency(directCostSavings)}/year</span>
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedDrivers.includes("direct_savings" as DriverId) ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {expandedDrivers.includes("direct_savings" as DriverId) && (
+                  <div className="px-5 pb-5 border-t border-neutral-100">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="bg-neutral-100 rounded-xl p-4">
+                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Current Scribe Cost</p>
+                        <p className="text-xl font-bold text-neutral-700">{formatCurrency(annualScribeCost)}/year</p>
+                        <p className="text-xs text-neutral-500 mt-1 font-mono">
+                          {providersWithScribes} × ${scribeHourlyCost}/hr × {scribeHoursPerWeek}hrs × 50wks
+                        </p>
+                      </div>
+                      <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                        <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3">Abridge Cost</p>
+                        <p className="text-xl font-bold text-neutral-900">Contact for pricing</p>
+                        <p className="text-xs text-emerald-600 mt-1">All {providers} providers covered</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
+                <button
+                  onClick={() => setExpandedDrivers(prev => prev.includes("expanded_coverage" as DriverId) ? prev.filter(d => d !== "expanded_coverage") : [...prev, "expanded_coverage" as DriverId])}
+                  className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
+                  data-testid="accordion-expanded-coverage"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-neutral-900">Expanded Coverage Value</p>
+                      <p className="text-xs text-neutral-500">{providersWithoutScribes} new providers with documentation support</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-emerald-600">+{formatCurrency(expandedCoverageValue)}/year</span>
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedDrivers.includes("expanded_coverage" as DriverId) ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {expandedDrivers.includes("expanded_coverage" as DriverId) && (
+                  <div className="px-5 pb-5 border-t border-neutral-100">
+                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                      <p className="text-sm text-neutral-700 mb-2">
+                        <strong>{providersWithoutScribes}</strong> providers currently have no documentation help.
+                      </p>
+                      <p className="text-sm text-neutral-600 font-mono">
+                        {providersWithoutScribes} providers × {Math.round(encountersPerProvider).toLocaleString()} encounters × 3 min = {timeSavedNewProvidersHours.toLocaleString()} hours
+                      </p>
+                      <p className="text-sm text-neutral-600 font-mono">
+                        {timeSavedNewProvidersHours.toLocaleString()} hours × $100/hr value = {formatCurrency(expandedCoverageValue)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
+                <button
+                  onClick={() => setExpandedDrivers(prev => prev.includes("hidden_costs" as DriverId) ? prev.filter(d => d !== "hidden_costs") : [...prev, "hidden_costs" as DriverId])}
+                  className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
+                  data-testid="accordion-hidden-costs"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                      <AlertTriangle className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-neutral-900">Turnover & Overhead Eliminated</p>
+                      <p className="text-xs text-neutral-500">No more recruiting, training, management</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-emerald-600">+{formatCurrency(hiddenCosts)}/year</span>
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedDrivers.includes("hidden_costs" as DriverId) ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {expandedDrivers.includes("hidden_costs" as DriverId) && (
+                  <div className="px-5 pb-5 border-t border-neutral-100">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                        <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">Turnover Cost</p>
+                        <p className="text-lg font-bold text-neutral-900">{formatCurrency(annualTurnoverCost)}/year</p>
+                        <p className="text-xs text-neutral-600 mt-1">
+                          {providersWithScribes} × 35% turnover × $4,000
+                        </p>
+                      </div>
+                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                        <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">Management Overhead</p>
+                        <p className="text-lg font-bold text-neutral-900">{formatCurrency(managementOverhead)}/year</p>
+                        <p className="text-xs text-neutral-600 mt-1">
+                          Coordination, scheduling, QA
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* TOTAL VALUE */}
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border-2 border-emerald-400 mb-8">
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-600">Direct Cost Savings</span>
+                  <span className="font-medium text-emerald-600">+{formatCurrency(directCostSavings)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-600">Expanded Coverage Value</span>
+                  <span className="font-medium text-emerald-600">+{formatCurrency(expandedCoverageValue)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-600">Turnover & Overhead Eliminated</span>
+                  <span className="font-medium text-emerald-600">+{formatCurrency(hiddenCosts)}</span>
+                </div>
+              </div>
+              <div className="border-t border-emerald-300 pt-4 flex justify-between items-center">
+                <span className="text-lg font-bold text-neutral-900">Total Annual Value</span>
+                <span className="text-2xl font-bold text-emerald-600 tabular-nums">{formatCurrency(totalScribeValue)}</span>
+              </div>
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button
+                variant="outline"
+                className="px-6 py-2.5 rounded-xl font-medium text-neutral-700 border-neutral-300 hover:bg-neutral-100"
+                data-testid="button-copy-link"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Copy Link
+              </Button>
+              <Button
+                variant="outline"
+                className="px-6 py-2.5 rounded-xl font-medium text-neutral-700 border-neutral-300 hover:bg-neutral-100"
+                data-testid="button-export-pdf"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export PDF
+              </Button>
+              <Button
+                onClick={() => setStep(3)}
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-6 py-2.5 rounded-xl font-medium"
+                data-testid="button-edit-inputs-main"
+              >
+                Edit Inputs
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 7 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
             {/* HERO SECTION */}
             <div className="text-center mb-8">
