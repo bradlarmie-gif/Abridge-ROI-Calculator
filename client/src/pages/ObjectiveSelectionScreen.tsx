@@ -75,6 +75,7 @@ interface ObjectiveSelectionScreenProps {
   ) => void;
   initialSelectedSettings?: CareSettingType[];
   initialSelectedLevers?: SelectedLever[];
+  onBackToJourney?: () => void;
 }
 
 const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
@@ -1049,6 +1050,7 @@ export default function ObjectiveSelectionScreen({
   onComplete,
   initialSelectedSettings = [],
   initialSelectedLevers = [],
+  onBackToJourney,
 }: ObjectiveSelectionScreenProps) {
   // If returning from calculator with existing selections, go directly to priorities page
   const [currentPage, setCurrentPage] = useState<Page>(
@@ -2192,13 +2194,25 @@ export default function ObjectiveSelectionScreen({
       {/* Header */}
       <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
         <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
-          <div className="flex flex-col gap-1 cursor-pointer" onClick={() => setCurrentPage("orientation")} data-testid="logo-home">
-            <span className="text-[18px] md:text-[20px] font-bold text-[#F03319] tracking-tight leading-none uppercase">
-              ABRIDGE
-            </span>
-            <span className="text-[14px] md:text-[15px] font-semibold text-[#111827] tracking-tight leading-none">
-              ROI Calculator
-            </span>
+          <div className="flex items-center gap-4">
+            {onBackToJourney && (
+              <button
+                onClick={onBackToJourney}
+                className="flex items-center gap-1 text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
+                data-testid="button-back-to-journey"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Back</span>
+              </button>
+            )}
+            <div className="flex flex-col gap-1 cursor-pointer" onClick={() => setCurrentPage("orientation")} data-testid="logo-home">
+              <span className="text-[18px] md:text-[20px] font-bold text-[#F03319] tracking-tight leading-none uppercase">
+                ABRIDGE
+              </span>
+              <span className="text-[14px] md:text-[15px] font-semibold text-[#111827] tracking-tight leading-none">
+                ROI Calculator
+              </span>
+            </div>
           </div>
 
           {currentPage !== "orientation" && (

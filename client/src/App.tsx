@@ -5,13 +5,19 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { queryClient } from "./lib/queryClient";
 
+import JourneySelector from "@/pages/JourneySelector";
 import ObjectiveSelectionScreen, {
   type SelectedLever,
 } from "@/pages/ObjectiveSelectionScreen";
 import RoiCalculator from "@/pages/RoiCalculator";
+import ExpandPath from "@/pages/ExpandPath";
+import SwitchPath from "@/pages/SwitchPath";
+import LearnPath from "@/pages/LearnPath";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
+
+type AppView = "journey" | "explore" | "calculator" | "expand" | "switch" | "learn";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -19,7 +25,7 @@ interface SelectionState {
 }
 
 export default function App() {
-  const [showCalculator, setShowCalculator] = useState(false);
+  const [currentView, setCurrentView] = useState<AppView>("journey");
 
   const [selectionState, setSelectionState] = useState<SelectionState>({
     selectedSettings: [],
@@ -28,12 +34,6 @@ export default function App() {
 
   const [seedInputs, setSeedInputs] = useState<Partial<RoiInputs>>({});
 
-  /**
-   * Supports either:
-   * onComplete(selectedSettings, selectedLevers)
-   * OR
-   * onComplete(selectedSettings, selectedLevers, seedInputs)
-   */
   const handleSelectionComplete = (
     selectedSettings: CareSettingType[],
     selectedLevers: SelectedLever[],
@@ -41,11 +41,15 @@ export default function App() {
   ) => {
     setSelectionState({ selectedSettings, selectedLevers });
     setSeedInputs(seed);
-    setShowCalculator(true);
+    setCurrentView("calculator");
   };
 
-  const handleBack = () => {
-    setShowCalculator(false);
+  const handleBackToExplore = () => {
+    setCurrentView("explore");
+  };
+
+  const handleBackToJourney = () => {
+    setCurrentView("journey");
   };
 
   const hasSelection = selectionState.selectedSettings.length > 0;
@@ -55,19 +59,43 @@ export default function App() {
       <TooltipProvider>
         <Toaster />
 
-        {showCalculator && hasSelection ? (
-          <RoiCalculator
-            selectedSettings={selectionState.selectedSettings}
-            selectedLevers={selectionState.selectedLevers}
-            seedInputs={seedInputs}
-            onBack={handleBack}
+        {currentView === "journey" && (
+          <JourneySelector
+            onSelectExplore={() => setCurrentView("explore")}
+            onSelectExpand={() => setCurrentView("expand")}
+            onSelectSwitch={() => setCurrentView("switch")}
+            onSelectLearn={() => setCurrentView("learn")}
           />
-        ) : (
+        )}
+
+        {currentView === "explore" && (
           <ObjectiveSelectionScreen
             onComplete={handleSelectionComplete}
             initialSelectedSettings={selectionState.selectedSettings}
             initialSelectedLevers={selectionState.selectedLevers}
+            onBackToJourney={handleBackToJourney}
           />
+        )}
+
+        {currentView === "calculator" && hasSelection && (
+          <RoiCalculator
+            selectedSettings={selectionState.selectedSettings}
+            selectedLevers={selectionState.selectedLevers}
+            seedInputs={seedInputs}
+            onBack={handleBackToExplore}
+          />
+        )}
+
+        {currentView === "expand" && (
+          <ExpandPath onBack={handleBackToJourney} />
+        )}
+
+        {currentView === "switch" && (
+          <SwitchPath onBack={handleBackToJourney} />
+        )}
+
+        {currentView === "learn" && (
+          <LearnPath onBack={handleBackToJourney} />
         )}
       </TooltipProvider>
     </QueryClientProvider>

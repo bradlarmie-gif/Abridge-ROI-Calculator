@@ -1,0 +1,83 @@
+I need to replace my current landing page with a new "journey selector" landing page. This is the entry point where users choose one of 4 paths based on their situation.
+
+DESIGN REQUIREMENTS:
+- Keep the exact same visual style as my current app (clean, minimal, white background, coral/red accent color)
+- Keep the ABRIDGE logo and "ROI Calculator" subtitle in the top left
+- The page should feel premium and confident—like Stripe's website
+
+LAYOUT STRUCTURE:
+
+1. HEADER (keep existing)
+   - ABRIDGE logo (coral/red color)
+   - "ROI Calculator" subtitle below it
+   - Optional: Help icon in top right
+
+2. HERO SECTION (centered)
+   - Headline: "Model the impact of ambient documentation"
+   - Subheadline: "Understand where the value actually comes from."
+   - Both centered, good spacing
+
+3. PATH SELECTOR SECTION
+   - Small label above cards: "What brings you here today?"
+   - 3 main path cards in a row (equal width, ~280px each):
+   
+   CARD 1 - EXPLORE:
+   - Icon: Compass or sparkle icon (use Lucide icons)
+   - Title: "Explore"
+   - Subtitle: "New to Abridge?"
+   - Description: "Build your first ROI model and see what ambient documentation could deliver for your organization"
+   - Button: "Get Started →"
+   - On click: navigate to /calculator/care-setting (existing route)
+   
+   CARD 2 - EXPAND:
+   - Icon: TrendingUp or BarChart3 icon
+   - Title: "Expand"  
+   - Subtitle: "Already using Abridge?"
+   - Description: "Model what expansion to new settings or more providers could look like based on your current results"
+   - Button: "Load Your Results →"
+   - On click: navigate to /expand (new route - just create empty page for now)
+   
+   CARD 3 - SWITCH:
+   - Icon: ArrowLeftRight or RefreshCw icon
+   - Title: "Switch"
+   - Subtitle: "Using another solution?"
+   - Description: "See how Abridge compares and what switching could mean for your ROI"
+   - Button: "Compare Solutions →"
+   - On click: navigate to /switch (new route - just create empty page for now)
+
+4. LEARN OPTION (below the 3 cards)
+   - Styled as a subtle banner/link, not a full card
+   - Icon: BookOpen or GraduationCap
+   - Text: "Just want to understand how ambient ROI works?"
+   - Link text: "Learn the methodology →"
+   - On click: navigate to /learn (new route - just create empty page for now)
+
+5. TRUST SECTION (bottom, centered)
+   - Subtle divider line
+   - Text: "Used by 200+ health system partners"
+   - Optional: small EHR partner logos if we have them (Epic, Oracle Health, MEDITECH)
+
+CARD STYLING:
+- White background with subtle border (1px, light gray)
+- Rounded corners (12px)
+- Subtle shadow on hover
+- Hover state: slight lift (translateY -2px) and increased shadow
+- Icon should be in the coral/red accent color
+- Button should be outlined style (not filled) with coral/red color
+- On hover, button fills with coral/red
+
+SPACING:
+- Generous padding throughout (48px+ sections)
+- Cards should have 24px gap between them
+- Card internal padding: 32px
+
+RESPONSIVE:
+- On mobile, cards stack vertically
+- Maintain good spacing on all screen sizes
+
+CREATE PLACEHOLDER ROUTES:
+- /expand → empty page with "Expand Path - Coming Soon" and back link
+- /switch → empty page with "Switch Path - Coming Soon" and back link  
+- /learn → empty page with "Learn Path - Coming Soon" and back link
+
+The EXPLORE path should use my existing flow starting at /calculator/care-setting - don't change that flow yet.
