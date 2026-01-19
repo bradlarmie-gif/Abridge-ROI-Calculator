@@ -1,0 +1,961 @@
+I need to completely rebuild the SWITCH path to be the most premium, defensible competitive comparison tool in healthcare. This should feel like a financial analysis from a top-tier consulting firm—Stripe-level UX, McKinsey-level rigor.
+
+CORE PHILOSOPHY:
+- Build alignment progressively (don't jump to big numbers)
+- Show we're doing analysis their vendor doesn't do
+- Make it feel like a diagnostic, not a sales pitch
+- Every number must be defensible and realistic
+- Visual hierarchy should guide the eye effortlessly
+
+---
+
+═══════════════════════════════════════════════════════════════════
+STEP 1: SOLUTION SELECTION (Simplified & Honest)
+═══════════════════════════════════════════════════════════════════
+
+Route: /switch
+
+DESIGN: Ultra-clean, centered, generous whitespace
+
+Header:
+- ABRIDGE logo (top left, coral)
+- "← Back to Home" (top left)
+
+Content (centered, max-width 800px):
+
+Headline (large, bold):
+"What solution are you using today?"
+
+Subheadline (gray, medium):
+"We'll show you what you might be leaving on the table."
+
+SOLUTION CARDS (3 cards in a row, equal width):
+
+Card 1: "Ambient AI"
+- Large microphone icon (gray)
+- Title: "Ambient AI"
+- Subtitle: "DAX, Suki, Nabla, or similar"
+- Radio button behavior
+- On select: Coral border (3px), icon turns coral
+
+Card 2: "Human Scribes"  
+- Large person icon (gray)
+- Title: "Human Scribes"
+- Subtitle: "In-person or virtual scribes"
+- Same interaction pattern
+
+Card 3: "Manual Documentation"
+- Large keyboard icon (gray)
+- Title: "No Solution Yet"
+- Subtitle: "Providers type everything"
+- Same interaction pattern
+
+Card styling:
+- White background
+- Light gray border (1px)
+- Rounded corners (12px)
+- Padding: 32px
+- Hover: Lift 2px, shadow increase
+- Selected: Coral border (3px), no shadow
+
+Below cards (centered):
+"Select a care setting:"
+
+Setting selector (pill toggle style):
+[● Outpatient] [○ ED] [○ Inpatient] [○ Nursing]
+
+Inpatient and Nursing:
+- Grayed out (opacity 0.4)
+- Tooltip on hover: "Coming soon"
+- Not clickable
+
+Button (centered, below):
+"Continue →"
+- Coral filled
+- Disabled (gray) until both solution and setting selected
+- On enable: Smooth color transition
+
+Mobile: Cards stack vertically
+
+---
+
+═══════════════════════════════════════════════════════════════════
+STEP 2: YOUR BASELINE (Clean Data Collection)
+═══════════════════════════════════════════════════════════════════
+
+Route: /switch/baseline
+
+Design: Form-like but elegant, not "formy"
+
+Headline: "Tell us about your current situation"
+Subheadline: "We'll help you understand where you stand."
+
+FORM (single column, max-width 600px, centered):
+
+Input 1: Number of providers
+Label: "How many providers are using [Ambient AI]?"
+Input: Large text field, placeholder "e.g., 50"
+Helper text: None initially
+
+Input 2: Annual encounters
+Label: "Total annual [outpatient] encounters across these providers?"
+Input: Large text field, placeholder "e.g., 100,000"
+Helper text (appears after input): 
+"💡 ~2,000 per provider is typical"
+If they enter number: Auto-check against providers × 2,000
+  - If close: Show "✓ This looks right"
+  - If way off: Show "⚠️ That's [X]/provider—is that correct?"
+
+Input 3: Current utilization
+Label: "What's your current utilization?"
+Sublabel (gray): "How often do providers actually use [Ambient AI]?"
+
+Slider with visual feedback:
+- Range: 10% to 90%
+- Large draggable handle
+- Value displays above handle as user drags
+- Gradient track: Red (left) → Yellow (middle) → Green (right)
+
+Emoji feedback zones (below slider):
+😔 Low        😐 Average      😊 Good        🎉 Great
+<40%          40-55%          55-65%         65%+
+
+Live feedback (updates as slider moves):
+"You're at: [Average]" (changes text + color based on zone)
+
+Benchmark shown (always visible):
+"💡 Abridge average: 65% (Great)"
+
+Calculated display (updates live):
+"At these numbers, you're documenting ~[25,000] encounters/year"
+Formula: (providers × encounters / providers) × (utilization %)
+
+Spacing:
+- 48px between inputs
+- 32px padding around form
+- 24px between label and input
+
+Button: "Continue →" (coral, full width within form)
+
+Design notes:
+- Inputs have focus states (coral border)
+- Slider is smooth, 60fps animation
+- All numbers format with commas (e.g., "100,000")
+- Mobile: Full width, larger touch targets
+
+---
+
+═══════════════════════════════════════════════════════════════════
+STEP 3: UNDERSTANDING THE ADOPTION GAP (Visual, Not Numbers)
+═══════════════════════════════════════════════════════════════════
+
+Route: /switch/adoption-gap
+
+Purpose: Build conceptual understanding of utilization gap
+
+Headline: "What does 'Great' utilization mean?"
+Subheadline: "Let's compare where you are to where top performers are."
+
+SECTION 1: The Spectrum (hero visual)
+
+Visual design (full width, centered):
+
+Horizontal gradient bar:
+- Left (red/pink): Low
+- Middle (yellow): Average  
+- Right-middle (light green): Good
+- Far right (bright green): Great
+
+Markers on the bar:
+- Emoji indicators: 😔 😐 😊 🎉
+- Percentage labels: <40%, 40-55%, 55-65%, 65%+
+- Zone labels: Low, Average, Good, Great
+
+Two pointers on the bar:
+1. "YOU" pointer at their %
+   - Dark gray color
+   - Vertical line extending down
+   - Label above: "YOU (50%)"
+
+2. "ABRIDGE" pointer at 65%
+   - Coral/green color
+   - Vertical line extending down
+   - Label above: "ABRIDGE (65%)"
+
+Visual gap indicator:
+- Bracket connecting the two pointers
+- Label: "15% gap" (coral color)
+- Subtle animation: Draws in when page loads
+
+SECTION 2: What This Gap Means (side-by-side cards)
+
+Two cards, equal width, side-by-side:
+
+LEFT CARD: "At your 50% utilization"
+- Large number: "25,000" (dark gray)
+- Label: "encounters documented/year"
+- Sublabel: "That's your current reach"
+- Light gray background
+
+RIGHT CARD: "At Abridge 65%"
+- Large number: "32,500" (green, not coral)
+- Label: "encounters documented/year"  
+- Sublabel: "That's 7,500 MORE encounters"
+- Light green background tint
+
+Below cards (centered callout):
+Background: Light yellow/cream
+Border: None or subtle
+Padding: 24px
+Text (centered):
+"That 15% utilization gap = 30% more encounters being documented.
+This is where value leaks."
+
+"value leaks" in coral color, slightly larger
+
+Button: "Next: See the efficiency gap →" (coral, centered)
+
+Design notes:
+- The spectrum should be beautiful—like a Bloomberg graphic
+- Smooth animations on page load (pointers slide in)
+- Cards should have subtle shadows
+- Mobile: Cards stack vertically
+
+---
+
+═══════════════════════════════════════════════════════════════════
+STEP 4: THE EFFICIENCY GAP (Parallel Structure)
+═══════════════════════════════════════════════════════════════════
+
+Route: /switch/efficiency-gap
+
+Headline: "The efficiency gap"
+Subheadline: "It's not just how often it's used—it's how much time it returns."
+
+SECTION 1: Time Savings Input
+
+Label: "How much time does [Ambient AI] save per encounter?"
+Sublabel: "Your best estimate—we'll use benchmarks if unsure"
+
+Slider:
+- Range: 0.5 min to 5.0 min
+- Default based on competitor:
+  - DAX: 1.5 min
+  - Suki: 1.3 min
+  - Manual: 0 min
+- Large, smooth slider
+- Value displays prominently above handle
+- Decimal precision (e.g., "1.5 min")
+
+Live feedback (below slider):
+"You're getting: [1.5] min/encounter"
+
+Benchmark (always shown):
+"💡 Abridge average: 3.0 min/encounter"
+(Note: Updated from 2.5 to 3.0)
+
+Checkbox (below slider):
+☐ "Not sure / Haven't measured"
+If checked: Grays out slider, uses competitor default
+
+SECTION 2: What This Means (side-by-side comparison)
+
+Two cards:
+
+LEFT CARD: "At your 1.5 min savings"
+- Calculation shown:
+  "25,000 encounters × 1.5 min"
+  "= 625 hours returned/year"
+- Sublabel: "That's your current impact"
+- Gray styling
+
+RIGHT CARD: "At Abridge 3.0 min"
+- Calculation shown:
+  "32,500 encounters × 3.0 min"
+  "= 1,625 hours returned/year"
+- Sublabel: "That's 1,000 MORE hours"
+- Green styling
+
+Below cards (callout):
+"The efficiency gap = 160% more time returned per encounter.
+Between the two gaps, you're leaving significant value on the table."
+
+"significant value on the table" in coral
+
+Button: "Show me the impact →"
+
+---
+
+═══════════════════════════════════════════════════════════════════
+STEP 5: DRIVER-SPECIFIC PERFORMANCE INPUTS (This is new & critical)
+═══════════════════════════════════════════════════════════════════
+
+Route: /switch/performance
+
+Purpose: Gather driver-specific current performance before selection
+This is what makes us different—we actually MODEL their current state
+
+Headline: "Let's understand your current performance"
+Subheadline: "A few quick metrics to make this accurate for you."
+
+Intro text (in a soft-colored callout):
+"We've seen a lot of organizations using [Ambient AI]. Here's what 
+we typically see—but your reality might be different. Help us 
+understand YOUR current results."
+
+PERFORMANCE INPUTS (one at a time, progressive disclosure):
+
+Input 1: wRVU Uplift
+"What wRVU uplift are you seeing from [Ambient AI]?"
+
+Options (radio button cards):
+○ "Not sure / Haven't measured" (default selected)
+  → If selected: "We'll use [DAX] industry average: 3.5%"
+  
+○ "We've measured it"
+  → If selected: Shows input field
+     "Current wRVU uplift: [___]%"
+     Helper: "💡 [DAX] customers typically see 3-4% uplift"
+
+Input 2: Under-coding Correction
+"What % of your encounters are being corrected from under-coding?"
+
+Same pattern:
+○ "Not sure / Haven't measured"
+  → "We'll use typical estimate: 8%"
+  
+○ "We track this"
+  → Input field: "[___]%"
+     Helper: "💡 Industry average: 8-10%"
+
+Input 3: Denial Prevention
+"How much has [Ambient AI] reduced documentation-related denials?"
+
+○ "Not sure / Haven't measured"
+  → "We'll use typical estimate: 30% reduction"
+  
+○ "We have this data"
+  → Input field: "[___]% reduction"
+     Helper: "💡 Most solutions achieve 25-35% reduction"
+
+Input 4: HCC Capture (only if relevant)
+"Have you seen improvement in HCC/chronic condition capture?"
+
+○ "Not measuring this"
+  → "We'll use conservative estimate: 10% improvement"
+  
+○ "Yes, we track it"
+  → Input field: "[___]% improvement"
+     Helper: "💡 Solutions typically deliver 10-12% improvement"
+
+Design for these inputs:
+- Show ONE at a time (progressive disclosure)
+- Previous answers visible above, condensed
+- "Not sure" should always be the easy default
+- When they DO know: Make input prominent and respected
+- Each input transitions smoothly to next
+
+At bottom (after all inputs):
+Callout box:
+"💡 It's okay if you don't have all these metrics. Most organizations 
+don't measure this granularly—that's actually part of the problem.
+
+We'll use industry benchmarks where needed, but YOUR data makes this 
+analysis more accurate."
+
+Button: "Continue to drivers →"
+
+Why this matters:
+- Shows we care about THEIR reality, not generic assumptions
+- Demonstrates sophistication their vendor probably doesn't have
+- Makes the gap analysis defensible
+- Builds credibility through rigor
+
+---
+
+═══════════════════════════════════════════════════════════════════
+STEP 6: DRIVER SELECTION (Premium Card-Based, Not Checkboxes)
+═══════════════════════════════════════════════════════════════════
+
+Route: /switch/drivers
+
+Headline: "Where would better performance create value?"
+Subheadline: "Select 2-4 areas where improvement matters most."
+
+RECAP BOX (at top, prominent):
+Background: Light blue/gray tint
+Border: Subtle
+Padding: 32px
+
+"We've established three types of gaps:
+
+📊 ADOPTION GAP
+- You're at 50% utilization, Abridge averages 65%
+- That's 7,500 more encounters being documented
+
+⏱️ EFFICIENCY GAP
+- You're getting 1.5 min/encounter, Abridge gets 3.0 min
+- That's 1,000 MORE hours returned to providers
+
+🎯 PERFORMANCE GAPS  
+- wRVU capture: You're at 3.5%, Abridge at 6%
+- Denial prevention: You're at 30%, Abridge at 45%
+- [Other metrics based on what they provided]
+
+Now let's focus on where these gaps matter most for YOU."
+
+DRIVER CARDS (2 columns, 3 rows on desktop):
+
+Card design:
+- Large (300px+ width)
+- White background
+- Subtle border (2px, light gray)
+- Rounded corners (16px)
+- Padding: 32px
+- Click entire card to select
+- Selected state: Coral border (3px), subtle coral shadow
+- Unselected hover: Lift 4px, shadow increase
+
+Card content structure:
+┌──────────────────────────────────────┐
+│  [Large Icon - 48px]                 │
+│                                      │
+│  DRIVER NAME                         │
+│  (Bold, 20px)                        │
+│                                      │
+│  One-line description                │
+│  (Gray, 16px)                        │
+│                                      │
+│  Context line                        │
+│  (Smaller, lighter gray)             │
+│                                      │
+│  Typical gap: $60-120K               │
+│  (Coral color, medium weight)        │
+│                                      │
+│  [✓ Selected] or [Select]            │
+│  (Centered button/indicator)         │
+└──────────────────────────────────────┘
+
+SPECIFIC DRIVER CARDS:
+
+⏱️ TIME SAVED BENEFITS
+(Section header with icon)
+
+CARD 1: Patient Access
+Icon: 👥 or Users icon (large)
+Title: "Patient Access"
+Description: "Convert extra capacity into seeing more patients"
+Context: "Requires patient demand + scheduling flexibility"
+Typical gap: "$60-120K"
+
+CARD 2: Overtime & Locum Savings
+Icon: ⏰ or Clock icon
+Title: "Overtime & Locum Savings"
+Description: "Reduce premium labor costs"
+Context: "Quick win—shows in payroll within 30 days"
+Typical gap: "$40-90K"
+
+CARD 3: Clinician Retention
+Icon: ❤️ or Heart icon
+Title: "Clinician Retention"
+Description: "Better work-life balance → less turnover"
+Context: "Long-term impact (12-18 months)"
+Typical gap: "$80-160K"
+
+📋 DOCUMENTATION QUALITY BENEFITS
+(Section header with icon)
+
+CARD 4: Level of Service Accuracy
+Icon: 📊 or BarChart icon
+Title: "Level of Service Accuracy"
+Description: "Better documentation → proper E/M coding"
+Context: "Universal—applies to every encounter"
+Typical gap: "$70-140K"
+
+CARD 5: Documentation-Related Denials
+Icon: 🛡️ or Shield icon
+Title: "Documentation-Related Denials"
+Description: "Better notes → fewer claim rejections"
+Context: "Revenue cycle impact within 3-6 months"
+Typical gap: "$50-110K"
+
+CARD 6: HCC & Chronic Condition Capture
+Icon: 🎯 or Target icon
+Title: "HCC & Chronic Condition Capture"
+Description: "Capture discussed conditions → RAF improvement"
+Context: "Only relevant with MA/risk-based contracts"
+Typical gap: "$100-300K"
+
+Selection indicator (bottom of page, sticky):
+Background: White
+Border top: Subtle
+Padding: 24px
+Shadow: Prominent
+
+"Selected: [2] drivers"
+(Updates live as they select)
+
+Button: "Calculate your gaps →"
+- Coral filled
+- Disabled (gray) until 2+ selected
+- Full width on mobile
+
+Design notes:
+- Icons should be outlined style, not filled (cleaner)
+- Cards should feel substantial, not flimsy
+- The grid should be perfectly aligned
+- Selected cards should feel "active" not just "clicked"
+- Mobile: Cards stack, full width, maintain generous padding
+
+---
+
+═══════════════════════════════════════════════════════════════════
+STEP 7: VALUE GAP ANALYSIS (Side-by-Side Comparison)
+═══════════════════════════════════════════════════════════════════
+
+Route: /switch/value
+
+Headline: "Your value gap"
+Subheadline: "Based on what you selected, here's what you're leaving on the table."
+
+Selected drivers (shown at top):
+"You selected: ✓ Patient Access  ✓ Level of Service  ✓ Denials"
+
+FOR EACH SELECTED DRIVER (expandable accordions):
+
+Accordion header (always visible):
+- Driver icon + name (left)
+- Gap amount (right, coral, large)
+- Expand/collapse chevron
+
+Example: "👥 Patient Access" ────────────── "+$78,400/year" [v]
+
+Accordion expanded content:
+
+Side-by-side comparison cards:
+
+LEFT CARD: "YOUR CURRENT PATIENT ACCESS"
+Background: Light gray (#F8F9FA)
+Border: 1px gray
+
+Show the calculation using THEIR metrics:
+"50 providers × 50% util × 1.5 min time savings
+→ 25,000 encounters documented
+→ 625 hours returned
+→ 125 hours usable (20% realization)
+→ 250 new visits possible
+→ 250 × $200 = $50,000/year"
+
+Visual bar at bottom:
+[████████████░░░░░░░░░░░░░░] (proportional to Abridge)
+
+RIGHT CARD: "WITH ABRIDGE"
+Background: Light green tint (#F0FDF4)
+Border: 1px green
+
+Show the calculation using ABRIDGE metrics:
+"50 providers × 65% util × 3.0 min time savings
+→ 32,500 encounters documented
+→ 1,625 hours returned
+→ 325 hours usable (20% realization)
+→ 650 new visits possible
+→ 650 × $200 = $130,000/year"
+
+Visual bar at bottom:
+[████████████████████████████] (full width, green)
+
+Below both cards (centered):
+Large text: "Gap: +$80,000/year"
+(Coral color, bold, 24px)
+
+Small explanatory text:
+"This gap comes from both higher adoption (65% vs 50%) and 
+better efficiency (3.0 min vs 1.5 min)."
+
+---
+
+SIMILAR STRUCTURE FOR OTHER DRIVERS:
+
+LEVEL OF SERVICE (uses wRVU performance gap):
+
+YOUR CURRENT:
+"25,000 encounters × 80% E/M billable = 20,000 E/M
+20,000 × 8% under-coded = 1,600 affected
+1,600 × 0.7 wRVU × $45 = $50,400
+
+But your current solution only catches 3.5% uplift:
+$50,400 × 0.4375 = $22,050/year"
+
+WITH ABRIDGE:
+"32,500 encounters × 80% E/M = 26,000 E/M
+26,000 × 12% under-coded = 3,120 affected
+3,120 × 0.7 wRVU × $45 = $98,280
+
+Abridge achieves 6% uplift:
+$98,280 × 0.75 = $73,710/year"
+
+Gap: +$51,660/year
+
+---
+
+DENIALS (uses denial prevention performance gap):
+
+YOUR CURRENT:
+"25,000 encounters × 7% denial rate = 1,750 denials
+1,750 × 35% doc-related = 612 doc denials
+
+Your current solution prevents 30%:
+612 × 0.3 = 184 prevented
+184 × $250 avg claim = $46,000/year"
+
+WITH ABRIDGE:
+"32,500 encounters × 7% = 2,275 denials
+2,275 × 35% = 796 doc denials
+
+Abridge prevents 45%:
+796 × 0.45 = 358 prevented
+358 × $250 = $89,500/year"
+
+Gap: +$43,500/year
+
+---
+
+BOTTOM SUMMARY (after all accordions):
+
+Large summary card:
+Background: White
+Border: 2px coral
+Padding: 32px
+Shadow: Prominent
+
+Line items:
+Patient Access           +$80,000
+Level of Service         +$51,660
+Denials                  +$43,500
+────────────────────────────────
+TOTAL ANNUAL GAP         $175,160
+
+Subtext (centered, gray):
+"That's $14,597 every month you're not capturing with your current solution."
+
+Button (centered, large):
+"What does waiting cost? →"
+(Coral filled)
+
+Design notes:
+- Each accordion should expand smoothly (300ms)
+- Only one expanded at a time (optional)
+- Bars should be proportional and visually clear
+- The math should be shown step-by-step (transparency)
+- Green for Abridge values
+- Gray for their current values
+- Coral for gaps
+
+---
+
+═══════════════════════════════════════════════════════════════════
+STEP 8: COST OF WAITING (Realistic, Driver-Aware Projection)
+═══════════════════════════════════════════════════════════════════
+
+Route: /switch/decision
+
+Headline: "The cost of waiting"
+Subheadline: "Every month you delay is value you'll never recapture."
+
+SECTION 1: Realistic 3-Year Chart
+
+Chart showing cumulative value over 3 years:
+
+Design:
+- Line chart, clean and modern
+- X-axis: Today, 3mo, 6mo, Year 1, Year 2, Year 3
+- Y-axis: $0 to [max value + 20%]
+- Grid lines: Subtle gray
+- Area under lines: Subtle fill
+
+Two lines:
+
+LINE 1: "Stay with [Ambient AI]"
+- Gray color (#6B7280)
+- Flat or very slight upward trend
+- Represents current baseline value
+
+LINE 2: "Switch to Abridge"  
+- Coral/red color (#E85D3F)
+- Realistic S-curve growth based on selected drivers
+- NOT linear—starts slow, accelerates, plateaus
+
+Calculate blended ramp based on driver selection:
+
+If they selected fast-ramp drivers (Overtime, Level of Service, Denials):
+- 3 months: 50% of gap value
+- 6 months: 75%
+- Year 1: 95%
+- Year 2+: 100%
+
+If they selected medium mix:
+- 3 months: 35%
+- 6 months: 60%
+- Year 1: 85%
+- Year 2: 100%
+
+If they selected slow-ramp drivers (Retention, HCC):
+- 3 months: 15%
+- 6 months: 30%
+- Year 1: 60%
+- Year 2: 90%
+- Year 3: 100%
+
+Visual gap between lines:
+- Shaded area between the two lines (coral tint, low opacity)
+- This represents total opportunity cost
+
+Annotation callout (on chart):
+Arrow pointing to the ramp curve:
+"Realistic ramp-up based on your selected drivers.
+
+[Fast drivers] show within 1-3 months.
+[Medium drivers] materialize over 3-6 months.
+[Slow drivers] take 12-18 months to fully realize."
+
+SECTION 2: Switch Now vs Wait 6 Months (side-by-side cards)
+
+LEFT CARD: "IF YOU SWITCH TODAY"
+Background: Light green tint
+Border: 2px green
+
+6 months:     +$52,500
+              (50% during ramp)
+              
+Year 1:       +$148,750
+              (includes 6mo ramp)
+              
+Year 2:       +$175,160
+Year 3:       +$175,160
+──────────────────────────
+3-year total: $551,570
+
+RIGHT CARD: "IF YOU WAIT 6 MONTHS"
+Background: Light red tint
+Border: 2px red/coral
+
+6 months:     $0
+              (still on current solution)
+              
+Year 1:       +$87,500
+              (only 6mo at partial value)
+              
+Year 2:       +$175,160
+Year 3:       +$175,160
+──────────────────────────
+3-year total: $437,820
+
+YOU LOSE:     $113,750
+(Red text, bold)
+
+Below cards (centered callout):
+Background: Light yellow
+Border: Coral
+Icon: ⚠️
+
+"Every month you delay = $14,597 in value you'll never recapture."
+
+SECTION 3: Make It Real (timeline visual)
+
+Simple visual timeline:
+TODAY ──────── 6 MONTHS ──────── 1 YEAR
+
+If you switch today:
+- Month 1: First payroll shows OT reduction
+- Month 3: Coding improvements visible
+- Month 6: Full workflow adoption
+- Year 1: $148K captured ✓
+
+If you wait 6 months:
+- Months 1-6: $87,500 lost forever ✗
+- Month 7: Finally starting
+- Month 12: Still ramping
+- Year 1: Only $87K captured
+
+The math is simple: Start earlier = Capture more.
+
+SECTION 4: CTAs
+
+Two buttons (side by side, centered):
+
+Button 1: "📥 Save This Analysis"
+- Outlined, coral border
+- Secondary action
+
+Button 2: "Let's Talk →"
+- Filled, coral background
+- Primary action
+- Larger, more prominent
+
+Below buttons (small, gray text):
+"All assumptions and methodology can be adjusted in conversation."
+
+Design notes:
+- The chart should be beautiful (consider using Chart.js or Recharts)
+- S-curve animation on load (line draws in)
+- The green/red card comparison should feel definitive
+- Mobile: Chart scales, cards stack
+- Everything should feel premium, not desperate
+
+---
+
+═══════════════════════════════════════════════════════════════════
+COLOR SCHEME FOR ENTIRE SWITCH PATH
+═══════════════════════════════════════════════════════════════════
+
+SWITCH path uses different colors than EXPLORE:
+
+PRIMARY COLORS:
+- Coral/Red (#E85D3F) - Gaps, opportunities, urgency, CTAs
+- Green (#10B981) - Abridge values, positive outcomes
+- Gray (#6B7280) - Current state, neutral baseline
+
+BACKGROUNDS:
+- White (#FFFFFF) - Primary background
+- Light gray (#F8F9FA) - Current state cards
+- Light green (#F0FDF4) - Abridge value cards
+- Light yellow (#FFFBEB) - Callouts and warnings
+- Light red (#FEF2F2) - Negative/loss scenarios
+
+TEXT:
+- Dark gray (#111827) - Headlines, primary text
+- Medium gray (#6B7280) - Body text, descriptions
+- Light gray (#9CA3AF) - Helper text, labels
+
+Never use:
+- Orange/coral for Abridge values (looks negative)
+- Red for current state (looks bad for them)
+- Same color for both sides of comparison
+
+---
+
+═══════════════════════════════════════════════════════════════════
+TECHNICAL REQUIREMENTS
+═══════════════════════════════════════════════════════════════════
+
+STATE MANAGEMENT:
+Track throughout the flow:
+- Solution type (Ambient AI, Scribes, Manual)
+- Care setting (Outpatient, ED)
+- Provider count
+- Annual encounters
+- Current utilization %
+- Current time savings (min/encounter)
+- Performance metrics (wRVU %, denials %, etc.)
+- Selected drivers
+
+CALCULATIONS:
+All calculations should happen in real-time as user inputs data.
+
+For each driver:
+1. Calculate THEIR current value using their metrics
+2. Calculate ABRIDGE value using Abridge metrics
+3. Gap = Abridge - Their
+4. Show all three (not just gap)
+
+Ramp-up calculation:
+- Store driver ramp schedules (provided earlier)
+- Calculate weighted average based on selected drivers
+- Apply to 3-year projection
+
+VALIDATION:
+- Providers > 0
+- Encounters > 0
+- Encounters/provider should be reasonable (500-5,000)
+- Utilization between 10-90%
+- Time savings 0.5-5 min
+
+PERSISTENCE:
+- Save state to localStorage
+- Allow browser back/forward
+- "Save This Analysis" should generate shareable link
+
+EXPORT:
+- PDF generation of summary
+- Include: Inputs, assumptions, calculations, methodology
+- Branded with Abridge logo
+- Clean, presentation-ready
+
+RESPONSIVE:
+- Mobile-first design
+- Touch-friendly (48px+ touch targets)
+- Cards stack on mobile
+- Charts scale appropriately
+- Maintain visual hierarchy on all screen sizes
+
+PERFORMANCE:
+- Page transitions smooth (no janky animations)
+- Charts should be performant
+- Images optimized
+- Fast initial load
+
+ACCESSIBILITY:
+- Proper heading hierarchy
+- Alt text for icons
+- Keyboard navigation works
+- Color contrast meets WCAG AA
+- Screen reader friendly
+
+---
+
+═══════════════════════════════════════════════════════════════════
+DESIGN SYSTEM CONSISTENCY
+═══════════════════════════════════════════════════════════════════
+
+Typography:
+- Headlines: Inter or similar, 32-40px, bold
+- Subheadlines: 18-20px, medium weight
+- Body: 16px, regular
+- Helper text: 14px, regular
+- Numbers: Tabular figures, medium weight
+
+Spacing:
+- Page padding: 48px desktop, 24px mobile
+- Section spacing: 64px
+- Card padding: 32px
+- Input spacing: 48px between inputs
+- Button padding: 16px vertical, 32px horizontal
+
+Shadows:
+- Cards: 0 1px 3px rgba(0,0,0,0.1)
+- Hover: 0 4px 6px rgba(0,0,0,0.1)
+- Elevated: 0 10px 15px rgba(0,0,0,0.1)
+
+Borders:
+- Subtle: 1px solid #E5E7EB
+- Emphasis: 2px solid [color]
+- Selected: 3px solid #E85D3F
+
+Animations:
+- Page transitions: 200ms ease
+- Hover effects: 150ms ease
+- Chart animations: 800ms ease-out
+- Number count-ups: 1000ms
+
+Icons:
+- Use Lucide React icons
+- 24px standard size
+- 48px for card headers
+- Outlined style, not filled
+- Consistent stroke width
+
+---
+
+FINAL NOTES:
+
+The goal is to make prospects think:
+"Holy shit, they actually understand our situation better than our current vendor does."
+
+Every interaction should feel:
+- Thoughtful, not rushed
+- Sophisticated, not complicated  
+- Honest, not salesy
+- Premium, not gimmicky
+
+This should be the standard for healthcare ROI tools.
+Make it undeniable.
