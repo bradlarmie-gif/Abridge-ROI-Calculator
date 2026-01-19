@@ -10,7 +10,15 @@ The application operates entirely client-side, providing a responsive and intera
 - **EXPLORE Path Redesign**: New 4-step sales-led flow (Care Setting → Strategic Priorities → Model Builder → Summary)
 - **Model Builder (Step 3)**: 65/35 split layout with Organization inputs, Value Driver accordions, Investment section, and sticky Live Model sidebar
 - **Enhanced Strategic Priorities**: Context tags with color coding (amber/orange/slate/green) and value ranges
-- **6 Driver-Specific Flows**: Overtime, Patient Access, Retention, Level of Service, HCC Capture, Denials
+- **6 Driver-Specific Flows (Outpatient)**: Overtime, Patient Access, Retention, Level of Service, HCC Capture, Denials
+- **Emergency Department (ED) Support**: Full ED support with 5 ED-specific drivers:
+  - Patient Throughput / LWBS Reduction (edThroughput)
+  - Scribe Cost Reduction (edScribe)
+  - Physician Retention (edRetention)
+  - Level-of-Service Accuracy (edLevelOfService)
+  - Documentation-Related Denials (edDenials)
+- **ED-Specific Defaults**: 25 physicians (vs 50 providers), 1,800 encounters/physician (vs 2,000), utilization rates 55/70/85% (vs 50/65/80%)
+- **State Persistence**: Model Builder state now persists when navigating to Summary and back via initialResults prop
 
 ## User Preferences
 
