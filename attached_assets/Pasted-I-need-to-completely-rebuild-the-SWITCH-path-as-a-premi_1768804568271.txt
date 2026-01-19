@@ -1,0 +1,388 @@
+I need to completely rebuild the SWITCH path as a premium competitive displacement experience. This is for prospects currently using DAX, Suki, Ambience, Nabla, human scribes, or other AI tools.
+
+The SWITCH path should feel like an executive diagnostic—dramatic, clean, and impactful. It should make them feel the cost of their current underperforming solution.
+
+---
+
+OVERALL DESIGN PHILOSOPHY:
+
+- Premium, editorial feel (like McKinsey or Bloomberg)
+- Minimal inputs, maximum impact
+- Dramatic reveal of the "gap"
+- Creates urgency through time-based framing
+- Builds to a clear decision point
+
+---
+
+ROUTE: /switch
+
+This path has 5 steps that flow as a single narrative:
+1. What solution? (5 seconds)
+2. Your reality (30 seconds) 
+3. The reveal (the "oh shit" moment)
+4. The breakdown (where the gap comes from)
+5. The cost of waiting (urgency)
+
+---
+
+STEP 1: SOLUTION SELECTION
+──────────────────────────
+
+Route: /switch
+
+HEADER:
+- "← Back to Home" link
+- ABRIDGE logo
+
+CONTENT (centered, minimal):
+
+Headline: "What solution are you using today?"
+
+6 cards in 2x3 grid:
+1. DAX (Nuance) - Ambient AI - microphone icon
+2. Suki - Ambient AI - microphone icon
+3. Ambience Healthcare - Ambient AI - microphone icon
+4. Nabla - Ambient AI - microphone icon
+5. Human Scribes - In-person documentation - person icon
+6. Other AI Solution - Ambient AI - microphone icon
+
+Cards should:
+- Be large touch targets
+- Have subtle hover effect
+- Single-select behavior
+- Coral border when selected
+
+Below cards, setting selector:
+"Select a setting: [● Outpatient] [ED] [Inpatient*] [Nursing*]"
+* Show "Coming soon" for Inpatient and Nursing, make them non-clickable
+
+Button: "Continue →" (disabled until selection made)
+
+---
+
+STEP 2: YOUR REALITY
+────────────────────
+
+Route: /switch/reality
+
+Headline: "Tell us about your [DAX] deployment"
+Subheadline: "We'll show you what you might be missing."
+
+INPUT 1: Provider count
+- Label: "How many providers are on [DAX]?"
+- Input: Number field, placeholder "e.g., 50"
+
+INPUT 2: Current utilization (this is the KEY input)
+- Label: "What's your current utilization?"
+- Sublabel: "How often do providers actually use it?"
+- Input: Slider with emoji indicators
+  - 😔 <30% (Low)
+  - 😐 30-45% (Avg)  
+  - 😊 45-55% (Good)
+  - 🎉 55%+ (Great)
+- Show benchmark hints below slider:
+  - "💡 [Competitor] industry average: 45-55%"
+  - "💡 Abridge average: 65%"
+
+INPUT 3: Time savings (optional)
+- Label: "What time savings are you seeing?"
+- Sublabel: "Per encounter (if you know it)"
+- Input: Slider 0.5 min to 4 min, default based on competitor
+- Checkbox: "○ Not sure / Haven't measured"
+- Show benchmark hints:
+  - "💡 [Competitor] customers typically report 1-2 min"
+  - "💡 Abridge average: 2.5-3.5 min"
+
+INPUT 4: Cost (optional)
+- Label: "What are you paying?"
+- Input: Currency field, placeholder "$150/provider/month"
+- Helper: "💡 Enterprise pricing varies. Skip if unsure."
+- Make this skippable
+
+Show live calculation as they input:
+"At 50 providers with 45% utilization, you're documenting ~22,500 encounters/year"
+
+Button: "Show Me the Gap →" (coral, prominent)
+
+---
+
+STEP 3: THE REVEAL
+──────────────────
+
+Route: /switch/reveal
+
+This is the HERO screen. It needs to punch them in the face.
+
+SECTION 1: The Big Number (top of page, full width)
+
+Dark or dramatic background card:
+
+Small text: "At your current adoption, you're leaving this on the table:"
+
+HUGE NUMBER (animated count-up from $0):
+"$247,000"
+"per year"
+
+Below that, in smaller text:
+"$20,583 every month"
+"$685 every day"  
+"$86 every hour your clinic is open"
+
+SECTION 2: The Visual Comparison
+
+Two columns:
+
+LEFT COLUMN - "Your Current State"
+- "[DAX] at 45%"
+- Visual bar (short, gray)
+- "$169K/year"
+
+RIGHT COLUMN - "The Opportunity"  
+- "Abridge at 65%"
+- Visual bar (long, coral)
+- "$416K/year"
+
+CENTER - "THE GAP"
+- "+$247,000" in large coral text
+
+Button: "See Where This Comes From →"
+
+---
+
+STEP 4: THE BREAKDOWN
+─────────────────────
+
+Route: /switch/breakdown
+
+Headline: "Where the $247,000 gap comes from"
+Subheadline: "It's not magic. It's math."
+
+SECTION 1: The Two Gaps (conceptual frame)
+
+Two cards side by side:
+
+CARD 1: "📊 ADOPTION GAP"
+- "You're at 45%"
+- "Abridge averages 65%"
+- "That's 20% more encounters being documented"
+- "Gap: +$98,000/year"
+
+CARD 2: "⏱️ EFFICIENCY GAP"
+- "You're getting 1.5 min"
+- "Abridge averages 2.5 min"
+- "That's 67% more time returned per encounter"
+- "Gap: +$149,000/year"
+
+SECTION 2: Value Driver Breakdown
+
+For each relevant driver, show expandable comparison:
+
+DRIVER CARD (expanded example for Patient Access):
+┌─────────────────────────────────────────────────────────────────────┐
+│  PATIENT ACCESS                                    Gap: +$63,400   │
+│  ─────────────────────────────────────────────────────────────────  │
+│                                                                     │
+│  WITH DAX (45%, 1.5 min)      │     WITH ABRIDGE (65%, 2.5 min)   │
+│                               │                                    │
+│  22,500 encounters            │     32,500 encounters              │
+│  563 hours returned           │     1,354 hours returned           │
+│  225 new visits               │     542 new visits                 │
+│  ─────────────                │     ─────────────                  │
+│  $45,000/year                 │     $108,400/year                  │
+│                               │                                    │
+│  [░░░░░░░░]                   │     [████████████████████]         │
+│                               │                                    │
+└─────────────────────────────────────────────────────────────────────┘
+
+Show drivers relevant to the care setting:
+- Outpatient: Patient Access, Level of Service, Overtime, Denials
+- ED: Throughput (LWBS), Scribe Savings, Level of Service, Denials
+
+SECTION 3: Total Summary
+
+Running total:
+- Patient Access: +$63,400
+- Level of Service: +$89,000
+- Overtime & Locum: +$52,000
+- Denials: +$43,000
+───────────────────────────────
+TOTAL ANNUAL GAP: +$247,400
+
+Button: "See the Cost of Waiting →"
+
+---
+
+STEP 5: THE COST OF WAITING
+───────────────────────────
+
+Route: /switch/decision
+
+Headline: "The Cost of Waiting"
+Subheadline: "Every month you delay is money you'll never get back."
+
+SECTION 1: Diverging Lines Chart
+
+Line chart showing cumulative value over 3 years:
+- Gray line: "Stay with [DAX]" - starts at $0, climbs slowly
+- Coral line: "Switch to Abridge" - starts at $0, climbs faster
+- The gap between lines grows dramatically
+
+X-axis: Today, Year 1, Year 2, Year 3
+Y-axis: $0K to $800K (or scale to fit)
+
+Legend below chart
+
+SECTION 2: Switch Now vs. Wait
+
+Two cards side by side:
+
+CARD 1: "IF YOU SWITCH TODAY"
+- 6 months: +$124,000 (green)
+- 1 year: +$247,000 (green)
+- 3 years: +$741,000 (green)
+- "3-year total: +$741K"
+
+CARD 2: "IF YOU WAIT 6 MONTHS"
+- 6 months: -$124,000 (red)
+- 1 year: +$124,000
+- 3 years: +$618,000
+- "3-year total: +$618K"
+- "(You lose $123K)"
+
+SECTION 3: Monthly Loss Callout
+
+Prominent box:
+"Every month you delay = $20,583 you'll never recapture."
+
+SECTION 4: The Choice
+
+Final comparison:
+
+TWO COLUMNS:
+
+"Stay with [DAX]"          │  "Switch to Abridge"
+                           │
+Year 1: $169K              │  Year 1: $416K
+Year 2: $169K              │  Year 2: $416K
+Year 3: $169K              │  Year 3: $416K
+                           │
+3-Year: $507K              │  3-Year: $1,248K
+
+CENTER:
+"The difference: +$741,000"
+"That's the cost of doing nothing."
+
+SECTION 5: CTAs
+
+Two buttons:
+- [Save This Analysis] - secondary, outlined
+- [Let's Talk →] - primary, coral filled
+
+---
+
+COMPETITOR-SPECIFIC BENCHMARKS:
+
+Use these defaults based on selected competitor:
+
+DAX (Nuance):
+- Typical utilization: 45-55%
+- Typical time savings: 1-2 min
+- Typical cost: $150-200/provider/month
+
+Suki:
+- Typical utilization: 40-50%
+- Typical time savings: 1-1.5 min
+- Typical cost: $100-150/provider/month
+
+Ambience Healthcare:
+- Typical utilization: 50-60%
+- Typical time savings: 1.5-2 min
+- Typical cost: $125-175/provider/month
+
+Nabla:
+- Typical utilization: 45-55%
+- Typical time savings: 1-2 min
+- Typical cost: $100-150/provider/month
+
+Human Scribes:
+- Utilization: N/A (different model)
+- Cost: $40-60K/scribe/year
+- For scribes, focus on cost replacement rather than adoption gap
+
+Other AI:
+- Use DAX defaults
+
+ABRIDGE BENCHMARKS (constant):
+- Average utilization: 65%
+- Average time savings: 2.5-3 min
+- Pricing: Input by user or default $140-180/provider/month
+
+---
+
+DESIGN SPECIFICATIONS:
+
+1. Premium, editorial feel
+   - More whitespace than rest of app
+   - Larger typography for key numbers
+   - Subtle animations for reveals
+
+2. Color usage:
+   - Coral (#E85D3F) for Abridge values, gaps, positive changes
+   - Gray for competitor values
+   - Red tint for losses/delays
+   - Green tint for gains
+
+3. The Big Number on reveal page:
+   - Animate count-up from $0 on page load
+   - Use large, bold font (48px+)
+   - Per month/day/hour breakdown adds urgency
+
+4. Charts:
+   - Clean, minimal styling
+   - Coral for Abridge line
+   - Gray for competitor line
+   - Animated draw-in effect
+
+5. Comparison bars:
+   - Simple horizontal bars
+   - Gray for competitor
+   - Coral for Abridge
+   - Clear visual difference in length
+
+6. Mobile responsive:
+   - Stack cards vertically
+   - Chart adapts to width
+   - Maintain impact of big numbers
+
+---
+
+CALCULATIONS:
+
+The gap calculation:
+
+1. Their current state:
+   - Documented encounters = Providers × 2000 × Their_utilization
+   - Time returned = Documented × Their_time_savings
+   - For each driver, calculate value with their metrics
+
+2. Abridge potential:
+   - Documented encounters = Providers × 2000 × 0.65 (Abridge avg)
+   - Time returned = Documented × 2.5 (Abridge avg)
+   - For each driver, calculate value with Abridge metrics
+
+3. Gap = Abridge value - Their value
+
+4. Cost of waiting:
+   - Monthly gap = Annual gap ÷ 12
+   - 3-year projection = Annual gap × 3
+   - Delay cost = Months waited × Monthly gap
+
+---
+
+ANIMATION:
+
+1. Page transitions: Smooth fade between steps
+2. Big number: Count up animation (2 seconds)
+3. Bars: Grow from left animation
+4. Chart: Line draw-in animation
+5. Gap reveals: Subtle fade-in

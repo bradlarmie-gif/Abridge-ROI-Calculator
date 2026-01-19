@@ -1,8 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { BackgroundShape } from "@/components/BackgroundShape";
 import { LiveReceipt } from "@/components/LiveReceipt";
-import NursingStrategicPriorities from "@/pages/NursingStrategicPriorities";
-import NursingValueMethodology from "@/pages/NursingValueMethodology";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import {
@@ -224,7 +222,7 @@ const ALL_SETTINGS: AllSettingType[] = [
   "inpatient",
 ];
 
-type Page = "orientation" | "setting" | "priorities" | "value-blueprint" | "model-setup" | "nursing-priorities" | "nursing-value-methodology";
+type Page = "orientation" | "setting" | "priorities" | "value-blueprint" | "model-setup";
 
 // Value posture presets for Step 2 (moved outside component to avoid recreation each render)
 type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
@@ -2163,37 +2161,8 @@ export default function ObjectiveSelectionScreen({
 
   const handleContinueToPage2 = () => {
     if (!selectedSetting) return;
-    // Route nursing to its dedicated flow
-    if (selectedSetting === "nursing") {
-      setCurrentPage("nursing-priorities");
-    } else {
-      setCurrentPage("priorities");
-    }
-  };
-  
-  // Nursing flow handlers
-  const handleNursingBackToSettings = () => {
-    setCurrentPage("setting");
-  };
-  
-  const handleNursingContinue = (selectedDrivers: string[]) => {
-    // Set the selected driver IDs for nursing
-    setSelectedLeverIds(new Set(selectedDrivers));
-    // Continue to the nursing value methodology step
-    setCurrentPage("nursing-value-methodology");
-  };
-
-  const handleNursingValueMethodologyBack = () => {
-    setCurrentPage("nursing-priorities");
-  };
-
-  const handleNursingValueMethodologyContinue = () => {
-    // Auto-apply typical posture if no posture has been selected yet
-    if (minutesSaved === null) {
-      applyPosture("typical");
-    }
-    // Continue to the model-setup (baseline assumptions) page
-    setCurrentPage("model-setup");
+    // All care settings use the same flow now
+    setCurrentPage("priorities");
   };
 
   const handleBackToPage1 = () => {
@@ -2663,22 +2632,6 @@ export default function ObjectiveSelectionScreen({
           </div>
         )}
 
-        {/* NURSING STRATEGIC PRIORITIES */}
-        {currentPage === "nursing-priorities" && selectedSetting === "nursing" && (
-          <NursingStrategicPriorities
-            onBack={handleNursingBackToSettings}
-            onContinue={handleNursingContinue}
-          />
-        )}
-
-        {/* NURSING VALUE METHODOLOGY PAGE */}
-        {currentPage === "nursing-value-methodology" && selectedSetting === "nursing" && (
-          <NursingValueMethodology
-            selectedDrivers={Array.from(selectedLeverIds)}
-            onBack={handleNursingValueMethodologyBack}
-            onContinue={handleNursingValueMethodologyContinue}
-          />
-        )}
 
         {/* PAGE 2 — STRATEGIC PRIORITIES */}
         {currentPage === "priorities" && selectedSetting && (
