@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, ArrowRight, Mic, User, Sparkles, TrendingUp, Clock, DollarSign, AlertTriangle, Check, ChevronDown, ChevronUp, Download, MessageSquare } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mic, User, Sparkles, TrendingUp, Clock, DollarSign, AlertTriangle, Check, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -198,8 +198,12 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const adoptionGapEncounters = abridgeDocumentedEncounters - theirDocumentedEncounters;
     const efficiencyGapTime = abridgeTimeReturned - theirTimeReturned;
     
-    const adoptionGapValue = Math.round(gap * 0.40);
-    const efficiencyGapValue = Math.round(gap * 0.60);
+    const theirValueSameTime = calcPatientAccess(abridgeDocumentedEncounters, abridgeDocumentedEncounters * timeSavings / 60) +
+      calcLevelOfService(abridgeDocumentedEncounters) +
+      calcOvertime(abridgeDocumentedEncounters * timeSavings / 60) +
+      calcDenials(abridgeDocumentedEncounters);
+    const adoptionGapValue = Math.round(theirValueSameTime - theirTotal);
+    const efficiencyGapValue = Math.round(gap - adoptionGapValue);
     
     return {
       theirDocumentedEncounters,
@@ -287,7 +291,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
       <div className="max-w-5xl mx-auto px-6 py-12">
         {step === 1 && (
-          <div className="max-w-3xl mx-auto text-center animate-in fade-in duration-500">
+          <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl font-bold text-neutral-900 mb-4" data-testid="text-step1-title">
               What solution are you using today?
             </h1>
@@ -359,7 +363,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         )}
 
         {step === 2 && competitorData && (
-          <div className="max-w-2xl mx-auto animate-in fade-in duration-500">
+          <div className="max-w-2xl mx-auto">
             <h1 className="text-3xl font-bold text-neutral-900 mb-2" data-testid="text-step2-title">
               Tell us about your {competitorData.name} deployment
             </h1>
@@ -404,19 +408,27 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 text-sm">
-                  <span className={utilization < 30 ? "text-orange-600 font-medium" : "text-neutral-400"}>
-                    {utilization < 30 ? "😔" : ""} {utilization < 30 ? "Low" : ""}
-                  </span>
-                  <span className={utilization >= 30 && utilization < 45 ? "text-yellow-600 font-medium" : "text-neutral-400"}>
-                    {utilization >= 30 && utilization < 45 ? "😐 Average" : ""}
-                  </span>
-                  <span className={utilization >= 45 && utilization < 55 ? "text-green-600 font-medium" : "text-neutral-400"}>
-                    {utilization >= 45 && utilization < 55 ? "😊 Good" : ""}
-                  </span>
-                  <span className={utilization >= 55 ? "text-emerald-600 font-medium" : "text-neutral-400"}>
-                    {utilization >= 55 ? "🎉 Great" : ""}
-                  </span>
+                <div className="flex items-center gap-4 text-sm">
+                  {utilization < 30 && (
+                    <span className="flex items-center gap-1.5 text-orange-600 font-medium">
+                      <Frown className="w-4 h-4" /> Low
+                    </span>
+                  )}
+                  {utilization >= 30 && utilization < 45 && (
+                    <span className="flex items-center gap-1.5 text-yellow-600 font-medium">
+                      <Meh className="w-4 h-4" /> Average
+                    </span>
+                  )}
+                  {utilization >= 45 && utilization < 55 && (
+                    <span className="flex items-center gap-1.5 text-green-600 font-medium">
+                      <Smile className="w-4 h-4" /> Good
+                    </span>
+                  )}
+                  {utilization >= 55 && (
+                    <span className="flex items-center gap-1.5 text-emerald-600 font-medium">
+                      <PartyPopper className="w-4 h-4" /> Great
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-4 space-y-1 text-sm">
@@ -461,7 +473,14 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <input
                     type="checkbox"
                     checked={!timeSavingsKnown}
-                    onChange={(e) => setTimeSavingsKnown(!e.target.checked)}
+                    onChange={(e) => {
+                      const notSure = e.target.checked;
+                      setTimeSavingsKnown(!notSure);
+                      if (notSure && competitorData) {
+                        const benchmarkMidpoint = (competitorData.typicalTimeSavings[0] + competitorData.typicalTimeSavings[1]) / 2;
+                        setTimeSavings(benchmarkMidpoint);
+                      }
+                    }}
                     className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
                   />
                   <span className="text-sm text-neutral-600">Not sure / Haven't measured</span>
@@ -501,7 +520,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         )}
 
         {step === 3 && competitorData && (
-          <div className="animate-in fade-in duration-500">
+          <div>
             <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-3xl p-10 md:p-16 text-center mb-12">
               <p className="text-neutral-400 text-lg mb-4">At your current adoption, you're leaving this on the table:</p>
               <div className="text-6xl md:text-8xl font-bold text-white mb-2" data-testid="text-gap-amount">
@@ -562,7 +581,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         )}
 
         {step === 4 && competitorData && (
-          <div className="animate-in fade-in duration-500">
+          <div>
             <h1 className="text-3xl font-bold text-neutral-900 mb-2" data-testid="text-step4-title">
               Where the {formatCurrency(calculations.gap)} gap comes from
             </h1>
@@ -673,7 +692,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         )}
 
         {step === 5 && competitorData && (
-          <div className="animate-in fade-in duration-500">
+          <div>
             <h1 className="text-3xl font-bold text-neutral-900 mb-2" data-testid="text-step5-title">
               The Cost of Waiting
             </h1>
