@@ -1136,237 +1136,218 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         {step === 5 && (
           <div className="animate-in fade-in duration-300">
             <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step5-title">
-              Let's understand your current performance
+              Your current performance assumptions
             </h1>
-            <p className="text-lg text-neutral-500 mb-6">A few quick metrics to make this accurate for you.</p>
+            <p className="text-lg text-neutral-500 mb-6">Pre-filled with industry benchmarks. Expand to customize any metric.</p>
 
-            <div className="bg-blue-50 rounded-xl p-5 border border-blue-200/50 mb-10">
-              <p className="text-blue-900 text-sm">
-                <Lightbulb className="w-4 h-4 inline mr-1.5 text-blue-600" />
-                We've seen many organizations using {solutionData?.name}. Here's what we typically see - but your reality might be different. Help us understand YOUR current results.
+            <div className="bg-green-50 rounded-xl p-4 border border-green-200/50 mb-8 flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <p className="text-green-900 text-sm">
+                Based on typical {solutionData?.name} performance, we've pre-filled these assumptions. You can proceed or customize below.
               </p>
             </div>
 
-            <div className="space-y-8">
-              <div className="bg-white rounded-xl p-6 border border-neutral-200">
-                <label className="block text-sm font-semibold text-neutral-900 mb-3">
-                  What wRVU uplift are you seeing from {solutionData?.name}?
-                </label>
-                
-                <div className="space-y-3">
-                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
-                    <input
-                      type="radio"
-                      checked={!wrvuKnown}
-                      onChange={() => {
-                        setWrvuKnown(false);
-                        setWrvuUplift(solutionData?.typicalWrvuUplift || 3.5);
-                      }}
-                      className="w-4 h-4 mt-0.5 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    />
-                    <div>
-                      <span className="text-sm text-neutral-900">Not sure / Haven't measured</span>
-                      <p className="text-xs text-neutral-500 mt-0.5">We'll use industry average: {solutionData?.typicalWrvuUplift || 3.5}%</p>
+            <div className="space-y-3">
+              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                <button
+                  onClick={() => setWrvuKnown(!wrvuKnown)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                      <BadgeDollarSign className="w-5 h-5 text-neutral-600" />
                     </div>
-                  </label>
-                  
-                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
-                    <input
-                      type="radio"
-                      checked={wrvuKnown}
-                      onChange={() => setWrvuKnown(true)}
-                      className="w-4 h-4 mt-0.5 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm text-neutral-900">We've measured it</span>
-                      {wrvuKnown && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={wrvuUplift}
-                            onChange={(e) => {
-                              const val = e.target.value.replace(/[^0-9.]/g, '');
-                              setWrvuUplift(val === "" ? 0 : parseFloat(val) || 0);
-                            }}
-                            className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
-                          />
-                          <span className="text-sm text-neutral-500">% uplift</span>
-                        </div>
-                      )}
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-neutral-900">wRVU Uplift</p>
+                      <p className="text-xs text-neutral-500">Revenue productivity improvement</p>
                     </div>
-                  </label>
-                </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-[#E85D3F] tabular-nums">{wrvuUplift}%</span>
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${wrvuKnown ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {wrvuKnown && (
+                  <div className="px-4 pb-4 pt-1 border-t border-neutral-100 bg-neutral-50">
+                    <label className="text-xs font-medium text-neutral-600 mb-2 block">Custom value:</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={wrvuUplift}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9.]/g, '');
+                          setWrvuUplift(val === "" ? 0 : parseFloat(val) || 0);
+                        }}
+                        className="w-24 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+                      />
+                      <span className="text-sm text-neutral-500">% uplift</span>
+                      <button
+                        onClick={() => {
+                          setWrvuUplift(solutionData?.typicalWrvuUplift || 3.5);
+                        }}
+                        className="ml-auto text-xs text-[#E85D3F] hover:underline"
+                      >
+                        Reset to default ({solutionData?.typicalWrvuUplift || 3.5}%)
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="bg-white rounded-xl p-6 border border-neutral-200">
-                <label className="block text-sm font-semibold text-neutral-900 mb-3">
-                  What % of your encounters are being corrected from under-coding?
-                </label>
-                
-                <div className="space-y-3">
-                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
-                    <input
-                      type="radio"
-                      checked={!underCodingKnown}
-                      onChange={() => {
-                        setUnderCodingKnown(false);
-                        setUnderCoding(solutionData?.typicalUnderCoding || 8);
-                      }}
-                      className="w-4 h-4 mt-0.5 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    />
-                    <div>
-                      <span className="text-sm text-neutral-900">Not sure / Haven't measured</span>
-                      <p className="text-xs text-neutral-500 mt-0.5">We'll use typical estimate: {solutionData?.typicalUnderCoding || 8}%</p>
+              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                <button
+                  onClick={() => setUnderCodingKnown(!underCodingKnown)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                      <FileCheck className="w-5 h-5 text-neutral-600" />
                     </div>
-                  </label>
-                  
-                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
-                    <input
-                      type="radio"
-                      checked={underCodingKnown}
-                      onChange={() => setUnderCodingKnown(true)}
-                      className="w-4 h-4 mt-0.5 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm text-neutral-900">We track this</span>
-                      {underCodingKnown && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={underCoding}
-                            onChange={(e) => {
-                              const val = e.target.value.replace(/[^0-9.]/g, '');
-                              setUnderCoding(val === "" ? 0 : parseFloat(val) || 0);
-                            }}
-                            className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
-                          />
-                          <span className="text-sm text-neutral-500">%</span>
-                        </div>
-                      )}
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-neutral-900">Under-coding Correction</p>
+                      <p className="text-xs text-neutral-500">Encounters corrected from under-coding</p>
                     </div>
-                  </label>
-                </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-[#E85D3F] tabular-nums">{underCoding}%</span>
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${underCodingKnown ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {underCodingKnown && (
+                  <div className="px-4 pb-4 pt-1 border-t border-neutral-100 bg-neutral-50">
+                    <label className="text-xs font-medium text-neutral-600 mb-2 block">Custom value:</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={underCoding}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9.]/g, '');
+                          setUnderCoding(val === "" ? 0 : parseFloat(val) || 0);
+                        }}
+                        className="w-24 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+                      />
+                      <span className="text-sm text-neutral-500">%</span>
+                      <button
+                        onClick={() => {
+                          setUnderCoding(solutionData?.typicalUnderCoding || 8);
+                        }}
+                        className="ml-auto text-xs text-[#E85D3F] hover:underline"
+                      >
+                        Reset to default ({solutionData?.typicalUnderCoding || 8}%)
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="bg-white rounded-xl p-6 border border-neutral-200">
-                <label className="block text-sm font-semibold text-neutral-900 mb-3">
-                  How much has {solutionData?.name} reduced documentation-related denials?
-                </label>
-                
-                <div className="space-y-3">
-                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
-                    <input
-                      type="radio"
-                      checked={!denialKnown}
-                      onChange={() => {
-                        setDenialKnown(false);
-                        setDenialPrevention(solutionData?.typicalDenialPrevention || 30);
-                      }}
-                      className="w-4 h-4 mt-0.5 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    />
-                    <div>
-                      <span className="text-sm text-neutral-900">Not sure / Haven't measured</span>
-                      <p className="text-xs text-neutral-500 mt-0.5">We'll use typical estimate: {solutionData?.typicalDenialPrevention || 30}% reduction</p>
+              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                <button
+                  onClick={() => setDenialKnown(!denialKnown)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                      <ShieldCheck className="w-5 h-5 text-neutral-600" />
                     </div>
-                  </label>
-                  
-                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
-                    <input
-                      type="radio"
-                      checked={denialKnown}
-                      onChange={() => setDenialKnown(true)}
-                      className="w-4 h-4 mt-0.5 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm text-neutral-900">We have this data</span>
-                      {denialKnown && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={denialPrevention}
-                            onChange={(e) => {
-                              const val = e.target.value.replace(/[^0-9.]/g, '');
-                              setDenialPrevention(val === "" ? 0 : parseFloat(val) || 0);
-                            }}
-                            className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
-                          />
-                          <span className="text-sm text-neutral-500">% reduction</span>
-                        </div>
-                      )}
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-neutral-900">Denial Prevention</p>
+                      <p className="text-xs text-neutral-500">Documentation-related denials reduced</p>
                     </div>
-                  </label>
-                </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-[#E85D3F] tabular-nums">{denialPrevention}%</span>
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${denialKnown ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {denialKnown && (
+                  <div className="px-4 pb-4 pt-1 border-t border-neutral-100 bg-neutral-50">
+                    <label className="text-xs font-medium text-neutral-600 mb-2 block">Custom value:</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={denialPrevention}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9.]/g, '');
+                          setDenialPrevention(val === "" ? 0 : parseFloat(val) || 0);
+                        }}
+                        className="w-24 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+                      />
+                      <span className="text-sm text-neutral-500">% reduction</span>
+                      <button
+                        onClick={() => {
+                          setDenialPrevention(solutionData?.typicalDenialPrevention || 30);
+                        }}
+                        className="ml-auto text-xs text-[#E85D3F] hover:underline"
+                      >
+                        Reset to default ({solutionData?.typicalDenialPrevention || 30}%)
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="bg-white rounded-xl p-6 border border-neutral-200">
-                <label className="block text-sm font-semibold text-neutral-900 mb-3">
-                  Have you seen improvement in HCC/chronic condition capture?
-                </label>
-                
-                <div className="space-y-3">
-                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
-                    <input
-                      type="radio"
-                      checked={!hccKnown}
-                      onChange={() => {
-                        setHccKnown(false);
-                        setHccImprovement(solutionData?.typicalHccImprovement || 10);
-                      }}
-                      className="w-4 h-4 mt-0.5 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    />
-                    <div>
-                      <span className="text-sm text-neutral-900">Not measuring this</span>
-                      <p className="text-xs text-neutral-500 mt-0.5">We'll use conservative estimate: {solutionData?.typicalHccImprovement || 10}% improvement</p>
+              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                <button
+                  onClick={() => setHccKnown(!hccKnown)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                      <Heart className="w-5 h-5 text-neutral-600" />
                     </div>
-                  </label>
-                  
-                  <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-neutral-50 transition-colors">
-                    <input
-                      type="radio"
-                      checked={hccKnown}
-                      onChange={() => setHccKnown(true)}
-                      className="w-4 h-4 mt-0.5 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm text-neutral-900">Yes, we track it</span>
-                      {hccKnown && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={hccImprovement}
-                            onChange={(e) => {
-                              const val = e.target.value.replace(/[^0-9.]/g, '');
-                              setHccImprovement(val === "" ? 0 : parseFloat(val) || 0);
-                            }}
-                            className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
-                          />
-                          <span className="text-sm text-neutral-500">% improvement</span>
-                        </div>
-                      )}
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-neutral-900">HCC Capture</p>
+                      <p className="text-xs text-neutral-500">Chronic condition documentation improvement</p>
                     </div>
-                  </label>
-                </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-[#E85D3F] tabular-nums">{hccImprovement}%</span>
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${hccKnown ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {hccKnown && (
+                  <div className="px-4 pb-4 pt-1 border-t border-neutral-100 bg-neutral-50">
+                    <label className="text-xs font-medium text-neutral-600 mb-2 block">Custom value:</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={hccImprovement}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9.]/g, '');
+                          setHccImprovement(val === "" ? 0 : parseFloat(val) || 0);
+                        }}
+                        className="w-24 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+                      />
+                      <span className="text-sm text-neutral-500">% improvement</span>
+                      <button
+                        onClick={() => {
+                          setHccImprovement(solutionData?.typicalHccImprovement || 10);
+                        }}
+                        className="ml-auto text-xs text-[#E85D3F] hover:underline"
+                      >
+                        Reset to default ({solutionData?.typicalHccImprovement || 10}%)
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="bg-neutral-50 rounded-xl p-5 mt-8 border border-neutral-200">
-              <p className="text-sm text-neutral-600">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-neutral-500">
                 <Lightbulb className="w-4 h-4 inline mr-1.5 text-amber-500" />
-                It's okay if you don't have all these metrics. Most organizations don't measure this granularly - that's actually part of the problem. We'll use industry benchmarks where needed, but YOUR data makes this analysis more accurate.
+                You can adjust these later if needed.
               </p>
-            </div>
-
-            <div className="mt-12 flex justify-end">
               <Button
                 onClick={handleContinue}
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step5"
               >
-                Continue to drivers
+                Continue with assumptions
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
@@ -1683,6 +1664,17 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   That's <strong className="text-neutral-700">{formatCurrency(calculations.monthlyGap)}</strong> every month you're not capturing with your current solution.
                 </p>
               </div>
+            </div>
+
+            <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-200 mt-8">
+              <p className="text-xs text-neutral-500 flex items-start gap-2">
+                <Lightbulb className="w-3.5 h-3.5 mt-0.5 text-neutral-400 flex-shrink-0" />
+                <span>
+                  <strong>Assumptions:</strong> Utilization ({utilization}% current vs {ABRIDGE_BENCHMARKS.utilization}% Abridge), 
+                  Time savings ({timeSavings} min vs {ABRIDGE_BENCHMARKS.timeSavings} min Abridge), 
+                  wRVU rate (~$60/wRVU), Overtime rate (~$100/hr). All estimates based on typical performance data.
+                </span>
+              </p>
             </div>
 
             <div className="mt-10 flex justify-center">
