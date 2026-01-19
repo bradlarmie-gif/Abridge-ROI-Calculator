@@ -626,19 +626,19 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     <div className="min-h-screen bg-white">
       <style>{spectrumStyles}</style>
       <header className="border-b border-neutral-100 bg-white sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <img src={abridgeLogo} alt="Abridge" className="h-6" />
-            <span className="text-sm font-medium text-neutral-400 tracking-wide">SWITCH</span>
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 md:gap-6">
+            <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+            <span className="text-xs md:text-sm font-medium text-neutral-400 tracking-wide">SWITCH</span>
           </div>
           
-          <div className="hidden md:flex items-center gap-1.5">
+          <div className="flex items-center gap-1 md:gap-1.5">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((s) => (
               <div
                 key={s}
-                className={`w-2 h-2 rounded-full transition-all ${
+                className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full transition-all ${
                   s === step
-                    ? "w-6 bg-[#E85D3F]"
+                    ? "w-4 md:w-6 bg-[#E85D3F]"
                     : s < step
                     ? "bg-[#E85D3F]/40"
                     : "bg-neutral-200"
@@ -649,26 +649,27 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+            className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             data-testid="button-back"
           >
-            <ArrowLeft className="w-4 h-4" />
-            {step === 1 ? "Back to Home" : "Back"}
+            <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span className="hidden md:inline">{step === 1 ? "Back to Home" : "Back"}</span>
+            <span className="md:hidden">Back</span>
           </button>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-12">
+      <main className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-12">
         {step === 1 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3 text-center" data-testid="text-step1-title">
+            <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3 text-center" data-testid="text-step1-title">
               What solution are you using today?
             </h1>
-            <p className="text-lg text-neutral-500 text-center mb-12">
+            <p className="text-base md:text-lg text-neutral-500 text-center mb-6 md:mb-12">
               We'll show you what you might be leaving on the table.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               {(["ambient", "scribes", "manual"] as SolutionType[]).map((solution) => {
                 const data = SOLUTION_DATA[solution];
                 const isSelected = selectedSolution === solution;
@@ -678,27 +679,30 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <button
                     key={solution}
                     onClick={() => setSelectedSolution(solution)}
-                    className={`group relative p-10 rounded-2xl border-2 text-left transition-all duration-300 ${
+                    className={`group relative p-5 md:p-10 rounded-2xl border-2 text-left transition-all duration-300 ${
                       isSelected
-                        ? "border-[#E85D3F] bg-gradient-to-b from-[#E85D3F]/5 to-[#E85D3F]/10 shadow-xl shadow-[#E85D3F]/10 -translate-y-1"
-                        : "border-neutral-200 hover:border-neutral-300 hover:-translate-y-1 hover:shadow-xl bg-white"
+                        ? "border-[#E85D3F] bg-gradient-to-b from-[#E85D3F]/5 to-[#E85D3F]/10 shadow-lg md:shadow-xl shadow-[#E85D3F]/10 md:-translate-y-1"
+                        : "border-neutral-200 hover:border-neutral-300 md:hover:-translate-y-1 md:hover:shadow-xl bg-white"
                     }`}
-                    style={{ minHeight: "200px" }}
                     data-testid={`card-solution-${solution}`}
                   >
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300 ${
-                      isSelected 
-                        ? "bg-[#E85D3F]/15 scale-105" 
-                        : "bg-neutral-100 group-hover:bg-neutral-200 group-hover:scale-105"
-                    }`}>
-                      <Icon className={`w-8 h-8 transition-colors ${isSelected ? "text-[#E85D3F]" : "text-neutral-500 group-hover:text-neutral-700"}`} />
+                    <div className="flex md:block items-center gap-4 md:gap-0">
+                      <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center md:mb-6 transition-all duration-300 flex-shrink-0 ${
+                        isSelected 
+                          ? "bg-[#E85D3F]/15 md:scale-105" 
+                          : "bg-neutral-100 group-hover:bg-neutral-200 md:group-hover:scale-105"
+                      }`}>
+                        <Icon className={`w-6 h-6 md:w-8 md:h-8 transition-colors ${isSelected ? "text-[#E85D3F]" : "text-neutral-500 group-hover:text-neutral-700"}`} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-base md:text-xl text-neutral-900 mb-1 md:mb-2">{data.name}</h3>
+                        <p className="text-sm md:text-base text-neutral-500 leading-relaxed">{data.subtitle}</p>
+                      </div>
                     </div>
-                    <h3 className="font-semibold text-xl text-neutral-900 mb-2">{data.name}</h3>
-                    <p className="text-base text-neutral-500 leading-relaxed">{data.subtitle}</p>
                     
                     {isSelected && (
-                      <div className="absolute top-4 right-4 w-6 h-6 bg-[#E85D3F] rounded-full flex items-center justify-center">
-                        <Check className="w-4 h-4 text-white" />
+                      <div className="absolute top-3 right-3 md:top-4 md:right-4 w-5 h-5 md:w-6 md:h-6 bg-[#E85D3F] rounded-full flex items-center justify-center">
+                        <Check className="w-3 h-3 md:w-4 md:h-4 text-white" />
                       </div>
                     )}
                   </button>
@@ -706,8 +710,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               })}
             </div>
 
-            <div className="mt-12">
-              <p className="text-sm font-medium text-neutral-600 mb-4 text-center">Select a care setting:</p>
+            <div className="mt-8 md:mt-12">
+              <p className="text-xs md:text-sm font-medium text-neutral-600 mb-3 md:mb-4 text-center">Select a care setting:</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {CARE_SETTINGS.map((setting) => (
                   <button
@@ -731,11 +735,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             </div>
 
-            <div className="mt-12 flex justify-center">
+            <div className="mt-8 md:mt-12 flex justify-center">
               <Button
                 onClick={handleContinue}
                 disabled={!canContinue()}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl transition-all disabled:opacity-40"
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 md:px-10 py-2.5 md:py-3 h-auto text-sm md:text-base font-semibold rounded-xl transition-all disabled:opacity-40 w-full md:w-auto"
                 data-testid="button-continue-step1"
               >
                 Continue
@@ -747,16 +751,16 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
         {step === 2 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step2-title">
+            <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3" data-testid="text-step2-title">
               Let's start with the basics.
             </h1>
-            <p className="text-lg text-neutral-500 mb-12">We'll build your baseline together.</p>
+            <p className="text-base md:text-lg text-neutral-500 mb-6 md:mb-12">We'll build your baseline together.</p>
 
-            <div className="bg-neutral-50 rounded-2xl p-8 md:p-10 space-y-8">
-              <div className="space-y-6">
-                <p className="text-xl text-neutral-700 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-3">
-                  <span>You have</span>
-                  <span className="inline-flex">
+            <div className="bg-neutral-50 rounded-2xl p-5 md:p-10 space-y-6 md:space-y-8">
+              <div className="space-y-4 md:space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-x-2">
+                  <span className="text-base md:text-xl text-neutral-700">You have</span>
+                  <div className="flex items-center gap-2">
                     <input
                       type="text"
                       inputMode="numeric"
@@ -766,16 +770,16 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         setProviders(val === "" ? 0 : parseInt(val, 10));
                       }}
                       placeholder="50"
-                      className="w-20 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                      className="w-20 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-lg md:text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
                       data-testid="input-providers"
                     />
-                  </span>
-                  <span>providers</span>
-                </p>
+                    <span className="text-base md:text-xl text-neutral-700">providers</span>
+                  </div>
+                </div>
 
-                <p className="text-xl text-neutral-700 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-3">
-                  <span>handling roughly</span>
-                  <span className="inline-flex items-center gap-2">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-x-2">
+                  <span className="text-base md:text-xl text-neutral-700">handling roughly</span>
+                  <div className="flex flex-wrap items-center gap-2">
                     <input
                       type="text"
                       inputMode="numeric"
@@ -785,26 +789,26 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         setAnnualEncounters(val === "" ? 0 : parseInt(val, 10));
                       }}
                       placeholder="100,000"
-                      className="w-32 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                      className="w-28 md:w-32 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-lg md:text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
                       data-testid="input-encounters"
                     />
+                    <span className="text-base md:text-xl text-neutral-700">encounters/year</span>
                     {providers > 0 && annualEncounters === 0 && (
                       <button
                         onClick={() => setAnnualEncounters(providers * 2000)}
-                        className="px-3 py-2 bg-[#E85D3F]/10 hover:bg-[#E85D3F]/20 text-[#E85D3F] text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                        className="px-3 py-2 bg-[#E85D3F]/10 hover:bg-[#E85D3F]/20 text-[#E85D3F] text-xs md:text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
                         data-testid="button-auto-calculate"
                         title={`Auto-fill: ${providers} providers × 2,000 = ${(providers * 2000).toLocaleString()}`}
                       >
                         Use typical
                       </button>
                     )}
-                  </span>
-                  <span>encounters/year</span>
-                </p>
+                  </div>
+                </div>
 
                 {annualEncounters > 0 && providers > 0 && (
-                  <div className="flex items-center gap-2 text-base text-neutral-500 pl-1">
-                    <Lightbulb className="w-5 h-5 text-amber-500" />
+                  <div className="flex items-center gap-2 text-sm md:text-base text-neutral-500 pl-1">
+                    <Lightbulb className="w-4 h-4 md:w-5 md:h-5 text-amber-500 flex-shrink-0" />
                     <span>
                       That's ~{Math.round(annualEncounters / providers).toLocaleString()} per provider
                       <span className="text-neutral-400">
@@ -819,16 +823,16 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 )}
               </div>
 
-              <div className="border-t border-neutral-200 pt-8">
-                <p className="text-xl text-neutral-700 mb-6">
+              <div className="border-t border-neutral-200 pt-6 md:pt-8">
+                <p className="text-base md:text-xl text-neutral-700 mb-4 md:mb-6">
                   And your current utilization is:
                 </p>
                 
                 <div className="relative">
-                  <div className="mb-4 text-center">
-                    <span className="inline-flex items-baseline gap-1 bg-white border-2 border-neutral-200 rounded-xl px-5 py-3 shadow-sm">
-                      <span className="text-4xl font-bold text-neutral-900">{utilization}</span>
-                      <span className="text-lg text-neutral-400">%</span>
+                  <div className="mb-3 md:mb-4 text-center">
+                    <span className="inline-flex items-baseline gap-1 bg-white border-2 border-neutral-200 rounded-xl px-4 md:px-5 py-2.5 md:py-3 shadow-sm">
+                      <span className="text-3xl md:text-4xl font-bold text-neutral-900">{utilization}</span>
+                      <span className="text-base md:text-lg text-neutral-400">%</span>
                     </span>
                   </div>
                   
@@ -862,14 +866,14 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     <span>90%</span>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 mt-6">
-                    <div className="bg-[#F3F4F6] rounded-xl p-4 text-center border border-[#E5E7EB]">
-                      <p className="text-sm text-[#9CA3AF] mb-1">Industry Avg</p>
-                      <p className="text-2xl font-bold text-[#6B7280]">45%</p>
+                  <div className="grid grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6">
+                    <div className="bg-[#F3F4F6] rounded-xl p-3 md:p-4 text-center border border-[#E5E7EB]">
+                      <p className="text-xs md:text-sm text-[#9CA3AF] mb-0.5 md:mb-1">Industry Avg</p>
+                      <p className="text-xl md:text-2xl font-bold text-[#6B7280]">45%</p>
                     </div>
-                    <div className="bg-[#FEF2F2] rounded-xl p-4 text-center border border-[#E85D3F]/20">
-                      <p className="text-sm text-[#E85D3F]/70 mb-1">Abridge Avg</p>
-                      <p className="text-2xl font-bold text-[#E85D3F]">65%</p>
+                    <div className="bg-[#FEF2F2] rounded-xl p-3 md:p-4 text-center border border-[#E85D3F]/20">
+                      <p className="text-xs md:text-sm text-[#E85D3F]/70 mb-0.5 md:mb-1">Abridge Avg</p>
+                      <p className="text-xl md:text-2xl font-bold text-[#E85D3F]">65%</p>
                     </div>
                   </div>
                 </div>
@@ -1364,12 +1368,16 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
         {step === 6 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step6-title">
+            <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3" data-testid="text-step6-title">
               Where would better performance create value?
             </h1>
-            <p className="text-lg text-neutral-500 mb-8">We've pre-selected the most common drivers. Adjust as needed.</p>
+            <p className="text-base md:text-lg text-neutral-500 mb-4 md:mb-6">Tap to deselect any that don't apply to you.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-6 flex items-center gap-2" data-testid="notice-preselection">
+              <span className="text-amber-600 text-xs md:text-sm">We've pre-selected the 3 most common drivers. Adjust as needed.</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
               {DRIVERS.filter(d => ["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
                 const Icon = driver.icon;
                 const isSelected = selectedDrivers.includes(driver.id);
@@ -1378,31 +1386,30 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <button
                     key={driver.id}
                     onClick={() => toggleDriver(driver.id)}
-                    className={`p-5 rounded-xl border-2 text-left transition-all duration-200 relative ${
+                    className={`p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-200 ${
                       isSelected
-                        ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
-                        : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
+                        ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-md"
+                        : "border-neutral-200 hover:border-neutral-300 bg-white"
                     }`}
                     data-testid={`driver-${driver.id}`}
                   >
-                    <span className="absolute -top-2 left-4 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-                      Most common
-                    </span>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    <div className="flex items-center md:items-start md:flex-col gap-3 md:gap-0">
+                      <div className={`w-10 h-10 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0 md:mb-3 ${
                         isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
                       }`}>
                         <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
                       </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-neutral-900 text-sm md:mb-1">{driver.name}</h3>
+                        <p className="text-xs text-neutral-500 line-clamp-1 md:line-clamp-2 md:mb-2">{driver.description}</p>
+                        <p className="text-sm font-semibold text-emerald-600 hidden md:block">{driver.typicalGap}</p>
+                      </div>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                         isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
                       }`}>
                         {isSelected && <Check className="w-4 h-4 text-white" />}
                       </div>
                     </div>
-                    <h3 className="font-semibold text-neutral-900 mb-1 text-sm">{driver.name}</h3>
-                    <p className="text-xs text-neutral-500 mb-2 line-clamp-2">{driver.description}</p>
-                    <p className="text-sm font-semibold text-emerald-600">{driver.typicalGap}</p>
                   </button>
                 );
               })}
@@ -1411,16 +1418,16 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             {!showAllDrivers ? (
               <button 
                 onClick={() => setShowAllDrivers(true)}
-                className="w-full py-3 border-2 border-dashed border-neutral-300 rounded-xl text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2 mb-8"
+                className="w-full py-2.5 md:py-3 border-2 border-dashed border-neutral-300 rounded-xl text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2 mb-6 md:mb-8 text-sm md:text-base"
                 data-testid="button-show-more-drivers"
               >
                 <ChevronDown className="w-4 h-4" />
                 Show 3 more drivers
               </button>
             ) : (
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-semibold text-neutral-500 uppercase tracking-wide">Additional Drivers</p>
+              <div className="mb-6 md:mb-8">
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <p className="text-xs md:text-sm font-semibold text-neutral-500 uppercase tracking-wide">Additional Drivers</p>
                   <button 
                     onClick={() => setShowAllDrivers(false)}
                     className="text-xs text-neutral-400 hover:text-neutral-600"
@@ -1428,7 +1435,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     Hide
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                   {DRIVERS.filter(d => !["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
                     const Icon = driver.icon;
                     const isSelected = selectedDrivers.includes(driver.id);
@@ -1437,28 +1444,30 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       <button
                         key={driver.id}
                         onClick={() => toggleDriver(driver.id)}
-                        className={`p-5 rounded-xl border-2 text-left transition-all duration-200 ${
+                        className={`p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-200 ${
                           isSelected
-                            ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
-                            : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
+                            ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-md"
+                            : "border-neutral-200 hover:border-neutral-300 bg-white"
                         }`}
                         data-testid={`driver-${driver.id}`}
                       >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        <div className="flex items-center md:items-start md:flex-col gap-3 md:gap-0">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 md:mb-3 ${
                             isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
                           }`}>
                             <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
                           </div>
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-neutral-900 text-sm md:mb-1">{driver.name}</h3>
+                            <p className="text-xs text-neutral-500 line-clamp-1 md:line-clamp-2 md:mb-2">{driver.description}</p>
+                            <p className="text-sm font-semibold text-emerald-600 hidden md:block">{driver.typicalGap}</p>
+                          </div>
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                             isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
                           }`}>
                             {isSelected && <Check className="w-4 h-4 text-white" />}
                           </div>
                         </div>
-                        <h3 className="font-semibold text-neutral-900 mb-1 text-sm">{driver.name}</h3>
-                        <p className="text-xs text-neutral-500 mb-2 line-clamp-2">{driver.description}</p>
-                        <p className="text-sm font-semibold text-emerald-600">{driver.typicalGap}</p>
                       </button>
                     );
                   })}
@@ -1467,53 +1476,41 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             )}
 
             {selectedDrivers.length > 0 && (
-              <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200 mb-8">
+              <div className="bg-emerald-50 rounded-xl p-3 md:p-4 border border-emerald-200 mb-6 md:mb-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-emerald-700 font-medium">Estimated Annual Gap</p>
+                    <p className="text-xs md:text-sm text-emerald-700 font-medium">Estimated Annual Gap</p>
                     <p className="text-xs text-emerald-600/70">{selectedDrivers.length} driver{selectedDrivers.length !== 1 ? "s" : ""} selected</p>
                   </div>
-                  <p className="text-2xl font-bold text-emerald-600 tabular-nums">
+                  <p className="text-xl md:text-2xl font-bold text-emerald-600 tabular-nums">
                     {formatCurrency(calculations.totalGap)}/year
                   </p>
                 </div>
               </div>
             )}
 
-            <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-neutral-200 -mx-6 px-6 py-5 mt-8 shadow-xl z-10">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-center sm:text-left">
-                  <div className="flex items-center gap-3">
-                    <div className="flex -space-x-1">
-                      {selectedDrivers.slice(0, 4).map((id) => {
-                        const driver = DRIVERS.find(d => d.id === id);
-                        const Icon = driver?.icon || Users;
-                        return (
-                          <div key={id} className="w-8 h-8 rounded-full bg-[#E85D3F]/10 border-2 border-white flex items-center justify-center">
-                            <Icon className="w-4 h-4 text-[#E85D3F]" />
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <span className="text-base font-semibold text-neutral-900">
-                      {selectedDrivers.length} of 6 selected
-                    </span>
-                  </div>
-                  <p className="text-sm text-neutral-500 mt-1">
+            <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-neutral-200 -mx-6 px-4 md:px-6 py-4 md:py-5 mt-6 md:mt-8 shadow-xl z-10">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm md:text-base font-semibold text-neutral-900 truncate">
+                    {selectedDrivers.length} of 6 selected
+                  </p>
+                  <p className="text-xs md:text-sm text-neutral-500">
                     {selectedDrivers.length < 2 
-                      ? "Select at least 2 drivers to continue" 
+                      ? "Select at least 2" 
                       : selectedDrivers.length >= 4 
                         ? "Great selection!" 
-                        : "Select 2-4 areas that matter most"}
+                        : "Select 2-4 areas"}
                   </p>
                 </div>
                 <Button
                   onClick={handleContinue}
                   disabled={!canContinue()}
-                  className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-xl disabled:opacity-40 shadow-lg"
+                  className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-4 md:px-8 py-2.5 md:py-3 h-auto text-sm md:text-base font-semibold rounded-xl disabled:opacity-40 shadow-lg flex-shrink-0"
                   data-testid="button-continue-step6"
                 >
-                  Calculate Your Gap
+                  <span className="hidden md:inline">Calculate Your Gap</span>
+                  <span className="md:hidden">Calculate</span>
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
