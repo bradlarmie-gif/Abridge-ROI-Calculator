@@ -1,0 +1,418 @@
+HUMAN SCRIBES PATH — THE LOGIC
+Here's how the calculation should work:
+Inputs needed:
+Copy1. How many providers currently have scribes? ___
+2. How many total providers do you have? ___
+3. What's your average scribe cost per hour? $___
+4. How many hours per week does each scribe work? ___
+The math:
+Current Scribe Cost:
+CopyProviders with scribes × Hours/week × Weeks/year × $/hour = Annual scribe spend
+
+Example: 20 providers × 40 hrs × 50 weeks × $25/hr = $1,000,000/year
+Abridge Cost (for comparison):
+CopyTotal providers × Abridge cost per provider/year = Annual Abridge spend
+
+Example: 50 providers × $X/provider = $Y/year
+Direct Cost Savings:
+CopyCurrent scribe spend - Abridge spend = Direct savings
+Coverage Expansion Value:
+CopyProviders WITHOUT scribes currently = 30 (50 total - 20 with scribes)
+These providers get NO documentation help today.
+
+With Abridge, all 50 get coverage.
+Value of expanding to uncovered providers:
+- Time saved: 30 providers × encounters × 3 min = hours returned
+- Convert to patient access, overtime reduction, etc.
+Turnover/Training Cost Elimination:
+CopyAverage scribe turnover: 30-50% annually
+Cost to recruit + train replacement: $3,000-5,000 per scribe
+Annual turnover cost: Scribes × turnover rate × replacement cost
+
+THE HUMAN SCRIBES FLOW
+Different screens than Ambient AI path:
+CopyStep 1: Baseline (same)
+- Total providers
+- Total encounters/year
+
+Step 2: Your Current Scribe Program
+- How many providers have scribes today? [slider or input]
+- Average scribe cost per hour? [$25 default, adjustable]
+- Hours per week per scribe? [40 default]
+
+Step 3: Coverage Gap
+- Visual showing: "20 of 50 providers have scribes"
+- "30 providers have no documentation support"
+- "With Abridge, all 50 get coverage"
+
+Step 4: The Cost Comparison
+- Current annual scribe spend: $1,000,000
+- Abridge annual cost (all 50 providers): $XXX,XXX
+- Direct savings: $XXX,XXX
+
+Step 5: The Hidden Costs
+- Turnover & training: $XX,XXX/year
+- Management overhead: $XX,XXX/year
+- Coverage gaps (nights/weekends): [qualitative or estimated]
+
+Step 6: Total Value
+- Direct cost savings: $XXX,XXX
+- Expanded coverage value: $XXX,XXX
+- Turnover elimination: $XX,XXX
+- Total annual value: $X,XXX,XXX
+
+Step 7: Summary Dashboard (same structure as Ambient AI path)
+
+REPLIT PROMPT — SOLUTION SELECTION SCREEN + HUMAN SCRIBES PATH
+CopySWITCH PATH UPDATES - SOLUTION SELECTION + HUMAN SCRIBES LOGIC
+
+## SOLUTION SELECTION SCREEN CHANGES
+
+1. REMOVE "No Solution Yet" card entirely
+   - Switch path is only for: Ambient AI or Human Scribes
+   - "No Solution" users should use the EXPLORE path instead
+
+2. CHANGE CARD LAYOUT FROM VERTICAL TO HORIZONTAL
+   Current: Cards are tall/vertical with icon on top, text below
+   New: Cards are wide/horizontal with icon on left, text on right
+   
+   Layout for each card:
+┌─────────────────────────────────────────────────────────────┐
+│  ┌──────┐                                                   │
+│  │ icon │   Ambient AI                                      │
+│  │      │   Another ambient AI solution (DAX, Suki, etc.)   │
+│  └──────┘                                                   │
+└─────────────────────────────────────────────────────────────┘
+Copy
+- Cards should be ~500px wide, ~100px tall (approximate)
+- Stack vertically with space between
+- Or place side-by-side if screen width allows (2 cards in a row)
+
+3. UPDATE CARD CONTENT
+
+Card 1 - Ambient AI:
+- Icon: Microphone (keep)
+- Title: "Ambient AI"
+- Subtitle: "Currently using DAX, Suki, Nabla, or similar"
+
+Card 2 - Human Scribes:
+- Icon: Person/User (keep)
+- Title: "Human Scribes"  
+- Subtitle: "In-person or virtual scribes"
+
+4. CARE SETTING PILLS - UPDATE STYLING
+
+Outpatient: 
+- Keep as-is, selectable, active state
+
+ED, Inpatient, Nursing:
+- Make pills slightly larger (match Outpatient size)
+- Add "Coming Soon" label
+- Style: Light gray background, muted text
+- NOT clickable/selectable
+- On hover: Show tooltip "Coming Q2 2025" or similar
+
+Layout:
+Select a care setting:
+┌─────────────┐  ┌─────────────────┐  ┌─────────────────────┐  ┌─────────────────┐
+│ ● Outpatient│  │ ED              │  │ Inpatient           │  │ Nursing         │
+│             │  │ Coming Soon     │  │ Coming Soon         │  │ Coming Soon     │
+└─────────────┘  └─────────────────┘  └─────────────────────┘  └─────────────────┘
+active          disabled              disabled                disabled
+Copy
+5. ROUTING LOGIC
+- If user selects "Ambient AI" → Continue to current Switch flow (utilization gap, efficiency gap, etc.)
+- If user selects "Human Scribes" → Route to NEW Human Scribes flow (see below)
+
+
+## NEW HUMAN SCRIBES FLOW
+
+Create a separate flow for users who select "Human Scribes". This has different steps and different calculations.
+
+### STEP 1: BASELINE (Reuse existing, slight modification)
+- "You have ___ providers"
+- "handling roughly ___ encounters/year"
+- NO utilization slider (not relevant for scribes comparison)
+
+### STEP 2: YOUR SCRIBE PROGRAM (NEW SCREEN)
+
+Title: "Tell us about your scribe program"
+Subtitle: "We'll calculate the full cost comparison."
+
+Inputs:
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  How many providers currently have scribes?                     │
+│                                                                 │
+│  ┌─────────┐                                                    │
+│  │   20    │  of 50 providers                                   │
+│  └─────────┘                                                    │
+│  ━━━━━━━━━━●━━━━━━━━━━━━━━━━━━━━━━━━━━  (slider 0 to max)       │
+│                                                                 │
+│  That's 40% of your providers with scribe support.              │
+│  60% have no documentation help.                                │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Average hourly cost per scribe                                 │
+│  ┌─────────┐                                                    │
+│  │  $25    │  /hour   (typical range: $18-40)                   │
+│  └─────────┘                                                    │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Hours per week per scribe                                      │
+│  ┌─────────┐                                                    │
+│  │   40    │  hours/week                                        │
+│  └─────────┘                                                    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+[Continue →]
+Copy
+### STEP 3: THE COVERAGE GAP (NEW SCREEN)
+
+Title: "The coverage gap"
+Subtitle: "Scribes can only scale so far."
+
+Visual:
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│          YOUR CURRENT COVERAGE                                  │
+│                                                                 │
+│     ┌─────────────────────────────────────────────────────┐     │
+│     │ ████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │     │
+│     │        20 providers              30 providers       │     │
+│     │        WITH scribes              WITHOUT scribes    │     │
+│     └─────────────────────────────────────────────────────┘     │
+│                                                                 │
+│           40% covered                   60% no support          │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│          WITH ABRIDGE                                           │
+│                                                                 │
+│     ┌─────────────────────────────────────────────────────┐     │
+│     │ ████████████████████████████████████████████████████│     │
+│     │              All 50 providers covered               │     │
+│     └─────────────────────────────────────────────────────┘     │
+│                                                                 │
+│           100% coverage at a fraction of the cost               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+The 30 providers without scribes are:
+
+Spending extra time on documentation
+Potentially seeing fewer patients
+More likely to burn out
+
+[See the cost comparison →]
+Copy
+### STEP 4: THE COST COMPARISON (NEW SCREEN)
+
+Title: "The cost comparison"
+Subtitle: "Scribes vs. Abridge — the full picture."
+
+Layout:
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR CURRENT SCRIBE PROGRAM           WITH ABRIDGE             │
+│                                                                 │
+│  ┌─────────────────────────┐     ┌─────────────────────────┐    │
+│  │                         │     │                         │    │
+│  │  20 providers covered   │     │  50 providers covered   │    │
+│  │                         │     │                         │    │
+│  │  Annual cost:           │     │  Annual cost:           │    │
+│  │  $1,000,000             │     │  $XXX,XXX               │    │
+│  │                         │     │                         │    │
+│  │  ─────────────────────  │     │  ─────────────────────  │    │
+│  │  20 scribes             │     │  All providers          │    │
+│  │  × $25/hr               │     │  Unlimited encounters   │    │
+│  │  × 40 hrs/week          │     │  No per-hour costs      │    │
+│  │  × 50 weeks             │     │                         │    │
+│  │                         │     │                         │    │
+│  └─────────────────────────┘     └─────────────────────────┘    │
+│              ↓                              ↓                    │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │                                                           │  │
+│  │   DIRECT COST DIFFERENCE                                  │  │
+│  │   $XXX,XXX/year savings                                   │  │
+│  │   + 30 more providers covered                             │  │
+│  │                                                           │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+Note: For Abridge cost, use a placeholder or configurable value.
+Could show as "Contact for pricing" or use an estimated $/provider/year.
+[See hidden costs →]
+Copy
+### STEP 5: THE HIDDEN COSTS (NEW SCREEN)
+
+Title: "The costs you don't see"
+Subtitle: "Scribes come with operational overhead."
+
+Content:
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  TURNOVER & TRAINING                                            │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  Average scribe turnover: 35% annually                  │    │
+│  │  Your 20 scribes = ~7 replacements/year                 │    │
+│  │  Cost to recruit + train: $4,000 each                   │    │
+│  │  ─────────────────────────────────────────              │    │
+│  │  Annual turnover cost: $28,000                          │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  MANAGEMENT OVERHEAD                                            │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  Scribe coordinator/manager time                        │    │
+│  │  Scheduling, QA, HR issues                              │    │
+│  │  Estimated: $15,000-25,000/year                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  COVERAGE GAPS                                                  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  Scribes don't cover:                                   │    │
+│  │  • Night shifts                                         │    │
+│  │  • Weekends                                             │    │
+│  │  • Sick days / PTO                                      │    │
+│  │  • All locations                                        │    │
+│  │                                                         │    │
+│  │  Abridge works 24/7, every location, no exceptions.     │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  TOTAL HIDDEN COSTS: ~$48,000/year                      │    │
+│  │  (Turnover + Management overhead)                       │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+[See total value →]
+Copy
+### STEP 6: SUMMARY DASHBOARD (Similar structure to Ambient AI path)
+
+Title: "Your value summary"
+
+Layout similar to Ambient AI Summary Dashboard, but with different sections:
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR INPUTS                                            [Edit]  │
+│  50 providers • 20 with scribes • $25/hr • 40 hrs/week          │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│         By switching from scribes to Abridge,                   │
+│                  you could capture                              │
+│                                                                 │
+│                   $XXX,XXX                                      │
+│                                                                 │
+│               in annual value.                                  │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  VALUE BREAKDOWN                                                │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ Direct Cost Savings                      +$XXX,XXX/year │    │
+│  │ (Scribe spend eliminated minus Abridge cost)        ∨   │    │
+│  ├─────────────────────────────────────────────────────────┤    │
+│  │ Expanded Coverage Value                   +$XX,XXX/year │    │
+│  │ (30 new providers with documentation support)       ∨   │    │
+│  ├─────────────────────────────────────────────────────────┤    │
+│  │ Turnover & Overhead Eliminated            +$48,000/year │    │
+│  │ (No more recruiting, training, management)          ∨   │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  TOTAL ANNUAL VALUE                        $XXX,XXX     │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  [Save Analysis]  [Copy Link]  [Export PDF]  [Edit Inputs]      │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+Copy
+Note: The Human Scribes path may not need the "Over Time" / 3-year view 
+since the value is more straightforward (cost elimination vs. performance gaps).
+Consider making that tab optional or removing it for this path.
+
+
+## CALCULATIONS FOR HUMAN SCRIBES PATH
+
+Store these formulas:
+
+```javascript
+// Inputs
+const totalProviders = 50;
+const providersWithScribes = 20;
+const scribeHourlyRate = 25;
+const scribeHoursPerWeek = 40;
+const weeksPerYear = 50;
+
+// Calculated
+const providersWithoutScribes = totalProviders - providersWithScribes;
+const coveragePercent = (providersWithScribes / totalProviders) * 100;
+
+// Current scribe cost
+const annualScribeCost = providersWithScribes * scribeHourlyRate * scribeHoursPerWeek * weeksPerYear;
+
+// Abridge cost (placeholder - make this configurable)
+const abridgeCostPerProvider = 0; // Set to 0 or placeholder for now
+const annualAbridgeCost = totalProviders * abridgeCostPerProvider;
+
+// Direct savings
+const directCostSavings = annualScribeCost - annualAbridgeCost;
+
+// Turnover costs
+const turnoverRate = 0.35;
+const costPerReplacement = 4000;
+const annualTurnoverCost = providersWithScribes * turnoverRate * costPerReplacement;
+
+// Management overhead (estimate)
+const managementOverhead = providersWithScribes > 10 ? 20000 : 10000;
+
+// Hidden costs total
+const hiddenCosts = annualTurnoverCost + managementOverhead;
+
+// Expanded coverage value (optional - time savings for newly covered providers)
+// This could use similar logic to Ambient AI path for the uncovered providers
+const encountersPerProvider = totalEncounters / totalProviders;
+const timeSavedPerEncounter = 3; // minutes, Abridge average
+const hoursSavedNewProviders = (providersWithoutScribes * encountersPerProvider * timeSavedPerEncounter) / 60;
+// Convert to dollar value using realization rate and visit value...
+
+// Total value
+const totalAnnualValue = directCostSavings + hiddenCosts + expandedCoverageValue;
+STATE MANAGEMENT
+The app needs to track which path the user is on:
+javascriptCopyconst [switchPath, setSwitchPath] = useState(null); // 'ambient-ai' or 'human-scribes'
+
+// When user selects solution card:
+if (selectedSolution === 'ambient-ai') {
+  setSwitchPath('ambient-ai');
+  // Route to Utilization Gap screen
+} else if (selectedSolution === 'human-scribes') {
+  setSwitchPath('human-scribes');
+  // Route to Scribe Program screen
+}
+The progress indicator should update based on which path they're on:
+
+Ambient AI path: 7 steps
+Human Scribes path: 6 steps (no utilization/efficiency gap screens)
+
+Copy
+---
+
+## **SUMMARY OF CHANGES**
+
+1. **Remove "No Solution Yet"** — only Ambient AI and Human Scribes
+2. **Horizontal card layout** — icon left, text right, wider cards
+3. **Care setting pills** — ED, Inpatient, Nursing are larger, say "Coming Soon", not clickable
+4. **Human Scribes gets its own flow** — different screens, different calculations, different value story
+5. **Path routing** — selection on this screen determines which flow they enter
+
+This gives you two distinct, credible stories:
+- **Ambient AI users:** "Your current tool underperforms. Here's the delta."
+- **Scribe users:** "You're overpaying for limited coverage. Here's the better economics."
+
+Both end at a Summary Dashboard with Save/Share/Export.

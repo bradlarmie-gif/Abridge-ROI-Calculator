@@ -262,6 +262,31 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   const [showUtilizationModal, setShowUtilizationModal] = useState(false);
   const [showTimeSavingsModal, setShowTimeSavingsModal] = useState(false);
   const [showAssumptions, setShowAssumptions] = useState(false);
+  
+  // Human Scribes Path State
+  const [providersWithScribes, setProvidersWithScribes] = useState<number>(20);
+  const [scribeHourlyCost, setScribeHourlyCost] = useState<number>(25);
+  const [scribeHoursPerWeek, setScribeHoursPerWeek] = useState<number>(40);
+  const [scribeTurnoverRate] = useState<number>(0.35);
+  const [scribeReplacementCost] = useState<number>(4000);
+  const [scribeManagementOverhead] = useState<number>(20000);
+  const weeksPerYear = 50;
+  
+  // Derived scribe calculations
+  const isScribePath = selectedSolution === "scribes";
+  const providersWithoutScribes = Math.max(0, providers - providersWithScribes);
+  const coveragePercent = providers > 0 ? Math.round((providersWithScribes / providers) * 100) : 0;
+  const annualScribeCost = providersWithScribes * scribeHourlyCost * scribeHoursPerWeek * weeksPerYear;
+  const abridgeCostPerProvider = 0; // Placeholder - show "Contact for pricing"
+  const annualAbridgeCost = providers * abridgeCostPerProvider;
+  const directCostSavings = annualScribeCost - annualAbridgeCost;
+  const annualTurnoverCost = Math.round(providersWithScribes * scribeTurnoverRate * scribeReplacementCost);
+  const managementOverhead = providersWithScribes > 10 ? scribeManagementOverhead : 10000;
+  const hiddenCosts = annualTurnoverCost + managementOverhead;
+  const encountersPerProvider = providers > 0 ? annualEncounters / providers : 2000;
+  const timeSavedNewProvidersHours = Math.round((providersWithoutScribes * encountersPerProvider * 3) / 60);
+  const expandedCoverageValue = Math.round(timeSavedNewProvidersHours * 100); // $100/hr value
+  const totalScribeValue = directCostSavings + hiddenCosts + expandedCoverageValue;
 
   const solutionData = selectedSolution ? SOLUTION_DATA[selectedSolution] : null;
   
@@ -658,42 +683,39 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               We'll show you what you might be leaving on the table.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              {(["ambient", "scribes", "manual"] as SolutionType[]).map((solution) => {
+            <div className="flex flex-col gap-4 max-w-xl mx-auto">
+              {(["ambient", "scribes"] as SolutionType[]).map((solution) => {
                 const data = SOLUTION_DATA[solution];
                 const isSelected = selectedSolution === solution;
-                const Icon = solution === "ambient" ? Mic : solution === "scribes" ? User : Keyboard;
+                const Icon = solution === "ambient" ? Mic : User;
                 
                 return (
                   <button
                     key={solution}
                     onClick={() => setSelectedSolution(solution)}
-                    className={`group relative p-5 md:p-10 rounded-2xl border-2 text-left transition-all duration-300 ${
+                    className={`group relative flex items-center gap-5 p-5 rounded-2xl border-2 text-left transition-all duration-300 ${
                       isSelected
-                        ? "border-[#E85D3F] bg-gradient-to-b from-[#E85D3F]/5 to-[#E85D3F]/10 shadow-lg md:shadow-xl shadow-[#E85D3F]/10 md:-translate-y-1"
-                        : "border-neutral-200 hover:border-neutral-300 md:hover:-translate-y-1 md:hover:shadow-xl bg-white"
+                        ? "border-[#E85D3F] bg-gradient-to-r from-[#E85D3F]/5 to-[#E85D3F]/10 shadow-lg"
+                        : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
                     }`}
                     data-testid={`card-solution-${solution}`}
                   >
-                    <div className="flex md:block items-center gap-4 md:gap-0">
-                      <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center md:mb-6 transition-all duration-300 flex-shrink-0 ${
-                        isSelected 
-                          ? "bg-[#E85D3F]/15 md:scale-105" 
-                          : "bg-neutral-100 group-hover:bg-neutral-200 md:group-hover:scale-105"
-                      }`}>
-                        <Icon className={`w-6 h-6 md:w-8 md:h-8 transition-colors ${isSelected ? "text-[#E85D3F]" : "text-neutral-500 group-hover:text-neutral-700"}`} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base md:text-xl text-neutral-900 mb-1 md:mb-2">{data.name}</h3>
-                        <p className="text-sm md:text-base text-neutral-500 leading-relaxed">{data.subtitle}</p>
-                      </div>
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                      isSelected ? "bg-[#E85D3F]/15" : "bg-neutral-100 group-hover:bg-neutral-200"
+                    }`}>
+                      <Icon className={`w-7 h-7 transition-colors ${isSelected ? "text-[#E85D3F]" : "text-neutral-500 group-hover:text-neutral-700"}`} />
                     </div>
-                    
-                    {isSelected && (
-                      <div className="absolute top-3 right-3 md:top-4 md:right-4 w-5 h-5 md:w-6 md:h-6 bg-[#E85D3F] rounded-full flex items-center justify-center">
-                        <Check className="w-3 h-3 md:w-4 md:h-4 text-white" />
-                      </div>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg text-neutral-900 mb-1">{data.name}</h3>
+                      <p className="text-sm text-neutral-500 leading-relaxed">
+                        {solution === "ambient" ? "Currently using DAX, Suki, Nabla, or similar" : "In-person or virtual scribes"}
+                      </p>
+                    </div>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
+                    }`}>
+                      {isSelected && <Check className="w-4 h-4 text-white" />}
+                    </div>
                   </button>
                 );
               })}
@@ -701,24 +723,29 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
             <div className="mt-8 md:mt-12">
               <p className="text-xs md:text-sm font-medium text-neutral-600 mb-3 md:mb-4 text-center">Select a care setting:</p>
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="flex flex-wrap justify-center gap-3">
                 {CARE_SETTINGS.map((setting) => (
                   <button
                     key={setting.id}
                     onClick={() => setting.available && setSelectedSetting(setting.id)}
                     disabled={!setting.available}
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    className={`relative px-5 py-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center min-w-[100px] ${
                       selectedSetting === setting.id
                         ? "bg-neutral-900 text-white"
                         : setting.available
-                        ? "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-                        : "bg-neutral-50 text-neutral-400 cursor-not-allowed opacity-40"
+                        ? "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border-2 border-transparent"
+                        : "bg-neutral-50 text-neutral-400 cursor-not-allowed border-2 border-dashed border-neutral-200"
                     }`}
-                    title={!setting.available ? "Coming soon" : undefined}
+                    title={!setting.available ? "Coming Q2 2025" : undefined}
                     data-testid={`button-setting-${setting.id}`}
                   >
-                    {selectedSetting === setting.id && <span className="mr-1">●</span>}
-                    {setting.label}
+                    <span className="flex items-center gap-1">
+                      {selectedSetting === setting.id && <span>●</span>}
+                      {setting.label}
+                    </span>
+                    {!setting.available && (
+                      <span className="text-[10px] text-neutral-400 mt-0.5">Coming Soon</span>
+                    )}
                   </button>
                 ))}
               </div>
