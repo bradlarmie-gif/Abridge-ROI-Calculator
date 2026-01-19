@@ -37,13 +37,15 @@ The application operates entirely client-side, providing a responsive and intera
 - **Nursing Utilization Rates**: 45/60/75% (vs 50/65/80% for providers)
 - **Nursing ROI Philosophy**: Focus on measurable workforce protection (overtime, agency, retention) rather than billing optimization since nurses don't bill
 - **Nursing Calculation Architecture**: The `calculateDriverValues` function in ObjectiveSelectionScreen.tsx includes dedicated nursing driver calculations that use nursing-specific state (staffedBeds, nurseFTEs) rather than provider-centric values (eligibleEncounters). Nursing driver IDs in the return object include both Explore-style (overtime_reduction) and ModelBuilder-style (nursingOvertime) keys for compatibility across flows.
-- **SWITCH Path (Complete)**: 5-step competitive displacement experience for prospects using other AI solutions:
-  - **Step 1 - Solution Selection**: Pick competitor (DAX, Suki, Ambience, Nabla, Human Scribes, Other) and care setting
-  - **Step 2 - Your Reality**: Input providers, utilization (with icon-based status), time savings
-  - **Step 3 - The Reveal**: Dramatic animated gap reveal with monthly/daily/hourly breakdown
-  - **Step 4 - The Breakdown**: Adoption Gap + Efficiency Gap analysis with expandable driver comparisons
-  - **Step 5 - Cost of Waiting**: Recharts diverging lines chart, 3-year projections, urgency messaging
-- **SWITCH Competitor Benchmarks**: DAX (45-55% util, 1-2 min), Suki (40-50%, 1-1.5 min), Ambience (50-60%, 1.5-2 min), Nabla (45-55%, 1-2 min), Human Scribes (scribe cost model)
+- **SWITCH Path (Complete - Rebuilt)**: 7-step diagnostic conversation for prospects using other AI solutions:
+  - **Step 1 - Solution Selection**: 3 options (Ambient AI, Human Scribes, Manual Documentation) + care setting
+  - **Step 2 - Your Baseline**: Providers, annual encounters input, utilization with live calculation
+  - **Step 3 - Understanding "Great"**: Conceptual utilization gap visualization with spectrum before showing numbers
+  - **Step 4 - The Efficiency Gap**: Time savings conceptual understanding before quantifying
+  - **Step 5 - Which Drivers Matter**: Customer selects 2-6 drivers that matter to them (Patient Access, Overtime, Retention, Level of Service, Denials, HCC)
+  - **Step 6 - The Value Gap**: Quantified based on selected drivers with expandable comparison cards
+  - **Step 7 - Cost of Waiting**: Realistic 3-year projection with ramp-up (Year 1 = 75%, not linear)
+- **SWITCH Philosophy**: Build conceptual understanding BEFORE showing dollar amounts; let customer choose which drivers matter; show realistic non-linear projections
 - **SWITCH Abridge Benchmarks**: 65% utilization, 2.5 min time savings
 
 ## User Preferences
