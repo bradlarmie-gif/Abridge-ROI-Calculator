@@ -125,7 +125,7 @@ const ABRIDGE_BENCHMARKS = {
 
 const CARE_SETTINGS: { id: CareSetting; label: string; available: boolean }[] = [
   { id: "outpatient", label: "Outpatient", available: true },
-  { id: "ed", label: "ED", available: true },
+  { id: "ed", label: "ED", available: false },
   { id: "inpatient", label: "Inpatient", available: false },
   { id: "nursing", label: "Nursing", available: false },
 ];
@@ -264,9 +264,12 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   const [showAssumptions, setShowAssumptions] = useState(false);
   
   // Human Scribes Path State
-  const [providersWithScribes, setProvidersWithScribes] = useState<number>(20);
-  const [scribeHourlyCost, setScribeHourlyCost] = useState<number>(25);
-  const [scribeHoursPerWeek, setScribeHoursPerWeek] = useState<number>(40);
+  const [providersWithScribes, setProvidersWithScribes] = useState<number>(0);
+  const [scribeHourlyCost, setScribeHourlyCost] = useState<number>(0);
+  const [scribeHoursPerWeek, setScribeHoursPerWeek] = useState<number>(0);
+  
+  // Scribe summary accordion state (separate from driver accordions)
+  const [expandedScribeSections, setExpandedScribeSections] = useState<string[]>([]);
   const [scribeTurnoverRate] = useState<number>(0.35);
   const [scribeReplacementCost] = useState<number>(4000);
   const [scribeManagementOverhead] = useState<number>(20000);
@@ -1080,13 +1083,12 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <input
                     type="text"
                     inputMode="numeric"
-                    value={providersWithScribes === 0 ? "" : providersWithScribes.toString()}
+                    value={providersWithScribes.toString()}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       const num = val === "" ? 0 : Math.min(parseInt(val, 10), providers);
                       setProvidersWithScribes(num);
                     }}
-                    placeholder="20"
                     className="w-24 px-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
                     data-testid="input-providers-with-scribes"
                   />
@@ -1121,12 +1123,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={scribeHourlyCost === 0 ? "" : scribeHourlyCost.toString()}
+                      value={scribeHourlyCost.toString()}
                       onChange={(e) => {
                         const val = e.target.value.replace(/[^0-9]/g, '');
                         setScribeHourlyCost(val === "" ? 0 : parseInt(val, 10));
                       }}
-                      placeholder="25"
                       className="w-28 pl-8 pr-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
                       data-testid="input-scribe-hourly-cost"
                     />
@@ -1144,12 +1145,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <input
                     type="text"
                     inputMode="numeric"
-                    value={scribeHoursPerWeek === 0 ? "" : scribeHoursPerWeek.toString()}
+                    value={scribeHoursPerWeek.toString()}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       setScribeHoursPerWeek(val === "" ? 0 : parseInt(val, 10));
                     }}
-                    placeholder="40"
                     className="w-24 px-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
                     data-testid="input-scribe-hours"
                   />
@@ -1965,7 +1965,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               
               <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
                 <button
-                  onClick={() => setExpandedDrivers(prev => prev.includes("direct_savings" as DriverId) ? prev.filter(d => d !== "direct_savings") : [...prev, "direct_savings" as DriverId])}
+                  onClick={() => setExpandedScribeSections(prev => prev.includes("direct_savings") ? prev.filter(d => d !== "direct_savings") : [...prev, "direct_savings"])}
                   className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
                   data-testid="accordion-direct-savings"
                 >
@@ -1980,10 +1980,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-lg font-bold text-emerald-600">+{formatCurrency(directCostSavings)}/year</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedDrivers.includes("direct_savings" as DriverId) ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedScribeSections.includes("direct_savings") ? "rotate-180" : ""}`} />
                   </div>
                 </button>
-                {expandedDrivers.includes("direct_savings" as DriverId) && (
+                {expandedScribeSections.includes("direct_savings") && (
                   <div className="px-5 pb-5 border-t border-neutral-100">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div className="bg-neutral-100 rounded-xl p-4">
@@ -2005,7 +2005,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
               <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
                 <button
-                  onClick={() => setExpandedDrivers(prev => prev.includes("expanded_coverage" as DriverId) ? prev.filter(d => d !== "expanded_coverage") : [...prev, "expanded_coverage" as DriverId])}
+                  onClick={() => setExpandedScribeSections(prev => prev.includes("expanded_coverage") ? prev.filter(d => d !== "expanded_coverage") : [...prev, "expanded_coverage"])}
                   className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
                   data-testid="accordion-expanded-coverage"
                 >
@@ -2020,10 +2020,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-lg font-bold text-emerald-600">+{formatCurrency(expandedCoverageValue)}/year</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedDrivers.includes("expanded_coverage" as DriverId) ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedScribeSections.includes("expanded_coverage") ? "rotate-180" : ""}`} />
                   </div>
                 </button>
-                {expandedDrivers.includes("expanded_coverage" as DriverId) && (
+                {expandedScribeSections.includes("expanded_coverage") && (
                   <div className="px-5 pb-5 border-t border-neutral-100">
                     <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
                       <p className="text-sm text-neutral-700 mb-2">
@@ -2042,7 +2042,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
               <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
                 <button
-                  onClick={() => setExpandedDrivers(prev => prev.includes("hidden_costs" as DriverId) ? prev.filter(d => d !== "hidden_costs") : [...prev, "hidden_costs" as DriverId])}
+                  onClick={() => setExpandedScribeSections(prev => prev.includes("hidden_costs") ? prev.filter(d => d !== "hidden_costs") : [...prev, "hidden_costs"])}
                   className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
                   data-testid="accordion-hidden-costs"
                 >
@@ -2057,10 +2057,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-lg font-bold text-emerald-600">+{formatCurrency(hiddenCosts)}/year</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedDrivers.includes("hidden_costs" as DriverId) ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedScribeSections.includes("hidden_costs") ? "rotate-180" : ""}`} />
                   </div>
                 </button>
-                {expandedDrivers.includes("hidden_costs" as DriverId) && (
+                {expandedScribeSections.includes("hidden_costs") && (
                   <div className="px-5 pb-5 border-t border-neutral-100">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
