@@ -1,0 +1,51 @@
+SPECIFIC PROMPT FOR REPLIT
+CopyREFINEMENTS FOR ABRIDGE-LEVEL POLISH:
+
+1. BENCHMARK CARDS (Screen 1):
+   - Both "Industry Avg" and "Abridge Avg" should be neutral gray backgrounds
+   - Remove coral from benchmark cards — the slider already shows the range
+   - Coral should only appear in RESULTS, not reference data
+
+2. EFFICIENCY GAP SCREEN (Screen 4):
+   - Add the multiplication logic visibly:
+     "1.25 min × 25,000 encounters = 521 hours"
+     "3 min × 32,500 encounters = 1,625 hours"
+   - Small text showing the math builds credibility
+   - Without it, the gap looks inflated
+
+3. DRIVER SELECTION (Screen 5):
+   - Start with NO cards pre-selected
+   - Keep "MOST COMMON" badges but make them subtler (gray badge, not orange)
+   - Change copy to: "Most health systems prioritize these. Select what matters to you."
+   - Coral checkmarks only appear AFTER user selects (not pre-filled)
+
+4. PERFORMANCE ASSUMPTIONS (Screen 6):
+   - Start with all rows COLLAPSED (just showing metric + value)
+   - User expands to customize
+   - Change green banner to neutral gray background — less visually heavy
+
+5. COST OF WAITING (Screen 9):
+   - Slow down the graph line animation (2-3 seconds, not instant)
+   - Change headers:
+     "IF YOU SWITCH TODAY" → "Starting now"
+     "IF YOU WAIT 6 MONTHS" → "Starting in 6 months"
+   - Consider simplifying to one comparison block instead of two full cards:
+     "Start now: $401K | Start in 6 mo: $316K | Difference: $85K"
+
+6. GLOBAL COLOR DISCIPLINE:
+   - Audit every screen: coral should appear in MAX 2 places
+   - Progress dots + one key result = enough
+   - Everything else neutral
+
+THE BOTTOM LINE
+You're at 85%. The structure is right. The flow is right. The narrative is right.
+But premium is in the last 15%:
+
+Color discipline
+Showing your math
+Restraint in pre-selection
+Slowing down animations
+Trusting the content instead of decorating it
+
+When Abridge's marketing team sees this, they should think: "This person understands our brand." Right now they'd think: "This is pretty good but feels a bit eager."
+Make it feel like it doesn't need to try. That's the Abridge energy.Add to Conversation
