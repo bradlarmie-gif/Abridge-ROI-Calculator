@@ -84,7 +84,7 @@ const SOLUTION_DATA: Record<SolutionType, {
 }> = {
   ambient: {
     name: "Ambient AI",
-    subtitle: "DAX, Suki, Nabla, or similar",
+    subtitle: "Another ambient AI solution",
     typicalUtilization: 50,
     typicalTimeSavings: 1.5,
     typicalWrvuUplift: 3.5,
@@ -623,6 +623,22 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <img src={abridgeLogo} alt="Abridge" className="h-6" />
             <span className="text-sm font-medium text-neutral-400 tracking-wide">SWITCH</span>
           </div>
+          
+          <div className="hidden md:flex items-center gap-1.5">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((s) => (
+              <div
+                key={s}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  s === step
+                    ? "w-6 bg-[#E85D3F]"
+                    : s < step
+                    ? "bg-[#E85D3F]/40"
+                    : "bg-neutral-200"
+                }`}
+              />
+            ))}
+          </div>
+          
           <button
             onClick={handleBack}
             className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
@@ -808,12 +824,18 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     </span>
                   </div>
                   
-                  <div className="relative rounded-2xl bg-gradient-to-r from-red-100 via-amber-100 via-60% via-emerald-100 to-emerald-200 p-1">
-                    <div className="absolute inset-0 flex items-center justify-between px-8 pointer-events-none">
-                      <Frown className="w-7 h-7 text-red-400/50" />
-                      <Meh className="w-7 h-7 text-amber-400/50" />
-                      <Smile className="w-7 h-7 text-emerald-400/50" />
-                      <PartyPopper className="w-7 h-7 text-emerald-500/50" />
+                  <div className="relative">
+                    <div className="relative rounded-full bg-gradient-to-r from-neutral-200 via-neutral-300 to-[#E85D3F]/30 h-3">
+                      <div 
+                        className="absolute top-1/2 -translate-y-1/2 w-0.5 h-6 bg-neutral-400"
+                        style={{ left: `${((45 - 10) / 80) * 100}%` }}
+                        title="Industry Average: 45%"
+                      />
+                      <div 
+                        className="absolute top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[#E85D3F]"
+                        style={{ left: `${((65 - 10) / 80) * 100}%` }}
+                        title="Abridge Average: 65%"
+                      />
                     </div>
                     
                     <Slider
@@ -822,24 +844,25 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       min={10}
                       max={90}
                       step={5}
-                      className="relative z-10 [&_[role=slider]]:w-12 [&_[role=slider]]:h-12 [&_[role=slider]]:bg-white [&_[role=slider]]:border-2 [&_[role=slider]]:border-neutral-300 [&_[role=slider]]:shadow-lg [&_[role=slider]]:rounded-xl [&_[role=slider]]:cursor-grab [&_[role=slider]]:active:cursor-grabbing [&_[role=slider]]:hover:border-neutral-400 [&_[role=slider]]:focus-visible:ring-2 [&_[role=slider]]:focus-visible:ring-[#E85D3F]/30 [&_.relative]:bg-transparent [&_.relative]:h-14 [&_[class*='bg-primary']]:bg-transparent"
+                      className="absolute inset-0 [&_[role=slider]]:w-10 [&_[role=slider]]:h-10 [&_[role=slider]]:bg-white [&_[role=slider]]:border-2 [&_[role=slider]]:border-neutral-400 [&_[role=slider]]:shadow-lg [&_[role=slider]]:rounded-full [&_[role=slider]]:cursor-grab [&_[role=slider]]:active:cursor-grabbing [&_[role=slider]]:hover:border-[#E85D3F] [&_[role=slider]]:focus-visible:ring-2 [&_[role=slider]]:focus-visible:ring-[#E85D3F]/30 [&_.relative]:bg-transparent [&_.relative]:h-3 [&_[class*='bg-primary']]:bg-transparent"
                       data-testid="slider-utilization"
                     />
                   </div>
                   
-                  <div className="flex justify-between text-xs text-neutral-400 mt-2 px-2">
+                  <div className="flex justify-between text-xs text-neutral-400 mt-4 px-2">
                     <span>10%</span>
                     <span>90%</span>
                   </div>
                   
-                  <div className="flex items-center justify-between mt-6">
-                    <span className={`flex items-center gap-2 font-semibold px-4 py-2.5 rounded-full text-sm ${status.color} ${status.bgColor}`}>
-                      <StatusIcon className="w-5 h-5" /> {status.label}
-                    </span>
-                    <span className="text-sm text-[#E85D3F] flex items-center gap-1.5 bg-[#E85D3F]/5 px-4 py-2.5 rounded-full">
-                      <Sparkles className="w-4 h-4" />
-                      Abridge hits {ABRIDGE_BENCHMARKS.utilization}%
-                    </span>
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="bg-neutral-100 rounded-xl p-4 text-center border border-neutral-200">
+                      <p className="text-sm text-neutral-500 mb-1">Industry Avg</p>
+                      <p className="text-2xl font-bold text-neutral-600">45%</p>
+                    </div>
+                    <div className="bg-[#E85D3F]/5 rounded-xl p-4 text-center border border-[#E85D3F]/20">
+                      <p className="text-sm text-[#E85D3F]/70 mb-1">Abridge Avg</p>
+                      <p className="text-2xl font-bold text-[#E85D3F]">65%</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -948,33 +971,43 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 );
               })()}
 
-              <div className="flex justify-between text-xs text-neutral-500 mt-10 px-2">
-                <span className="flex items-center gap-1"><Frown className="w-3 h-3" /> &lt;40%</span>
-                <span className="flex items-center gap-1"><Meh className="w-3 h-3" /> 40-55%</span>
-                <span className="flex items-center gap-1"><Smile className="w-3 h-3" /> 55-65%</span>
-                <span className="flex items-center gap-1"><PartyPopper className="w-3 h-3" /> 65%+</span>
+              <div className="flex justify-between text-xs text-neutral-400 mt-10 px-2">
+                <span>10%</span>
+                <span>45% Industry</span>
+                <span>65% Abridge</span>
+                <span>90%</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-              <div className="relative bg-neutral-100 rounded-2xl p-6 border-2 border-neutral-300 overflow-hidden">
-                <Mic className="absolute top-4 right-4 w-8 h-8 text-neutral-300" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 relative">
+              <div className="relative bg-[#F5F5F5] rounded-2xl p-6 border border-neutral-200">
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Your Current</p>
                 <p className="text-sm text-neutral-500 mb-1">At {utilization}% utilization</p>
-                <p className="text-4xl font-bold text-neutral-900 mb-1">{calculations.theirDocumentedEncounters.toLocaleString()}</p>
+                <p className="text-4xl font-bold text-neutral-700 mb-1 tabular-nums">{calculations.theirDocumentedEncounters.toLocaleString()}</p>
                 <p className="text-sm text-neutral-500">encounters documented/year</p>
               </div>
               
-              <div className="relative bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-400 overflow-hidden">
-                <div className="absolute top-4 right-4 text-emerald-200 font-bold text-4xl opacity-30">A</div>
-                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">With Abridge</p>
-                <p className="text-sm text-emerald-700 mb-1">At {ABRIDGE_BENCHMARKS.utilization}% utilization</p>
-                <p className="text-4xl font-bold text-emerald-600 mb-1">{calculations.abridgeDocumentedEncounters.toLocaleString()}</p>
+              <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full border-2 border-[#E85D3F] items-center justify-center shadow-lg">
+                <ArrowRight className="w-5 h-5 text-[#E85D3F]" />
+              </div>
+              
+              <div className="relative rounded-2xl p-6 border-2 border-[#E85D3F]/30" style={{ backgroundColor: "rgba(232, 93, 63, 0.05)" }}>
+                <div className="absolute top-4 right-4 text-[#E85D3F]/10 font-bold text-4xl">A</div>
+                <p className="text-xs font-semibold text-[#E85D3F] uppercase tracking-wide mb-2">With Abridge</p>
+                <p className="text-sm text-[#E85D3F]/70 mb-1">At {ABRIDGE_BENCHMARKS.utilization}% utilization</p>
+                <p className="text-4xl font-bold text-[#E85D3F] mb-1 tabular-nums">{calculations.abridgeDocumentedEncounters.toLocaleString()}</p>
                 <p className="text-sm text-neutral-500">encounters documented/year</p>
-                <div className="mt-3 inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-sm font-semibold px-3 py-1 rounded-full">
+                <div className="mt-3 inline-flex items-center gap-1.5 bg-[#E85D3F]/10 text-[#E85D3F] text-sm font-semibold px-3 py-1 rounded-full">
                   <ArrowRight className="w-3 h-3 rotate-[-45deg]" />
                   +{Math.round(((calculations.abridgeDocumentedEncounters - calculations.theirDocumentedEncounters) / calculations.theirDocumentedEncounters) * 100)}% more
                 </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-center mb-8">
+              <div className="bg-[#E85D3F]/10 rounded-xl px-6 py-4 text-center border border-[#E85D3F]/20">
+                <p className="text-2xl font-bold text-[#E85D3F] tabular-nums">+{calculations.utilizationGapEncounters.toLocaleString()}</p>
+                <p className="text-sm text-[#E85D3F]/80">additional encounters/year</p>
               </div>
             </div>
 
@@ -1062,29 +1095,29 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-              <div className="bg-neutral-100 rounded-2xl p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 relative">
+              <div className="bg-[#F5F5F5] rounded-2xl p-6 border border-neutral-200">
                 <p className="text-sm text-neutral-500 mb-2">At your {timeSavings} min savings</p>
-                <p className="text-4xl font-bold text-neutral-900 mb-1">{calculations.theirTimeSavedHours.toLocaleString()}</p>
+                <p className="text-4xl font-bold text-neutral-700 mb-1 tabular-nums">{calculations.theirTimeSavedHours.toLocaleString()}</p>
                 <p className="text-sm text-neutral-500">hours returned/year</p>
-                <p className="text-xs text-neutral-400 mt-4">That's your current impact</p>
               </div>
               
-              <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-200">
-                <p className="text-sm text-emerald-700 mb-2">At Abridge {ABRIDGE_BENCHMARKS.timeSavings} min</p>
-                <p className="text-4xl font-bold text-emerald-600 mb-1">{calculations.abridgeTimeSavedHours.toLocaleString()}</p>
+              <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full border-2 border-[#E85D3F] items-center justify-center shadow-lg">
+                <ArrowRight className="w-5 h-5 text-[#E85D3F]" />
+              </div>
+              
+              <div className="rounded-2xl p-6 border-2 border-[#E85D3F]/30" style={{ backgroundColor: "rgba(232, 93, 63, 0.05)" }}>
+                <p className="text-sm text-[#E85D3F]/70 mb-2">At Abridge {ABRIDGE_BENCHMARKS.timeSavings} min</p>
+                <p className="text-4xl font-bold text-[#E85D3F] mb-1 tabular-nums">{calculations.abridgeTimeSavedHours.toLocaleString()}</p>
                 <p className="text-sm text-neutral-500">hours returned/year</p>
-                <p className="text-xs text-emerald-600 mt-4 font-medium">
-                  That's {calculations.efficiencyGapHours.toLocaleString()} MORE hours
-                </p>
               </div>
             </div>
-
-            <div className="bg-amber-50 rounded-xl p-5 border border-amber-200/50 text-center">
-              <p className="text-amber-900">
-                The efficiency gap = <strong>{calculations.efficiencyGapPercent}%</strong> more time returned per encounter.
-              </p>
-              <p className="text-[#E85D3F] font-medium mt-1">Between the two gaps, you're leaving significant value on the table.</p>
+            
+            <div className="flex justify-center mb-8">
+              <div className="bg-[#E85D3F]/10 rounded-xl px-6 py-4 text-center border border-[#E85D3F]/20">
+                <p className="text-2xl font-bold text-[#E85D3F] tabular-nums">+{calculations.efficiencyGapHours.toLocaleString()} hours</p>
+                <p className="text-sm text-[#E85D3F]/80">That's {calculations.efficiencyGapPercent}% MORE time returned</p>
+              </div>
             </div>
 
             <div className="mt-12 flex justify-end">
@@ -1380,18 +1413,24 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 {DRIVERS.filter(d => d.category === "time").map((driver) => {
                   const Icon = driver.icon;
                   const isSelected = selectedDrivers.includes(driver.id);
+                  const isCommon = driver.id === "patient_access" || driver.id === "overtime";
                   
                   return (
                     <button
                       key={driver.id}
                       onClick={() => toggleDriver(driver.id)}
-                      className={`p-6 rounded-xl border-2 text-left transition-all duration-200 ${
+                      className={`p-6 rounded-xl border-2 text-left transition-all duration-200 relative ${
                         isSelected
                           ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
                           : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
                       }`}
                       data-testid={`driver-${driver.id}`}
                     >
+                      {isCommon && (
+                        <span className="absolute -top-2 left-4 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                          Most common
+                        </span>
+                      )}
                       <div className="flex items-start justify-between mb-4">
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                           isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
@@ -1422,18 +1461,24 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 {DRIVERS.filter(d => d.category === "quality").map((driver) => {
                   const Icon = driver.icon;
                   const isSelected = selectedDrivers.includes(driver.id);
+                  const isCommon = driver.id === "denials";
                   
                   return (
                     <button
                       key={driver.id}
                       onClick={() => toggleDriver(driver.id)}
-                      className={`p-6 rounded-xl border-2 text-left transition-all duration-200 ${
+                      className={`p-6 rounded-xl border-2 text-left transition-all duration-200 relative ${
                         isSelected
                           ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
                           : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
                       }`}
                       data-testid={`driver-${driver.id}`}
                     >
+                      {isCommon && (
+                        <span className="absolute -top-2 left-4 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                          Most common
+                        </span>
+                      )}
                       <div className="flex items-start justify-between mb-4">
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                           isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
@@ -1733,19 +1778,24 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <p><strong className="text-neutral-900">{formatCurrency(Math.round(calculations.totalGap / 2080))}</strong> every hour your clinic is open</p>
             </div>
             
-            <Button
-              onClick={handleContinue}
-              className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-12 py-4 h-auto text-lg font-bold rounded-xl shadow-xl transition-all duration-200 hover:shadow-2xl hover:-translate-y-1"
-              data-testid="button-continue-step7"
+            <div
               style={{
                 opacity: gapRevealStage >= 6 ? 1 : 0,
                 transform: gapRevealStage >= 6 ? "translateY(0)" : "translateY(20px)",
                 transition: "all 0.5s ease-out"
               }}
+              className="text-center"
             >
-              Show Me How
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+              <Button
+                onClick={handleContinue}
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-12 py-4 h-auto text-lg font-bold rounded-xl shadow-xl transition-all duration-200 hover:shadow-2xl hover:-translate-y-1"
+                data-testid="button-continue-step7"
+              >
+                See The Breakdown
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+              <p className="text-sm text-neutral-400 mt-3">{selectedDrivers.length} key {selectedDrivers.length === 1 ? "area" : "areas"} where value is leaking</p>
+            </div>
           </div>
         )}
 
@@ -1966,7 +2016,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                   <div className="bg-red-100 rounded-lg p-3 text-center">
                     <p className="text-xl font-bold text-red-600">
-                      YOU LOSE: {formatCurrency(calculations.costOfWaiting)}
+                      Value left behind: {formatCurrency(calculations.costOfWaiting)}
                     </p>
                   </div>
                 </div>

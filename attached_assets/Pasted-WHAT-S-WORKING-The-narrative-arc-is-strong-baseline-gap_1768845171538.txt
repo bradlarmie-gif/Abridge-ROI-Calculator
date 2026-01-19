@@ -1,0 +1,341 @@
+WHAT'S WORKING
+
+The narrative arc is strong (baseline → gaps → value → urgency)
+The "money on the table" reveal is emotionally powerful
+The value gap breakdown with expandable cards is smart
+The 3-year cumulative comparison is compelling
+
+
+WHAT'S BROKEN (And Exactly How to Fix It)
+Screen 1: "Let's start with the basics"
+Problems:
+
+The utilization slider visual is confusing — the gradient bar with emoji faces feels juvenile for healthcare executives
+"At these numbers, you're documenting 0 encounters/year" — this is a bug showing when first screenshot was at 50% but shows 0
+The "Abridge hits 65%" sparkle feels gimmicky, not authoritative
+Too much vertical scroll before the CTA
+
+Fix:
+CopyREDESIGN THE UTILIZATION INPUT:
+
+Instead of emoji slider, use:
+┌─────────────────────────────────────────────────────┐
+│  YOUR UTILIZATION                                   │
+│  ━━━━━━━━━━━●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│  10%        35%                              90%    │
+│                                                     │
+│  ┌──────────────┐     ┌──────────────┐             │
+│  │ INDUSTRY AVG │     │ ABRIDGE AVG  │             │
+│  │    ~45%      │     │    65%       │             │
+│  │  ○ marker    │     │  ○ marker    │             │
+│  └──────────────┘     └──────────────┘             │
+└─────────────────────────────────────────────────────┘
+
+- Remove emojis entirely
+- Add subtle vertical tick marks on slider at 45% and 65%
+- Show benchmarks as clean stat cards BELOW the slider
+- Real-time calculation updates as they drag
+
+Screen 2: "What solution are you using today?"
+Problems:
+
+The three cards are visually identical weight — but "Ambient AI" (competitors) should feel like the FOCUS since this is SWITCH path
+"DAX, Suki, Nabla, or similar" — this list will date quickly and feels like you're name-checking competitors
+The care setting pills at bottom feel disconnected from the card selection
+
+Fix:
+CopyREDESIGN SOLUTION SELECTION:
+
+Make "Ambient AI" the visually dominant card:
+- Larger card size OR
+- Pre-selected with subtle highlight border
+- Add subtext: "Let's see what you might be missing"
+
+For competitor naming:
+- Change to: "Another ambient AI solution"
+- On selection, show a DROPDOWN or type-ahead: 
+  "Which one? (optional)" — this gives you intel without dating the UI
+
+Care setting selection:
+- Move it to NEXT screen, or
+- Make it a horizontal step indicator: 
+  Step 1: Select solution → Step 2: Select setting
+- Don't stack two choices on one screen
+
+Screen 3: "What does 'Great' utilization mean?"
+Problems:
+
+The horizontal bar visualization is solid BUT the labels "YOU (35%)" and "ABRIDGE (65%)" floating above feel disconnected
+"+30% gap" badge looks like an error state, not an opportunity
+The two stat cards below are nearly identical styling — no visual hierarchy showing "theirs → ours" progression
+
+Fix:
+CopyREDESIGN THE GAP VISUALIZATION:
+
+Use a before/after bar chart instead:
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  YOUR CURRENT          →        WITH ABRIDGE        │
+│  ████████░░░░░░░░░░░░░    ████████████████████░░░  │
+│  35% utilization              65% utilization       │
+│                                                     │
+│         ┌──────────────────────┐                    │
+│         │   +30% more usage    │                    │
+│         │   = 22,500 more      │                    │
+│         │   encounters/year    │                    │
+│         └──────────────────────┘                    │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+- Make the gap callout a centered "bridge" element
+- Arrow or connector between the two bars
+- The two stat cards should use LEFT = muted/gray, RIGHT = Abridge coral/green
+
+Screen 4: "The efficiency gap"
+Problems:
+
+The slider interaction is good
+"Not sure / Haven't measured" checkbox is buried
+The two stat cards (656 vs 2,438 hours) don't visually "compare" — they're just sitting next to each other
+"That's 1,782 MORE hours" — the word "MORE" should be visually emphasized
+
+Fix:
+CopyREDESIGN THE COMPARISON:
+
+Stack the cards or use arrow connector:
+┌────────────────────────────────────────────────────┐
+│  AT YOUR CURRENT              WITH ABRIDGE         │
+│  1.5 min savings              3 min savings        │
+│                                                    │
+│  ┌─────────────┐    ──→    ┌─────────────┐        │
+│  │   656       │           │   2,438     │        │
+│  │   hours     │           │   hours     │        │
+│  │   returned  │           │   returned  │        │
+│  └─────────────┘           └─────────────┘        │
+│           gray/muted            coral/accent       │
+│                                                    │
+│         ┌─────────────────────────┐                │
+│         │  +1,782 HOURS           │                │
+│         │  That's 271% more time  │                │
+│         └─────────────────────────┘                │
+└────────────────────────────────────────────────────┘
+
+- Left card: muted background
+- Right card: Abridge brand color subtle background
+- Center callout: high contrast, large number
+
+Screen 5: "Let's understand your current performance"
+Problems:
+
+This is the longest, densest screen — feels like a form, not a calculator
+Four questions stacked with radio buttons feels like a survey
+The yellow info banner at top is helpful but gets lost
+No progress indicator — user doesn't know how much is left
+
+Fix:
+CopyBREAK THIS INTO 2-3 SCREENS OR USE PROGRESSIVE DISCLOSURE:
+
+Option A: Split into screens
+- Screen 5a: wRVU uplift + coding correction (grouped as "Revenue metrics")
+- Screen 5b: Denial reduction + HCC capture (grouped as "Quality metrics")
+
+Option B: Accordion/progressive reveal
+- Start with only ONE question visible
+- On answer, smoothly reveal the next
+- Feels interactive, not form-like
+
+Option C: Smart defaults with one-click override
+┌────────────────────────────────────────────────────┐
+│  We'll use industry benchmarks unless you tell us  │
+│  otherwise. Tap any metric to enter your actuals.  │
+│                                                    │
+│  ┌─────────────────────────────────────────────┐   │
+│  │ ✓ wRVU uplift: 3.5% (industry avg)         │   │
+│  │   [Tap to edit]                             │   │
+│  ├─────────────────────────────────────────────┤   │
+│  │ ✓ Under-coding correction: 8% (typical)    │   │
+│  │   [Tap to edit]                             │   │
+│  ├─────────────────────────────────────────────┤   │
+│  │ ✓ Denial reduction: 30% (typical)          │   │
+│  │   [Tap to edit]                             │   │
+│  ├─────────────────────────────────────────────┤   │
+│  │ ✓ HCC improvement: 10% (conservative)      │   │
+│  │   [Tap to edit]                             │   │
+│  └─────────────────────────────────────────────┘   │
+│                                                    │
+│         [Continue with these assumptions →]        │
+└────────────────────────────────────────────────────┘
+
+This respects the user's time while still allowing customization.
+
+Screen 6: "Where would better performance create value?"
+Problems:
+
+Good concept, but the cards are all identical visual weight
+The "0 of 6 selected" footer feels like an error state
+"TIME SAVED BENEFITS" and "DOCUMENTATION QUALITY BENEFITS" headers are too subtle
+No visual indication of which combinations are common/recommended
+
+Fix:
+CopyADD VISUAL HIERARCHY AND SMART DEFAULTS:
+
+- Pre-select 2-3 most common drivers with subtle highlight
+- Add "Most health systems select these" badge on common ones
+- Show running total as they select:
+
+┌────────────────────────────────────────────────────┐
+│  ESTIMATED GAP AS YOU SELECT                       │
+│  ┌──────────────────────────────────────────────┐  │
+│  │  $0 → $142,800 → $892,800...               │  │
+│  │  ████████████████████░░░░░░░░░░░░░░░░░░░░  │  │
+│  └──────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────┘
+
+- Animate the value building as they select each card
+- Makes the selection feel consequential, not arbitrary
+
+Screen 7: "$1,837,293 on the table"
+Problems:
+
+This is your MONEY SHOT and it's almost right
+"Every. Single. Year." is good but the typography could hit harder
+The supporting stats ($153K/month, $5K/day) are good context
+BUT the CTA "Show Me How" is weak — they already know HOW, they want the BREAKDOWN
+
+Fix:
+CopyENHANCE THE REVEAL:
+
+┌────────────────────────────────────────────────────┐
+│                                                    │
+│         Based on what you've told us,              │
+│         you're leaving                             │
+│                                                    │
+│           $1,837,293                               │
+│                                                    │
+│              on the table.                         │
+│         ─────────────────                          │
+│         Every. Single. Year.                       │
+│                                                    │
+│  ┌─────────────────────────────────────────────┐   │
+│  │  $153,108    $5,034      $883              │   │
+│  │  /month      /day        /hour your        │   │
+│  │                          clinic is open     │   │
+│  └─────────────────────────────────────────────┘   │
+│                                                    │
+│         [See The Breakdown →]                      │
+│                                                    │
+│  (small) This gap exists because your current      │
+│  solution underperforms in 3 key areas ↓           │
+│                                                    │
+└────────────────────────────────────────────────────┘
+
+- Make the dollar amount HUGE (48-64px)
+- Add subtle entrance animation (count up or fade in)
+- Change CTA to "See The Breakdown" — action-oriented
+
+Screen 8-9: "Your value gap breakdown"
+Problems:
+
+The expandable accordions are good UX
+BUT the expanded state shows too much calculation detail — looks like a spreadsheet
+The sticky footer summary is smart
+The "Your Current" vs "With Abridge" side-by-side works
+
+Fix:
+CopySIMPLIFY THE EXPANDED CALCULATION VIEW:
+
+Instead of showing every formula step, show:
+┌────────────────────────────────────────────────────┐
+│  PATIENT ACCESS                    +$142,800/year  │
+│  ──────────────────────────────────────────────── │
+│                                                    │
+│  THE MATH (simplified):                            │
+│  ┌──────────────────┐     ┌──────────────────┐    │
+│  │ YOU NOW          │ →   │ WITH ABRIDGE     │    │
+│  │ 656 hrs returned │     │ 2,438 hrs        │    │
+│  │ = 262 visits     │     │ = 976 visits     │    │
+│  │ × $200/visit     │     │ × $200/visit     │    │
+│  │ ─────────────    │     │ ─────────────    │    │
+│  │ $52,400/year     │     │ $195,200/year    │    │
+│  └──────────────────┘     └──────────────────┘    │
+│                                                    │
+│              GAP: +$142,800/year                   │
+│                                                    │
+│  ⓘ Assumes 20% of time saved converts to visits   │
+│                                                    │
+└────────────────────────────────────────────────────┘
+
+- Hide the raw formulas
+- Show the STORY: hours → visits → dollars
+- Add assumption footnote for credibility
+
+Screen 10: "3-Year Cumulative Value"
+Problems:
+
+The chart is good but the two comparison cards below are busy
+"IF YOU SWITCH TODAY" vs "IF YOU WAIT 6 MONTHS" — good framing
+But the "YOU LOSE: $1,286,105" in red feels punitive, not motivating
+
+Fix:
+CopyREFRAME THE URGENCY:
+
+Change "YOU LOSE" to:
+"Value left behind: $1,286,105"
+or
+"6-month delay cost: $1,286,105"
+
+Better comparison layout:
+┌────────────────────────────────────────────────────┐
+│           SWITCH TODAY        WAIT 6 MONTHS        │
+│          ┌───────────┐       ┌───────────┐         │
+│  6 mo    │ +$551K    │       │ $0        │         │
+│  Year 1  │ +$1.56M   │       │ +$551K    │         │
+│  Year 2  │ +$1.84M   │       │ +$1.56M   │         │
+│  Year 3  │ +$1.84M   │       │ +$1.84M   │         │
+│          ├───────────┤       ├───────────┤         │
+│  TOTAL   │ $5.24M    │       │ $3.95M    │         │
+│          └───────────┘       └───────────┘         │
+│                                                     │
+│         ┌─────────────────────────────────┐        │
+│         │  Every month you wait =         │        │
+│         │  $153,108 in value you          │        │
+│         │  can never recapture            │        │
+│         └─────────────────────────────────┘        │
+│                                                     │
+│  [Save This Analysis]     [Schedule Conversation]  │
+│                                                     │
+└────────────────────────────────────────────────────┘
+
+- Line up the years horizontally for easy scanning
+- Make "TOTAL" row bold, highlighted
+- Soften the loss language
+- Dual CTAs: save for later OR talk now
+
+GLOBAL UX FIXES FOR SWITCH PATH
+1. Add Progress Indicator
+Every screen should show where you are:
+Copy○───○───●───○───○───○───○
+Baseline  Gaps  Drivers  Value  Timeline
+2. Consistent Card Styling
+
+"Your Current" cards: Light gray background, muted text
+"With Abridge" cards: Subtle coral/brand tint, slightly elevated shadow
+Gap callouts: High contrast, centered, large numbers
+
+3. Transitions Between Screens
+
+Add subtle slide or fade transitions
+Numbers should animate/count up when revealed
+Makes it feel alive, not static
+
+4. Mobile Responsive Check
+Some of these side-by-side layouts will break on mobile. Need:
+
+Stack vertically on small screens
+Larger touch targets for sliders
+Collapsible sections
+
+5. Credibility Footer
+On calculation screens, add subtle footer:
+CopyMethodology based on data from 200+ health system implementations
+[View our assumptions]

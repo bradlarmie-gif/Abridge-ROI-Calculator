@@ -1,0 +1,53 @@
+SWITCH PATH UX IMPROVEMENTS - IMPLEMENT THESE CHANGES:
+
+1. BASELINE SCREEN:
+- Remove emoji slider faces
+- Replace with clean gradient bar + benchmark markers at 45% and 65%
+- Add two small stat cards below showing "Industry Avg: 45%" and "Abridge Avg: 65%"
+- Ensure real-time calculation updates
+
+2. SOLUTION SELECTION SCREEN:
+- Make "Ambient AI" card visually larger or pre-selected
+- Change subtitle to "Another ambient AI solution"
+- Add optional dropdown on selection: "Which solution? (helps us compare)"
+- Move care setting selection to separate screen or make it step 2
+
+3. ALL COMPARISON SCREENS (utilization gap, efficiency gap):
+- Left card: light gray background (#F5F5F5)
+- Right card: subtle Abridge coral tint (rgba(255, 107, 107, 0.05))
+- Add connecting arrow or bridge element between cards
+- Gap callout: centered, larger font (24px+), high contrast
+
+4. PERFORMANCE METRICS SCREEN:
+- Convert 4 questions to collapsible list with smart defaults
+- Pre-fill all with industry benchmarks
+- Each row shows: "✓ Metric: X% (industry avg) [Edit]"
+- Single CTA: "Continue with these assumptions"
+- Tapping Edit expands that row with input field
+
+5. VALUE DRIVER SELECTION:
+- Pre-select 2-3 common drivers
+- Add "Most common" badge to Patient Access and Denials
+- Add running total animation at top as user selects
+- Progress bar fills as total value increases
+
+6. MONEY REVEAL SCREEN:
+- Dollar amount: 56px font, animate count-up on load
+- Change CTA from "Show Me How" to "See The Breakdown"
+- Add subtle subtext: "3 key areas where value is leaking"
+
+7. BREAKDOWN SCREEN:
+- Simplify expanded card calculations
+- Show: Current → Abridge → Gap (not raw formulas)
+- Add assumption footnotes in smaller text
+
+8. TIMELINE SCREEN:
+- Change "YOU LOSE" to "Value left behind"
+- Align year-by-year comparison horizontally
+- Dual CTAs: "Save Analysis" (secondary) + "Let's Talk" (primary)
+
+9. GLOBAL:
+- Add progress indicator to all screens (dots or step labels)
+- Add subtle page transitions (fade or slide)
+- Add credibility footer on calculation screens
+- Ensure all number displays animate on reveal
