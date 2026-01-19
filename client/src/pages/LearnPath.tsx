@@ -68,6 +68,11 @@ interface SettingConfig {
   name: string;
   icon: React.ElementType;
   subtitle: string;
+  insightText: {
+    main: string;
+    highlight: string;
+    followup: string;
+  };
   referenceScenario: {
     providers: number;
     providerLabel: string;
@@ -87,6 +92,11 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     name: "Outpatient",
     icon: Stethoscope,
     subtitle: "Primary care, specialty visits, clinics",
+    insightText: {
+      main: "Most people think ambient just saves time. That's true—but incomplete. Time saved is only",
+      highlight: "HALF",
+      followup: "the value. The other half? Documentation that's actually better than manual notes."
+    },
     referenceScenario: {
       providers: 40,
       providerLabel: "providers",
@@ -415,6 +425,11 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     name: "Emergency Department",
     icon: Zap,
     subtitle: "High-volume, fast-paced encounters",
+    insightText: {
+      main: "In the ED, time isn't about seeing MORE patients—they're already in your waiting room. Time is about seeing them FASTER. Faster documentation means faster disposition, lower LWBS rates, and more beds turning over.",
+      highlight: "FASTER",
+      followup: "And if you're using scribes, there's a direct cost replacement opportunity."
+    },
     referenceScenario: {
       providers: 25,
       providerLabel: "physicians",
@@ -424,105 +439,107 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
       eligibleEncounters: 31500,
       description: "We'll walk through the math using a mid-sized emergency department as an example:"
     },
-    timeSavedSubtitle: "Faster documentation, more throughput",
-    docQualitySubtitle: "Real-time capture during fast encounters",
+    timeSavedSubtitle: "When ED physicians document faster, patients move through faster",
+    docQualitySubtitle: "ED visits involve complex decision-making that's hard to capture under pressure",
     drivers: [
       {
         id: "throughput",
-        name: "Patient Throughput",
-        description: "LWBS reduction, more patients seen",
-        whyItMatters: "The quick win—faster disposition, more revenue",
-        referenceValue: 315000,
+        name: "Patient Throughput (LWBS)",
+        description: "LWBS reduction, revenue recaptured",
+        whyItMatters: "Keep patients from walking out—capture that revenue",
+        referenceValue: 189000,
         icon: Activity,
         lane: "time",
         order: 1,
-        theory: "In the ED, every minute of documentation time affects throughput. Reducing documentation burden lets physicians disposition patients faster, reducing Left Without Being Seen (LWBS) rates and capturing additional revenue.",
+        theory: "When patients leave without being seen, you lose that revenue entirely. Faster documentation means faster throughput, shorter wait times, and fewer walkouts.",
         calculationSteps: [
           {
             stepNumber: 1,
-            stepLabel: "TIME SAVINGS",
-            question: "How much time does Abridge give back?",
+            stepLabel: "CURRENT LWBS RATE",
+            question: "How many patients are you losing?",
             inputs: [
-              { label: "Time per encounter", value: "3 min" },
-              { label: "Eligible encounters", value: "31,500" }
+              { label: "Annual visits", value: "45,000" },
+              { label: "LWBS rate", value: "3.5%" }
             ],
-            output: { label: "Hours returned", value: "1,575 hrs" }
+            output: { label: "Patients leaving", value: "1,575" }
           },
           {
             stepNumber: 2,
-            stepLabel: "ADDITIONAL CAPACITY",
-            question: "How many more patients can be seen?",
+            stepLabel: "THROUGHPUT IMPROVEMENT",
+            question: "How much can faster documentation help?",
             inputs: [
-              { label: "Hours returned", value: "1,575 hrs" },
-              { label: "Utilization rate", value: "40%" }
+              { label: "Patients leaving", value: "1,575" },
+              { label: "LWBS improvement", value: "20%" }
             ],
-            output: { label: "Additional patients", value: "630" }
+            output: { label: "Patients retained", value: "315" }
           },
           {
             stepNumber: 3,
-            stepLabel: "REVENUE CAPTURED",
-            question: "What's the revenue impact?",
+            stepLabel: "REVENUE RECAPTURED",
+            question: "What's that worth?",
             inputs: [
-              { label: "Additional patients", value: "630" },
-              { label: "Avg ED visit", value: "$500" }
+              { label: "Patients retained", value: "315" },
+              { label: "Avg ED visit", value: "$600" }
             ],
-            output: { label: "Annual value", value: "$315,000" }
+            output: { label: "Annual value", value: "$189,000" }
           }
-        ]
+        ],
+        caveat: "Some retained patients would have been admitted (~15%). Conservative model excludes admission revenue."
       },
       {
         id: "scribe-reduction",
         name: "Scribe Cost Reduction",
-        description: "Replace or reduce scribe coverage",
-        whyItMatters: "Direct labor savings—visible on day one",
-        referenceValue: 180000,
+        description: "Convert labor cost to technology investment",
+        whyItMatters: "Convert labor cost to technology investment",
+        referenceValue: 337500,
         icon: Users,
         lane: "time",
         order: 2,
-        theory: "Many EDs employ scribes to handle documentation. Ambient AI can reduce or replace scribe needs, providing significant labor savings while maintaining documentation quality.",
+        theory: "Many EDs rely on scribes to handle documentation burden. Abridge can reduce scribe needs or eliminate them entirely—freeing up significant labor budget.",
         calculationSteps: [
           {
             stepNumber: 1,
-            stepLabel: "CURRENT SCRIBE COVERAGE",
-            question: "How many scribes are used today?",
+            stepLabel: "CURRENT SCRIBE INVESTMENT",
+            question: "What are you spending on scribes?",
             inputs: [
-              { label: "Physicians", value: "25" },
-              { label: "With scribes", value: "40%" }
+              { label: "Physicians × scribe FTE each", value: "25 × 0.5" },
+              { label: "Cost per FTE", value: "$45,000/year" }
             ],
-            output: { label: "Scribe FTEs", value: "10" }
+            output: { label: "Annual cost", value: "$562,500" }
           },
           {
             stepNumber: 2,
             stepLabel: "SCRIBE REDUCTION",
             question: "How many can Abridge replace?",
             inputs: [
-              { label: "Current FTEs", value: "10" },
-              { label: "Reduction rate", value: "50%" }
+              { label: "Current FTEs", value: "12.5" },
+              { label: "Reduction rate", value: "60%" }
             ],
-            output: { label: "FTEs saved", value: "5" }
+            output: { label: "FTEs reduced", value: "7.5" }
           },
           {
             stepNumber: 3,
-            stepLabel: "LABOR SAVINGS",
-            question: "What's the dollar value?",
+            stepLabel: "COST SAVINGS",
+            question: "What's the budget impact?",
             inputs: [
-              { label: "FTEs saved", value: "5" },
-              { label: "Annual cost", value: "$36,000" }
+              { label: "FTEs reduced", value: "7.5" },
+              { label: "Cost per FTE", value: "$45,000" }
             ],
-            output: { label: "Annual savings", value: "$180,000" }
+            output: { label: "Annual savings", value: "$337,500" }
           }
-        ]
+        ],
+        caveat: "Some organizations redeploy scribes rather than eliminate—still creates budget flexibility"
       },
       {
         id: "ed-retention",
-        name: "Workforce Retention",
+        name: "Physician Retention",
         description: "Reduced ED burnout and turnover",
-        whyItMatters: "The long game—12+ months to see full impact",
-        referenceValue: 195000,
+        whyItMatters: "The long game—ED burnout is severe",
+        referenceValue: 240000,
         icon: UserCheck,
         lane: "time",
         order: 3,
-        theory: "ED physicians face extreme burnout rates. Documentation burden compounds the stress of high-acuity care. Reducing this burden improves retention in a specialty where replacement is costly and difficult.",
+        theory: "ED physicians face extreme burnout—over 40% report symptoms. Documentation burden extends shifts and destroys work-life balance. Reducing this burden improves retention.",
         calculationSteps: [
           {
             stepNumber: 1,
@@ -536,7 +553,7 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           },
           {
             stepNumber: 2,
-            stepLabel: "BURNOUT ATTRIBUTION",
+            stepLabel: "BURNOUT-RELATED",
             question: "How much is burnout-driven?",
             inputs: [
               { label: "Annual departures", value: "2.0" },
@@ -546,119 +563,120 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           },
           {
             stepNumber: 3,
-            stepLabel: "RETENTION BENEFIT",
+            stepLabel: "ABRIDGE ATTRIBUTION",
             question: "What can Abridge prevent?",
             inputs: [
               { label: "Preventable", value: "1.0" },
-              { label: "Abridge impact", value: "30%" }
+              { label: "Attribution", value: "30%" }
             ],
-            output: { label: "Retained", value: "0.3 FTE" }
+            output: { label: "Departures avoided", value: "0.30" }
           },
           {
             stepNumber: 4,
-            stepLabel: "REPLACEMENT SAVINGS",
+            stepLabel: "COST SAVINGS",
             question: "What's the dollar value?",
             inputs: [
-              { label: "FTE retained", value: "0.3" },
-              { label: "Replacement cost", value: "$650,000" }
+              { label: "Departures avoided", value: "0.30" },
+              { label: "Replacement cost", value: "$800,000" }
             ],
-            output: { label: "Annual savings", value: "$195,000" }
+            output: { label: "Annual savings", value: "$240,000" }
           }
         ],
-        caveat: "Retention impact typically measurable after 12-18 months"
+        caveat: "ED physician replacement costs $750K-1.2M. Retention impact measurable after 12-18 months."
       },
       {
         id: "ed-los",
         name: "Level-of-Service Accuracy",
         description: "Capture true acuity in wRVUs",
-        whyItMatters: "Capture the complexity of high-acuity encounters",
-        referenceValue: 157500,
+        whyItMatters: "Capture the complexity you're already delivering",
+        referenceValue: 204120,
         icon: TrendingUp,
         lane: "quality",
         order: 1,
-        theory: "ED encounters are complex and fast-moving. Documentation often misses elements that support higher E/M levels. AI captures the full clinical picture in real-time.",
+        theory: "ED visits involve complex medical decision-making, but under time pressure, documentation often doesn't capture the full MDM picture. Abridge ensures appropriate E/M levels are supported.",
         calculationSteps: [
           {
             stepNumber: 1,
-            stepLabel: "DOCUMENTED ENCOUNTERS",
-            question: "How many ED encounters are documented?",
+            stepLabel: "E/M ENCOUNTERS",
+            question: "How many encounters are billable E/M?",
             inputs: [
-              { label: "Eligible ED visits", value: "31,500" }
+              { label: "Documented encounters", value: "31,500" },
+              { label: "E/M percentage", value: "90%" }
             ],
-            output: { label: "Total", value: "31,500" }
+            output: { label: "E/M encounters", value: "28,350" }
           },
           {
             stepNumber: 2,
-            stepLabel: "CODING IMPROVEMENT",
-            question: "How many are being under-coded?",
+            stepLabel: "UNDER-CODED VISITS",
+            question: "How many are coded below actual complexity?",
             inputs: [
-              { label: "ED visits", value: "31,500" },
-              { label: "Undercode rate", value: "10%" }
+              { label: "E/M encounters", value: "28,350" },
+              { label: "Under-coded rate", value: "12%" }
             ],
-            output: { label: "Affected", value: "3,150" }
+            output: { label: "Affected visits", value: "3,402" }
           },
           {
             stepNumber: 3,
-            stepLabel: "wRVU CAPTURE",
-            question: "What's the revenue opportunity?",
+            stepLabel: "wRVU LIFT",
+            question: "What's the revenue impact?",
             inputs: [
-              { label: "Affected visits", value: "3,150" },
-              { label: "wRVU delta", value: "$50" }
+              { label: "Affected visits × wRVU delta", value: "3,402 × 1.2" },
+              { label: "$/wRVU", value: "$50" }
             ],
-            output: { label: "Annual value", value: "$157,500" }
+            output: { label: "Annual value", value: "$204,120" }
           }
         ]
       },
       {
         id: "ed-denials",
         name: "Documentation-Related Denials",
-        description: "Reduce claim rejections",
-        whyItMatters: "Better notes, fewer rejections, faster payment",
-        referenceValue: 94500,
+        description: "ED claims face heavy scrutiny—better notes win",
+        whyItMatters: "ED claims face heavy scrutiny—better notes win",
+        referenceValue: 368550,
         icon: FileX,
         lane: "quality",
         order: 2,
-        theory: "ED claims face high scrutiny. Incomplete or inconsistent documentation leads to denials. Real-time AI capture ensures thorough documentation that withstands payer review.",
+        theory: "ED claims face intense payer scrutiny. Medical necessity, level of service, and procedure documentation are common denial triggers. Complete, real-time documentation reduces these denials.",
         calculationSteps: [
           {
             stepNumber: 1,
-            stepLabel: "TOTAL DENIALS",
-            question: "How many claims are denied today?",
+            stepLabel: "ED DENIAL VOLUME",
+            question: "How many claims are denied?",
             inputs: [
-              { label: "ED encounters", value: "31,500" },
-              { label: "Denial rate", value: "8%" }
+              { label: "Documented encounters", value: "31,500" },
+              { label: "Denial rate", value: "10%" }
             ],
-            output: { label: "Annual denials", value: "2,520" }
+            output: { label: "Annual denials", value: "3,150" }
           },
           {
             stepNumber: 2,
-            stepLabel: "DOC-RELATED",
-            question: "How many are documentation-related?",
+            stepLabel: "DOCUMENTATION-RELATED",
+            question: "How many are doc-related?",
             inputs: [
-              { label: "Total denials", value: "2,520" },
-              { label: "Doc-related", value: "30%" }
+              { label: "Total denials", value: "3,150" },
+              { label: "Doc-related", value: "40%" }
             ],
-            output: { label: "Doc denials", value: "756" }
+            output: { label: "Doc denials", value: "1,260" }
           },
           {
             stepNumber: 3,
-            stepLabel: "PREVENTED",
-            question: "How many can Abridge prevent?",
+            stepLabel: "DENIALS PREVENTED",
+            question: "How many can better documentation prevent?",
             inputs: [
-              { label: "Doc denials", value: "756" },
-              { label: "Improvement", value: "25%" }
+              { label: "Doc denials", value: "1,260" },
+              { label: "Improvement", value: "45%" }
             ],
-            output: { label: "Prevented", value: "189" }
+            output: { label: "Prevented", value: "567" }
           },
           {
             stepNumber: 4,
-            stepLabel: "VALUE",
-            question: "What's the dollar value?",
+            stepLabel: "VALUE RECOVERED",
+            question: "What's the revenue impact?",
             inputs: [
-              { label: "Prevented", value: "189" },
-              { label: "Avg claim", value: "$500" }
+              { label: "Prevented", value: "567" },
+              { label: "Avg claim", value: "$650" }
             ],
-            output: { label: "Annual value", value: "$94,500" }
+            output: { label: "Annual value", value: "$368,550" }
           }
         ]
       }
@@ -668,6 +686,11 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     name: "Nursing",
     icon: HeartPulse,
     subtitle: "Bedside documentation, care coordination",
+    insightText: {
+      main: "Nurses spend up to 35% of their shift on documentation—time that could be at the bedside. Ambient AI captures care activities in real-time, returning hours to where they matter most:",
+      highlight: "PATIENT CARE",
+      followup: "Plus, real-time documentation reduces end-of-shift overtime and improves note completeness."
+    },
     referenceScenario: {
       providers: 150,
       providerLabel: "nurses",
@@ -1232,7 +1255,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             <span className="text-xs font-bold text-[#111827] tracking-wide">THE INSIGHT</span>
           </div>
           <p className="text-[#111827] mb-3">
-            Most people think ambient just saves time. That's true—but incomplete. Time saved is only <span className="font-semibold">HALF</span> the value. The other half? Documentation that's actually better than manual notes.
+            {config?.insightText.main} <span className="font-semibold">{config?.insightText.highlight}</span> {config?.insightText.followup}
           </p>
           <p className="text-[#6B7280] text-sm">
             Two value streams. One technology. Here's how the math works.
@@ -1431,15 +1454,19 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             </p>
             
             <p className="text-[#6B7280] mb-4 max-w-xl mx-auto">
-              The reference scenario showed potential value of <span className="font-semibold text-[#E85D3F]">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-provider practice. But your organization is different.
+              The reference scenario showed potential value of <span className="font-semibold text-[#E85D3F]">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-{config?.referenceScenario.providerLabel === "physicians" ? "physician ED" : config?.referenceScenario.providerLabel === "nurses" ? "nurse unit" : "provider practice"}. But your organization is different.
             </p>
             
             <p className="text-[#6B7280] mb-8">
-              Different provider count. Different volumes. Different payer mix.
+              {selectedSetting === "ed" 
+                ? "Different physician count. Different LWBS rates. Different scribe situation."
+                : selectedSetting === "nursing"
+                ? "Different nurse count. Different documentation workflows. Different overtime patterns."
+                : "Different provider count. Different volumes. Different payer mix."}
             </p>
             
             <p className="text-[#111827] font-semibold mb-6">
-              Ready to see what Abridge could mean for YOU?
+              Ready to see what Abridge could mean for YOUR {selectedSetting === "ed" ? "ED" : selectedSetting === "nursing" ? "unit" : "practice"}?
             </p>
             
             <div className="flex flex-col items-center gap-4">

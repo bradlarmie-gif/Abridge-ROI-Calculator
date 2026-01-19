@@ -1,0 +1,200 @@
+I need to create the Emergency Department version of the Learn Methodology page. This should follow the exact same design pattern as the Outpatient page we just refined, but with ED-specific drivers and math.
+
+---
+
+SETTING: Emergency Department
+
+REFERENCE SCENARIO:
+- 25 physicians
+- 45,000 annual visits  
+- 70% adoption
+- = ~31,500 Abridge-documented encounters/year
+
+---
+
+THE INSIGHT (for ED):
+
+"In the ED, time isn't about seeing MORE patients—they're already in your waiting room. Time is about seeing them FASTER. Faster documentation means faster disposition, lower LWBS rates, and more beds turning over. And if you're using scribes, there's a direct cost replacement opportunity."
+
+---
+
+FRAMEWORK DIAGRAM:
+
+Same two-lane structure, but with ED-specific messaging:
+
+TIME SAVED box:
+- "When ED physicians document faster, patients move through faster. Lower LWBS, better throughput, and if you're using scribes—potential cost replacement."
+- Bullet points: Throughput (LWBS), Scribe Reduction, Physician Retention
+
+DOC QUALITY box:
+- "ED visits involve complex decision-making that's hard to capture under pressure. AI documentation ensures the full clinical picture is recorded."
+- Bullet points: Level of Service, Denial Reduction
+
+---
+
+ED DRIVERS (in this order):
+
+TIME SAVED BENEFITS:
+
+1. PATIENT THROUGHPUT (LWBS REDUCTION)
+   Subtitle: "Keep patients from walking out—capture that revenue"
+   
+   The Theory:
+   "When patients leave without being seen, you lose that revenue entirely. Faster documentation means faster throughput, shorter wait times, and fewer walkouts."
+   
+   How We Calculate It:
+   
+   STEP 1: CURRENT LWBS RATE
+   "How many patients are you losing?"
+   45,000 visits × 3.5% LWBS rate = 1,575 patients leaving
+   
+   STEP 2: THROUGHPUT IMPROVEMENT  
+   "How much can faster documentation help?"
+   1,575 patients × 20% LWBS improvement = 315 patients retained
+   
+   STEP 3: REVENUE RECAPTURED
+   "What's that worth?"
+   315 patients × $600 avg ED visit = $189,000
+   
+   Note: "Some retained patients would have been admitted (~15%). Conservative model excludes admission revenue."
+
+2. SCRIBE COST REDUCTION
+   Subtitle: "Convert labor cost to technology investment"
+   
+   The Theory:
+   "Many EDs rely on scribes to handle documentation burden. Abridge can reduce scribe needs or eliminate them entirely—freeing up significant labor budget."
+   
+   How We Calculate It:
+   
+   STEP 1: CURRENT SCRIBE INVESTMENT
+   "What are you spending on scribes?"
+   25 physicians × 0.5 scribe FTE each = 12.5 FTEs
+   12.5 FTEs × $45,000/year = $562,500 annual cost
+   
+   STEP 2: SCRIBE REDUCTION
+   "How many can Abridge replace?"
+   12.5 FTEs × 60% reduction = 7.5 FTEs reduced
+   
+   STEP 3: COST SAVINGS
+   "What's the budget impact?"
+   7.5 FTEs × $45,000 = $337,500 annual savings
+   
+   Note: "Some organizations redeploy scribes rather than eliminate—still creates budget flexibility"
+
+3. PHYSICIAN RETENTION
+   Subtitle: "The long game—ED burnout is severe"
+   
+   The Theory:
+   "ED physicians face extreme burnout—over 40% report symptoms. Documentation burden extends shifts and destroys work-life balance. Reducing this burden improves retention."
+   
+   How We Calculate It:
+   
+   STEP 1: BASELINE TURNOVER
+   "What's the current turnover situation?"
+   25 physicians × 8% turnover = 2.0 departures/year
+   
+   STEP 2: BURNOUT-RELATED
+   "How much is burnout-driven?"
+   2.0 departures × 50% burnout-related = 1.0 preventable
+   
+   STEP 3: ABRIDGE ATTRIBUTION
+   "What can Abridge prevent?"
+   1.0 × 30% attribution = 0.30 departures avoided
+   
+   STEP 4: COST SAVINGS
+   "What's the dollar value?"
+   0.30 × $800,000 replacement cost = $240,000
+   
+   Note: "⚠️ ED physician replacement costs $750K-1.2M. Retention impact measurable after 12-18 months."
+
+---
+
+DOCUMENTATION QUALITY BENEFITS:
+
+1. LEVEL-OF-SERVICE ACCURACY
+   Subtitle: "Capture the complexity you're already delivering"
+   
+   The Theory:
+   "ED visits involve complex medical decision-making, but under time pressure, documentation often doesn't capture the full MDM picture. Abridge ensures appropriate E/M levels are supported."
+   
+   How We Calculate It:
+   
+   STEP 1: E/M ENCOUNTERS
+   "How many encounters are billable E/M?"
+   31,500 documented × 90% E/M = 28,350 encounters
+   
+   STEP 2: UNDER-CODED VISITS
+   "How many are coded below actual complexity?"
+   28,350 × 12% under-coded = 3,402 affected visits
+   
+   STEP 3: wRVU LIFT
+   "What's the revenue impact?"
+   3,402 × 1.2 wRVU delta × $50/wRVU = $204,120
+
+2. DOCUMENTATION-RELATED DENIALS
+   Subtitle: "ED claims face heavy scrutiny—better notes win"
+   
+   The Theory:
+   "ED claims face intense payer scrutiny. Medical necessity, level of service, and procedure documentation are common denial triggers. Complete, real-time documentation reduces these denials."
+   
+   How We Calculate It:
+   
+   STEP 1: ED DENIAL VOLUME
+   "How many claims are denied?"
+   31,500 encounters × 10% denial rate = 3,150 denials
+   
+   STEP 2: DOCUMENTATION-RELATED
+   "How many are doc-related?"
+   3,150 × 40% doc-related = 1,260 denials
+   
+   STEP 3: DENIALS PREVENTED
+   "How many can better documentation prevent?"
+   1,260 × 45% improvement = 567 denials prevented
+   
+   STEP 4: VALUE RECOVERED
+   "What's the revenue impact?"
+   567 × $650 avg claim = $368,550
+
+---
+
+COMBINED REFERENCE VALUE:
+
+Time Saved Benefits:
+- Patient Throughput (LWBS)     $189,000
+- Scribe Cost Reduction         $337,500
+- Physician Retention           $240,000
+Subtotal:                       $766,500
+
+Documentation Quality Benefits:
+- Level-of-Service Accuracy     $204,120
+- Documentation-Related Denials $368,550
+Subtotal:                       $572,670
+
+TOTAL POTENTIAL VALUE:          $1,339,170
+For 25 physicians at 70% adoption
+~$53,567 per physician/year
+
+---
+
+BRIDGE SECTION:
+
+"You've seen the framework.
+
+The reference scenario showed potential value of $1,339,170 for a 25-physician ED. But your department is different.
+
+Different physician count. Different LWBS rates. Different scribe situation.
+
+Ready to see what Abridge could mean for YOUR ED?"
+
+[Build My ROI Model →]
+
+← Or explore another care setting
+
+---
+
+DESIGN:
+- Use exact same visual design as the refined Outpatient page
+- Same color scheme (coral accents, white backgrounds, gray text)
+- Same calculation step format with plain-English questions
+- Same hierarchy: Insight → Framework → Reference → Drivers → Total → Bridge
+- When user selects "Emergency Department" from the Learn entry page, route to this version
