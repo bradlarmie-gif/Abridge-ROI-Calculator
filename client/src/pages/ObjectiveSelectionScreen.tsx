@@ -1293,12 +1293,17 @@ export default function ObjectiveSelectionScreen({
     setLastNonCustomPosture(posture);
   };
 
-  // Calculate nursing driver values based on reference scenario and current inputs
+  // Calculate nursing driver values based on actual organization inputs
   const calculateNursingDriverValue = (driverId: string, posture?: "conservative" | "typical" | "aggressive") => {
-    // Reference scenario: 200 beds, 332,150 events/year, 65% adoption
-    const eligibleEvents = 332150;
-    const staffedBeds = 200;
-    const nursingFTEs = 280;
+    // Use actual values from state, with sensible defaults
+    const actualBeds = typeof nursingStaffedBeds === "number" ? nursingStaffedBeds : 200;
+    const actualFTEs = typeof nursingFTEsInScope === "number" ? nursingFTEsInScope : 300;
+    const util = utilizationPercent ?? 65;
+    // Documentation events: ~750 per bed per year × utilization
+    const totalDocEvents = actualBeds * 750;
+    const eligibleEvents = Math.round(totalDocEvents * (util / 100));
+    const staffedBeds = actualBeds;
+    const nursingFTEs = actualFTEs;
     
     const p = posture ? NURSING_POSTURE_PRESETS[posture] : {
       minutesSavedPerEvent: nursingMinutesSavedPerEvent,
@@ -1402,7 +1407,7 @@ export default function ObjectiveSelectionScreen({
   }, [selectedLeverIds, nursingMinutesSavedPerEvent, nursingHourlyRate, nursingOvertimeReductionPct, 
       nursingPctOvertimeFromDocs, nursingAgencyReductionPct, nursingRetentionPreventionPct,
       nursingTimelinessRiskReduction, nursingCompletenessRiskReduction, nursingSafetyPreventionPct,
-      nursingCcmccCaptureImprovement]);
+      nursingCcmccCaptureImprovement, nursingStaffedBeds, nursingFTEsInScope, utilizationPercent]);
 
   // Detect nursing posture based on current values - checks all key posture-driven parameters
   const detectedNursingPosture = useMemo((): ValuePosture => {
@@ -1974,13 +1979,97 @@ export default function ObjectiveSelectionScreen({
         return Math.round(premiumHoursAvoided * ftOvertimePremiumRate);
       };
       
+      // ============================================================
+      // NURSING-SPECIFIC DRIVER CALCULATIONS
+      // ============================================================
+      const actualBeds = typeof nursingStaffedBeds === "number" ? nursingStaffedBeds : 200;
+      const actualFTEs = typeof nursingFTEsInScope === "number" ? nursingFTEsInScope : 300;
+      const nursingUtil = util;
+      const totalDocEvents = actualBeds * 750;
+      const nursingEligibleEvents = Math.round(totalDocEvents * (nursingUtil / 100));
+      
+      const calcNursingDocTimeSavings = () => {
+        const hoursSaved = (nursingEligibleEvents * nursingMinutesSavedPerEvent) / 60;
+        return Math.round(hoursSaved * nursingHourlyRate);
+      };
+      
+      const calcNursingOvertimeReduction = () => {
+        const totalHours = actualFTEs * 2080;
+        const otHours = totalHours * 0.08;
+        const docOtHours = otHours * (nursingPctOvertimeFromDocs / 100);
+        const hoursAvoided = docOtHours * (nursingOvertimeReductionPct / 100);
+        const otPremium = 22.50; // Net OT cost above base
+        return Math.round(hoursAvoided * otPremium);
+      };
+      
+      const calcNursingAgencyReduction = () => {
+        const totalHours = actualFTEs * 2080;
+        const agencyHours = totalHours * 0.12;
+        const hoursReduced = agencyHours * (nursingAgencyReductionPct / 100);
+        const premiumPerHour = 50;
+        return Math.round(hoursReduced * premiumPerHour);
+      };
+      
+      const calcNursingRetention = () => {
+        const turnoverRate = 0.22;
+        const departures = actualFTEs * turnoverRate;
+        const burnoutDepartures = departures * 0.40;
+        const departuresAvoided = burnoutDepartures * (nursingRetentionPreventionPct / 100);
+        const costPerDeparture = 65520;
+        return Math.round(departuresAvoided * costPerDeparture);
+      };
+      
+      const calcNursingTimeliness = () => {
+        const baseRisk = 75000;
+        return Math.round(baseRisk * (nursingTimelinessRiskReduction / 100));
+      };
+      
+      const calcNursingCompleteness = () => {
+        const baseRisk = 70000;
+        return Math.round(baseRisk * (nursingCompletenessRiskReduction / 100));
+      };
+      
+      const calcNursingSafety = () => {
+        const patientDays = 73000;
+        const safetyEvents = 416;
+        const docRelated = safetyEvents * 0.35;
+        const eventsAvoided = docRelated * (nursingSafetyPreventionPct / 100);
+        const costPerEvent = 5857;
+        return Math.round(eventsAvoided * costPerEvent);
+      };
+      
+      const calcNursingCcmcc = () => {
+        const discharges = 8500;
+        const opportunityCases = discharges * 0.25;
+        const gapCases = opportunityCases * 0.40;
+        const additionalCaptures = gapCases * (nursingCcmccCaptureImprovement / 100);
+        const revenuePerCapture = 1001;
+        return Math.round(additionalCaptures * revenuePerCapture);
+      };
+      
       return {
+        // Provider-centric drivers
         patientAccess: calcPatientAccess(),
         wrvu: calcWrvu(),
         workforce: calcRetention(),
         hcc: calcHcc(),
         denials: calcDenials(),
         overtime: calcOvertime(),
+        // Nursing-specific drivers
+        documentation_time_savings: calcNursingDocTimeSavings(),
+        overtime_reduction: calcNursingOvertimeReduction(),
+        agency_reduction: calcNursingAgencyReduction(),
+        nurse_retention: calcNursingRetention(),
+        documentation_timeliness: calcNursingTimeliness(),
+        documentation_completeness: calcNursingCompleteness(),
+        safety_event_reduction: calcNursingSafety(),
+        ccmcc_support: calcNursingCcmcc(),
+        // Also add nursingOvertime for the ModelBuilder-style IDs
+        nursingOvertime: calcNursingOvertimeReduction(),
+        nursingDocTime: calcNursingDocTimeSavings(),
+        nursingAgency: calcNursingAgencyReduction(),
+        nursingRetention: calcNursingRetention(),
+        nursingCompleteness: calcNursingCompleteness(),
       };
     };
   }, [
@@ -2003,6 +2092,19 @@ export default function ObjectiveSelectionScreen({
     ftDenialPreventionRate,
     ftOvertimeAfterHoursReduction,
     ftOvertimePremiumRate,
+    // Nursing-specific dependencies
+    nursingStaffedBeds,
+    nursingFTEsInScope,
+    nursingMinutesSavedPerEvent,
+    nursingHourlyRate,
+    nursingOvertimeReductionPct,
+    nursingPctOvertimeFromDocs,
+    nursingAgencyReductionPct,
+    nursingRetentionPreventionPct,
+    nursingTimelinessRiskReduction,
+    nursingCompletenessRiskReduction,
+    nursingSafetyPreventionPct,
+    nursingCcmccCaptureImprovement,
   ]);
   
   // Current driver values (using current posture/inputs)

@@ -416,6 +416,113 @@ const DRIVER_METADATA: Record<string, {
       validation: ["Analyze denial reasons", "Review medical necessity denials", "Calculate appeals rate"],
     },
   },
+  // Nursing Drivers
+  nursingOvertime: {
+    name: "Nursing Overtime Reduction",
+    category: "time",
+    categoryLabel: "Workforce Protection",
+    icon: Clock,
+    description: "Reduced nursing overtime from documentation burden",
+    methodology: {
+      logic: "Nurses spend 25-35% of their time on documentation. Reducing this burden directly reduces overtime driven by charting catch-up.",
+      formula: "OT Hours Saved = Nurse FTEs × Weekly OT Hours × Doc Portion × Reduction Rate\nAnnual Savings = OT Hours Saved × 50 weeks × OT Rate",
+      assumptions: [
+        { label: "Documentation portion of OT", value: "40-60%", source: "Nursing surveys" },
+        { label: "Reduction rate", value: "45-75%", source: "Pilot data" },
+        { label: "OT rate multiplier", value: "1.5x base", source: "Standard labor law" },
+      ],
+      factors: {
+        increase: ["High baseline overtime", "Chronic understaffing", "Documentation-heavy workflows"],
+        decrease: ["Low overtime baseline", "Adequate staffing", "Already optimized workflows"],
+      },
+      validation: ["Review overtime reports by unit", "Survey nurses on documentation time", "Compare shift-end departure times"],
+    },
+  },
+  nursingDocTime: {
+    name: "Documentation Time Savings",
+    category: "time",
+    categoryLabel: "Workflow Efficiency",
+    icon: FileText,
+    description: "Time returned to direct patient care",
+    methodology: {
+      logic: "Nurses spend 2.5+ hours per shift on documentation. Reducing this returns time to bedside care, improving patient outcomes and job satisfaction.",
+      formula: "Hours Returned = Nurse FTEs × Doc Hours/Shift × Shifts/Week × Reduction %\nValue = Hours × Hourly Rate × Realization Factor",
+      assumptions: [
+        { label: "Documentation per shift", value: "2.0-3.5 hrs", source: "Time-motion studies" },
+        { label: "Time reduction", value: "25-45%", source: "Abridge nursing pilots" },
+        { label: "Realization factor", value: "50%", source: "Conservative estimate" },
+      ],
+      factors: {
+        increase: ["High documentation burden", "Complex patient populations", "Multiple EHR systems"],
+        decrease: ["Already efficient workflows", "Strong tech adoption", "Low documentation burden"],
+      },
+      validation: ["Conduct time-motion study", "Survey nurses on documentation time", "Measure shift end times"],
+    },
+  },
+  nursingAgency: {
+    name: "Agency & Travel Nurse Reduction",
+    category: "time",
+    categoryLabel: "Workforce Protection",
+    icon: Users,
+    description: "Convert expensive agency staff to permanent FTEs",
+    methodology: {
+      logic: "Agency nurses cost 2-3x permanent staff. Improving work conditions through reduced documentation burden helps retain staff and reduce agency dependence.",
+      formula: "Premium Saved = Agency FTEs × (Agency Cost - Staff Cost) × Conversion Rate\nAnnual Value = Premium × Utilization Rate",
+      assumptions: [
+        { label: "Agency cost premium", value: "2-3x", source: "Staffing industry data" },
+        { label: "Conversion rate", value: "5-20%", source: "Conservative estimate" },
+        { label: "Annual agency FTE cost", value: "$180-220K", source: "Agency contracts" },
+      ],
+      factors: {
+        increase: ["High agency utilization", "Large cost premium", "Retention challenges"],
+        decrease: ["Low agency use", "Competitive local market", "Union constraints"],
+      },
+      validation: ["Review agency spend by unit", "Calculate per-FTE premium", "Analyze turnover patterns"],
+    },
+  },
+  nursingRetention: {
+    name: "Nurse Retention",
+    category: "time",
+    categoryLabel: "Workforce Protection",
+    icon: Heart,
+    description: "Reduced turnover from burnout prevention",
+    methodology: {
+      logic: "Nursing turnover is a $50K+ event. Documentation burden drives burnout, which drives turnover. Reducing this burden improves retention.",
+      formula: "Turnover Prevented = Nurse FTEs × Turnover Rate × Burnout % × Doc Attribution × Prevention Rate\nAnnual Value = Nurses Retained × Replacement Cost",
+      assumptions: [
+        { label: "Nursing turnover rate", value: "18-25%", source: "Industry benchmarks" },
+        { label: "Burnout-driven turnover", value: "50-60%", source: "Nursing surveys" },
+        { label: "Documentation attribution", value: "25-35%", source: "Exit interviews" },
+        { label: "Replacement cost", value: "$50-80K", source: "HR data" },
+      ],
+      factors: {
+        increase: ["High turnover", "Burnout signals", "Documentation complaints"],
+        decrease: ["Low turnover", "Strong culture", "Competitive compensation"],
+      },
+      validation: ["Review exit interview data", "Survey current staff on burnout", "Calculate true replacement cost"],
+    },
+  },
+  nursingCompleteness: {
+    name: "Documentation Timeliness & Completeness",
+    category: "quality",
+    categoryLabel: "Quality & Compliance",
+    icon: FileCheck,
+    description: "Improved documentation quality and regulatory compliance",
+    methodology: {
+      logic: "Complete, timely documentation reduces compliance risk, supports care coordination, and improves handoffs. Value is often operational rather than direct revenue.",
+      formula: "Value = Operational Improvement Estimate × Utilization Rate",
+      assumptions: [
+        { label: "Documentation deficiency rate", value: "15-25%", source: "Chart audits" },
+        { label: "Improvement rate", value: "40-60%", source: "Quality studies" },
+        { label: "Operational value", value: "Variable", source: "Organization-specific" },
+      ],
+      factors: {
+        increase: ["High deficiency rates", "Regulatory scrutiny", "Care coordination issues"],
+        decrease: ["Already strong compliance", "Low deficiency rates", "Minimal regulatory risk"],
+      },
+      validation: ["Review chart audit results", "Analyze documentation lag times", "Assess handoff quality"],
+    },
+  },
 };
 
 // ============================================================================
@@ -448,6 +555,8 @@ export default function SummaryCommandCenter({
     : "Outpatient";
   
   const isEDSetting = selectedSettings.includes("ed");
+  const isNursingSetting = selectedSettings.includes("nursing");
+  const isInpatientSetting = selectedSettings.includes("inpatient");
 
   // Categorize drivers by type
   const categorizedDrivers = useMemo(() => {
@@ -612,7 +721,12 @@ export default function SummaryCommandCenter({
             <div className="hidden md:flex items-center gap-3 text-sm text-gray-600">
               <span className="font-medium text-gray-900">{settingLabel}</span>
               <span className="text-gray-300">│</span>
-              <span>{formatNumber(modelResults.providers)} {isEDSetting ? "physicians" : "providers"}</span>
+              <span>
+                {isNursingSetting 
+                  ? `${formatNumber(modelResults.nursingStaffedBeds || 0)} beds / ${formatNumber(modelResults.nursingFTEs || 0)} nurse FTEs`
+                  : `${formatNumber(modelResults.providers)} ${isEDSetting ? "physicians" : isInpatientSetting ? "hospitalists" : "providers"}`
+                }
+              </span>
               <span className="text-gray-300">│</span>
               <span className="font-semibold text-emerald-600">{formatCurrency(modelResults.netGain)} net value</span>
               <span className="text-gray-300">│</span>
@@ -849,15 +963,28 @@ export default function SummaryCommandCenter({
         <ul className="space-y-2 text-sm text-gray-600 mb-4">
           <li className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
-            <span>{formatNumber(modelResults.providers)} {isEDSetting ? "physicians" : "providers"} with {formatNumber(modelResults.encounters)} annual encounters</span>
+            <span>
+              {isNursingSetting 
+                ? `${formatNumber(modelResults.nursingStaffedBeds || 0)} staffed beds with ${formatNumber(modelResults.nursingFTEs || 0)} nurse FTEs`
+                : `${formatNumber(modelResults.providers)} ${isEDSetting ? "physicians" : isInpatientSetting ? "hospitalists" : "providers"} with ${formatNumber(modelResults.encounters)} annual ${isInpatientSetting ? "admissions" : "encounters"}`
+              }
+            </span>
           </li>
           <li className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
-            <span>{Math.round(modelResults.utilizationRate * 100)}% adoption rate = {formatNumber(modelResults.eligibleEncounters)} eligible encounters</span>
+            <span>
+              {isNursingSetting
+                ? `${Math.round(modelResults.utilizationRate * 100)}% adoption rate across nursing documentation`
+                : `${Math.round(modelResults.utilizationRate * 100)}% adoption rate = ${formatNumber(modelResults.eligibleEncounters)} eligible ${isInpatientSetting ? "admissions" : "encounters"}`
+              }
+            </span>
           </li>
           <li className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
-            <span>Investment of {formatCurrency(modelResults.investment)} annually</span>
+            <span>
+              Investment of {formatCurrency(modelResults.investment)} annually
+              {isNursingSetting && ` (${formatCurrency(modelResults.nursingCostPerBedPerMonth || 75)}/bed/month)`}
+            </span>
           </li>
         </ul>
         <div className="flex gap-4">
@@ -895,22 +1022,45 @@ export default function SummaryCommandCenter({
           </button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div>
-            <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.providers)}</div>
-            <div className="text-sm text-gray-500">{isEDSetting ? "ED Physicians" : "Providers"}</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.encounters)}</div>
-            <div className="text-sm text-gray-500">Annual Encounters</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900">{Math.round(modelResults.utilizationRate * 100)}%</div>
-            <div className="text-sm text-gray-500">Utilization</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-emerald-600">{formatNumber(modelResults.eligibleEncounters)}</div>
-            <div className="text-sm text-gray-500">Eligible Encounters</div>
-          </div>
+          {isNursingSetting ? (
+            <>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.nursingStaffedBeds || 0)}</div>
+                <div className="text-sm text-gray-500">Staffed Beds</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.nursingFTEs || 0)}</div>
+                <div className="text-sm text-gray-500">Nurse FTEs</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{Math.round(modelResults.utilizationRate * 100)}%</div>
+                <div className="text-sm text-gray-500">Adoption Rate</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-emerald-600">{modelResults.nursingUnitType || "Mixed"}</div>
+                <div className="text-sm text-gray-500">Unit Type</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.providers)}</div>
+                <div className="text-sm text-gray-500">{isEDSetting ? "ED Physicians" : isInpatientSetting ? "Hospitalists" : "Providers"}</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.encounters)}</div>
+                <div className="text-sm text-gray-500">Annual {isInpatientSetting ? "Admissions" : "Encounters"}</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{Math.round(modelResults.utilizationRate * 100)}%</div>
+                <div className="text-sm text-gray-500">Utilization</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-emerald-600">{formatNumber(modelResults.eligibleEncounters)}</div>
+                <div className="text-sm text-gray-500">Eligible {isInpatientSetting ? "Admissions" : "Encounters"}</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
