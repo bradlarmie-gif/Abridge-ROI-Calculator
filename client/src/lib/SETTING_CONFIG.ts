@@ -116,76 +116,51 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
   ],
   nursing: [
-    // Capacity & Labor
+    // ⏱️ TIME SAVED BENEFITS
     {
-      id: "documentation_time_savings",
-      label: "Documentation Time Savings",
-      category: "capacityLabor",
-      description: "Return hours to nurses through efficient documentation.",
-      driverSummary: "staffing efficiency, reduced administrative burden.",
-      keyMetric: "Hours returned annually",
-    },
-    {
-      id: "overtime_reduction",
+      id: "nursingOvertime",
       label: "Overtime Reduction",
-      category: "capacityLabor",
-      description: "Reduce overtime driven by end-of-shift documentation.",
-      driverSummary: "overtime spend reduction, labor cost savings.",
-      keyMetric: "OT hours avoided",
+      category: "time",
+      description: "Eliminate end-of-shift documentation catch-up",
+      driverSummary: "Most directly measurable—shows up in payroll data",
+      keyMetric: "$400K-900K for 200 staffed beds",
     },
     {
-      id: "agency_reduction",
+      id: "nursingDocTime",
+      label: "Documentation Time Savings",
+      category: "time",
+      description: "Return hours to bedside care",
+      driverSummary: "Immediate impact on nurse workflow",
+      keyMetric: "$300K-700K for 200 staffed beds",
+    },
+    {
+      id: "nursingAgency",
       label: "Agency & Travel Nurse Reduction",
-      category: "capacityLabor",
-      description: "Decrease reliance on premium labor through retention.",
-      driverSummary: "agency spend reduction, workforce stability.",
-      keyMetric: "Agency hours reduced",
+      category: "time",
+      description: "Convert expensive agency spend to staff positions",
+      driverSummary: "Agency nurses cost 2-3x staff nurses",
+      keyMetric: "$200K-500K for 200 staffed beds",
     },
     {
-      id: "nurse_retention",
+      id: "nursingRetention",
       label: "Nurse Retention",
-      category: "capacityLabor",
-      description: "Lower burnout and turnover from administrative burden.",
-      driverSummary: "reduced turnover, avoided replacement costs.",
-      keyMetric: "Departures avoided",
-    },
-    // Documentation Quality
-    {
-      id: "documentation_timeliness",
-      label: "Documentation Timeliness",
-      category: "documentationQuality",
-      description: "Enable real-time documentation at point of care.",
-      driverSummary: "reduced documentation lag, improved care coordination.",
-      keyMetric: "Documentation lag reduction",
-    },
-    {
-      id: "documentation_completeness",
-      label: "Documentation Completeness",
-      category: "documentationQuality",
-      description: "Improve compliance and clinical documentation rates.",
-      driverSummary: "improved field completion, better compliance.",
-      keyMetric: "Field completion rate",
-    },
-    // Quality & Revenue (Indirect Impact)
-    {
-      id: "safety_event_reduction",
-      label: "Safety Event Risk Reduction",
-      category: "qualityRevenue",
-      description: "Support identification of at-risk patients (HAPI, Falls).",
-      driverSummary: "reduced safety events, improved patient outcomes.",
-      keyMetric: "Risk exposure reduction",
+      category: "time",
+      description: "Address the top driver of nursing burnout",
+      driverSummary: "Long-term impact—12+ months to measure fully",
+      keyMetric: "$100K-250K for 200 staffed beds",
       hasWarning: true,
-      warningText: "Indirect relationship—see important limitations",
+      warningText: "Long-term—12+ months to see full impact",
     },
+    // 📋 DOCUMENTATION QUALITY BENEFITS
     {
-      id: "ccmcc_support",
-      label: "Clinical Documentation & Revenue Support",
-      category: "qualityRevenue",
-      description: "Support CDI efforts through complete clinical indicators.",
-      driverSummary: "CC/MCC capture support, DRG accuracy.",
-      keyMetric: "CC/MCC capture support",
+      id: "nursingCompleteness",
+      label: "Documentation Timeliness & Completeness",
+      category: "documentation",
+      description: "Real-time documentation, regulatory compliance",
+      driverSummary: "Harder to monetize but important for compliance",
+      keyMetric: "$30K-75K for 200 staffed beds",
       hasWarning: true,
-      warningText: "Indirect relationship—see important limitations",
+      warningText: "Harder to monetize—but important for compliance",
     },
   ],
 
@@ -256,17 +231,13 @@ export const CATEGORY_LABELS: Record<LeverCategory, string> = {
 };
 
 export const NURSING_CATEGORY_LABELS: Record<string, { label: string; description: string }> = {
-  capacityLabor: {
-    label: "Capacity & Labor",
+  time: {
+    label: "Time Saved Benefits",
     description: "Workforce efficiency and cost management",
   },
-  documentationQuality: {
-    label: "Documentation Quality",
+  documentation: {
+    label: "Documentation Quality Benefits",
     description: "Clinical documentation and compliance",
-  },
-  qualityRevenue: {
-    label: "Quality & Revenue",
-    description: "Requires additional assumptions—see methodology",
   },
 };
 
