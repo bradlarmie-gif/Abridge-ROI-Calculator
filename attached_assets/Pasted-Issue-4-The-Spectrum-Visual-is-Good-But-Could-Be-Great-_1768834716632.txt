@@ -1,0 +1,110 @@
+Issue 4: The Spectrum Visual is Good, But Could Be Great
+Current:
+
+Static, flat bars
+Pointers are okay but not stunning
+
+God-tier enhancement:
+CopyAdd subtle motion:
+- When page loads, the gradient bar "paints" from left to right
+- The "YOU" pointer slides in from left (200ms delay)
+- The "ABRIDGE" pointer slides in from right (400ms delay)
+- The bracket/gap indicator draws in last (600ms delay)
+
+Result: Tells a story visually, not just showing data
+
+Also:
+- Make the gap bracket more prominent (thicker line, coral color)
+- Add a subtle pulse animation on the gap label
+- Consider: Vertical lines extending down from pointers to 
+  the cards below to visually connect them
+
+Issue 5: The Side-by-Side Cards Need More Differentiation
+Problem:
+
+Gray vs. light green is subtle
+Doesn't create enough visual punch
+Hard to quickly scan which is which
+
+God-tier fix:
+CopyLEFT CARD (Current):
+- Keep light gray background
+- Add subtle icon in top corner (like a muted microphone)
+- Border: 2px solid gray
+- Title: "Your Current" in smaller, gray text above big number
+
+RIGHT CARD (Abridge):
+- Light green background (good)
+- Add subtle Abridge "A" logo watermark in background
+- Border: 2px solid green
+- Add a small "↑" indicator showing improvement %
+- Title: "With Abridge" in green
+
+The difference should be IMMEDIATELY obvious from 10 feet away.
+
+Issue 6: Driver Selection Cards Are Good, Need One Tweak
+What's almost perfect:
+
+Card design is clean
+Selection state is clear
+Typical gap range is helpful
+
+The one thing missing:
+CopyAdd a "Selected: 2 of 6" indicator that's STICKY at the bottom.
+
+Like this:
+
+┌──────────────────────────────────────────────┐
+│ [Cards above, scrollable]                    │
+└──────────────────────────────────────────────┘
+┌──────────────────────────────────────────────┐ ← Sticky
+│  Selected: 2 drivers                         │
+│  (Select 2-4 to continue)                    │
+│                                              │
+│          [Calculate Your Gap →]              │
+└──────────────────────────────────────────────┘
+
+This gives constant feedback as they select/deselect.
+Currently it's easy to forget how many you've picked.
+
+Issue 7: The Value Gap Accordions Are Functional, Not Beautiful
+Current state:
+
+They work
+The math is there
+But it feels... administrative
+
+God-tier fix:
+CopyEach accordion should feel like revealing a secret, not opening a folder.
+
+COLLAPSED STATE:
+┌────────────────────────────────────────────────────┐
+│  👥 Patient Access              +$78,400/year  [v] │
+└────────────────────────────────────────────────────┘
+↓ (Subtle line animation on expand)
+
+EXPANDED STATE:
+┌────────────────────────────────────────────────────┐
+│  👥 Patient Access              +$78,400/year  [^] │
+│                                                    │
+│  ┌──────────────────┐    ┌──────────────────┐    │
+│  │ YOUR CURRENT     │    │ WITH ABRIDGE     │    │
+│  │                  │    │                  │    │
+│  │ [Gray box with   │    │ [Green box with  │    │
+│  │  calculation]    │    │  calculation]    │    │
+│  │                  │    │                  │    │
+│  │ [Gray bar ████]  │    │ [Green ████████] │    │
+│  │                  │    │                  │    │
+│  │ $50,000/year     │    │ $130,000/year    │    │
+│  └──────────────────┘    └──────────────────┘    │
+│                                                    │
+│              Gap: +$80,000/year                    │
+│                    ▲                               │
+│              (Coral, bold, larger)                 │
+└────────────────────────────────────────────────────┘
+
+Key: The expanded content should FADE IN + SLIDE DOWN (not just appear).
+The bars should GROW from left to right (animated, 400ms).
+The gap number should COUNT UP from $0.
+
+Right now it feels static. Make it ALIVE.

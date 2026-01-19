@@ -557,7 +557,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               We'll show you what you might be leaving on the table.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {(["ambient", "scribes", "manual"] as SolutionType[]).map((solution) => {
                 const data = SOLUTION_DATA[solution];
                 const isSelected = selectedSolution === solution;
@@ -567,20 +567,29 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <button
                     key={solution}
                     onClick={() => setSelectedSolution(solution)}
-                    className={`p-8 rounded-xl border-2 text-left transition-all duration-200 ${
+                    className={`group relative p-10 rounded-2xl border-2 text-left transition-all duration-300 ${
                       isSelected
-                        ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
-                        : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
+                        ? "border-[#E85D3F] bg-gradient-to-b from-[#E85D3F]/5 to-[#E85D3F]/10 shadow-xl shadow-[#E85D3F]/10 -translate-y-1"
+                        : "border-neutral-200 hover:border-neutral-300 hover:-translate-y-1 hover:shadow-xl bg-white"
                     }`}
+                    style={{ minHeight: "200px" }}
                     data-testid={`card-solution-${solution}`}
                   >
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${
-                      isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300 ${
+                      isSelected 
+                        ? "bg-[#E85D3F]/15 scale-105" 
+                        : "bg-neutral-100 group-hover:bg-neutral-200 group-hover:scale-105"
                     }`}>
-                      <Icon className={`w-7 h-7 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
+                      <Icon className={`w-8 h-8 transition-colors ${isSelected ? "text-[#E85D3F]" : "text-neutral-500 group-hover:text-neutral-700"}`} />
                     </div>
-                    <h3 className="font-semibold text-lg text-neutral-900 mb-1">{data.name}</h3>
-                    <p className="text-sm text-neutral-500">{data.subtitle}</p>
+                    <h3 className="font-semibold text-xl text-neutral-900 mb-2">{data.name}</h3>
+                    <p className="text-base text-neutral-500 leading-relaxed">{data.subtitle}</p>
+                    
+                    {isSelected && (
+                      <div className="absolute top-4 right-4 w-6 h-6 bg-[#E85D3F] rounded-full flex items-center justify-center">
+                        <Check className="w-4 h-4 text-white" />
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -628,121 +637,134 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         {step === 2 && (
           <div className="animate-in fade-in duration-300">
             <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step2-title">
-              Tell us about your current situation
+              Let's start with the basics.
             </h1>
-            <p className="text-lg text-neutral-500 mb-10">We'll help you understand where you stand.</p>
+            <p className="text-lg text-neutral-500 mb-12">We'll build your baseline together.</p>
 
-            <div className="space-y-10">
-              <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-3">
-                  How many providers are using {solutionData?.name || "your solution"}?
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={providers === 0 ? "" : providers.toString()}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9]/g, '');
-                    setProviders(val === "" ? 0 : parseInt(val, 10));
-                  }}
-                  placeholder="e.g., 50"
-                  className="w-full px-5 py-4 rounded-xl border border-neutral-200 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F] transition-all"
-                  data-testid="input-providers"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                  Total annual {selectedSetting} encounters across these providers?
-                </label>
-                <p className="text-sm text-neutral-500 mb-3 flex items-center gap-1.5">
-                  <Lightbulb className="w-4 h-4 text-amber-500" />
-                  ~2,000 per provider is typical
+            <div className="bg-neutral-50 rounded-2xl p-8 md:p-10 space-y-8">
+              <div className="space-y-6">
+                <p className="text-xl text-neutral-700 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-3">
+                  <span>You have</span>
+                  <span className="inline-flex">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={providers === 0 ? "" : providers.toString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setProviders(val === "" ? 0 : parseInt(val, 10));
+                      }}
+                      placeholder="50"
+                      className="w-20 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                      data-testid="input-providers"
+                    />
+                  </span>
+                  <span>providers</span>
                 </p>
-                <div className="flex gap-3 items-center">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={annualEncounters === 0 ? "" : annualEncounters.toLocaleString()}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/[^0-9]/g, '');
-                      setAnnualEncounters(val === "" ? 0 : parseInt(val, 10));
-                    }}
-                    placeholder="e.g., 100,000"
-                    className="flex-1 px-5 py-4 rounded-xl border border-neutral-200 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F] transition-all"
-                    data-testid="input-encounters"
-                  />
-                  {providers > 0 && (
-                    <button
-                      onClick={() => setAnnualEncounters(providers * 2000)}
-                      className="px-4 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-medium rounded-xl transition-colors whitespace-nowrap"
-                      data-testid="button-auto-calculate"
-                      title={`Auto-fill: ${providers} providers × 2,000 = ${(providers * 2000).toLocaleString()}`}
-                    >
-                      Auto-populate
-                    </button>
-                  )}
-                </div>
+
+                <p className="text-xl text-neutral-700 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-3">
+                  <span>handling roughly</span>
+                  <span className="inline-flex items-center gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={annualEncounters === 0 ? "" : annualEncounters.toLocaleString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setAnnualEncounters(val === "" ? 0 : parseInt(val, 10));
+                      }}
+                      placeholder="100,000"
+                      className="w-32 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                      data-testid="input-encounters"
+                    />
+                    {providers > 0 && annualEncounters === 0 && (
+                      <button
+                        onClick={() => setAnnualEncounters(providers * 2000)}
+                        className="px-3 py-2 bg-[#E85D3F]/10 hover:bg-[#E85D3F]/20 text-[#E85D3F] text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                        data-testid="button-auto-calculate"
+                        title={`Auto-fill: ${providers} providers × 2,000 = ${(providers * 2000).toLocaleString()}`}
+                      >
+                        Use typical
+                      </button>
+                    )}
+                  </span>
+                  <span>encounters/year</span>
+                </p>
+
                 {annualEncounters > 0 && providers > 0 && (
-                  <p className="mt-3 text-sm text-neutral-500">
-                    That's {Math.round(annualEncounters / providers).toLocaleString()} per provider
-                    {Math.round(annualEncounters / providers) >= 500 && Math.round(annualEncounters / providers) <= 5000 
-                      ? " - looks right" 
-                      : " - is that correct?"}
-                  </p>
+                  <div className="flex items-center gap-2 text-base text-neutral-500 pl-1">
+                    <Lightbulb className="w-5 h-5 text-amber-500" />
+                    <span>
+                      That's ~{Math.round(annualEncounters / providers).toLocaleString()} per provider
+                      <span className="text-neutral-400">
+                        {Math.round(annualEncounters / providers) >= 1500 && Math.round(annualEncounters / providers) <= 2500 
+                          ? " (typical)" 
+                          : Math.round(annualEncounters / providers) > 2500
+                            ? " (high volume)"
+                            : " (lower volume)"}
+                      </span>
+                    </span>
+                  </div>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-2">
-                  What's your current utilization?
-                </label>
-                <p className="text-sm text-neutral-500 mb-4">
-                  How often do providers actually use {solutionData?.name || "your solution"}?
+              <div className="border-t border-neutral-200 pt-8">
+                <p className="text-xl text-neutral-700 mb-6">
+                  And your current utilization is:
                 </p>
                 
-                <div className="bg-neutral-50 rounded-xl p-6">
-                  <div className="mb-2 text-center">
-                    <span className="text-3xl font-bold text-neutral-900">{utilization}%</span>
+                <div className="relative">
+                  <div className="mb-4 text-center">
+                    <span className="inline-flex items-baseline gap-1 bg-white border-2 border-neutral-200 rounded-xl px-5 py-3 shadow-sm">
+                      <span className="text-4xl font-bold text-neutral-900">{utilization}</span>
+                      <span className="text-lg text-neutral-400">%</span>
+                    </span>
                   </div>
                   
-                  <div className="relative">
-                    <div className="absolute inset-x-0 top-1/2 h-2 bg-gradient-to-r from-red-200 via-amber-200 via-emerald-200 to-emerald-300 rounded-full -translate-y-1/2" />
+                  <div className="relative rounded-2xl bg-gradient-to-r from-red-100 via-amber-100 via-60% via-emerald-100 to-emerald-200 p-1">
+                    <div className="absolute inset-0 flex items-center justify-between px-8 pointer-events-none">
+                      <Frown className="w-7 h-7 text-red-400/50" />
+                      <Meh className="w-7 h-7 text-amber-400/50" />
+                      <Smile className="w-7 h-7 text-emerald-400/50" />
+                      <PartyPopper className="w-7 h-7 text-emerald-500/50" />
+                    </div>
+                    
                     <Slider
                       value={[utilization]}
                       onValueChange={(v) => setUtilization(v[0])}
                       min={10}
                       max={90}
                       step={5}
-                      className="relative z-10"
+                      className="relative z-10 [&_[role=slider]]:w-12 [&_[role=slider]]:h-12 [&_[role=slider]]:bg-white [&_[role=slider]]:border-2 [&_[role=slider]]:border-neutral-300 [&_[role=slider]]:shadow-lg [&_[role=slider]]:rounded-xl [&_[role=slider]]:cursor-grab [&_[role=slider]]:active:cursor-grabbing [&_[role=slider]]:hover:border-neutral-400 [&_[role=slider]]:focus-visible:ring-2 [&_[role=slider]]:focus-visible:ring-[#E85D3F]/30 [&_.relative]:bg-transparent [&_.relative]:h-14 [&_[class*='bg-primary']]:bg-transparent"
                       data-testid="slider-utilization"
                     />
                   </div>
                   
-                  <div className="flex justify-between mt-4 text-xs">
-                    <span className="flex items-center gap-1 text-red-500"><Frown className="w-4 h-4" /> Low</span>
-                    <span className="flex items-center gap-1 text-amber-500"><Meh className="w-4 h-4" /> Average</span>
-                    <span className="flex items-center gap-1 text-emerald-500"><Smile className="w-4 h-4" /> Good</span>
-                    <span className="flex items-center gap-1 text-emerald-600"><PartyPopper className="w-4 h-4" /> Great</span>
+                  <div className="flex justify-between text-xs text-neutral-400 mt-2 px-2">
+                    <span>10%</span>
+                    <span>90%</span>
                   </div>
                   
-                  <div className="mt-6 flex items-center justify-between">
-                    <span className={`flex items-center gap-2 font-semibold px-3 py-1.5 rounded-full ${status.color} ${status.bgColor}`}>
-                      <StatusIcon className="w-4 h-4" /> You're at: {status.label}
+                  <div className="flex items-center justify-between mt-6">
+                    <span className={`flex items-center gap-2 font-semibold px-4 py-2.5 rounded-full text-sm ${status.color} ${status.bgColor}`}>
+                      <StatusIcon className="w-5 h-5" /> {status.label}
                     </span>
-                    <span className="text-sm text-[#E85D3F] flex items-center gap-1.5">
+                    <span className="text-sm text-[#E85D3F] flex items-center gap-1.5 bg-[#E85D3F]/5 px-4 py-2.5 rounded-full">
                       <Sparkles className="w-4 h-4" />
-                      Abridge avg: {ABRIDGE_BENCHMARKS.utilization}%
+                      Abridge hits {ABRIDGE_BENCHMARKS.utilization}%
                     </span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="bg-amber-50 rounded-xl p-5 border border-amber-200/50">
-                <p className="text-amber-900">
-                  At these numbers, you're documenting <strong className="text-amber-950">{calculations.theirDocumentedEncounters.toLocaleString()}</strong> encounters/year
-                </p>
-              </div>
+            <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200/50">
+              <p className="text-lg text-amber-900 flex items-center gap-3">
+                <BarChart3 className="w-6 h-6 text-amber-600" />
+                <span>
+                  At these numbers, you're documenting <strong className="text-amber-950 font-semibold">{calculations.theirDocumentedEncounters.toLocaleString()}</strong> encounters/year
+                </span>
+              </p>
             </div>
 
             <div className="mt-12 flex justify-end">
