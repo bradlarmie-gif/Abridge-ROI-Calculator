@@ -97,6 +97,7 @@ export default function App() {
             selectedLevers={selectionState.selectedLevers}
             onBack={handleBackToExplore}
             onComplete={handleModelComplete}
+            initialResults={modelResults}
           />
         )}
 

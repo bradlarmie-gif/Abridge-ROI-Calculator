@@ -35,6 +35,7 @@ interface ModelBuilderProps {
   selectedLevers: SelectedLever[];
   onBack: () => void;
   onComplete: (results: ModelResults) => void;
+  initialResults?: ModelResults | null;
 }
 
 export interface ModelResults {
@@ -49,7 +50,8 @@ export interface ModelResults {
   roiMultiple: number;
   paybackMonths: number;
   costPerMonth?: number;
-  pricingModel?: string;
+  enterpriseAnnual?: number;
+  pricingModel?: "per_clinician" | "enterprise";
 }
 
 interface DriverResult {
@@ -167,14 +169,26 @@ export default function ModelBuilder({
   selectedLevers,
   onBack,
   onComplete,
+  initialResults,
 }: ModelBuilderProps) {
-  const [providers, setProviders] = useState<number>(50);
-  const [encounters, setEncounters] = useState<number>(100000);
-  const [utilizationRate, setUtilizationRate] = useState<50 | 55 | 65 | 70 | 80 | 85>(65);
+  const isEDSettingInit = selectedSettings.includes("ed");
+  const defaultProviders = initialResults?.providers ?? (isEDSettingInit ? 25 : 50);
+  const defaultEncounters = initialResults?.encounters ?? (defaultProviders * (isEDSettingInit ? 1800 : 2000));
+  const defaultUtilization = initialResults?.utilizationRate ?? (isEDSettingInit ? 70 : 65);
   
-  const [pricingModel, setPricingModel] = useState<"per_clinician" | "enterprise">("per_clinician");
-  const [costPerMonth, setCostPerMonth] = useState<number>(140);
-  const [enterpriseAnnual, setEnterpriseAnnual] = useState<number>(500000);
+  const [providers, setProviders] = useState<number>(defaultProviders);
+  const [encounters, setEncounters] = useState<number>(defaultEncounters);
+  const [utilizationRate, setUtilizationRate] = useState<50 | 55 | 65 | 70 | 80 | 85>(defaultUtilization as 50 | 55 | 65 | 70 | 80 | 85);
+  
+  const [pricingModel, setPricingModel] = useState<"per_clinician" | "enterprise">(
+    initialResults?.pricingModel ?? "per_clinician"
+  );
+  const [costPerMonth, setCostPerMonth] = useState<number>(
+    initialResults?.costPerMonth ?? 140
+  );
+  const [enterpriseAnnual, setEnterpriseAnnual] = useState<number>(
+    initialResults?.enterpriseAnnual ?? 500000
+  );
   const [contractTerm, setContractTerm] = useState<1 | 2 | 3 | number>(1);
   const [includeImplementation, setIncludeImplementation] = useState(false);
   const [implementationFee, setImplementationFee] = useState<number>(25000);
@@ -523,6 +537,7 @@ export default function ModelBuilder({
       roiMultiple,
       paybackMonths,
       costPerMonth,
+      enterpriseAnnual,
       pricingModel,
     };
     onComplete(results);

@@ -202,6 +202,111 @@ const DRIVER_METADATA: Record<string, {
       validation: ["Analyze denial reasons", "Review documentation-related denials specifically", "Calculate rework costs"],
     },
   },
+  // ED-specific drivers
+  edThroughput: {
+    name: "Patient Throughput / LWBS Reduction",
+    category: "time",
+    categoryLabel: "Capacity & Throughput",
+    icon: Clock,
+    description: "Reduced left-without-being-seen rates through faster documentation",
+    methodology: {
+      logic: "Faster documentation means faster disposition, reducing ED wait times and LWBS rates. Each minute saved per encounter compounds across high-volume ED operations.",
+      formula: "LWBS Avoided = Annual Encounters × LWBS Rate × Reduction Rate\nAnnual Value = LWBS Avoided × Lost Revenue per LWBS",
+      assumptions: [
+        { label: "LWBS rate", value: "2-5%", source: "ED operational data" },
+        { label: "LWBS reduction with Abridge", value: "15-25%", source: "ED deployment data" },
+        { label: "Lost revenue per LWBS", value: "$500-800", source: "ED billing analysis" },
+      ],
+      factors: {
+        increase: ["High baseline LWBS rate", "High ED volume", "Admission revenue potential"],
+        decrease: ["Already low LWBS", "Staffing is primary bottleneck", "Low patient volume"],
+      },
+      validation: ["Review current LWBS rates", "Calculate average ED revenue per visit", "Analyze admission conversion rates"],
+    },
+  },
+  edScribe: {
+    name: "Scribe Cost Reduction",
+    category: "time",
+    categoryLabel: "Capacity & Labor",
+    icon: Users,
+    description: "Reduced scribe FTE requirements",
+    methodology: {
+      logic: "Abridge can replace or reduce scribe coverage, converting variable scribe costs to a more predictable technology investment.",
+      formula: "FTE Reduction = Current Scribe FTEs × Reduction Rate\nAnnual Savings = FTE Reduction × Annual Scribe Cost",
+      assumptions: [
+        { label: "Scribe FTE reduction", value: "50-75%", source: "ED deployment data" },
+        { label: "Annual scribe cost per FTE", value: "$45,000-65,000", source: "Industry benchmarks" },
+      ],
+      factors: {
+        increase: ["Large current scribe program", "High scribe costs", "Scribe turnover issues"],
+        decrease: ["No scribes currently", "Scribes valued for non-documentation tasks", "Contract restrictions"],
+      },
+      validation: ["Confirm current scribe FTEs and costs", "Review scribe contract terms", "Assess non-documentation scribe duties"],
+    },
+  },
+  edRetention: {
+    name: "Physician Retention",
+    category: "time",
+    categoryLabel: "Capacity & Labor",
+    icon: Users,
+    description: "Reduced turnover from lower admin burden",
+    methodology: {
+      logic: "ED physicians face high burnout from documentation burden. Reducing this burden improves satisfaction and retention, avoiding costly replacement.",
+      formula: "Departures Avoided = Physicians × Turnover Reduction Rate\nAnnual Savings = Departures Avoided × Replacement Cost",
+      assumptions: [
+        { label: "Turnover reduction", value: "0.5-2%", source: "HR industry studies" },
+        { label: "ED physician replacement cost", value: "$750,000-1,200,000", source: "MGMA + ED-specific data" },
+      ],
+      factors: {
+        increase: ["High current turnover", "Documentation cited in exit interviews", "Competitive job market"],
+        decrease: ["Low baseline turnover", "Other retention initiatives", "Small physician count"],
+      },
+      validation: ["Review exit interview data", "Calculate current replacement costs", "Survey physician satisfaction"],
+    },
+  },
+  edLevelOfService: {
+    name: "Level-of-Service Accuracy",
+    category: "quality",
+    categoryLabel: "Revenue & Risk",
+    icon: DollarSign,
+    description: "Accurate E/M and wRVU capture from comprehensive documentation",
+    methodology: {
+      logic: "ED encounters often involve high complexity that is under-documented. Better documentation captures true complexity, improving coding accuracy.",
+      formula: "Visits Affected = Eligible Encounters × Improvement Rate\nAnnual Value = Visits Affected × wRVU Improvement × wRVU Rate",
+      assumptions: [
+        { label: "Coding improvement rate", value: "8-15%", source: "ED coding analysis" },
+        { label: "Average wRVU uplift", value: "0.8-1.5 wRVU", source: "ED customer data" },
+        { label: "wRVU rate", value: "$45-70", source: "Organization input" },
+      ],
+      factors: {
+        increase: ["Current undercoding patterns", "High-acuity patient mix", "Complex procedures common"],
+        decrease: ["Already optimized coding", "Strong existing CDI", "Low-acuity ED"],
+      },
+      validation: ["Review current E/M level distribution", "Compare to ED benchmarks", "Analyze missed documentation elements"],
+    },
+  },
+  edDenials: {
+    name: "Documentation-Related Denials",
+    category: "quality",
+    categoryLabel: "Revenue & Risk",
+    icon: AlertCircle,
+    description: "Reduced claim denials from complete ED documentation",
+    methodology: {
+      logic: "ED documentation is particularly prone to denials due to time pressure. Complete, real-time documentation reduces these denials.",
+      formula: "Denials Avoided = Total Claims × Current Denial Rate × Doc-Related % × Reduction Rate\nAnnual Value = Denials Avoided × Average ED Claim Value",
+      assumptions: [
+        { label: "ED denial rate", value: "8-12%", source: "ED billing data" },
+        { label: "Documentation-related %", value: "40%", source: "Denial analysis" },
+        { label: "Documentation denial reduction", value: "30-50%", source: "Revenue cycle studies" },
+        { label: "Average ED claim value", value: "$500-850", source: "Organization data" },
+      ],
+      factors: {
+        increase: ["High current denial rate", "Time pressure in documentation", "Complex payer mix"],
+        decrease: ["Low denial rates", "Denials not documentation-related", "Strong existing processes"],
+      },
+      validation: ["Analyze ED-specific denial reasons", "Review documentation-related denials", "Calculate rework costs"],
+    },
+  },
 };
 
 // ============================================================================
@@ -232,6 +337,8 @@ export default function SummaryCommandCenter({
   const settingLabel = selectedSettings.length > 0 
     ? CARE_SETTING_LABELS[selectedSettings[0]] || "Outpatient" 
     : "Outpatient";
+  
+  const isEDSetting = selectedSettings.includes("ed");
 
   // Categorize drivers by type
   const categorizedDrivers = useMemo(() => {
@@ -396,7 +503,7 @@ export default function SummaryCommandCenter({
             <div className="hidden md:flex items-center gap-3 text-sm text-gray-600">
               <span className="font-medium text-gray-900">{settingLabel}</span>
               <span className="text-gray-300">│</span>
-              <span>{formatNumber(modelResults.providers)} providers</span>
+              <span>{formatNumber(modelResults.providers)} {isEDSetting ? "physicians" : "providers"}</span>
               <span className="text-gray-300">│</span>
               <span className="font-semibold text-emerald-600">{formatCurrency(modelResults.netGain)} net value</span>
               <span className="text-gray-300">│</span>
@@ -633,7 +740,7 @@ export default function SummaryCommandCenter({
         <ul className="space-y-2 text-sm text-gray-600 mb-4">
           <li className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
-            <span>{formatNumber(modelResults.providers)} providers with {formatNumber(modelResults.encounters)} annual encounters</span>
+            <span>{formatNumber(modelResults.providers)} {isEDSetting ? "physicians" : "providers"} with {formatNumber(modelResults.encounters)} annual encounters</span>
           </li>
           <li className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
@@ -681,7 +788,7 @@ export default function SummaryCommandCenter({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div>
             <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.providers)}</div>
-            <div className="text-sm text-gray-500">Providers</div>
+            <div className="text-sm text-gray-500">{isEDSetting ? "ED Physicians" : "Providers"}</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.encounters)}</div>
@@ -1031,7 +1138,7 @@ export default function SummaryCommandCenter({
             </thead>
             <tbody>
               <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">Providers</td>
+                <td className="px-6 py-4 font-medium text-gray-900">{isEDSetting ? "ED Physicians" : "Providers"}</td>
                 <td className="px-6 py-4 text-right font-semibold bg-[#E85D3F]/5">{formatNumber(scenarios.current.providers)}</td>
                 <td className="px-6 py-4 text-right text-gray-600">{formatNumber(scenarios.pilot.providers)}</td>
                 <td className="px-6 py-4 text-right text-gray-600">{formatNumber(scenarios.full.providers)}</td>
