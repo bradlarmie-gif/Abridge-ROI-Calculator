@@ -212,6 +212,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     }
   }, [selectedSolution]);
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
+
   const getRampMultipliers = (drivers: DriverId[]) => {
     const rampSpeeds = drivers.map(id => DRIVERS.find(d => d.id === id)?.rampSpeed || "medium");
     const fastCount = rampSpeeds.filter(s => s === "fast").length;
@@ -633,9 +638,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   How many providers are using {solutionData?.name || "your solution"}?
                 </label>
                 <input
-                  type="number"
-                  value={providers}
-                  onChange={(e) => setProviders(Math.max(1, parseInt(e.target.value) || 0))}
+                  type="text"
+                  inputMode="numeric"
+                  value={providers === 0 ? "" : providers.toString()}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setProviders(val === "" ? 0 : parseInt(val, 10));
+                  }}
                   placeholder="e.g., 50"
                   className="w-full px-5 py-4 rounded-xl border border-neutral-200 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F] transition-all"
                   data-testid="input-providers"
@@ -651,9 +660,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   ~2,000 per provider is typical
                 </p>
                 <input
-                  type="number"
-                  value={annualEncounters}
-                  onChange={(e) => setAnnualEncounters(Math.max(0, parseInt(e.target.value) || 0))}
+                  type="text"
+                  inputMode="numeric"
+                  value={annualEncounters === 0 ? "" : annualEncounters.toString()}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setAnnualEncounters(val === "" ? 0 : parseInt(val, 10));
+                  }}
                   placeholder="e.g., 100,000"
                   className="w-full px-5 py-4 rounded-xl border border-neutral-200 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F] transition-all"
                   data-testid="input-encounters"
@@ -751,41 +764,58 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <p className="text-lg text-neutral-500 mb-10">Let's compare where you are to where top performers are.</p>
 
             <div className="bg-neutral-50 rounded-2xl p-8 mb-8">
-              <div className="relative h-20 mb-4">
-                <div className="absolute inset-x-0 top-1/2 h-3 bg-gradient-to-r from-red-200 via-amber-200 via-emerald-200 to-emerald-400 rounded-full -translate-y-1/2" />
+              {(() => {
+                const youPos = Math.min(Math.max((utilization - 10) / 80 * 100, 2), 98);
+                const abridgePos = (ABRIDGE_BENCHMARKS.utilization - 10) / 80 * 100;
+                const tooClose = Math.abs(youPos - abridgePos) < 25;
+                const youIsLeft = youPos < abridgePos;
                 
-                <div 
-                  className="absolute flex flex-col items-center transition-all duration-500" 
-                  style={{ left: `${Math.min(Math.max((utilization - 10) / 80 * 100, 2), 98)}%`, top: "0", transform: "translateX(-50%)" }}
-                >
-                  <span className="text-xs font-bold text-neutral-700 bg-white px-2.5 py-1 rounded-lg border border-neutral-300 shadow-sm whitespace-nowrap">
-                    YOU ({utilization}%)
-                  </span>
-                  <div className="w-0.5 h-4 bg-neutral-500" />
-                  <div className="w-4 h-4 rounded-full bg-neutral-700 border-2 border-white shadow-md" />
-                </div>
-                
-                <div 
-                  className="absolute flex flex-col items-center" 
-                  style={{ left: `${(ABRIDGE_BENCHMARKS.utilization - 10) / 80 * 100}%`, top: "0", transform: "translateX(-50%)" }}
-                >
-                  <span className="text-xs font-bold text-[#E85D3F] bg-[#E85D3F]/10 px-2.5 py-1 rounded-lg border border-[#E85D3F]/30 shadow-sm whitespace-nowrap">
-                    ABRIDGE ({ABRIDGE_BENCHMARKS.utilization}%)
-                  </span>
-                  <div className="w-0.5 h-4 bg-[#E85D3F]" />
-                  <div className="w-4 h-4 rounded-full bg-[#E85D3F] border-2 border-white shadow-md" />
-                </div>
+                return (
+                  <div className="relative h-28 mb-4">
+                    <div className="absolute inset-x-0 top-1/2 h-3 bg-gradient-to-r from-red-200 via-amber-200 via-emerald-200 to-emerald-400 rounded-full -translate-y-1/2" />
+                    
+                    <div 
+                      className="absolute flex flex-col items-center transition-all duration-500" 
+                      style={{ 
+                        left: `${youPos}%`, 
+                        top: tooClose && youIsLeft ? "0" : tooClose ? "8px" : "0", 
+                        transform: "translateX(-50%)" 
+                      }}
+                    >
+                      <span className="text-xs font-bold text-neutral-700 bg-white px-2.5 py-1 rounded-lg border border-neutral-300 shadow-sm whitespace-nowrap">
+                        YOU ({utilization}%)
+                      </span>
+                      <div className="w-0.5 h-4 bg-neutral-500" />
+                      <div className="w-4 h-4 rounded-full bg-neutral-700 border-2 border-white shadow-md" />
+                    </div>
+                    
+                    <div 
+                      className="absolute flex flex-col items-center" 
+                      style={{ 
+                        left: `${abridgePos}%`, 
+                        top: tooClose && !youIsLeft ? "0" : tooClose ? "8px" : "0", 
+                        transform: "translateX(-50%)" 
+                      }}
+                    >
+                      <span className="text-xs font-bold text-[#E85D3F] bg-[#E85D3F]/10 px-2.5 py-1 rounded-lg border border-[#E85D3F]/30 shadow-sm whitespace-nowrap">
+                        ABRIDGE ({ABRIDGE_BENCHMARKS.utilization}%)
+                      </span>
+                      <div className="w-0.5 h-4 bg-[#E85D3F]" />
+                      <div className="w-4 h-4 rounded-full bg-[#E85D3F] border-2 border-white shadow-md" />
+                    </div>
 
-                {utilization < ABRIDGE_BENCHMARKS.utilization && (
-                  <div 
-                    className="absolute top-1/2 h-1 bg-[#E85D3F]/30 -translate-y-1/2"
-                    style={{ 
-                      left: `${(utilization - 10) / 80 * 100}%`,
-                      width: `${(ABRIDGE_BENCHMARKS.utilization - utilization) / 80 * 100}%`
-                    }}
-                  />
-                )}
-              </div>
+                    {utilization < ABRIDGE_BENCHMARKS.utilization && (
+                      <div 
+                        className="absolute top-1/2 h-1 bg-[#E85D3F]/30 -translate-y-1/2"
+                        style={{ 
+                          left: `${youPos}%`,
+                          width: `${abridgePos - youPos}%`
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="flex justify-between text-xs text-neutral-500 mt-6 px-2">
                 <span className="flex items-center gap-1"><Frown className="w-3 h-3" /> &lt;40%</span>
