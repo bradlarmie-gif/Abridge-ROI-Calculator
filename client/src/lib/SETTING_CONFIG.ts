@@ -1,5 +1,5 @@
-export type CareSettingType = "outpatient" | "ed" | "nursing";
-export type AllSettingType = CareSettingType | "inpatient";
+export type CareSettingType = "outpatient" | "ed" | "nursing" | "inpatient";
+export type AllSettingType = CareSettingType;
 export type LeverCategory = "time" | "documentation" | "capacityLabor" | "documentationQuality" | "qualityRevenue";
 
 export interface LeverConfig {
@@ -186,6 +186,56 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       keyMetric: "CC/MCC capture support",
       hasWarning: true,
       warningText: "Indirect relationship—see important limitations",
+    },
+  ],
+
+  inpatient: [
+    {
+      id: "inpatientRounding",
+      label: "Rounding Efficiency & Time Savings",
+      category: "time",
+      description:
+        "Return time to bedside care, teaching, discharge planning.",
+      driverSummary: "Immediate impact—measurable within weeks",
+      keyMetric: "$150K-350K for 20 hospitalists",
+    },
+    {
+      id: "inpatientRetention",
+      label: "Hospitalist Retention",
+      category: "time",
+      description:
+        "Address the #1 driver of hospitalist turnover.",
+      driverSummary: "Hospitalist turnover is a crisis (15-20% typical)",
+      keyMetric: "$100K-250K for 20 hospitalists",
+      hasWarning: true,
+      warningText: "Long-term—12+ months to see full impact",
+    },
+    {
+      id: "inpatientCCMCC",
+      label: "CC/MCC Capture (DRG Optimization)",
+      category: "documentation",
+      description:
+        "Document the complexity you're managing.",
+      driverSummary: "Directly impacts DRG weight and reimbursement",
+      keyMetric: "$250K-500K for 20 hospitalists",
+    },
+    {
+      id: "inpatientCDI",
+      label: "CDI Query Reduction",
+      category: "documentation",
+      description:
+        "Better initial documentation = less rework.",
+      driverSummary: "Operational efficiency—CDI teams love this",
+      keyMetric: "$20K-50K for 20 hospitalists",
+    },
+    {
+      id: "inpatientDenials",
+      label: "Documentation-Related Denials",
+      category: "documentation",
+      description:
+        "Protect your reimbursement.",
+      driverSummary: "Inpatient denials are high-dollar",
+      keyMetric: "$150K-400K for 20 hospitalists",
     },
   ],
 };

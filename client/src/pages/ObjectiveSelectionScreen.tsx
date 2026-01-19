@@ -126,6 +126,12 @@ const LEVER_ICONS: Record<string, typeof Users> = {
   documentation_completeness: FileText,
   safety_event_reduction: AlertTriangle,
   ccmcc_support: Building2,
+  // Inpatient (Hospitalist) drivers
+  inpatientRounding: Clock,
+  inpatientRetention: HeartPulse,
+  inpatientCCMCC: DollarSign,
+  inpatientCDI: FileText,
+  inpatientDenials: FileX,
 };
 
 const LEVER_KEY_METRICS: Record<string, string> = {
@@ -153,6 +159,12 @@ const LEVER_KEY_METRICS: Record<string, string> = {
   documentation_completeness: "Field completion rate",
   safety_event_reduction: "Risk exposure reduction",
   ccmcc_support: "CC/MCC capture support",
+  // Inpatient (Hospitalist) drivers
+  inpatientRounding: "Hours returned to bedside care",
+  inpatientRetention: "Hospitalist departures avoided",
+  inpatientCCMCC: "DRG weight improvement",
+  inpatientCDI: "CDI queries avoided",
+  inpatientDenials: "Denials prevented",
 };
 
 const LEVER_CONTEXT_TAGS: Record<string, { icon: string; text: string; color: string }> = {
@@ -172,6 +184,12 @@ const LEVER_CONTEXT_TAGS: Record<string, { icon: string; text: string; color: st
   edRetention: { icon: "clock", text: "Long-term—12+ months to see full impact", color: "slate" },
   edLevelOfService: { icon: "check", text: "Universal—ED visits are often under-documented", color: "green" },
   edDenials: { icon: "dollar", text: "ED claims face heavy payer scrutiny", color: "amber" },
+  // Inpatient (Hospitalist) drivers
+  inpatientRounding: { icon: "zap", text: "Immediate impact—measurable within weeks", color: "green" },
+  inpatientRetention: { icon: "alert", text: "Hospitalist turnover is a crisis (15-20% typical)", color: "amber" },
+  inpatientCCMCC: { icon: "dollar", text: "Directly impacts DRG weight and reimbursement", color: "emerald" },
+  inpatientCDI: { icon: "check", text: "Operational efficiency—CDI teams love this", color: "green" },
+  inpatientDenials: { icon: "dollar", text: "Inpatient denials are high-dollar", color: "amber" },
 };
 
 const LEVER_VALUE_RANGES: Record<string, { min: number; max: number; perProviders: number }> = {
@@ -191,6 +209,12 @@ const LEVER_VALUE_RANGES: Record<string, { min: number; max: number; perProvider
   edRetention: { min: 150000, max: 300000, perProviders: 25 },
   edLevelOfService: { min: 150000, max: 300000, perProviders: 25 },
   edDenials: { min: 200000, max: 450000, perProviders: 25 },
+  // Inpatient (Hospitalist) drivers
+  inpatientRounding: { min: 150000, max: 350000, perProviders: 20 },
+  inpatientRetention: { min: 100000, max: 250000, perProviders: 20 },
+  inpatientCCMCC: { min: 250000, max: 500000, perProviders: 20 },
+  inpatientCDI: { min: 20000, max: 50000, perProviders: 20 },
+  inpatientDenials: { min: 150000, max: 400000, perProviders: 20 },
 };
 
 const ALL_SETTINGS: AllSettingType[] = [
