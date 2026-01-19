@@ -37,6 +37,14 @@ The application operates entirely client-side, providing a responsive and intera
 - **Nursing Utilization Rates**: 45/60/75% (vs 50/65/80% for providers)
 - **Nursing ROI Philosophy**: Focus on measurable workforce protection (overtime, agency, retention) rather than billing optimization since nurses don't bill
 - **Nursing Calculation Architecture**: The `calculateDriverValues` function in ObjectiveSelectionScreen.tsx includes dedicated nursing driver calculations that use nursing-specific state (staffedBeds, nurseFTEs) rather than provider-centric values (eligibleEncounters). Nursing driver IDs in the return object include both Explore-style (overtime_reduction) and ModelBuilder-style (nursingOvertime) keys for compatibility across flows.
+- **SWITCH Path (Complete)**: 5-step competitive displacement experience for prospects using other AI solutions:
+  - **Step 1 - Solution Selection**: Pick competitor (DAX, Suki, Ambience, Nabla, Human Scribes, Other) and care setting
+  - **Step 2 - Your Reality**: Input providers, utilization (with icon-based status), time savings
+  - **Step 3 - The Reveal**: Dramatic animated gap reveal with monthly/daily/hourly breakdown
+  - **Step 4 - The Breakdown**: Adoption Gap + Efficiency Gap analysis with expandable driver comparisons
+  - **Step 5 - Cost of Waiting**: Recharts diverging lines chart, 3-year projections, urgency messaging
+- **SWITCH Competitor Benchmarks**: DAX (45-55% util, 1-2 min), Suki (40-50%, 1-1.5 min), Ambience (50-60%, 1.5-2 min), Nabla (45-55%, 1-2 min), Human Scribes (scribe cost model)
+- **SWITCH Abridge Benchmarks**: 65% utilization, 2.5 min time savings
 
 ## User Preferences
 
