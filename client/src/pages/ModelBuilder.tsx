@@ -454,6 +454,11 @@ export default function ModelBuilder({
     }
   }, [staffedBeds, unitType, isNursingSetting, nurseFTEsManuallyEdited]);
   
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  
   const eligibleEncounters = Math.round(encounters * (utilizationRate / 100));
   // For nursing: eligible documentation events (nursing uses documentationEvents, not encounters)
   const eligibleDocEvents = Math.round(documentationEvents * (utilizationRate / 100));
@@ -2905,9 +2910,13 @@ export default function ModelBuilder({
                       {isInpatientSetting ? "How many hospitalists are in scope?" : isEDSetting ? "How many ED physicians are in scope?" : "How many providers are in scope?"}
                     </label>
                     <Input
-                      type="number"
-                      value={providers}
-                      onChange={(e) => setProviders(Number(e.target.value) || 0)}
+                      type="text"
+                      inputMode="numeric"
+                      value={providers === 0 ? "" : providers.toLocaleString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setProviders(val === "" ? 0 : parseInt(val, 10));
+                      }}
                       placeholder={isInpatientSetting ? "e.g., 20" : isEDSetting ? "e.g., 25" : "e.g., 50"}
                       className="max-w-xs font-mono"
                       data-testid="input-providers"
@@ -2928,9 +2937,13 @@ export default function ModelBuilder({
                         : `Annual encounters for these ${isEDSetting ? "physicians" : "providers"}?`}
                     </label>
                     <Input
-                      type="number"
-                      value={encounters}
-                      onChange={(e) => setEncounters(Number(e.target.value) || 0)}
+                      type="text"
+                      inputMode="numeric"
+                      value={encounters === 0 ? "" : encounters.toLocaleString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setEncounters(val === "" ? 0 : parseInt(val, 10));
+                      }}
                       placeholder={isInpatientSetting ? "e.g., 8,000" : isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
                       className="max-w-xs font-mono"
                       data-testid="input-encounters"

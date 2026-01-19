@@ -1017,11 +1017,14 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       {wrvuKnown && (
                         <div className="mt-2 flex items-center gap-2">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={wrvuUplift}
-                            onChange={(e) => setWrvuUplift(Math.max(0, parseFloat(e.target.value) || 0))}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9.]/g, '');
+                              setWrvuUplift(val === "" ? 0 : parseFloat(val) || 0);
+                            }}
                             className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
-                            step="0.5"
                           />
                           <span className="text-sm text-neutral-500">% uplift</span>
                         </div>
@@ -1065,9 +1068,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       {underCodingKnown && (
                         <div className="mt-2 flex items-center gap-2">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={underCoding}
-                            onChange={(e) => setUnderCoding(Math.max(0, parseFloat(e.target.value) || 0))}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9.]/g, '');
+                              setUnderCoding(val === "" ? 0 : parseFloat(val) || 0);
+                            }}
                             className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
                           />
                           <span className="text-sm text-neutral-500">%</span>
@@ -1112,9 +1119,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       {denialKnown && (
                         <div className="mt-2 flex items-center gap-2">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={denialPrevention}
-                            onChange={(e) => setDenialPrevention(Math.max(0, parseFloat(e.target.value) || 0))}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9.]/g, '');
+                              setDenialPrevention(val === "" ? 0 : parseFloat(val) || 0);
+                            }}
                             className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
                           />
                           <span className="text-sm text-neutral-500">% reduction</span>
@@ -1159,9 +1170,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       {hccKnown && (
                         <div className="mt-2 flex items-center gap-2">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={hccImprovement}
-                            onChange={(e) => setHccImprovement(Math.max(0, parseFloat(e.target.value) || 0))}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9.]/g, '');
+                              setHccImprovement(val === "" ? 0 : parseFloat(val) || 0);
+                            }}
                             className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
                           />
                           <span className="text-sm text-neutral-500">% improvement</span>
