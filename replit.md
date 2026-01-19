@@ -36,6 +36,7 @@ The application operates entirely client-side, providing a responsive and intera
 - **Nursing Organization Inputs**: Staffed beds, Nurse FTEs (auto-calculated based on unit type), Unit Type (Med-Surg/ICU/Mixed)
 - **Nursing Utilization Rates**: 45/60/75% (vs 50/65/80% for providers)
 - **Nursing ROI Philosophy**: Focus on measurable workforce protection (overtime, agency, retention) rather than billing optimization since nurses don't bill
+- **Nursing Calculation Architecture**: The `calculateDriverValues` function in ObjectiveSelectionScreen.tsx includes dedicated nursing driver calculations that use nursing-specific state (staffedBeds, nurseFTEs) rather than provider-centric values (eligibleEncounters). Nursing driver IDs in the return object include both Explore-style (overtime_reduction) and ModelBuilder-style (nursingOvertime) keys for compatibility across flows.
 
 ## User Preferences
 
