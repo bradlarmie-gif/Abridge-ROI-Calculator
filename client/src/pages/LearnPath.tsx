@@ -22,8 +22,8 @@ import {
   ClipboardCheck,
   Lightbulb,
   Calculator,
-  SlidersHorizontal,
-  BarChart3
+  AlertTriangle,
+  BarChart2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
@@ -36,6 +36,19 @@ interface LearnPathProps {
 type CareSettingType = "outpatient" | "ed" | "nursing";
 type LearnScreen = "selection" | "methodology";
 
+interface CalculationStep {
+  stepNumber: number;
+  stepLabel: string;
+  inputs: {
+    label: string;
+    value: string;
+  }[];
+  output: {
+    label: string;
+    value: string;
+  };
+}
+
 interface Driver {
   id: string;
   name: string;
@@ -44,16 +57,8 @@ interface Driver {
   icon: React.ElementType;
   lane: "time" | "quality";
   theory: string;
-  calculationSteps: {
-    label: string;
-    formula: string;
-    result: string;
-  }[];
-  customizableInputs: string[];
-  ranges: {
-    conservative: string;
-    typical: string;
-  };
+  calculationSteps: CalculationStep[];
+  caveat?: string;
 }
 
 interface SettingConfig {
@@ -61,9 +66,13 @@ interface SettingConfig {
   icon: React.ElementType;
   subtitle: string;
   referenceScenario: {
-    title: string;
-    details: string;
-    encounters: string;
+    providers: number;
+    providerLabel: string;
+    annualVisits: number;
+    visitLabel: string;
+    adoption: number;
+    eligibleEncounters: number;
+    description: string;
   };
   timeSavedSubtitle: string;
   docQualitySubtitle: string;
@@ -76,9 +85,13 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     icon: Stethoscope,
     subtitle: "Primary care, specialty visits, clinics",
     referenceScenario: {
-      title: "Reference: Typical mid-sized outpatient practice",
-      details: "40 providers | 80,000 annual visits | 65% adoption",
-      encounters: "~52,000 Abridge-documented encounters/year"
+      providers: 40,
+      providerLabel: "providers",
+      annualVisits: 80000,
+      visitLabel: "annual visits",
+      adoption: 65,
+      eligibleEncounters: 52000,
+      description: "We'll walk through the math using a typical mid-sized outpatient practice as an example:"
     },
     timeSavedSubtitle: "2.5 min returned per encounter",
     docQualitySubtitle: "More complete, accurate notes",
@@ -92,92 +105,271 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "time",
         theory: "When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and other factors limit realization—but even a modest portion creates meaningful revenue.",
         calculationSteps: [
-          { label: "Time Returned", formula: "2.5 min × 52,000 encounters", result: "2,167 hours" },
-          { label: "Reality Check", formula: "2,167 hrs × 20% realization", result: "433 usable hours" },
-          { label: "New Visits", formula: "433 hrs ÷ 30 min/visit", result: "866 additional visits" },
-          { label: "Revenue Impact", formula: "866 visits × $200/visit", result: "$173,200" }
-        ],
-        customizableInputs: ["Provider count", "Visit volume", "Revenue per visit", "Realization factor"],
-        ranges: { conservative: "$80K-120K", typical: "$150K-200K" }
+          {
+            stepNumber: 1,
+            stepLabel: "TIME RETURNED",
+            inputs: [
+              { label: "Time saved per encounter", value: "2.5 min" },
+              { label: "Eligible encounters", value: "52,000" }
+            ],
+            output: { label: "Hours returned", value: "2,167 hrs" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "REALITY CHECK",
+            inputs: [
+              { label: "Hours returned", value: "2,167 hrs" },
+              { label: "Realization factor", value: "20%" }
+            ],
+            output: { label: "Usable hours", value: "433 hrs" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "NEW VISITS",
+            inputs: [
+              { label: "Usable hours", value: "433 hrs" },
+              { label: "Time per visit", value: "30 min" }
+            ],
+            output: { label: "Additional visits", value: "866 visits" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "REVENUE",
+            inputs: [
+              { label: "Additional visits", value: "866" },
+              { label: "Revenue per visit", value: "$200" }
+            ],
+            output: { label: "Annual value", value: "$173,200" }
+          }
+        ]
       },
       {
         id: "overtime-locum",
         name: "Overtime & Locum Savings",
         description: "Less premium labor needed",
-        referenceValue: 89400,
+        referenceValue: 151200,
         icon: DollarSign,
         lane: "time",
         theory: "Documentation often extends past scheduled hours, triggering overtime pay. By returning time to clinicians, organizations reduce the need for after-hours work and expensive locum coverage to maintain access.",
         calculationSteps: [
-          { label: "Overtime Hours Saved", formula: "2,167 hrs × 15% overtime portion", result: "325 OT hours eliminated" },
-          { label: "Cost Avoidance", formula: "325 hrs × $275/hr OT rate", result: "$89,375" }
+          {
+            stepNumber: 1,
+            stepLabel: "AFTER-HOURS BASELINE",
+            inputs: [
+              { label: "Providers with OT", value: "40 × 60%" },
+              { label: "Hours/week × weeks", value: "4 × 50" }
+            ],
+            output: { label: "Annual OT hours", value: "4,800 hrs" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "HOURS ELIMINATED",
+            inputs: [
+              { label: "Baseline OT hours", value: "4,800 hrs" },
+              { label: "Reduction rate", value: "70%" }
+            ],
+            output: { label: "Hours saved", value: "3,360 hrs" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "PREMIUM LABOR PORTION",
+            inputs: [
+              { label: "Hours saved", value: "3,360 hrs" },
+              { label: "Premium rate %", value: "30%" }
+            ],
+            output: { label: "Premium hours", value: "1,008 hrs" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "COST SAVINGS",
+            inputs: [
+              { label: "Premium hours", value: "1,008 hrs" },
+              { label: "OT rate", value: "$150/hr" }
+            ],
+            output: { label: "Annual savings", value: "$151,200" }
+          }
         ],
-        customizableInputs: ["Overtime rate", "Locum rate", "Current overtime hours"],
-        ranges: { conservative: "$40K-70K", typical: "$80K-120K" }
+        caveat: "Some organizations see higher impact if using locums ($275/hr)"
       },
       {
         id: "clinician-retention",
         name: "Clinician Retention",
         description: "Reduced burnout, lower turnover costs",
-        referenceValue: 156000,
+        referenceValue: 160000,
         icon: UserCheck,
         lane: "time",
         theory: "Documentation burden is the #1 driver of physician burnout. Reducing this burden improves satisfaction and retention. Replacing a physician costs $500K-1M when you factor in recruiting, onboarding, and lost revenue.",
         calculationSteps: [
-          { label: "Burnout Reduction", formula: "52,000 encounters × time savings", result: "Measurable satisfaction improvement" },
-          { label: "Turnover Avoided", formula: "1 physician retained × 30% attribution", result: "0.3 physician equivalents" },
-          { label: "Cost Savings", formula: "0.3 × $520,000 replacement cost", result: "$156,000" }
+          {
+            stepNumber: 1,
+            stepLabel: "BASELINE TURNOVER",
+            inputs: [
+              { label: "Providers", value: "40" },
+              { label: "Annual turnover", value: "6%" }
+            ],
+            output: { label: "Departures/year", value: "2.4" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "BURNOUT-RELATED",
+            inputs: [
+              { label: "Annual departures", value: "2.4" },
+              { label: "Burnout attribution", value: "45%" }
+            ],
+            output: { label: "Preventable", value: "1.08" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "ABRIDGE ATTRIBUTION",
+            inputs: [
+              { label: "Preventable departures", value: "1.08" },
+              { label: "Abridge impact", value: "30%" }
+            ],
+            output: { label: "Departures avoided", value: "0.32" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "COST SAVINGS",
+            inputs: [
+              { label: "Departures avoided", value: "0.32" },
+              { label: "Replacement cost", value: "$500,000" }
+            ],
+            output: { label: "Annual savings", value: "$160,000" }
+          }
         ],
-        customizableInputs: ["Current turnover rate", "Replacement cost", "Attribution factor"],
-        ranges: { conservative: "$75K-125K", typical: "$140K-200K" }
+        caveat: "Retention impact typically measurable after 12-18 months"
       },
       {
         id: "level-of-service",
         name: "Accurate Level of Service",
         description: "Capture appropriate wRVU value",
-        referenceValue: 124800,
+        referenceValue: 131040,
         icon: TrendingUp,
         lane: "quality",
         theory: "Physicians under time pressure often undercode visits—documenting a Level 3 when the encounter truly warranted Level 4. AI documentation captures the full clinical picture, ensuring accurate E/M coding.",
         calculationSteps: [
-          { label: "Eligible Encounters", formula: "52,000 documented encounters", result: "52,000" },
-          { label: "Upcoding Opportunity", formula: "52,000 × 8% undercode rate", result: "4,160 visits affected" },
-          { label: "Revenue Lift", formula: "4,160 × $30 wRVU delta", result: "$124,800" }
-        ],
-        customizableInputs: ["Current undercode rate", "wRVU rate", "E/M mix"],
-        ranges: { conservative: "$60K-100K", typical: "$110K-150K" }
+          {
+            stepNumber: 1,
+            stepLabel: "E/M ENCOUNTERS",
+            inputs: [
+              { label: "Eligible encounters", value: "52,000" },
+              { label: "E/M portion", value: "80%" }
+            ],
+            output: { label: "E/M visits", value: "41,600" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "UNDER-CODED",
+            inputs: [
+              { label: "E/M visits", value: "41,600" },
+              { label: "Undercode rate", value: "10%" }
+            ],
+            output: { label: "Affected visits", value: "4,160" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "wRVU LIFT",
+            inputs: [
+              { label: "Affected visits", value: "4,160" },
+              { label: "wRVU delta × rate", value: "0.7 × $45" }
+            ],
+            output: { label: "Annual value", value: "$131,040" }
+          }
+        ]
       },
       {
         id: "hcc-capture",
         name: "HCC & Chronic Condition Capture",
         description: "RAF score improvement",
-        referenceValue: 208000,
+        referenceValue: 524160,
         icon: ShieldCheck,
         lane: "quality",
         theory: "Risk adjustment relies on complete documentation of chronic conditions. AI ensures conditions mentioned in conversation get documented, improving RAF scores for value-based contracts.",
         calculationSteps: [
-          { label: "Value-Based Lives", formula: "52,000 × 40% in risk contracts", result: "20,800 eligible encounters" },
-          { label: "HCC Recapture", formula: "20,800 × 5% improvement", result: "1,040 conditions captured" },
-          { label: "RAF Value", formula: "1,040 × $200 per HCC", result: "$208,000" }
+          {
+            stepNumber: 1,
+            stepLabel: "RISK-BASED ENCOUNTERS",
+            inputs: [
+              { label: "Eligible encounters", value: "52,000" },
+              { label: "In risk contracts", value: "35%" }
+            ],
+            output: { label: "Risk encounters", value: "18,200" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "HCC GAP",
+            inputs: [
+              { label: "Risk encounters", value: "18,200" },
+              { label: "Capture gap", value: "30%" }
+            ],
+            output: { label: "Opportunities", value: "5,460" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "ABRIDGE IMPROVEMENT",
+            inputs: [
+              { label: "HCC opportunities", value: "5,460" },
+              { label: "Improvement rate", value: "20%" }
+            ],
+            output: { label: "HCCs captured", value: "1,092" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "REVENUE",
+            inputs: [
+              { label: "HCCs × value × audit", value: "1,092 × $800 × 60%" }
+            ],
+            output: { label: "Annual value", value: "$524,160" }
+          }
         ],
-        customizableInputs: ["% in risk contracts", "HCC capture improvement", "Value per HCC"],
-        ranges: { conservative: "$100K-160K", typical: "$180K-250K" }
+        caveat: "Varies significantly based on payer mix and current capture rates"
       },
       {
         id: "denials-reduction",
         name: "Documentation-Related Denials",
         description: "Fewer rejected claims",
-        referenceValue: 78000,
+        referenceValue: 127500,
         icon: FileX,
         lane: "quality",
         theory: "Incomplete documentation leads to claim denials and costly rework. AI-generated notes are more comprehensive, reducing the denial rate for documentation-related issues.",
         calculationSteps: [
-          { label: "Annual Claims", formula: "52,000 documented encounters", result: "52,000 claims" },
-          { label: "Denial Reduction", formula: "52,000 × 0.5% denial improvement", result: "260 denials avoided" },
-          { label: "Value Recovered", formula: "260 × $300 avg claim value", result: "$78,000" }
-        ],
-        customizableInputs: ["Current denial rate", "Average claim value", "% documentation-related"],
-        ranges: { conservative: "$40K-65K", typical: "$70K-100K" }
+          {
+            stepNumber: 1,
+            stepLabel: "TOTAL DENIALS",
+            inputs: [
+              { label: "Eligible encounters", value: "52,000" },
+              { label: "Denial rate", value: "7%" }
+            ],
+            output: { label: "Annual denials", value: "3,640" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "DOC-RELATED",
+            inputs: [
+              { label: "Total denials", value: "3,640" },
+              { label: "Doc-related %", value: "35%" }
+            ],
+            output: { label: "Doc denials", value: "1,274" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "PREVENTED",
+            inputs: [
+              { label: "Doc denials", value: "1,274" },
+              { label: "Improvement", value: "40%" }
+            ],
+            output: { label: "Prevented", value: "510" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "VALUE",
+            inputs: [
+              { label: "Prevented denials", value: "510" },
+              { label: "Avg claim value", value: "$250" }
+            ],
+            output: { label: "Annual value", value: "$127,500" }
+          }
+        ]
       }
     ]
   },
@@ -186,9 +378,13 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     icon: Zap,
     subtitle: "High-volume, fast-paced encounters",
     referenceScenario: {
-      title: "Reference: Mid-sized emergency department",
-      details: "25 physicians | 45,000 annual visits | 70% adoption",
-      encounters: "~31,500 Abridge-documented encounters/year"
+      providers: 25,
+      providerLabel: "physicians",
+      annualVisits: 45000,
+      visitLabel: "annual visits",
+      adoption: 70,
+      eligibleEncounters: 31500,
+      description: "We'll walk through the math using a mid-sized emergency department as an example:"
     },
     timeSavedSubtitle: "Faster documentation, more throughput",
     docQualitySubtitle: "Real-time capture during fast encounters",
@@ -202,12 +398,34 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "time",
         theory: "In the ED, every minute of documentation time affects throughput. Reducing documentation burden lets physicians disposition patients faster, reducing Left Without Being Seen (LWBS) rates and capturing additional revenue.",
         calculationSteps: [
-          { label: "Time Savings", formula: "3 min × 31,500 encounters", result: "1,575 hours returned" },
-          { label: "Additional Capacity", formula: "1,575 hrs × 40% utilization", result: "630 additional patients" },
-          { label: "Revenue Captured", formula: "630 × $500 avg ED visit", result: "$315,000" }
-        ],
-        customizableInputs: ["Current LWBS rate", "Average ED revenue", "Time per encounter"],
-        ranges: { conservative: "$150K-250K", typical: "$280K-380K" }
+          {
+            stepNumber: 1,
+            stepLabel: "TIME SAVINGS",
+            inputs: [
+              { label: "Time per encounter", value: "3 min" },
+              { label: "Eligible encounters", value: "31,500" }
+            ],
+            output: { label: "Hours returned", value: "1,575 hrs" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "ADDITIONAL CAPACITY",
+            inputs: [
+              { label: "Hours returned", value: "1,575 hrs" },
+              { label: "Utilization rate", value: "40%" }
+            ],
+            output: { label: "Additional patients", value: "630" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "REVENUE CAPTURED",
+            inputs: [
+              { label: "Additional patients", value: "630" },
+              { label: "Avg ED visit", value: "$500" }
+            ],
+            output: { label: "Annual value", value: "$315,000" }
+          }
+        ]
       },
       {
         id: "scribe-reduction",
@@ -218,12 +436,34 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "time",
         theory: "Many EDs employ scribes to handle documentation. Ambient AI can reduce or replace scribe needs, providing significant labor savings while maintaining documentation quality.",
         calculationSteps: [
-          { label: "Current Scribe Coverage", formula: "25 physicians × 40% with scribes", result: "10 scribe FTEs" },
-          { label: "Scribe Reduction", formula: "10 FTEs × 50% reduction", result: "5 FTEs saved" },
-          { label: "Labor Savings", formula: "5 × $36,000 annual cost", result: "$180,000" }
-        ],
-        customizableInputs: ["Current scribe FTEs", "Scribe hourly rate", "Reduction percentage"],
-        ranges: { conservative: "$80K-140K", typical: "$160K-220K" }
+          {
+            stepNumber: 1,
+            stepLabel: "CURRENT SCRIBE COVERAGE",
+            inputs: [
+              { label: "Physicians", value: "25" },
+              { label: "With scribes", value: "40%" }
+            ],
+            output: { label: "Scribe FTEs", value: "10" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "SCRIBE REDUCTION",
+            inputs: [
+              { label: "Current FTEs", value: "10" },
+              { label: "Reduction rate", value: "50%" }
+            ],
+            output: { label: "FTEs saved", value: "5" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "LABOR SAVINGS",
+            inputs: [
+              { label: "FTEs saved", value: "5" },
+              { label: "Annual cost", value: "$36,000" }
+            ],
+            output: { label: "Annual savings", value: "$180,000" }
+          }
+        ]
       },
       {
         id: "ed-retention",
@@ -234,12 +474,44 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "time",
         theory: "ED physicians face extreme burnout rates. Documentation burden compounds the stress of high-acuity care. Reducing this burden improves retention in a specialty where replacement is costly and difficult.",
         calculationSteps: [
-          { label: "Burnout Impact", formula: "31,500 encounters × reduced burden", result: "Measurable improvement" },
-          { label: "Retention Benefit", formula: "0.3 physicians retained", result: "0.3 FTE" },
-          { label: "Replacement Savings", formula: "0.3 × $650,000 cost", result: "$195,000" }
+          {
+            stepNumber: 1,
+            stepLabel: "BASELINE TURNOVER",
+            inputs: [
+              { label: "ED physicians", value: "25" },
+              { label: "Annual turnover", value: "8%" }
+            ],
+            output: { label: "Departures/year", value: "2.0" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "BURNOUT ATTRIBUTION",
+            inputs: [
+              { label: "Annual departures", value: "2.0" },
+              { label: "Burnout-related", value: "50%" }
+            ],
+            output: { label: "Preventable", value: "1.0" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "RETENTION BENEFIT",
+            inputs: [
+              { label: "Preventable", value: "1.0" },
+              { label: "Abridge impact", value: "30%" }
+            ],
+            output: { label: "Retained", value: "0.3 FTE" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "REPLACEMENT SAVINGS",
+            inputs: [
+              { label: "FTE retained", value: "0.3" },
+              { label: "Replacement cost", value: "$650,000" }
+            ],
+            output: { label: "Annual savings", value: "$195,000" }
+          }
         ],
-        customizableInputs: ["Current turnover rate", "Replacement cost", "Attribution factor"],
-        ranges: { conservative: "$100K-160K", typical: "$175K-240K" }
+        caveat: "Retention impact typically measurable after 12-18 months"
       },
       {
         id: "ed-los",
@@ -250,12 +522,33 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "quality",
         theory: "ED encounters are complex and fast-moving. Documentation often misses elements that support higher E/M levels. AI captures the full clinical picture in real-time.",
         calculationSteps: [
-          { label: "Documented Encounters", formula: "31,500 ED visits", result: "31,500" },
-          { label: "Coding Improvement", formula: "31,500 × 10% undercode rate", result: "3,150 affected" },
-          { label: "wRVU Capture", formula: "3,150 × $50 delta", result: "$157,500" }
-        ],
-        customizableInputs: ["Current undercode rate", "wRVU rate", "Acuity mix"],
-        ranges: { conservative: "$80K-130K", typical: "$140K-190K" }
+          {
+            stepNumber: 1,
+            stepLabel: "DOCUMENTED ENCOUNTERS",
+            inputs: [
+              { label: "Eligible ED visits", value: "31,500" }
+            ],
+            output: { label: "Total", value: "31,500" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "CODING IMPROVEMENT",
+            inputs: [
+              { label: "ED visits", value: "31,500" },
+              { label: "Undercode rate", value: "10%" }
+            ],
+            output: { label: "Affected", value: "3,150" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "wRVU CAPTURE",
+            inputs: [
+              { label: "Affected visits", value: "3,150" },
+              { label: "wRVU delta", value: "$50" }
+            ],
+            output: { label: "Annual value", value: "$157,500" }
+          }
+        ]
       },
       {
         id: "ed-denials",
@@ -266,12 +559,43 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "quality",
         theory: "ED claims face high scrutiny. Incomplete or inconsistent documentation leads to denials. Real-time AI capture ensures thorough documentation that withstands payer review.",
         calculationSteps: [
-          { label: "Annual ED Claims", formula: "31,500 encounters", result: "31,500 claims" },
-          { label: "Denial Improvement", formula: "31,500 × 0.6% reduction", result: "189 denials avoided" },
-          { label: "Revenue Recovered", formula: "189 × $500 avg", result: "$94,500" }
-        ],
-        customizableInputs: ["Current denial rate", "Average claim value", "% documentation-related"],
-        ranges: { conservative: "$50K-80K", typical: "$85K-120K" }
+          {
+            stepNumber: 1,
+            stepLabel: "TOTAL DENIALS",
+            inputs: [
+              { label: "ED encounters", value: "31,500" },
+              { label: "Denial rate", value: "8%" }
+            ],
+            output: { label: "Annual denials", value: "2,520" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "DOC-RELATED",
+            inputs: [
+              { label: "Total denials", value: "2,520" },
+              { label: "Doc-related", value: "30%" }
+            ],
+            output: { label: "Doc denials", value: "756" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "PREVENTED",
+            inputs: [
+              { label: "Doc denials", value: "756" },
+              { label: "Improvement", value: "25%" }
+            ],
+            output: { label: "Prevented", value: "189" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "VALUE",
+            inputs: [
+              { label: "Prevented", value: "189" },
+              { label: "Avg claim", value: "$500" }
+            ],
+            output: { label: "Annual value", value: "$94,500" }
+          }
+        ]
       }
     ]
   },
@@ -280,9 +604,13 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     icon: HeartPulse,
     subtitle: "Bedside documentation, care coordination",
     referenceScenario: {
-      title: "Reference: 200-bed hospital nursing deployment",
-      details: "150 nurses | 180,000 documentation events/year | 60% adoption",
-      encounters: "~108,000 Abridge-documented events/year"
+      providers: 150,
+      providerLabel: "nurses",
+      annualVisits: 180000,
+      visitLabel: "documentation events",
+      adoption: 60,
+      eligibleEncounters: 108000,
+      description: "We'll walk through the math using a 200-bed hospital nursing deployment as an example:"
     },
     timeSavedSubtitle: "Hours returned to bedside care",
     docQualitySubtitle: "Point-of-care documentation",
@@ -296,13 +624,42 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "time",
         theory: "Nurses spend up to 35% of their shift on documentation. Ambient AI captures care activities in real-time, returning hours to the bedside where they improve patient outcomes and satisfaction.",
         calculationSteps: [
-          { label: "Documentation Events", formula: "108,000 events/year", result: "108,000" },
-          { label: "Time Savings", formula: "108,000 × 2.5 min saved", result: "4,500 hours returned" },
-          { label: "Value of Time", formula: "4,500 hrs × $45/hr", result: "$202,500 direct value" },
-          { label: "Productivity Multiplier", formula: "$202,500 × 2.4x", result: "$486,000" }
-        ],
-        customizableInputs: ["Nurse count", "Documentation events", "Hourly rate", "Productivity factor"],
-        ranges: { conservative: "$250K-380K", typical: "$450K-600K" }
+          {
+            stepNumber: 1,
+            stepLabel: "DOCUMENTATION EVENTS",
+            inputs: [
+              { label: "Annual events", value: "108,000" }
+            ],
+            output: { label: "Total events", value: "108,000" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "TIME SAVINGS",
+            inputs: [
+              { label: "Events", value: "108,000" },
+              { label: "Time saved", value: "2.5 min" }
+            ],
+            output: { label: "Hours returned", value: "4,500 hrs" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "DIRECT VALUE",
+            inputs: [
+              { label: "Hours returned", value: "4,500" },
+              { label: "Hourly rate", value: "$45" }
+            ],
+            output: { label: "Direct value", value: "$202,500" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "PRODUCTIVITY MULTIPLIER",
+            inputs: [
+              { label: "Direct value", value: "$202,500" },
+              { label: "Multiplier", value: "2.4x" }
+            ],
+            output: { label: "Annual value", value: "$486,000" }
+          }
+        ]
       },
       {
         id: "nursing-overtime",
@@ -313,12 +670,34 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "time",
         theory: "End-of-shift documentation frequently pushes nurses into overtime. Real-time documentation eliminates this burden, reducing premium labor costs.",
         calculationSteps: [
-          { label: "Overtime Hours", formula: "150 nurses × 3 hrs OT/week", result: "23,400 OT hrs/year" },
-          { label: "Reduction Rate", formula: "23,400 × 30% reduction", result: "7,020 hrs eliminated" },
-          { label: "Cost Savings", formula: "7,020 × $23/hr OT premium", result: "$162,000" }
-        ],
-        customizableInputs: ["Current OT hours", "OT rate premium", "Reduction percentage"],
-        ranges: { conservative: "$80K-130K", typical: "$145K-200K" }
+          {
+            stepNumber: 1,
+            stepLabel: "BASELINE OVERTIME",
+            inputs: [
+              { label: "Nurses", value: "150" },
+              { label: "OT hrs/week × weeks", value: "3 × 52" }
+            ],
+            output: { label: "Annual OT hrs", value: "23,400" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "REDUCTION",
+            inputs: [
+              { label: "OT hours", value: "23,400" },
+              { label: "Reduction rate", value: "30%" }
+            ],
+            output: { label: "Hours eliminated", value: "7,020" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "COST SAVINGS",
+            inputs: [
+              { label: "Hours eliminated", value: "7,020" },
+              { label: "OT premium", value: "$23/hr" }
+            ],
+            output: { label: "Annual savings", value: "$162,000" }
+          }
+        ]
       },
       {
         id: "nurse-retention",
@@ -329,12 +708,35 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "time",
         theory: "Documentation burden is a top driver of nursing burnout and turnover. With replacement costs of $50K-80K per nurse, even modest retention improvements create significant value.",
         calculationSteps: [
-          { label: "Current Turnover", formula: "150 nurses × 18% turnover", result: "27 nurses leave/year" },
-          { label: "Retention Impact", formula: "27 × 15% improvement", result: "4 nurses retained" },
-          { label: "Replacement Savings", formula: "4 × $67,500 avg cost", result: "$270,000" }
+          {
+            stepNumber: 1,
+            stepLabel: "CURRENT TURNOVER",
+            inputs: [
+              { label: "Nurses", value: "150" },
+              { label: "Turnover rate", value: "18%" }
+            ],
+            output: { label: "Annual departures", value: "27" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "RETENTION IMPACT",
+            inputs: [
+              { label: "Departures", value: "27" },
+              { label: "Improvement", value: "15%" }
+            ],
+            output: { label: "Nurses retained", value: "4" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "REPLACEMENT SAVINGS",
+            inputs: [
+              { label: "Retained", value: "4" },
+              { label: "Replacement cost", value: "$67,500" }
+            ],
+            output: { label: "Annual savings", value: "$270,000" }
+          }
         ],
-        customizableInputs: ["Nurse count", "Turnover rate", "Replacement cost", "Attribution"],
-        ranges: { conservative: "$140K-220K", typical: "$250K-340K" }
+        caveat: "Retention impact typically measurable after 12-18 months"
       },
       {
         id: "doc-timeliness",
@@ -345,12 +747,33 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "quality",
         theory: "Delayed documentation leads to errors and omissions. Real-time capture ensures accuracy and supports clinical decision-making during the care episode.",
         calculationSteps: [
-          { label: "Documented Events", formula: "108,000 events", result: "108,000" },
-          { label: "Timeliness Improvement", formula: "From 4+ hrs to <15 min avg", result: "95% improvement" },
-          { label: "Error Reduction Value", formula: "108,000 × $1 per event", result: "$108,000" }
-        ],
-        customizableInputs: ["Current documentation lag", "Error rate", "Error cost"],
-        ranges: { conservative: "$55K-90K", typical: "$95K-135K" }
+          {
+            stepNumber: 1,
+            stepLabel: "DOCUMENTED EVENTS",
+            inputs: [
+              { label: "Annual events", value: "108,000" }
+            ],
+            output: { label: "Total", value: "108,000" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "TIMELINESS IMPROVEMENT",
+            inputs: [
+              { label: "Current lag", value: "4+ hours" },
+              { label: "New lag", value: "<15 min" }
+            ],
+            output: { label: "Improvement", value: "95%" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "ERROR REDUCTION VALUE",
+            inputs: [
+              { label: "Events improved", value: "108,000" },
+              { label: "Value per event", value: "$1" }
+            ],
+            output: { label: "Annual value", value: "$108,000" }
+          }
+        ]
       },
       {
         id: "doc-completeness",
@@ -361,16 +784,81 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         lane: "quality",
         theory: "Rushed documentation often misses required fields, leading to compliance issues and downstream problems. AI ensures comprehensive capture of all care activities.",
         calculationSteps: [
-          { label: "Documentation Events", formula: "108,000 events", result: "108,000" },
-          { label: "Completeness Improvement", formula: "108,000 × 5% more complete", result: "5,400 improved events" },
-          { label: "Value per Event", formula: "5,400 × $25 compliance value", result: "$135,000" }
-        ],
-        customizableInputs: ["Completeness rate", "Compliance value", "Audit risk"],
-        ranges: { conservative: "$70K-110K", typical: "$120K-165K" }
+          {
+            stepNumber: 1,
+            stepLabel: "DOCUMENTATION EVENTS",
+            inputs: [
+              { label: "Annual events", value: "108,000" }
+            ],
+            output: { label: "Total", value: "108,000" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "COMPLETENESS IMPROVEMENT",
+            inputs: [
+              { label: "Events", value: "108,000" },
+              { label: "Improvement rate", value: "5%" }
+            ],
+            output: { label: "Improved events", value: "5,400" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "COMPLIANCE VALUE",
+            inputs: [
+              { label: "Improved events", value: "5,400" },
+              { label: "Value per event", value: "$25" }
+            ],
+            output: { label: "Annual value", value: "$135,000" }
+          }
+        ]
       }
     ]
   }
 };
+
+function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: boolean }) {
+  return (
+    <div className="relative">
+      <div className="bg-[#F8F9FA] rounded-lg p-5 animate-in fade-in duration-300">
+        <div className="text-xs font-bold text-[#6B7280] tracking-wide mb-4">
+          STEP {step.stepNumber}: {step.stepLabel}
+        </div>
+        
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div className="flex items-end gap-3 flex-wrap flex-1">
+            {step.inputs.map((input, idx) => (
+              <div key={idx} className="flex items-end gap-3">
+                {idx > 0 && (
+                  <span className="text-[#9CA3AF] font-mono text-lg pb-1">×</span>
+                )}
+                <div className="text-center">
+                  <div className="text-xs text-[#6B7280] mb-1">{input.label}</div>
+                  <div className="font-mono text-[#111827] font-medium border-b-2 border-[#E5E7EB] pb-1 px-2">
+                    {input.value}
+                  </div>
+                </div>
+              </div>
+            ))}
+            <span className="text-[#9CA3AF] font-mono text-lg pb-1">=</span>
+          </div>
+          
+          <div className="text-right">
+            <div className="text-xs text-[#6B7280] mb-1">{step.output.label}</div>
+            <div className="font-mono text-[#E85D3F] font-bold text-lg border-b-2 border-[#E85D3F] pb-1 px-2">
+              {step.output.value}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {!isLast && (
+        <div className="flex justify-center py-2">
+          <div className="w-0.5 h-4 bg-[#E5E7EB]"></div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function DriverAccordion({ 
   driver, 
@@ -421,67 +909,40 @@ function DriverAccordion({
       </button>
       
       {isExpanded && (
-        <div className="px-5 pb-5 pt-2 border-t border-neutral-100 space-y-6 animate-in slide-in-from-top-2 duration-300">
+        <div className="px-5 pb-6 pt-3 border-t border-neutral-100 space-y-6 animate-in slide-in-from-top-2 duration-300">
+          {/* The Theory */}
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               <Lightbulb className="w-4 h-4 text-[#E85D3F]" />
               <span className="text-sm font-semibold text-[#111827]">The Theory</span>
             </div>
             <p className="text-sm text-[#6B7280] leading-relaxed">{driver.theory}</p>
           </div>
           
+          {/* How We Calculate It */}
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <Calculator className="w-4 h-4 text-[#E85D3F]" />
               <span className="text-sm font-semibold text-[#111827]">How We Calculate It</span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-0">
               {driver.calculationSteps.map((step, idx) => (
-                <div 
+                <CalculationStepCard 
                   key={idx} 
-                  className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg animate-in fade-in duration-300"
-                  style={{ animationDelay: `${idx * 100}ms` }}
-                >
-                  <span className="w-6 h-6 rounded-full bg-[#E85D3F] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
-                    {idx + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs text-[#6B7280] block">{step.label}</span>
-                    <span className="text-sm text-[#111827] font-mono">{step.formula}</span>
-                  </div>
-                  <span className="text-sm font-semibold text-[#E85D3F] whitespace-nowrap">{step.result}</span>
-                </div>
+                  step={step} 
+                  isLast={idx === driver.calculationSteps.length - 1}
+                />
               ))}
             </div>
           </div>
           
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <SlidersHorizontal className="w-4 h-4 text-[#E85D3F]" />
-              <span className="text-sm font-semibold text-[#111827]">What You'd Customize</span>
+          {/* Caveat Note */}
+          {driver.caveat && (
+            <div className="flex items-start gap-2 text-sm text-[#6B7280]">
+              <AlertTriangle className="w-4 h-4 text-[#9CA3AF] mt-0.5 flex-shrink-0" />
+              <span>{driver.caveat}</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {driver.customizableInputs.map((input, idx) => (
-                <span 
-                  key={idx}
-                  className="px-3 py-1 bg-[#FEF2F0] text-[#E85D3F] text-sm rounded-full"
-                >
-                  {input}
-                </span>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="w-4 h-4 text-[#E85D3F]" />
-              <span className="text-sm font-semibold text-[#111827]">Range Across Customers</span>
-            </div>
-            <p className="text-sm text-[#6B7280]">
-              Conservative: <span className="font-semibold">{driver.ranges.conservative}</span> | 
-              Typical: <span className="font-semibold">{driver.ranges.typical}</span>
-            </p>
-          </div>
+          )}
         </div>
       )}
     </div>
@@ -670,6 +1131,41 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           <p className="text-[#6B7280]">Understanding where value actually comes from</p>
         </div>
 
+        {/* Reference Scenario Card - Now at top */}
+        <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-8" data-testid="reference-scenario-card">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart2 className="w-5 h-5 text-[#E85D3F]" />
+            <h3 className="text-sm font-bold text-[#111827] tracking-wide">REFERENCE SCENARIO</h3>
+          </div>
+          
+          <p className="text-[#6B7280] mb-6">{config?.referenceScenario.description}</p>
+          
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-[#F8F9FA] rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-[#111827]">{config?.referenceScenario.providers}</div>
+              <div className="text-sm text-[#6B7280]">{config?.referenceScenario.providerLabel}</div>
+            </div>
+            <div className="bg-[#F8F9FA] rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-[#111827]">{config?.referenceScenario.annualVisits.toLocaleString()}</div>
+              <div className="text-sm text-[#6B7280]">{config?.referenceScenario.visitLabel}</div>
+            </div>
+            <div className="bg-[#F8F9FA] rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-[#111827]">{config?.referenceScenario.adoption}%</div>
+              <div className="text-sm text-[#6B7280]">adoption</div>
+            </div>
+          </div>
+          
+          <p className="text-sm text-[#111827] font-medium mb-3">
+            This creates ~{config?.referenceScenario.eligibleEncounters.toLocaleString()} Abridge-documented encounters/year
+          </p>
+          
+          <div className="flex items-start gap-2 text-sm text-[#6B7280] bg-[#FEF2F0] rounded-lg p-3">
+            <Lightbulb className="w-4 h-4 text-[#E85D3F] mt-0.5 flex-shrink-0" />
+            <span>In the calculator, you'll input YOUR numbers</span>
+          </div>
+        </div>
+
+        {/* Visual Framework */}
         <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-8">
           <div className="text-center mb-8">
             <span className="inline-block px-4 py-2 bg-[#111827] text-white text-sm font-semibold rounded-full mb-6">
@@ -694,12 +1190,6 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="bg-[#FEF2F0] border border-[#E85D3F]/20 rounded-xl p-5 mb-8">
-          <h4 className="font-semibold text-[#111827] mb-1">{config?.referenceScenario.title}</h4>
-          <p className="text-sm text-[#6B7280] mb-2">{config?.referenceScenario.details}</p>
-          <p className="text-sm font-medium text-[#E85D3F]">{config?.referenceScenario.encounters}</p>
         </div>
 
         <div className="mb-10">
@@ -736,6 +1226,38 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
               />
             ))}
           </div>
+        </div>
+
+        {/* Combined Reference Value Summary */}
+        <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-10" data-testid="value-summary-card">
+          <h3 className="text-sm font-bold text-[#111827] tracking-wide mb-6">COMBINED REFERENCE VALUE</h3>
+          
+          <div className="space-y-4 mb-6">
+            <div className="flex justify-between items-center">
+              <span className="text-[#6B7280]">Time Saved Benefits:</span>
+              <span className="font-mono font-bold text-[#111827]">
+                ${timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0).toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-[#6B7280]">Documentation Quality:</span>
+              <span className="font-mono font-bold text-[#111827]">
+                ${qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0).toLocaleString()}
+              </span>
+            </div>
+            <div className="border-t border-neutral-200 pt-4">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-[#111827]">Total Potential:</span>
+                <span className="font-mono font-bold text-[#E85D3F] text-xl">
+                  ${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <p className="text-sm text-[#6B7280]">
+            For {config?.referenceScenario.providers} {config?.referenceScenario.providerLabel} with {config?.referenceScenario.adoption}% adoption
+          </p>
         </div>
 
         {showBridge && (

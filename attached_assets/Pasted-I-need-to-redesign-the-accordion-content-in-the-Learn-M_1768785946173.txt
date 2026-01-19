@@ -1,0 +1,135 @@
+I need to redesign the accordion content in the Learn Methodology page. The current version has too much clutter. I want a cleaner, more educational presentation of the math.
+
+CHANGES TO MAKE:
+
+1. REMOVE these sections from each accordion:
+   - "What You'd Customize" (pills showing variables)
+   - "Range Across Customers"
+   
+   These belong in the BUILD flow, not the LEARN flow.
+
+2. RESTRUCTURE each accordion to have only:
+   - The Theory (2-3 sentences, conversational)
+   - How We Calculate It (step-by-step math)
+   - A simple note at the bottom if there are important caveats
+
+3. IMPROVE the calculation step display:
+
+Current format (too compressed):
+┌─────────────────────────────────────────┐
+│ 1  Time Returned                        │
+│    2.5 min × 52,000 encounters  2,167 hours │
+└─────────────────────────────────────────┘
+
+New format (clearer, more visual):
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 1: TIME RETURNED                                       │
+│                                                             │
+│    Time saved          Eligible                  Hours      │
+│    per encounter   ×   encounters            =   returned   │
+│    ─────────────       ───────────               ─────────  │
+│       2.5 min      ×     52,000              =   2,167 hrs  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+Key design elements:
+- Step label at top (STEP 1, STEP 2, etc.)
+- Description of what this step calculates
+- Three columns: Input × Input = Output
+- Labels above each number explaining what it represents
+- Result on the right in coral/red color
+- Light gray background (#F8F9FA)
+- Rounded corners (8px)
+- Comfortable padding (20px)
+
+4. ADD visual hierarchy between steps:
+   - Small vertical line or arrow connecting steps
+   - Each step builds on the previous
+   - Final step result should be larger and more prominent
+
+5. ADD a simple callout for important caveats:
+   Instead of a full section, just a small note at the bottom:
+   
+   ⚠️ "Retention impact typically measurable after 12+ months"
+   
+   Style: Small text, gray, with warning icon
+
+6. UPDATE the reference scenario card:
+   Move it ABOVE the visual framework diagram, make it more prominent:
+   
+   ┌─────────────────────────────────────────────────────────────┐
+   │  📊 REFERENCE SCENARIO                                      │
+   │                                                             │
+   │  We'll walk through the math using a typical mid-sized      │
+   │  outpatient practice as an example:                         │
+   │                                                             │
+   │  ┌─────────┐  ┌─────────────────┐  ┌─────────────┐         │
+   │  │   40    │  │     80,000      │  │     65%     │         │
+   │  │providers│  │  annual visits  │  │  adoption   │         │
+   │  └─────────┘  └─────────────────┘  └─────────────┘         │
+   │                                                             │
+   │  This creates ~52,000 Abridge-documented encounters/year    │
+   │                                                             │
+   │  💡 In the calculator, you'll input YOUR numbers            │
+   └─────────────────────────────────────────────────────────────┘
+
+7. FIX the math for each driver based on this logic:
+
+PATIENT ACCESS:
+- Step 1: Time Returned (2.5 min × 52,000 = 2,167 hours)
+- Step 2: Reality Check (2,167 × 20% realization = 433 usable hours)
+- Step 3: New Visits (433 hrs ÷ 30 min/visit = 866 visits)
+- Step 4: Revenue (866 × $200/visit = $173,200)
+
+OVERTIME & LOCUM SAVINGS:
+- Step 1: After-Hours Baseline (40 providers × 60% × 4 hrs/wk × 50 wks = 4,800 hrs)
+- Step 2: Hours Eliminated (4,800 × 70% reduction = 3,360 hrs)
+- Step 3: Premium Labor Portion (3,360 × 30% = 1,008 hrs)
+- Step 4: Cost Savings (1,008 × $150/hr = $151,200)
+- Note: "Some organizations see higher impact if using locums ($275/hr)"
+
+CLINICIAN RETENTION:
+- Step 1: Baseline Turnover (40 providers × 6% = 2.4 departures/year)
+- Step 2: Burnout-Related (2.4 × 45% = 1.08 preventable)
+- Step 3: Abridge Attribution (1.08 × 30% = 0.32 departures avoided)
+- Step 4: Cost Savings (0.32 × $500,000 = $160,000)
+- Note: "⚠️ Retention impact typically measurable after 12-18 months"
+
+ACCURATE LEVEL OF SERVICE:
+- Step 1: E/M Encounters (52,000 × 80% E/M = 41,600)
+- Step 2: Under-Coded (41,600 × 10% = 4,160 affected)
+- Step 3: wRVU Lift (4,160 × 0.7 wRVU × $45 = $131,040)
+
+HCC & CHRONIC CONDITION CAPTURE:
+- Step 1: Risk-Based Encounters (52,000 × 35% = 18,200)
+- Step 2: HCC Gap (18,200 × 30% capture gap = 5,460 opportunities)
+- Step 3: Abridge Improvement (5,460 × 20% = 1,092 HCCs captured)
+- Step 4: Revenue (1,092 × $800 × 60% audit pass = $524,160)
+- Note: "Varies significantly based on payer mix and current capture rates"
+
+DOCUMENTATION-RELATED DENIALS:
+- Step 1: Total Denials (52,000 × 7% = 3,640)
+- Step 2: Doc-Related (3,640 × 35% = 1,274)
+- Step 3: Prevented (1,274 × 40% improvement = 510)
+- Step 4: Value (510 × $250 = $127,500)
+
+8. TOTAL VALUE CALLOUT:
+   After all accordions, before the "Now You Understand" bridge, add a simple total:
+   
+   ┌─────────────────────────────────────────────────────────────┐
+   │  COMBINED REFERENCE VALUE                                   │
+   │                                                             │
+   │  Time Saved Benefits:           $484,400                    │
+   │  Documentation Quality:         $782,700                    │
+   │  ────────────────────────────────────────                   │
+   │  Total Potential:              $1,267,100                   │
+   │                                                             │
+   │  For 40 providers with 65% adoption                         │
+   └─────────────────────────────────────────────────────────────┘
+
+VISUAL DESIGN:
+- Keep the same color scheme (#E85D3F coral accent)
+- Clean, lots of whitespace
+- Calculation boxes should feel like a whiteboard explanation
+- Numbers should be easy to follow left-to-right
+- Use monospace font for the math portions
