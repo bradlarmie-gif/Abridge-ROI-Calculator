@@ -6,6 +6,12 @@ Abridge ROI Studio is a single-page web application designed to calculate the re
 
 The application operates entirely client-side, providing a responsive and interactive experience with a two-panel layout: inputs on the left and results (KPIs, waterfall charts, lever tables) on the right.
 
+### Recent Changes (January 2026)
+- **EXPLORE Path Redesign**: New 4-step sales-led flow (Care Setting → Strategic Priorities → Model Builder → Summary)
+- **Model Builder (Step 3)**: 65/35 split layout with Organization inputs, Value Driver accordions, Investment section, and sticky Live Model sidebar
+- **Enhanced Strategic Priorities**: Context tags with color coding (amber/orange/slate/green) and value ranges
+- **6 Driver-Specific Flows**: Overtime, Patient Access, Retention, Level of Service, HCC Capture, Denials
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
