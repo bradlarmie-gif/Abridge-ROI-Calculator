@@ -52,7 +52,7 @@ The application guides users through a multi-step process:
 4.  **Calculator Screen**: The main interface displaying inputs, KPIs, a waterfall chart visualizing financial impact, and a detailed lever table.
 
 ### Specific Flow Enhancements
--   **Nursing Flow**: Features dedicated strategic priorities with up to 8 drivers, a Value Methodology page explaining driver impact with reference scenarios, and a specialized Value Posture step with predefined presets and fine-tuning options.
+-   **Nursing Flow**: Now follows the same 4-step flow as Outpatient, ED, and Inpatient (Care Setting → Strategic Priorities → Value Blueprint → Model Setup). Nursing-specific drivers and inputs are displayed on the standard pages.
 -   **Expansion Calculator**: A 4-step wizard for modeling ROI in provider expansion scenarios, including baseline review, expansion planning, a "Reality Check" for driver validation, and 3-year maturity model projections.
 -   **New Care Setting Flow**: A two-step process to explore adding new care settings to an existing deployment, offering educational insights and a "Combined Preview" with real-time ROI calculations for integrated deployments, considering volume discounts and driver inheritance.
 -   **Competitor Comparison Wizard**: A 4-step wizard enabling users to compare the incremental value of Abridge against other ambient documentation vendors. Features:
