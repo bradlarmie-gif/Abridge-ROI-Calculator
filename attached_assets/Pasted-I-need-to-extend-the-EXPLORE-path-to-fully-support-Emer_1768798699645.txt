@@ -1,0 +1,218 @@
+I need to extend the EXPLORE path to fully support Emergency Department with ED-specific drivers, inputs, and calculations. The structure should match Outpatient exactly, but with ED-specific content.
+
+---
+
+CARE SETTING: Emergency Department
+
+When user selects "Emergency Department" in Step 1, the entire flow should use ED-specific configuration.
+
+---
+
+STEP 2: STRATEGIC PRIORITIES (ED Version)
+
+Show these drivers for ED (in this order):
+
+⏱️ TIME SAVED BENEFITS:
+
+1. PATIENT THROUGHPUT (LWBS REDUCTION)
+   - Subtitle: "Keep patients from leaving—capture that revenue"
+   - Context: "💰 Direct revenue impact—every LWBS is lost revenue"
+   - Typical range: "$150K-350K for 25 physicians"
+
+2. SCRIBE COST REDUCTION
+   - Subtitle: "Convert scribe labor cost to technology investment"
+   - Context: "⚠️ Only relevant if you currently use scribes"
+   - Typical range: "$200K-500K depending on scribe count"
+
+3. PHYSICIAN RETENTION
+   - Subtitle: "Reduce ED burnout-driven turnover"
+   - Context: "🕐 Long-term—12+ months to see full impact"
+   - Typical range: "$150K-300K for 25 physicians"
+
+📋 DOCUMENTATION QUALITY BENEFITS:
+
+4. LEVEL-OF-SERVICE ACCURACY
+   - Subtitle: "Capture appropriate E/M coding for complex ED visits"
+   - Context: "✓ Universal—ED visits are often under-documented"
+   - Typical range: "$150K-300K for 25 physicians"
+
+5. DOCUMENTATION-RELATED DENIALS
+   - Subtitle: "Reduce claim rejections from incomplete documentation"
+   - Context: "💰 ED claims face heavy payer scrutiny"
+   - Typical range: "$200K-450K for 25 physicians"
+
+---
+
+STEP 3: MODEL BUILDER (ED Version)
+
+YOUR ORGANIZATION section:
+- Label: "How many ED physicians are in scope?"
+- Helper: "Include attendings and mid-levels who will use Abridge"
+- Encounters helper: "💡 ~1,800/physician is typical for a community ED"
+- Utilization options: [Early 55%] [Typical 70%] [Aggressive 85%]
+- Utilization helper: "ED adoption is typically higher than outpatient"
+
+---
+
+DRIVER-SPECIFIC INPUTS:
+
+PATIENT THROUGHPUT (LWBS REDUCTION):
+─────────────────────────────────────
+
+STEP 1: Current LWBS rate
+- Input: Slider 1% to 8%, default 3.5%
+- Helper: "National average is 2-4%. High-volume urban EDs can be 5-8%"
+- Calculation: [visits] × [LWBS%] = patients leaving
+
+STEP 2: Throughput improvement
+- Input: [Conservative 15%] [Typical 20%] [Aggressive 30%]
+- Helper: "Abridge customers typically see 15-25% LWBS reduction"
+- Calculation: [patients leaving] × [improvement%] = patients retained
+
+STEP 3: Revenue per visit
+- Input: Currency field, default $600
+- Helper: "Ranges from $450 (low acuity) to $1,200 (high acuity)"
+- Calculation: [patients retained] × $[revenue] = $[RESULT]
+
+Advanced option (collapsed by default):
+- Checkbox: "Include downstream admission revenue"
+- If checked: Show additional calculation
+  - [patients retained] × 15% admission rate × $12,000 = additional value
+  - Add to total with note: "Including admission revenue (aggressive)"
+
+Note: "Some retained patients would have been admitted (~15%). Conservative model excludes admission revenue by default."
+
+---
+
+SCRIBE COST REDUCTION:
+──────────────────────
+
+STEP 1: Scribe qualifier
+- Input: [Yes, we use scribes] [No scribes currently]
+- If "No": Show $0 value, note "Scribe reduction doesn't apply to your ED"
+- If "Yes": Continue to next steps
+
+STEP 2: Current scribe count
+- Input: Number field, placeholder "e.g., 12.5"
+- Helper: "Typical ratio: 0.3-0.6 scribe FTE per ED physician. For 25 physicians: 7-15 FTEs"
+- Auto-suggest: [physicians] × 0.5 as default
+
+STEP 3: Cost per scribe FTE
+- Input: Currency field, default $45,000
+- Helper: "Includes salary, benefits, overhead. Range: $35K (in-house) to $60K (contracted)"
+- Shows: [FTEs] × $[cost] = $[current investment]
+
+STEP 4: Reduction level
+- Input: [Partial 40%] [Significant 60%] [Full 80%]
+- Helper: "Most EDs reduce by 50-75% over 12 months"
+- Calculation: [FTEs] × [reduction%] = FTEs eliminated
+
+STEP 5: Savings
+- Calculation: [FTEs eliminated] × $[cost] = $[RESULT]
+- Note: "Some organizations redeploy scribes to other roles rather than eliminating positions"
+
+---
+
+PHYSICIAN RETENTION (ED Version):
+─────────────────────────────────
+
+STEP 1: Turnover rate
+- Input: Slider 4% to 15%, default 8%
+- Helper: "ED turnover is typically higher than other specialties (6-12%)"
+- Calculation: [physicians] × [turnover%] = departures/year
+
+STEP 2: Burnout portion (auto)
+- Use 50% for ED (vs. 45% for outpatient)
+- Calculation: [departures] × 50% = preventable departures
+
+STEP 3: Attribution (auto)
+- Use 30% attribution
+- Calculation: [preventable] × 30% = departures avoided
+
+STEP 4: Replacement cost
+- Input: Currency field, default $800,000
+- Helper: "ED physicians cost more to replace: $750K-1.2M. Includes recruiting, signing bonus, coverage gaps"
+- Calculation: [departures avoided] × $[cost] = $[RESULT]
+
+Note: "⚠️ Retention impact typically measurable after 12-18 months"
+
+---
+
+LEVEL-OF-SERVICE ACCURACY (ED Version):
+───────────────────────────────────────
+
+STEP 1: E/M percentage (auto)
+- Use 90% for ED (vs. 80% for outpatient)
+- Calculation: [documented encounters] × 90% = E/M encounters
+
+STEP 2: Under-coding rate
+- Input: Slider 5% to 20%, default 12%
+- Helper: "ED under-coding is typically 10-15% (higher than outpatient due to pace)"
+- Calculation: [E/M encounters] × [undercode%] = affected visits
+
+STEP 3: wRVU delta
+- Input: Number field, default 1.2
+- Helper: "ED wRVU deltas are larger than outpatient (~1.0-1.4)"
+
+STEP 4: wRVU conversion
+- Input: Currency field, default $50
+- Calculation: [affected] × [delta] × $[conversion] = $[RESULT]
+
+---
+
+DOCUMENTATION-RELATED DENIALS (ED Version):
+───────────────────────────────────────────
+
+STEP 1: Denial rate
+- Input: Slider 5% to 15%, default 10%
+- Helper: "ED denial rates are typically 8-12% (higher than outpatient)"
+- Calculation: [encounters] × [denial%] = total denials
+
+STEP 2: Doc-related portion (auto)
+- Use 40% for ED (vs. 35% for outpatient)
+- Calculation: [denials] × 40% = doc-related denials
+
+STEP 3: Prevention rate (auto)
+- Use 45% for ED (vs. 40% for outpatient)
+- Calculation: [doc denials] × 45% = prevented
+
+STEP 4: Claim value
+- Input: Currency field, default $650
+- Helper: "ED claims are higher than outpatient: $500-900 typical"
+- Calculation: [prevented] × $[value] = $[RESULT]
+
+---
+
+LIVE SIDEBAR should update with ED-specific labels:
+- "ED Physicians" instead of "Providers"
+- Show "LWBS Rate" if throughput driver selected
+- Show "Scribe FTEs" if scribe driver selected
+
+---
+
+SUMMARY PAGE for ED:
+
+Executive Summary should show ED-specific framing:
+- "ROI MODEL: Emergency Department"
+- "25 physicians │ 31,500 documented encounters/year"
+
+Value Story cards should show ED-relevant metrics:
+- ⏱️ TIME SAVED: "315 patients retained │ 7.5 scribes reduced │ 0.3 departures avoided"
+- 📋 DOC QUALITY: "3,402 visits properly coded │ 567 denials prevented"
+
+Methodology should include ED-specific sources:
+- "LWBS reduction rates based on Abridge ED deployments"
+- "Scribe reduction timeline based on 50+ ED implementations"
+
+Scenario Builder should offer ED-specific scenarios:
+- "What if LWBS improves to 25%?"
+- "What if we fully eliminate scribes?"
+- "What if we expand to cover nights and weekends?"
+
+---
+
+DESIGN:
+- Use exact same visual design as Outpatient EXPLORE
+- Same color scheme, same component styles
+- ED should feel like a native part of the same product
+- All ED-specific helpers and notes should be clearly differentiated from Outpatient

@@ -111,11 +111,12 @@ const LEVER_ICONS: Record<string, typeof Users> = {
   denials: AlertTriangle,
   hccCapture: Building2,
   denialReduction: AlertTriangle,
+  // ED drivers
   edThroughput: Zap,
-  edStaffingEfficiency: Clock,
+  edScribe: Users,
   edRetention: HeartPulse,
   edLevelOfService: BarChart3,
-  edDocCompliance: FileText,
+  edDenials: FileX,
   // Nursing drivers
   documentation_time_savings: Clock,
   overtime_reduction: Clock,
@@ -137,11 +138,12 @@ const LEVER_KEY_METRICS: Record<string, string> = {
   denials: "Documentation-related denials prevented",
   hccCapture: "RAF score lift",
   denialReduction: "Documentation-related denials prevented",
-  edThroughput: "Additional patients per day",
-  edStaffingEfficiency: "Staff hours saved",
-  edRetention: "Staff departures avoided",
+  // ED drivers
+  edThroughput: "Patients retained from LWBS",
+  edScribe: "Scribe FTEs reduced",
+  edRetention: "Physician departures avoided",
   edLevelOfService: "wRVU capture improvement",
-  edDocCompliance: "Documentation compliance rate",
+  edDenials: "Denials prevented",
   // Nursing drivers
   documentation_time_savings: "Hours returned annually",
   overtime_reduction: "OT hours avoided",
@@ -154,21 +156,26 @@ const LEVER_KEY_METRICS: Record<string, string> = {
 };
 
 const LEVER_CONTEXT_TAGS: Record<string, { icon: string; text: string; color: string }> = {
+  // Outpatient
   overtime: { icon: "zap", text: "Quick win—measurable in 30 days", color: "amber" },
   patientAccess: { icon: "alert", text: "Requires patient demand", color: "orange" },
   retention: { icon: "clock", text: "Long-term—12+ months", color: "slate" },
   workforce: { icon: "clock", text: "Long-term—12+ months", color: "slate" },
   wrvu: { icon: "check", text: "Universal—applies to every practice", color: "green" },
-  edLevelOfService: { icon: "check", text: "Universal—applies to every ED", color: "green" },
   denials: { icon: "dollar", text: "Rev cycle teams love this", color: "emerald" },
   denialReduction: { icon: "dollar", text: "Rev cycle teams love this", color: "emerald" },
   hcc: { icon: "alert", text: "Only relevant with MA/risk volume", color: "orange" },
   hccCapture: { icon: "alert", text: "Only relevant with MA/risk volume", color: "orange" },
-  edThroughput: { icon: "zap", text: "Quick win—measurable in 30 days", color: "amber" },
-  edRetention: { icon: "clock", text: "Long-term—12+ months", color: "slate" },
+  // ED drivers
+  edThroughput: { icon: "dollar", text: "Direct revenue impact—every LWBS is lost revenue", color: "amber" },
+  edScribe: { icon: "alert", text: "Only relevant if you currently use scribes", color: "orange" },
+  edRetention: { icon: "clock", text: "Long-term—12+ months to see full impact", color: "slate" },
+  edLevelOfService: { icon: "check", text: "Universal—ED visits are often under-documented", color: "green" },
+  edDenials: { icon: "dollar", text: "ED claims face heavy payer scrutiny", color: "amber" },
 };
 
 const LEVER_VALUE_RANGES: Record<string, { min: number; max: number; perProviders: number }> = {
+  // Outpatient
   overtime: { min: 80000, max: 200000, perProviders: 50 },
   patientAccess: { min: 150000, max: 350000, perProviders: 50 },
   retention: { min: 50000, max: 150000, perProviders: 50 },
@@ -176,11 +183,14 @@ const LEVER_VALUE_RANGES: Record<string, { min: number; max: number; perProvider
   wrvu: { min: 100000, max: 250000, perProviders: 50 },
   denials: { min: 50000, max: 150000, perProviders: 50 },
   hcc: { min: 150000, max: 400000, perProviders: 50 },
-  edThroughput: { min: 200000, max: 500000, perProviders: 25 },
-  edLevelOfService: { min: 150000, max: 350000, perProviders: 25 },
-  edRetention: { min: 100000, max: 300000, perProviders: 25 },
-  denialReduction: { min: 75000, max: 200000, perProviders: 25 },
   hccCapture: { min: 100000, max: 300000, perProviders: 50 },
+  denialReduction: { min: 75000, max: 200000, perProviders: 25 },
+  // ED drivers
+  edThroughput: { min: 150000, max: 350000, perProviders: 25 },
+  edScribe: { min: 200000, max: 500000, perProviders: 25 },
+  edRetention: { min: 150000, max: 300000, perProviders: 25 },
+  edLevelOfService: { min: 150000, max: 300000, perProviders: 25 },
+  edDenials: { min: 200000, max: 450000, perProviders: 25 },
 };
 
 const ALL_SETTINGS: AllSettingType[] = [

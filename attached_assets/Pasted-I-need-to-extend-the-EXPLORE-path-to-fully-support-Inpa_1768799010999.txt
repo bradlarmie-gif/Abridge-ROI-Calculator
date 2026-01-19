@@ -1,0 +1,267 @@
+I need to extend the EXPLORE path to fully support Inpatient (Hospitalist) with inpatient-specific drivers, inputs, and calculations. The structure should match Outpatient and ED exactly, but with inpatient-specific content and honest framing about the different economics.
+
+---
+
+CARE SETTING: Inpatient
+
+When user selects "Inpatient" in Step 1, the entire flow should use Inpatient-specific configuration.
+
+---
+
+STEP 2: STRATEGIC PRIORITIES (Inpatient Version)
+
+Show these drivers for Inpatient (in this order):
+
+⏱️ TIME SAVED BENEFITS:
+
+1. ROUNDING EFFICIENCY & TIME SAVINGS
+   - Subtitle: "Return time to bedside care, teaching, discharge planning"
+   - Context: "✓ Immediate impact—measurable within weeks"
+   - Typical range: "$150K-350K for 20 hospitalists"
+
+2. HOSPITALIST RETENTION
+   - Subtitle: "Address the #1 driver of hospitalist turnover"
+   - Context: "🔥 Hospitalist turnover is a crisis (15-20% typical)"
+   - Typical range: "$100K-250K for 20 hospitalists"
+
+📋 DOCUMENTATION QUALITY BENEFITS:
+
+3. CC/MCC CAPTURE (DRG OPTIMIZATION)
+   - Subtitle: "Document the complexity you're managing"
+   - Context: "💰 Directly impacts DRG weight and reimbursement"
+   - Typical range: "$250K-500K for 20 hospitalists"
+
+4. CDI QUERY REDUCTION
+   - Subtitle: "Better initial documentation = less rework"
+   - Context: "⚡ Operational efficiency—CDI teams love this"
+   - Typical range: "$20K-50K for 20 hospitalists"
+
+5. DOCUMENTATION-RELATED DENIALS
+   - Subtitle: "Protect your reimbursement"
+   - Context: "💰 Inpatient denials are high-dollar"
+   - Typical range: "$150K-400K for 20 hospitalists"
+
+ADD A NOTE CALLOUT after the driver list:
+
+"💡 A NOTE ON INPATIENT ROI
+
+Unlike outpatient, hospitalists don't generate more revenue by documenting faster—the census is fixed by admissions.
+
+Inpatient ROI is about:
+- Protecting your workforce (time savings, retention)
+- Protecting your reimbursement (DRG accuracy, denials)
+
+Both are real, measurable value."
+
+---
+
+STEP 3: MODEL BUILDER (Inpatient Version)
+
+YOUR ORGANIZATION section:
+
+Label: "How many hospitalists are in scope?"
+- Input: Number field, placeholder "e.g., 20"
+- Helper: "Include all hospitalists who will use Abridge for rounding"
+
+Label: "Annual admissions for this hospitalist group?"
+- Input: Number field, placeholder "e.g., 8,000"
+- Helper: "💡 ~400/hospitalist is typical for a community hospital program"
+- Smart default: hospitalists × 400
+
+Label: "Average length of stay?"
+- Input: Number field, default 4.5
+- Helper: "💡 National average is 4.5-5.5 days for medical admissions"
+
+Label: "Expected utilization rate?"
+- Input: [Early 50%] [Typical 65%] [Aggressive 80%]
+- Helper: "% of patient encounters that will use Abridge"
+
+Show calculated scenario:
+"20 hospitalists × 8,000 admissions × 65% = 5,200 documented admissions
+ With 4.5 day LOS = ~23,400 patient-days documented"
+
+---
+
+DRIVER-SPECIFIC INPUTS:
+
+ROUNDING EFFICIENCY & TIME SAVINGS:
+───────────────────────────────────
+
+STEP 1: Documentation burden
+- Question: "How much time do your hospitalists spend documenting?"
+- Input: [Light 1.5 hrs] [Moderate 2.5 hrs] [Heavy 3.5 hrs] per day
+- Helper: "Per hospitalist per day. Industry studies show 2-3 hours avg"
+- Calculation: [hospitalists] × [hours] × 250 days = total hours/year
+
+STEP 2: Time reduction
+- Input: [Conservative 30%] [Typical 40%] [Aggressive 50%]
+- Helper: "Abridge hospitalist customers typically see 35-45% reduction"
+- Calculation: [total hours] × [reduction%] × [adoption%] = hours returned
+
+STEP 3: Value of time
+- Add important callout box explaining that this time doesn't directly generate revenue, but has real value (quality of life, complex cases, teaching, reduced burnout)
+- Input: [Conservative $50/hr] [Typical $75/hr] [Full value $125/hr]
+- Helper: "We recommend 'Typical' for a balanced, defensible model"
+- Calculation: [hours returned] × $[rate] = $[RESULT]
+
+Show practical meaning:
+"3,250 hours = 162.5 hours per hospitalist per year = ~40 min/day"
+
+---
+
+HOSPITALIST RETENTION:
+──────────────────────
+
+STEP 1: Turnover rate
+- Input: Slider 5% to 25%, default 15%
+- Helper: "Hospitalist turnover is significantly higher than other specialties. National average: 15-20%"
+- Calculation: [hospitalists] × [turnover%] = departures/year
+
+STEP 2: Burnout portion (auto)
+- Use 60% for hospitalists (vs. 45% for outpatient, 50% for ED)
+- Note: "Hospitalist burnout is severe—over 60% report symptoms"
+- Calculation: [departures] × 60% = preventable departures
+
+STEP 3: Documentation attribution
+- Input: Slider 20% to 50%, default 35%
+- Helper: "Studies show documentation is a top-3 burnout driver"
+- Calculation: [preventable] × [attribution%] = doc-related departures
+
+STEP 4: Abridge prevention
+- Input: [Conservative 30%] [Typical 50%] [Aggressive 70%]
+- Helper: "Based on satisfaction improvement data from Abridge customers"
+- Calculation: [doc-related] × [prevention%] = departures avoided
+
+STEP 5: Replacement cost
+- Input: Currency field, default $500,000
+- Helper: Show breakdown: recruiting ($30-50K), signing bonus ($20-50K), locum coverage ($100-200K), ramp-up loss
+- Calculation: [departures avoided] × $[cost] = $[RESULT]
+
+Note: "⚠️ Retention impact typically measurable after 12-18 months"
+
+---
+
+CC/MCC CAPTURE (DRG OPTIMIZATION):
+──────────────────────────────────
+
+STEP 1: Documentation gap opportunity
+- Input: Slider 20% to 60%, default 40%
+- Helper: "% of admissions with potential CC/MCC documentation gaps. Your CDI team can help estimate."
+- Calculation: [documented admissions] × [gap%] = opportunities
+
+STEP 2: Capture improvement
+- Input: [Conservative 10%] [Typical 15%] [Aggressive 25%]
+- Helper: "% of gaps that Abridge helps close"
+- Calculation: [opportunities] × [improvement%] = improved admissions
+
+STEP 3: DRG weight impact
+- Input: Slider 0.2 to 0.8, default 0.4
+- Helper: "Depends on case mix. MCC additions have larger impact."
+
+STEP 4: DRG base rate
+- Input: Currency field, default $6,000
+- Helper: "Per DRG weight. Varies by hospital and payer mix."
+- Calculation: [improved] × [weight] × $[rate] = gross impact
+
+STEP 5: Realization rate
+- Input: [Conservative 40%] [Typical 50%] [Aggressive 70%]
+- Helper: "Accounts for audit challenges, payer denials"
+- Calculation: [gross] × [realization%] = $[RESULT]
+
+Add validation tip: "Work with your CDI director to validate these assumptions."
+
+---
+
+CDI QUERY REDUCTION:
+────────────────────
+
+STEP 1: Current query rate
+- Input: Slider 15% to 50%, default 30%
+- Helper: "% of admissions that generate a CDI query. Typical: 25-35%"
+- Calculation: [admissions] × [query%] = queries/year
+
+STEP 2: Query reduction
+- Input: [Conservative 15%] [Typical 25%] [Aggressive 40%]
+- Helper: "% reduction from better initial documentation"
+- Calculation: [queries] × [reduction%] = queries avoided
+
+STEP 3: Value per query (show breakdown, use $50 default)
+- Show: CDI time ($12) + Physician time ($30) + Processing ($4) + Overhead ($4) = $50
+- Calculation: [queries avoided] × $50 = $[RESULT]
+
+Add note: "Additional benefits: Faster DRG finalization, reduced physician interruptions"
+
+---
+
+DOCUMENTATION-RELATED DENIALS (Inpatient):
+──────────────────────────────────────────
+
+STEP 1: Denial rate
+- Input: Slider 2% to 10%, default 5%
+- Helper: "Inpatient denial rates typically 4-8%"
+- Calculation: [admissions] × [denial%] = denials
+
+STEP 2: Doc-related portion
+- Input: Slider 20% to 50%, default 35%
+- Helper: "Common reasons: medical necessity, level of care, insufficient clinical indicators"
+- Calculation: [denials] × [doc%] = doc-related denials
+
+STEP 3: Prevention rate
+- Input: [Conservative 30%] [Typical 40%] [Aggressive 55%]
+- Calculation: [doc denials] × [prevention%] = prevented
+
+STEP 4: Claim value
+- Input: Currency field, default $12,000
+- Helper: "Average inpatient reimbursement. Varies by case mix."
+- Calculation: [prevented] × $[value] = gross
+
+STEP 5: Permanent save rate
+- Input: [Conservative 30%] [Typical 40%] [Aggressive 60%]
+- Helper: "Many denials are overturned on appeal. This is the 'permanent save' rate."
+- Calculation: [gross] × [save%] = $[RESULT]
+
+---
+
+LIVE SIDEBAR for Inpatient:
+- "Hospitalists" instead of "Providers"
+- "Admissions" instead of "Encounters"
+- Show "Avg LOS" as additional metric
+- Show "Patient-days" calculation
+
+---
+
+VALUE STORY for Inpatient Summary:
+
+Add insight callout:
+"Unlike outpatient, ~63% of inpatient value comes from documentation quality (protecting reimbursement) rather than time savings (enabling more volume). This makes sense: hospitalist census is fixed, but DRG accuracy and denial prevention directly impact the bottom line."
+
+---
+
+SUMMARY PAGE for Inpatient:
+
+Executive Summary should show:
+- "ROI MODEL: Hospitalist Program"
+- "20 hospitalists │ 5,200 documented admissions/year"
+
+Value Story cards:
+- ⏱️ TIME SAVED: "3,250 hours returned │ 0.32 departures avoided"
+- 📋 DOC QUALITY: "312 improved DRGs │ 600 queries avoided │ 56 denials prevented"
+
+Methodology should include inpatient-specific notes:
+- "Hospitalist time savings valued at opportunity cost, not revenue generation"
+- "DRG improvement rates based on CDI collaboration data"
+- "Conservative realization rates account for audit and payer challenges"
+
+Scenario Builder should offer:
+- "What if we expanded to 40 hospitalists?"
+- "What if CC/MCC capture improved to 20%?"
+- "What if turnover dropped to 10%?"
+
+---
+
+DESIGN:
+- Use exact same visual design as Outpatient and ED
+- Same color scheme, same component styles
+- Inpatient should feel native to the same product
+- Key callouts about "different economics" should be prominent but not alarming
+- The "honest framing" builds credibility, doesn't undermine the value
