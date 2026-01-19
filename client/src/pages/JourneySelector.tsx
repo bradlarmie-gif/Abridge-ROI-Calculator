@@ -1,5 +1,6 @@
 import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BackgroundShape } from "@/components/BackgroundShape";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 
 interface JourneySelectorProps {
@@ -48,8 +49,9 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
 
 export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn }: JourneySelectorProps) {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-white relative">
+      <BackgroundShape />
+      <div className="max-w-6xl mx-auto px-6 py-8 relative z-10">
         <header className="mb-16">
           <div className="flex items-start">
             <div>

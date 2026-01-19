@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { BackgroundShape } from "@/components/BackgroundShape";
 import { LiveReceipt } from "@/components/LiveReceipt";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
@@ -2398,8 +2397,7 @@ export default function ObjectiveSelectionScreen({
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative font-sans bg-gradient-to-b from-neutral-50 via-white to-neutral-50">
-      <BackgroundShape />
+    <div className="min-h-screen flex flex-col relative font-sans bg-neutral-50">
 
       {/* Header */}
       <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
