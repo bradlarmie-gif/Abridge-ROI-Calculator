@@ -1,0 +1,249 @@
+I need to create the Nursing version of the Learn Methodology page. This follows the same design pattern as other settings, but with a fundamentally different value story because nurses don't generate revenue directly.
+
+---
+
+SETTING: Nursing
+
+REFERENCE SCENARIO:
+- 300 nurses (FTEs)
+- 150,000 documentation events/year
+- 60% adoption
+- = ~90,000 Abridge-documented events/year
+
+Additional context:
+- Average nurse salary: $85,000/year
+- Agency nurse rate: ~$150,000/year (fully loaded)
+- Nursing turnover: 18%/year
+- OT rate: $67.50/hr (1.5× base)
+
+---
+
+THE INSIGHT (for Nursing - this is critical and different):
+
+"Nursing ROI is different. Nurses don't bill—there's no wRVU capture or E/M coding to optimize.
+
+The value is purely about protecting your most expensive and scarce resource: your nursing workforce. Every hour returned to bedside care is real. Every overtime hour eliminated hits the budget directly. Every nurse you retain is $50K you don't spend on replacement.
+
+This isn't about revenue generation. It's about cost protection and workforce sustainability."
+
+---
+
+FRAMEWORK DIAGRAM:
+
+For Nursing, the two lanes are weighted differently:
+
+TIME SAVED box (PRIMARY - make this visually larger/more prominent):
+- "Nurses spend 25-35% of their shift on documentation. Returning that time means less overtime, less burnout, and less reliance on expensive agency staff."
+- Bullet points: Time Savings, Overtime Reduction, Agency Reduction, Retention
+
+DOC QUALITY box (SECONDARY - smaller, supporting role):
+- "Real-time documentation improves compliance and care continuity—important for regulatory readiness, but harder to monetize."
+- Bullet points: Timeliness, Completeness
+
+Design note: Make the Time Saved box take ~65% of the width, Doc Quality ~35%. The visual weight should communicate where the real value is.
+
+---
+
+NURSING DRIVERS (in this order):
+
+TIME SAVED BENEFITS:
+
+1. OVERTIME REDUCTION
+   Subtitle: "The most directly measurable impact"
+   
+   The Theory:
+   "Nursing overtime is often driven by end-of-shift documentation catch-up. When charting happens in real-time throughout the shift, nurses leave on time. This is real budget savings you can measure in 30 days."
+   
+   How We Calculate It:
+   
+   STEP 1: CURRENT OVERTIME
+   "How much OT exists today?"
+   300 nurses × 4 OT hrs/week × 50 weeks = 60,000 OT hours/year
+   
+   STEP 2: DOCUMENTATION-DRIVEN OT
+   "How much is charting catch-up?"
+   60,000 × 45% doc-related = 27,000 hours
+   
+   STEP 3: OT ELIMINATED
+   "How much can real-time documentation prevent?"
+   27,000 × 60% reduction × 60% adoption = 9,720 hours eliminated
+   
+   STEP 4: COST SAVINGS
+   "What's the budget impact?"
+   9,720 hours × $67.50 OT rate = $656,100
+   
+   Note: "This is DIRECT, MEASURABLE savings. Track it month-over-month."
+
+2. DOCUMENTATION TIME SAVINGS
+   Subtitle: "Return hours to bedside care"
+   
+   The Theory:
+   "Nurses spend 25-35% of their shift on documentation—time taken away from patients. Ambient documentation into flowsheets captures assessments, vitals, and observations in real-time."
+   
+   How We Calculate It:
+   
+   STEP 1: DOCUMENTATION BURDEN
+   "How much time is spent charting?"
+   300 nurses × 2.5 hrs/shift × 3 shifts/week × 50 weeks = 112,500 hours/year
+   
+   STEP 2: TIME RETURNED
+   "How much can Abridge give back?"
+   112,500 hrs × 35% reduction × 60% adoption = 23,625 hours returned
+   
+   STEP 3: VALUE OF TIME
+   "What's this worth?"
+   23,625 hours × $45/hr × 50% realization = $531,563
+   
+   Note: "This time doesn't disappear from payroll—but it DOES get redirected to bedside care, patient education, and discharge prep."
+
+3. AGENCY & TRAVEL NURSE REDUCTION
+   Subtitle: "Convert expensive agency spend to staff positions"
+   
+   The Theory:
+   "When staff nurses burn out and leave, hospitals fill gaps with agency nurses at 3-4× the cost. Improving retention through reduced documentation burden directly impacts agency spend."
+   
+   How We Calculate It:
+   
+   STEP 1: CURRENT AGENCY UTILIZATION
+   "How much agency are you using?"
+   300 nurses × 15% agency = 45 FTEs filled by agency
+   
+   STEP 2: AGENCY PREMIUM
+   "What's the cost difference?"
+   Staff: $85,000/yr | Agency: $150,000/yr
+   Premium: $65,000 per agency FTE
+   
+   STEP 3: AGENCY REDUCTION
+   "How much can better retention reduce agency needs?"
+   45 FTEs × 10% reduction = 4.5 FTEs converted
+   
+   STEP 4: COST SAVINGS
+   "What's the budget impact?"
+   4.5 FTEs × $65,000 = $292,500
+   
+   Note: "This is an indirect benefit—the logic chain is: better retention → less agency need → budget savings."
+
+4. NURSE RETENTION
+   Subtitle: "Address the top driver of nursing burnout"
+   
+   The Theory:
+   "Nursing turnover costs $40-60K per nurse. Documentation burden is consistently cited as a top driver of burnout. Reducing this burden improves job satisfaction and retention."
+   
+   How We Calculate It:
+   
+   STEP 1: BASELINE TURNOVER
+   "What's the current situation?"
+   300 nurses × 18% turnover = 54 departures/year
+   
+   STEP 2: BURNOUT-RELATED
+   "How much is burnout-driven?"
+   54 × 55% = 29.7 burnout-related departures
+   
+   STEP 3: DOCUMENTATION ATTRIBUTION
+   "How much is documentation's fault?"
+   29.7 × 25% = 7.4 doc-related departures
+   
+   STEP 4: ABRIDGE IMPACT
+   "What can Abridge prevent?"
+   7.4 × 40% = 3.0 departures avoided
+   
+   STEP 5: COST SAVINGS
+   "What's the dollar value?"
+   3.0 × $50,000 = $150,000
+   
+   Note: "⚠️ Retention impact typically measurable after 12+ months."
+
+---
+
+DOCUMENTATION QUALITY BENEFITS:
+
+1. DOCUMENTATION TIMELINESS & COMPLETENESS
+   Subtitle: "Regulatory readiness and care continuity"
+   
+   The Theory:
+   "Regulatory requirements demand timely, complete documentation. Late or incomplete charting creates compliance risk. Real-time ambient documentation ensures assessments are captured when they happen—not reconstructed hours later."
+   
+   How We Calculate It:
+   
+   STEP 1: CURRENT GAPS
+   "What's the compliance situation?"
+   Late documentation (>2 hrs): ~20% of charts
+   Incomplete assessments: ~15% of required fields
+   
+   STEP 2: IMPROVEMENT
+   "How much can real-time documentation help?"
+   Late documentation: 20% → 5% (75% improvement)
+   Incomplete fields: 15% → 5% (67% improvement)
+   
+   STEP 3: VALUE
+   "What's this worth?"
+   Reduced audit prep, survey readiness, legal exposure
+   Conservative operational value: $50,000/year
+   
+   Note: "This is harder to quantify but real from a risk management and regulatory perspective."
+
+---
+
+WHAT WE'RE NOT CLAIMING (add a small "Our Approach" callout):
+
+Add a subtle callout box after the Doc Quality section:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ 📋 A NOTE ON NURSING ROI                                            │
+│                                                                     │
+│ We intentionally DON'T claim:                                       │
+│ • Reduced falls or pressure injuries (too indirect)                 │
+│ • Revenue support via CDI (nursing notes rarely drive DRG)          │
+│ • Improved patient satisfaction (hard to attribute)                 │
+│                                                                     │
+│ We focus on what's measurable and defensible: workforce costs.      │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style: Light gray background, subtle, small text. This builds credibility by showing you know what NOT to claim.
+
+---
+
+COMBINED REFERENCE VALUE:
+
+Time Saved Benefits:
+- Overtime Reduction                $656,100
+- Documentation Time Savings        $531,563
+- Agency Nurse Reduction            $292,500
+- Nurse Retention                   $150,000
+Subtotal:                         $1,630,163
+
+Documentation Quality Benefits:
+- Timeliness & Completeness         $50,000
+Subtotal:                           $50,000
+
+TOTAL POTENTIAL VALUE:            $1,680,163
+For 300 nurses at 60% adoption
+~$5,600 per nurse/year
+
+Note below the total: "Nursing ROI is primarily cost avoidance, not revenue generation. But cost avoidance is real money—it hits the same budget line."
+
+---
+
+BRIDGE SECTION:
+
+"You've seen the framework.
+
+The reference scenario showed potential value of $1,680,163 for a 300-nurse deployment. But your organization is different.
+
+Different nurse count. Different OT rates. Different agency utilization.
+
+Ready to see what Abridge could mean for YOUR nursing team?"
+
+[Build My ROI Model →]
+
+← Or explore another care setting
+
+---
+
+DESIGN:
+- Use exact same visual design as other settings
+- Same color scheme, same calculation step format
+- KEY DIFFERENCE: Time Saved section should be visually dominant (~80% of the value)
+- Doc Quality section should feel secondary/supporting
+- Include the "What we're NOT claiming" callout for credibility
+- When user selects "Nursing" from the Learn entry page, route to this version

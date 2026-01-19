@@ -687,244 +687,288 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
     icon: HeartPulse,
     subtitle: "Bedside documentation, care coordination",
     insightText: {
-      main: "Nurses spend up to 35% of their shift on documentation—time that could be at the bedside. Ambient AI captures care activities in real-time, returning hours to where they matter most:",
-      highlight: "PATIENT CARE",
-      followup: "Plus, real-time documentation reduces end-of-shift overtime and improves note completeness."
+      main: "Nursing ROI is different. Nurses don't bill—there's no wRVU capture or E/M coding to optimize. The value is purely about protecting your most expensive and scarce resource: your nursing workforce. Every hour returned to bedside care is real. Every overtime hour eliminated hits the budget directly. Every nurse you retain is $50K you don't spend on replacement. This isn't about revenue generation. It's about:",
+      highlight: "COST PROTECTION",
+      followup: "And workforce sustainability."
     },
     referenceScenario: {
-      providers: 150,
+      providers: 300,
       providerLabel: "nurses",
-      annualVisits: 180000,
+      annualVisits: 150000,
       visitLabel: "documentation events",
       adoption: 60,
-      eligibleEncounters: 108000,
-      description: "We'll walk through the math using a 200-bed hospital nursing deployment as an example:"
+      eligibleEncounters: 90000,
+      description: "We'll walk through the math using a 300-nurse deployment as an example:"
     },
-    timeSavedSubtitle: "Hours returned to bedside care",
-    docQualitySubtitle: "Point-of-care documentation",
+    timeSavedSubtitle: "Nurses spend 25-35% of their shift on documentation. Returning that time means less overtime, less burnout, and less reliance on expensive agency staff.",
+    docQualitySubtitle: "Real-time documentation improves compliance and care continuity—important for regulatory readiness, but harder to monetize.",
     drivers: [
       {
         id: "nursing-overtime",
         name: "Overtime Reduction",
-        description: "Eliminate end-of-shift charting overtime",
+        description: "The most directly measurable impact",
         whyItMatters: "The quick win—immediate payroll savings",
-        referenceValue: 162000,
+        referenceValue: 656100,
         icon: DollarSign,
         lane: "time",
         order: 1,
-        theory: "End-of-shift documentation frequently pushes nurses into overtime. Real-time documentation eliminates this burden, reducing premium labor costs.",
+        theory: "Nursing overtime is often driven by end-of-shift documentation catch-up. When charting happens in real-time throughout the shift, nurses leave on time. This is real budget savings you can measure in 30 days.",
         calculationSteps: [
           {
             stepNumber: 1,
-            stepLabel: "BASELINE OVERTIME",
-            question: "How much overtime exists today?",
+            stepLabel: "CURRENT OVERTIME",
+            question: "How much OT exists today?",
             inputs: [
-              { label: "Nurses", value: "150" },
-              { label: "OT hrs/week × weeks", value: "3 × 52" }
+              { label: "Nurses", value: "300" },
+              { label: "OT hrs/week", value: "4" },
+              { label: "Weeks/year", value: "50" }
             ],
-            output: { label: "Annual OT hrs", value: "23,400" }
+            output: { label: "Annual OT hrs", value: "60,000" }
           },
           {
             stepNumber: 2,
-            stepLabel: "REDUCTION",
-            question: "How much can Abridge reduce?",
+            stepLabel: "DOCUMENTATION-DRIVEN OT",
+            question: "How much is charting catch-up?",
             inputs: [
-              { label: "OT hours", value: "23,400" },
-              { label: "Reduction rate", value: "30%" }
+              { label: "Total OT hours", value: "60,000" },
+              { label: "Doc-related", value: "45%" }
             ],
-            output: { label: "Hours eliminated", value: "7,020" }
+            output: { label: "Doc-driven OT", value: "27,000 hrs" }
           },
           {
             stepNumber: 3,
-            stepLabel: "COST SAVINGS",
-            question: "What's the dollar value?",
+            stepLabel: "OT ELIMINATED",
+            question: "How much can real-time documentation prevent?",
             inputs: [
-              { label: "Hours eliminated", value: "7,020" },
-              { label: "OT premium", value: "$23/hr" }
+              { label: "Doc-driven OT", value: "27,000" },
+              { label: "Reduction rate", value: "60%" },
+              { label: "Adoption", value: "60%" }
             ],
-            output: { label: "Annual savings", value: "$162,000" }
+            output: { label: "Hours eliminated", value: "9,720" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "COST SAVINGS",
+            question: "What's the budget impact?",
+            inputs: [
+              { label: "Hours eliminated", value: "9,720" },
+              { label: "OT rate", value: "$67.50/hr" }
+            ],
+            output: { label: "Annual savings", value: "$656,100" }
           }
-        ]
+        ],
+        caveat: "This is DIRECT, MEASURABLE savings. Track it month-over-month."
       },
       {
         id: "doc-time-savings",
         name: "Documentation Time Savings",
-        description: "Hours returned to direct patient care",
+        description: "Return hours to bedside care",
         whyItMatters: "More time at the bedside—where care happens",
-        referenceValue: 486000,
+        referenceValue: 531563,
         icon: Timer,
         lane: "time",
         order: 2,
-        theory: "Nurses spend up to 35% of their shift on documentation. Ambient AI captures care activities in real-time, returning hours to the bedside where they improve patient outcomes and satisfaction.",
+        theory: "Nurses spend 25-35% of their shift on documentation—time taken away from patients. Ambient documentation into flowsheets captures assessments, vitals, and observations in real-time.",
         calculationSteps: [
           {
             stepNumber: 1,
-            stepLabel: "DOCUMENTATION EVENTS",
-            question: "How many documentation events happen?",
+            stepLabel: "DOCUMENTATION BURDEN",
+            question: "How much time is spent charting?",
             inputs: [
-              { label: "Annual events", value: "108,000" }
+              { label: "Nurses", value: "300" },
+              { label: "Hrs/shift", value: "2.5" },
+              { label: "Shifts/week", value: "3" },
+              { label: "Weeks/year", value: "50" }
             ],
-            output: { label: "Total events", value: "108,000" }
+            output: { label: "Annual doc hours", value: "112,500" }
           },
           {
             stepNumber: 2,
-            stepLabel: "TIME SAVINGS",
-            question: "How much time does Abridge give back?",
+            stepLabel: "TIME RETURNED",
+            question: "How much can Abridge give back?",
             inputs: [
-              { label: "Events", value: "108,000" },
-              { label: "Time saved", value: "2.5 min" }
+              { label: "Doc hours", value: "112,500" },
+              { label: "Reduction", value: "35%" },
+              { label: "Adoption", value: "60%" }
             ],
-            output: { label: "Hours returned", value: "4,500 hrs" }
+            output: { label: "Hours returned", value: "23,625" }
           },
           {
             stepNumber: 3,
-            stepLabel: "DIRECT VALUE",
-            question: "What's the direct labor value?",
+            stepLabel: "VALUE OF TIME",
+            question: "What's this worth?",
             inputs: [
-              { label: "Hours returned", value: "4,500" },
-              { label: "Hourly rate", value: "$45" }
+              { label: "Hours returned", value: "23,625" },
+              { label: "Hourly rate", value: "$45" },
+              { label: "Realization", value: "50%" }
             ],
-            output: { label: "Direct value", value: "$202,500" }
+            output: { label: "Annual value", value: "$531,563" }
+          }
+        ],
+        caveat: "This time doesn't disappear from payroll—but it DOES get redirected to bedside care, patient education, and discharge prep."
+      },
+      {
+        id: "agency-reduction",
+        name: "Agency & Travel Nurse Reduction",
+        description: "Convert expensive agency spend to staff positions",
+        whyItMatters: "Reduce premium labor costs",
+        referenceValue: 292500,
+        icon: Users,
+        lane: "time",
+        order: 3,
+        theory: "When staff nurses burn out and leave, hospitals fill gaps with agency nurses at 3-4× the cost. Improving retention through reduced documentation burden directly impacts agency spend.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "CURRENT AGENCY UTILIZATION",
+            question: "How much agency are you using?",
+            inputs: [
+              { label: "Nurses", value: "300" },
+              { label: "Agency %", value: "15%" }
+            ],
+            output: { label: "Agency FTEs", value: "45" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "AGENCY PREMIUM",
+            question: "What's the cost difference?",
+            inputs: [
+              { label: "Staff salary", value: "$85,000/yr" },
+              { label: "Agency cost", value: "$150,000/yr" }
+            ],
+            output: { label: "Premium per FTE", value: "$65,000" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "AGENCY REDUCTION",
+            question: "How much can better retention reduce agency needs?",
+            inputs: [
+              { label: "Agency FTEs", value: "45" },
+              { label: "Reduction", value: "10%" }
+            ],
+            output: { label: "FTEs converted", value: "4.5" }
           },
           {
             stepNumber: 4,
-            stepLabel: "PRODUCTIVITY MULTIPLIER",
-            question: "What's the total productivity impact?",
+            stepLabel: "COST SAVINGS",
+            question: "What's the budget impact?",
             inputs: [
-              { label: "Direct value", value: "$202,500" },
-              { label: "Multiplier", value: "2.4x" }
+              { label: "FTEs converted", value: "4.5" },
+              { label: "Premium", value: "$65,000" }
             ],
-            output: { label: "Annual value", value: "$486,000" }
+            output: { label: "Annual savings", value: "$292,500" }
           }
-        ]
+        ],
+        caveat: "This is an indirect benefit—the logic chain is: better retention → less agency need → budget savings."
       },
       {
         id: "nurse-retention",
         name: "Nurse Retention",
-        description: "Reduced burnout and turnover",
+        description: "Address the top driver of nursing burnout",
         whyItMatters: "The long game—12+ months to see full impact",
-        referenceValue: 270000,
+        referenceValue: 150000,
         icon: UserCheck,
         lane: "time",
-        order: 3,
-        theory: "Documentation burden is a top driver of nursing burnout and turnover. With replacement costs of $50K-80K per nurse, even modest retention improvements create significant value.",
+        order: 4,
+        theory: "Nursing turnover costs $40-60K per nurse. Documentation burden is consistently cited as a top driver of burnout. Reducing this burden improves job satisfaction and retention.",
         calculationSteps: [
           {
             stepNumber: 1,
-            stepLabel: "CURRENT TURNOVER",
-            question: "What's the current turnover situation?",
+            stepLabel: "BASELINE TURNOVER",
+            question: "What's the current situation?",
             inputs: [
-              { label: "Nurses", value: "150" },
+              { label: "Nurses", value: "300" },
               { label: "Turnover rate", value: "18%" }
             ],
-            output: { label: "Annual departures", value: "27" }
+            output: { label: "Annual departures", value: "54" }
           },
           {
             stepNumber: 2,
-            stepLabel: "RETENTION IMPACT",
-            question: "How many can Abridge help retain?",
+            stepLabel: "BURNOUT-RELATED",
+            question: "How much is burnout-driven?",
             inputs: [
-              { label: "Departures", value: "27" },
-              { label: "Improvement", value: "15%" }
+              { label: "Departures", value: "54" },
+              { label: "Burnout factor", value: "55%" }
             ],
-            output: { label: "Nurses retained", value: "4" }
+            output: { label: "Burnout departures", value: "29.7" }
           },
           {
             stepNumber: 3,
-            stepLabel: "REPLACEMENT SAVINGS",
+            stepLabel: "DOCUMENTATION ATTRIBUTION",
+            question: "How much is documentation's fault?",
+            inputs: [
+              { label: "Burnout departures", value: "29.7" },
+              { label: "Doc-related", value: "25%" }
+            ],
+            output: { label: "Doc-related departures", value: "7.4" }
+          },
+          {
+            stepNumber: 4,
+            stepLabel: "ABRIDGE IMPACT",
+            question: "What can Abridge prevent?",
+            inputs: [
+              { label: "Doc-related", value: "7.4" },
+              { label: "Prevention rate", value: "40%" }
+            ],
+            output: { label: "Departures avoided", value: "3.0" }
+          },
+          {
+            stepNumber: 5,
+            stepLabel: "COST SAVINGS",
             question: "What's the dollar value?",
             inputs: [
-              { label: "Retained", value: "4" },
-              { label: "Replacement cost", value: "$67,500" }
+              { label: "Avoided", value: "3.0" },
+              { label: "Replacement cost", value: "$50,000" }
             ],
-            output: { label: "Annual savings", value: "$270,000" }
+            output: { label: "Annual savings", value: "$150,000" }
           }
         ],
-        caveat: "Retention impact typically measurable after 12-18 months"
+        caveat: "Retention impact typically measurable after 12+ months."
       },
       {
-        id: "doc-timeliness",
-        name: "Documentation Timeliness",
-        description: "Real-time vs. end-of-shift documentation",
-        whyItMatters: "Real-time notes support better clinical decisions",
-        referenceValue: 108000,
+        id: "doc-timeliness-completeness",
+        name: "Documentation Timeliness & Completeness",
+        description: "Regulatory readiness and care continuity",
+        whyItMatters: "Compliance and risk management value",
+        referenceValue: 50000,
         icon: ClipboardCheck,
         lane: "quality",
         order: 1,
-        theory: "Delayed documentation leads to errors and omissions. Real-time capture ensures accuracy and supports clinical decision-making during the care episode.",
+        theory: "Regulatory requirements demand timely, complete documentation. Late or incomplete charting creates compliance risk. Real-time ambient documentation ensures assessments are captured when they happen—not reconstructed hours later.",
         calculationSteps: [
           {
             stepNumber: 1,
-            stepLabel: "DOCUMENTED EVENTS",
-            question: "How many events are documented?",
+            stepLabel: "CURRENT GAPS",
+            question: "What's the compliance situation?",
             inputs: [
-              { label: "Annual events", value: "108,000" }
+              { label: "Late documentation (>2 hrs)", value: "~20% of charts" },
+              { label: "Incomplete assessments", value: "~15% of fields" }
             ],
-            output: { label: "Total", value: "108,000" }
+            output: { label: "Compliance gaps", value: "Significant" }
           },
           {
             stepNumber: 2,
-            stepLabel: "TIMELINESS IMPROVEMENT",
-            question: "How much faster is real-time capture?",
+            stepLabel: "IMPROVEMENT",
+            question: "How much can real-time documentation help?",
             inputs: [
-              { label: "Current lag", value: "4+ hours" },
-              { label: "New lag", value: "<15 min" }
+              { label: "Late docs", value: "20% → 5%" },
+              { label: "Incomplete", value: "15% → 5%" }
             ],
-            output: { label: "Improvement", value: "95%" }
+            output: { label: "Improvement", value: "67-75%" }
           },
           {
             stepNumber: 3,
-            stepLabel: "ERROR REDUCTION VALUE",
-            question: "What's the value of fewer errors?",
+            stepLabel: "VALUE",
+            question: "What's this worth?",
             inputs: [
-              { label: "Events improved", value: "108,000" },
-              { label: "Value per event", value: "$1" }
+              { label: "Reduced audit prep", value: "Yes" },
+              { label: "Survey readiness", value: "Yes" },
+              { label: "Legal exposure", value: "Reduced" }
             ],
-            output: { label: "Annual value", value: "$108,000" }
+            output: { label: "Operational value", value: "$50,000" }
           }
-        ]
-      },
-      {
-        id: "doc-completeness",
-        name: "Documentation Completeness",
-        description: "All required elements captured",
-        whyItMatters: "Complete notes mean better compliance",
-        referenceValue: 135000,
-        icon: FileText,
-        lane: "quality",
-        order: 2,
-        theory: "Rushed documentation often misses required fields, leading to compliance issues and downstream problems. AI ensures comprehensive capture of all care activities.",
-        calculationSteps: [
-          {
-            stepNumber: 1,
-            stepLabel: "DOCUMENTATION EVENTS",
-            question: "How many events need documentation?",
-            inputs: [
-              { label: "Annual events", value: "108,000" }
-            ],
-            output: { label: "Total", value: "108,000" }
-          },
-          {
-            stepNumber: 2,
-            stepLabel: "COMPLETENESS IMPROVEMENT",
-            question: "How much more complete are AI notes?",
-            inputs: [
-              { label: "Events", value: "108,000" },
-              { label: "Improvement rate", value: "5%" }
-            ],
-            output: { label: "Improved events", value: "5,400" }
-          },
-          {
-            stepNumber: 3,
-            stepLabel: "COMPLIANCE VALUE",
-            question: "What's the compliance value?",
-            inputs: [
-              { label: "Improved events", value: "5,400" },
-              { label: "Value per event", value: "$25" }
-            ],
-            output: { label: "Annual value", value: "$135,000" }
-          }
-        ]
+        ],
+        caveat: "This is harder to quantify but real from a risk management and regulatory perspective."
       }
     ]
   },
@@ -1561,16 +1605,17 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
         </div>
 
         {/* Visual Framework - Now ABOVE Reference Scenario */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Nursing uses 65/35 visual weighting to emphasize Time Saved as primary value */}
+        <div className={`grid grid-cols-1 gap-6 mb-8 ${selectedSetting === "nursing" ? "md:grid-cols-[2fr_1fr]" : "md:grid-cols-2"}`}>
           <button
             onClick={() => document.getElementById('time-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className="p-6 bg-white border border-[#E5E7EB] rounded-xl text-left hover-elevate"
+            className={`p-6 bg-white border rounded-xl text-left hover-elevate ${selectedSetting === "nursing" ? "border-[#E85D3F] border-2" : "border-[#E5E7EB]"}`}
             data-testid="framework-time-card"
           >
             <Clock className="w-8 h-8 text-[#E85D3F] mb-3" />
-            <h3 className="font-bold text-[#111827] text-lg mb-2">Time Saved</h3>
+            <h3 className="font-bold text-[#111827] text-lg mb-2">Time Saved {selectedSetting === "nursing" && <span className="text-xs font-normal text-[#E85D3F] ml-2">PRIMARY</span>}</h3>
             <p className="text-sm text-[#6B7280] mb-4">
-              When clinicians document faster, that time can be redirected to care or recovered as cost savings.
+              {config?.timeSavedSubtitle}
             </p>
             <ul className="text-sm text-[#6B7280] space-y-1">
               {timeDrivers.map(d => (
@@ -1584,13 +1629,13 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           
           <button
             onClick={() => document.getElementById('quality-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className="p-6 bg-white border border-[#E5E7EB] rounded-xl text-left hover-elevate"
+            className={`p-6 bg-white border border-[#E5E7EB] rounded-xl text-left hover-elevate ${selectedSetting === "nursing" ? "opacity-75" : ""}`}
             data-testid="framework-quality-card"
           >
             <FileText className="w-8 h-8 text-[#E85D3F] mb-3" />
-            <h3 className="font-bold text-[#111827] text-lg mb-2">Doc Quality</h3>
+            <h3 className="font-bold text-[#111827] text-lg mb-2">Doc Quality {selectedSetting === "nursing" && <span className="text-xs font-normal text-[#6B7280] ml-2">SUPPORTING</span>}</h3>
             <p className="text-sm text-[#6B7280] mb-4">
-              AI captures more complete information than rushed manual documentation. Better notes drive downstream revenue.
+              {config?.docQualitySubtitle}
             </p>
             <ul className="text-sm text-[#6B7280] space-y-1">
               {qualityDrivers.map(d => (
@@ -1678,6 +1723,34 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           </div>
         </div>
 
+        {/* Nursing-only: What we're NOT claiming callout */}
+        {selectedSetting === "nursing" && (
+          <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-5 mb-10" data-testid="nursing-disclaimer">
+            <div className="flex items-start gap-3">
+              <ClipboardCheck className="w-5 h-5 text-[#6B7280] mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-sm font-semibold text-[#111827] mb-2">A NOTE ON NURSING ROI</h4>
+                <p className="text-sm text-[#6B7280] mb-3">We intentionally DON'T claim:</p>
+                <ul className="text-sm text-[#6B7280] space-y-1 mb-3">
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
+                    Reduced falls or pressure injuries (too indirect)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
+                    Revenue support via CDI (nursing notes rarely drive DRG)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
+                    Improved patient satisfaction (hard to attribute)
+                  </li>
+                </ul>
+                <p className="text-sm text-[#111827] font-medium">We focus on what's measurable and defensible: workforce costs.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Combined Reference Value Summary - Itemized */}
         <div className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-10 shadow-sm" data-testid="value-summary-card">
           <h3 className="text-sm font-bold text-[#111827] tracking-wide mb-6">COMBINED REFERENCE VALUE</h3>
@@ -1738,9 +1811,14 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
               <div className="flex justify-between items-center text-sm text-[#6B7280]">
                 <span>For {config?.referenceScenario.providers} {config?.referenceScenario.providerLabel} at {config?.referenceScenario.adoption}% adoption</span>
                 <span className="font-mono">
-                  ~${Math.round((timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)) / (config?.referenceScenario.providers || 1)).toLocaleString()} per provider/year
+                  ~${Math.round((timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)) / (config?.referenceScenario.providers || 1)).toLocaleString()} per {selectedSetting === "nursing" ? "nurse" : selectedSetting === "inpatient" ? "hospitalist" : "provider"}/year
                 </span>
               </div>
+              {selectedSetting === "nursing" && (
+                <p className="text-xs text-[#6B7280] mt-4 italic">
+                  Nursing ROI is primarily cost avoidance, not revenue generation. But cost avoidance is real money—it hits the same budget line.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -1752,21 +1830,21 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             </p>
             
             <p className="text-[#6B7280] mb-4 max-w-xl mx-auto">
-              The reference scenario showed potential value of <span className="font-semibold text-[#E85D3F]">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-{config?.referenceScenario.providerLabel === "physicians" ? "physician ED" : config?.referenceScenario.providerLabel === "nurses" ? "nurse unit" : config?.referenceScenario.providerLabel === "hospitalists" ? "hospitalist program" : "provider practice"}. But your {selectedSetting === "inpatient" ? "program" : "organization"} is different.
+              The reference scenario showed potential value of <span className="font-semibold text-[#E85D3F]">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-{config?.referenceScenario.providerLabel === "physicians" ? "physician ED" : config?.referenceScenario.providerLabel === "nurses" ? "nurse deployment" : config?.referenceScenario.providerLabel === "hospitalists" ? "hospitalist program" : "provider practice"}. But your {selectedSetting === "inpatient" ? "program" : "organization"} is different.
             </p>
             
             <p className="text-[#6B7280] mb-8">
               {selectedSetting === "ed" 
                 ? "Different physician count. Different LWBS rates. Different scribe situation."
                 : selectedSetting === "nursing"
-                ? "Different nurse count. Different documentation workflows. Different overtime patterns."
+                ? "Different nurse count. Different OT rates. Different agency utilization."
                 : selectedSetting === "inpatient"
                 ? "Different hospitalist count. Different turnover rates. Different case mix."
                 : "Different provider count. Different volumes. Different payer mix."}
             </p>
             
             <p className="text-[#111827] font-semibold mb-6">
-              Ready to see what Abridge could mean for YOUR {selectedSetting === "ed" ? "ED" : selectedSetting === "nursing" ? "unit" : selectedSetting === "inpatient" ? "inpatient program" : "practice"}?
+              Ready to see what Abridge could mean for YOUR {selectedSetting === "ed" ? "ED" : selectedSetting === "nursing" ? "nursing team" : selectedSetting === "inpatient" ? "inpatient program" : "practice"}?
             </p>
             
             <div className="flex flex-col items-center gap-4">
