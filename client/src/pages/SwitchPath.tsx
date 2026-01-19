@@ -37,6 +37,27 @@ const spectrumStyles = `
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.8; transform: scale(1.05); }
 }
+@keyframes drawLine {
+  from { stroke-dashoffset: 2000; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes fillArea {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes liftButton {
+  from { transform: translateY(0); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+  to { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+}
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+@keyframes countNumber {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 `;
 
 interface SwitchPathProps {
@@ -45,7 +66,7 @@ interface SwitchPathProps {
 
 type SolutionType = "ambient" | "scribes" | "manual";
 type CareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
-type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 type DriverId = "patient_access" | "overtime" | "retention" | "level_of_service" | "denials" | "hcc";
 
@@ -231,8 +252,39 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   
   const [selectedDrivers, setSelectedDrivers] = useState<DriverId[]>([]);
   const [expandedDrivers, setExpandedDrivers] = useState<DriverId[]>([]);
+  const [chartAnimationStage, setChartAnimationStage] = useState(0);
+  const [gapRevealStage, setGapRevealStage] = useState(0);
 
   const solutionData = selectedSolution ? SOLUTION_DATA[selectedSolution] : null;
+  
+  useEffect(() => {
+    if (step === 7) {
+      setGapRevealStage(0);
+      const timers = [
+        setTimeout(() => setGapRevealStage(1), 300),
+        setTimeout(() => setGapRevealStage(2), 800),
+        setTimeout(() => setGapRevealStage(3), 2800),
+        setTimeout(() => setGapRevealStage(4), 3200),
+        setTimeout(() => setGapRevealStage(5), 3700),
+        setTimeout(() => setGapRevealStage(6), 4200),
+      ];
+      return () => timers.forEach(clearTimeout);
+    }
+  }, [step]);
+  
+  useEffect(() => {
+    if (step === 9) {
+      setChartAnimationStage(0);
+      const timers = [
+        setTimeout(() => setChartAnimationStage(1), 100),
+        setTimeout(() => setChartAnimationStage(2), 400),
+        setTimeout(() => setChartAnimationStage(3), 1200),
+        setTimeout(() => setChartAnimationStage(4), 1500),
+        setTimeout(() => setChartAnimationStage(5), 1800),
+      ];
+      return () => timers.forEach(clearTimeout);
+    }
+  }, [step]);
 
   useEffect(() => {
     if (selectedSolution) {
@@ -510,7 +562,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   };
 
   const handleContinue = () => {
-    if (step < 8) {
+    if (step < 9) {
       setStep((step + 1) as Step);
     }
   };
@@ -1445,12 +1497,12 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 7 && (
+        {step === 8 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step7-title">
-              Your value gap
+            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step8-title">
+              Your value gap breakdown
             </h1>
-            <p className="text-lg text-neutral-500 mb-6">Based on what you selected, here's what you're leaving on the table.</p>
+            <p className="text-lg text-neutral-500 mb-6">Here's exactly where the value comes from.</p>
 
             <div className="bg-neutral-100 rounded-xl p-4 mb-8">
               <p className="text-sm text-neutral-700">
@@ -1592,7 +1644,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <Button
                 onClick={handleContinue}
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
-                data-testid="button-continue-step7"
+                data-testid="button-continue-step8"
               >
                 What does waiting cost?
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -1601,160 +1653,360 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 8 && (
+        {step === 7 && (
+          <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
+            <p 
+              className="text-2xl md:text-3xl text-neutral-500 font-medium mb-4"
+              style={{
+                opacity: gapRevealStage >= 1 ? 1 : 0,
+                transform: gapRevealStage >= 1 ? "translateY(0)" : "translateY(20px)",
+                transition: "all 0.6s ease-out"
+              }}
+            >
+              Based on what you've told us,
+            </p>
+            <p 
+              className="text-2xl md:text-3xl text-neutral-500 font-medium mb-8"
+              style={{
+                opacity: gapRevealStage >= 1 ? 1 : 0,
+                transform: gapRevealStage >= 1 ? "translateY(0)" : "translateY(20px)",
+                transition: "all 0.6s ease-out 0.2s"
+              }}
+            >
+              you're leaving
+            </p>
+            
+            <div 
+              className="mb-6"
+              style={{
+                opacity: gapRevealStage >= 2 ? 1 : 0,
+                transform: gapRevealStage >= 2 ? "scale(1)" : "scale(0.8)",
+                transition: "all 0.8s ease-out"
+              }}
+            >
+              <span className="text-6xl md:text-8xl font-bold text-[#E85D3F] tabular-nums tracking-tight">
+                {gapRevealStage >= 2 ? <AnimatedNumber value={calculations.totalGap} duration={2000} /> : "$0"}
+              </span>
+            </div>
+            
+            <p 
+              className="text-2xl md:text-3xl text-neutral-500 font-medium mb-2"
+              style={{
+                opacity: gapRevealStage >= 3 ? 1 : 0,
+                transform: gapRevealStage >= 3 ? "translateY(0)" : "translateY(20px)",
+                transition: "all 0.5s ease-out"
+              }}
+            >
+              on the table.
+            </p>
+            
+            <p 
+              className="text-3xl md:text-4xl font-bold text-neutral-900 mb-12"
+              style={{
+                opacity: gapRevealStage >= 4 ? 1 : 0,
+                transform: gapRevealStage >= 4 ? "translateY(0)" : "translateY(20px)",
+                transition: "all 0.5s ease-out"
+              }}
+            >
+              Every. Single. Year.
+            </p>
+            
+            <div 
+              className="w-48 h-px bg-neutral-300 mb-10"
+              style={{
+                opacity: gapRevealStage >= 5 ? 1 : 0,
+                transform: gapRevealStage >= 5 ? "scaleX(1)" : "scaleX(0)",
+                transition: "all 0.5s ease-out"
+              }}
+            />
+            
+            <div 
+              className="space-y-2 text-lg md:text-xl text-neutral-600 mb-12"
+              style={{
+                opacity: gapRevealStage >= 5 ? 1 : 0,
+                transform: gapRevealStage >= 5 ? "translateY(0)" : "translateY(20px)",
+                transition: "all 0.5s ease-out"
+              }}
+            >
+              <p>That's <strong className="text-neutral-900">{formatCurrency(calculations.monthlyGap)}</strong> every month</p>
+              <p><strong className="text-neutral-900">{formatCurrency(Math.round(calculations.totalGap / 365))}</strong> every day</p>
+              <p><strong className="text-neutral-900">{formatCurrency(Math.round(calculations.totalGap / 2080))}</strong> every hour your clinic is open</p>
+            </div>
+            
+            <Button
+              onClick={handleContinue}
+              className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-12 py-4 h-auto text-lg font-bold rounded-xl shadow-xl transition-all duration-200 hover:shadow-2xl hover:-translate-y-1"
+              data-testid="button-continue-step7"
+              style={{
+                opacity: gapRevealStage >= 6 ? 1 : 0,
+                transform: gapRevealStage >= 6 ? "translateY(0)" : "translateY(20px)",
+                transition: "all 0.5s ease-out"
+              }}
+            >
+              Show Me How
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        )}
+
+        {step === 9 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step8-title">
+            <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-3 tracking-tight leading-tight" data-testid="text-step9-title">
               The cost of waiting
             </h1>
-            <p className="text-lg text-neutral-500 mb-10">Every month you delay is value you'll never recapture.</p>
+            <p className="text-xl text-neutral-500 mb-10">Every month you delay is value you'll never recapture.</p>
 
-            <div className="bg-white rounded-xl p-6 border border-neutral-200 mb-8">
-              <p className="text-sm font-semibold text-neutral-500 mb-4">3-YEAR CUMULATIVE VALUE</p>
-              <div className="h-72">
+            <div 
+              className="bg-white rounded-2xl p-8 border-2 border-neutral-200 mb-8 shadow-sm"
+              style={{ 
+                opacity: chartAnimationStage >= 1 ? 1 : 0,
+                transition: "opacity 0.3s ease-out"
+              }}
+            >
+              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-6">3-Year Cumulative Value</p>
+              <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#E85D3F" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#E85D3F" stopOpacity={0.05}/>
+                      </linearGradient>
+                      <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#E85D3F" stopOpacity={0.15}/>
+                        <stop offset="100%" stopColor="#E85D3F" stopOpacity={0.05}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="period" tick={{ fontSize: 12 }} stroke="#9CA3AF" />
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      stroke="#E5E7EB"
+                      style={{
+                        opacity: chartAnimationStage >= 1 ? 1 : 0,
+                        transition: "opacity 0.2s ease-out"
+                      }}
+                    />
+                    <XAxis 
+                      dataKey="period" 
+                      tick={{ fontSize: 12, fill: "#6B7280" }} 
+                      stroke="#D1D5DB"
+                      axisLine={{ strokeWidth: 2 }}
+                    />
                     <YAxis 
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} 
-                      tick={{ fontSize: 12 }} 
-                      stroke="#9CA3AF"
+                      tick={{ fontSize: 12, fill: "#6B7280" }} 
+                      stroke="#D1D5DB"
+                      axisLine={{ strokeWidth: 2 }}
                     />
                     <Tooltip 
-                      formatter={(value: number) => [formatCurrency(value), "Abridge Value"]}
-                      contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB' }}
+                      formatter={(value: number, name: string) => [
+                        formatCurrency(value), 
+                        name === "current" ? `Stay with ${solutionData?.name}` : "Switch to Abridge"
+                      ]}
+                      contentStyle={{ 
+                        borderRadius: 12, 
+                        border: '2px solid #E5E7EB',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }}
                     />
                     <Area 
                       type="monotone" 
                       dataKey="current" 
-                      stroke="#6B7280" 
-                      strokeWidth={2}
+                      stroke="#9CA3AF" 
+                      strokeWidth={3}
                       fill="transparent"
-                      name="Current Solution"
+                      name="current"
+                      style={{
+                        strokeDasharray: 2000,
+                        strokeDashoffset: chartAnimationStage >= 2 ? 0 : 2000,
+                        transition: "stroke-dashoffset 0.8s ease-out"
+                      }}
                     />
                     <Area 
                       type="monotone" 
                       dataKey="abridge" 
                       stroke="#E85D3F" 
-                      strokeWidth={3}
+                      strokeWidth={4}
                       fill="url(#abridgeGradient)"
-                      name="With Abridge"
+                      name="abridge"
+                      style={{
+                        strokeDasharray: 2000,
+                        strokeDashoffset: chartAnimationStage >= 3 ? 0 : 2000,
+                        transition: "stroke-dashoffset 0.8s ease-out 0.2s",
+                        fillOpacity: chartAnimationStage >= 4 ? 1 : 0
+                      }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex items-center justify-center gap-6 mt-4 text-sm">
-                <span className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-neutral-400" />
+              <div 
+                className="flex items-center justify-center gap-8 mt-6 text-sm"
+                style={{
+                  opacity: chartAnimationStage >= 5 ? 1 : 0,
+                  transform: chartAnimationStage >= 5 ? "translateY(0)" : "translateY(10px)",
+                  transition: "all 0.3s ease-out"
+                }}
+              >
+                <span className="flex items-center gap-2 text-neutral-600">
+                  <div className="w-4 h-1 rounded-full bg-neutral-400" />
                   Stay with {solutionData?.name}
                 </span>
-                <span className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#E85D3F]" />
+                <span className="flex items-center gap-2 font-semibold text-[#E85D3F]">
+                  <div className="w-4 h-1 rounded-full bg-[#E85D3F]" />
                   Switch to Abridge
                 </span>
               </div>
             </div>
 
-            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/50 mb-8 text-sm text-amber-900">
-              <AlertTriangle className="w-4 h-4 inline mr-1.5 text-amber-600" />
+            <div 
+              className="bg-amber-50/50 rounded-xl p-4 border border-amber-200/50 mb-8 text-sm text-amber-800"
+              style={{
+                opacity: chartAnimationStage >= 5 ? 1 : 0,
+                transition: "opacity 0.3s ease-out 0.2s"
+              }}
+            >
+              <Lightbulb className="w-4 h-4 inline mr-2 text-amber-600" />
               <strong>Realistic ramp-up</strong> based on your selected drivers. 
-              {selectedDrivers.some(id => DRIVERS.find(d => d.id === id)?.rampSpeed === "fast") && " Fast drivers (Overtime, Level of Service, Denials) show within 1-3 months."}
-              {selectedDrivers.some(id => DRIVERS.find(d => d.id === id)?.rampSpeed === "slow") && " Slow drivers (Retention, HCC) take 12-18 months to fully realize."}
+              {selectedDrivers.some(id => DRIVERS.find(d => d.id === id)?.rampSpeed === "fast") && " Fast drivers show within 1-3 months."}
+              {selectedDrivers.some(id => DRIVERS.find(d => d.id === id)?.rampSpeed === "slow") && " Slow drivers take 12-18 months."}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-              <div className="bg-emerald-50 rounded-xl p-6 border-2 border-emerald-300">
-                <p className="text-sm font-semibold text-emerald-700 mb-4">IF YOU SWITCH TODAY</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">6 months</span>
-                    <span className="font-semibold text-neutral-900">+{formatCurrency(calculations.month6Value)}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div 
+                className="bg-emerald-50 rounded-2xl p-8 border-[3px] border-emerald-400 shadow-lg relative overflow-hidden"
+                style={{
+                  opacity: chartAnimationStage >= 5 ? 1 : 0,
+                  transform: chartAnimationStage >= 5 ? "translateY(0)" : "translateY(20px)",
+                  transition: "all 0.4s ease-out"
+                }}
+              >
+                <div className="absolute top-4 right-4 text-emerald-200 text-6xl font-bold opacity-30">A</div>
+                <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-5">If You Switch Today</p>
+                <div className="space-y-3 text-base">
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2 text-neutral-600">
+                      <Check className="w-4 h-4 text-emerald-500" />
+                      6 months
+                    </span>
+                    <span className="font-bold text-emerald-700 text-lg tabular-nums">+{formatCurrency(calculations.month6Value)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Year 1</span>
-                    <span className="font-semibold text-neutral-900">+{formatCurrency(calculations.year1Value)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2 text-neutral-600">
+                      <Check className="w-4 h-4 text-emerald-500" />
+                      Year 1
+                    </span>
+                    <span className="font-bold text-emerald-700 text-lg tabular-nums">+{formatCurrency(calculations.year1Value)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Year 2</span>
-                    <span className="font-semibold text-neutral-900">+{formatCurrency(calculations.year2Value)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2 text-neutral-600">
+                      <Check className="w-4 h-4 text-emerald-500" />
+                      Year 2
+                    </span>
+                    <span className="font-bold text-emerald-700 text-lg tabular-nums">+{formatCurrency(calculations.year2Value)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Year 3</span>
-                    <span className="font-semibold text-neutral-900">+{formatCurrency(calculations.year3Value)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2 text-neutral-600">
+                      <Check className="w-4 h-4 text-emerald-500" />
+                      Year 3
+                    </span>
+                    <span className="font-bold text-emerald-700 text-lg tabular-nums">+{formatCurrency(calculations.year3Value)}</span>
                   </div>
                 </div>
-                <div className="border-t border-emerald-200 mt-4 pt-4">
+                <div className="border-t-2 border-emerald-300 mt-6 pt-6">
                   <div className="flex justify-between items-baseline">
-                    <span className="font-semibold text-emerald-800">3-year total</span>
-                    <span className="text-2xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearTotal)}</span>
+                    <span className="font-bold text-emerald-800 text-sm uppercase tracking-wide">3-Year Total</span>
+                    <span className="text-4xl font-bold text-emerald-600 tabular-nums tracking-tight">{formatCurrency(calculations.threeYearTotal)}</span>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-red-50 rounded-xl p-6 border-2 border-red-200">
-                <p className="text-sm font-semibold text-red-700 mb-4">IF YOU WAIT 6 MONTHS</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">6 months</span>
-                    <span className="font-semibold text-neutral-400">$0</span>
+              <div 
+                className="bg-red-50 rounded-2xl p-8 border-[3px] border-red-300 shadow-lg relative overflow-hidden"
+                style={{
+                  opacity: chartAnimationStage >= 5 ? 1 : 0,
+                  transform: chartAnimationStage >= 5 ? "translateY(0)" : "translateY(20px)",
+                  transition: "all 0.4s ease-out 0.1s"
+                }}
+              >
+                <div className="absolute top-4 right-4 text-red-200 text-6xl font-bold opacity-30">?</div>
+                <p className="text-xs font-bold text-red-700 uppercase tracking-wider mb-5">If You Wait 6 Months</p>
+                <div className="space-y-3 text-base">
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2 text-neutral-400">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      6 months
+                    </span>
+                    <span className="font-bold text-neutral-400 text-lg tabular-nums">$0</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Year 1</span>
-                    <span className="font-semibold text-neutral-900">+{formatCurrency(calculations.waitYear1Value)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2 text-neutral-600">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      Year 1
+                    </span>
+                    <span className="font-bold text-red-600 text-lg tabular-nums">+{formatCurrency(calculations.waitYear1Value)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Year 2</span>
-                    <span className="font-semibold text-neutral-900">+{formatCurrency(calculations.waitYear2Value)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2 text-neutral-600">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      Year 2
+                    </span>
+                    <span className="font-bold text-red-600 text-lg tabular-nums">+{formatCurrency(calculations.waitYear2Value)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Year 3</span>
-                    <span className="font-semibold text-neutral-900">+{formatCurrency(calculations.waitYear3Value)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2 text-neutral-600">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      Year 3
+                    </span>
+                    <span className="font-bold text-red-600 text-lg tabular-nums">+{formatCurrency(calculations.waitYear3Value)}</span>
                   </div>
                 </div>
-                <div className="border-t border-red-200 mt-4 pt-4">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-semibold text-red-800">3-year total</span>
-                    <span className="text-2xl font-bold text-red-600">{formatCurrency(calculations.waitThreeYearTotal)}</span>
+                <div className="border-t-2 border-red-200 mt-6 pt-6">
+                  <div className="flex justify-between items-baseline mb-3">
+                    <span className="font-bold text-red-800 text-sm uppercase tracking-wide">3-Year Total</span>
+                    <span className="text-4xl font-bold text-red-500 tabular-nums tracking-tight">{formatCurrency(calculations.waitThreeYearTotal)}</span>
                   </div>
-                  <p className="text-red-600 font-bold mt-2">
-                    YOU LOSE: {formatCurrency(calculations.costOfWaiting)}
-                  </p>
+                  <div className="bg-red-100 rounded-lg p-3 text-center">
+                    <p className="text-xl font-bold text-red-600">
+                      YOU LOSE: {formatCurrency(calculations.costOfWaiting)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-amber-50 rounded-xl p-5 border border-amber-200 text-center mb-10">
-              <AlertTriangle className="w-5 h-5 text-amber-600 mx-auto mb-2" />
-              <p className="text-amber-900 font-semibold">
-                Every month you delay = <span className="text-[#E85D3F]">{formatCurrency(calculations.monthlyGap)}</span> in value you'll never recapture.
+            <div 
+              className="bg-amber-100 rounded-2xl p-6 border-2 border-amber-300 text-center mb-10 shadow-md"
+              style={{
+                opacity: chartAnimationStage >= 5 ? 1 : 0,
+                transform: chartAnimationStage >= 5 ? "scale(1)" : "scale(0.95)",
+                transition: "all 0.4s ease-out 0.3s"
+              }}
+            >
+              <AlertTriangle className="w-8 h-8 text-amber-600 mx-auto mb-3" />
+              <p className="text-xl text-amber-900 font-bold">
+                Every month you delay = <span className="text-[#E85D3F] text-2xl">{formatCurrency(calculations.monthlyGap)}</span>
               </p>
+              <p className="text-amber-700 mt-1">in value you'll never recapture.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
                 variant="outline"
-                className="border-[#E85D3F] text-[#E85D3F] hover:bg-[#E85D3F]/5 px-8 py-3 h-auto text-base font-semibold rounded-xl"
+                className="border-2 border-[#E85D3F] text-[#E85D3F] hover:bg-[#E85D3F]/5 px-8 py-4 h-auto text-base font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                 data-testid="button-save-analysis"
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="w-5 h-5 mr-2" />
                 Save This Analysis
               </Button>
               <Button
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-4 h-auto text-lg font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
                 data-testid="button-lets-talk"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
+                <MessageSquare className="w-5 h-5 mr-2" />
                 Let's Talk
               </Button>
             </div>
             
-            <p className="text-center text-xs text-neutral-400 mt-6">
+            <p className="text-center text-sm text-neutral-400 mt-8">
               All assumptions and methodology can be adjusted in conversation.
             </p>
           </div>
