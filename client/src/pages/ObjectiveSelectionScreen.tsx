@@ -1270,6 +1270,12 @@ export default function ObjectiveSelectionScreen({
   const [nursingCompareExpanded, setNursingCompareExpanded] = useState(false);
   const [nursingFineTuneExpanded, setNursingFineTuneExpanded] = useState(false);
   
+  // Nursing-specific organization inputs
+  const [nursingStaffedBeds, setNursingStaffedBeds] = useState<number | "">(200);
+  const [nursingFTEsInScope, setNursingFTEsInScope] = useState<number | "">(300);
+  const [nursingUnitType, setNursingUnitType] = useState<"med-surg" | "icu" | "mixed">("med-surg");
+  const [nursingCostPerBed, setNursingCostPerBed] = useState<number>(75);
+  
   // Apply nursing posture
   const applyNursingPosture = (posture: "conservative" | "typical" | "aggressive") => {
     const preset = NURSING_POSTURE_PRESETS[posture];
@@ -2208,6 +2214,20 @@ export default function ObjectiveSelectionScreen({
       },
     };
 
+    // Add nursing-specific inputs when in nursing mode
+    if (selectedSetting === "nursing") {
+      const beds = nursingStaffedBeds === "" ? 200 : nursingStaffedBeds;
+      const ftes = nursingFTEsInScope === "" ? 300 : nursingFTEsInScope;
+      seedInputs.nursing = {
+        staffedBeds: beds,
+        nurseFTEs: ftes,
+        unitType: nursingUnitType,
+        documentationEventsPerBedPerYear: 750, // ~750 events per bed per year
+        costPerBedPerMonth: 75, // $75/bed/month
+        utilizationRate: utilizationPercent ?? 60,
+      };
+    }
+
     // If enterprise pricing, convert to monthly per-provider equivalent
     if (
       pricingModel === "enterprise" &&
@@ -2227,21 +2247,30 @@ export default function ObjectiveSelectionScreen({
   const canContinuePage1 = selectedSetting !== null;
   const canContinuePage2 =
     selectedSetting !== null && selectedLeverIds.size > 0;
+  
+  // For nursing, validate nursing-specific inputs; otherwise standard provider/encounter validation
+  const nursingInputsValid = selectedSetting === "nursing"
+    ? (nursingStaffedBeds !== "" && nursingStaffedBeds > 0 && 
+       nursingFTEsInScope !== "" && nursingFTEsInScope > 0 &&
+       utilizationPercent !== null)
+    : false;
+  
+  const standardInputsValid = selectedSetting !== "nursing"
+    ? (effectiveClinicians > 0 && effectiveEncounters > 0 && utilizationPercent !== null)
+    : false;
+
   const canContinuePage3 =
-    effectiveClinicians > 0 &&
-    effectiveEncounters > 0 &&
-    utilizationPercent !== null &&
-    effectiveMinutesSaved !== null &&
+    (selectedSetting === "nursing" ? nursingInputsValid : standardInputsValid) &&
+    (selectedSetting === "nursing" || effectiveMinutesSaved !== null) &&
     pricingModel !== null &&
     annualSubscriptionCost !== null &&
     (!implementationEnabled ||
       (implementationFee !== null && implementationFee > 0));
 
   // Step completion flags for pill navigation (all required info on that step is filled)
-  const isStep1Complete =
-    effectiveClinicians > 0 &&
-    effectiveEncounters > 0 &&
-    utilizationPercent !== null;
+  const isStep1Complete = selectedSetting === "nursing"
+    ? nursingInputsValid
+    : (effectiveClinicians > 0 && effectiveEncounters > 0 && utilizationPercent !== null);
 
   const isStep2Complete =
     effectiveMinutesSaved !== null &&
@@ -3085,59 +3114,160 @@ export default function ObjectiveSelectionScreen({
                         </div>
                       </div>
 
-                      {/* Providers in scope - Required */}
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Providers (in scope){" "}
-                          <span className="text-[#F03319]">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={cliniciansInScope === "" ? "" : formatNumber(cliniciansInScope)}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === "") {
-                              setCliniciansInScope("");
-                            } else {
-                              setCliniciansInScope(Math.max(0, parseFormattedNumber(val)));
-                            }
-                          }}
-                          className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
-                          data-testid="input-clinicians"
-                          placeholder="e.g., 50"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1.5">
-                          Number of providers who will use Abridge. This is the foundation of your ROI model.
-                        </p>
-                      </div>
+                      {selectedSetting === "nursing" ? (
+                        /* Nursing-specific organization inputs */
+                        <>
+                          {/* Staffed Beds - Required */}
+                          <div>
+                            <label className="block text-sm font-medium text-neutral-700 mb-2">
+                              Staffed beds (in scope){" "}
+                              <span className="text-[#F03319]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={nursingStaffedBeds === "" ? "" : formatNumber(nursingStaffedBeds)}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") {
+                                  setNursingStaffedBeds("");
+                                } else {
+                                  const parsed = Math.max(0, parseFormattedNumber(val));
+                                  setNursingStaffedBeds(parsed);
+                                  // Auto-calculate nurse FTEs based on unit type
+                                  const ratio = nursingUnitType === "icu" ? 2.5 : nursingUnitType === "mixed" ? 2.0 : 1.5;
+                                  setNursingFTEsInScope(Math.round(parsed * ratio));
+                                }
+                              }}
+                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              data-testid="input-staffed-beds"
+                              placeholder="e.g., 200"
+                            />
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              This is your billing unit for Abridge Nursing. Pricing is per staffed bed.
+                            </p>
+                          </div>
 
-                      {/* Annual outpatient encounters (in scope) - Required */}
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          Annual outpatient encounters (in scope){" "}
-                          <span className="text-[#F03319]">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={annualEncountersInScope === "" ? "" : formatNumber(annualEncountersInScope)}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === "") {
-                              setAnnualEncountersInScope("");
-                            } else {
-                              setAnnualEncountersInScope(Math.max(0, parseFormattedNumber(val)));
-                            }
-                          }}
-                          className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
-                          data-testid="input-encounters"
-                          placeholder="e.g., 100,000"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1.5">
-                          Total annual patient encounters for the providers in scope. This drives encounter-based ROI calculations.
-                        </p>
-                      </div>
+                          {/* Nurse FTEs - Required */}
+                          <div>
+                            <label className="block text-sm font-medium text-neutral-700 mb-2">
+                              Nurse FTEs (supporting these beds){" "}
+                              <span className="text-[#F03319]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={nursingFTEsInScope === "" ? "" : formatNumber(nursingFTEsInScope)}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") {
+                                  setNursingFTEsInScope("");
+                                } else {
+                                  setNursingFTEsInScope(Math.max(0, parseFormattedNumber(val)));
+                                }
+                              }}
+                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              data-testid="input-nurse-ftes"
+                              placeholder="e.g., 300"
+                            />
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              ~1.5 FTEs per bed is typical for med-surg. Higher for ICU (~2.5-3.0).
+                            </p>
+                          </div>
+
+                          {/* Unit Type */}
+                          <div>
+                            <label className="block text-sm font-medium text-neutral-700 mb-2">
+                              Unit type
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                              {(["med-surg", "icu", "mixed"] as const).map((type) => (
+                                <button
+                                  key={type}
+                                  onClick={() => {
+                                    setNursingUnitType(type);
+                                    // Auto-update nurse FTEs based on new unit type
+                                    if (nursingStaffedBeds !== "") {
+                                      const ratio = type === "icu" ? 2.5 : type === "mixed" ? 2.0 : 1.5;
+                                      setNursingFTEsInScope(Math.round(nursingStaffedBeds * ratio));
+                                    }
+                                  }}
+                                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    nursingUnitType === type
+                                      ? "bg-[#F03319]/10 text-[#F03319] border border-[#F03319]/30"
+                                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 border border-neutral-200"
+                                  }`}
+                                  data-testid={`unit-type-${type}`}
+                                >
+                                  {type === "med-surg" && "Med-Surg"}
+                                  {type === "icu" && "ICU / Critical Care"}
+                                  {type === "mixed" && "Mixed"}
+                                </button>
+                              ))}
+                            </div>
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              Unit type affects documentation burden and staffing ratios.
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        /* Standard provider/encounter inputs */
+                        <>
+                          {/* Providers in scope - Required */}
+                          <div>
+                            <label className="block text-sm font-medium text-neutral-700 mb-2">
+                              Providers (in scope){" "}
+                              <span className="text-[#F03319]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={cliniciansInScope === "" ? "" : formatNumber(cliniciansInScope)}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") {
+                                  setCliniciansInScope("");
+                                } else {
+                                  setCliniciansInScope(Math.max(0, parseFormattedNumber(val)));
+                                }
+                              }}
+                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              data-testid="input-clinicians"
+                              placeholder="e.g., 50"
+                            />
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              Number of providers who will use Abridge. This is the foundation of your ROI model.
+                            </p>
+                          </div>
+
+                          {/* Annual outpatient encounters (in scope) - Required */}
+                          <div>
+                            <label className="block text-sm font-medium text-neutral-700 mb-2">
+                              Annual outpatient encounters (in scope){" "}
+                              <span className="text-[#F03319]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={annualEncountersInScope === "" ? "" : formatNumber(annualEncountersInScope)}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") {
+                                  setAnnualEncountersInScope("");
+                                } else {
+                                  setAnnualEncountersInScope(Math.max(0, parseFormattedNumber(val)));
+                                }
+                              }}
+                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              data-testid="input-encounters"
+                              placeholder="e.g., 100,000"
+                            />
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              Total annual patient encounters for the providers in scope. This drives encounter-based ROI calculations.
+                            </p>
+                          </div>
+                        </>
+                      )}
 
                       {/* Utilization Rate */}
                       <div>
@@ -3153,7 +3283,7 @@ export default function ObjectiveSelectionScreen({
                           type="range"
                           min="10"
                           max="100"
-                          value={utilizationPercent ?? 50}
+                          value={utilizationPercent ?? (selectedSetting === "nursing" ? 60 : 50)}
                           onChange={(e) =>
                             setUtilizationPercent(parseInt(e.target.value))
                           }
@@ -3161,57 +3291,116 @@ export default function ObjectiveSelectionScreen({
                           data-testid="slider-utilization"
                         />
                         <div className="flex flex-wrap gap-2 mt-3">
-                          <button
-                            onClick={() => setUtilizationPercent(50)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                              utilizationPercent === 50
-                                ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-util-conservative"
-                          >
-                            <div className="flex flex-col items-center">
-                              <span>Early (50%)</span>
-                              <span className="text-[10px] mt-0.5 opacity-70">
-                                Pilot / phased rollout
-                              </span>
-                            </div>
-                          </button>
-                          <button
-                            onClick={() => setUtilizationPercent(65)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                              utilizationPercent === 65
-                                ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-util-expected"
-                          >
-                            <div className="flex flex-col items-center">
-                              <span>Typical (65%)</span>
-                              <span className="text-[10px] mt-0.5 opacity-70">
-                                Steady adoption with enablement
-                              </span>
-                            </div>
-                          </button>
-                          <button
-                            onClick={() => setUtilizationPercent(80)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                              utilizationPercent === 80
-                                ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
-                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                            }`}
-                            data-testid="chip-util-high"
-                          >
-                            <div className="flex flex-col items-center">
-                              <span>Aggressive (80%)</span>
-                              <span className="text-[10px] mt-0.5 opacity-70">
-                                Mature deployment
-                              </span>
-                            </div>
-                          </button>
+                          {selectedSetting === "nursing" ? (
+                            /* Nursing utilization rates: 45/60/75% */
+                            <>
+                              <button
+                                onClick={() => setUtilizationPercent(45)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  utilizationPercent === 45
+                                    ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                                data-testid="utilization-45"
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span>Early (45%)</span>
+                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                    Pilot units
+                                  </span>
+                                </div>
+                              </button>
+                              <button
+                                onClick={() => setUtilizationPercent(60)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  utilizationPercent === 60
+                                    ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                                data-testid="utilization-60"
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span>Typical (60%)</span>
+                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                    Steady adoption
+                                  </span>
+                                </div>
+                              </button>
+                              <button
+                                onClick={() => setUtilizationPercent(75)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  utilizationPercent === 75
+                                    ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                                data-testid="utilization-75"
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span>Aggressive (75%)</span>
+                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                    Mature deployment
+                                  </span>
+                                </div>
+                              </button>
+                            </>
+                          ) : (
+                            /* Standard provider utilization rates: 50/65/80% */
+                            <>
+                              <button
+                                onClick={() => setUtilizationPercent(50)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  utilizationPercent === 50
+                                    ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                                data-testid="chip-util-conservative"
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span>Early (50%)</span>
+                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                    Pilot / phased rollout
+                                  </span>
+                                </div>
+                              </button>
+                              <button
+                                onClick={() => setUtilizationPercent(65)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  utilizationPercent === 65
+                                    ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                                data-testid="chip-util-expected"
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span>Typical (65%)</span>
+                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                    Steady adoption with enablement
+                                  </span>
+                                </div>
+                              </button>
+                              <button
+                                onClick={() => setUtilizationPercent(80)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  utilizationPercent === 80
+                                    ? "bg-neutral-200 text-neutral-900 ring-1 ring-neutral-400"
+                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                                }`}
+                                data-testid="chip-util-high"
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span>Aggressive (80%)</span>
+                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                    Mature deployment
+                                  </span>
+                                </div>
+                              </button>
+                            </>
+                          )}
                         </div>
                         <p className="text-xs text-neutral-500 mt-2">
-                          Percentage of encounters where Abridge is actively used for documentation.
+                          {selectedSetting === "nursing" 
+                            ? "Percentage of documentation events where Abridge is actively used."
+                            : "Percentage of encounters where Abridge is actively used for documentation."}
                         </p>
 
                         {/* Why this matters - Expandable */}

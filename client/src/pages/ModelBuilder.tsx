@@ -53,6 +53,12 @@ export interface ModelResults {
   costPerMonth?: number;
   enterpriseAnnual?: number;
   pricingModel?: "per_clinician" | "enterprise";
+  // Nursing-specific fields
+  nursingStaffedBeds?: number;
+  nursingFTEs?: number;
+  nursingUnitType?: "med-surg" | "icu" | "mixed";
+  nursingDocEventsPerBedPerYear?: number;
+  nursingCostPerBedPerMonth?: number;
 }
 
 interface DriverResult {
@@ -141,6 +147,36 @@ interface DriverInputs {
     denialRate: number;
     avgClaimValue: number;
   };
+  // Nursing-specific drivers
+  nursingOvertime: {
+    hoursPerWeek: number;
+    docPortionPct: number;
+    reductionLevel: "conservative" | "typical" | "aggressive";
+    baseHourlyRate: number;
+  };
+  nursingDocTime: {
+    docBurden: "light" | "moderate" | "heavy";
+    reductionLevel: "conservative" | "typical" | "aggressive";
+    realizationFactor: number;
+  };
+  nursingAgency: {
+    agencyUtilization: number;
+    staffNurseCost: number;
+    agencyNurseCost: number;
+    reductionLevel: "conservative" | "typical" | "aggressive";
+  };
+  nursingRetention: {
+    turnoverRate: number;
+    burnoutPortion: number;
+    docAttribution: number;
+    preventionLevel: "conservative" | "typical" | "aggressive";
+    replacementCost: number;
+  };
+  nursingCompleteness: {
+    lateDocPct: number;
+    incompleteFieldsPct: number;
+    operationalValue: number;
+  };
 }
 
 const DRIVER_ICONS: Record<string, typeof Clock> = {
@@ -162,6 +198,12 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
   inpatientCCMCC: DollarSign,
   inpatientCDI: FileText,
   inpatientDenials: FileX,
+  // Nursing drivers
+  nursingOvertime: Clock,
+  nursingDocTime: Clock,
+  nursingAgency: Users,
+  nursingRetention: Heart,
+  nursingCompleteness: FileText,
 };
 
 const DRIVER_NAMES: Record<string, string> = {
@@ -183,6 +225,12 @@ const DRIVER_NAMES: Record<string, string> = {
   inpatientCCMCC: "CC/MCC Capture (DRG Optimization)",
   inpatientCDI: "CDI Query Reduction",
   inpatientDenials: "Documentation-Related Denials",
+  // Nursing drivers
+  nursingOvertime: "Overtime Reduction",
+  nursingDocTime: "Documentation Time Savings",
+  nursingAgency: "Agency & Travel Nurse Reduction",
+  nursingRetention: "Nurse Retention",
+  nursingCompleteness: "Documentation Timeliness & Completeness",
 };
 
 const DRIVER_THEORIES: Record<string, string> = {
@@ -204,6 +252,12 @@ const DRIVER_THEORIES: Record<string, string> = {
   inpatientCCMCC: "Complete documentation of complications and comorbidities drives DRG weight and reimbursement. Many CC/MCC opportunities go uncaptured due to rushed documentation.",
   inpatientCDI: "Better initial documentation means fewer CDI queries. Each avoided query saves time for both the CDI team and the hospitalist—operational efficiency everyone appreciates.",
   inpatientDenials: "Inpatient denials are high-dollar events. Medical necessity and clinical rationale documentation gaps are primary drivers of preventable denials.",
+  // Nursing drivers
+  nursingOvertime: "Real-time charting eliminates end-of-shift documentation catch-up. This is DIRECT, MEASURABLE savings—track month-over-month in payroll data.",
+  nursingDocTime: "Flowsheet auto-population and voice-to-text assessments return hours to bedside care. Time doesn't disappear from payroll but gets redirected to patient care.",
+  nursingAgency: "Improved retention and satisfaction reduces reliance on expensive agency nurses who cost 2-3x staff nurses. Agency → staff conversion is real budget savings.",
+  nursingRetention: "Documentation burden is the top driver of nursing burnout. By reducing this burden, we help prevent burnout-related departures—each costing $40-60K to replace.",
+  nursingCompleteness: "Real-time documentation ensures timely, complete charting for regulatory compliance. While harder to monetize, this reduces audit risk and remediation costs.",
 };
 
 export default function ModelBuilder({
@@ -215,13 +269,33 @@ export default function ModelBuilder({
 }: ModelBuilderProps) {
   const isEDSettingInit = selectedSettings.includes("ed");
   const isInpatientSettingInit = selectedSettings.includes("inpatient");
-  const defaultProviders = initialResults?.providers ?? (isInpatientSettingInit ? 20 : isEDSettingInit ? 25 : 50);
-  const defaultEncounters = initialResults?.encounters ?? (defaultProviders * (isInpatientSettingInit ? 400 : isEDSettingInit ? 1800 : 2000));
-  const defaultUtilization = initialResults?.utilizationRate ?? (isEDSettingInit ? 70 : 65);
+  const isNursingSettingInit = selectedSettings.includes("nursing");
+  const defaultProviders = initialResults?.providers ?? (isNursingSettingInit ? 300 : isInpatientSettingInit ? 20 : isEDSettingInit ? 25 : 50);
+  const defaultEncounters = initialResults?.encounters ?? (isNursingSettingInit ? 150000 : defaultProviders * (isInpatientSettingInit ? 400 : isEDSettingInit ? 1800 : 2000));
+  const defaultUtilization = initialResults?.utilizationRate ?? (isNursingSettingInit ? 60 : isEDSettingInit ? 70 : 65);
   
   const [providers, setProviders] = useState<number>(defaultProviders);
   const [encounters, setEncounters] = useState<number>(defaultEncounters);
-  const [utilizationRate, setUtilizationRate] = useState<50 | 55 | 65 | 70 | 80 | 85>(defaultUtilization as 50 | 55 | 65 | 70 | 80 | 85);
+  const [utilizationRate, setUtilizationRate] = useState<45 | 50 | 55 | 60 | 65 | 70 | 75 | 80 | 85>(defaultUtilization as 45 | 50 | 55 | 60 | 65 | 70 | 75 | 80 | 85);
+  
+  // Nursing-specific state (initialized from initialResults or defaults)
+  const [staffedBeds, setStaffedBeds] = useState<number>(
+    initialResults?.nursingStaffedBeds ?? 200
+  );
+  const [nurseFTEs, setNurseFTEs] = useState<number>(
+    initialResults?.nursingFTEs ?? 300
+  );
+  const [unitType, setUnitType] = useState<"med-surg" | "icu" | "mixed">(
+    initialResults?.nursingUnitType ?? "med-surg"
+  );
+  const [documentationEvents, setDocumentationEvents] = useState<number>(
+    (initialResults?.nursingStaffedBeds ?? 200) * (initialResults?.nursingDocEventsPerBedPerYear ?? 750)
+  );
+  const [costPerBedPerMonth, setCostPerBedPerMonth] = useState<number>(
+    initialResults?.nursingCostPerBedPerMonth ?? 75
+  );
+  // Track whether user has manually edited nurse FTEs (to avoid auto-overwriting)
+  const [nurseFTEsManuallyEdited, setNurseFTEsManuallyEdited] = useState<boolean>(false);
   
   const [pricingModel, setPricingModel] = useState<"per_clinician" | "enterprise">(
     initialResults?.pricingModel ?? "per_clinician"
@@ -319,22 +393,70 @@ export default function ModelBuilder({
       denialRate: 6,
       avgClaimValue: 4500,
     },
+    // Nursing defaults
+    nursingOvertime: {
+      hoursPerWeek: 4,
+      docPortionPct: 45,
+      reductionLevel: "typical",
+      baseHourlyRate: 45,
+    },
+    nursingDocTime: {
+      docBurden: "moderate",
+      reductionLevel: "typical",
+      realizationFactor: 50,
+    },
+    nursingAgency: {
+      agencyUtilization: 15,
+      staffNurseCost: 85000,
+      agencyNurseCost: 150000,
+      reductionLevel: "typical",
+    },
+    nursingRetention: {
+      turnoverRate: 18,
+      burnoutPortion: 55,
+      docAttribution: 25,
+      preventionLevel: "typical",
+      replacementCost: 50000,
+    },
+    nursingCompleteness: {
+      lateDocPct: 20,
+      incompleteFieldsPct: 15,
+      operationalValue: 50000,
+    },
   });
   
   const isInpatientSetting = selectedSettings.includes("inpatient");
+  const isNursingSetting = selectedSettings.includes("nursing");
   
   useEffect(() => {
-    // Inpatient uses admissions, ED uses encounters, outpatient uses encounters
-    let encountersPerProvider = 2000;
-    if (isEDSetting) {
-      encountersPerProvider = 1800;
-    } else if (isInpatientSetting) {
-      encountersPerProvider = 400;
+    // Nursing uses documentation events, others use encounters
+    if (isNursingSetting) {
+      // Nursing: ~500 events/nurse/year or ~750/bed/year
+      setDocumentationEvents(nurseFTEs * 500);
+    } else {
+      // Inpatient uses admissions, ED uses encounters, outpatient uses encounters
+      let encountersPerProvider = 2000;
+      if (isEDSetting) {
+        encountersPerProvider = 1800;
+      } else if (isInpatientSetting) {
+        encountersPerProvider = 400;
+      }
+      setEncounters(providers * encountersPerProvider);
     }
-    setEncounters(providers * encountersPerProvider);
-  }, [providers, isEDSetting, isInpatientSetting]);
+  }, [providers, isEDSetting, isInpatientSetting, isNursingSetting, nurseFTEs]);
+  
+  // Smart default for nurse FTEs based on staffed beds
+  useEffect(() => {
+    // Only auto-calculate nurse FTEs if user hasn't manually edited them
+    if (isNursingSetting && !nurseFTEsManuallyEdited) {
+      const ratio = unitType === "icu" ? 2.5 : unitType === "mixed" ? 2.0 : 1.5;
+      setNurseFTEs(Math.round(staffedBeds * ratio));
+    }
+  }, [staffedBeds, unitType, isNursingSetting, nurseFTEsManuallyEdited]);
   
   const eligibleEncounters = Math.round(encounters * (utilizationRate / 100));
+  // For nursing: eligible documentation events (nursing uses documentationEvents, not encounters)
+  const eligibleDocEvents = Math.round(documentationEvents * (utilizationRate / 100));
   
   const activeDrivers = useMemo(() => {
     const driverMap: Record<string, string> = {
@@ -360,6 +482,12 @@ export default function ModelBuilder({
       inpatientCCMCC: "inpatientCCMCC",
       inpatientCDI: "inpatientCDI",
       inpatientDenials: "inpatientDenials",
+      // Nursing mappings
+      nursingOvertime: "nursingOvertime",
+      nursingDocTime: "nursingDocTime",
+      nursingAgency: "nursingAgency",
+      nursingRetention: "nursingRetention",
+      nursingCompleteness: "nursingCompleteness",
     };
     
     const active = new Set<string>();
@@ -373,6 +501,9 @@ export default function ModelBuilder({
     });
     
     if (active.size === 0) {
+      if (isNursingSetting) {
+        return ["nursingOvertime", "nursingDocTime", "nursingRetention"];
+      }
       if (isEDSetting) {
         return ["edThroughput", "edLevelOfService", "edDenials"];
       }
@@ -383,7 +514,7 @@ export default function ModelBuilder({
     }
     
     return Array.from(active);
-  }, [selectedLevers, isEDSetting, isInpatientSetting]);
+  }, [selectedLevers, isEDSetting, isInpatientSetting, isNursingSetting]);
   
   const calculateDriverValue = useCallback((driverId: string): number => {
     switch (driverId) {
@@ -517,14 +648,56 @@ export default function ModelBuilder({
         const prevented = docRelated * 0.40 * (utilizationRate / 100);
         return Math.round(prevented * avgClaimValue);
       }
+      // Nursing Drivers
+      case "nursingOvertime": {
+        const { hoursPerWeek, docPortionPct, reductionLevel, baseHourlyRate } = driverInputs.nursingOvertime;
+        const overtimeRate = baseHourlyRate * 1.5;
+        const totalOTHours = nurseFTEs * hoursPerWeek * 50; // 50 weeks
+        const docRelatedOT = totalOTHours * (docPortionPct / 100);
+        const reductionPct = reductionLevel === "conservative" ? 45 : reductionLevel === "typical" ? 60 : 75;
+        const hoursEliminated = docRelatedOT * (reductionPct / 100) * (utilizationRate / 100);
+        return Math.round(hoursEliminated * overtimeRate);
+      }
+      case "nursingDocTime": {
+        const { docBurden, reductionLevel, realizationFactor } = driverInputs.nursingDocTime;
+        const hoursPerShift = docBurden === "light" ? 2.0 : docBurden === "moderate" ? 2.5 : 3.5;
+        const totalDocHours = nurseFTEs * hoursPerShift * 3 * 50; // 3 shifts/week, 50 weeks
+        const reductionPct = reductionLevel === "conservative" ? 25 : reductionLevel === "typical" ? 35 : 45;
+        const hoursReturned = totalDocHours * (reductionPct / 100) * (utilizationRate / 100);
+        // Use 50% realization factor (time gets redirected, not eliminated from payroll)
+        return Math.round(hoursReturned * 45 * (realizationFactor / 100));
+      }
+      case "nursingAgency": {
+        const { agencyUtilization, staffNurseCost, agencyNurseCost, reductionLevel } = driverInputs.nursingAgency;
+        const agencyFTEs = nurseFTEs * (agencyUtilization / 100);
+        const premium = agencyNurseCost - staffNurseCost;
+        const reductionPct = reductionLevel === "conservative" ? 5 : reductionLevel === "typical" ? 10 : 20;
+        const ftesConverted = agencyFTEs * (reductionPct / 100) * (utilizationRate / 100);
+        return Math.round(ftesConverted * premium);
+      }
+      case "nursingRetention": {
+        const { turnoverRate, burnoutPortion, docAttribution, preventionLevel, replacementCost } = driverInputs.nursingRetention;
+        const departures = nurseFTEs * (turnoverRate / 100);
+        const burnoutDepartures = departures * (burnoutPortion / 100);
+        const docRelated = burnoutDepartures * (docAttribution / 100);
+        const preventionPct = preventionLevel === "conservative" ? 30 : preventionLevel === "typical" ? 40 : 55;
+        const prevented = docRelated * (preventionPct / 100) * (utilizationRate / 100);
+        return Math.round(prevented * replacementCost);
+      }
+      case "nursingCompleteness": {
+        const { operationalValue } = driverInputs.nursingCompleteness;
+        // Documentation completeness is hard to monetize directly
+        // Apply utilization rate to the operational value estimate
+        return Math.round(operationalValue * (utilizationRate / 100));
+      }
       default:
         return 0;
     }
-  }, [providers, encounters, utilizationRate, eligibleEncounters, driverInputs]);
+  }, [providers, encounters, utilizationRate, eligibleEncounters, eligibleDocEvents, driverInputs, nurseFTEs, documentationEvents]);
   
   const driverResults = useMemo(() => {
     const results: Record<string, { name: string; value: number; category: "time" | "quality" }> = {};
-    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRounding", "inpatientRetention"];
+    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRounding", "inpatientRetention", "nursingOvertime", "nursingDocTime", "nursingAgency", "nursingRetention"];
     activeDrivers.forEach(id => {
       results[id] = {
         name: DRIVER_NAMES[id],
@@ -550,11 +723,15 @@ export default function ModelBuilder({
   const totalBenefit = timeSubtotal + qualitySubtotal;
   
   const annualInvestment = useMemo(() => {
+    // Nursing uses per-bed pricing
+    if (isNursingSetting) {
+      return staffedBeds * costPerBedPerMonth * 12;
+    }
     if (pricingModel === "per_clinician") {
       return providers * costPerMonth * 12;
     }
     return enterpriseAnnual;
-  }, [pricingModel, providers, costPerMonth, enterpriseAnnual]);
+  }, [pricingModel, providers, costPerMonth, enterpriseAnnual, isNursingSetting, staffedBeds, costPerBedPerMonth]);
   
   const totalInvestment = annualInvestment + (includeImplementation ? implementationFee : 0);
   const netGain = totalBenefit - totalInvestment;
@@ -690,6 +867,14 @@ export default function ModelBuilder({
       costPerMonth,
       enterpriseAnnual,
       pricingModel,
+      // Include nursing-specific fields when in nursing mode
+      ...(isNursingSetting && {
+        nursingStaffedBeds: staffedBeds,
+        nursingFTEs: nurseFTEs,
+        nursingUnitType: unitType,
+        nursingDocEventsPerBedPerYear: 750,
+        nursingCostPerBedPerMonth: costPerBedPerMonth,
+      }),
     };
     onComplete(results);
   };
@@ -784,6 +969,17 @@ export default function ModelBuilder({
         return renderInpatientCDIInputs();
       case "inpatientDenials":
         return renderInpatientDenialsInputs();
+      // Nursing drivers
+      case "nursingOvertime":
+        return renderNursingOvertimeInputs();
+      case "nursingDocTime":
+        return renderNursingDocTimeInputs();
+      case "nursingAgency":
+        return renderNursingAgencyInputs();
+      case "nursingRetention":
+        return renderNursingRetentionInputs();
+      case "nursingCompleteness":
+        return renderNursingCompletenessInputs();
       default:
         return null;
     }
@@ -2048,6 +2244,501 @@ export default function ModelBuilder({
     );
   };
   
+  // Nursing Driver Render Functions
+  const renderNursingOvertimeInputs = () => {
+    const { hoursPerWeek, docPortionPct, reductionLevel, baseHourlyRate } = driverInputs.nursingOvertime;
+    const overtimeRate = baseHourlyRate * 1.5;
+    const totalOTHours = nurseFTEs * hoursPerWeek * 50;
+    const docRelatedOT = totalOTHours * (docPortionPct / 100);
+    const reductionPct = reductionLevel === "conservative" ? 45 : reductionLevel === "typical" ? 60 : 75;
+    const hoursEliminated = docRelatedOT * (reductionPct / 100) * (utilizationRate / 100);
+    
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Average OT hours per nurse per week?</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{hoursPerWeek} hrs</span>
+          </div>
+          <Slider
+            value={[hoursPerWeek]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, hoursPerWeek: val } }))}
+            min={1}
+            max={8}
+            step={0.5}
+            className="w-full"
+            data-testid="nursing-overtime-hours-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Nursing OT is typically 3-6 hours/week</p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {nurseFTEs} nurses × {hoursPerWeek} hrs × 50 wks = {totalOTHours.toLocaleString()} OT hrs
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">What portion is documentation catch-up?</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{docPortionPct}%</span>
+          </div>
+          <Slider
+            value={[docPortionPct]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, docPortionPct: val } }))}
+            min={20}
+            max={60}
+            step={5}
+            className="w-full"
+            data-testid="nursing-overtime-doc-portion-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Nurses report 40-50% of OT is charting</p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {totalOTHours.toLocaleString()} × {docPortionPct}% = {Math.round(docRelatedOT).toLocaleString()} doc-related OT
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Expected reduction?</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(["conservative", "typical", "aggressive"] as const).map(opt => (
+              <button
+                key={opt}
+                onClick={() => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, reductionLevel: opt } }))}
+                className={`p-3 rounded-lg border text-sm transition-all ${
+                  reductionLevel === opt
+                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                }`}
+                data-testid={`nursing-overtime-reduction-${opt}`}
+              >
+                {opt === "conservative" && "Conservative 45%"}
+                {opt === "typical" && "Typical 60%"}
+                {opt === "aggressive" && "Aggressive 75%"}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Base hourly wage</label>
+          <div className="flex items-center gap-2">
+            <span className="text-[#6B7280]">$</span>
+            <Input
+              type="number"
+              value={baseHourlyRate}
+              onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, baseHourlyRate: Number(e.target.value) || 0 } }))}
+              className="w-32 font-mono"
+              data-testid="nursing-overtime-hourly-input"
+            />
+            <span className="text-sm text-[#6B7280]">/hour → ${Math.round(overtimeRate)}/OT hour</span>
+          </div>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(Math.round(hoursEliminated * overtimeRate))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {Math.round(hoursEliminated).toLocaleString()} hrs × ${Math.round(overtimeRate)}/hr
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderNursingDocTimeInputs = () => {
+    const { docBurden, reductionLevel, realizationFactor } = driverInputs.nursingDocTime;
+    const hoursPerShift = docBurden === "light" ? 2.0 : docBurden === "moderate" ? 2.5 : 3.5;
+    const totalDocHours = nurseFTEs * hoursPerShift * 3 * 50;
+    const reductionPct = reductionLevel === "conservative" ? 25 : reductionLevel === "typical" ? 35 : 45;
+    const hoursReturned = totalDocHours * (reductionPct / 100) * (utilizationRate / 100);
+    const dollarValue = Math.round(hoursReturned * 45 * (realizationFactor / 100));
+    
+    return (
+      <div className="space-y-6">
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <p className="text-xs text-amber-800 flex items-start gap-2">
+            <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5" />
+            <span>This driver is harder to monetize. Time returned goes to patient care, not payroll reduction.</span>
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Documentation burden level?</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(["light", "moderate", "heavy"] as const).map(opt => (
+              <button
+                key={opt}
+                onClick={() => setDriverInputs(prev => ({ ...prev, nursingDocTime: { ...prev.nursingDocTime, docBurden: opt } }))}
+                className={`p-3 rounded-lg border text-sm transition-all ${
+                  docBurden === opt
+                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                }`}
+                data-testid={`nursing-doc-time-burden-${opt}`}
+              >
+                {opt === "light" && "Light (~2 hrs/shift)"}
+                {opt === "moderate" && "Moderate (~2.5 hrs)"}
+                {opt === "heavy" && "Heavy (~3.5 hrs)"}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-neutral-400 font-mono">
+            {nurseFTEs} nurses × {hoursPerShift} hrs × 3 shifts/wk × 50 wks = {totalDocHours.toLocaleString()} doc hours
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Expected time reduction?</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(["conservative", "typical", "aggressive"] as const).map(opt => (
+              <button
+                key={opt}
+                onClick={() => setDriverInputs(prev => ({ ...prev, nursingDocTime: { ...prev.nursingDocTime, reductionLevel: opt } }))}
+                className={`p-3 rounded-lg border text-sm transition-all ${
+                  reductionLevel === opt
+                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                }`}
+                data-testid={`nursing-doc-time-reduction-${opt}`}
+              >
+                {opt === "conservative" && "25%"}
+                {opt === "typical" && "35%"}
+                {opt === "aggressive" && "45%"}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Realization factor</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{realizationFactor}%</span>
+          </div>
+          <Slider
+            value={[realizationFactor]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingDocTime: { ...prev.nursingDocTime, realizationFactor: val } }))}
+            min={25}
+            max={75}
+            step={5}
+            className="w-full"
+            data-testid="nursing-doc-time-realization-slider"
+          />
+          <p className="text-xs text-[#6B7280]">What portion of time savings can be valued? (~50% is typical)</p>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result (Soft Value)</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(dollarValue)}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {Math.round(hoursReturned).toLocaleString()} hrs × $45 × {realizationFactor}%
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderNursingAgencyInputs = () => {
+    const { agencyUtilization, staffNurseCost, agencyNurseCost, reductionLevel } = driverInputs.nursingAgency;
+    const agencyFTEs = nurseFTEs * (agencyUtilization / 100);
+    const premium = agencyNurseCost - staffNurseCost;
+    const reductionPct = reductionLevel === "conservative" ? 5 : reductionLevel === "typical" ? 10 : 20;
+    const ftesConverted = agencyFTEs * (reductionPct / 100) * (utilizationRate / 100);
+    
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">What % of your workforce is agency/traveler?</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{agencyUtilization}%</span>
+          </div>
+          <Slider
+            value={[agencyUtilization]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyUtilization: val } }))}
+            min={5}
+            max={35}
+            step={5}
+            className="w-full"
+            data-testid="nursing-agency-util-slider"
+          />
+          <p className="text-xs text-[#6B7280]">National average is ~15%. Some facilities hit 25%+</p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {nurseFTEs} × {agencyUtilization}% = {Math.round(agencyFTEs).toLocaleString()} agency FTEs
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm text-[#111827] font-medium">Staff nurse cost</label>
+            <div className="flex items-center gap-2">
+              <span className="text-[#6B7280]">$</span>
+              <Input
+                type="number"
+                value={staffNurseCost}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, staffNurseCost: Number(e.target.value) || 0 } }))}
+                className="w-28 font-mono"
+                data-testid="nursing-agency-staff-cost-input"
+              />
+              <span className="text-xs text-[#6B7280]">/year</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm text-[#111827] font-medium">Agency nurse cost</label>
+            <div className="flex items-center gap-2">
+              <span className="text-[#6B7280]">$</span>
+              <Input
+                type="number"
+                value={agencyNurseCost}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyNurseCost: Number(e.target.value) || 0 } }))}
+                className="w-28 font-mono"
+                data-testid="nursing-agency-agency-cost-input"
+              />
+              <span className="text-xs text-[#6B7280]">/year</span>
+            </div>
+          </div>
+        </div>
+        <p className="text-xs text-neutral-400 font-mono">
+          Premium: ${premium.toLocaleString()}/FTE
+        </p>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">How much agency reduction is realistic?</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(["conservative", "typical", "aggressive"] as const).map(opt => (
+              <button
+                key={opt}
+                onClick={() => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, reductionLevel: opt } }))}
+                className={`p-3 rounded-lg border text-sm transition-all ${
+                  reductionLevel === opt
+                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                }`}
+                data-testid={`nursing-agency-reduction-${opt}`}
+              >
+                {opt === "conservative" && "5%"}
+                {opt === "typical" && "10%"}
+                {opt === "aggressive" && "20%"}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-[#6B7280]">Documentation burden is one factor driving agency use. Conservative is realistic.</p>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(Math.round(ftesConverted * premium))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {ftesConverted.toFixed(1)} FTEs converted × ${premium.toLocaleString()} premium
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderNursingRetentionInputs = () => {
+    const { turnoverRate, burnoutPortion, docAttribution, preventionLevel, replacementCost } = driverInputs.nursingRetention;
+    const departures = nurseFTEs * (turnoverRate / 100);
+    const burnoutDepartures = departures * (burnoutPortion / 100);
+    const docRelated = burnoutDepartures * (docAttribution / 100);
+    const preventionPct = preventionLevel === "conservative" ? 30 : preventionLevel === "typical" ? 40 : 55;
+    const prevented = docRelated * (preventionPct / 100) * (utilizationRate / 100);
+    
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Annual nursing turnover rate?</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{turnoverRate}%</span>
+          </div>
+          <Slider
+            value={[turnoverRate]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, turnoverRate: val } }))}
+            min={10}
+            max={30}
+            step={2}
+            className="w-full"
+            data-testid="nursing-retention-turnover-slider"
+          />
+          <p className="text-xs text-[#6B7280]">National average is 18-22%</p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {nurseFTEs} × {turnoverRate}% = {Math.round(departures).toLocaleString()} annual departures
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Burnout-driven departures?</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{burnoutPortion}%</span>
+          </div>
+          <Slider
+            value={[burnoutPortion]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, burnoutPortion: val } }))}
+            min={40}
+            max={70}
+            step={5}
+            className="w-full"
+            data-testid="nursing-retention-burnout-slider"
+          />
+          <p className="text-xs text-[#6B7280]">~55% of departures are burnout-related</p>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Documentation attribution?</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{docAttribution}%</span>
+          </div>
+          <Slider
+            value={[docAttribution]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, docAttribution: val } }))}
+            min={15}
+            max={40}
+            step={5}
+            className="w-full"
+            data-testid="nursing-retention-doc-attribution-slider"
+          />
+          <p className="text-xs text-[#6B7280]">Documentation burden is the #1 driver of nursing burnout</p>
+          <p className="text-xs text-neutral-400 font-mono">
+            {Math.round(departures).toLocaleString()} × {burnoutPortion}% × {docAttribution}% = {Math.round(docRelated).toLocaleString()} doc-driven departures
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Prevention level?</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(["conservative", "typical", "aggressive"] as const).map(opt => (
+              <button
+                key={opt}
+                onClick={() => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, preventionLevel: opt } }))}
+                className={`p-3 rounded-lg border text-sm transition-all ${
+                  preventionLevel === opt
+                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                }`}
+                data-testid={`nursing-retention-prevention-${opt}`}
+              >
+                {opt === "conservative" && "30%"}
+                {opt === "typical" && "40%"}
+                {opt === "aggressive" && "55%"}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Replacement cost per nurse?</label>
+          <div className="flex items-center gap-2">
+            <span className="text-[#6B7280]">$</span>
+            <Input
+              type="number"
+              value={replacementCost}
+              onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, replacementCost: Number(e.target.value) || 0 } }))}
+              className="w-32 font-mono"
+              data-testid="nursing-retention-cost-input"
+            />
+          </div>
+          <p className="text-xs text-[#6B7280]">$40K-$60K is typical (recruiting, training, onboarding)</p>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(Math.round(prevented * replacementCost))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {prevented.toFixed(1)} prevented × ${replacementCost.toLocaleString()}
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderNursingCompletenessInputs = () => {
+    const { lateDocPct, incompleteFieldsPct, operationalValue } = driverInputs.nursingCompleteness;
+    
+    return (
+      <div className="space-y-6">
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <p className="text-xs text-amber-800 flex items-start gap-2">
+            <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5" />
+            <span>Documentation completeness reduces audit risk and improves regulatory compliance. The value is real but harder to quantify.</span>
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Late documentation rate?</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{lateDocPct}%</span>
+          </div>
+          <Slider
+            value={[lateDocPct]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingCompleteness: { ...prev.nursingCompleteness, lateDocPct: val } }))}
+            min={10}
+            max={40}
+            step={5}
+            className="w-full"
+            data-testid="nursing-completeness-late-slider"
+          />
+          <p className="text-xs text-[#6B7280]">What % of documentation is completed after shift end?</p>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-sm text-[#111827] font-medium">Incomplete/missing fields?</label>
+            <span className="font-mono text-sm text-[#E85D3F]">{incompleteFieldsPct}%</span>
+          </div>
+          <Slider
+            value={[incompleteFieldsPct]}
+            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingCompleteness: { ...prev.nursingCompleteness, incompleteFieldsPct: val } }))}
+            min={5}
+            max={30}
+            step={5}
+            className="w-full"
+            data-testid="nursing-completeness-incomplete-slider"
+          />
+          <p className="text-xs text-[#6B7280]">What % of required fields are often incomplete?</p>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm text-[#111827] font-medium">Estimated annual operational value</label>
+          <div className="flex items-center gap-2">
+            <span className="text-[#6B7280]">$</span>
+            <Input
+              type="number"
+              value={operationalValue}
+              onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingCompleteness: { ...prev.nursingCompleteness, operationalValue: Number(e.target.value) || 0 } }))}
+              className="w-32 font-mono"
+              data-testid="nursing-completeness-value-input"
+            />
+          </div>
+          <p className="text-xs text-[#6B7280]">Includes avoided audit findings, reduced remediation, compliance benefits</p>
+        </div>
+        
+        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Result (Compliance Value)</span>
+            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+              {formatCurrency(Math.round(operationalValue * (utilizationRate / 100)))}
+            </span>
+          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            ${operationalValue.toLocaleString()} × {utilizationRate}% adoption
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
       <div
@@ -2092,106 +2783,223 @@ export default function ModelBuilder({
                 <p className="text-sm text-[#6B7280]">Let's start with the basics</p>
               </div>
               
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#111827]">
-                    {isInpatientSetting ? "How many hospitalists are in scope?" : isEDSetting ? "How many ED physicians are in scope?" : "How many providers are in scope?"}
-                  </label>
-                  <Input
-                    type="number"
-                    value={providers}
-                    onChange={(e) => setProviders(Number(e.target.value) || 0)}
-                    placeholder={isInpatientSetting ? "e.g., 20" : isEDSetting ? "e.g., 25" : "e.g., 50"}
-                    className="max-w-xs font-mono"
-                    data-testid="input-providers"
-                  />
-                  <p className="text-xs text-[#6B7280]">
-                    {isInpatientSetting
-                      ? "Include all hospitalists who will use Abridge for documentation"
-                      : isEDSetting 
-                        ? "Include attendings and mid-levels who will use Abridge" 
-                        : "This is your starting point. Could be a pilot or full deployment."}
-                  </p>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#111827]">
-                    {isInpatientSetting 
-                      ? `Annual admissions for these hospitalists?` 
-                      : `Annual encounters for these ${isEDSetting ? "physicians" : "providers"}?`}
-                  </label>
-                  <Input
-                    type="number"
-                    value={encounters}
-                    onChange={(e) => setEncounters(Number(e.target.value) || 0)}
-                    placeholder={isInpatientSetting ? "e.g., 8,000" : isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
-                    className="max-w-xs font-mono"
-                    data-testid="input-encounters"
-                  />
-                  <p className="text-xs text-[#6B7280]">
-                    {isInpatientSetting
-                      ? "~400/hospitalist is typical for a hospitalist program"
-                      : isEDSetting 
-                        ? "~1,800/physician is typical for a community ED"
-                        : "~2,000/provider is typical for primary care, ~1,500 for specialty"}
-                  </p>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#111827]">Expected utilization rate?</label>
-                  <p className="text-xs text-[#6B7280] mb-2">
-                    {isEDSetting 
-                      ? "ED adoption is typically higher than outpatient"
-                      : isInpatientSetting 
-                        ? "What percentage of admissions will use Abridge?"
-                        : "What percentage of encounters will use Abridge?"}
-                  </p>
-                  <div className="flex gap-2">
-                    {(isEDSetting ? [55, 70, 85] as const : isInpatientSetting ? [50, 65, 80] as const : [50, 65, 80] as const).map(rate => (
-                      <button
-                        key={rate}
-                        onClick={() => setUtilizationRate(rate)}
-                        className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                          utilizationRate === rate
-                            ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                            : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
-                        }`}
-                        data-testid={`utilization-${rate}`}
-                      >
-                        {isInpatientSetting ? (
-                          <>
-                            {rate === 50 && "Conservative 50%"}
-                            {rate === 65 && "Typical 65%"}
-                            {rate === 80 && "Aggressive 80%"}
-                          </>
-                        ) : isEDSetting ? (
-                          <>
-                            {rate === 55 && "Early 55%"}
-                            {rate === 70 && "Typical 70%"}
-                            {rate === 85 && "Aggressive 85%"}
-                          </>
-                        ) : (
-                          <>
-                            {rate === 50 && "Early 50%"}
-                            {rate === 65 && "Typical 65%"}
-                            {rate === 80 && "Aggressive 80%"}
-                          </>
-                        )}
-                      </button>
-                    ))}
+              {isNursingSetting ? (
+                /* Nursing-specific organization inputs */
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">
+                      How many staffed beds are in scope?
+                    </label>
+                    <Input
+                      type="number"
+                      value={staffedBeds}
+                      onChange={(e) => setStaffedBeds(Number(e.target.value) || 0)}
+                      placeholder="e.g., 200"
+                      className="max-w-xs font-mono"
+                      data-testid="input-staffed-beds"
+                    />
+                    <p className="text-xs text-[#6B7280] flex items-center gap-1">
+                      <Lightbulb className="w-3 h-3" /> This is your billing unit for Abridge Nursing
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">
+                      How many nurse FTEs support these beds?
+                    </label>
+                    <Input
+                      type="number"
+                      value={nurseFTEs}
+                      onChange={(e) => {
+                        setNurseFTEs(Number(e.target.value) || 0);
+                        setNurseFTEsManuallyEdited(true); // User has manually edited, stop auto-calc
+                      }}
+                      placeholder="e.g., 300"
+                      className="max-w-xs font-mono"
+                      data-testid="input-nurse-ftes"
+                    />
+                    <p className="text-xs text-[#6B7280] flex items-center gap-1">
+                      <Lightbulb className="w-3 h-3" /> ~1.5 FTEs per bed is typical for med-surg. Higher for ICU (~2.5-3.0)
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">What type of unit(s)?</label>
+                    <p className="text-xs text-[#6B7280] mb-2">
+                      Unit type affects documentation burden and staffing ratios
+                    </p>
+                    <div className="flex gap-2">
+                      {(["med-surg", "icu", "mixed"] as const).map(type => (
+                        <button
+                          key={type}
+                          onClick={() => setUnitType(type)}
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                            unitType === type
+                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                          }`}
+                          data-testid={`unit-type-${type}`}
+                        >
+                          {type === "med-surg" && "Med-Surg"}
+                          {type === "icu" && "ICU/Critical Care"}
+                          {type === "mixed" && "Mixed"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">Expected utilization rate?</label>
+                    <p className="text-xs text-[#6B7280] mb-2">
+                      Nursing adoption can be slower than provider adoption
+                    </p>
+                    <div className="flex gap-2">
+                      {([45, 60, 75] as const).map(rate => (
+                        <button
+                          key={rate}
+                          onClick={() => setUtilizationRate(rate)}
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                            utilizationRate === rate
+                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                          }`}
+                          data-testid={`utilization-${rate}`}
+                        >
+                          {rate === 45 && "Early 45%"}
+                          {rate === 60 && "Typical 60%"}
+                          {rate === 75 && "Aggressive 75%"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
+                    <p className="text-sm text-[#111827]">
+                      <span className="font-medium">→</span>{" "}
+                      <span className="font-mono">{staffedBeds.toLocaleString()}</span> beds │{" "}
+                      <span className="font-mono">{nurseFTEs.toLocaleString()}</span> nurses │ {unitType === "med-surg" ? "Med-Surg" : unitType === "icu" ? "ICU" : "Mixed"}
+                    </p>
+                    <p className="text-sm text-[#111827] mt-1">
+                      <span className="font-mono">{documentationEvents.toLocaleString()}</span> events ×{" "}
+                      <span className="font-mono">{utilizationRate}%</span> ={" "}
+                      <span className="font-mono font-semibold text-[#E85D3F]">{Math.round(documentationEvents * (utilizationRate / 100)).toLocaleString()}</span> Abridge-documented events/year
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <p className="text-sm text-amber-800 flex items-start gap-2">
+                      <DollarSign className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Abridge Nursing is priced per staffed bed, not per nurse.</strong>
+                        <br />
+                        This means your ROI scales as utilization increases.
+                      </span>
+                    </p>
                   </div>
                 </div>
-                
-                <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
-                  <p className="text-sm text-[#111827]">
-                    <span className="font-medium">→</span>{" "}
-                    <span className="font-mono">{providers.toLocaleString()}</span> {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} ×{" "}
-                    <span className="font-mono">{encounters.toLocaleString()}</span> {isInpatientSetting ? "admissions" : "encounters"} ×{" "}
-                    <span className="font-mono">{utilizationRate}%</span> ={" "}
-                    <span className="font-mono font-semibold text-[#E85D3F]">{eligibleEncounters.toLocaleString()}</span> eligible {isInpatientSetting ? "admissions" : "encounters"}
-                  </p>
+              ) : (
+                /* Standard provider/encounter inputs */
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">
+                      {isInpatientSetting ? "How many hospitalists are in scope?" : isEDSetting ? "How many ED physicians are in scope?" : "How many providers are in scope?"}
+                    </label>
+                    <Input
+                      type="number"
+                      value={providers}
+                      onChange={(e) => setProviders(Number(e.target.value) || 0)}
+                      placeholder={isInpatientSetting ? "e.g., 20" : isEDSetting ? "e.g., 25" : "e.g., 50"}
+                      className="max-w-xs font-mono"
+                      data-testid="input-providers"
+                    />
+                    <p className="text-xs text-[#6B7280]">
+                      {isInpatientSetting
+                        ? "Include all hospitalists who will use Abridge for documentation"
+                        : isEDSetting 
+                          ? "Include attendings and mid-levels who will use Abridge" 
+                          : "This is your starting point. Could be a pilot or full deployment."}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">
+                      {isInpatientSetting 
+                        ? `Annual admissions for these hospitalists?` 
+                        : `Annual encounters for these ${isEDSetting ? "physicians" : "providers"}?`}
+                    </label>
+                    <Input
+                      type="number"
+                      value={encounters}
+                      onChange={(e) => setEncounters(Number(e.target.value) || 0)}
+                      placeholder={isInpatientSetting ? "e.g., 8,000" : isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
+                      className="max-w-xs font-mono"
+                      data-testid="input-encounters"
+                    />
+                    <p className="text-xs text-[#6B7280]">
+                      {isInpatientSetting
+                        ? "~400/hospitalist is typical for a hospitalist program"
+                        : isEDSetting 
+                          ? "~1,800/physician is typical for a community ED"
+                          : "~2,000/provider is typical for primary care, ~1,500 for specialty"}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">Expected utilization rate?</label>
+                    <p className="text-xs text-[#6B7280] mb-2">
+                      {isEDSetting 
+                        ? "ED adoption is typically higher than outpatient"
+                        : isInpatientSetting 
+                          ? "What percentage of admissions will use Abridge?"
+                          : "What percentage of encounters will use Abridge?"}
+                    </p>
+                    <div className="flex gap-2">
+                      {(isEDSetting ? [55, 70, 85] as const : isInpatientSetting ? [50, 65, 80] as const : [50, 65, 80] as const).map(rate => (
+                        <button
+                          key={rate}
+                          onClick={() => setUtilizationRate(rate)}
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                            utilizationRate === rate
+                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                          }`}
+                          data-testid={`utilization-${rate}`}
+                        >
+                          {isInpatientSetting ? (
+                            <>
+                              {rate === 50 && "Conservative 50%"}
+                              {rate === 65 && "Typical 65%"}
+                              {rate === 80 && "Aggressive 80%"}
+                            </>
+                          ) : isEDSetting ? (
+                            <>
+                              {rate === 55 && "Early 55%"}
+                              {rate === 70 && "Typical 70%"}
+                              {rate === 85 && "Aggressive 85%"}
+                            </>
+                          ) : (
+                            <>
+                              {rate === 50 && "Early 50%"}
+                              {rate === 65 && "Typical 65%"}
+                              {rate === 80 && "Aggressive 80%"}
+                            </>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
+                    <p className="text-sm text-[#111827]">
+                      <span className="font-medium">→</span>{" "}
+                      <span className="font-mono">{providers.toLocaleString()}</span> {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} ×{" "}
+                      <span className="font-mono">{encounters.toLocaleString()}</span> {isInpatientSetting ? "admissions" : "encounters"} ×{" "}
+                      <span className="font-mono">{utilizationRate}%</span> ={" "}
+                      <span className="font-mono font-semibold text-[#E85D3F]">{eligibleEncounters.toLocaleString()}</span> eligible {isInpatientSetting ? "admissions" : "encounters"}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </section>
             
             <section className="bg-white rounded-2xl border border-neutral-200 p-8">
@@ -2210,127 +3018,210 @@ export default function ModelBuilder({
                 <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Investment</h2>
               </div>
               
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#111827]">Pricing model</label>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setPricingModel("per_clinician")}
-                      className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                        pricingModel === "per_clinician"
-                          ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                          : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
-                      }`}
-                      data-testid="pricing-per-clinician"
-                    >
-                      Per clinician/month
-                    </button>
-                    <button
-                      onClick={() => setPricingModel("enterprise")}
-                      className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                        pricingModel === "enterprise"
-                          ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                          : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
-                      }`}
-                      data-testid="pricing-enterprise"
-                    >
-                      Enterprise annual
-                    </button>
+              {isNursingSetting ? (
+                /* Nursing per-bed pricing */
+                <div className="space-y-6">
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-xs text-blue-800 flex items-start gap-2">
+                      <DollarSign className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                      <span>Abridge Nursing uses per-bed pricing. Your cost stays fixed as utilization increases.</span>
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">Cost per staffed bed</label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#6B7280]">$</span>
+                      <Input
+                        type="number"
+                        value={costPerBedPerMonth}
+                        onChange={(e) => setCostPerBedPerMonth(Number(e.target.value) || 0)}
+                        className="w-24 font-mono"
+                        data-testid="input-cost-per-bed"
+                      />
+                      <span className="text-sm text-[#6B7280]">/bed/month</span>
+                    </div>
+                    <p className="text-xs text-[#6B7280]">$60-90/bed/month is typical</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">Contract term</label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3].map(term => (
+                        <button
+                          key={term}
+                          onClick={() => setContractTerm(term as 1 | 2 | 3)}
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                            contractTerm === term
+                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                          }`}
+                          data-testid={`contract-term-${term}`}
+                        >
+                          {term} yr{term > 1 ? "s" : ""}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={includeImplementation}
+                      onChange={(e) => setIncludeImplementation(e.target.checked)}
+                      className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
+                      data-testid="checkbox-implementation"
+                    />
+                    <label className="text-sm text-[#111827]">Add implementation fee</label>
+                    {includeImplementation && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#6B7280]">$</span>
+                        <Input
+                          type="number"
+                          value={implementationFee}
+                          onChange={(e) => setImplementationFee(Number(e.target.value) || 0)}
+                          className="w-28 font-mono"
+                          data-testid="input-implementation-fee"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
+                    <p className="text-sm text-[#111827]">
+                      <span className="font-mono">{staffedBeds}</span> beds ×{" "}
+                      <span className="font-mono">${costPerBedPerMonth}</span>/bed × 12 ={" "}
+                      <span className="font-mono font-semibold">{formatCurrency(annualInvestment)}</span>/year
+                      {includeImplementation && (
+                        <span className="text-[#6B7280]"> + {formatCurrency(implementationFee)} implementation</span>
+                      )}
+                    </p>
                   </div>
                 </div>
-                
-                {pricingModel === "per_clinician" ? (
+              ) : (
+                /* Standard per-clinician or enterprise pricing */
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">Cost per clinician</label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#6B7280]">$</span>
-                      <Input
-                        type="number"
-                        value={costPerMonth}
-                        onChange={(e) => setCostPerMonth(Number(e.target.value) || 0)}
-                        className="w-24 font-mono"
-                        data-testid="input-cost-per-month"
-                      />
-                      <span className="text-sm text-[#6B7280]">/month</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">Annual enterprise cost</label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#6B7280]">$</span>
-                      <Input
-                        type="number"
-                        value={enterpriseAnnual}
-                        onChange={(e) => setEnterpriseAnnual(Number(e.target.value) || 0)}
-                        className="w-40 font-mono"
-                        data-testid="input-enterprise-annual"
-                      />
-                      <span className="text-sm text-[#6B7280]">/year</span>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#111827]">Contract term</label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3].map(term => (
+                    <label className="text-sm font-medium text-[#111827]">Pricing model</label>
+                    <div className="flex gap-2">
                       <button
-                        key={term}
-                        onClick={() => setContractTerm(term as 1 | 2 | 3)}
+                        onClick={() => setPricingModel("per_clinician")}
                         className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                          contractTerm === term
+                          pricingModel === "per_clinician"
                             ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
                             : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
                         }`}
-                        data-testid={`contract-term-${term}`}
+                        data-testid="pricing-per-clinician"
                       >
-                        {term} yr{term > 1 ? "s" : ""}
+                        Per clinician/month
                       </button>
-                    ))}
+                      <button
+                        onClick={() => setPricingModel("enterprise")}
+                        className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                          pricingModel === "enterprise"
+                            ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                            : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                        }`}
+                        data-testid="pricing-enterprise"
+                      >
+                        Enterprise annual
+                      </button>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={includeImplementation}
-                    onChange={(e) => setIncludeImplementation(e.target.checked)}
-                    className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
-                    data-testid="checkbox-implementation"
-                  />
-                  <label className="text-sm text-[#111827]">Add implementation fee</label>
-                  {includeImplementation && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#6B7280]">$</span>
-                      <Input
-                        type="number"
-                        value={implementationFee}
-                        onChange={(e) => setImplementationFee(Number(e.target.value) || 0)}
-                        className="w-28 font-mono"
-                        data-testid="input-implementation-fee"
-                      />
+                  
+                  {pricingModel === "per_clinician" ? (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-[#111827]">Cost per clinician</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#6B7280]">$</span>
+                        <Input
+                          type="number"
+                          value={costPerMonth}
+                          onChange={(e) => setCostPerMonth(Number(e.target.value) || 0)}
+                          className="w-24 font-mono"
+                          data-testid="input-cost-per-month"
+                        />
+                        <span className="text-sm text-[#6B7280]">/month</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-[#111827]">Annual enterprise cost</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#6B7280]">$</span>
+                        <Input
+                          type="number"
+                          value={enterpriseAnnual}
+                          onChange={(e) => setEnterpriseAnnual(Number(e.target.value) || 0)}
+                          className="w-40 font-mono"
+                          data-testid="input-enterprise-annual"
+                        />
+                        <span className="text-sm text-[#6B7280]">/year</span>
+                      </div>
                     </div>
                   )}
-                </div>
-                
-                <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
-                  <p className="text-sm text-[#111827]">
-                    {pricingModel === "per_clinician" ? (
-                      <>
-                        <span className="font-mono">{providers}</span> providers ×{" "}
-                        <span className="font-mono">${costPerMonth}</span> × 12 ={" "}
-                        <span className="font-mono font-semibold">{formatCurrency(annualInvestment)}</span>/year
-                      </>
-                    ) : (
-                      <span className="font-mono font-semibold">{formatCurrency(enterpriseAnnual)}</span>
-                    )}
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#111827]">Contract term</label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3].map(term => (
+                        <button
+                          key={term}
+                          onClick={() => setContractTerm(term as 1 | 2 | 3)}
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                            contractTerm === term
+                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                          }`}
+                          data-testid={`contract-term-${term}`}
+                        >
+                          {term} yr{term > 1 ? "s" : ""}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={includeImplementation}
+                      onChange={(e) => setIncludeImplementation(e.target.checked)}
+                      className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
+                      data-testid="checkbox-implementation"
+                    />
+                    <label className="text-sm text-[#111827]">Add implementation fee</label>
                     {includeImplementation && (
-                      <span className="text-[#6B7280]"> + {formatCurrency(implementationFee)} implementation</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#6B7280]">$</span>
+                        <Input
+                          type="number"
+                          value={implementationFee}
+                          onChange={(e) => setImplementationFee(Number(e.target.value) || 0)}
+                          className="w-28 font-mono"
+                          data-testid="input-implementation-fee"
+                        />
+                      </div>
                     )}
-                  </p>
+                  </div>
+                  
+                  <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
+                    <p className="text-sm text-[#111827]">
+                      {pricingModel === "per_clinician" ? (
+                        <>
+                          <span className="font-mono">{providers}</span> providers ×{" "}
+                          <span className="font-mono">${costPerMonth}</span> × 12 ={" "}
+                          <span className="font-mono font-semibold">{formatCurrency(annualInvestment)}</span>/year
+                        </>
+                      ) : (
+                        <span className="font-mono font-semibold">{formatCurrency(enterpriseAnnual)}</span>
+                      )}
+                      {includeImplementation && (
+                        <span className="text-[#6B7280]"> + {formatCurrency(implementationFee)} implementation</span>
+                      )}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </section>
           </div>
           

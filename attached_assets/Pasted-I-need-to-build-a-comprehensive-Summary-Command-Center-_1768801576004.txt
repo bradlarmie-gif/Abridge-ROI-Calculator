@@ -1,0 +1,669 @@
+I need to build a comprehensive Summary Command Center that serves as the hub for the ROI model. This replaces the current simple summary page with a multi-mode experience that different stakeholders can use differently.
+
+---
+
+OVERALL STRUCTURE:
+
+The Summary page has:
+1. Persistent header (always visible)
+2. Tab navigation for 5 view modes
+3. Content area that changes based on selected mode
+4. Persistent action bar (export, share, edit)
+
+---
+
+PERSISTENT HEADER:
+
+Always visible at top of page:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  ← Back to Model Builder                                 ABRIDGE    │
+│                                                     ROI Calculator  │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  YOUR ROI MODEL                                              │   │
+│  │                                                               │   │
+│  │  [Setting Icon] Outpatient │ 50 providers │ 65,000 encounters│   │
+│  │                                                               │   │
+│  │  $379,802 net annual value │ 5.5x ROI │ 3.7 month payback   │   │
+│  │                                                               │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  [✏️ Edit Model]  [📄 Export ▼]  [📧 Share]  [💾 Save]             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+The header should:
+- Show setting icon and name (Outpatient/ED/Inpatient/Nursing)
+- Display key metrics from the model
+- Include action buttons
+- Be sticky when scrolling
+
+Export dropdown options:
+- PDF - Executive Summary
+- PDF - Full Detail with Methodology
+- PowerPoint Slides
+- Copy Shareable Link
+- Export to CSV (raw data)
+
+---
+
+TAB NAVIGATION:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ [●Executive Summary] [Detailed Breakdown] [Methodology]             │
+│ [Scenario Builder] [Sensitivity Analysis]                           │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style:
+- Active tab: coral underline, darker text
+- Inactive tabs: gray text
+- Hover: subtle background highlight
+- Smooth transition between modes (fade, not jarring)
+
+---
+
+MODE 1: EXECUTIVE SUMMARY (Default View)
+────────────────────────────────────────
+
+Purpose: CFO-ready overview, 2-minute scan
+
+SECTION 1: Hero Metrics
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│      $379,802               5.5x                3.7 mo              │
+│   ───────────────       ───────────────     ───────────────         │
+│   Net Annual Value      Return on            Payback                │
+│                         Investment           Period                 │
+│                                                                     │
+│   Total Benefit: $463,802  │  Annual Investment: $84,000           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style:
+- Large, bold numbers
+- Net value in coral color
+- Subtle card with shadow
+- Supporting metrics below in smaller text
+
+SECTION 2: The Value Story
+Two cards side by side showing the two value streams:
+
+┌────────────────────────────────┐  ┌────────────────────────────────┐
+│ ⏱️ TIME SAVED                  │  │ 📋 DOCUMENTATION QUALITY       │
+│                                │  │                                │
+│ $216,302 (57%)                 │  │ $163,500 (43%)                 │
+│                                │  │                                │
+│ • 1,640 OT hours eliminated    │  │ • 4,160 visits properly coded  │
+│ • 1,083 new visits enabled     │  │ • $131K in wRVU capture        │
+│ • 0.32 departures avoided      │  │ • 260 denials prevented        │
+│                                │  │                                │
+└────────────────────────────────┘  └────────────────────────────────┘
+
+Below cards: Visual bar showing the split
+┌─────────────────────────────────────────────────────────────────────┐
+│ [████████████████████████████████░░░░░░░░░░░░░░░░]                 │
+│  Time Saved (57%)                    Doc Quality (43%)              │
+└─────────────────────────────────────────────────────────────────────┘
+
+The metrics shown should be SETTING-SPECIFIC:
+
+For Outpatient:
+- Time Saved: OT hours, new visits, departures avoided
+- Doc Quality: visits coded, wRVU capture, denials prevented
+
+For ED:
+- Time Saved: patients retained (LWBS), scribe FTEs reduced, departures avoided
+- Doc Quality: visits coded, denials prevented
+
+For Inpatient:
+- Time Saved: hours returned, departures avoided
+- Doc Quality: DRGs improved, queries avoided, denials prevented
+
+For Nursing:
+- Time Saved: OT hours eliminated, agency FTEs converted, departures avoided
+- Doc Quality: timeliness improvement %, completeness improvement %
+
+SECTION 3: Multi-Year View
+┌─────────────────────────────────────────────────────────────────────┐
+│  MULTI-YEAR PROJECTION                                              │
+│                                                                     │
+│              Year 1       Year 2       Year 3       TOTAL          │
+│  ─────────────────────────────────────────────────────────────     │
+│  Value       $463,802     $463,802     $463,802     $1,391,406     │
+│  Investment  $84,000      $84,000      $84,000      $252,000       │
+│  Net Gain    $379,802     $379,802     $379,802     $1,139,406     │
+│                                                                     │
+│  Cumulative ROI:  Year 1: 5.5x  │  Year 2: 5.5x  │  Year 3: 5.5x  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style:
+- Clean table
+- Total column highlighted
+- Show cumulative ROI for each year
+
+SECTION 4: Key Assumptions (Collapsible)
+┌─────────────────────────────────────────────────────────────────────┐
+│  KEY ASSUMPTIONS                                           [▼]     │
+│                                                                     │
+│  • 65% utilization rate (typical for phased rollout)               │
+│  • 2.5 minutes time saved per encounter (Abridge median)           │
+│  • $140/provider/month investment                                  │
+│  • 20% realization rate for patient access (conservative)          │
+│                                                                     │
+│  [See full methodology →]     [Adjust assumptions →]               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+SECTION 5: Quick Actions
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐          │
+│  │ 📊 Compare    │  │ 🔍 Deep Dive  │  │ 📄 Export     │          │
+│  │ Scenarios     │  │ into Numbers  │  │ for CFO       │          │
+│  └───────────────┘  └───────────────┘  └───────────────┘          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+---
+
+MODE 2: DETAILED BREAKDOWN
+──────────────────────────
+
+Purpose: Full transparency for analysts and skeptics
+
+SECTION 1: Your Baseline (Editable)
+┌─────────────────────────────────────────────────────────────────────┐
+│  YOUR BASELINE                                        [✏️ Edit]    │
+│                                                                     │
+│  Providers: 50      Encounters: 100,000      Utilization: 65%      │
+│                                                                     │
+│  → 65,000 Abridge-documented encounters/year                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Clicking "Edit" should:
+- Option A: Open inline editing
+- Option B: Return to Model Builder with all data preserved
+
+SECTION 2: Value Drivers (Expandable Accordions)
+
+For each driver they selected, show:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  ⏱️ TIME SAVED BENEFITS                              $216,302      │
+│  ═══════════════════════════════════════════════════════════════   │
+│                                                                     │
+│  ┌───────────────────────────────────────────────────────────────┐ │
+│  │  OVERTIME & LOCUM SAVINGS                     $126,750    [▼] │ │
+│  │  ─────────────────────────────────────────────────────────── │ │
+│  │                                                               │ │
+│  │  YOUR INPUTS              │  YOUR CALCULATION                │ │
+│  │  ─────────────            │  ──────────────────              │ │
+│  │  OT situation: Moderate   │  50 × 60% × 4hrs × 50wks        │ │
+│  │  Doc portion: 45%         │  = 6,000 OT hours baseline      │ │
+│  │  OT rate: $150/hr         │                                  │ │
+│  │                           │  6,000 × 45% = 2,700 doc OT     │ │
+│  │  [✏️ Change]              │                                  │ │
+│  │                           │  2,700 × 70% × 65%               │ │
+│  │                           │  = 1,229 hours eliminated        │ │
+│  │  ABRIDGE ASSUMPTIONS      │                                  │ │
+│  │  ──────────────────       │  1,229 × $150 = $126,750        │ │
+│  │  Reduction rate: 70%      │                                  │ │
+│  │  Source: 200+ deployments │                                  │ │
+│  │                           │                                  │ │
+│  │  [See benchmark data →]   │                                  │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│  [Similar accordions for each selected driver...]                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Each accordion shows:
+- Left side: Their inputs with "Change" button
+- Right side: Step-by-step calculation with their numbers
+- Bottom: Abridge assumptions with sources
+- Link to benchmark/comparison data
+
+SECTION 3: Add Another Driver
+┌─────────────────────────────────────────────────────────────────────┐
+│  + ADD ANOTHER DRIVER                                              │
+│                                                                     │
+│  You haven't included:                                             │
+│                                                                     │
+│  ⏱️ Clinician Retention                                            │
+│     Typical range: $80-160K for your size                          │
+│     [+ Add to Model]                                               │
+│                                                                     │
+│  📋 HCC & Chronic Condition Capture                                 │
+│     Typical range: $150-400K for your size                         │
+│     [+ Add to Model]                                               │
+│                                                                     │
+│  📋 Documentation-Related Denials                                   │
+│     Typical range: $60-150K for your size                          │
+│     [+ Add to Model]                                               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Clicking "Add to Model":
+- Opens a modal with driver-specific inputs
+- Asks only the required questions
+- Updates all calculations
+- Returns to Detailed Breakdown with new driver added
+
+---
+
+MODE 3: METHODOLOGY
+───────────────────
+
+Purpose: Help them defend the numbers internally
+
+SECTION 1: The Core Framework
+┌─────────────────────────────────────────────────────────────────────┐
+│  THE ABRIDGE ROI FRAMEWORK                                         │
+│                                                                     │
+│  Ambient documentation creates two distinct types of value:        │
+│                                                                     │
+│  ┌─────────────────────────┐    ┌─────────────────────────┐       │
+│  │ ⏱️ TIME SAVED           │    │ 📋 DOC QUALITY          │       │
+│  │                         │    │                         │       │
+│  │ When clinicians         │    │ AI captures more        │       │
+│  │ document faster, that   │    │ complete information    │       │
+│  │ time can be redirected  │    │ than rushed manual      │       │
+│  │ to care or recovered    │    │ documentation. Better   │       │
+│  │ as cost savings.        │    │ notes drive revenue.    │       │
+│  └─────────────────────────┘    └─────────────────────────┘       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+SECTION 2: Driver Methodology (for each driver in model)
+┌─────────────────────────────────────────────────────────────────────┐
+│  OVERTIME & LOCUM SAVINGS                                          │
+│  ════════════════════════                                          │
+│                                                                     │
+│  THE LOGIC                                                         │
+│  ─────────                                                         │
+│  Documentation often extends past scheduled hours, triggering      │
+│  overtime pay. By returning time to clinicians during shifts,      │
+│  organizations reduce after-hours work and locum coverage needs.   │
+│                                                                     │
+│  THE FORMULA                                                       │
+│  ───────────                                                       │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ (Providers × %_with_OT × Hrs/wk × Weeks) × Doc_portion      │   │
+│  │ × Reduction_rate × Adoption_rate × OT_rate = Value          │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  KEY ASSUMPTIONS & SOURCES                                         │
+│  ─────────────────────────                                         │
+│                                                                     │
+│  • 70% reduction rate                                              │
+│    Source: Median across 200+ Abridge deployments                 │
+│    Range observed: 50% (conservative) to 85% (aggressive)         │
+│                                                                     │
+│  • 45% of OT is documentation-related (your input)                │
+│    Industry benchmark: 40-55% (AMIA 2023, AMA studies)            │
+│                                                                     │
+│  WHAT WOULD CHANGE THIS NUMBER?                                    │
+│  ──────────────────────────────                                    │
+│  ↑ Higher value if:                                                │
+│    • More baseline overtime exists                                 │
+│    • Higher overtime rates (market-dependent)                      │
+│    • Greater documentation burden currently                        │
+│                                                                     │
+│  ↓ Lower value if:                                                 │
+│    • Already efficient documentation workflows                     │
+│    • Low baseline overtime                                         │
+│    • Salaried providers (no OT cost)                              │
+│                                                                     │
+│  HOW TO VALIDATE                                                   │
+│  ───────────────                                                   │
+│  Ask your operations team:                                         │
+│  • "How many providers regularly stay late to finish notes?"       │
+│  • "What's our average overtime hours per provider per week?"      │
+│  • "What portion of that is documentation vs. patient care?"       │
+│                                                                     │
+│  Your finance team can pull baseline OT data from payroll.        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+[Repeat similar section for each driver in the model]
+
+SECTION 3: What We Don't Include
+┌─────────────────────────────────────────────────────────────────────┐
+│  WHAT WE INTENTIONALLY EXCLUDE                                     │
+│  ══════════════════════════════                                    │
+│                                                                     │
+│  We exclude benefits that are harder to attribute directly:        │
+│                                                                     │
+│  • Patient satisfaction improvements                               │
+│    (Real, but hard to monetize and attribute)                     │
+│                                                                     │
+│  • Quality metric improvements                                     │
+│    (Indirect relationship, many confounding factors)              │
+│                                                                     │
+│  • Provider satisfaction                                           │
+│    (Captured via retention driver instead)                        │
+│                                                                     │
+│  • Reduced malpractice risk                                        │
+│    (Real but extremely hard to quantify)                          │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ 💡 Our goal is a DEFENSIBLE model, not an INFLATED one.      │   │
+│  │    We'd rather be conservative and over-deliver.             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+SECTION 4: Export Methodology
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│  [📄 Download Methodology PDF]     [📋 Copy to Clipboard]          │
+│                                                                     │
+│  Share with your finance team, CMO, or board for validation.      │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+---
+
+MODE 4: SCENARIO BUILDER
+────────────────────────
+
+Purpose: Compare different scenarios side-by-side
+
+SECTION 1: Comparison Table
+┌─────────────────────────────────────────────────────────────────────┐
+│  SCENARIO COMPARISON                                               │
+│                                                                     │
+│                 CURRENT      PILOT        FULL         CUSTOM      │
+│                 MODEL        (25 prov)    (150 prov)               │
+│  ───────────────────────────────────────────────────────────────   │
+│  Providers      50           25           150          [___]       │
+│  Encounters     100,000      50,000       300,000      [___]       │
+│  Utilization    65%          50%          75%          [___]%      │
+│  ───────────────────────────────────────────────────────────────   │
+│  Annual Value   $463,802     $189,250     $1,580,000   $___       │
+│  Investment     $84,000      $42,000      $252,000     $___       │
+│  Net Gain       $379,802     $147,250     $1,328,000   $___       │
+│  ───────────────────────────────────────────────────────────────   │
+│  ROI            5.5x         4.5x         6.3x         ___x       │
+│  Per-Provider   $7,596       $5,890       $8,853       $___       │
+│  ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│  [Apply Custom as New Model]                                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+The Custom column should:
+- Have editable inputs
+- Calculate in real-time
+- Allow saving as new scenario
+
+SECTION 2: Insight Callout (Auto-generated)
+┌─────────────────────────────────────────────────────────────────────┐
+│  💡 INSIGHT                                                         │
+│                                                                     │
+│  Notice how per-provider value INCREASES with scale:               │
+│                                                                     │
+│  • Pilot (25 providers): $5,890/provider                           │
+│  • Current (50 providers): $7,596/provider                         │
+│  • Full (150 providers): $8,853/provider                           │
+│                                                                     │
+│  This is because:                                                  │
+│  1. Adoption rates typically improve with broader deployment       │
+│  2. Fixed implementation costs spread across more providers        │
+│  3. Workflow improvements compound with scale                      │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+SECTION 3: Quick Scenario Buttons (Setting-specific)
+
+For Outpatient:
+┌─────────────────────────────────────────────────────────────────────┐
+│  QUICK SCENARIOS                                                   │
+│                                                                     │
+│  [What if we added ED?]                                            │
+│  [What if utilization reached 80%?]                                │
+│  [What if we included HCC capture?]                                │
+│  [What if we added 3 more clinics?]                                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+For ED:
+- What if LWBS improved to 25%?
+- What if we fully eliminated scribes?
+- What if we expanded to night shifts?
+
+For Inpatient:
+- What if we expanded to 40 hospitalists?
+- What if CC/MCC capture improved to 20%?
+- What if turnover dropped to 10%?
+
+For Nursing:
+- What if we expanded to 400 beds?
+- What if overtime reduced by 75%?
+- What if agency dropped to 5%?
+
+Clicking a quick scenario:
+- Pre-populates the Custom column
+- Shows the comparison immediately
+
+SECTION 4: Add Another Setting
+┌─────────────────────────────────────────────────────────────────────┐
+│  + MODEL ANOTHER CARE SETTING                                      │
+│                                                                     │
+│  See combined ROI across multiple deployments:                     │
+│                                                                     │
+│  [+ Add ED]  [+ Add Inpatient]  [+ Add Nursing]                   │
+│                                                                     │
+│  Current: Outpatient only                                          │
+│  With ED: Combined value would be ~$X                              │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+---
+
+MODE 5: SENSITIVITY ANALYSIS
+────────────────────────────
+
+Purpose: Stress-test the model for sophisticated buyers
+
+SECTION 1: Current Model Reference
+┌─────────────────────────────────────────────────────────────────────┐
+│  YOUR CURRENT MODEL                                                │
+│                                                                     │
+│  $379,802 net annual value  │  5.5x ROI  │  3.7 month payback     │
+│                                                                     │
+│  Let's see how robust these numbers are.                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+SECTION 2: Variable Sensitivity Tables
+
+For each key variable, show a sensitivity table:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  UTILIZATION RATE SENSITIVITY                                      │
+│  ─────────────────────────────                                     │
+│                                                                     │
+│  What if adoption is lower or higher than expected?                │
+│                                                                     │
+│              50%           65%           80%                       │
+│           (Pessimistic)  (Your Model)  (Optimistic)               │
+│  ─────────────────────────────────────────────────                 │
+│  Value     $356,770      $463,802      $570,834                   │
+│  ROI       4.2x          5.5x          6.8x                       │
+│                             ▲                                      │
+│                        (current)                                   │
+│                                                                     │
+│  💡 Even at 50% adoption, ROI remains above 4x.                    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  TIME SAVINGS SENSITIVITY                                          │
+│  ─────────────────────────                                         │
+│                                                                     │
+│  What if Abridge saves more or less time than expected?            │
+│                                                                     │
+│              1.5 min       2.5 min       3.5 min                   │
+│           (Conservative)  (Your Model)  (Optimistic)              │
+│  ─────────────────────────────────────────────────                 │
+│  Value     $298,500      $463,802      $629,104                   │
+│  ROI       3.6x          5.5x          7.5x                       │
+│                             ▲                                      │
+│                        (current)                                   │
+│                                                                     │
+│  💡 Even at 1.5 min/encounter, ROI remains above 3.5x.             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Add similar tables for:
+- Realization rate (for Patient Access)
+- OT reduction rate (for Overtime)
+- Under-coding rate (for Level of Service)
+- Pricing sensitivity
+
+SECTION 3: Breakeven Analysis
+┌─────────────────────────────────────────────────────────────────────┐
+│  🔒 BREAKEVEN ANALYSIS                                              │
+│                                                                     │
+│  Your model breaks even (ROI = 1x) if:                             │
+│                                                                     │
+│  • Utilization drops below 12%                                     │
+│    (You modeled 65%)                                               │
+│                                                                     │
+│  • Time savings are below 0.4 min/encounter                        │
+│    (You modeled 2.5 min)                                           │
+│                                                                     │
+│  • Only 18% of projected value materializes                        │
+│    (Your model assumes typical realization)                        │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                                                              │   │
+│  │  In other words: the model would need to be                 │   │
+│  │                                                              │   │
+│  │              ~82% WRONG                                      │   │
+│  │                                                              │   │
+│  │  to not deliver positive ROI.                               │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Style: The "82% WRONG" should be large, bold, and impactful.
+
+SECTION 4: The Bottom Line
+┌─────────────────────────────────────────────────────────────────────┐
+│  💡 THE BOTTOM LINE                                                 │
+│                                                                     │
+│  This model is robust.                                             │
+│                                                                     │
+│  Even under pessimistic assumptions:                               │
+│  • 50% adoption instead of 65%                                     │
+│  • 1.5 min savings instead of 2.5 min                              │
+│  • Conservative realization rates                                  │
+│                                                                     │
+│  ...ROI still exceeds 3x.                                          │
+│                                                                     │
+│  The question isn't IF there's value—it's HOW MUCH.               │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  [Schedule a conversation to discuss implementation →]       │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+---
+
+SETTING-SPECIFIC ADAPTATIONS:
+
+The Summary Command Center should adapt based on care setting:
+
+FOR NURSING:
+- Show "per staffed bed" and "per nurse" metrics
+- Value Story emphasizes "97% from time savings"
+- Include "What We Don't Claim" reminder
+- Scenarios compare bed counts, not provider counts
+
+FOR INPATIENT:
+- Show "per hospitalist" metrics
+- Value Story notes that Doc Quality dominates (63%)
+- Include honest framing about census being fixed
+- Scenarios include CDI-related options
+
+FOR ED:
+- Show "per physician" metrics
+- Include LWBS and scribe-specific metrics
+- Scenarios include throughput and scribe options
+
+---
+
+INTERACTIONS AND BEHAVIORS:
+
+1. Tab switching:
+   - Smooth fade transition between modes
+   - Remember last selected tab in session
+   - Deep-linkable URLs (/summary/methodology, etc.)
+
+2. Edit Model button:
+   - Returns to Model Builder with all data preserved
+   - Changes sync back to Summary automatically
+
+3. Add Driver (in Detailed Breakdown):
+   - Opens modal with driver-specific inputs
+   - Updates calculations without full page reload
+   - Shows success message with new totals
+
+4. Export:
+   - PDF generation with loading state
+   - Branded templates with Abridge logo
+   - Different templates for Executive vs. Full Detail
+   - Include generation timestamp
+
+5. Share:
+   - Copy unique URL to clipboard
+   - Toast notification "Link copied!"
+   - Shared links should be read-only by default
+
+6. Scenario Builder Custom column:
+   - Real-time calculation as user types
+   - Validation for reasonable inputs
+   - "Apply" button to make it the new base model
+
+7. Mobile responsive:
+   - Tabs become dropdown on small screens
+   - Tables scroll horizontally
+   - Comparison view stacks cards vertically
+
+---
+
+DESIGN SPECIFICATIONS:
+
+1. Colors:
+   - Coral (#E85D3F) for accents, key numbers, CTAs
+   - White backgrounds
+   - Gray (#6B7280) for secondary text
+   - Light gray (#F8F9FA) for card backgrounds
+   - Green tint for positive metrics, subtle
+
+2. Typography:
+   - Large, bold for hero metrics
+   - Monospace for calculations/formulas
+   - Clear hierarchy in each section
+
+3. Spacing:
+   - Generous padding (24-32px)
+   - Clear section separation
+   - Breathing room around key numbers
+
+4. Cards and containers:
+   - Subtle shadows for depth
+   - Rounded corners (12px)
+   - Consistent padding
+
+5. Tables:
+   - Alternating row colors for readability
+   - Highlighted "current" column
+   - Sticky headers for long tables

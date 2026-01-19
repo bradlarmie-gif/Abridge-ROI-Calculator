@@ -78,6 +78,16 @@ export interface RoiInputs {
     pmpmBenchmark: number;
   };
   ed?: EdInputs;
+  nursing?: NursingInputs;
+}
+
+export interface NursingInputs {
+  staffedBeds: number;
+  nurseFTEs: number;
+  unitType: "med-surg" | "icu" | "mixed";
+  documentationEventsPerBedPerYear: number;
+  costPerBedPerMonth: number;
+  utilizationRate: number;
 }
 
 export interface EdInputs {

@@ -26,6 +26,16 @@ The application operates entirely client-side, providing a responsive and intera
   - Documentation-Related Denials (inpatientDenials)
 - **Inpatient-Specific Defaults**: 20 hospitalists (vs 50 providers), 400 admissions/hospitalist (8,000 total), uses "hospitalists" and "admissions" terminology, hospitalist-specific burnout rates (55%) and denial patterns (45% doc-related)
 - **State Persistence**: Model Builder state now persists when navigating to Summary and back via initialResults prop
+- **Nursing Support (Complete)**: Full Nursing support with 5 nursing-specific drivers:
+  - Overtime Reduction (nursingOvertime)
+  - Documentation Time Savings (nursingDocTime)
+  - Agency & Travel Nurse Reduction (nursingAgency)
+  - Nurse Retention (nursingRetention)
+  - Documentation Timeliness & Completeness (nursingCompleteness)
+- **Nursing-Specific Defaults**: 200 staffed beds, 300 nurse FTEs, per-bed pricing ($75/bed/month), documentation events (~500/nurse/year)
+- **Nursing Organization Inputs**: Staffed beds, Nurse FTEs (auto-calculated based on unit type), Unit Type (Med-Surg/ICU/Mixed)
+- **Nursing Utilization Rates**: 45/60/75% (vs 50/65/80% for providers)
+- **Nursing ROI Philosophy**: Focus on measurable workforce protection (overtime, agency, retention) rather than billing optimization since nurses don't bill
 
 ## User Preferences
 
