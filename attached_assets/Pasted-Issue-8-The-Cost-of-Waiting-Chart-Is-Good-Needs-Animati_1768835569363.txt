@@ -1,0 +1,203 @@
+Issue 8: The Cost of Waiting Chart Is Good, Needs Animation
+Current:
+
+Chart exists
+Lines are there
+It's... fine
+
+God-tier:
+CopyThe chart should be the DRAMATIC CLIMAX of the whole flow.
+
+When the page loads:
+1. Grid and axes appear first (100ms)
+2. Gray line (Stay with DAX) draws in from left (800ms)
+3. Coral line (Switch to Abridge) draws in from left (800ms, 200ms delay)
+4. Gap shading fills in (300ms)
+5. Annotation callout fades in (200ms delay)
+
+Use an easing function (ease-out) so it feels confident, not robotic.
+
+Think: How Bloomberg animates their financial charts.
+
+Also: Add subtle hover states on the lines (they highlight when you hover).
+
+Issue 9: The "If You Switch Today" Cards Need Visual Impact
+Current:
+
+Text-heavy
+Hard to quickly compare
+Doesn't create urgency
+
+God-tier fix:
+CopyMake the comparison VISCERAL:
+
+LEFT CARD (Switch Today):
+- Green border (3px)
+- Green background tint
+- Numbers in large, bold green
+- Checkmark icons (✓) next to each milestone
+- "3-year total" is HUGE (40px)
+
+RIGHT CARD (Wait 6 Months):
+- Red border (3px)
+- Red background tint
+- Numbers in red
+- X icons (✗) for lost months
+- "YOU LOSE: $113,750" is HUGE, bold, red
+
+Below both cards:
+Large callout (yellow background, warning icon):
+"Every month you delay = $14,597 in value you'll never recapture."
+
+Make the loss HURT visually.
+
+Issue 10: Typography Hierarchy Needs Tightening
+Current:
+
+Good, but not great
+Some headings feel same-weight as body text
+Numbers don't pop enough
+
+God-tier fixes:
+cssCopy/* Headlines */
+h1 { 
+  font-size: 40px; 
+  font-weight: 700; 
+  letter-spacing: -0.02em; /* Tighter */
+  line-height: 1.1; /* Tighter */
+}
+
+/* Subheadlines */
+h2 { 
+  font-size: 20px; 
+  font-weight: 500; 
+  color: #6B7280; 
+  line-height: 1.4;
+}
+
+/* Big numbers */
+.hero-number {
+  font-size: 56px; /* HUGE */
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* Monospace digits */
+  letter-spacing: -0.03em;
+}
+
+/* Gap amounts */
+.gap-amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #E85D3F; /* Coral */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Card numbers */
+.card-value {
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+The principle: If it's a number, make it UNMISSABLE.
+
+Issue 11: Micro-Interactions Missing
+What would make this feel premium:
+Copy1. Button hover states:
+   - Don't just change color
+   - Lift 2px + shadow increase + slight scale (1.02)
+   
+2. Card selection:
+   - When you click a driver card
+   - Brief "success" animation (subtle scale pulse)
+   - Haptic feedback on mobile (if supported)
+   
+3. Slider dragging:
+   - Handle gets slightly bigger when dragging
+   - Zone label follows the handle smoothly
+   - Benchmark hint appears after 500ms of no movement
+   
+4. Accordion expand:
+   - Content fades in + slides down
+   - Bars animate from left to right
+   - Gap number counts up
+   
+5. Page transitions:
+   - Fade out current (200ms)
+   - Fade in next (200ms, 100ms delay)
+   - Content slides up slightly as it fades in
+God-tier products feel RESPONSIVE, not just functional.
+
+Issue 12: Mobile Considerations (You Didn't Show, But...)
+Critical mobile fixes:
+Copy1. Solution cards stack vertically (good)
+   - But they should be TALLER on mobile (easier to tap)
+   - 80px height minimum
+   
+2. Slider on mobile:
+   - 70px height (bigger touch target)
+   - Handle is 50px diameter
+   - Lots of padding around it
+   
+3. Side-by-side cards:
+   - Stack on mobile (obvious)
+   - But show "swipe" hint if they're in a carousel
+   
+4. Driver selection:
+   - On mobile, cards should be full-width
+   - Generous padding (32px)
+   
+5. Chart on mobile:
+   - Simplify (maybe remove some labels)
+   - Make taller (portrait orientation)
+   - Allow pinch-to-zoom
+
+The Missing "Wow" Moment
+Every god-tier product has ONE moment where you go "holy shit."
+For Stripe, it's the pricing slider.
+For Airbnb, it's the map interaction.
+For Linear, it's the command palette.
+For you, it should be: The Gap Reveal
+Here's what I'd do:
+The "Gap Reveal" Screen (New Concept)
+After they select drivers, BEFORE showing the detailed breakdown:
+Copy┌──────────────────────────────────────────────────────┐
+│                                                      │
+│                                                      │
+│         Based on what you've told us,                │
+│                                                      │
+│         you're leaving                               │
+│                                                      │
+│                                                      │
+│              $175,160                                │
+│                                                      │
+│              on the table.                           │
+│                                                      │
+│                                                      │
+│         Every. Single. Year.                         │
+│                                                      │
+│                                                      │
+│         ───────────────────────────────              │
+│                                                      │
+│         That's $14,597 every month                   │
+│         $486 every day                               │
+│         $61 every hour your clinic is open           │
+│                                                      │
+│                                                      │
+│              [Show Me How →]                         │
+│                                                      │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+Animation:
+
+Page loads with just the sentence "Based on what you've told us, you're leaving"
+Pause (500ms)
+The big number COUNTS UP from $0 to $175,160 (2 seconds)
+Pause (300ms)
+"on the table" fades in
+Pause (200ms)
+"Every. Single. Year." fades in
+Pause (500ms)
+Breakdowns fade in (month/day/hour)
+CTA appears
+
+This is the mic drop moment. Make it count.
+Then the next screen breaks it down. But THIS screen creates the impact.

@@ -5,6 +5,40 @@ import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 
+const spectrumStyles = `
+@keyframes scaleX {
+  from { transform: scaleX(0) translateY(-50%); }
+  to { transform: scaleX(1) translateY(-50%); }
+}
+@keyframes slideInFromLeft {
+  from { opacity: 0; transform: translateX(-100%); }
+  to { opacity: 1; transform: translateX(-50%); }
+}
+@keyframes slideInFromRight {
+  from { opacity: 0; transform: translateX(0%); }
+  to { opacity: 1; transform: translateX(-50%); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes growWidth {
+  from { width: 0%; }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; transform: translateY(-10px); }
+  to { opacity: 1; max-height: 1000px; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+`;
+
 interface SwitchPathProps {
   onBack: () => void;
 }
@@ -530,6 +564,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
   return (
     <div className="min-h-screen bg-white">
+      <style>{spectrumStyles}</style>
       <header className="border-b border-neutral-100 bg-white sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -794,55 +829,74 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 const abridgePos = (ABRIDGE_BENCHMARKS.utilization - 10) / 80 * 100;
                 const tooClose = Math.abs(youPos - abridgePos) < 25;
                 const youIsLeft = youPos < abridgePos;
+                const gapWidth = Math.abs(abridgePos - youPos);
                 
                 return (
-                  <div className="relative h-28 mb-4">
-                    <div className="absolute inset-x-0 top-1/2 h-3 bg-gradient-to-r from-red-200 via-amber-200 via-emerald-200 to-emerald-400 rounded-full -translate-y-1/2" />
+                  <div className="relative h-32 mb-4">
+                    <div 
+                      className="absolute inset-x-0 top-1/2 h-4 bg-gradient-to-r from-red-200 via-amber-200 via-emerald-200 to-emerald-400 rounded-full -translate-y-1/2 origin-left"
+                      style={{ animation: "scaleX 0.6s ease-out forwards" }}
+                    />
                     
                     <div 
-                      className="absolute flex flex-col items-center transition-all duration-500" 
+                      className="absolute flex flex-col items-center"
                       style={{ 
                         left: `${youPos}%`, 
-                        top: tooClose && youIsLeft ? "0" : tooClose ? "8px" : "0", 
-                        transform: "translateX(-50%)" 
+                        top: tooClose && youIsLeft ? "-4px" : tooClose ? "8px" : "0", 
+                        transform: "translateX(-50%)",
+                        animation: "slideInFromLeft 0.5s ease-out 0.2s both"
                       }}
                     >
-                      <span className="text-xs font-bold text-neutral-700 bg-white px-2.5 py-1 rounded-lg border border-neutral-300 shadow-sm whitespace-nowrap">
+                      <span className="text-xs font-bold text-neutral-700 bg-white px-3 py-1.5 rounded-lg border-2 border-neutral-400 shadow-md whitespace-nowrap">
                         YOU ({utilization}%)
                       </span>
-                      <div className="w-0.5 h-4 bg-neutral-500" />
-                      <div className="w-4 h-4 rounded-full bg-neutral-700 border-2 border-white shadow-md" />
+                      <div className="w-0.5 h-5 bg-neutral-600" />
+                      <div className="w-5 h-5 rounded-full bg-neutral-700 border-2 border-white shadow-lg" />
                     </div>
                     
                     <div 
-                      className="absolute flex flex-col items-center" 
+                      className="absolute flex flex-col items-center"
                       style={{ 
                         left: `${abridgePos}%`, 
-                        top: tooClose && !youIsLeft ? "0" : tooClose ? "8px" : "0", 
-                        transform: "translateX(-50%)" 
+                        top: tooClose && !youIsLeft ? "-4px" : tooClose ? "8px" : "0", 
+                        transform: "translateX(-50%)",
+                        animation: "slideInFromRight 0.5s ease-out 0.4s both"
                       }}
                     >
-                      <span className="text-xs font-bold text-[#E85D3F] bg-[#E85D3F]/10 px-2.5 py-1 rounded-lg border border-[#E85D3F]/30 shadow-sm whitespace-nowrap">
+                      <span className="text-xs font-bold text-[#E85D3F] bg-[#E85D3F]/10 px-3 py-1.5 rounded-lg border-2 border-[#E85D3F] shadow-md whitespace-nowrap">
                         ABRIDGE ({ABRIDGE_BENCHMARKS.utilization}%)
                       </span>
-                      <div className="w-0.5 h-4 bg-[#E85D3F]" />
-                      <div className="w-4 h-4 rounded-full bg-[#E85D3F] border-2 border-white shadow-md" />
+                      <div className="w-0.5 h-5 bg-[#E85D3F]" />
+                      <div className="w-5 h-5 rounded-full bg-[#E85D3F] border-2 border-white shadow-lg" />
                     </div>
 
                     {utilization < ABRIDGE_BENCHMARKS.utilization && (
-                      <div 
-                        className="absolute top-1/2 h-1 bg-[#E85D3F]/30 -translate-y-1/2"
-                        style={{ 
-                          left: `${youPos}%`,
-                          width: `${abridgePos - youPos}%`
-                        }}
-                      />
+                      <>
+                        <div 
+                          className="absolute top-1/2 -translate-y-1/2"
+                          style={{ 
+                            left: `${youPos}%`,
+                            width: `${gapWidth}%`,
+                            animation: "fadeIn 0.4s ease-out 0.6s both"
+                          }}
+                        >
+                          <div className="h-6 border-2 border-[#E85D3F] border-t-0 rounded-b-lg" />
+                          <div 
+                            className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap"
+                            style={{ animation: "pulse 2s ease-in-out infinite" }}
+                          >
+                            <span className="text-sm font-bold text-[#E85D3F] bg-[#E85D3F]/10 px-3 py-1 rounded-full border border-[#E85D3F]/30">
+                              +{ABRIDGE_BENCHMARKS.utilization - utilization}% gap
+                            </span>
+                          </div>
+                        </div>
+                      </>
                     )}
                   </div>
                 );
               })()}
 
-              <div className="flex justify-between text-xs text-neutral-500 mt-6 px-2">
+              <div className="flex justify-between text-xs text-neutral-500 mt-10 px-2">
                 <span className="flex items-center gap-1"><Frown className="w-3 h-3" /> &lt;40%</span>
                 <span className="flex items-center gap-1"><Meh className="w-3 h-3" /> 40-55%</span>
                 <span className="flex items-center gap-1"><Smile className="w-3 h-3" /> 55-65%</span>
@@ -851,20 +905,24 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-              <div className="bg-neutral-100 rounded-2xl p-6">
-                <p className="text-sm text-neutral-500 mb-2">At your {utilization}% utilization</p>
+              <div className="relative bg-neutral-100 rounded-2xl p-6 border-2 border-neutral-300 overflow-hidden">
+                <Mic className="absolute top-4 right-4 w-8 h-8 text-neutral-300" />
+                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Your Current</p>
+                <p className="text-sm text-neutral-500 mb-1">At {utilization}% utilization</p>
                 <p className="text-4xl font-bold text-neutral-900 mb-1">{calculations.theirDocumentedEncounters.toLocaleString()}</p>
                 <p className="text-sm text-neutral-500">encounters documented/year</p>
-                <p className="text-xs text-neutral-400 mt-4">That's your current reach</p>
               </div>
               
-              <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-200">
-                <p className="text-sm text-emerald-700 mb-2">At Abridge {ABRIDGE_BENCHMARKS.utilization}%</p>
+              <div className="relative bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-400 overflow-hidden">
+                <div className="absolute top-4 right-4 text-emerald-200 font-bold text-4xl opacity-30">A</div>
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">With Abridge</p>
+                <p className="text-sm text-emerald-700 mb-1">At {ABRIDGE_BENCHMARKS.utilization}% utilization</p>
                 <p className="text-4xl font-bold text-emerald-600 mb-1">{calculations.abridgeDocumentedEncounters.toLocaleString()}</p>
                 <p className="text-sm text-neutral-500">encounters documented/year</p>
-                <p className="text-xs text-emerald-600 mt-4 font-medium">
-                  That's {calculations.utilizationGapEncounters.toLocaleString()} MORE encounters
-                </p>
+                <div className="mt-3 inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-sm font-semibold px-3 py-1 rounded-full">
+                  <ArrowRight className="w-3 h-3 rotate-[-45deg]" />
+                  +{Math.round(((calculations.abridgeDocumentedEncounters - calculations.theirDocumentedEncounters) / calculations.theirDocumentedEncounters) * 100)}% more
+                </div>
               </div>
             </div>
 
@@ -1346,19 +1404,40 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-white border-t border-neutral-200 -mx-6 px-6 py-4 mt-8 shadow-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-600">
-                  Selected: <strong className="text-neutral-900">{selectedDrivers.length}</strong> drivers
-                  {selectedDrivers.length < 2 && <span className="text-neutral-400 ml-1">(select at least 2)</span>}
-                </span>
+            <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-neutral-200 -mx-6 px-6 py-5 mt-8 shadow-xl z-10">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-center sm:text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-1">
+                      {selectedDrivers.slice(0, 4).map((id) => {
+                        const driver = DRIVERS.find(d => d.id === id);
+                        const Icon = driver?.icon || Users;
+                        return (
+                          <div key={id} className="w-8 h-8 rounded-full bg-[#E85D3F]/10 border-2 border-white flex items-center justify-center">
+                            <Icon className="w-4 h-4 text-[#E85D3F]" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <span className="text-base font-semibold text-neutral-900">
+                      {selectedDrivers.length} of 6 selected
+                    </span>
+                  </div>
+                  <p className="text-sm text-neutral-500 mt-1">
+                    {selectedDrivers.length < 2 
+                      ? "Select at least 2 drivers to continue" 
+                      : selectedDrivers.length >= 4 
+                        ? "Great selection!" 
+                        : "Select 2-4 areas that matter most"}
+                  </p>
+                </div>
                 <Button
                   onClick={handleContinue}
                   disabled={!canContinue()}
-                  className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-xl disabled:opacity-40"
+                  className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-xl disabled:opacity-40 shadow-lg"
                   data-testid="button-continue-step6"
                 >
-                  Calculate your gaps
+                  Calculate Your Gap
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -1386,69 +1465,95 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             </div>
 
             <div className="space-y-4 mb-8">
-              {selectedDrivers.map((driverId) => {
+              {selectedDrivers.map((driverId, driverIndex) => {
                 const driver = DRIVERS.find(d => d.id === driverId);
                 const values = calculations.driverValues[driverId];
                 const isExpanded = expandedDrivers.includes(driverId);
                 const Icon = driver?.icon || Users;
+                const barPercent = values && values.abridge > 0 ? Math.min((values.their / values.abridge) * 100, 100) : 0;
                 
                 if (!driver || !values) return null;
                 
                 return (
-                  <div key={driverId} className="border border-neutral-200 rounded-xl overflow-hidden bg-white">
+                  <div 
+                    key={driverId} 
+                    className={`border-2 rounded-2xl overflow-hidden bg-white transition-all duration-300 ${
+                      isExpanded ? "border-[#E85D3F]/30 shadow-lg" : "border-neutral-200 hover:border-neutral-300"
+                    }`}
+                  >
                     <button
                       onClick={() => toggleDriverExpanded(driverId)}
-                      className="w-full p-5 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+                      className="w-full p-6 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
                       data-testid={`accordion-${driverId}`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-                          <Icon className="w-5 h-5 text-neutral-600" />
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                          isExpanded ? "bg-[#E85D3F]/10" : "bg-neutral-100"
+                        }`}>
+                          <Icon className={`w-6 h-6 transition-colors ${isExpanded ? "text-[#E85D3F]" : "text-neutral-600"}`} />
                         </div>
-                        <span className="font-semibold text-neutral-900">{driver.name}</span>
+                        <span className="font-semibold text-lg text-neutral-900">{driver.name}</span>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <span className="text-xl font-bold text-[#E85D3F]">+{formatCurrency(values.gap)}/year</span>
-                        {isExpanded ? <ChevronUp className="w-5 h-5 text-neutral-400" /> : <ChevronDown className="w-5 h-5 text-neutral-400" />}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                          isExpanded ? "bg-[#E85D3F]/10 rotate-180" : "bg-neutral-100"
+                        }`}>
+                          <ChevronDown className={`w-5 h-5 transition-colors ${isExpanded ? "text-[#E85D3F]" : "text-neutral-400"}`} />
+                        </div>
                       </div>
                     </button>
                     
                     {isExpanded && (
-                      <div className="px-5 pb-5 border-t border-neutral-100">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                          <div className="bg-neutral-100 rounded-xl p-5">
-                            <p className="text-sm font-semibold text-neutral-500 mb-3">YOUR CURRENT</p>
+                      <div 
+                        className="px-6 pb-6 border-t border-neutral-100"
+                        style={{ animation: "slideDown 0.4s ease-out forwards" }}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                          <div className="relative bg-neutral-100 rounded-2xl p-6 border-2 border-neutral-300 overflow-hidden">
+                            <Mic className="absolute top-4 right-4 w-6 h-6 text-neutral-300" />
+                            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4">Your Current</p>
                             <div className="space-y-1.5 text-sm text-neutral-600 font-mono">
                               {values.theirCalc.map((line, i) => (
-                                <p key={i}>{line}</p>
+                                <p key={i} style={{ animation: `fadeIn 0.3s ease-out ${0.1 * i}s both` }}>{line}</p>
                               ))}
                             </div>
-                            <div className="mt-4 h-2 bg-neutral-200 rounded-full overflow-hidden">
+                            <div className="mt-5 h-3 bg-neutral-200 rounded-full overflow-hidden">
                               <div 
                                 className="h-full bg-neutral-400 rounded-full"
-                                style={{ width: values.abridge > 0 ? `${Math.min((values.their / values.abridge) * 100, 100)}%` : '0%' }}
+                                style={{ 
+                                  width: `${barPercent}%`,
+                                  animation: "growWidth 0.6s ease-out 0.3s both"
+                                }}
                               />
                             </div>
+                            <p className="mt-3 text-2xl font-bold text-neutral-700">{formatCurrency(values.their)}/year</p>
                           </div>
                           
-                          <div className="bg-emerald-50 rounded-xl p-5 border border-emerald-200">
-                            <p className="text-sm font-semibold text-emerald-700 mb-3">WITH ABRIDGE</p>
+                          <div className="relative bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-400 overflow-hidden">
+                            <div className="absolute top-4 right-4 text-emerald-200 font-bold text-3xl opacity-40">A</div>
+                            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-4">With Abridge</p>
                             <div className="space-y-1.5 text-sm text-emerald-800 font-mono">
                               {values.abridgeCalc.map((line, i) => (
-                                <p key={i}>{line}</p>
+                                <p key={i} style={{ animation: `fadeIn 0.3s ease-out ${0.1 * i}s both` }}>{line}</p>
                               ))}
                             </div>
-                            <div className="mt-4 h-2 bg-emerald-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-emerald-500 rounded-full w-full" />
+                            <div className="mt-5 h-3 bg-emerald-200 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-emerald-500 rounded-full"
+                                style={{ animation: "growWidth 0.6s ease-out 0.3s both", width: "100%" }}
+                              />
                             </div>
+                            <p className="mt-3 text-2xl font-bold text-emerald-600">{formatCurrency(values.abridge)}/year</p>
                           </div>
                         </div>
                         
-                        <div className="mt-4 text-center">
-                          <p className="text-2xl font-bold text-[#E85D3F]">Gap: +{formatCurrency(values.gap)}/year</p>
-                          <p className="text-sm text-neutral-500 mt-1">
-                            This gap comes from both higher adoption ({ABRIDGE_BENCHMARKS.utilization}% vs {utilization}%) and better efficiency ({ABRIDGE_BENCHMARKS.timeSavings} min vs {timeSavings} min).
-                          </p>
+                        <div 
+                          className="mt-6 text-center py-4 bg-[#E85D3F]/5 rounded-xl border border-[#E85D3F]/20"
+                          style={{ animation: "countUp 0.5s ease-out 0.5s both" }}
+                        >
+                          <p className="text-sm font-medium text-[#E85D3F]/70 uppercase tracking-wide mb-1">Annual Value Gap</p>
+                          <p className="text-3xl font-bold text-[#E85D3F]">+{formatCurrency(values.gap)}/year</p>
                         </div>
                       </div>
                     )}
