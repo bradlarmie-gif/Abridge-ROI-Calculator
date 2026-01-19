@@ -1,0 +1,226 @@
+THE EXACT REPLIT PROMPT
+Copy and paste this entire thing:
+CopyMAJOR RESTRUCTURE OF SWITCH PATH - COMPLETE OVERHAUL
+
+## OVERVIEW
+We're restructuring the Switch flow from a linear slide-by-slide presentation into a smarter modeling tool. The key changes:
+1. Reorder steps (Driver Selection before Performance Assumptions)
+2. Combine final screens into one Summary Dashboard
+3. Add persistent "Your Inputs" bar
+4. Add Save/Share/Export functionality
+5. Add credibility links on benchmarks
+
+## NEW STEP ORDER
+
+Step 1: Baseline (KEEP AS-IS)
+- Providers, encounters, utilization
+- No changes needed
+
+Step 2: Current Solution (KEEP AS-IS)  
+- Ambient AI / Human Scribes / No Solution
+- Care setting selection
+- No changes needed
+
+Step 3: Utilization Gap (MINOR CHANGES)
+- Keep the visualization
+- Change the benchmark cards: BOTH should be neutral gray backgrounds
+- Only the user's current position and results should use coral
+- Add this under "Abridge avg: 65%": small link "Based on 200+ deployments [See data →]"
+- Clicking opens a small modal with benchmark sources
+
+Step 4: Efficiency Gap (CHANGES NEEDED)
+- Keep the slider and comparison cards
+- ADD visible math in the comparison cards:
+  Left card: "1.25 min × 25,000 encounters = 521 hours/year"
+  Right card: "3 min × 32,500 encounters = 1,625 hours/year"
+- This shows WHY the gap exists, not just the result
+- Add under "Abridge avg: 3 min": small link "Based on measured data [See benchmarks →]"
+
+Step 5: Driver Selection (MOVED EARLIER - CHANGES NEEDED)
+- This now comes BEFORE Performance Assumptions
+- Start with NO cards pre-selected
+- Keep "MOST COMMON" badges but make them subtle (gray, not orange)
+- Add copy at top: "Most health systems prioritize these 3. Select what applies to you."
+- Remove the coral/orange from unselected states
+- When selected: subtle coral border, coral checkmark
+- Show running total at bottom as they select
+- "Show 3 more drivers" expand link (keep this)
+
+Step 6: Performance Assumptions (CHANGES NEEDED)
+- Only show metrics RELEVANT to their selected drivers
+- If they selected Patient Access + Denials, only show:
+  - wRVU Uplift (relates to Patient Access)
+  - Denial Prevention (relates to Denials)
+- Do NOT show HCC Capture if they didn't select that driver
+- Start with all rows COLLAPSED (just metric name + value)
+- User expands to customize if they want
+- Simpler, cleaner, less overwhelming
+
+Step 7: Summary Dashboard (NEW - REPLACES 3 SCREENS)
+This is the big change. Combine Money Reveal + Value Breakdown + Cost of Waiting into ONE dashboard view.
+
+LAYOUT:
+┌─────────────────────────────────────────────────────────┐
+│  HEADER                                                 │
+│  Your Inputs bar (collapsible)                          │
+│  [Edit] link that jumps to relevant step                │
+├─────────────────────────────────────────────────────────┤
+│  HERO SECTION                                           │
+│  "Based on what you've told us, you're leaving"         │
+│  $136,033                                               │
+│  "on the table. Every. Single. Year."                   │
+│  $11,336/month • $373/day • $65/hour                    │
+├─────────────────────────────────────────────────────────┤
+│  TAB NAVIGATION                                         │
+│  [By Driver]  [Over Time]                               │
+├─────────────────────────────────────────────────────────┤
+│  TAB CONTENT                                            │
+│                                                         │
+│  BY DRIVER (default):                                   │
+│  - Expandable accordion cards for each selected driver  │
+│  - Shows the calculation breakdown when expanded        │
+│  - Collapsed shows: Driver name + annual value          │
+│                                                         │
+│  OVER TIME:                                             │
+│  - The 3-year cumulative graph (slow animation)         │
+│  - Below graph: simple 3-column comparison              │
+│    "Start now: $401K | Start in 6mo: $316K | Gap: $85K" │
+│  - No more side-by-side cards with year breakdowns      │
+│  - Cleaner, simpler, less salesy                        │
+├─────────────────────────────────────────────────────────┤
+│  ASSUMPTIONS FOOTER                                     │
+│  Small text showing key assumptions used                │
+│  [View all assumptions] link expands full list          │
+├─────────────────────────────────────────────────────────┤
+│  ACTION BAR                                             │
+│  [Save Analysis] [Copy Link] [Export PDF] [Edit Model]  │
+│                                                         │
+│  Save Analysis: Generates a unique URL with state       │
+│  Copy Link: Copies shareable URL to clipboard           │
+│  Export PDF: Generates downloadable summary             │
+│  Edit Model: Scrolls/jumps back to first editable step  │
+└─────────────────────────────────────────────────────────┘
+Copy
+## PERSISTENT "YOUR INPUTS" BAR
+
+Starting from Step 3 (Utilization Gap), show a collapsible bar at the top of each screen:
+┌─────────────────────────────────────────────────────────┐
+│  YOUR INPUTS                                    [Edit]  │
+│  50 providers • 100K encounters/year • 50% utilization  │
+│  Current solution: Ambient AI • Outpatient              │
+└─────────────────────────────────────────────────────────┘
+Copy
+- Starts collapsed (just shows one line)
+- Click to expand and see all inputs
+- [Edit] link jumps to the relevant step
+- As user progresses, this bar accumulates their inputs
+- By Step 5, it shows: providers, encounters, utilization, solution, care setting, time savings
+
+## CREDIBILITY MODALS
+
+Create two modals that open when user clicks benchmark links:
+
+UTILIZATION BENCHMARK MODAL:
+Where does 65% come from?
+Based on measured data from Abridge deployments:
+
+Average utilization across 200+ health systems: 65%
+Top quartile performers: 75%+
+Typical ramp: 40% → 65% over 6-9 months
+
+We use 65% as a realistic target based on actual results.
+[Close]
+Copy
+TIME SAVINGS BENCHMARK MODAL:
+Where does 3 minutes come from?
+Based on time studies across care settings:
+
+Outpatient primary care: 2.5 - 4 min/encounter
+Specialty care: 2 - 3.5 min/encounter
+Emergency: 3 - 5 min/encounter
+Inpatient: 4 - 7 min/encounter
+
+We use 3 min as a conservative cross-setting average.
+Your actual results depend on documentation complexity.
+[View published case studies →] (external link)
+[Close]
+Copy
+## GRAPH ANIMATION FIX
+
+On the "Over Time" tab, the cumulative value graph should:
+- Animate the line drawing over 2-3 seconds (not instant)
+- Use easing (ease-out) so it slows down at the end
+- The shaded area under "Switch to Abridge" line fades in after line completes
+
+## COLOR DISCIPLINE ENFORCEMENT
+
+Audit every screen and ensure:
+- Coral/orange ONLY appears for: 
+  - Progress indicator (current step)
+  - Primary CTA buttons
+  - Result numbers (annual gap, driver values)
+  - Selected state indicators (checkmarks, borders)
+  
+- Coral should NOT appear on:
+  - Benchmark cards (make these neutral gray)
+  - Reference data
+  - Labels or headers
+
+- Neutral gray for:
+  - "Your Current" cards and states
+  - Benchmark references
+  - Secondary information
+
+## SAVE/SHARE FUNCTIONALITY
+
+For Save Analysis:
+- Generate a unique URL with encoded state (or save to simple backend)
+- Format: /switch/results?id=abc123 or encode state in URL params
+- When someone visits that URL, load the summary dashboard with their data
+
+For Copy Link:
+- Copy the shareable URL to clipboard
+- Show toast: "Link copied! Share this analysis with your team."
+
+For Export PDF:
+- Generate a clean one-page summary:
+  - Header with Abridge logo
+  - Key inputs (providers, encounters, settings)
+  - Annual gap number
+  - Driver breakdown (simplified)
+  - 3-year projection
+  - Assumptions list
+  - Date generated
+- Use browser print-to-PDF or a library like html2pdf
+
+## STEP INDICATOR UPDATE
+
+Update the progress dots to reflect the new 7-step flow:
+1. Baseline
+2. Solution  
+3. Utilization
+4. Efficiency
+5. Priorities (Driver Selection)
+6. Assumptions
+7. Results (Summary Dashboard)
+
+## IMPLEMENTATION ORDER
+
+1. First: Reorder steps (move Driver Selection before Assumptions)
+2. Second: Filter Assumptions to only show selected driver metrics
+3. Third: Build the Summary Dashboard (combine 3 screens into 1)
+4. Fourth: Add the persistent "Your Inputs" bar
+5. Fifth: Add credibility modals on benchmark links
+6. Sixth: Add Save/Share/Export functionality
+7. Seventh: Fix colors and animation timing
+
+WHAT THIS ACHIEVES
+
+Smarter flow — They tell you what they care about BEFORE you ask for detailed assumptions
+Less cognitive load — Only see assumptions relevant to their choices
+One powerful artifact — The Summary Dashboard is the thing they screenshot, share, and reference
+Trust through transparency — Benchmark links let skeptics verify without interrupting believers
+Practical utility — Save/Share/Export transforms this from demo to leave-behind asset
+Editable without restarting — "Your Inputs" bar lets them refine anytime
+Cleaner aesthetics — Color discipline, slower animations, less visual noise
+

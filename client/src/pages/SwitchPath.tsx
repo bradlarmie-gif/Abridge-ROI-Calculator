@@ -66,7 +66,7 @@ interface SwitchPathProps {
 
 type SolutionType = "ambient" | "scribes" | "manual";
 type CareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
-type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 type DriverId = "patient_access" | "overtime" | "retention" | "level_of_service" | "denials" | "hcc";
 
@@ -255,13 +255,22 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   const [showAllDrivers, setShowAllDrivers] = useState(false);
   const [chartAnimationStage, setChartAnimationStage] = useState(0);
   const [gapRevealStage, setGapRevealStage] = useState(0);
+  
+  // New state for Summary Dashboard
+  const [summaryTab, setSummaryTab] = useState<"drivers" | "time">("drivers");
+  const [showInputsBar, setShowInputsBar] = useState(false);
+  const [showUtilizationModal, setShowUtilizationModal] = useState(false);
+  const [showTimeSavingsModal, setShowTimeSavingsModal] = useState(false);
+  const [showAssumptions, setShowAssumptions] = useState(false);
 
   const solutionData = selectedSolution ? SOLUTION_DATA[selectedSolution] : null;
   
+  // Step 7 is now the combined Summary Dashboard
   useEffect(() => {
     if (step === 7) {
       setGapRevealStage(0);
-      const timers = [
+      setChartAnimationStage(0);
+      const revealTimers = [
         setTimeout(() => setGapRevealStage(1), 300),
         setTimeout(() => setGapRevealStage(2), 800),
         setTimeout(() => setGapRevealStage(3), 2800),
@@ -269,21 +278,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         setTimeout(() => setGapRevealStage(5), 3700),
         setTimeout(() => setGapRevealStage(6), 4200),
       ];
-      return () => timers.forEach(clearTimeout);
-    }
-  }, [step]);
-  
-  useEffect(() => {
-    if (step === 9) {
-      setChartAnimationStage(0);
-      const timers = [
-        setTimeout(() => setChartAnimationStage(1), 200),
-        setTimeout(() => setChartAnimationStage(2), 800),
-        setTimeout(() => setChartAnimationStage(3), 1800),
-        setTimeout(() => setChartAnimationStage(4), 2400),
-        setTimeout(() => setChartAnimationStage(5), 3000),
-      ];
-      return () => timers.forEach(clearTimeout);
+      return () => revealTimers.forEach(clearTimeout);
     }
   }, [step]);
 
@@ -556,16 +551,15 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       case 2: return providers > 0 && annualEncounters > 0;
       case 3: return true;
       case 4: return true;
-      case 5: return true;
-      case 6: return selectedDrivers.length >= 2;
-      case 7: return true;
-      case 8: return true;
+      case 5: return selectedDrivers.length >= 2; // Driver Selection now Step 5
+      case 6: return true; // Performance Assumptions now Step 6
+      case 7: return true; // Summary Dashboard
       default: return false;
     }
   };
 
   const handleContinue = () => {
-    if (step < 9) {
+    if (step < 7) {
       setStep((step + 1) as Step);
     }
   };
@@ -628,7 +622,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
           
           <div className="flex items-center gap-1 md:gap-1.5">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((s) => (
+            {[1, 2, 3, 4, 5, 6, 7].map((s) => (
               <div
                 key={s}
                 className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full transition-all ${
@@ -1146,21 +1140,25 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 5 && (
+        {step === 6 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step5-title">
-              Your current performance assumptions
+            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step6-title">
+              Refine your assumptions
             </h1>
-            <p className="text-lg text-neutral-500 mb-6">Pre-filled with industry benchmarks. Expand to customize any metric.</p>
+            <p className="text-lg text-neutral-500 mb-6">
+              Based on your selected drivers, review these relevant metrics.
+            </p>
 
             <div className="bg-neutral-100 rounded-xl p-4 border border-neutral-200 mb-8 flex items-center gap-3">
               <Check className="w-5 h-5 text-neutral-500 flex-shrink-0" />
               <p className="text-neutral-700 text-sm">
-                Based on typical {solutionData?.name} performance, we've pre-filled these assumptions. Expand any row to customize.
+                Pre-filled with {solutionData?.name || "industry"} benchmarks. Expand any row to customize.
               </p>
             </div>
 
             <div className="space-y-3">
+              {/* Show wRVU Uplift if level_of_service or patient_access selected */}
+              {(selectedDrivers.includes("level_of_service") || selectedDrivers.includes("patient_access")) && (
               <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
                 <button
                   onClick={() => setWrvuKnown(!wrvuKnown)}
@@ -1207,7 +1205,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                 )}
               </div>
+              )}
 
+              {/* Show Under-coding if level_of_service selected */}
+              {selectedDrivers.includes("level_of_service") && (
               <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
                 <button
                   onClick={() => setUnderCodingKnown(!underCodingKnown)}
@@ -1254,7 +1255,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                 )}
               </div>
+              )}
 
+              {/* Show Denial Prevention if denials selected */}
+              {selectedDrivers.includes("denials") && (
               <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
                 <button
                   onClick={() => setDenialKnown(!denialKnown)}
@@ -1301,7 +1305,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                 )}
               </div>
+              )}
 
+              {/* Show HCC Capture if hcc selected */}
+              {selectedDrivers.includes("hcc") && (
               <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
                 <button
                   onClick={() => setHccKnown(!hccKnown)}
@@ -1348,7 +1355,21 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                 )}
               </div>
+              )}
             </div>
+
+            {/* Info message when no drivers have relevant metrics */}
+            {!(selectedDrivers.includes("level_of_service") || selectedDrivers.includes("patient_access") || 
+               selectedDrivers.includes("denials") || selectedDrivers.includes("hcc")) && (
+              <div className="bg-neutral-50 rounded-xl p-6 border border-neutral-200 text-center">
+                <p className="text-neutral-600">
+                  The drivers you selected (Overtime, Retention) primarily use time-based calculations.
+                </p>
+                <p className="text-sm text-neutral-500 mt-2">
+                  No additional performance metrics needed. Click below to see your results.
+                </p>
+              </div>
+            )}
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-sm text-neutral-500">
@@ -1358,19 +1379,19 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <Button
                 onClick={handleContinue}
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
-                data-testid="button-continue-step5"
+                data-testid="button-continue-step6"
               >
-                Continue with assumptions
+                See Your Results
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
         )}
 
-        {step === 6 && (
+        {step === 5 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3" data-testid="text-step6-title">
-              Where would better performance create value?
+            <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3" data-testid="text-step5-title">
+              What matters most to your organization?
             </h1>
             <p className="text-base md:text-lg text-neutral-500 mb-4 md:mb-6">Most health systems prioritize these. Select what matters to you.</p>
 
@@ -1507,10 +1528,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   onClick={handleContinue}
                   disabled={!canContinue()}
                   className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-4 md:px-8 py-2.5 md:py-3 h-auto text-sm md:text-base font-semibold rounded-xl disabled:opacity-40 shadow-lg flex-shrink-0"
-                  data-testid="button-continue-step6"
+                  data-testid="button-continue-step5"
                 >
-                  <span className="hidden md:inline">Calculate Your Gap</span>
-                  <span className="md:hidden">Calculate</span>
+                  <span className="hidden md:inline">Continue</span>
+                  <span className="md:hidden">Continue</span>
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -1518,519 +1539,295 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 8 && (
-          <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step8-title">
-              Your value gap breakdown
-            </h1>
-            <p className="text-lg text-neutral-500 mb-6">Here's exactly where the value comes from.</p>
-
-            <div className="bg-neutral-100 rounded-xl p-4 mb-8">
-              <p className="text-sm text-neutral-700">
-                <strong>You selected:</strong>{" "}
-                {selectedDrivers.map((id, i) => (
-                  <span key={id}>
-                    {i > 0 && " • "}
-                    <span className="text-neutral-900 font-medium">{DRIVERS.find(d => d.id === id)?.name}</span>
-                  </span>
-                ))}
-              </p>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              {selectedDrivers.map((driverId, driverIndex) => {
-                const driver = DRIVERS.find(d => d.id === driverId);
-                const values = calculations.driverValues[driverId];
-                const isExpanded = expandedDrivers.includes(driverId);
-                const Icon = driver?.icon || Users;
-                
-                if (!driver || !values) return null;
-                
-                return (
-                  <div 
-                    key={driverId} 
-                    className={`border-2 rounded-2xl overflow-hidden bg-white transition-all duration-300 ${
-                      isExpanded ? "border-emerald-300 shadow-lg" : "border-neutral-200 hover:border-neutral-300"
-                    }`}
-                  >
-                    <button
-                      onClick={() => toggleDriverExpanded(driverId)}
-                      className="w-full p-6 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
-                      data-testid={`accordion-${driverId}`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                          isExpanded ? "bg-emerald-100" : "bg-neutral-100"
-                        }`}>
-                          <Icon className={`w-6 h-6 transition-colors ${isExpanded ? "text-emerald-600" : "text-neutral-600"}`} />
-                        </div>
-                        <span className="font-semibold text-lg text-neutral-900">{driver.name}</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-xl font-bold text-emerald-600">+{formatCurrency(values.gap)}/year</span>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                          isExpanded ? "bg-emerald-100 rotate-180" : "bg-neutral-100"
-                        }`}>
-                          <ChevronDown className={`w-5 h-5 transition-colors ${isExpanded ? "text-emerald-600" : "text-neutral-400"}`} />
-                        </div>
-                      </div>
-                    </button>
-                    
-                    {isExpanded && (
-                      <div 
-                        className="px-6 pb-6 border-t border-neutral-100"
-                        style={{ animation: "slideDown 0.4s ease-out forwards" }}
-                      >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-                          <div className="relative bg-[#F3F4F6] rounded-2xl p-6 border border-[#E5E7EB] overflow-hidden">
-                            <Mic className="absolute top-4 right-4 w-6 h-6 text-[#D1D5DB]" />
-                            <p className="text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-4">Your Current</p>
-                            <div className="space-y-1.5 text-sm text-[#6B7280] font-mono">
-                              {values.theirCalc.map((line, i) => (
-                                <p key={i} style={{ animation: `fadeIn 0.3s ease-out ${0.1 * i}s both` }}>{line}</p>
-                              ))}
-                            </div>
-                            <p className="mt-5 text-2xl font-bold text-[#6B7280]">{formatCurrency(values.their)}/year</p>
-                          </div>
-                          
-                          <div className="relative bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-200 overflow-hidden">
-                            <div className="absolute top-4 right-4 text-emerald-100 font-bold text-3xl">A</div>
-                            <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-4">With Abridge</p>
-                            <div className="space-y-1.5 text-sm text-[#1F2937] font-mono">
-                              {values.abridgeCalc.map((line, i) => (
-                                <p key={i} style={{ animation: `fadeIn 0.3s ease-out ${0.1 * i}s both` }}>{line}</p>
-                              ))}
-                            </div>
-                            <p className="mt-5 text-2xl font-bold text-[#1F2937]">{formatCurrency(values.abridge)}/year</p>
-                          </div>
-                        </div>
-                        
-                        <div 
-                          className="mt-6 text-center py-4 bg-emerald-50 rounded-xl border border-emerald-200"
-                          style={{ animation: "countUp 0.5s ease-out 0.5s both" }}
-                        >
-                          <p className="text-sm font-medium text-emerald-600 uppercase tracking-wide mb-1">Annual Value Gap</p>
-                          <p className="text-3xl font-bold text-emerald-600">+{formatCurrency(values.gap)}/year</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="bg-white rounded-xl p-6 border-2 border-emerald-400 shadow-lg">
-              <div className="space-y-2 mb-4">
-                {selectedDrivers.map((driverId) => {
-                  const driver = DRIVERS.find(d => d.id === driverId);
-                  const values = calculations.driverValues[driverId];
-                  return (
-                    <div key={driverId} className="flex justify-between text-sm">
-                      <span className="text-neutral-600">{driver?.name}</span>
-                      <span className="font-medium text-emerald-600">+{formatCurrency(values?.gap || 0)}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="border-t border-neutral-200 pt-4">
-                <div className="flex justify-between items-baseline">
-                  <span className="font-semibold text-neutral-900">TOTAL ANNUAL GAP</span>
-                  <span className="text-3xl font-bold text-emerald-600">
-                    <AnimatedNumber value={calculations.totalGap} />
-                  </span>
-                </div>
-                <p className="text-sm text-neutral-500 text-center mt-3">
-                  That's <strong className="text-emerald-600">{formatCurrency(calculations.monthlyGap)}</strong> every month you're not capturing with your current solution.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-200 mt-8">
-              <p className="text-xs text-neutral-500 flex items-start gap-2">
-                <Lightbulb className="w-3.5 h-3.5 mt-0.5 text-neutral-400 flex-shrink-0" />
-                <span>
-                  <strong>Assumptions:</strong> Utilization ({utilization}% current vs {ABRIDGE_BENCHMARKS.utilization}% Abridge), 
-                  Time savings ({timeSavings} min vs {ABRIDGE_BENCHMARKS.timeSavings} min Abridge), 
-                  wRVU rate (~$60/wRVU), Overtime rate (~$100/hr). All estimates based on typical performance data.
-                </span>
-              </p>
-            </div>
-
-            <div className="mt-10 flex justify-center">
-              <Button
-                onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
-                data-testid="button-continue-step8"
-              >
-                What does waiting cost?
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        )}
-
         {step === 7 && (
-          <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
-            <p 
-              className="text-2xl md:text-3xl text-neutral-500 font-medium mb-4"
-              style={{
-                opacity: gapRevealStage >= 1 ? 1 : 0,
-                transform: gapRevealStage >= 1 ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.6s ease-out"
-              }}
-            >
-              Based on what you've told us,
-            </p>
-            <p 
-              className="text-2xl md:text-3xl text-neutral-500 font-medium mb-8"
-              style={{
-                opacity: gapRevealStage >= 1 ? 1 : 0,
-                transform: gapRevealStage >= 1 ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.6s ease-out 0.2s"
-              }}
-            >
-              you're leaving
-            </p>
-            
-            <div 
-              className="mb-6"
-              style={{
-                opacity: gapRevealStage >= 2 ? 1 : 0,
-                transform: gapRevealStage >= 2 ? "scale(1)" : "scale(0.8)",
-                transition: "all 0.8s ease-out"
-              }}
-            >
-              <span className="text-6xl md:text-8xl font-bold text-[#E85D3F] tabular-nums tracking-tight">
-                {gapRevealStage >= 2 ? <AnimatedNumber value={calculations.totalGap} duration={2000} /> : "$0"}
-              </span>
-            </div>
-            
-            <p 
-              className="text-2xl md:text-3xl text-neutral-500 font-medium mb-2"
-              style={{
-                opacity: gapRevealStage >= 3 ? 1 : 0,
-                transform: gapRevealStage >= 3 ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.5s ease-out"
-              }}
-            >
-              on the table.
-            </p>
-            
-            <p 
-              className="text-3xl md:text-4xl font-bold text-neutral-900 mb-12"
-              style={{
-                opacity: gapRevealStage >= 4 ? 1 : 0,
-                transform: gapRevealStage >= 4 ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.5s ease-out"
-              }}
-            >
-              Every. Single. Year.
-            </p>
-            
-            <div 
-              className="w-48 h-px bg-neutral-300 mb-10"
-              style={{
-                opacity: gapRevealStage >= 5 ? 1 : 0,
-                transform: gapRevealStage >= 5 ? "scaleX(1)" : "scaleX(0)",
-                transition: "all 0.5s ease-out"
-              }}
-            />
-            
-            <div 
-              className="space-y-2 text-lg md:text-xl text-neutral-600 mb-12"
-              style={{
-                opacity: gapRevealStage >= 5 ? 1 : 0,
-                transform: gapRevealStage >= 5 ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.5s ease-out"
-              }}
-            >
-              <p>That's <strong className="text-neutral-900">{formatCurrency(calculations.monthlyGap)}</strong> every month</p>
-              <p><strong className="text-neutral-900">{formatCurrency(Math.round(calculations.totalGap / 365))}</strong> every day</p>
-              <p><strong className="text-neutral-900">{formatCurrency(Math.round(calculations.totalGap / 2080))}</strong> every hour your clinic is open</p>
-            </div>
-            
-            <div
-              style={{
-                opacity: gapRevealStage >= 6 ? 1 : 0,
-                transform: gapRevealStage >= 6 ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.5s ease-out"
-              }}
-              className="text-center"
-            >
-              <Button
-                onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-12 py-4 h-auto text-lg font-bold rounded-xl shadow-xl transition-all duration-200 hover:shadow-2xl hover:-translate-y-1"
-                data-testid="button-continue-step7"
-              >
-                See The Breakdown
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-              <p className="text-sm text-neutral-400 mt-3">{selectedDrivers.length} key {selectedDrivers.length === 1 ? "area" : "areas"} where value is leaking</p>
-            </div>
-          </div>
-        )}
-
-        {step === 9 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-3 tracking-tight leading-tight" data-testid="text-step9-title">
-              The cost of waiting
-            </h1>
-            <p className="text-xl text-neutral-500 mb-10">Every month you delay is value you'll never recapture.</p>
-
-            <div 
-              className="bg-white rounded-2xl p-8 border-2 border-neutral-200 mb-8 shadow-sm"
-              style={{ 
-                opacity: chartAnimationStage >= 1 ? 1 : 0,
-                transition: "opacity 0.3s ease-out"
-              }}
-            >
-              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-6">3-Year Cumulative Value</p>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
-                      </linearGradient>
-                      <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#E85D3F" stopOpacity={0.15}/>
-                        <stop offset="100%" stopColor="#E85D3F" stopOpacity={0.05}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid 
-                      strokeDasharray="3 3" 
-                      stroke="#E5E7EB"
-                      style={{
-                        opacity: chartAnimationStage >= 1 ? 1 : 0,
-                        transition: "opacity 0.2s ease-out"
-                      }}
-                    />
-                    <XAxis 
-                      dataKey="period" 
-                      tick={{ fontSize: 12, fill: "#6B7280" }} 
-                      stroke="#D1D5DB"
-                      axisLine={{ strokeWidth: 2 }}
-                    />
-                    <YAxis 
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} 
-                      tick={{ fontSize: 12, fill: "#6B7280" }} 
-                      stroke="#D1D5DB"
-                      axisLine={{ strokeWidth: 2 }}
-                    />
-                    <Tooltip 
-                      formatter={(value: number, name: string) => [
-                        formatCurrency(value), 
-                        name === "current" ? `Stay with ${solutionData?.name}` : "Switch to Abridge"
-                      ]}
-                      contentStyle={{ 
-                        borderRadius: 12, 
-                        border: '2px solid #E5E7EB',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="current" 
-                      stroke="#9CA3AF" 
-                      strokeWidth={3}
-                      fill="transparent"
-                      name="current"
-                      style={{
-                        strokeDasharray: 2000,
-                        strokeDashoffset: chartAnimationStage >= 2 ? 0 : 2000,
-                        transition: "stroke-dashoffset 1.5s ease-out"
-                      }}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="abridge" 
-                      stroke="#10B981" 
-                      strokeWidth={4}
-                      fill="url(#abridgeGradient)"
-                      name="abridge"
-                      style={{
-                        strokeDasharray: 2000,
-                        strokeDashoffset: chartAnimationStage >= 3 ? 0 : 2000,
-                        transition: "stroke-dashoffset 1.5s ease-out 0.3s",
-                        fillOpacity: chartAnimationStage >= 4 ? 1 : 0
-                      }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-              <div 
-                className="flex items-center justify-center gap-8 mt-6 text-sm"
+            {/* HERO SECTION */}
+            <div className="text-center mb-8">
+              <p 
+                className="text-lg md:text-xl text-neutral-500 font-medium mb-2"
                 style={{
-                  opacity: chartAnimationStage >= 5 ? 1 : 0,
-                  transform: chartAnimationStage >= 5 ? "translateY(0)" : "translateY(10px)",
-                  transition: "all 0.3s ease-out"
+                  opacity: gapRevealStage >= 1 ? 1 : 0,
+                  transform: gapRevealStage >= 1 ? "translateY(0)" : "translateY(10px)",
+                  transition: "all 0.5s ease-out"
                 }}
               >
-                <span className="flex items-center gap-2 text-neutral-600">
-                  <div className="w-4 h-1 rounded-full bg-neutral-400" />
-                  Stay with {solutionData?.name}
-                </span>
-                <span className="flex items-center gap-2 font-semibold text-emerald-600">
-                  <div className="w-4 h-1 rounded-full bg-emerald-500" />
-                  Switch to Abridge
+                Based on what you've told us, you're leaving
+              </p>
+              <div 
+                className="mb-2"
+                style={{
+                  opacity: gapRevealStage >= 2 ? 1 : 0,
+                  transform: gapRevealStage >= 2 ? "scale(1)" : "scale(0.9)",
+                  transition: "all 0.6s ease-out"
+                }}
+              >
+                <span className="text-5xl md:text-7xl font-bold text-emerald-600 tabular-nums tracking-tight">
+                  {gapRevealStage >= 2 ? <AnimatedNumber value={calculations.totalGap} duration={1800} /> : "$0"}
                 </span>
               </div>
-            </div>
-
-            <div 
-              className="bg-amber-50/50 rounded-xl p-4 border border-amber-200/50 mb-8 text-sm text-amber-800"
-              style={{
-                opacity: chartAnimationStage >= 5 ? 1 : 0,
-                transition: "opacity 0.3s ease-out 0.2s"
-              }}
-            >
-              <Lightbulb className="w-4 h-4 inline mr-2 text-amber-600" />
-              <strong>Realistic ramp-up</strong> based on your selected drivers. 
-              {selectedDrivers.some(id => DRIVERS.find(d => d.id === id)?.rampSpeed === "fast") && " Fast drivers show within 1-3 months."}
-              {selectedDrivers.some(id => DRIVERS.find(d => d.id === id)?.rampSpeed === "slow") && " Slow drivers take 12-18 months."}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div 
-                className="bg-emerald-50 rounded-2xl p-8 border-[3px] border-emerald-400 shadow-lg relative overflow-hidden"
+              <p 
+                className="text-xl md:text-2xl font-bold text-neutral-900"
                 style={{
-                  opacity: chartAnimationStage >= 5 ? 1 : 0,
-                  transform: chartAnimationStage >= 5 ? "translateY(0)" : "translateY(20px)",
+                  opacity: gapRevealStage >= 3 ? 1 : 0,
                   transition: "all 0.4s ease-out"
                 }}
               >
-                <div className="absolute top-4 right-4 text-emerald-200 text-6xl font-bold opacity-30">A</div>
-                <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-5">Starting now</p>
-                <div className="space-y-3 text-base">
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-neutral-600">
-                      <Check className="w-4 h-4 text-emerald-500" />
-                      6 months
-                    </span>
-                    <span className="font-bold text-emerald-700 text-lg tabular-nums">+{formatCurrency(calculations.month6Value)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-neutral-600">
-                      <Check className="w-4 h-4 text-emerald-500" />
-                      Year 1
-                    </span>
-                    <span className="font-bold text-emerald-700 text-lg tabular-nums">+{formatCurrency(calculations.year1Value)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-neutral-600">
-                      <Check className="w-4 h-4 text-emerald-500" />
-                      Year 2
-                    </span>
-                    <span className="font-bold text-emerald-700 text-lg tabular-nums">+{formatCurrency(calculations.year2Value)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-neutral-600">
-                      <Check className="w-4 h-4 text-emerald-500" />
-                      Year 3
-                    </span>
-                    <span className="font-bold text-emerald-700 text-lg tabular-nums">+{formatCurrency(calculations.year3Value)}</span>
-                  </div>
-                </div>
-                <div className="border-t-2 border-emerald-300 mt-6 pt-6">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-emerald-800 text-sm uppercase tracking-wide">3-Year Total</span>
-                    <span className="text-4xl font-bold text-emerald-600 tabular-nums tracking-tight">{formatCurrency(calculations.threeYearTotal)}</span>
-                  </div>
-                </div>
-              </div>
-              
+                on the table. Every. Single. Year.
+              </p>
               <div 
-                className="bg-red-50 rounded-2xl p-8 border-[3px] border-red-300 shadow-lg relative overflow-hidden"
+                className="flex items-center justify-center gap-4 mt-4 text-sm text-neutral-500"
                 style={{
-                  opacity: chartAnimationStage >= 5 ? 1 : 0,
-                  transform: chartAnimationStage >= 5 ? "translateY(0)" : "translateY(20px)",
-                  transition: "all 0.4s ease-out 0.1s"
+                  opacity: gapRevealStage >= 4 ? 1 : 0,
+                  transition: "all 0.4s ease-out"
                 }}
               >
-                <div className="absolute top-4 right-4 text-red-200 text-6xl font-bold opacity-30">?</div>
-                <p className="text-xs font-bold text-red-700 uppercase tracking-wider mb-5">Starting in 6 months</p>
-                <div className="space-y-3 text-base">
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-neutral-400">
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                      6 months
-                    </span>
-                    <span className="font-bold text-neutral-400 text-lg tabular-nums">$0</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-neutral-600">
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                      Year 1
-                    </span>
-                    <span className="font-bold text-red-600 text-lg tabular-nums">+{formatCurrency(calculations.waitYear1Value)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-neutral-600">
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                      Year 2
-                    </span>
-                    <span className="font-bold text-red-600 text-lg tabular-nums">+{formatCurrency(calculations.waitYear2Value)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2 text-neutral-600">
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                      Year 3
-                    </span>
-                    <span className="font-bold text-red-600 text-lg tabular-nums">+{formatCurrency(calculations.waitYear3Value)}</span>
-                  </div>
-                </div>
-                <div className="border-t-2 border-red-200 mt-6 pt-6">
-                  <div className="flex justify-between items-baseline mb-3">
-                    <span className="font-bold text-red-800 text-sm uppercase tracking-wide">3-Year Total</span>
-                    <span className="text-4xl font-bold text-red-500 tabular-nums tracking-tight">{formatCurrency(calculations.waitThreeYearTotal)}</span>
-                  </div>
-                  <div className="bg-[#FEE2E2] rounded-lg p-3 text-center border border-[#FECACA]">
-                    <p className="text-sm text-[#991B1B]/70 mb-1">The gap if you wait</p>
-                    <p className="text-xl font-bold text-[#991B1B]">
-                      {formatCurrency(calculations.costOfWaiting)}
-                    </p>
-                  </div>
-                </div>
+                <span>{formatCurrency(calculations.monthlyGap)}/month</span>
+                <span className="text-neutral-300">•</span>
+                <span>{formatCurrency(Math.round(calculations.totalGap / 365))}/day</span>
+                <span className="text-neutral-300">•</span>
+                <span>{formatCurrency(Math.round(calculations.totalGap / 2080))}/hour</span>
               </div>
             </div>
 
+            {/* TAB NAVIGATION */}
             <div 
-              className="bg-amber-100 rounded-2xl p-6 border-2 border-amber-300 text-center mb-10 shadow-md"
+              className="flex justify-center gap-2 mb-8"
               style={{
-                opacity: chartAnimationStage >= 5 ? 1 : 0,
-                transform: chartAnimationStage >= 5 ? "scale(1)" : "scale(0.95)",
-                transition: "all 0.4s ease-out 0.3s"
+                opacity: gapRevealStage >= 5 ? 1 : 0,
+                transition: "all 0.3s ease-out"
               }}
             >
-              <AlertTriangle className="w-8 h-8 text-amber-600 mx-auto mb-3" />
-              <p className="text-xl text-amber-900 font-bold">
-                Every month you delay = <span className="text-[#E85D3F] text-2xl">{formatCurrency(calculations.monthlyGap)}</span>
-              </p>
-              <p className="text-amber-700 mt-1">in value you'll never recapture.</p>
+              <button
+                onClick={() => setSummaryTab("drivers")}
+                className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                  summaryTab === "drivers"
+                    ? "bg-neutral-900 text-white"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
+                data-testid="tab-by-driver"
+              >
+                By Driver
+              </button>
+              <button
+                onClick={() => {
+                  setSummaryTab("time");
+                  // Trigger chart animation when switching to time tab
+                  setChartAnimationStage(0);
+                  setTimeout(() => setChartAnimationStage(1), 100);
+                  setTimeout(() => setChartAnimationStage(2), 400);
+                  setTimeout(() => setChartAnimationStage(3), 1000);
+                  setTimeout(() => setChartAnimationStage(4), 1600);
+                  setTimeout(() => setChartAnimationStage(5), 2000);
+                }}
+                className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                  summaryTab === "time"
+                    ? "bg-neutral-900 text-white"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
+                data-testid="tab-over-time"
+              >
+                Over Time
+              </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* BY DRIVER TAB */}
+            {summaryTab === "drivers" && gapRevealStage >= 5 && (
+              <div className="space-y-4 mb-8">
+                {selectedDrivers.map((driverId) => {
+                  const driver = DRIVERS.find(d => d.id === driverId);
+                  const values = calculations.driverValues[driverId];
+                  const isExpanded = expandedDrivers.includes(driverId);
+                  const Icon = driver?.icon || Users;
+                  
+                  if (!driver || !values) return null;
+                  
+                  return (
+                    <div 
+                      key={driverId} 
+                      className={`border-2 rounded-2xl overflow-hidden bg-white transition-all duration-300 ${
+                        isExpanded ? "border-emerald-300 shadow-lg" : "border-neutral-200 hover:border-neutral-300"
+                      }`}
+                    >
+                      <button
+                        onClick={() => toggleDriverExpanded(driverId)}
+                        className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
+                        data-testid={`accordion-${driverId}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                            isExpanded ? "bg-emerald-100" : "bg-neutral-100"
+                          }`}>
+                            <Icon className={`w-5 h-5 transition-colors ${isExpanded ? "text-emerald-600" : "text-neutral-600"}`} />
+                          </div>
+                          <span className="font-semibold text-neutral-900">{driver.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-bold text-emerald-600">+{formatCurrency(values.gap)}/year</span>
+                          <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                        </div>
+                      </button>
+                      
+                      {isExpanded && (
+                        <div className="px-5 pb-5 border-t border-neutral-100">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="bg-neutral-100 rounded-xl p-4">
+                              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Your Current</p>
+                              <div className="space-y-1 text-sm text-neutral-600 font-mono">
+                                {values.theirCalc.map((line, i) => <p key={i}>{line}</p>)}
+                              </div>
+                              <p className="mt-3 text-xl font-bold text-neutral-600">{formatCurrency(values.their)}/year</p>
+                            </div>
+                            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                              <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3">With Abridge</p>
+                              <div className="space-y-1 text-sm text-neutral-700 font-mono">
+                                {values.abridgeCalc.map((line, i) => <p key={i}>{line}</p>)}
+                              </div>
+                              <p className="mt-3 text-xl font-bold text-neutral-900">{formatCurrency(values.abridge)}/year</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Total Summary */}
+                <div className="bg-white rounded-xl p-5 border-2 border-emerald-400">
+                  <div className="space-y-2 mb-3">
+                    {selectedDrivers.map((driverId) => {
+                      const driver = DRIVERS.find(d => d.id === driverId);
+                      const values = calculations.driverValues[driverId];
+                      return (
+                        <div key={driverId} className="flex justify-between text-sm">
+                          <span className="text-neutral-600">{driver?.name}</span>
+                          <span className="font-medium text-emerald-600">+{formatCurrency(values?.gap || 0)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="border-t border-neutral-200 pt-3">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-semibold text-neutral-900">TOTAL ANNUAL GAP</span>
+                      <span className="text-2xl font-bold text-emerald-600">{formatCurrency(calculations.totalGap)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* OVER TIME TAB */}
+            {summaryTab === "time" && (
+              <div className="mb-8">
+                <div className="bg-white rounded-2xl p-6 border-2 border-neutral-200 mb-6">
+                  <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4">3-Year Cumulative Value</p>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                        <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#6B7280" }} stroke="#D1D5DB" />
+                        <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} tick={{ fontSize: 11, fill: "#6B7280" }} stroke="#D1D5DB" />
+                        <Tooltip 
+                          formatter={(value: number) => [formatCurrency(value), "Cumulative Value"]}
+                          contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB' }}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="abridge" 
+                          stroke="#10B981" 
+                          strokeWidth={3}
+                          fill="url(#abridgeGradient)"
+                          style={{
+                            strokeDasharray: 2000,
+                            strokeDashoffset: chartAnimationStage >= 3 ? 0 : 2000,
+                            transition: "stroke-dashoffset 2s ease-out",
+                            fillOpacity: chartAnimationStage >= 4 ? 1 : 0
+                          }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Simple 3-column comparison */}
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                    <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">Start Now</p>
+                    <p className="text-xl md:text-2xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearTotal)}</p>
+                  </div>
+                  <div className="bg-red-50 rounded-xl p-4 border border-red-200">
+                    <p className="text-xs font-semibold text-red-600 uppercase mb-1">Start in 6mo</p>
+                    <p className="text-xl md:text-2xl font-bold text-red-500">{formatCurrency(calculations.waitThreeYearTotal)}</p>
+                  </div>
+                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                    <p className="text-xs font-semibold text-amber-600 uppercase mb-1">Gap</p>
+                    <p className="text-xl md:text-2xl font-bold text-amber-600">{formatCurrency(calculations.costOfWaiting)}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ASSUMPTIONS FOOTER */}
+            <div 
+              className="mb-6"
+              style={{
+                opacity: gapRevealStage >= 6 ? 1 : 0,
+                transition: "all 0.3s ease-out"
+              }}
+            >
+              <button
+                onClick={() => setShowAssumptions(!showAssumptions)}
+                className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700"
+              >
+                <Lightbulb className="w-4 h-4" />
+                <span>{showAssumptions ? "Hide" : "View"} assumptions</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showAssumptions ? "rotate-180" : ""}`} />
+              </button>
+              {showAssumptions && (
+                <div className="mt-3 bg-neutral-50 rounded-xl p-4 border border-neutral-200 text-xs text-neutral-600">
+                  <p><strong>Utilization:</strong> {utilization}% current vs {ABRIDGE_BENCHMARKS.utilization}% Abridge</p>
+                  <p><strong>Time savings:</strong> {timeSavings} min vs {ABRIDGE_BENCHMARKS.timeSavings} min Abridge</p>
+                  <p><strong>wRVU rate:</strong> ~$45/wRVU • <strong>Overtime rate:</strong> ~$100/hr</p>
+                </div>
+              )}
+            </div>
+
+            {/* ACTION BAR */}
+            <div 
+              className="flex flex-col sm:flex-row items-center justify-center gap-3"
+              style={{
+                opacity: gapRevealStage >= 6 ? 1 : 0,
+                transition: "all 0.3s ease-out 0.1s"
+              }}
+            >
               <Button
                 variant="outline"
-                className="border-2 border-[#E85D3F] text-[#E85D3F] hover:bg-[#E85D3F]/5 px-8 py-4 h-auto text-base font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                data-testid="button-save-analysis"
+                className="border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-50 px-6 py-3 h-auto text-sm font-semibold rounded-xl"
+                onClick={() => setStep(3)}
+                data-testid="button-edit-model"
               >
-                <Download className="w-5 h-5 mr-2" />
-                Save This Analysis
+                Edit Model
               </Button>
               <Button
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-4 h-auto text-lg font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
+                variant="outline"
+                className="border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-50 px-6 py-3 h-auto text-sm font-semibold rounded-xl"
+                data-testid="button-copy-link"
+              >
+                Copy Link
+              </Button>
+              <Button
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-bold rounded-xl shadow-lg"
                 data-testid="button-lets-talk"
               >
                 <MessageSquare className="w-5 h-5 mr-2" />
                 Let's Talk
               </Button>
             </div>
-            
-            <p className="text-center text-sm text-neutral-400 mt-8">
-              All assumptions and methodology can be adjusted in conversation.
-            </p>
           </div>
         )}
       </main>
