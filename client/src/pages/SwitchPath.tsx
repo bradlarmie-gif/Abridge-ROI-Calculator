@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
-import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import abridgeLogo from "@assets/abridge-logo-symbol-500x300_1768935221852.png";
 
 const spectrumStyles = `
 @keyframes scaleX {
@@ -1318,7 +1318,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               className="hover:opacity-70 transition-opacity cursor-pointer"
               data-testid="button-logo-home"
             >
-              <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+              <img src={abridgeLogo} alt="Abridge" className="h-6 md:h-7" />
             </button>
             <span className="text-xs md:text-sm font-medium text-neutral-400 tracking-wide">SWITCH</span>
           </div>
