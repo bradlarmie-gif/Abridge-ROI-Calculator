@@ -2489,33 +2489,26 @@ export default function ObjectiveSelectionScreen({
             </h2>
             
             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
-              <p className="text-lg font-semibold text-[#111827] mb-2">Build a model for your organization</p>
-              <p className="text-sm text-[#6B7280] leading-relaxed">
-                Each care setting has unique documentation workflows, encounter patterns, and value drivers. Your selection determines the baseline assumptions throughout this calculator.
+              <p className="text-base text-[#6B7280] leading-relaxed mb-4">
+                Each care setting has unique documentation workflows and value drivers. Your selection determines the baseline assumptions throughout this calculator.
               </p>
-              <p className="text-[13px] text-[#6B7280] mt-4 flex items-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5" /> Based on data from 200+ health system partners
-              </p>
-            </div>
-
-            <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg px-5 py-4 mb-8 flex items-start gap-3">
-              <Lightbulb className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-semibold text-[#1E40AF] mb-3">Why care setting matters</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium text-[#1E40AF]">Workflows differ by setting—so ROI drivers differ too. <em>Example:</em> Emergency departments prioritize throughput; outpatient prioritizes patient access.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium text-[#1E40AF]">This sets the assumptions used throughout the model.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium text-[#1E40AF]">You'll get a tailored output you can share.</span>
-                  </li>
-                </ul>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[#6B7280]">
+                <span className="flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-[#10B981]" />
+                  Setting-specific ROI drivers
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-[#10B981]" />
+                  Tailored assumptions
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-[#10B981]" />
+                  Shareable output
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  Based on 200+ health system partners
+                </span>
               </div>
             </div>
 
