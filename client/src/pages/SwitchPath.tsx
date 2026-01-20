@@ -2460,7 +2460,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               const state = getEfficiencyState();
                               return (
                                 <div className={`rounded-lg p-3 border transition-all ${
-                                  state.enabled ? "bg-neutral-50 border-neutral-200" : "bg-neutral-100/50 border-neutral-200/50 opacity-60"
+                                  state.enabled ? "bg-neutral-100 border-neutral-300" : "bg-neutral-50/50 border-neutral-200/50 opacity-60"
                                 }`}>
                                   <div className="flex items-start gap-2 mb-2">
                                     <input
@@ -2496,7 +2496,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                               value={currentValue}
                                               onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
                                               type={step.editable.type}
-                                              suffix={step.editable.type === 'percent' ? '%' : ''}
+                                              suffix=""
                                               prefix={step.editable.type === 'currency' ? '$' : ''}
                                               testId={`edit-${step.editable.driverId}-${step.editable.key}`}
                                             />
@@ -2534,7 +2534,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               const state = getUtilizationState();
                               return (
                                 <div className={`rounded-lg p-3 border transition-all ${
-                                  state.enabled ? "bg-neutral-50 border-neutral-200" : "bg-neutral-100/50 border-neutral-200/50 opacity-60"
+                                  state.enabled ? "bg-neutral-100 border-neutral-300" : "bg-neutral-50/50 border-neutral-200/50 opacity-60"
                                 }`}>
                                   <div className="flex items-start gap-2 mb-2">
                                     <input
@@ -2570,7 +2570,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                               value={currentValue}
                                               onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
                                               type={step.editable.type}
-                                              suffix={step.editable.type === 'percent' ? '%' : ''}
+                                              suffix=""
                                               prefix={step.editable.type === 'currency' ? '$' : ''}
                                               testId={`edit-${step.editable.driverId}-${step.editable.key}`}
                                             />
@@ -2608,7 +2608,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               const state = getDirectState();
                               return (
                                 <div className={`rounded-lg p-3 border transition-all ${
-                                  state.enabled ? "bg-neutral-50 border-neutral-200" : "bg-neutral-100/50 border-neutral-200/50 opacity-60"
+                                  state.enabled ? "bg-neutral-100 border-neutral-300" : "bg-neutral-50/50 border-neutral-200/50 opacity-60"
                                 }`}>
                                   <div className="flex items-start gap-2 mb-2">
                                     <input
@@ -2644,7 +2644,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                               value={currentValue}
                                               onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
                                               type={step.editable.type}
-                                              suffix={step.editable.type === 'percent' ? '%' : ''}
+                                              suffix=""
                                               prefix={step.editable.type === 'currency' ? '$' : ''}
                                               testId={`edit-${step.editable.driverId}-${step.editable.key}`}
                                             />
