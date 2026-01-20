@@ -617,7 +617,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   };
 
   const handleContinue = () => {
-    const maxStep = isScribePath ? 8 : 7;
+    const maxStep = isScribePath ? 7 : 7;
     if (step < maxStep) {
       setStep((step + 1) as Step);
     }
@@ -681,7 +681,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
           
           <div className="flex items-center gap-1 md:gap-1.5">
-            {(isScribePath ? [1, 2, 3, 4, 5, 6, 7, 8] : [1, 2, 3, 4, 5, 6, 7]).map((s) => (
+            {(isScribePath ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4, 5, 6, 7]).map((s) => (
               <div
                 key={s}
                 className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full transition-all ${
@@ -1598,133 +1598,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
             <div className="mt-10 flex justify-end">
               <Button
-                onClick={handleContinue}
+                onClick={() => setStep(7)}
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step6-scribe"
-              >
-                See what else Abridge adds
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Human Scribes Step 7: What Scribes Can't Do */}
-        {step === 7 && isScribePath && (
-          <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step7-scribe-title">
-              What scribes can't do
-            </h1>
-            <p className="text-lg text-neutral-500 mb-10">Abridge isn't just documentation — it's documentation intelligence.</p>
-
-            <div className="bg-neutral-50 rounded-2xl p-6 md:p-8 mb-8">
-              <p className="text-neutral-700 mb-6">Your scribes document encounters. Abridge does that <strong>AND</strong> helps with:</p>
-              
-              <div className="space-y-4">
-                {/* Coding Accuracy Toggle */}
-                <button
-                  onClick={() => setSelectedScribeDrivers(prev => 
-                    prev.includes("coding") ? prev.filter(d => d !== "coding") : [...prev, "coding"]
-                  )}
-                  className={`w-full p-5 rounded-xl border-2 transition-all text-left ${
-                    selectedScribeDrivers.includes("coding")
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-neutral-200 bg-white hover:border-neutral-300"
-                  }`}
-                  data-testid="toggle-coding"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      selectedScribeDrivers.includes("coding")
-                        ? "bg-emerald-500 border-emerald-500"
-                        : "border-neutral-300"
-                    }`}>
-                      {selectedScribeDrivers.includes("coding") && (
-                        <Check className="w-4 h-4 text-white" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-neutral-900">Coding Accuracy</p>
-                      <p className="text-sm text-neutral-600 mt-1">Suggests appropriate E/M levels based on documentation</p>
-                      <p className="text-sm text-emerald-600 mt-2 font-medium">Typical improvement: 3-6% wRVU uplift</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Denial Prevention Toggle */}
-                <button
-                  onClick={() => setSelectedScribeDrivers(prev => 
-                    prev.includes("denials") ? prev.filter(d => d !== "denials") : [...prev, "denials"]
-                  )}
-                  className={`w-full p-5 rounded-xl border-2 transition-all text-left ${
-                    selectedScribeDrivers.includes("denials")
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-neutral-200 bg-white hover:border-neutral-300"
-                  }`}
-                  data-testid="toggle-denials"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      selectedScribeDrivers.includes("denials")
-                        ? "bg-emerald-500 border-emerald-500"
-                        : "border-neutral-300"
-                    }`}>
-                      {selectedScribeDrivers.includes("denials") && (
-                        <Check className="w-4 h-4 text-white" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-neutral-900">Denial Prevention</p>
-                      <p className="text-sm text-neutral-600 mt-1">Better documentation quality = fewer claim rejections</p>
-                      <p className="text-sm text-emerald-600 mt-2 font-medium">Typical improvement: 20-30% reduction</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* HCC Capture Toggle */}
-                <button
-                  onClick={() => setSelectedScribeDrivers(prev => 
-                    prev.includes("hcc") ? prev.filter(d => d !== "hcc") : [...prev, "hcc"]
-                  )}
-                  className={`w-full p-5 rounded-xl border-2 transition-all text-left ${
-                    selectedScribeDrivers.includes("hcc")
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-neutral-200 bg-white hover:border-neutral-300"
-                  }`}
-                  data-testid="toggle-hcc"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      selectedScribeDrivers.includes("hcc")
-                        ? "bg-emerald-500 border-emerald-500"
-                        : "border-neutral-300"
-                    }`}>
-                      {selectedScribeDrivers.includes("hcc") && (
-                        <Check className="w-4 h-4 text-white" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-neutral-900">HCC / Chronic Condition Capture</p>
-                      <p className="text-sm text-neutral-600 mt-1">Surfaces conditions for proper risk adjustment</p>
-                      <p className="text-sm text-emerald-600 mt-2 font-medium">Typical improvement: 10-15% capture rate</p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/50">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> These apply to ALL providers with Abridge access, not just those who had scribes.
-                We'll apply conservative estimates in your summary.
-              </p>
-            </div>
-
-            <div className="mt-12 flex justify-end">
-              <Button
-                onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
-                data-testid="button-continue-step7-scribe"
               >
                 Calculate my value
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -2132,8 +2008,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {/* Human Scribes Step 8: Summary Dashboard */}
-        {step === 8 && isScribePath && (() => {
+        {/* Human Scribes Step 7: Summary Dashboard */}
+        {step === 7 && isScribePath && (() => {
           const monthlySpend = Math.round(totalCurrentCost / 12);
           const dailySpend = Math.round(totalCurrentCost / 260); // ~260 business days
           const hourlySpend = Math.round(totalCurrentCost / (260 * 8)); // 8 hours per day
@@ -2263,7 +2139,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 Assumptions: {providersWithScribes} scribes, ${scribeHourlyCost}/hr, {scribeHoursPerWeek} hrs/week, {scribeTurnoverRate}% turnover
               </p>
               <button 
-                onClick={() => setStep(4)}
+                onClick={() => setStep(5)}
                 className="text-xs text-neutral-500 hover:text-neutral-700 underline mt-1"
                 data-testid="button-view-edit-assumptions"
               >
