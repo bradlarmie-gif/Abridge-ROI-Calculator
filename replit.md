@@ -71,7 +71,14 @@ The application operates entirely client-side, providing a responsive and intera
   - Formula: (encounters × utilization × emBillableRate × wRVU/enc × uplift%) × $/wRVU
   - Single toggle (losEnabled) instead of two separate pathways
   - Transparent step-by-step breakdown in UI: encounters → E/M billable → baseline wRVUs → Abridge uplift → incremental wRVUs → dollar value
-  - **Generalized UI Helpers**: getEfficiencyState, getUtilizationState, getDirectState functions provide consistent pathway rendering across all drivers
+- **PathwayCard Component (January 2026)**: Progressive disclosure pattern for driver pathways:
+  - **Collapsed State**: Checkbox + title + value (emerald-600) + one-liner summary (~60px height)
+  - **Expanded State**: Clean table layout with editable inline inputs (tabular-nums, not monospace)
+  - **One-liner Summaries**: PATHWAY_SUMMARIES generators create readable formulas (e.g., "10% of 12,500 hours → visits @ $200")
+  - **Color Discipline**: Coral (#E85D3F) ONLY for CTAs; emerald-600 for positive values; neutral focus rings on inputs
+  - **Consistent Disabled State**: Both collapsed and expanded views show $0 in gray (text-neutral-400)
+  - **Smooth Animations**: 200ms transitions for expand/collapse
+  - **Test IDs**: pathway-toggle-{prefix}, pathway-checkbox-{prefix}, pathway-collapse-{prefix}, pathway-reset-{prefix}
 
 ## User Preferences
 
