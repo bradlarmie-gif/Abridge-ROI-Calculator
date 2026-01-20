@@ -3319,14 +3319,10 @@ export default function ModelBuilder({
                     <span className="text-xs text-[#6B7280] uppercase tracking-wider">Net Gain</span>
                     <div className="font-mono font-bold text-2xl text-[#E85D3F]">{formatCurrency(netGain)}/yr</div>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-center text-sm">
                     <div className="text-center">
                       <div className="font-mono font-semibold text-[#111827]">{roiMultiple.toFixed(1)}x</div>
                       <div className="text-xs text-[#6B7280]">ROI</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-mono font-semibold text-[#111827]">{paybackMonths} mo</div>
-                      <div className="text-xs text-[#6B7280]">Payback</div>
                     </div>
                   </div>
                 </div>
