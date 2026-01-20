@@ -1332,7 +1332,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <div className="bg-neutral-50 rounded-2xl p-6 md:p-8 space-y-8">
               <div>
                 <p className="text-sm font-semibold text-neutral-600 uppercase tracking-wide mb-4">Your Current Coverage</p>
-                <div className="relative h-10 rounded-full overflow-hidden bg-neutral-200">
+                <div className="relative h-12 rounded-full overflow-hidden bg-neutral-200">
                   <div 
                     className="absolute inset-y-0 left-0 bg-neutral-500 flex items-center justify-end pr-3"
                     style={{ width: `${coveragePercent}%` }}
@@ -1358,14 +1358,14 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
               <div className="border-t border-neutral-200 pt-6">
                 <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-4">With Abridge</p>
-                <div className="relative h-10 rounded-full overflow-hidden bg-emerald-500">
+                <div className="relative h-12 rounded-full overflow-hidden bg-emerald-500">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">All {providers} providers have ACCESS to Abridge</span>
+                    <span className="text-sm font-bold text-white">All {providers} providers have access to Abridge</span>
                   </div>
                 </div>
                 <div className="mt-3 space-y-1">
                   <p className="text-center text-sm text-emerald-600 font-medium">
-                    Average utilization: {Math.round(ABRIDGE_UTILIZATION * 100)}% based on industry benchmarks
+                    Average utilization: {Math.round(ABRIDGE_UTILIZATION * 100)}% based on Abridge partner benchmarks
                   </p>
                   <p className="text-center text-xs text-neutral-400">
                     No per-provider cost barrier to scale
