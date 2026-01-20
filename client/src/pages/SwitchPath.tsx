@@ -2368,9 +2368,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </button>
             </div>
 
-            {/* BY DRIVER TAB */}
+            {/* BY DRIVER TAB - Start collapsed by default */}
             {summaryTab === "drivers" && gapRevealStage >= 5 && (
-              <div className="space-y-4 mb-8">
+              <div className="space-y-2 mb-8">
                 {selectedDrivers.map((driverId) => {
                   const driver = DRIVERS.find(d => d.id === driverId);
                   const values = calculations.driverValues[driverId];
@@ -2382,45 +2382,41 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   return (
                     <div 
                       key={driverId} 
-                      className={`border-2 rounded-2xl overflow-hidden bg-white transition-all duration-300 ${
-                        isExpanded ? "border-emerald-300 shadow-lg" : "border-neutral-200 hover:border-neutral-300"
+                      className={`rounded-xl overflow-hidden bg-white transition-all duration-300 ${
+                        isExpanded ? "border-2 border-emerald-300 shadow-md" : "border border-neutral-200 hover:border-neutral-300"
                       }`}
                     >
                       <button
                         onClick={() => toggleDriverExpanded(driverId)}
-                        className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
+                        className="w-full p-4 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
                         data-testid={`accordion-${driverId}`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                            isExpanded ? "bg-emerald-100" : "bg-neutral-100"
-                          }`}>
-                            <Icon className={`w-5 h-5 transition-colors ${isExpanded ? "text-emerald-600" : "text-neutral-600"}`} />
-                          </div>
-                          <span className="font-semibold text-neutral-900">{driver.name}</span>
+                          <Icon className="w-5 h-5 text-neutral-500" />
+                          <span className="font-medium text-neutral-900">{driver.name}</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg font-bold text-emerald-600">+{formatCurrency(values.gap)}/year</span>
-                          <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                        <div className="flex items-center gap-2">
+                          <span className="text-base font-bold text-emerald-600">+{formatCurrency(values.gap)}/yr</span>
+                          <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                         </div>
                       </button>
                       
                       {isExpanded && (
-                        <div className="px-5 pb-5 border-t border-neutral-100">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div className="bg-neutral-100 rounded-xl p-4">
-                              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Your Current</p>
-                              <div className="space-y-1 text-sm text-neutral-600 font-mono">
+                        <div className="px-4 pb-4 border-t border-neutral-100">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            <div className="bg-neutral-100 rounded-lg p-3">
+                              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Your Current</p>
+                              <div className="space-y-0.5 text-xs text-neutral-600 font-mono">
                                 {values.theirCalc.map((line, i) => <p key={i}>{line}</p>)}
                               </div>
-                              <p className="mt-3 text-xl font-bold text-neutral-600">{formatCurrency(values.their)}/year</p>
+                              <p className="mt-2 text-lg font-bold text-neutral-600">{formatCurrency(values.their)}/yr</p>
                             </div>
-                            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-                              <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3">With Abridge</p>
-                              <div className="space-y-1 text-sm text-neutral-700 font-mono">
+                            <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                              <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">With Abridge</p>
+                              <div className="space-y-0.5 text-xs text-neutral-700 font-mono">
                                 {values.abridgeCalc.map((line, i) => <p key={i}>{line}</p>)}
                               </div>
-                              <p className="mt-3 text-xl font-bold text-neutral-900">{formatCurrency(values.abridge)}/year</p>
+                              <p className="mt-2 text-lg font-bold text-neutral-900">{formatCurrency(values.abridge)}/yr</p>
                             </div>
                           </div>
                         </div>
@@ -2429,25 +2425,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   );
                 })}
 
-                {/* Total Summary */}
-                <div className="bg-white rounded-xl p-5 border-2 border-emerald-400">
-                  <div className="space-y-2 mb-3">
-                    {selectedDrivers.map((driverId) => {
-                      const driver = DRIVERS.find(d => d.id === driverId);
-                      const values = calculations.driverValues[driverId];
-                      return (
-                        <div key={driverId} className="flex justify-between text-sm">
-                          <span className="text-neutral-600">{driver?.name}</span>
-                          <span className="font-medium text-emerald-600">+{formatCurrency(values?.gap || 0)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="border-t border-neutral-200 pt-3">
-                    <div className="flex justify-between items-baseline">
-                      <span className="font-semibold text-neutral-900">TOTAL ANNUAL GAP</span>
-                      <span className="text-2xl font-bold text-emerald-600">{formatCurrency(calculations.totalGap)}</span>
-                    </div>
+                {/* Total Summary - Compact */}
+                <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-neutral-600">TOTAL ANNUAL GAP</span>
+                    <span className="text-xl font-bold text-emerald-600">{formatCurrency(calculations.totalGap)}/year</span>
                   </div>
                 </div>
               </div>
@@ -2456,15 +2438,15 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             {/* OVER TIME TAB */}
             {summaryTab === "time" && (
               <div className="mb-8">
-                <div className="bg-white rounded-2xl p-6 border-2 border-neutral-200 mb-6">
-                  <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4">3-Year Cumulative Value</p>
-                  <div className="h-64">
+                <div className="bg-white rounded-xl p-5 border border-neutral-200 mb-4">
+                  <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">3-Year Cumulative Value</p>
+                  <div className="h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
                           <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.25}/>
+                            <stop offset="95%" stopColor="#10B981" stopOpacity={0.02}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -2492,27 +2474,68 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                 </div>
 
-                {/* Simple 3-column comparison */}
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-                    <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">Start Now</p>
-                    <p className="text-xl md:text-2xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearTotal)}</p>
+                {/* Single clear comparison block */}
+                <div className="bg-neutral-50 rounded-xl p-5 border border-neutral-200">
+                  <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">3-Year Value</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-neutral-600">Switch today:</span>
+                      <span className="text-lg font-bold text-emerald-600">{formatCurrency(calculations.threeYearTotal)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-neutral-600">Wait 6 months:</span>
+                      <span className="text-lg font-bold text-neutral-500">{formatCurrency(calculations.waitThreeYearTotal)}</span>
+                    </div>
+                    <div className="border-t border-neutral-300 pt-2 mt-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-neutral-900">Cost of waiting:</span>
+                        <span className="text-xl font-bold text-[#E85D3F]">{formatCurrency(calculations.costOfWaiting)}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-                    <p className="text-xs font-semibold text-red-600 uppercase mb-1">Start in 6mo</p>
-                    <p className="text-xl md:text-2xl font-bold text-red-500">{formatCurrency(calculations.waitThreeYearTotal)}</p>
-                  </div>
-                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
-                    <p className="text-xs font-semibold text-amber-600 uppercase mb-1">Gap</p>
-                    <p className="text-xl md:text-2xl font-bold text-amber-600">{formatCurrency(calculations.costOfWaiting)}</p>
-                  </div>
+                  <p className="text-sm text-neutral-500 mt-4 pt-3 border-t border-neutral-200">
+                    That's <span className="font-semibold text-neutral-700">{formatCurrency(Math.round(calculations.costOfWaiting / 6))}/month</span> you can never recapture.
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* ASSUMPTIONS FOOTER */}
+            {/* THE DECISION SECTION */}
             <div 
-              className="mb-6"
+              className="bg-neutral-900 rounded-xl p-6 mb-6 text-white"
+              style={{
+                opacity: gapRevealStage >= 6 ? 1 : 0,
+                transition: "all 0.4s ease-out"
+              }}
+            >
+              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-3">The Decision</p>
+              <p className="text-base text-neutral-300 mb-4">
+                You already invested in ambient AI. The question is whether you're getting full value.
+              </p>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                  <span className="text-neutral-300">Your utilization: <span className="font-semibold text-white">{utilization}%</span> <span className="text-neutral-500">(Abridge avg: {ABRIDGE_BENCHMARKS.utilization}%)</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                  <span className="text-neutral-300">Your time savings: <span className="font-semibold text-white">{timeSavings} min</span> <span className="text-neutral-500">(Abridge avg: {ABRIDGE_BENCHMARKS.timeSavings} min)</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-neutral-300">Annual gap: <span className="font-bold text-emerald-400">{formatCurrency(calculations.totalGap)}</span></span>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-neutral-700">
+                <p className="text-sm text-neutral-400">
+                  Every month you stay at current state costs <span className="font-semibold text-[#E85D3F]">~{formatCurrency(calculations.monthlyGap)}</span> in value you could be capturing.
+                </p>
+              </div>
+            </div>
+
+            {/* ASSUMPTIONS - Subtle toggle */}
+            <div 
+              className="mb-8"
               style={{
                 opacity: gapRevealStage >= 6 ? 1 : 0,
                 transition: "all 0.3s ease-out"
@@ -2520,51 +2543,53 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             >
               <button
                 onClick={() => setShowAssumptions(!showAssumptions)}
-                className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700"
+                className="flex items-center gap-2 text-xs text-neutral-400 hover:text-neutral-600"
               >
-                <Lightbulb className="w-4 h-4" />
+                <Settings className="w-3.5 h-3.5" />
                 <span>{showAssumptions ? "Hide" : "View"} assumptions</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${showAssumptions ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAssumptions ? "rotate-180" : ""}`} />
               </button>
               {showAssumptions && (
-                <div className="mt-3 bg-neutral-50 rounded-xl p-4 border border-neutral-200 text-xs text-neutral-600">
-                  <p><strong>Utilization:</strong> {utilization}% current vs {ABRIDGE_BENCHMARKS.utilization}% Abridge</p>
-                  <p><strong>Time savings:</strong> {timeSavings} min vs {ABRIDGE_BENCHMARKS.timeSavings} min Abridge</p>
-                  <p><strong>wRVU rate:</strong> ~$45/wRVU • <strong>Overtime rate:</strong> ~$100/hr</p>
+                <div className="mt-2 bg-neutral-50 rounded-lg p-3 border border-neutral-200 text-xs text-neutral-500">
+                  <p>Utilization: {utilization}% → {ABRIDGE_BENCHMARKS.utilization}% • Time: {timeSavings} → {ABRIDGE_BENCHMARKS.timeSavings} min • wRVU: $45 • OT: $100/hr</p>
                 </div>
               )}
             </div>
 
-            {/* ACTION BAR */}
+            {/* ACTION BAR - Improved hierarchy */}
             <div 
-              className="flex flex-col sm:flex-row items-center justify-center gap-3"
+              className="flex flex-col items-center gap-4"
               style={{
                 opacity: gapRevealStage >= 6 ? 1 : 0,
                 transition: "all 0.3s ease-out 0.1s"
               }}
             >
+              {/* Primary CTA */}
               <Button
-                variant="outline"
-                className="border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-50 px-6 py-3 h-auto text-sm font-semibold rounded-xl"
-                onClick={() => setStep(3)}
-                data-testid="button-edit-model"
-              >
-                Edit Model
-              </Button>
-              <Button
-                variant="outline"
-                className="border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-50 px-6 py-3 h-auto text-sm font-semibold rounded-xl"
-                data-testid="button-copy-link"
-              >
-                Copy Link
-              </Button>
-              <Button
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-bold rounded-xl shadow-lg"
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-4 h-auto text-lg font-bold rounded-xl shadow-lg"
                 data-testid="button-lets-talk"
               >
                 <MessageSquare className="w-5 h-5 mr-2" />
                 Let's Talk
               </Button>
+              
+              {/* Secondary actions */}
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  className="border border-neutral-300 text-neutral-600 hover:bg-neutral-50 px-5 py-2 h-auto text-sm font-medium rounded-lg"
+                  data-testid="button-copy-link"
+                >
+                  Copy Link
+                </Button>
+                <button
+                  onClick={() => setStep(3)}
+                  className="text-sm text-neutral-500 hover:text-neutral-700 underline"
+                  data-testid="button-edit-model"
+                >
+                  Edit model
+                </button>
+              </div>
             </div>
           </div>
         )}

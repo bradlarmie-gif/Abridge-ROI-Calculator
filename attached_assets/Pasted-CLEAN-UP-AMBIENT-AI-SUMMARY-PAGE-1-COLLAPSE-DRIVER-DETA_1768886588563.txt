@@ -1,0 +1,70 @@
+CLEAN UP AMBIENT AI SUMMARY PAGE
+
+## 1. COLLAPSE DRIVER DETAILS BY DEFAULT
+
+"By Driver" tab:
+- Start with all drivers COLLAPSED (just icon + name + value)
+- User clicks to expand and see the math
+- Reduces visual overwhelm
+- The detail is there for credibility, but not forced on everyone
+
+## 2. CLARIFY THE TIME COMPARISON CARDS
+
+Current: "START NOW: $753,772 | START IN 6MO: $594,075 | GAP: $159,697"
+
+Change to a single, clear comparison block:
+┌─────────────────────────────────────────────────────────────────┐
+│  3-YEAR VALUE                                                   │
+│                                                                 │
+│  Switch today:        $753,772                                  │
+│  Wait 6 months:       $594,075                                  │
+│  ───────────────────────────────                                │
+│  Cost of waiting:     $159,697                                  │
+│                                                                 │
+│  That's $26,616 per month you can never recapture.              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+## 3. ADD "THE DECISION" SECTION
+
+After the tabs content, before action buttons:
+
+┌─────────────────────────────────────────────────────────────────┐
+│  THE DECISION                                                   │
+│                                                                 │
+│  You already invested in ambient AI.                            │
+│  The question is whether you're getting full value.             │
+│                                                                 │
+│  Based on your inputs:                                          │
+│  • Your utilization: 50% (Abridge avg: 65%)                     │
+│  • Your time savings: 1.5 min (Abridge avg: 3 min)              │
+│  • Annual gap: $255,516                                         │
+│                                                                 │
+│  Every month you stay at current state costs ~$21,293           │
+│  in value you could be capturing.                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+## 4. IMPROVE BUTTON HIERARCHY
+
+Current: [Edit Model] [Copy Link] [Let's Talk] — all similar weight
+
+Change:
+- [Let's Talk] — Primary, coral, larger
+- [Copy Link] — Secondary, outlined
+- [Edit Model] — Tertiary, text link style
+
+Consider making this section sticky or adding a clear visual break above it.
+
+## 5. GRAPH COLOR REFINEMENT (optional)
+
+- Abridge line: Keep coral or use a warmer green
+- "Stay with current" line: Gray (#9CA3AF)
+- Fill area: Subtle gradient that matches the line color
+
+## 6. ENSURE SCROLLING DOESN'T BURY THE CTA
+
+If page is long, consider:
+- Sticky footer with [Let's Talk] button
+- OR clear visual section break before actions
+- The CTA should never feel like an afterthought
