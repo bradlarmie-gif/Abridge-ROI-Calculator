@@ -3314,14 +3314,14 @@ export default function ModelBuilder({
                   </div>
                 </div>
                 
-                <div className="bg-gradient-to-br from-[#E85D3F]/10 to-[#E85D3F]/5 rounded-xl p-4 border border-[#E85D3F]/20">
+                <div className="bg-neutral-100 rounded-xl p-4 border border-neutral-200">
                   <div className="text-center mb-3">
                     <span className="text-xs text-[#6B7280] uppercase tracking-wider">Net Gain</span>
-                    <div className="font-mono font-bold text-2xl text-[#E85D3F]">{formatCurrency(netGain)}/yr</div>
+                    <div className="font-mono font-bold text-2xl text-emerald-600">{formatCurrency(netGain)}/yr</div>
                   </div>
                   <div className="flex justify-center text-sm">
                     <div className="text-center">
-                      <div className="font-mono font-semibold text-[#111827]">{roiMultiple.toFixed(1)}x</div>
+                      <div className="font-mono font-bold text-xl text-[#111827]">{roiMultiple.toFixed(1)}x</div>
                       <div className="text-xs text-[#6B7280]">ROI</div>
                     </div>
                   </div>
