@@ -1,0 +1,73 @@
+ENHANCE THE "OVER TIME" GRAPH FOR BETTER STORYTELLING
+
+## 1. ADD A SECOND LINE TO THE GRAPH
+
+Currently: Only shows Abridge cumulative value (growing line)
+
+Add: A second line for "Stay with current solution"
+- Gray color (#9CA3AF)
+- Flat or near-flat (showing minimal/no incremental value)
+- Label in legend: "Stay with current" vs "Switch to Abridge"
+
+Shade the AREA between the two lines with a light coral/green tint.
+This visually shows the gap/opportunity cost.
+
+## 2. ADD MILESTONE ANNOTATIONS ON THE GRAPH
+
+Add 2-3 small callout labels directly on or near the graph:
+
+At ~3 months mark:
+- Small label: "Quick wins" or "Early efficiency gains"
+
+At ~12 months mark:
+- Small label: "Full ramp" or "All drivers active"
+
+These can be small text labels with a subtle connecting line to the curve.
+Keep them minimal — not cluttering, just guiding.
+
+## 3. ADD RAMP-UP CONTEXT BELOW THE GRAPH
+
+Add a small explanatory note between the graph and the comparison numbers:
+
+"Value builds as utilization increases and workflows mature:
+- Months 1-3: Efficiency gains start immediately
+- Months 3-6: Utilization climbs toward 65%
+- Year 1+: Full value from all drivers"
+
+Style: Small text (14px), muted gray, subtle — not a big callout box.
+
+## 4. IMPROVE THE COMPARISON BOX
+
+Change from a simple list to a more narrative format:
+
+┌─────────────────────────────────────────────────────────────┐
+│  SWITCH TODAY                           3-year: $301,803    │
+│  ─────────────────────────────────────────────────────────  │
+│  WAIT 6 MONTHS                          3-year: $237,862    │
+│  (First 6 months of value is lost forever)                  │
+│  ─────────────────────────────────────────────────────────  │
+│  COST OF WAITING                               $63,941      │
+│  That's $10,657/month you can never recapture.              │
+└─────────────────────────────────────────────────────────────┘
+
+## 5. INTERACTIVE HOVER STATES (if not already)
+
+When hovering on the graph:
+- Show the cumulative value at that point
+- Show the date/milestone ("Month 6: $51,000 captured")
+
+This lets people explore the curve without cluttering the view.
+
+## 6. SLOW, CONFIDENT ANIMATION
+
+- Line draws over 2-3 seconds (ease-out)
+- Area fill fades in after line completes
+- Feels considered, not flashy
+
+## THE GOAL
+
+Someone looking at this graph should immediately understand:
+1. Value grows over time (the curve)
+2. Waiting costs real money (the comparison)
+3. The ramp is realistic, not magic (the annotations)
+4. The gap between "stay" and "switch" is significant (the shaded area)

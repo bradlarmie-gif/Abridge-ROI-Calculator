@@ -663,13 +663,15 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     });
   };
 
+  // Chart data with both Abridge and "Stay with current" lines
+  // Current solution shows minimal value growth (5% of Abridge value as baseline inefficiency)
   const chartData = [
-    { period: "Today", abridge: 0, current: 0 },
-    { period: "3 mo", abridge: Math.round(calculations.totalGap * calculations.ramp.month3 * 0.25), current: 0 },
-    { period: "6 mo", abridge: calculations.month6Value, current: 0 },
-    { period: "Year 1", abridge: calculations.year1Value, current: 0 },
-    { period: "Year 2", abridge: calculations.year1Value + calculations.year2Value, current: 0 },
-    { period: "Year 3", abridge: calculations.threeYearTotal, current: 0 },
+    { period: "Today", abridge: 0, current: 0, milestone: null },
+    { period: "3 mo", abridge: Math.round(calculations.totalGap * calculations.ramp.month3 * 0.25), current: Math.round(calculations.totalGap * 0.02), milestone: "Quick wins" },
+    { period: "6 mo", abridge: calculations.month6Value, current: Math.round(calculations.totalGap * 0.04), milestone: null },
+    { period: "Year 1", abridge: calculations.year1Value, current: Math.round(calculations.totalGap * 0.06), milestone: "Full ramp" },
+    { period: "Year 2", abridge: calculations.year1Value + calculations.year2Value, current: Math.round(calculations.totalGap * 0.08), milestone: null },
+    { period: "Year 3", abridge: calculations.threeYearTotal, current: Math.round(calculations.totalGap * 0.10), milestone: null },
   ];
 
   const getUtilizationStatus = (util: number) => {
@@ -2064,23 +2066,80 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               {summaryTab === "time" && (
               <div className="mb-8">
                 <div className="bg-white rounded-xl p-5 border border-neutral-200 mb-4">
-                  <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">3-Year Cumulative Value</p>
-                  <div className="h-56">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">3-Year Cumulative Value</p>
+                    <div className="flex items-center gap-4 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-0.5 bg-emerald-500 rounded" />
+                        <span className="text-neutral-600">Switch to Abridge</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-0.5 bg-neutral-400 rounded" />
+                        <span className="text-neutral-600">Stay with current</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-64 relative">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <AreaChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
                         <defs>
                           <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.25}/>
-                            <stop offset="95%" stopColor="#10B981" stopOpacity={0.02}/>
+                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+                          </linearGradient>
+                          <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.08}/>
+                            <stop offset="95%" stopColor="#E85D3F" stopOpacity={0.02}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                        <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#6B7280" }} stroke="#D1D5DB" />
-                        <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} tick={{ fontSize: 11, fill: "#6B7280" }} stroke="#D1D5DB" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
+                        <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#6B7280" }} stroke="#D1D5DB" axisLine={false} />
+                        <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} tick={{ fontSize: 11, fill: "#6B7280" }} stroke="#D1D5DB" axisLine={false} />
                         <Tooltip 
-                          formatter={(value: number) => [formatCurrency(value), "Cumulative Value"]}
-                          contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB' }}
+                          content={({ active, payload, label }) => {
+                            if (active && payload && payload.length) {
+                              const abridgeVal = payload.find(p => p.dataKey === 'abridge')?.value as number || 0;
+                              const currentVal = payload.find(p => p.dataKey === 'current')?.value as number || 0;
+                              const gap = abridgeVal - currentVal;
+                              const milestone = chartData.find(d => d.period === label)?.milestone;
+                              return (
+                                <div className="bg-white rounded-lg shadow-lg border border-neutral-200 p-3 min-w-[160px]">
+                                  <p className="text-xs font-semibold text-neutral-900 mb-2">{label}</p>
+                                  {milestone && <p className="text-xs text-emerald-600 font-medium mb-2">{milestone}</p>}
+                                  <div className="space-y-1 text-xs">
+                                    <div className="flex justify-between">
+                                      <span className="text-emerald-600">Abridge:</span>
+                                      <span className="font-semibold">{formatCurrency(abridgeVal)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-neutral-500">Current:</span>
+                                      <span className="font-semibold text-neutral-600">{formatCurrency(currentVal)}</span>
+                                    </div>
+                                    <div className="flex justify-between pt-1 border-t border-neutral-100">
+                                      <span className="text-[#E85D3F] font-medium">Gap:</span>
+                                      <span className="font-bold text-[#E85D3F]">+{formatCurrency(gap)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
                         />
+                        {/* Current solution line (gray, near-flat) */}
+                        <Area 
+                          type="monotone" 
+                          dataKey="current" 
+                          stroke="#9CA3AF" 
+                          strokeWidth={2}
+                          strokeDasharray="4 4"
+                          fill="none"
+                          style={{
+                            opacity: chartAnimationStage >= 3 ? 1 : 0,
+                            transition: "opacity 0.5s ease-out"
+                          }}
+                        />
+                        {/* Abridge value line (emerald, growing) */}
                         <Area 
                           type="monotone" 
                           dataKey="abridge" 
@@ -2090,37 +2149,67 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                           style={{
                             strokeDasharray: 2000,
                             strokeDashoffset: chartAnimationStage >= 3 ? 0 : 2000,
-                            transition: "stroke-dashoffset 2s ease-out",
+                            transition: "stroke-dashoffset 2.5s ease-out",
                             fillOpacity: chartAnimationStage >= 4 ? 1 : 0
                           }}
                         />
+                        {/* Milestone annotations */}
+                        <ReferenceLine x="3 mo" stroke="transparent" label={{ value: "Quick wins", position: "top", fill: "#10B981", fontSize: 10, fontWeight: 500, dy: -5 }} />
+                        <ReferenceLine x="Year 1" stroke="transparent" label={{ value: "Full ramp", position: "top", fill: "#10B981", fontSize: 10, fontWeight: 500, dy: -5 }} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
-                {/* Single clear comparison block */}
-                <div className="bg-neutral-50 rounded-xl p-5 border border-neutral-200">
-                  <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">3-Year Value</p>
-                  <div className="space-y-2">
+                {/* Ramp-up context */}
+                <div className="px-1 mb-4">
+                  <p className="text-sm text-neutral-500 leading-relaxed">
+                    <span className="font-medium text-neutral-600">Value builds as utilization increases:</span>{" "}
+                    Months 1-3: efficiency gains start immediately. Months 3-6: utilization climbs toward 65%. Year 1+: full value from all drivers.
+                  </p>
+                </div>
+
+                {/* Improved narrative comparison block */}
+                <div className="bg-neutral-50 rounded-xl border border-neutral-200 overflow-hidden">
+                  {/* Switch Today row */}
+                  <div className="p-4 border-b border-neutral-200">
                     <div className="flex justify-between items-center">
-                      <span className="text-neutral-600">Switch today:</span>
-                      <span className="text-lg font-bold text-emerald-600">{formatCurrency(calculations.threeYearTotal)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-600">Wait 6 months:</span>
-                      <span className="text-lg font-bold text-neutral-500">{formatCurrency(calculations.waitThreeYearTotal)}</span>
-                    </div>
-                    <div className="border-t border-neutral-300 pt-2 mt-2">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-neutral-900">Cost of waiting:</span>
-                        <span className="text-xl font-bold text-[#E85D3F]">{formatCurrency(calculations.costOfWaiting)}</span>
+                      <div>
+                        <p className="text-sm font-semibold text-emerald-700 uppercase tracking-wide">Switch Today</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-neutral-500 mb-0.5">3-year value</p>
+                        <p className="text-xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearTotal)}</p>
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-neutral-500 mt-4 pt-3 border-t border-neutral-200">
-                    That's <span className="font-semibold text-neutral-700">{formatCurrency(Math.round(calculations.costOfWaiting / 6))}/month</span> you can never recapture.
-                  </p>
+                  
+                  {/* Wait 6 Months row */}
+                  <div className="p-4 border-b border-neutral-200 bg-neutral-100/50">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm font-semibold text-neutral-600 uppercase tracking-wide">Wait 6 Months</p>
+                        <p className="text-xs text-neutral-500 mt-0.5">First 6 months of value is lost forever</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-neutral-500 mb-0.5">3-year value</p>
+                        <p className="text-xl font-bold text-neutral-500">{formatCurrency(calculations.waitThreeYearTotal)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Cost of Waiting row */}
+                  <div className="p-4 bg-[#E85D3F]/5">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm font-bold text-[#E85D3F] uppercase tracking-wide">Cost of Waiting</p>
+                        <p className="text-xs text-neutral-600 mt-0.5">
+                          That's <span className="font-semibold">{formatCurrency(Math.round(calculations.costOfWaiting / 6))}/month</span> you can never recapture.
+                        </p>
+                      </div>
+                      <p className="text-2xl font-bold text-[#E85D3F]">{formatCurrency(calculations.costOfWaiting)}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
               )}
