@@ -284,46 +284,32 @@ function EditableInput({ value, onChange, type, min = 0, max, suffix = "", prefi
   
   const displayValue = type === "currency" ? value.toLocaleString() : value;
   
-  if (editing) {
-    return (
-      <span className="inline-flex items-center">
-        {prefix && <span className="text-neutral-500">{prefix}</span>}
-        <input
-          type="number"
-          value={tempValue}
-          onChange={(e) => {
-            setTempValue(e.target.value);
-            const num = parseFloat(e.target.value);
-            setError(!isNaN(num) && !validate(num));
-          }}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          autoFocus
-          className={`w-16 px-1 py-0.5 text-center font-mono text-sm bg-white border rounded focus:outline-none focus:ring-1 ${
-            error ? "border-red-400 focus:ring-red-300" : "border-neutral-300 focus:ring-emerald-300"
-          } ${className}`}
-          data-testid={testId}
-        />
-        {suffix && <span className="text-neutral-500">{suffix}</span>}
-      </span>
-    );
-  }
-  
+  // Always show as a visible input field - not hidden until clicked
   return (
-    <span 
-      onClick={() => {
-        setTempValue(String(value));
-        setEditing(true);
-      }}
-      className={`inline-flex items-center cursor-pointer hover:bg-neutral-100 px-1 py-0.5 rounded transition-colors group ${className}`}
-      title="Click to edit"
-      data-testid={testId}
-    >
-      {prefix && <span className="text-neutral-500">{prefix}</span>}
-      <span className="font-mono text-sm text-neutral-800 border-b border-dashed border-neutral-300 group-hover:border-emerald-400">
-        {displayValue}
-      </span>
-      {suffix && <span className="text-neutral-500">{suffix}</span>}
+    <span className="inline-flex items-center">
+      {prefix && <span className="text-neutral-500 mr-0.5">{prefix}</span>}
+      <input
+        type={editing ? "number" : "text"}
+        value={editing ? tempValue : displayValue}
+        onChange={(e) => {
+          setTempValue(e.target.value);
+          const num = parseFloat(e.target.value);
+          setError(!isNaN(num) && !validate(num));
+        }}
+        onFocus={() => {
+          setTempValue(String(value));
+          setEditing(true);
+        }}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className={`min-w-[50px] w-auto px-2 py-1 text-right font-mono text-sm rounded transition-all outline-none
+          bg-neutral-50 border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-100 cursor-text
+          focus:bg-white focus:border-2 focus:border-[#E85D3F] focus:ring-1 focus:ring-[#E85D3F]/30
+          ${error ? "!border-red-400 !focus:ring-red-300" : ""} ${className}`}
+        style={{ width: `${Math.max(50, String(displayValue).length * 10 + 20)}px` }}
+        data-testid={testId}
+      />
+      {suffix && <span className="text-neutral-500 ml-0.5">{suffix}</span>}
     </span>
   );
 }
@@ -658,7 +644,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const utilizationNewEncounters = utilizationGapEncounters;
     const utilizationPatientAccessValue = Math.round(utilizationNewEncounters * utilizationRealizationRate * revenuePerVisit);
     
-    const patientAccessGap = abridgePatientAccess - theirPatientAccess;
+    // Total = SUM of both efficiency and utilization components
+    const patientAccessGap = efficiencyPatientAccessValue + utilizationPatientAccessValue;
     
     driverValues.patient_access = {
       their: theirPatientAccess,
@@ -705,8 +692,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const abridgeOvertimeHours = Math.round(abridgeTimeSavedHours * otConversionRate);
     const theirOvertime = theirOvertimeHours * overtimeRate;
     const abridgeOvertime = abridgeOvertimeHours * overtimeRate;
-    const overtimeGap = abridgeOvertime - theirOvertime;
     const efficiencyOvertimeValue = Math.round(efficiencyGapHours * otConversionRate * overtimeRate);
+    // Total = efficiency component (only component for overtime)
+    const overtimeGap = efficiencyOvertimeValue;
     
     driverValues.overtime = {
       their: theirOvertime,

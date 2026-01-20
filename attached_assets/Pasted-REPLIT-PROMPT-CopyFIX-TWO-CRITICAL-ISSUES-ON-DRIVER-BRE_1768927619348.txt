@@ -1,0 +1,156 @@
+REPLIT PROMPT
+CopyFIX TWO CRITICAL ISSUES ON DRIVER BREAKDOWNS
+
+## ISSUE 1: EDITABLE FIELDS ARE INVISIBLE
+
+PROBLEM: Users don't know they can edit the assumption values.
+Clicking on a number to edit it is not discoverable.
+
+FIX: Make all editable values visually obvious as input fields.
+
+CURRENT:
+× 20% time-to-visit conversion
+
+CHANGE TO:
+× [  20  ]% time-to-visit conversion
+     ↑
+     Styled as a visible input:
+     - Light gray background (#F9FAFB)
+     - Subtle border (1px solid #E5E7EB)
+     - Border-radius: 4px
+     - Padding: 4px 8px
+     - Min-width: 50px
+     - Text aligned right inside the box
+
+CSS for editable inputs:
+```css
+.editable-assumption {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  padding: 4px 8px;
+  min-width: 50px;
+  text-align: right;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: text;
+}
+
+.editable-assumption:hover {
+  border-color: #D1D5DB;
+  background: #F3F4F6;
+}
+
+.editable-assumption:focus {
+  border-color: #E85D3F;
+  outline: none;
+  background: white;
+}
+FORMAT IN THE CALCULATION:
+CopyFrom your efficiency gap:
++900 hours returned
+× [  20  ]% time-to-visit conversion
+× $ [  200  ] per visit
+= $72,000/year
+The brackets represent visible input fields, not just text.
+ISSUE 2: MATH IS WRONG
+PROBLEM: The driver total shows only the first subtotal, not the sum.
+Example (Patient Access):
+
+Efficiency gap value: $72,000
+Utilization gap value: $270,000
+Displayed total: $72,000 ← WRONG
+Should be: $342,000
+
+FIX: Update the calculation logic to sum all subtotals.
+javascriptCopy// Patient Access calculation
+const calculatePatientAccess = (inputs) => {
+  // Efficiency gap component
+  const efficiencyHours = inputs.efficiencyGapHours; // e.g., 900
+  const timeToVisitConversion = inputs.timeToVisitConversion / 100; // e.g., 0.20
+  const revenuePerVisit = inputs.revenuePerVisit; // e.g., 200
+  
+  const efficiencyValue = efficiencyHours * timeToVisitConversion * revenuePerVisit;
+  
+  // Utilization gap component  
+  const utilizationEncounters = inputs.utilizationGapEncounters; // e.g., 6750
+  const realizationRate = inputs.realizationRate / 100; // e.g., 0.20
+  
+  const utilizationValue = utilizationEncounters * realizationRate * revenuePerVisit;
+  
+  // TOTAL = SUM OF BOTH
+  const total = efficiencyValue + utilizationValue;
+  
+  return {
+    efficiencyValue,
+    utilizationValue,
+    total  // This should be displayed as the driver total
+  };
+};
+DISPLAY:
+CopyFrom your efficiency gap:
++900 hours returned
+× [20]% time-to-visit conversion
+× $[200] per visit
+= $72,000/year
+
+From your utilization gap:
++6,750 more encounters documented
+× [20]% realization rate
+× $[200] per visit
+= $270,000/year
+
+─────────────────────────────────────
+Total: $342,000/year   ← SUM of both subtotals
+CHECK ALL OTHER DRIVERS:
+
+Level of Service Accuracy
+Documentation-Related Denials
+Overtime & Locum Savings
+Clinician Retention
+HCC Capture
+
+Make sure each driver's total is the SUM of all its components,
+not just one component.
+AFTER BOTH FIXES
+The expanded driver should look like:
+┌─────────────────────────────────────────────────────────────────┐
+│  Patient Access                                  +$342,000/yr   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  HOW WE CALCULATED THIS:                                        │
+│                                                                 │
+│  From your efficiency gap:                                      │
+│  +900 hours returned                                            │
+│  × [ 20 ]% time-to-visit conversion                             │
+│  × $ [ 200 ] per visit                                          │
+│  = $72,000/year                                                 │
+│                                                                 │
+│  From your utilization gap:                                     │
+│  +6,750 more encounters documented                              │
+│  × [ 20 ]% realization rate                                     │
+│  × $ [ 200 ] per visit                                          │
+│  = $270,000/year                                                │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│  Total:                                        $342,000/year    │
+│                                                                 │
+│  [Reset to defaults]                     [Remove this driver]   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Editable fields are visually obvious (bordered inputs)
+Math adds up correctly
+Total is clearly the sum of components
+User can adjust any assumption and see real-time updates
+
+Copy
+---
+
+## **THE BOTTOM LINE**
+
+1. **Make inputs look like inputs** — borders, backgrounds, hover states
+2. **Fix the math** — total = sum of all subtotals
+3. **Real-time updates** — when they change a value, everything recalculates
+
+These are table stakes for credibility. If the math is wrong or the UI is confusing, you lose the room.Add to Conversation
