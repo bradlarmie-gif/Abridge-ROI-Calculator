@@ -1,0 +1,66 @@
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ABRIDGE            SWITCH                          ← Back      │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│                    The real question                            │
+│                                                                 │
+│         What would you do with $379,300/year?                   │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│                                                                 │
+│  That's what you're spending on a scribe program that           │
+│  covers 14 of 35 providers.                                     │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  YOUR CURRENT INVESTMENT                                        │
+│                                                                 │
+│  Scribe program:                            $350,000/year       │
+│  Hidden costs (turnover, mgmt):              $29,300/year       │
+│  ─────────────────────────────────────────────────────────      │
+│  Total:                                     $379,300/year       │
+│                                                                 │
+│  Coverage: 14 of 35 providers (40%)                             │
+│  The other 21 providers are self-documenting.                   │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  WITH ABRIDGE                                                   │
+│                                                                 │
+│  ✓ All 35 providers get access                                  │
+│  ✓ No turnover. No training. No management overhead.            │
+│  ✓ 24/7 coverage — nights, weekends, every location.            │
+│                                                                 │
+│  Your Abridge rep can provide deployment-specific pricing.      │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  THE DECISION                                                   │
+│                                                                 │
+│  You're not just choosing a documentation tool.                 │
+│  You're deciding whether to keep investing $379K/year           │
+│  in a program that leaves 60% of your providers                 │
+│  without support.                                               │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────      │
+│                                                                 │
+│  $31,608/month                                                  │
+│  $1,039/day                                                     │
+│  $130/hour your clinic is open                                  │
+│                                                                 │
+│  Every month you wait is another month of that investment       │
+│  going toward partial coverage.                                 │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │ Talk to     │  │ Save        │  │ Share       │              │
+│  │ Abridge     │  │ Analysis    │  │             │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+│                                                                 │
+│  Assumptions: X scribes, $Y/hr, Z hrs/week, W% turnover         │
+│  [View/edit assumptions]                                        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘

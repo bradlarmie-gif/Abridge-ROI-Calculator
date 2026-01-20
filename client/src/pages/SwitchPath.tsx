@@ -2133,121 +2133,108 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         )}
 
         {/* Human Scribes Step 8: Summary Dashboard */}
-        {step === 8 && isScribePath && (
+        {step === 8 && isScribePath && (() => {
+          const monthlySpend = Math.round(totalCurrentCost / 12);
+          const dailySpend = Math.round(totalCurrentCost / 260); // ~260 business days
+          const hourlySpend = Math.round(totalCurrentCost / (260 * 8)); // 8 hours per day
+          const uncoveredProviders = providers - providersWithScribes;
+          const uncoveredPercent = providers > 0 ? Math.round((uncoveredProviders / providers) * 100) : 0;
+          
+          return (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step8-scribe-title">
-              Your value summary
-            </h1>
-            <p className="text-lg text-neutral-500 mb-8">Here's what switching from scribes to Abridge could mean.</p>
-
-            {/* SECTION 1: What You're Spending */}
-            <div className="bg-neutral-100 rounded-2xl p-6 mb-6 border border-neutral-200">
-              <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-4">What You're Spending</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-neutral-700">Current scribe program:</span>
-                  <span className="text-xl font-bold text-neutral-900 tabular-nums">{formatCurrency(annualScribeCost)}/year</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-neutral-700">Hidden costs (turnover, mgmt):</span>
-                  <span className="text-lg font-semibold text-neutral-700 tabular-nums">{formatCurrency(hiddenCosts)}/year</span>
-                </div>
-                <div className="border-t border-neutral-300 pt-3 mt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-neutral-900">Total current cost:</span>
-                    <span className="text-2xl font-bold text-neutral-900 tabular-nums">{formatCurrency(totalCurrentCost)}/year</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* SECTION 2: With Abridge */}
-            <div className="bg-emerald-50 rounded-2xl p-6 mb-6 border-2 border-emerald-200">
-              <h3 className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-4">With Abridge</h3>
-              <p className="text-emerald-800 font-medium mb-4">Contact your Abridge rep for deployment-specific pricing.</p>
-              <div className="space-y-2 text-sm text-emerald-700">
-                <p className="flex items-center gap-2">
-                  <Check className="w-4 h-4 flex-shrink-0" />
-                  All {providers} providers get access (vs. {providersWithScribes} with scribes)
-                </p>
-                <p className="flex items-center gap-2">
-                  <Check className="w-4 h-4 flex-shrink-0" />
-                  No turnover/training costs
-                </p>
-                <p className="flex items-center gap-2">
-                  <Check className="w-4 h-4 flex-shrink-0" />
-                  No management overhead
-                </p>
-                <p className="flex items-center gap-2">
-                  <Check className="w-4 h-4 flex-shrink-0" />
-                  24/7 coverage, all locations
-                </p>
-              </div>
-            </div>
-
-            {/* SECTION 3: Additional Value (only if drivers selected) */}
-            {selectedScribeDrivers.length > 0 && (
-              <div className="bg-blue-50 rounded-2xl p-6 mb-6 border border-blue-200">
-                <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-1">Additional Value from Abridge</h3>
-                <p className="text-xs text-blue-600/70 mb-4">(Beyond cost comparison)</p>
-                <div className="space-y-3">
-                  {selectedScribeDrivers.includes("coding") && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-700">Coding Accuracy:</span>
-                      <span className="font-semibold text-emerald-600 tabular-nums">+{formatCurrency(Math.round(codingValue / REALIZATION_FACTOR))}/year</span>
-                    </div>
-                  )}
-                  {selectedScribeDrivers.includes("denials") && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-700">Denial Reduction:</span>
-                      <span className="font-semibold text-emerald-600 tabular-nums">+{formatCurrency(Math.round(denialsValue / REALIZATION_FACTOR))}/year</span>
-                    </div>
-                  )}
-                  {selectedScribeDrivers.includes("hcc") && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-700">HCC Capture:</span>
-                      <span className="font-semibold text-emerald-600 tabular-nums">+{formatCurrency(Math.round(hccValue / REALIZATION_FACTOR))}/year</span>
-                    </div>
-                  )}
-                  <div className="border-t border-blue-200 pt-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-700">Subtotal:</span>
-                      <span className="font-bold text-neutral-900 tabular-nums">+{formatCurrency(additionalValuePreRealization)}/year</span>
-                    </div>
-                  </div>
-                  <div className="bg-blue-100 rounded-lg p-3 mt-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-blue-800 font-medium">Applied at 50% realization*:</span>
-                      <span className="text-xl font-bold text-blue-900 tabular-nums">+{formatCurrency(additionalValue)}/year</span>
-                    </div>
-                    <p className="text-xs text-blue-600 mt-1">* Conservative factor reflecting implementation ramp</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SECTION 4: The Bottom Line */}
-            <div className="bg-gradient-to-r from-neutral-800 to-neutral-900 rounded-2xl p-6 text-white">
-              <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-4">The Bottom Line</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-neutral-300">Current spend you could redirect:</span>
-                  <span className="text-xl font-bold text-white tabular-nums">{formatCurrency(totalCurrentCost)}/year</span>
-                </div>
-                {additionalValue > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-300">Plus additional value captured:</span>
-                    <span className="text-xl font-bold text-emerald-400 tabular-nums">+{formatCurrency(additionalValue)}/year</span>
-                  </div>
-                )}
-              </div>
-              <p className="text-sm text-neutral-400 mt-4 border-t border-neutral-700 pt-4">
-                Talk to your Abridge rep about pricing for your specific deployment to calculate net savings.
+            {/* SECTION 1: THE HOOK */}
+            <div className="text-center mb-10">
+              <p className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-2">The real question</p>
+              <h1 className="text-3xl md:text-5xl font-bold text-neutral-900 mb-4" data-testid="text-step8-scribe-title">
+                What would you do with {formatCurrency(totalCurrentCost)}/year?
+              </h1>
+              <div className="w-16 h-1 bg-neutral-200 mx-auto mb-4"></div>
+              <p className="text-lg text-neutral-600 max-w-xl mx-auto">
+                That's what you're spending on a scribe program that covers {providersWithScribes} of {providers} providers.
               </p>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="mt-10 flex flex-wrap gap-3 justify-center">
+            {/* SECTION 2: YOUR CURRENT INVESTMENT */}
+            <div className="bg-neutral-50 rounded-2xl p-6 mb-5 border border-neutral-200">
+              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-4">Your Current Investment</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-600">Scribe program:</span>
+                  <span className="font-semibold text-neutral-900 tabular-nums">{formatCurrency(annualScribeCost)}/year</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-600">Hidden costs (turnover, mgmt):</span>
+                  <span className="font-semibold text-neutral-700 tabular-nums">{formatCurrency(hiddenCosts)}/year</span>
+                </div>
+                <div className="border-t border-neutral-200 pt-3 mt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-neutral-900">Total:</span>
+                    <span className="text-xl font-bold text-neutral-900 tabular-nums">{formatCurrency(totalCurrentCost)}/year</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-neutral-200">
+                <p className="text-sm text-neutral-600">
+                  <strong>Coverage:</strong> {providersWithScribes} of {providers} providers ({coveragePercent}%)
+                </p>
+                <p className="text-sm text-neutral-500 mt-1">
+                  The other {uncoveredProviders} providers are self-documenting.
+                </p>
+              </div>
+            </div>
+
+            {/* SECTION 3: WITH ABRIDGE */}
+            <div className="bg-emerald-50 rounded-2xl p-6 mb-5 border border-emerald-200">
+              <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-4">With Abridge</h3>
+              <div className="space-y-2 text-sm text-emerald-800">
+                <p className="flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0 text-emerald-600" />
+                  All {providers} providers get access
+                </p>
+                <p className="flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0 text-emerald-600" />
+                  No turnover. No training. No management overhead.
+                </p>
+                <p className="flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0 text-emerald-600" />
+                  24/7 coverage — nights, weekends, every location.
+                </p>
+              </div>
+              <p className="text-sm text-emerald-700 mt-4 pt-3 border-t border-emerald-200">
+                Your Sales Director can provide deployment-specific pricing.
+              </p>
+            </div>
+
+            {/* SECTION 4: THE DECISION */}
+            <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-2xl p-6 text-white mb-5">
+              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-4">The Decision</h3>
+              <p className="text-neutral-300 leading-relaxed mb-5">
+                You're not just choosing a documentation tool. You're deciding whether to keep investing <strong className="text-white">{formatCurrency(totalCurrentCost)}/year</strong> in a program that leaves <strong className="text-white">{uncoveredPercent}%</strong> of your providers without support.
+              </p>
+              
+              <div className="border-t border-neutral-700 pt-5">
+                <div className="grid grid-cols-3 gap-4 text-center mb-5">
+                  <div>
+                    <p className="text-2xl md:text-3xl font-bold text-white tabular-nums">{formatCurrency(monthlySpend)}</p>
+                    <p className="text-xs text-neutral-400 mt-1">/month</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl md:text-3xl font-bold text-white tabular-nums">{formatCurrency(dailySpend)}</p>
+                    <p className="text-xs text-neutral-400 mt-1">/day</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl md:text-3xl font-bold text-white tabular-nums">{formatCurrency(hourlySpend)}</p>
+                    <p className="text-xs text-neutral-400 mt-1">/hour your clinic is open</p>
+                  </div>
+                </div>
+                <p className="text-sm text-neutral-400 text-center italic">
+                  Every month you wait is another month of that investment going toward partial coverage.
+                </p>
+              </div>
+            </div>
+
+            {/* SECTION 5: ACTIONS */}
+            <div className="flex flex-wrap gap-3 justify-center mb-6">
               <Button
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-talk-to-abridge"
@@ -2269,8 +2256,23 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 Share
               </Button>
             </div>
+
+            {/* Assumptions footnote */}
+            <div className="text-center">
+              <p className="text-xs text-neutral-400">
+                Assumptions: {providersWithScribes} scribes, ${scribeHourlyCost}/hr, {scribeHoursPerWeek} hrs/week, {scribeTurnoverRate}% turnover
+              </p>
+              <button 
+                onClick={() => setStep(4)}
+                className="text-xs text-neutral-500 hover:text-neutral-700 underline mt-1"
+                data-testid="button-view-edit-assumptions"
+              >
+                View/edit assumptions
+              </button>
+            </div>
           </div>
-        )}
+          );
+        })()}
 
         {step === 7 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
