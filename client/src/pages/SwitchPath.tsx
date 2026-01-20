@@ -1690,48 +1690,86 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 6 && !isScribePath && (
+        {step === 6 && !isScribePath && (() => {
+          // Calculate what each metric contributes to the total for real-time impact display
+          const getMetricImpact = (metricId: string, currentValue: number, defaultValue: number) => {
+            const diff = currentValue - defaultValue;
+            if (Math.abs(diff) < 0.1) return null;
+            
+            // Rough impact calculation based on metric type
+            const eligibleEncounters = calculations.abridgeDocumentedEncounters;
+            let impact = 0;
+            
+            if (metricId === "wrvuUplift") {
+              // wRVU impact: encounters × wRVU rate × uplift difference
+              impact = eligibleEncounters * 45 * (diff / 100); // $45 per wRVU average
+            } else if (metricId === "underCoding") {
+              // Under-coding impact
+              impact = eligibleEncounters * 15 * (diff / 100); // ~$15 per corrected code
+            } else if (metricId === "denialPrevention") {
+              // Denial prevention impact
+              impact = eligibleEncounters * 0.02 * 500 * (diff / 100); // 2% denial rate, $500 avg
+            } else if (metricId === "hccImprovement") {
+              // HCC capture impact
+              impact = eligibleEncounters * 0.15 * 1200 * (diff / 100); // 15% Medicare, $1200 RAF
+            }
+            
+            return Math.round(impact);
+          };
+
+          const hasRelevantMetrics = selectedDrivers.includes("level_of_service") || 
+                                     selectedDrivers.includes("patient_access") || 
+                                     selectedDrivers.includes("denials") || 
+                                     selectedDrivers.includes("hcc");
+
+          return (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step6-title">
-              Refine your assumptions
+            <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2" data-testid="text-step6-title">
+              Fine-tune your assumptions
             </h1>
-            <p className="text-lg text-neutral-500 mb-6">
-              Based on your selected drivers, review these relevant metrics.
+            <p className="text-base text-neutral-500 mb-6">
+              These are conservative industry benchmarks. Expand any row to customize.
             </p>
 
-            <div className="bg-neutral-100 rounded-xl p-4 border border-neutral-200 mb-8 flex items-center gap-3">
-              <Check className="w-5 h-5 text-neutral-500 flex-shrink-0" />
-              <p className="text-neutral-700 text-sm">
-                Pre-filled with {solutionData?.name || "industry"} benchmarks. Expand any row to customize.
+            {/* Use Defaults escape hatch */}
+            <div className="bg-[#F9FAFB] rounded-lg px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-sm text-neutral-600">
+                Current estimated gap: <span className="font-bold text-[#E85D3F]">{formatCurrency(calculations.totalGap)}/year</span>
               </p>
+              <Button
+                onClick={handleContinue}
+                variant="outline"
+                className="text-sm border-neutral-300 hover:bg-white"
+                data-testid="button-use-defaults"
+              >
+                Continue with defaults
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
 
-            <div className="space-y-3">
-              {/* Show wRVU Uplift if level_of_service or patient_access selected */}
+            {hasRelevantMetrics && (
+            <div className="space-y-2">
+              {/* wRVU Uplift */}
               {(selectedDrivers.includes("level_of_service") || selectedDrivers.includes("patient_access")) && (
-              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+              <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
                 <button
                   onClick={() => setWrvuKnown(!wrvuKnown)}
                   className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-                      <BadgeDollarSign className="w-5 h-5 text-neutral-600" />
-                    </div>
-                    <div className="text-left">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-neutral-900">wRVU Uplift</p>
-                      <p className="text-xs text-neutral-500">Revenue productivity improvement</p>
+                      <span className="text-lg font-bold text-neutral-700 tabular-nums">{wrvuUplift}%</span>
                     </div>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      If Abridge helps capture more complete visits, typical improvement is 3-6%. We're using {wrvuUplift}%.
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-neutral-700 tabular-nums">{wrvuUplift}%</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${wrvuKnown ? "rotate-180" : ""}`} />
-                  </div>
+                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-3 ${wrvuKnown ? "rotate-180" : ""}`} />
                 </button>
                 {wrvuKnown && (
-                  <div className="px-4 pb-4 pt-1 border-t border-neutral-100 bg-neutral-50">
-                    <label className="text-xs font-medium text-neutral-600 mb-2 block">Custom value:</label>
-                    <div className="flex items-center gap-2">
+                  <div className="px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50">
+                    <div className="flex items-center gap-3">
                       <input
                         type="text"
                         inputMode="decimal"
@@ -1740,48 +1778,53 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                           const val = e.target.value.replace(/[^0-9.]/g, '');
                           setWrvuUplift(val === "" ? 0 : parseFloat(val) || 0);
                         }}
-                        className="w-24 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+                        className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm text-center font-semibold"
                       />
-                      <span className="text-sm text-neutral-500">% uplift</span>
+                      <span className="text-sm text-neutral-500">%</span>
                       <button
-                        onClick={() => {
-                          setWrvuUplift(solutionData?.typicalWrvuUplift || 3.5);
-                        }}
-                        className="ml-auto text-xs text-neutral-500 hover:underline"
+                        onClick={() => setWrvuUplift(solutionData?.typicalWrvuUplift || 3.5)}
+                        className="text-xs text-neutral-400 hover:text-neutral-600 ml-auto"
                       >
-                        Reset to default ({solutionData?.typicalWrvuUplift || 3.5}%)
+                        Reset to {solutionData?.typicalWrvuUplift || 3.5}%
                       </button>
                     </div>
+                    {(() => {
+                      const impact = getMetricImpact("wrvuUplift", wrvuUplift, solutionData?.typicalWrvuUplift || 3.5);
+                      if (impact && Math.abs(impact) > 500) {
+                        return (
+                          <p className={`text-xs mt-2 ${impact > 0 ? "text-emerald-600" : "text-amber-600"}`}>
+                            {impact > 0 ? "+" : ""}{formatCurrency(impact)}/year vs. default
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
               </div>
               )}
 
-              {/* Show Under-coding if level_of_service selected */}
+              {/* Under-coding Correction */}
               {selectedDrivers.includes("level_of_service") && (
-              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+              <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
                 <button
                   onClick={() => setUnderCodingKnown(!underCodingKnown)}
                   className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-                      <FileCheck className="w-5 h-5 text-neutral-600" />
-                    </div>
-                    <div className="text-left">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-neutral-900">Under-coding Correction</p>
-                      <p className="text-xs text-neutral-500">Encounters corrected from under-coding</p>
+                      <span className="text-lg font-bold text-neutral-700 tabular-nums">{underCoding}%</span>
                     </div>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      Percentage of visits where Abridge captures complexity that would have been under-coded. Industry range: 5-12%.
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-neutral-700 tabular-nums">{underCoding}%</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${underCodingKnown ? "rotate-180" : ""}`} />
-                  </div>
+                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-3 ${underCodingKnown ? "rotate-180" : ""}`} />
                 </button>
                 {underCodingKnown && (
-                  <div className="px-4 pb-4 pt-1 border-t border-neutral-100 bg-neutral-50">
-                    <label className="text-xs font-medium text-neutral-600 mb-2 block">Custom value:</label>
-                    <div className="flex items-center gap-2">
+                  <div className="px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50">
+                    <div className="flex items-center gap-3">
                       <input
                         type="text"
                         inputMode="decimal"
@@ -1790,48 +1833,53 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                           const val = e.target.value.replace(/[^0-9.]/g, '');
                           setUnderCoding(val === "" ? 0 : parseFloat(val) || 0);
                         }}
-                        className="w-24 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+                        className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm text-center font-semibold"
                       />
                       <span className="text-sm text-neutral-500">%</span>
                       <button
-                        onClick={() => {
-                          setUnderCoding(solutionData?.typicalUnderCoding || 8);
-                        }}
-                        className="ml-auto text-xs text-neutral-500 hover:underline"
+                        onClick={() => setUnderCoding(solutionData?.typicalUnderCoding || 8)}
+                        className="text-xs text-neutral-400 hover:text-neutral-600 ml-auto"
                       >
-                        Reset to default ({solutionData?.typicalUnderCoding || 8}%)
+                        Reset to {solutionData?.typicalUnderCoding || 8}%
                       </button>
                     </div>
+                    {(() => {
+                      const impact = getMetricImpact("underCoding", underCoding, solutionData?.typicalUnderCoding || 8);
+                      if (impact && Math.abs(impact) > 500) {
+                        return (
+                          <p className={`text-xs mt-2 ${impact > 0 ? "text-emerald-600" : "text-amber-600"}`}>
+                            {impact > 0 ? "+" : ""}{formatCurrency(impact)}/year vs. default
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
               </div>
               )}
 
-              {/* Show Denial Prevention if denials selected */}
+              {/* Denial Prevention */}
               {selectedDrivers.includes("denials") && (
-              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+              <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
                 <button
                   onClick={() => setDenialKnown(!denialKnown)}
                   className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-                      <ShieldCheck className="w-5 h-5 text-neutral-600" />
-                    </div>
-                    <div className="text-left">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-neutral-900">Denial Prevention</p>
-                      <p className="text-xs text-neutral-500">Documentation-related denials reduced</p>
+                      <span className="text-lg font-bold text-neutral-700 tabular-nums">{denialPrevention}%</span>
                     </div>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      Percentage of documentation-related denials that complete notes prevent. Industry range: 20-45%.
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-neutral-700 tabular-nums">{denialPrevention}%</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${denialKnown ? "rotate-180" : ""}`} />
-                  </div>
+                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-3 ${denialKnown ? "rotate-180" : ""}`} />
                 </button>
                 {denialKnown && (
-                  <div className="px-4 pb-4 pt-1 border-t border-neutral-100 bg-neutral-50">
-                    <label className="text-xs font-medium text-neutral-600 mb-2 block">Custom value:</label>
-                    <div className="flex items-center gap-2">
+                  <div className="px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50">
+                    <div className="flex items-center gap-3">
                       <input
                         type="text"
                         inputMode="decimal"
@@ -1840,48 +1888,53 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                           const val = e.target.value.replace(/[^0-9.]/g, '');
                           setDenialPrevention(val === "" ? 0 : parseFloat(val) || 0);
                         }}
-                        className="w-24 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+                        className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm text-center font-semibold"
                       />
-                      <span className="text-sm text-neutral-500">% reduction</span>
+                      <span className="text-sm text-neutral-500">%</span>
                       <button
-                        onClick={() => {
-                          setDenialPrevention(solutionData?.typicalDenialPrevention || 30);
-                        }}
-                        className="ml-auto text-xs text-neutral-500 hover:underline"
+                        onClick={() => setDenialPrevention(solutionData?.typicalDenialPrevention || 30)}
+                        className="text-xs text-neutral-400 hover:text-neutral-600 ml-auto"
                       >
-                        Reset to default ({solutionData?.typicalDenialPrevention || 30}%)
+                        Reset to {solutionData?.typicalDenialPrevention || 30}%
                       </button>
                     </div>
+                    {(() => {
+                      const impact = getMetricImpact("denialPrevention", denialPrevention, solutionData?.typicalDenialPrevention || 30);
+                      if (impact && Math.abs(impact) > 500) {
+                        return (
+                          <p className={`text-xs mt-2 ${impact > 0 ? "text-emerald-600" : "text-amber-600"}`}>
+                            {impact > 0 ? "+" : ""}{formatCurrency(impact)}/year vs. default
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
               </div>
               )}
 
-              {/* Show HCC Capture if hcc selected */}
+              {/* HCC Capture */}
               {selectedDrivers.includes("hcc") && (
-              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+              <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
                 <button
                   onClick={() => setHccKnown(!hccKnown)}
                   className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-                      <Heart className="w-5 h-5 text-neutral-600" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-neutral-900">HCC Capture Improvement</p>
+                      <span className="text-lg font-bold text-neutral-700 tabular-nums">{hccImprovement}%</span>
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-neutral-900">HCC Capture</p>
-                      <p className="text-xs text-neutral-500">Chronic condition documentation improvement</p>
-                    </div>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      Improvement in capturing chronic conditions for risk adjustment. Conservative range: 8-15%.
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-neutral-700 tabular-nums">{hccImprovement}%</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${hccKnown ? "rotate-180" : ""}`} />
-                  </div>
+                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-3 ${hccKnown ? "rotate-180" : ""}`} />
                 </button>
                 {hccKnown && (
-                  <div className="px-4 pb-4 pt-1 border-t border-neutral-100 bg-neutral-50">
-                    <label className="text-xs font-medium text-neutral-600 mb-2 block">Custom value:</label>
-                    <div className="flex items-center gap-2">
+                  <div className="px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50">
+                    <div className="flex items-center gap-3">
                       <input
                         type="text"
                         inputMode="decimal"
@@ -1890,45 +1943,50 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                           const val = e.target.value.replace(/[^0-9.]/g, '');
                           setHccImprovement(val === "" ? 0 : parseFloat(val) || 0);
                         }}
-                        className="w-24 px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+                        className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm text-center font-semibold"
                       />
-                      <span className="text-sm text-neutral-500">% improvement</span>
+                      <span className="text-sm text-neutral-500">%</span>
                       <button
-                        onClick={() => {
-                          setHccImprovement(solutionData?.typicalHccImprovement || 10);
-                        }}
-                        className="ml-auto text-xs text-neutral-500 hover:underline"
+                        onClick={() => setHccImprovement(solutionData?.typicalHccImprovement || 10)}
+                        className="text-xs text-neutral-400 hover:text-neutral-600 ml-auto"
                       >
-                        Reset to default ({solutionData?.typicalHccImprovement || 10}%)
+                        Reset to {solutionData?.typicalHccImprovement || 10}%
                       </button>
                     </div>
+                    {(() => {
+                      const impact = getMetricImpact("hccImprovement", hccImprovement, solutionData?.typicalHccImprovement || 10);
+                      if (impact && Math.abs(impact) > 500) {
+                        return (
+                          <p className={`text-xs mt-2 ${impact > 0 ? "text-emerald-600" : "text-amber-600"}`}>
+                            {impact > 0 ? "+" : ""}{formatCurrency(impact)}/year vs. default
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
               </div>
               )}
             </div>
+            )}
 
             {/* Info message when no drivers have relevant metrics */}
-            {!(selectedDrivers.includes("level_of_service") || selectedDrivers.includes("patient_access") || 
-               selectedDrivers.includes("denials") || selectedDrivers.includes("hcc")) && (
-              <div className="bg-neutral-50 rounded-xl p-6 border border-neutral-200 text-center">
-                <p className="text-neutral-600">
-                  The drivers you selected (Overtime, Retention) primarily use time-based calculations.
+            {!hasRelevantMetrics && (
+              <div className="bg-neutral-50 rounded-lg p-5 border border-neutral-200">
+                <p className="text-neutral-600 text-sm">
+                  The drivers you selected (Overtime, Retention) use time-based calculations from your earlier inputs.
                 </p>
-                <p className="text-sm text-neutral-500 mt-2">
-                  No additional performance metrics needed. Click below to see your results.
+                <p className="text-xs text-neutral-400 mt-2">
+                  No additional assumptions needed.
                 </p>
               </div>
             )}
 
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-neutral-500">
-                <Lightbulb className="w-4 h-4 inline mr-1.5 text-amber-500" />
-                You can adjust these later if needed.
-              </p>
+            <div className="mt-8 flex justify-end">
               <Button
                 onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-lg"
                 data-testid="button-continue-step6"
               >
                 See Your Results
@@ -1936,7 +1994,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </Button>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {step === 5 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
