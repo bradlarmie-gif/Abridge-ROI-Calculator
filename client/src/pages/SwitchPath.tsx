@@ -337,6 +337,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         setTimeout(() => setGapRevealStage(4), 3200),
         setTimeout(() => setGapRevealStage(5), 3700),
         setTimeout(() => setGapRevealStage(6), 4200),
+        // Chart animation stages for Over Time tab
+        setTimeout(() => setChartAnimationStage(1), 500),
+        setTimeout(() => setChartAnimationStage(2), 1000),
+        setTimeout(() => setChartAnimationStage(3), 1500),
+        setTimeout(() => setChartAnimationStage(4), 2500),
       ];
       return () => revealTimers.forEach(clearTimeout);
     }
