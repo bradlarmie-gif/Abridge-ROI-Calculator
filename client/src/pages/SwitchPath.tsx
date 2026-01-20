@@ -1915,7 +1915,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             </div>
 
-            {/* SECTION 3: VALUE BREAKDOWN - Where that value shows up */}
+            {/* SECTION 3: TABBED VIEW - Value Breakdown / Over Time */}
             <div 
               className="mb-6"
               style={{
@@ -1923,6 +1923,35 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 transition: "all 0.4s ease-out"
               }}
             >
+              {/* Tab buttons */}
+              <div className="flex items-center gap-1 mb-4 bg-neutral-100 p-1 rounded-lg w-fit">
+                <button
+                  onClick={() => setSummaryTab("drivers")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    summaryTab === "drivers"
+                      ? "bg-white text-neutral-900 shadow-sm"
+                      : "text-neutral-500 hover:text-neutral-700"
+                  }`}
+                  data-testid="tab-value-breakdown"
+                >
+                  Value Breakdown
+                </button>
+                <button
+                  onClick={() => setSummaryTab("time")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    summaryTab === "time"
+                      ? "bg-white text-neutral-900 shadow-sm"
+                      : "text-neutral-500 hover:text-neutral-700"
+                  }`}
+                  data-testid="tab-over-time"
+                >
+                  Over Time
+                </button>
+              </div>
+
+              {/* Value Breakdown Tab Content */}
+              {summaryTab === "drivers" && (
+              <>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Where That Value Shows Up</p>
                 <button
@@ -2023,10 +2052,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                 </div>
               </div>
-            </div>
+              </>
+              )}
 
-            {/* OVER TIME TAB */}
-            {summaryTab === "time" && (
+              {/* OVER TIME TAB */}
+              {summaryTab === "time" && (
               <div className="mb-8">
                 <div className="bg-white rounded-xl p-5 border border-neutral-200 mb-4">
                   <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">3-Year Cumulative Value</p>
@@ -2088,7 +2118,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </p>
                 </div>
               </div>
-            )}
+              )}
+            </div>
 
             {/* THE DECISION SECTION */}
             <div 

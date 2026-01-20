@@ -1,0 +1,82 @@
+ADD BACK THE "OVER TIME" VISUALIZATION TO SUMMARY DASHBOARD
+
+## WHAT TO ADD
+
+After the driver breakdown ("WHERE THAT VALUE SHOWS UP") and before 
+"THE DECISION" section, add a tabbed view or a new section:
+
+### OPTION A: TABBED VIEW (Recommended)
+
+Add tabs above the value breakdown:
+[Value Breakdown]  [Over Time]
+
+"Value Breakdown" tab (default):
+- Shows the three drivers with values
+- "TOTAL ANNUAL GAP: $204,363/year"
+
+"Over Time" tab:
+- Shows the 3-year cumulative value graph
+- Below graph, show the comparison:
+
+┌─────────────────────────────────────────────────────────────────┐
+│  3-YEAR CUMULATIVE VALUE                                        │
+│                                                                 │
+│  [Graph with two lines:                                         │
+│   - "Stay with current" (gray, flat)                            │
+│   - "Switch to Abridge" (coral, growing)]                       │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  Switch today:       $612,000                                   │
+│  Wait 6 months:      $510,000                                   │
+│  Cost of waiting:    $102,000                                   │
+│                                                                 │
+│  That's ~$17,000/month you can never recapture.                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+
+### OPTION B: SEPARATE SECTION (If tabs feel complex)
+
+Add a new section after drivers, before "THE DECISION":
+
+"VALUE OVER TIME"
+
+- Same graph
+- Same comparison numbers
+- No tabs, just another section in the scroll
+
+
+## GRAPH SPECIFICATIONS
+
+- X-axis: Today → 3 mo → 6 mo → Year 1 → Year 2 → Year 3
+- Y-axis: $0 → $600K+ (auto-scale based on values)
+- Two lines:
+  - Gray line: "Stay with Ambient AI" — flat or minimal growth
+  - Coral line: "Switch to Abridge" — growing curve
+- Shaded area between the lines to show the gap
+- Hover state: Show cumulative value at each point
+- Animation: Line draws over 2-3 seconds on load
+
+## COMPARISON BOX BELOW GRAPH
+
+Clean, single box (not three separate cards):
+
+"Switch today: $XXX,XXX (3-year total)
+Wait 6 months: $XXX,XXX (3-year total)
+─────────────────────────────────
+Cost of waiting: $XX,XXX"
+
+Add context line:
+"That's ~$X,XXX/month you can never recapture."
+
+## PLACEMENT
+
+The flow should be:
+1. Headline ($204,363)
+2. The Gaps We Identified
+3. Where That Value Shows Up (drivers)
+4. [Value Breakdown] [Over Time] tabs — OR — "Value Over Time" section
+5. The Decision
+6. View assumptions
+7. Actions (Let's Talk, Copy Link, Edit Model)
