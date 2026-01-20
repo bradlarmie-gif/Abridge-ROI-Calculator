@@ -1,0 +1,136 @@
+CLEAN UP VALUE DRIVER UI - MAKE IT TOP 0.5% QUALITY
+
+## THE GOAL
+Premium, clean, Stripe-level design. Not a spreadsheet.
+
+## PRINCIPLE: PROGRESSIVE DISCLOSURE
+
+DEFAULT STATE (collapsed):
+- Pathway name + checkbox on left
+- Total value on right  
+- One-line summary of the formula in muted text
+- Expand arrow [v]
+
+EXPANDED STATE:
+- Clean table layout for the math (not monospace)
+- Editable inputs are subtle but visible
+- Context line is small and muted
+- Collapse arrow [^]
+
+## COLLAPSED PATHWAY FORMAT
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ☑ Additional Patient Visits                       +$44,000/yr  │
+│   10% of 1,100 hours → visits @ $200                      [v]  │
+└─────────────────────────────────────────────────────────────────┘
+
+- Height: ~60px fixed when collapsed
+- Checkbox: left aligned
+- Title: bold, dark text
+- Value: right aligned, coral/green color
+- Summary: small muted text (14px, gray)
+- Expand arrow: right side
+
+## EXPANDED PATHWAY FORMAT
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ☑ Additional Patient Visits                       +$44,000/yr  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Hours returned                               1,100            │
+│   × Conversion to visits                    [ 10 ]%             │
+│   × Revenue per visit                      $[ 200 ]             │
+│   ───────────────────────────────────────────────               │
+│   Result                                    $44,000/yr          │
+│                                                                 │
+│   ⓘ Applies if you have appointment demand exceeding supply    │
+│                                                                 │
+│   [Reset to defaults]                              [Collapse ^] │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+## STYLING DETAILS
+
+COLLAPSED STATE:
+- Card background: white
+- Border: 1px solid #E5E7EB
+- Border-radius: 8px
+- Padding: 16px
+- Shadow: none or very subtle (0 1px 2px rgba(0,0,0,0.05))
+
+EXPANDED STATE:
+- Same card styling
+- Divider line after header row
+- Math section: 
+  - NOT monospace font
+  - Use regular font with tabular number alignment
+  - Labels left-aligned, values right-aligned
+  - Clean spacing (8px between rows)
+- Editable inputs: 
+  - Subtle border (1px solid #D1D5DB)
+  - Light background (#F9FAFB)
+  - Min-width: 60px
+  - Right-aligned text inside
+
+CONTEXT LINE (ⓘ):
+- Font size: 13px
+- Color: #9CA3AF (muted gray)
+- Italic or regular, subtle
+- Don't let this compete with the math
+
+COLORS:
+- Positive values: #059669 (emerald green) or keep coral #E85D3F
+- Labels: #374151 (gray-700)
+- Muted text: #9CA3AF (gray-400)
+- Inputs: #1F2937 text on #F9FAFB background
+
+## REMOVE
+
+- Monospace/code-style font for calculations
+- All the verbose math showing by default
+- Cluttered multi-line displays in collapsed state
+
+## ONE-LINER SUMMARIES FOR EACH PATHWAY
+
+Create short formula summaries:
+
+Patient Access - Additional Visits:
+"[X]% of [Y] hours → visits @ $[Z]"
+
+Patient Access - Revenue from Encounters:
+"[X]% of [Y] encounters @ $[Z]/visit"
+
+Level of Service - wRVU Uplift:
+"[X]% uplift on [Y] E/M encounters @ $[Z]/wRVU"
+
+Denials:
+"[X]% reduction on [Y] doc-related denials @ $[Z] each"
+
+Overtime:
+"[X]% of [Y] hours reduces OT @ $[Z]/hr"
+
+Retention:
+"[X] providers × [Y]% retention × $[Z] replacement cost"
+
+HCC:
+"[X]% improvement on [Y] MA encounters @ $[Z] RAF value"
+
+These summaries appear in collapsed state.
+Full math appears only when expanded.
+
+## ANIMATION
+
+- Expand/collapse: smooth 200ms transition
+- Height animates, content fades in
+- Feels polished, not jarring
+
+THE RESULT
+Before: Wall of math that looks like a tax form
+After: Clean cards that expand on demand
+The CFO sees:
+
+"Patient Access: +$209,000/yr"
+A one-liner explaining the formula
+Click to drill in if they want details
+
+That's premium. That's top 0.5%. That's how you win the room without overwhelming it.Add to Conversation

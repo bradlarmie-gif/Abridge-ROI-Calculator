@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings, X, Plus, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings, X, Plus, CheckCircle2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
@@ -313,6 +313,206 @@ function EditableInput({ value, onChange, type, min = 0, max, suffix = "", prefi
     </span>
   );
 }
+
+// Pathway types for the new progressive disclosure UI
+type PathwayType = 'efficiency' | 'utilization' | 'direct';
+
+interface PathwayInput {
+  label: string;
+  value: number;
+  editable?: {
+    key: string;
+    driverId: DriverId;
+    type: 'percent' | 'currency' | 'number';
+  };
+  isResult?: boolean;
+}
+
+interface PathwayCardProps {
+  title: string;
+  enabled: boolean;
+  onToggle?: (enabled: boolean) => void;
+  canToggle: boolean;
+  subtotal: number;
+  summary: string;
+  inputs: PathwayInput[];
+  context?: string;
+  driverAssumptions: typeof DEFAULT_ASSUMPTIONS;
+  updateDriverAssumption: (driverId: DriverId, key: string, value: number) => void;
+  onResetDefaults?: () => void;
+  testIdPrefix: string;
+}
+
+function PathwayCard({
+  title,
+  enabled,
+  onToggle,
+  canToggle,
+  subtotal,
+  summary,
+  inputs,
+  context,
+  driverAssumptions,
+  updateDriverAssumption,
+  onResetDefaults,
+  testIdPrefix,
+}: PathwayCardProps) {
+  const [expanded, setExpanded] = useState(false);
+  
+  // Filter out empty label steps for display
+  const displayInputs = inputs.filter(input => input.label.trim() !== '');
+  
+  return (
+    <div 
+      className={`rounded-lg border transition-all duration-200 ${
+        enabled 
+          ? "bg-white border-neutral-200 shadow-sm" 
+          : "bg-neutral-50/50 border-neutral-200/50 opacity-60"
+      }`}
+      data-testid={`pathway-${testIdPrefix}`}
+    >
+      {/* Collapsed header - always visible */}
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full px-4 py-3 flex items-center gap-3 text-left"
+        data-testid={`pathway-toggle-${testIdPrefix}`}
+      >
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => {
+            e.stopPropagation();
+            if (canToggle && onToggle) {
+              onToggle(e.target.checked);
+            }
+          }}
+          disabled={!canToggle}
+          onClick={(e) => e.stopPropagation()}
+          className="w-4 h-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500 disabled:opacity-50 cursor-pointer"
+          data-testid={`pathway-checkbox-${testIdPrefix}`}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-medium text-neutral-800 text-sm">{title}</span>
+            <span className={`font-semibold text-sm whitespace-nowrap ${enabled ? "text-emerald-600" : "text-neutral-400"}`}>
+              +{formatCurrency(enabled ? subtotal : 0)}/yr
+            </span>
+          </div>
+          {!expanded && (
+            <p className="text-sm text-neutral-500 mt-0.5 truncate">{summary}</p>
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 text-neutral-400 shrink-0 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} />
+      </button>
+      
+      {/* Expanded content */}
+      <div 
+        className={`overflow-hidden transition-all duration-200 ${
+          expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="px-4 pb-4 border-t border-neutral-100">
+          {/* Clean table layout for math */}
+          <div className="mt-4 space-y-2">
+            {displayInputs.map((input, i) => {
+              const isResultRow = input.isResult;
+              const hasEditable = !!input.editable;
+              
+              if (isResultRow) {
+                return (
+                  <div key={i} className="flex justify-between items-center pt-2 border-t border-neutral-200">
+                    <span className="text-sm font-medium text-neutral-700">Result</span>
+                    <span className="text-sm font-semibold text-emerald-600">{formatCurrency(subtotal)}/yr</span>
+                  </div>
+                );
+              }
+              
+              if (hasEditable && input.editable) {
+                const currentValue = (driverAssumptions as any)[input.editable.driverId]?.[input.editable.key];
+                // Extract the label prefix (before the value)
+                const labelParts = input.label.match(/^(.*?)(\d+\.?\d*)/);
+                const labelText = labelParts ? labelParts[1].replace(/[××]/g, '').trim() : input.label;
+                
+                return (
+                  <div key={i} className="flex justify-between items-center gap-4">
+                    <span className="text-sm text-neutral-600 flex-1">{labelText}</span>
+                    <div className="flex items-center">
+                      <EditableInput
+                        value={currentValue}
+                        onChange={(val) => updateDriverAssumption(input.editable!.driverId, input.editable!.key, val)}
+                        type={input.editable.type}
+                        suffix={input.editable.type === 'percent' ? '%' : ''}
+                        prefix={input.editable.type === 'currency' ? '$' : ''}
+                        testId={`edit-${input.editable.driverId}-${input.editable.key}`}
+                        className="!bg-neutral-50 !border-neutral-200"
+                      />
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Regular display row
+              return (
+                <div key={i} className="flex justify-between items-center">
+                  <span className="text-sm text-neutral-600">{input.label}</span>
+                  {input.value && <span className="text-sm text-neutral-700 font-medium tabular-nums">{input.value}</span>}
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Context note */}
+          {context && (
+            <div className="mt-4 flex items-start gap-2 text-xs text-neutral-500">
+              <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <span className="italic">{context}</span>
+            </div>
+          )}
+          
+          {/* Footer actions */}
+          <div className="mt-4 flex items-center justify-between">
+            {onResetDefaults && (
+              <button
+                type="button"
+                onClick={onResetDefaults}
+                className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+                data-testid={`pathway-reset-${testIdPrefix}`}
+              >
+                Reset to defaults
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              className="text-xs text-neutral-500 hover:text-neutral-700 flex items-center gap-1 ml-auto transition-colors"
+            >
+              Collapse <ChevronUp className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// One-liner summary generators for each pathway type
+const PATHWAY_SUMMARIES = {
+  patient_access_visits: (hours: number, conversion: number, revenue: number) =>
+    `${conversion}% of ${hours.toLocaleString()} hours → visits @ $${revenue}`,
+  patient_access_utilization: (encounters: number, realization: number, revenue: number) =>
+    `${realization}% of ${encounters.toLocaleString()} encounters @ $${revenue}/visit`,
+  overtime_reduction: (hours: number, conversion: number, rate: number) =>
+    `${conversion}% of ${hours.toLocaleString()} hours reduces OT @ $${rate}/hr`,
+  retention: (providers: number, turnover: number, cost: number) =>
+    `${providers} providers × ${turnover}% retention × $${(cost / 1000).toFixed(0)}K replacement`,
+  level_of_service: (encounters: number, uplift: number, conversionFactor: number) =>
+    `${uplift}% uplift on ${encounters.toLocaleString()} E/M encounters @ $${conversionFactor}/wRVU`,
+  denials: (encounters: number, reduction: number, claimValue: number) =>
+    `${reduction}% reduction on doc-related denials @ $${claimValue} each`,
+  hcc: (encounters: number, improvement: number, rafValue: number) =>
+    `${improvement}% improvement on MA encounters @ $${rafValue} RAF value`,
+};
 
 // Default assumption values per driver - now with pathway structure
 const DEFAULT_ASSUMPTIONS = {
@@ -2431,284 +2631,228 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       
                       {isExpanded && (
                         <div className="px-4 pb-4 border-t border-neutral-100">
-                          {/* Gap description */}
-                          <div className="mt-4 mb-3 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                            <p className="text-sm text-neutral-700">
-                              <span className="font-medium">Your Gap:</span>{" "}
-                              {driverId === 'patient_access' && `+${calculations.efficiencyGapHours.toLocaleString()} hours/year returned from documentation efficiency`}
-                              {driverId === 'overtime' && `+${calculations.efficiencyGapHours.toLocaleString()} hours/year that can reduce overtime`}
-                              {driverId === 'retention' && `${providers} providers with documentation burden reduced`}
-                              {driverId === 'level_of_service' && `+${calculations.utilizationGapEncounters.toLocaleString()} more encounters with better documentation`}
-                              {driverId === 'denials' && `Better documentation quality across ${calculations.abridgeDocumentedEncounters.toLocaleString()} encounters`}
-                              {driverId === 'hcc' && `+${calculations.utilizationGapEncounters.toLocaleString()} more encounters with complete HCC capture`}
-                            </p>
-                          </div>
-                          
-                          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">How This Creates Value:</p>
-                          
-                          <div className="space-y-3">
-                            {/* Pathway: From Efficiency Gap */}
-                            {values.gapBreakdown.fromEfficiency && (() => {
-                              // Determine enabled state and toggle key based on driver
-                              const getEfficiencyState = () => {
-                                if (driverId === 'patient_access') return { enabled: !!driverAssumptions.patient_access.visitsEnabled, key: 'visitsEnabled', label: 'Additional Patient Visits', context: PATHWAY_CONTEXT.patient_access.visits };
-                                if (driverId === 'overtime') return { enabled: !!driverAssumptions.overtime.efficiencyEnabled, key: 'efficiencyEnabled', label: 'Overtime Reduction', context: PATHWAY_CONTEXT.overtime.efficiency };
-                                return { enabled: true, key: null, label: 'From efficiency gains', context: null };
-                              };
-                              const state = getEfficiencyState();
-                              return (
-                                <div className={`rounded-lg p-3 border transition-all ${
-                                  state.enabled ? "bg-neutral-100 border-neutral-300" : "bg-neutral-50/50 border-neutral-200/50 opacity-60"
-                                }`}>
-                                  <div className="flex items-start gap-2 mb-2">
-                                    <input
-                                      type="checkbox"
-                                      checked={state.enabled}
-                                      onChange={(e) => {
-                                        if (state.key) {
-                                          updateDriverAssumption(driverId, state.key, e.target.checked ? 1 : 0);
-                                        }
-                                      }}
-                                      disabled={!state.key}
-                                      className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500 disabled:opacity-50"
-                                      data-testid={`toggle-${driverId}-efficiency`}
-                                    />
-                                    <div className="flex-1">
-                                      <div className="flex justify-between items-center">
-                                        <p className="text-xs font-medium text-neutral-700">{state.label}</p>
-                                        <span className="text-sm font-semibold text-emerald-600">
-                                          +{formatCurrency(values.gapBreakdown.fromEfficiency.subtotal)}/yr
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="ml-6 space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                                    {values.gapBreakdown.fromEfficiency.steps.map((step, i) => {
-                                      if (step.editable) {
-                                        const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
-                                        const parts = step.label.split(/(\d+\.?\d*)/);
-                                        return (
-                                          <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600 flex items-center flex-wrap gap-0.5"}>
-                                            {parts[0]}
-                                            <EditableInput
-                                              value={currentValue}
-                                              onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
-                                              type={step.editable.type}
-                                              suffix=""
-                                              prefix={step.editable.type === 'currency' ? '$' : ''}
-                                              testId={`edit-${step.editable.driverId}-${step.editable.key}`}
-                                            />
-                                            {parts.slice(2).join('')}
-                                          </p>
-                                        );
-                                      }
-                                      return (
-                                        <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
-                                          {step.label}
-                                        </p>
-                                      );
-                                    })}
-                                  </div>
-                                  {state.context && (
-                                    <p className="ml-6 mt-2 text-xs text-neutral-500 flex items-center gap-1">
-                                      <Lightbulb className="w-3 h-3" />
-                                      {state.context}
-                                    </p>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                            
-                            {/* Pathway: From Utilization Gap */}
-                            {values.gapBreakdown.fromUtilization && (() => {
-                              // Determine enabled state and toggle key based on driver
-                              const getUtilizationState = () => {
-                                if (driverId === 'patient_access') return { enabled: !!driverAssumptions.patient_access.utilizationEnabled, key: 'utilizationEnabled', label: 'Revenue from More Encounters', context: PATHWAY_CONTEXT.patient_access.utilization };
-                                if (driverId === 'level_of_service') return { enabled: true, key: null, label: 'From higher utilization', context: null };
-                                if (driverId === 'denials') return { enabled: !!driverAssumptions.denials.denialsEnabled, key: 'denialsEnabled', label: 'Denial Prevention (Volume)', context: null };
-                                if (driverId === 'hcc') return { enabled: !!driverAssumptions.hcc.hccEnabled, key: 'hccEnabled', label: 'HCC Capture (Volume)', context: PATHWAY_CONTEXT.hcc.hcc };
-                                return { enabled: true, key: null, label: 'From higher utilization', context: null };
-                              };
-                              const state = getUtilizationState();
-                              return (
-                                <div className={`rounded-lg p-3 border transition-all ${
-                                  state.enabled ? "bg-neutral-100 border-neutral-300" : "bg-neutral-50/50 border-neutral-200/50 opacity-60"
-                                }`}>
-                                  <div className="flex items-start gap-2 mb-2">
-                                    <input
-                                      type="checkbox"
-                                      checked={state.enabled}
-                                      onChange={(e) => {
-                                        if (state.key) {
-                                          updateDriverAssumption(driverId, state.key, e.target.checked ? 1 : 0);
-                                        }
-                                      }}
-                                      disabled={!state.key}
-                                      className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500 disabled:opacity-50"
-                                      data-testid={`toggle-${driverId}-utilization`}
-                                    />
-                                    <div className="flex-1">
-                                      <div className="flex justify-between items-center">
-                                        <p className="text-xs font-medium text-neutral-700">{state.label}</p>
-                                        <span className="text-sm font-semibold text-emerald-600">
-                                          +{formatCurrency(values.gapBreakdown.fromUtilization.subtotal)}/yr
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="ml-6 space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                                    {values.gapBreakdown.fromUtilization.steps.map((step, i) => {
-                                      if (step.editable) {
-                                        const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
-                                        const parts = step.label.split(/(\d+\.?\d*)/);
-                                        return (
-                                          <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600 flex items-center flex-wrap gap-0.5"}>
-                                            {parts[0]}
-                                            <EditableInput
-                                              value={currentValue}
-                                              onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
-                                              type={step.editable.type}
-                                              suffix=""
-                                              prefix={step.editable.type === 'currency' ? '$' : ''}
-                                              testId={`edit-${step.editable.driverId}-${step.editable.key}`}
-                                            />
-                                            {parts.slice(2).join('')}
-                                          </p>
-                                        );
-                                      }
-                                      return (
-                                        <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
-                                          {step.label}
-                                        </p>
-                                      );
-                                    })}
-                                  </div>
-                                  {state.context && (
-                                    <p className="ml-6 mt-2 text-xs text-neutral-500 flex items-center gap-1">
-                                      <Lightbulb className="w-3 h-3" />
-                                      {state.context}
-                                    </p>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                            
-                            {/* Pathway: Direct / Quality Improvement */}
-                            {values.gapBreakdown.direct && (() => {
-                              // Determine enabled state and toggle key based on driver
-                              const getDirectState = () => {
-                                if (driverId === 'retention') return { enabled: !!driverAssumptions.retention.retentionEnabled, key: 'retentionEnabled', label: 'Burnout Reduction', context: PATHWAY_CONTEXT.retention.retention };
-                                if (driverId === 'level_of_service') return { enabled: !!driverAssumptions.level_of_service.losEnabled, key: 'losEnabled', label: 'wRVU Uplift from Better Documentation', context: PATHWAY_CONTEXT.level_of_service.wrvu };
-                                if (driverId === 'denials') return { enabled: !!driverAssumptions.denials.denialsEnabled, key: 'denialsEnabled', label: 'Denial Prevention (Quality)', context: PATHWAY_CONTEXT.denials.denials };
-                                if (driverId === 'hcc') return { enabled: !!driverAssumptions.hcc.hccEnabled, key: 'hccEnabled', label: 'HCC Capture (Quality)', context: null };
-                                return { enabled: true, key: null, label: 'From documentation quality', context: null };
-                              };
-                              const state = getDirectState();
-                              return (
-                                <div className={`rounded-lg p-3 border transition-all ${
-                                  state.enabled ? "bg-neutral-100 border-neutral-300" : "bg-neutral-50/50 border-neutral-200/50 opacity-60"
-                                }`}>
-                                  <div className="flex items-start gap-2 mb-2">
-                                    <input
-                                      type="checkbox"
-                                      checked={state.enabled}
-                                      onChange={(e) => {
-                                        if (state.key) {
-                                          updateDriverAssumption(driverId, state.key, e.target.checked ? 1 : 0);
-                                        }
-                                      }}
-                                      disabled={!state.key}
-                                      className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500 disabled:opacity-50"
-                                      data-testid={`toggle-${driverId}-direct`}
-                                    />
-                                    <div className="flex-1">
-                                      <div className="flex justify-between items-center">
-                                        <p className="text-xs font-medium text-neutral-700">{state.label}</p>
-                                        <span className="text-sm font-semibold text-emerald-600">
-                                          +{formatCurrency(values.gapBreakdown.direct.subtotal)}/yr
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="ml-6 space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                                    {values.gapBreakdown.direct.steps.map((step, i) => {
-                                      if (step.editable) {
-                                        const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
-                                        const parts = step.label.split(/(\d+\.?\d*)/);
-                                        return (
-                                          <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600 flex items-center flex-wrap gap-0.5"}>
-                                            {parts[0]}
-                                            <EditableInput
-                                              value={currentValue}
-                                              onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
-                                              type={step.editable.type}
-                                              suffix=""
-                                              prefix={step.editable.type === 'currency' ? '$' : ''}
-                                              testId={`edit-${step.editable.driverId}-${step.editable.key}`}
-                                            />
-                                            {parts.slice(2).join('')}
-                                          </p>
-                                        );
-                                      }
-                                      return (
-                                        <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
-                                          {step.label}
-                                        </p>
-                                      );
-                                    })}
-                                  </div>
-                                  {state.context && (
-                                    <p className="ml-6 mt-2 text-xs text-neutral-500 flex items-center gap-1">
-                                      <Lightbulb className="w-3 h-3" />
-                                      {state.context}
-                                    </p>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                            
-                            {/* Total line with animated number */}
-                            <div className="border-t border-neutral-300 pt-3 mt-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-neutral-700">Total:</span>
-                                <span className="text-lg font-bold text-emerald-600">
-                                  <AnimatedNumber value={values.gap} duration={500} />/year
-                                </span>
-                              </div>
-                            </div>
-                            
-                            {/* Assumptions */}
-                            {values.gapBreakdown.assumptions.length > 0 && (
-                              <p className="text-xs text-neutral-500 pt-1">
-                                <span className="font-medium">Assumptions:</span>{" "}
-                                {values.gapBreakdown.assumptions.join(", ")}
-                              </p>
+                          {/* Clean pathway cards with progressive disclosure */}
+                          <div className="mt-4 space-y-2">
+                            {/* Patient Access - Efficiency Pathway */}
+                            {driverId === 'patient_access' && values.gapBreakdown.fromEfficiency && (
+                              <PathwayCard
+                                title="Additional Patient Visits"
+                                enabled={!!driverAssumptions.patient_access.visitsEnabled}
+                                onToggle={(enabled) => updateDriverAssumption('patient_access', 'visitsEnabled', enabled ? 1 : 0)}
+                                canToggle={true}
+                                subtotal={values.gapBreakdown.fromEfficiency.subtotal}
+                                summary={PATHWAY_SUMMARIES.patient_access_visits(
+                                  calculations.efficiencyGapHours,
+                                  driverAssumptions.patient_access.visitConversion,
+                                  driverAssumptions.patient_access.revenuePerVisit
+                                )}
+                                inputs={[
+                                  { label: 'Hours returned', value: calculations.efficiencyGapHours },
+                                  { label: 'Conversion to visits', value: driverAssumptions.patient_access.visitConversion, editable: { key: 'visitConversion', driverId: 'patient_access', type: 'percent' } },
+                                  { label: 'Revenue per visit', value: driverAssumptions.patient_access.revenuePerVisit, editable: { key: 'revenuePerVisit', driverId: 'patient_access', type: 'currency' } },
+                                  { label: 'Result', value: 0, isResult: true },
+                                ]}
+                                context={PATHWAY_CONTEXT.patient_access.visits}
+                                driverAssumptions={driverAssumptions}
+                                updateDriverAssumption={updateDriverAssumption}
+                                testIdPrefix="patient_access-visits"
+                              />
                             )}
                             
-                            {/* Reset + Remove buttons */}
-                            <div className="border-t border-neutral-200 pt-3 mt-3 flex justify-between items-center">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  resetDriverToDefaults(driverId);
-                                }}
-                                className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
-                                data-testid={`reset-driver-${driverId}`}
-                              >
-                                Reset to defaults
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleDriver(driverId);
-                                  setExpandedDrivers(prev => prev.filter(id => id !== driverId));
-                                }}
-                                className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
-                                data-testid={`remove-driver-${driverId}`}
-                              >
-                                Remove this driver
-                              </button>
+                            {/* Patient Access - Utilization Pathway */}
+                            {driverId === 'patient_access' && values.gapBreakdown.fromUtilization && (
+                              <PathwayCard
+                                title="Revenue from More Encounters"
+                                enabled={!!driverAssumptions.patient_access.utilizationEnabled}
+                                onToggle={(enabled) => updateDriverAssumption('patient_access', 'utilizationEnabled', enabled ? 1 : 0)}
+                                canToggle={true}
+                                subtotal={values.gapBreakdown.fromUtilization.subtotal}
+                                summary={PATHWAY_SUMMARIES.patient_access_utilization(
+                                  calculations.utilizationGapEncounters,
+                                  driverAssumptions.patient_access.utilizationRealization,
+                                  driverAssumptions.patient_access.revenuePerVisit
+                                )}
+                                inputs={[
+                                  { label: 'Additional encounters', value: calculations.utilizationGapEncounters },
+                                  { label: 'Realization rate', value: driverAssumptions.patient_access.utilizationRealization, editable: { key: 'utilizationRealization', driverId: 'patient_access', type: 'percent' } },
+                                  { label: 'Revenue per visit', value: driverAssumptions.patient_access.revenuePerVisit, editable: { key: 'revenuePerVisit', driverId: 'patient_access', type: 'currency' } },
+                                  { label: 'Result', value: 0, isResult: true },
+                                ]}
+                                context={PATHWAY_CONTEXT.patient_access.utilization}
+                                driverAssumptions={driverAssumptions}
+                                updateDriverAssumption={updateDriverAssumption}
+                                testIdPrefix="patient_access-utilization"
+                              />
+                            )}
+                            
+                            {/* Overtime - Efficiency Pathway */}
+                            {driverId === 'overtime' && values.gapBreakdown.fromEfficiency && (
+                              <PathwayCard
+                                title="Overtime Reduction"
+                                enabled={!!driverAssumptions.overtime.efficiencyEnabled}
+                                onToggle={(enabled) => updateDriverAssumption('overtime', 'efficiencyEnabled', enabled ? 1 : 0)}
+                                canToggle={true}
+                                subtotal={values.gapBreakdown.fromEfficiency.subtotal}
+                                summary={PATHWAY_SUMMARIES.overtime_reduction(
+                                  calculations.efficiencyGapHours,
+                                  driverAssumptions.overtime.otConversionRate,
+                                  driverAssumptions.overtime.otHourlyRate
+                                )}
+                                inputs={[
+                                  { label: 'Hours returned', value: calculations.efficiencyGapHours },
+                                  { label: 'OT conversion rate', value: driverAssumptions.overtime.otConversionRate, editable: { key: 'otConversionRate', driverId: 'overtime', type: 'percent' } },
+                                  { label: 'OT hourly rate', value: driverAssumptions.overtime.otHourlyRate, editable: { key: 'otHourlyRate', driverId: 'overtime', type: 'currency' } },
+                                  { label: 'Result', value: 0, isResult: true },
+                                ]}
+                                context={PATHWAY_CONTEXT.overtime.efficiency}
+                                driverAssumptions={driverAssumptions}
+                                updateDriverAssumption={updateDriverAssumption}
+                                testIdPrefix="overtime-efficiency"
+                              />
+                            )}
+                            
+                            {/* Retention - Direct Pathway */}
+                            {driverId === 'retention' && values.gapBreakdown.direct && (
+                              <PathwayCard
+                                title="Burnout Reduction"
+                                enabled={!!driverAssumptions.retention.retentionEnabled}
+                                onToggle={(enabled) => updateDriverAssumption('retention', 'retentionEnabled', enabled ? 1 : 0)}
+                                canToggle={true}
+                                subtotal={values.gapBreakdown.direct.subtotal}
+                                summary={PATHWAY_SUMMARIES.retention(
+                                  providers,
+                                  driverAssumptions.retention.turnoverRate,
+                                  driverAssumptions.retention.replacementCost
+                                )}
+                                inputs={[
+                                  { label: 'Providers', value: providers },
+                                  { label: 'Turnover rate', value: driverAssumptions.retention.turnoverRate, editable: { key: 'turnoverRate', driverId: 'retention', type: 'percent' } },
+                                  { label: 'Burnout reduction', value: driverAssumptions.retention.burnoutReduction, editable: { key: 'burnoutReduction', driverId: 'retention', type: 'percent' } },
+                                  { label: 'Replacement cost', value: driverAssumptions.retention.replacementCost, editable: { key: 'replacementCost', driverId: 'retention', type: 'currency' } },
+                                  { label: 'Realization rate', value: driverAssumptions.retention.realizationRate, editable: { key: 'realizationRate', driverId: 'retention', type: 'percent' } },
+                                  { label: 'Result', value: 0, isResult: true },
+                                ]}
+                                context={PATHWAY_CONTEXT.retention.retention}
+                                driverAssumptions={driverAssumptions}
+                                updateDriverAssumption={updateDriverAssumption}
+                                testIdPrefix="retention-direct"
+                              />
+                            )}
+                            
+                            {/* Level of Service - Direct Pathway */}
+                            {driverId === 'level_of_service' && values.gapBreakdown.direct && (
+                              <PathwayCard
+                                title="wRVU Uplift from Better Documentation"
+                                enabled={!!driverAssumptions.level_of_service.losEnabled}
+                                onToggle={(enabled) => updateDriverAssumption('level_of_service', 'losEnabled', enabled ? 1 : 0)}
+                                canToggle={true}
+                                subtotal={values.gapBreakdown.direct.subtotal}
+                                summary={PATHWAY_SUMMARIES.level_of_service(
+                                  Math.round(calculations.abridgeDocumentedEncounters * (driverAssumptions.level_of_service.emBillableRate / 100)),
+                                  driverAssumptions.level_of_service.wrvuUpliftPercent,
+                                  driverAssumptions.level_of_service.conversionFactor
+                                )}
+                                inputs={[
+                                  { label: 'E/M billable rate', value: driverAssumptions.level_of_service.emBillableRate, editable: { key: 'emBillableRate', driverId: 'level_of_service', type: 'percent' } },
+                                  { label: 'Avg wRVU per encounter', value: driverAssumptions.level_of_service.avgWrvuPerEncounter, editable: { key: 'avgWrvuPerEncounter', driverId: 'level_of_service', type: 'number' } },
+                                  { label: 'wRVU uplift %', value: driverAssumptions.level_of_service.wrvuUpliftPercent, editable: { key: 'wrvuUpliftPercent', driverId: 'level_of_service', type: 'percent' } },
+                                  { label: '$ per wRVU', value: driverAssumptions.level_of_service.conversionFactor, editable: { key: 'conversionFactor', driverId: 'level_of_service', type: 'currency' } },
+                                  { label: 'Result', value: 0, isResult: true },
+                                ]}
+                                context={PATHWAY_CONTEXT.level_of_service.wrvu}
+                                driverAssumptions={driverAssumptions}
+                                updateDriverAssumption={updateDriverAssumption}
+                                testIdPrefix="level_of_service-direct"
+                              />
+                            )}
+                            
+                            {/* Denials - Direct Pathway */}
+                            {driverId === 'denials' && values.gapBreakdown.direct && (
+                              <PathwayCard
+                                title="Denial Prevention"
+                                enabled={!!driverAssumptions.denials.denialsEnabled}
+                                onToggle={(enabled) => updateDriverAssumption('denials', 'denialsEnabled', enabled ? 1 : 0)}
+                                canToggle={true}
+                                subtotal={values.gapBreakdown.total}
+                                summary={PATHWAY_SUMMARIES.denials(
+                                  calculations.abridgeDocumentedEncounters,
+                                  driverAssumptions.denials.reductionRate,
+                                  driverAssumptions.denials.claimValue
+                                )}
+                                inputs={[
+                                  { label: 'Denial rate', value: driverAssumptions.denials.denialRate, editable: { key: 'denialRate', driverId: 'denials', type: 'percent' } },
+                                  { label: 'Doc-related %', value: driverAssumptions.denials.docRelatedRate, editable: { key: 'docRelatedRate', driverId: 'denials', type: 'percent' } },
+                                  { label: 'Reduction rate', value: driverAssumptions.denials.reductionRate, editable: { key: 'reductionRate', driverId: 'denials', type: 'percent' } },
+                                  { label: 'Claim value', value: driverAssumptions.denials.claimValue, editable: { key: 'claimValue', driverId: 'denials', type: 'currency' } },
+                                  { label: 'Result', value: 0, isResult: true },
+                                ]}
+                                context={PATHWAY_CONTEXT.denials.denials}
+                                driverAssumptions={driverAssumptions}
+                                updateDriverAssumption={updateDriverAssumption}
+                                testIdPrefix="denials-direct"
+                              />
+                            )}
+                            
+                            {/* HCC - Direct Pathway */}
+                            {driverId === 'hcc' && values.gapBreakdown.direct && (
+                              <PathwayCard
+                                title="HCC Capture Improvement"
+                                enabled={!!driverAssumptions.hcc.hccEnabled}
+                                onToggle={(enabled) => updateDriverAssumption('hcc', 'hccEnabled', enabled ? 1 : 0)}
+                                canToggle={true}
+                                subtotal={values.gapBreakdown.total}
+                                summary={PATHWAY_SUMMARIES.hcc(
+                                  calculations.abridgeDocumentedEncounters,
+                                  driverAssumptions.hcc.captureImprovement,
+                                  driverAssumptions.hcc.rafValue
+                                )}
+                                inputs={[
+                                  { label: 'MA population %', value: driverAssumptions.hcc.maPopulation, editable: { key: 'maPopulation', driverId: 'hcc', type: 'percent' } },
+                                  { label: 'RAF value', value: driverAssumptions.hcc.rafValue, editable: { key: 'rafValue', driverId: 'hcc', type: 'currency' } },
+                                  { label: 'Capture improvement', value: driverAssumptions.hcc.captureImprovement, editable: { key: 'captureImprovement', driverId: 'hcc', type: 'percent' } },
+                                  { label: 'Result', value: 0, isResult: true },
+                                ]}
+                                context={PATHWAY_CONTEXT.hcc.hcc}
+                                driverAssumptions={driverAssumptions}
+                                updateDriverAssumption={updateDriverAssumption}
+                                testIdPrefix="hcc-direct"
+                              />
+                            )}
+                          </div>
+                          
+                          {/* Total line */}
+                          <div className="mt-4 pt-3 border-t border-neutral-200">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-neutral-700">Total:</span>
+                              <span className="text-lg font-bold text-emerald-600">
+                                <AnimatedNumber value={values.gap} duration={500} />/year
+                              </span>
                             </div>
+                          </div>
+                          
+                          {/* Footer actions */}
+                          <div className="mt-3 pt-3 border-t border-neutral-100 flex justify-between items-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                resetDriverToDefaults(driverId);
+                              }}
+                              className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+                              data-testid={`reset-driver-${driverId}`}
+                            >
+                              Reset to defaults
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleDriver(driverId);
+                                setExpandedDrivers(prev => prev.filter(id => id !== driverId));
+                              }}
+                              className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
+                              data-testid={`remove-driver-${driverId}`}
+                            >
+                              Remove this driver
+                            </button>
                           </div>
                         </div>
                       )}
