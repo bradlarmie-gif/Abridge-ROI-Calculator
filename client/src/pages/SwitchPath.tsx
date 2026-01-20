@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings, X, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings, X, Plus, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
@@ -206,12 +206,15 @@ function formatCurrency(value: number): string {
   return "$" + Math.round(value).toLocaleString();
 }
 
-function AnimatedNumber({ value, duration = 1500 }: { value: number; duration?: number }) {
-  const [displayValue, setDisplayValue] = useState(0);
+function AnimatedNumber({ value, duration = 1500, prefix = "$" }: { value: number; duration?: number; prefix?: string }) {
+  const [displayValue, setDisplayValue] = useState(value);
+  const [prevValue, setPrevValue] = useState(value);
   
   useEffect(() => {
+    if (value === prevValue) return;
+    
     const startTime = Date.now();
-    const startValue = 0;
+    const startValue = displayValue;
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -221,14 +224,142 @@ function AnimatedNumber({ value, duration = 1500 }: { value: number; duration?: 
       
       if (progress < 1) {
         requestAnimationFrame(animate);
+      } else {
+        setPrevValue(value);
       }
     };
     
     requestAnimationFrame(animate);
-  }, [value, duration]);
+  }, [value, duration, prevValue, displayValue]);
   
-  return <span>{formatCurrency(displayValue)}</span>;
+  return <span>{prefix}{Math.round(displayValue).toLocaleString()}</span>;
 }
+
+// Editable inline input component
+interface EditableInputProps {
+  value: number;
+  onChange: (value: number) => void;
+  type: "percent" | "currency" | "number";
+  min?: number;
+  max?: number;
+  suffix?: string;
+  prefix?: string;
+  className?: string;
+  testId?: string;
+}
+
+function EditableInput({ value, onChange, type, min = 0, max, suffix = "", prefix = "", className = "", testId }: EditableInputProps) {
+  const [editing, setEditing] = useState(false);
+  const [tempValue, setTempValue] = useState(String(value));
+  const [error, setError] = useState(false);
+  
+  const validate = (val: number): boolean => {
+    if (type === "percent" && (val < 0 || val > 100)) return false;
+    if (type === "currency" && val <= 0) return false; // Currency must be > 0
+    if (min !== undefined && val < min) return false;
+    if (max !== undefined && val > max) return false;
+    return true;
+  };
+  
+  const handleBlur = () => {
+    const numVal = parseFloat(tempValue);
+    if (isNaN(numVal) || !validate(numVal)) {
+      setError(true);
+      return;
+    }
+    setError(false);
+    setEditing(false);
+    onChange(numVal);
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleBlur();
+    } else if (e.key === "Escape") {
+      setTempValue(String(value));
+      setError(false);
+      setEditing(false);
+    }
+  };
+  
+  const displayValue = type === "currency" ? value.toLocaleString() : value;
+  
+  if (editing) {
+    return (
+      <span className="inline-flex items-center">
+        {prefix && <span className="text-neutral-500">{prefix}</span>}
+        <input
+          type="number"
+          value={tempValue}
+          onChange={(e) => {
+            setTempValue(e.target.value);
+            const num = parseFloat(e.target.value);
+            setError(!isNaN(num) && !validate(num));
+          }}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          autoFocus
+          className={`w-16 px-1 py-0.5 text-center font-mono text-sm bg-white border rounded focus:outline-none focus:ring-1 ${
+            error ? "border-red-400 focus:ring-red-300" : "border-neutral-300 focus:ring-emerald-300"
+          } ${className}`}
+          data-testid={testId}
+        />
+        {suffix && <span className="text-neutral-500">{suffix}</span>}
+      </span>
+    );
+  }
+  
+  return (
+    <span 
+      onClick={() => {
+        setTempValue(String(value));
+        setEditing(true);
+      }}
+      className={`inline-flex items-center cursor-pointer hover:bg-neutral-100 px-1 py-0.5 rounded transition-colors group ${className}`}
+      title="Click to edit"
+      data-testid={testId}
+    >
+      {prefix && <span className="text-neutral-500">{prefix}</span>}
+      <span className="font-mono text-sm text-neutral-800 border-b border-dashed border-neutral-300 group-hover:border-emerald-400">
+        {displayValue}
+      </span>
+      {suffix && <span className="text-neutral-500">{suffix}</span>}
+    </span>
+  );
+}
+
+// Default assumption values per driver
+const DEFAULT_ASSUMPTIONS = {
+  patient_access: {
+    timeToVisitConversion: 20, // %
+    revenuePerVisit: 200, // $
+    utilizationRealization: 20, // %
+  },
+  overtime: {
+    otConversionRate: 40, // % of hours that reduce OT
+    otHourlyRate: 100, // $ per hour
+  },
+  retention: {
+    turnoverRate: 8, // %
+    replacementCost: 350000, // $
+    realizationRate: 20, // %
+    burnoutReduction: 25, // %
+  },
+  level_of_service: {
+    emBillableRate: 80, // %
+    wrvuMultiplier: 0.7,
+    wrvuValue: 45, // $
+  },
+  denials: {
+    denialRate: 7, // %
+    docRelatedRate: 35, // %
+    claimValue: 250, // $
+  },
+  hcc: {
+    maPopulation: 30, // %
+    rafValue: 1200, // $
+  },
+};
 
 export default function SwitchPath({ onBack }: SwitchPathProps) {
   const [step, setStep] = useState<Step>(1);
@@ -262,6 +393,37 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   const [showUtilizationModal, setShowUtilizationModal] = useState(false);
   const [showTimeSavingsModal, setShowTimeSavingsModal] = useState(false);
   const [showAssumptions, setShowAssumptions] = useState(false);
+  
+  // Editable driver assumptions state
+  const [driverAssumptions, setDriverAssumptions] = useState({
+    patient_access: { ...DEFAULT_ASSUMPTIONS.patient_access },
+    overtime: { ...DEFAULT_ASSUMPTIONS.overtime },
+    retention: { ...DEFAULT_ASSUMPTIONS.retention },
+    level_of_service: { ...DEFAULT_ASSUMPTIONS.level_of_service },
+    denials: { ...DEFAULT_ASSUMPTIONS.denials },
+    hcc: { ...DEFAULT_ASSUMPTIONS.hcc },
+  });
+  
+  const [resetToast, setResetToast] = useState<string | null>(null);
+  
+  const updateDriverAssumption = (driverId: DriverId, key: string, value: number) => {
+    setDriverAssumptions(prev => ({
+      ...prev,
+      [driverId]: {
+        ...prev[driverId],
+        [key]: value,
+      },
+    }));
+  };
+  
+  const resetDriverToDefaults = (driverId: DriverId) => {
+    setDriverAssumptions(prev => ({
+      ...prev,
+      [driverId]: { ...DEFAULT_ASSUMPTIONS[driverId] },
+    }));
+    setResetToast(`${DRIVERS.find(d => d.id === driverId)?.name || driverId} reset to defaults`);
+    setTimeout(() => setResetToast(null), 2500);
+  };
   
   // Human Scribes Path State
   const [providersWithScribes, setProvidersWithScribes] = useState<number>(0);
@@ -401,20 +563,46 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const efficiencyGapHours = abridgeTimeSavedHours - theirTimeSavedHours;
     const efficiencyGapPercent = theirTimeSavedMinutes > 0 ? Math.round(((abridgeTimeSavedMinutes - theirTimeSavedMinutes) / theirTimeSavedMinutes) * 100) : 0;
     
-    const revenuePerVisit = 200;
-    const overtimeRate = 100;
-    const providerCost = 350000;
-    const turnoverRate = 0.08;
-    const burnoutReduction = 0.25;
-    const avgClaimValue = 250;
-    const avgWrvuValue = 45;
-    const maPopulation = 0.30;
-    const avgRafValue = 1200;
+    // Use editable assumption values from state
+    const paAssumptions = driverAssumptions.patient_access;
+    const otAssumptions = driverAssumptions.overtime;
+    const retAssumptions = driverAssumptions.retention;
+    const losAssumptions = driverAssumptions.level_of_service;
+    const denAssumptions = driverAssumptions.denials;
+    const hccAssumptions = driverAssumptions.hcc;
+    
+    const revenuePerVisit = paAssumptions.revenuePerVisit;
+    const timeToVisitConversion = paAssumptions.timeToVisitConversion / 100;
+    const utilizationRealizationRate = paAssumptions.utilizationRealization / 100;
+    
+    const otConversionRate = otAssumptions.otConversionRate / 100;
+    const overtimeRate = otAssumptions.otHourlyRate;
+    
+    const turnoverRate = retAssumptions.turnoverRate / 100;
+    const providerCost = retAssumptions.replacementCost;
+    const retentionRealization = retAssumptions.realizationRate / 100;
+    const burnoutReduction = retAssumptions.burnoutReduction / 100;
+    
+    const emBillableRate = losAssumptions.emBillableRate / 100;
+    const avgWrvuValue = losAssumptions.wrvuValue;
+    const wrvuMultiplier = losAssumptions.wrvuMultiplier;
+    
+    const denialRate = denAssumptions.denialRate / 100;
+    const docRelatedRate = denAssumptions.docRelatedRate / 100;
+    const avgClaimValue = denAssumptions.claimValue;
+    
+    const maPopulation = hccAssumptions.maPopulation / 100;
+    const avgRafValue = hccAssumptions.rafValue;
     
     type CalcStep = {
       label: string;
       value: string;
       isResult?: boolean;
+      editable?: {
+        key: string;
+        driverId: DriverId;
+        type: 'percent' | 'currency' | 'number';
+      };
     };
     
     type DriverCalc = {
@@ -452,8 +640,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       hcc: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [], gapBreakdown: createEmptyGapBreakdown() },
     };
     
-    const theirUsableHours = Math.round(theirTimeSavedHours * 0.20);
-    const abridgeUsableHours = Math.round(abridgeTimeSavedHours * 0.20);
+    // Patient Access calculations using editable assumptions
+    const theirUsableHours = Math.round(theirTimeSavedHours * timeToVisitConversion);
+    const abridgeUsableHours = Math.round(abridgeTimeSavedHours * timeToVisitConversion);
     const theirNewVisits = Math.round(theirUsableHours * 2);
     const abridgeNewVisits = Math.round(abridgeUsableHours * 2);
     const theirPatientAccess = theirNewVisits * revenuePerVisit;
@@ -461,14 +650,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     
     // Calculate efficiency gap contribution to patient access
     const efficiencyGapHoursForAccess = efficiencyGapHours;
-    const efficiencyUsableHours = Math.round(efficiencyGapHoursForAccess * 0.20);
+    const efficiencyUsableHours = Math.round(efficiencyGapHoursForAccess * timeToVisitConversion);
     const efficiencyNewVisits = Math.round(efficiencyUsableHours * 2);
     const efficiencyPatientAccessValue = efficiencyNewVisits * revenuePerVisit;
     
     // Calculate utilization gap contribution to patient access
     const utilizationNewEncounters = utilizationGapEncounters;
-    const utilizationRealization = 0.20;
-    const utilizationPatientAccessValue = Math.round(utilizationNewEncounters * utilizationRealization * revenuePerVisit);
+    const utilizationPatientAccessValue = Math.round(utilizationNewEncounters * utilizationRealizationRate * revenuePerVisit);
     
     const patientAccessGap = abridgePatientAccess - theirPatientAccess;
     
@@ -492,8 +680,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         fromEfficiency: {
           steps: [
             { label: `+${efficiencyGapHoursForAccess.toLocaleString()} hours returned`, value: '' },
-            { label: `× 20% time-to-visit conversion`, value: '' },
-            { label: `× $${revenuePerVisit} per visit`, value: '' },
+            { label: `× ${paAssumptions.timeToVisitConversion}% time-to-visit conversion`, value: '', editable: { key: 'timeToVisitConversion', driverId: 'patient_access' as DriverId, type: 'percent' as const } },
+            { label: `× $${revenuePerVisit} per visit`, value: '', editable: { key: 'revenuePerVisit', driverId: 'patient_access' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(efficiencyPatientAccessValue)}/year`, value: formatCurrency(efficiencyPatientAccessValue), isResult: true },
           ],
           subtotal: efficiencyPatientAccessValue,
@@ -501,24 +689,24 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         fromUtilization: {
           steps: [
             { label: `+${utilizationNewEncounters.toLocaleString()} more encounters documented`, value: '' },
-            { label: `× 20% realization rate`, value: '' },
-            { label: `× $${revenuePerVisit} per visit`, value: '' },
+            { label: `× ${paAssumptions.utilizationRealization}% realization rate`, value: '', editable: { key: 'utilizationRealization', driverId: 'patient_access' as DriverId, type: 'percent' as const } },
+            { label: `× $${revenuePerVisit} per visit`, value: '', editable: { key: 'revenuePerVisit', driverId: 'patient_access' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(utilizationPatientAccessValue)}/year`, value: formatCurrency(utilizationPatientAccessValue), isResult: true },
           ],
           subtotal: utilizationPatientAccessValue,
         },
         total: patientAccessGap,
-        assumptions: [`20% realization rate`, `$${revenuePerVisit}/visit`],
+        assumptions: [`${paAssumptions.utilizationRealization}% realization`, `$${revenuePerVisit}/visit`],
       },
     };
     
-    // Overtime calculations
-    const theirOvertimeHours = Math.round(theirTimeSavedHours * 0.40);
-    const abridgeOvertimeHours = Math.round(abridgeTimeSavedHours * 0.40);
+    // Overtime calculations using editable assumptions
+    const theirOvertimeHours = Math.round(theirTimeSavedHours * otConversionRate);
+    const abridgeOvertimeHours = Math.round(abridgeTimeSavedHours * otConversionRate);
     const theirOvertime = theirOvertimeHours * overtimeRate;
     const abridgeOvertime = abridgeOvertimeHours * overtimeRate;
     const overtimeGap = abridgeOvertime - theirOvertime;
-    const efficiencyOvertimeValue = Math.round(efficiencyGapHours * 0.40 * overtimeRate);
+    const efficiencyOvertimeValue = Math.round(efficiencyGapHours * otConversionRate * overtimeRate);
     
     driverValues.overtime = {
       their: theirOvertime,
@@ -538,20 +726,20 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         fromEfficiency: {
           steps: [
             { label: `+${efficiencyGapHours.toLocaleString()} hours returned`, value: '' },
-            { label: `× 40% converts to OT reduction`, value: '' },
-            { label: `× $${overtimeRate}/hour OT rate`, value: '' },
+            { label: `× ${otAssumptions.otConversionRate}% converts to OT reduction`, value: '', editable: { key: 'otConversionRate', driverId: 'overtime' as DriverId, type: 'percent' as const } },
+            { label: `× $${overtimeRate}/hour OT rate`, value: '', editable: { key: 'otHourlyRate', driverId: 'overtime' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(efficiencyOvertimeValue)}/year`, value: formatCurrency(efficiencyOvertimeValue), isResult: true },
           ],
           subtotal: efficiencyOvertimeValue,
         },
         total: overtimeGap,
-        assumptions: [`40% OT conversion`, `$${overtimeRate}/hr OT rate`],
+        assumptions: [`${otAssumptions.otConversionRate}% OT conversion`, `$${overtimeRate}/hr OT rate`],
       },
     };
     
-    // Retention calculations
-    const theirRetention = Math.round(providers * turnoverRate * burnoutReduction * 0.5 * providerCost * 0.20);
-    const abridgeRetention = Math.round(providers * turnoverRate * burnoutReduction * providerCost * 0.20);
+    // Retention calculations using editable assumptions
+    const theirRetention = Math.round(providers * turnoverRate * burnoutReduction * 0.5 * providerCost * retentionRealization);
+    const abridgeRetention = Math.round(providers * turnoverRate * burnoutReduction * providerCost * retentionRealization);
     const retentionGap = abridgeRetention - theirRetention;
     const effectivenessGap = 0.50; // Abridge 100% vs current 50%
     
@@ -574,34 +762,34 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       gapBreakdown: {
         direct: {
           steps: [
-            { label: `${providers} providers × ${(turnoverRate * 100).toFixed(0)}% turnover rate`, value: '' },
-            { label: `× ${burnoutReduction * 100}% burnout reduction`, value: '' },
+            { label: `${providers} providers × ${retAssumptions.turnoverRate}% turnover rate`, value: '', editable: { key: 'turnoverRate', driverId: 'retention' as DriverId, type: 'percent' as const } },
+            { label: `× ${retAssumptions.burnoutReduction}% burnout reduction`, value: '', editable: { key: 'burnoutReduction', driverId: 'retention' as DriverId, type: 'percent' as const } },
             { label: `× ${(effectivenessGap * 100).toFixed(0)}% higher effectiveness with Abridge`, value: '' },
-            { label: `× $${(providerCost / 1000).toFixed(0)}K replacement cost × 20%`, value: '' },
+            { label: `× $${(providerCost / 1000).toFixed(0)}K replacement cost × ${retAssumptions.realizationRate}%`, value: '', editable: { key: 'replacementCost', driverId: 'retention' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(retentionGap)}/year`, value: formatCurrency(retentionGap), isResult: true },
           ],
           subtotal: retentionGap,
         },
         total: retentionGap,
-        assumptions: [`8% turnover rate`, `$${(providerCost / 1000).toFixed(0)}K replacement cost`, `20% realization`],
+        assumptions: [`${retAssumptions.turnoverRate}% turnover`, `$${(providerCost / 1000).toFixed(0)}K replacement`, `${retAssumptions.realizationRate}% realization`],
       },
     };
     
-    // Level of Service calculations
-    const theirEmBillable = Math.round(theirDocumentedEncounters * 0.80);
-    const abridgeEmBillable = Math.round(abridgeDocumentedEncounters * 0.80);
+    // Level of Service calculations using editable assumptions
+    const theirEmBillable = Math.round(theirDocumentedEncounters * emBillableRate);
+    const abridgeEmBillable = Math.round(abridgeDocumentedEncounters * emBillableRate);
     const theirUnderCoded = Math.round(theirEmBillable * (underCoding / 100));
     const abridgeUnderCoded = Math.round(abridgeEmBillable * (ABRIDGE_BENCHMARKS.underCoding / 100));
-    const theirWrvuCapture = theirUnderCoded * 0.7 * avgWrvuValue * (wrvuUplift / 100);
-    const abridgeWrvuCapture = abridgeUnderCoded * 0.7 * avgWrvuValue * (ABRIDGE_BENCHMARKS.wrvuUplift / 100);
+    const theirWrvuCapture = theirUnderCoded * wrvuMultiplier * avgWrvuValue * (wrvuUplift / 100);
+    const abridgeWrvuCapture = abridgeUnderCoded * wrvuMultiplier * avgWrvuValue * (ABRIDGE_BENCHMARKS.wrvuUplift / 100);
     const theirLos = Math.round(theirWrvuCapture);
     const abridgeLos = Math.round(abridgeWrvuCapture);
     const losGap = abridgeLos - theirLos;
     
     // Calculate utilization contribution to LOS
-    const utilizationEmEncounters = Math.round(utilizationGapEncounters * 0.80);
+    const utilizationEmEncounters = Math.round(utilizationGapEncounters * emBillableRate);
     const utilizationUnderCoded = Math.round(utilizationEmEncounters * (ABRIDGE_BENCHMARKS.underCoding / 100));
-    const utilizationLosValue = Math.round(utilizationUnderCoded * 0.7 * avgWrvuValue * (ABRIDGE_BENCHMARKS.wrvuUplift / 100));
+    const utilizationLosValue = Math.round(utilizationUnderCoded * wrvuMultiplier * avgWrvuValue * (ABRIDGE_BENCHMARKS.wrvuUplift / 100));
     
     // Calculate rate improvement contribution
     const rateImprovementLos = losGap - utilizationLosValue;
@@ -626,8 +814,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         fromUtilization: {
           steps: [
             { label: `+${utilizationGapEncounters.toLocaleString()} more encounters`, value: '' },
-            { label: `× 80% E/M billable`, value: '' },
-            { label: `× ${ABRIDGE_BENCHMARKS.underCoding}% under-coded × 0.7 wRVU × $${avgWrvuValue}`, value: '' },
+            { label: `× ${losAssumptions.emBillableRate}% E/M billable`, value: '', editable: { key: 'emBillableRate', driverId: 'level_of_service' as DriverId, type: 'percent' as const } },
+            { label: `× ${ABRIDGE_BENCHMARKS.underCoding}% under-coded × ${losAssumptions.wrvuMultiplier} wRVU × $${avgWrvuValue}`, value: '', editable: { key: 'wrvuValue', driverId: 'level_of_service' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(utilizationLosValue)}/year`, value: formatCurrency(utilizationLosValue), isResult: true },
           ],
           subtotal: utilizationLosValue,
@@ -642,13 +830,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           subtotal: rateImprovementLos,
         } : undefined,
         total: losGap,
-        assumptions: [`${ABRIDGE_BENCHMARKS.underCoding}% under-coded`, `$${avgWrvuValue}/wRVU`],
+        assumptions: [`${losAssumptions.emBillableRate}% E/M billable`, `$${avgWrvuValue}/wRVU`],
       },
     };
     
-    // Denials calculations
-    const denialRate = 0.07;
-    const docRelatedRate = 0.35;
+    // Denials calculations - uses denialRate, docRelatedRate from editable assumptions above
     const theirDenials = Math.round(theirDocumentedEncounters * denialRate);
     const theirDocDenials = Math.round(theirDenials * docRelatedRate);
     const theirPrevented = Math.round(theirDocDenials * (denialPrevention / 100));
@@ -688,8 +874,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         fromUtilization: utilizationDenialsValue > 0 ? {
           steps: [
             { label: `+${utilizationGapEncounters.toLocaleString()} more encounters documented`, value: '' },
-            { label: `× 7% denial rate × 35% doc-related`, value: '' },
-            { label: `× ${ABRIDGE_BENCHMARKS.denialPrevention}% prevention × $${avgClaimValue}/claim`, value: '' },
+            { label: `× ${denAssumptions.denialRate}% denial rate × ${denAssumptions.docRelatedRate}% doc-related`, value: '', editable: { key: 'denialRate', driverId: 'denials' as DriverId, type: 'percent' as const } },
+            { label: `× ${ABRIDGE_BENCHMARKS.denialPrevention}% prevention × $${avgClaimValue}/claim`, value: '', editable: { key: 'claimValue', driverId: 'denials' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(utilizationDenialsValue)}/year`, value: formatCurrency(utilizationDenialsValue), isResult: true },
           ],
           subtotal: utilizationDenialsValue,
@@ -704,7 +890,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           subtotal: rateImprovementDenials,
         } : undefined,
         total: denialsGap,
-        assumptions: [`7% denial rate`, `35% doc-related`, `$${avgClaimValue}/claim`],
+        assumptions: [`${denAssumptions.denialRate}% denial rate`, `${denAssumptions.docRelatedRate}% doc-related`, `$${avgClaimValue}/claim`],
       },
     };
     
@@ -742,8 +928,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         fromUtilization: utilizationHccValue > 0 ? {
           steps: [
             { label: `+${utilizationGapEncounters.toLocaleString()} more encounters`, value: '' },
-            { label: `× 30% MA population`, value: '' },
-            { label: `× ${ABRIDGE_BENCHMARKS.hccImprovement}% HCC improvement × $${avgRafValue.toLocaleString()} RAF`, value: '' },
+            { label: `× ${hccAssumptions.maPopulation}% MA population`, value: '', editable: { key: 'maPopulation', driverId: 'hcc' as DriverId, type: 'percent' as const } },
+            { label: `× ${ABRIDGE_BENCHMARKS.hccImprovement}% HCC improvement × $${avgRafValue.toLocaleString()} RAF`, value: '', editable: { key: 'rafValue', driverId: 'hcc' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(utilizationHccValue)}/year`, value: formatCurrency(utilizationHccValue), isResult: true },
           ],
           subtotal: utilizationHccValue,
@@ -758,7 +944,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           subtotal: rateImprovementHcc,
         } : undefined,
         total: hccGap,
-        assumptions: [`30% MA population`, `$${avgRafValue.toLocaleString()} RAF value`],
+        assumptions: [`${hccAssumptions.maPopulation}% MA population`, `$${avgRafValue.toLocaleString()} RAF value`],
       },
     };
     
@@ -807,7 +993,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       waitThreeYearTotal,
       costOfWaiting,
     };
-  }, [providers, annualEncounters, utilization, timeSavings, wrvuUplift, underCoding, denialPrevention, hccImprovement, selectedDrivers]);
+  }, [providers, annualEncounters, utilization, timeSavings, wrvuUplift, underCoding, denialPrevention, hccImprovement, selectedDrivers, driverAssumptions]);
 
   const canContinue = (): boolean => {
     switch (step) {
@@ -2199,11 +2385,31 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
                                 <p className="text-xs font-medium text-neutral-600 mb-2">From your efficiency gap:</p>
                                 <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                                  {values.gapBreakdown.fromEfficiency.steps.map((step, i) => (
-                                    <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
-                                      {step.label}
-                                    </p>
-                                  ))}
+                                  {values.gapBreakdown.fromEfficiency.steps.map((step, i) => {
+                                    if (step.editable) {
+                                      const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
+                                      const parts = step.label.split(/(\d+\.?\d*)/);
+                                      return (
+                                        <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600 flex items-center flex-wrap gap-0.5"}>
+                                          {parts[0]}
+                                          <EditableInput
+                                            value={currentValue}
+                                            onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
+                                            type={step.editable.type}
+                                            suffix={step.editable.type === 'percent' ? '%' : ''}
+                                            prefix={step.editable.type === 'currency' ? '$' : ''}
+                                            testId={`edit-${step.editable.driverId}-${step.editable.key}`}
+                                          />
+                                          {parts.slice(2).join('')}
+                                        </p>
+                                      );
+                                    }
+                                    return (
+                                      <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
+                                        {step.label}
+                                      </p>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -2213,11 +2419,31 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
                                 <p className="text-xs font-medium text-neutral-600 mb-2">From your utilization gap:</p>
                                 <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                                  {values.gapBreakdown.fromUtilization.steps.map((step, i) => (
-                                    <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
-                                      {step.label}
-                                    </p>
-                                  ))}
+                                  {values.gapBreakdown.fromUtilization.steps.map((step, i) => {
+                                    if (step.editable) {
+                                      const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
+                                      const parts = step.label.split(/(\d+\.?\d*)/);
+                                      return (
+                                        <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600 flex items-center flex-wrap gap-0.5"}>
+                                          {parts[0]}
+                                          <EditableInput
+                                            value={currentValue}
+                                            onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
+                                            type={step.editable.type}
+                                            suffix={step.editable.type === 'percent' ? '%' : ''}
+                                            prefix={step.editable.type === 'currency' ? '$' : ''}
+                                            testId={`edit-${step.editable.driverId}-${step.editable.key}`}
+                                          />
+                                          {parts.slice(2).join('')}
+                                        </p>
+                                      );
+                                    }
+                                    return (
+                                      <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
+                                        {step.label}
+                                      </p>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -2227,20 +2453,42 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
                                 <p className="text-xs font-medium text-neutral-600 mb-2">From documentation quality:</p>
                                 <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                                  {values.gapBreakdown.direct.steps.map((step, i) => (
-                                    <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
-                                      {step.label}
-                                    </p>
-                                  ))}
+                                  {values.gapBreakdown.direct.steps.map((step, i) => {
+                                    if (step.editable) {
+                                      const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
+                                      const parts = step.label.split(/(\d+\.?\d*)/);
+                                      return (
+                                        <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600 flex items-center flex-wrap gap-0.5"}>
+                                          {parts[0]}
+                                          <EditableInput
+                                            value={currentValue}
+                                            onChange={(val) => updateDriverAssumption(step.editable!.driverId, step.editable!.key, val)}
+                                            type={step.editable.type}
+                                            suffix={step.editable.type === 'percent' ? '%' : ''}
+                                            prefix={step.editable.type === 'currency' ? '$' : ''}
+                                            testId={`edit-${step.editable.driverId}-${step.editable.key}`}
+                                          />
+                                          {parts.slice(2).join('')}
+                                        </p>
+                                      );
+                                    }
+                                    return (
+                                      <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
+                                        {step.label}
+                                      </p>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
                             
-                            {/* Total line */}
+                            {/* Total line with animated number */}
                             <div className="border-t border-neutral-300 pt-3 mt-2">
                               <div className="flex justify-between items-center">
                                 <span className="text-sm font-medium text-neutral-700">Total:</span>
-                                <span className="text-lg font-bold text-emerald-600">{formatCurrency(values.gap)}/year</span>
+                                <span className="text-lg font-bold text-emerald-600">
+                                  <AnimatedNumber value={values.gap} duration={500} />/year
+                                </span>
                               </div>
                             </div>
                             
@@ -2252,8 +2500,18 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               </p>
                             )}
                             
-                            {/* Remove driver link */}
-                            <div className="border-t border-neutral-200 pt-3 mt-3">
+                            {/* Reset + Remove buttons */}
+                            <div className="border-t border-neutral-200 pt-3 mt-3 flex justify-between items-center">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  resetDriverToDefaults(driverId);
+                                }}
+                                className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+                                data-testid={`reset-driver-${driverId}`}
+                              >
+                                Reset to defaults
+                              </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -2273,11 +2531,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   );
                 })}
 
-                {/* Total Summary - Compact */}
+                {/* Total Summary - Compact with animated number */}
                 <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold text-neutral-600">TOTAL ANNUAL GAP</span>
-                    <span className="text-xl font-bold text-[#E85D3F]">{formatCurrency(calculations.totalGap)}/year</span>
+                    <span className="text-xl font-bold text-[#E85D3F]">
+                      <AnimatedNumber value={calculations.totalGap} duration={500} />/year
+                    </span>
                   </div>
                 </div>
                 
@@ -2592,6 +2852,17 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
       </main>
+      
+      {/* Toast notification for reset to defaults */}
+      {resetToast && (
+        <div 
+          className="fixed bottom-4 right-4 bg-neutral-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50"
+          data-testid="toast-reset-defaults"
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span className="text-sm">{resetToast}</span>
+        </div>
+      )}
     </div>
   );
 }
