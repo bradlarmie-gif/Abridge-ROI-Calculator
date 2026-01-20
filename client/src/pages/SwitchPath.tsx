@@ -302,9 +302,9 @@ function EditableInput({ value, onChange, type, min = 0, max, suffix = "", prefi
         }}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        className={`min-w-[50px] w-auto px-2 py-1 text-right font-mono text-sm rounded transition-all outline-none
+        className={`min-w-[50px] w-auto px-2 py-1 text-right tabular-nums text-sm rounded transition-all outline-none
           bg-neutral-50 border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-100 cursor-text
-          focus:bg-white focus:border-2 focus:border-[#E85D3F] focus:ring-1 focus:ring-[#E85D3F]/30
+          focus:bg-white focus:border-2 focus:border-neutral-400 focus:ring-1 focus:ring-neutral-200
           ${error ? "!border-red-400 !focus:ring-red-300" : ""} ${className}`}
         style={{ width: `${Math.max(50, String(displayValue).length * 10 + 20)}px` }}
         data-testid={testId}
@@ -420,10 +420,13 @@ function PathwayCard({
               const hasEditable = !!input.editable;
               
               if (isResultRow) {
+                const displayValue = enabled ? subtotal : 0;
                 return (
                   <div key={i} className="flex justify-between items-center pt-2 border-t border-neutral-200">
                     <span className="text-sm font-medium text-neutral-700">Result</span>
-                    <span className="text-sm font-semibold text-emerald-600">{formatCurrency(subtotal)}/yr</span>
+                    <span className={`text-sm font-semibold ${enabled ? "text-emerald-600" : "text-neutral-400"}`}>
+                      {formatCurrency(displayValue)}/yr
+                    </span>
                   </div>
                 );
               }
@@ -486,6 +489,7 @@ function PathwayCard({
               type="button"
               onClick={() => setExpanded(false)}
               className="text-xs text-neutral-500 hover:text-neutral-700 flex items-center gap-1 ml-auto transition-colors"
+              data-testid={`pathway-collapse-${testIdPrefix}`}
             >
               Collapse <ChevronUp className="w-3 h-3" />
             </button>
