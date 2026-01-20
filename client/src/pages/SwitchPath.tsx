@@ -1323,7 +1323,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 </div>
                 <div className="flex justify-between mt-3 text-sm">
                   <span className="text-neutral-600"><strong className="text-neutral-900">{coveragePercent}%</strong> covered</span>
-                  <span className="text-neutral-500"><strong className="text-neutral-700">{100 - coveragePercent}%</strong> no support</span>
+                  <span className="text-neutral-500"><strong className="text-neutral-700">{100 - coveragePercent}%</strong> self documenting</span>
                 </div>
               </div>
 
