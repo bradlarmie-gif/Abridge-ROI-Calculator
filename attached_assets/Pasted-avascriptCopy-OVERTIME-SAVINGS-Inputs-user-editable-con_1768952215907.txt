@@ -1,0 +1,123 @@
+avascriptCopy// ============ OVERTIME SAVINGS ============
+
+// Inputs (user-editable)
+const otProviders = 40;                    // Total providers
+const otPercentWithOT = 0.60;              // % who regularly work OT
+const otHoursPerWeek = 4;                  // Avg OT hours per week
+const otWeeksPerYear = 50;                 // Working weeks
+const otReductionRate = 0.70;              // Abridge impact on documentation time
+const otConversionRate = 0.33;             // % of saved time → actual OT reduction
+const physicianHourlyRate = 150;           // Fully-loaded physician labor cost
+
+// Calculations
+const annualOTHours = otProviders * otPercentWithOT * otHoursPerWeek * otWeeksPerYear;
+// 40 × 0.60 × 4 × 50 = 4,800 hrs
+
+const otHoursEliminated = annualOTHours * otReductionRate;
+// 4,800 × 0.70 = 3,360 hrs
+
+const otHoursConvertedToSavings = otHoursEliminated * otConversionRate;
+// 3,360 × 0.33 = 1,109 hrs
+
+const annualOTSavings = otHoursConvertedToSavings * physicianHourlyRate;
+// 1,109 × $150 = $166,320
+
+
+// ============ LOCUM AVOIDANCE ============
+
+// Inputs (user-editable)
+const locumProviders = 2;                  // Number of locum providers used
+const locumHoursPerWeek = 40;              // Hours per locum per week
+const locumWeeksPerYear = 30;              // Weeks of locum coverage annually
+const locumConversionRate = 0.33;          // % of efficiency gain → locum reduction
+const locumHourlyRate = 275;               // Avg locum cost per hour
+
+// Calculations
+const annualLocumHours = locumProviders * locumHoursPerWeek * locumWeeksPerYear;
+// 2 × 40 × 30 = 2,400 hrs
+
+const locumHoursAvoided = annualLocumHours * locumConversionRate;
+// 2,400 × 0.33 = 792 hrs
+
+const annualLocumSavings = locumHoursAvoided * locumHourlyRate;
+// 792 × $275 = $217,800
+
+
+// ============ COMBINED ============
+
+const totalOTLocumSavings = annualOTSavings + annualLocumSavings;
+// $166,320 + $217,800 = $384,120
+
+Updated Step-Down UI:
+OVERTIME SAVINGS — $166,320
+CopySTEP 1: BASELINE OVERTIME HOURS
+How much overtime exists today?
+
+Providers  ×  % with OT  ×  Hrs/Week  ×  Weeks    =  Annual OT Hours
+   40      ×     60%     ×     4      ×    50     =     4,800 hrs
+
+─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+
+STEP 2: DOCUMENTATION TIME ELIMINATED
+How much can Abridge reduce?
+
+Annual OT Hours  ×  Reduction Rate  =  Hours Eliminated
+    4,800 hrs    ×       70%        =     3,360 hrs
+
+─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+
+STEP 3: HOURS CONVERTED TO SAVINGS
+What portion becomes actual OT reduction?
+
+Hours Eliminated  ×  Conversion Rate  =  OT Hours Saved
+    3,360 hrs     ×       33%         =     1,109 hrs
+
+💡 The remaining 67% goes to quality of life and seeing more patients
+
+─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+
+STEP 4: COST SAVINGS
+What's the dollar value?
+
+OT Hours Saved  ×  Physician Rate  =  Annual OT Savings
+   1,109 hrs    ×     $150/hr      =      $166,320
+
+LOCUM AVOIDANCE — $217,800
+CopySTEP 1: CURRENT LOCUM USAGE
+How many locum hours are you using today?
+
+Locum Providers  ×  Hrs/Week  ×  Weeks/Year  =  Annual Locum Hours
+       2         ×     40     ×      30      =      2,400 hrs
+
+─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+
+STEP 2: LOCUM HOURS AVOIDED
+What portion can improved efficiency reduce?
+
+Annual Locum Hours  ×  Conversion Rate  =  Locum Hours Avoided
+     2,400 hrs      ×       33%         =       792 hrs
+
+💡 We conservatively assume 1/3 of locum usage is tied to 
+   documentation-driven capacity constraints
+
+─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+
+STEP 3: COST SAVINGS
+What's the dollar value?
+
+Locum Hours Avoided  ×  Locum Rate  =  Annual Locum Savings
+      792 hrs        ×   $275/hr    =       $217,800
+
+⚠️ National avg locum rate. Specialists may run $350-500/hr.
+
+COMBINED TOTAL
+Copy┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   TOTAL OVERTIME & LOCUM SAVINGS                                │
+│                                                                 │
+│   Overtime Savings:           $166,320                          │
+│   Locum Avoidance:            $217,800                          │
+│   ───────────────────────────────────────                       │
+│   TOTAL ANNUAL SAVINGS:       $384,120                          │
+│                                                                 │
+└──────────────────────────────────────────────
