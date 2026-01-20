@@ -1440,14 +1440,6 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             </div>
 
-            <div className="bg-blue-50 rounded-xl p-5 border border-blue-200/50 flex items-center justify-between">
-              <div>
-                <p className="text-blue-900 font-medium">See how Abridge creates value beyond cost</p>
-                <p className="text-sm text-blue-700/80">Hidden costs, expanded coverage, and documentation intelligence</p>
-              </div>
-              <ArrowRight className="w-5 h-5 text-blue-600" />
-            </div>
-
             <div className="mt-12 flex justify-end">
               <Button
                 onClick={handleContinue}
@@ -1925,7 +1917,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 5 && (
+        {step === 5 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
             <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3" data-testid="text-step5-title">
               What matters most to your organization?

@@ -1,0 +1,77 @@
+FIX THE SCRIBE PATH - SPLIT THE CRAMPED SCREEN INTO SEPARATE PAGES
+
+## THE PROBLEM
+The current "cost comparison" screen has too many elements:
+- Cost comparison cards
+- "See how Abridge creates value" link
+- "See hidden costs" button  
+- "What matters most" section
+- Driver selection cards
+- Estimated gap
+- Continue button
+
+This needs to be 3 SEPARATE screens.
+
+## THE FIX
+
+### SCREEN 4: Cost Comparison
+This screen should ONLY contain:
+1. Title: "The cost comparison"
+2. Subtitle: "Scribes vs. Abridge"
+3. Two side-by-side cards:
+   - Left: Your Scribe Program (cost, providers covered, math)
+   - Right: With Abridge (pricing note, all providers get access, no per-hour)
+4. One CTA button: "See hidden costs →"
+
+REMOVE from this screen:
+- "See how Abridge creates value beyond cost" link
+- "What matters most to your organization" section
+- All driver selection cards
+- Estimated Annual Gap box
+- The cramped footer
+
+### SCREEN 5: Hidden Costs
+This screen should ONLY contain:
+1. Title: "The costs you don't see"
+2. Subtitle: "Scribes come with operational overhead"
+3. Three info cards (Turnover, Management, Coverage Gaps)
+4. Total Hidden Costs summary
+5. One CTA button: "See what else Abridge adds →"
+
+### SCREEN 6: Value Drivers (NEW SEPARATE SCREEN)
+This screen should contain:
+1. Title: "What scribes can't do"
+2. Subtitle: "Abridge adds intelligence, not just documentation"
+3. Intro text: "Select what matters to your organization:"
+4. Driver selection cards (the ones currently crammed onto cost comparison)
+5. "Show 3 more drivers" expand
+6. Running total at bottom: "Selected: X of 6 | Estimated additional value: $XX/year"
+7. TWO CTA options:
+   - Secondary: "Skip - just show cost savings" (goes to summary without drivers)
+   - Primary: "Calculate value →" (goes to summary with drivers)
+
+### SCREEN 7: Summary
+Combines everything into final view.
+
+## PROGRESS DOTS
+Update to reflect the new flow:
+1. Baseline
+2. Solution Selection  
+3. Scribe Program Details
+4. Coverage Gap
+5. Cost Comparison (NEW - just costs)
+6. Hidden Costs
+7. Value Drivers (NEW - separate screen)
+8. Summary
+
+That's 8 steps for scribe path.
+
+## NAVIGATION
+Each screen has ONE clear next action:
+- Cost Comparison → "See hidden costs"
+- Hidden Costs → "See what else Abridge adds"
+- Value Drivers → "Calculate value" OR "Skip"
+- Summary → Save/Share/Export
+
+No more cramming multiple sections onto one scrolling page.
+Each screen = one concept = one decision.
