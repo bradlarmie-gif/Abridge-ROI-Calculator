@@ -742,7 +742,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-lg text-neutral-900 mb-1">{data.name}</h3>
                       <p className="text-sm text-neutral-500 leading-relaxed">
-                        {solution === "ambient" ? "Currently using DAX, Suki, Nabla, or similar" : "In-person or virtual scribes"}
+                        {solution === "ambient" ? "Currently using DAX, Ambience Healthcare, or similar" : "In-person or virtual scribes"}
                       </p>
                     </div>
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
