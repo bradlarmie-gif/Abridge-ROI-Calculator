@@ -603,7 +603,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
   const canContinue = (): boolean => {
     switch (step) {
-      case 1: return selectedSolution !== null;
+      case 1: return selectedSolution !== null && selectedSetting !== null;
       case 2: return providers > 0 && annualEncounters > 0;
       case 3: return true;
       case 4: return true;
@@ -727,7 +727,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     onClick={() => setSelectedSolution(solution)}
                     className={`group relative flex items-center gap-5 p-5 rounded-2xl border-2 text-left transition-all duration-300 ${
                       isSelected
-                        ? "border-neutral-900 bg-neutral-50 shadow-lg"
+                        ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
                         : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
                     }`}
                     data-testid={`card-solution-${solution}`}
@@ -744,7 +744,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       </p>
                     </div>
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                      isSelected ? "border-neutral-900 bg-neutral-900" : "border-neutral-300"
+                      isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
                     }`}>
                       {isSelected && <Check className="w-4 h-4 text-white" />}
                     </div>
@@ -753,7 +753,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               })}
             </div>
 
-            <div className="mt-8 md:mt-12">
+            <div className="mt-6 md:mt-8">
               <p className="text-xs md:text-sm font-medium text-neutral-600 mb-3 md:mb-4 text-center">Select a care setting:</p>
               <div className="flex flex-wrap justify-center gap-3">
                 {CARE_SETTINGS.map((setting) => (
@@ -776,7 +776,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       {setting.label}
                     </span>
                     {!setting.available && (
-                      <span className="text-[10px] text-neutral-400 mt-0.5">Coming Soon</span>
+                      <span className="text-[11px] text-neutral-400 mt-0.5">Coming Soon</span>
                     )}
                   </button>
                 ))}
