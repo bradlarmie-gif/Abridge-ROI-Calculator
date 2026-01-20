@@ -615,7 +615,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   };
 
   const handleContinue = () => {
-    if (step < 7) {
+    const maxStep = isScribePath ? 8 : 7;
+    if (step < maxStep) {
       setStep((step + 1) as Step);
     }
   };
@@ -726,15 +727,15 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     onClick={() => setSelectedSolution(solution)}
                     className={`group relative flex items-center gap-5 p-5 rounded-2xl border-2 text-left transition-all duration-300 ${
                       isSelected
-                        ? "border-[#E85D3F] bg-gradient-to-r from-[#E85D3F]/5 to-[#E85D3F]/10 shadow-lg"
+                        ? "border-neutral-900 bg-neutral-50 shadow-lg"
                         : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
                     }`}
                     data-testid={`card-solution-${solution}`}
                   >
                     <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                      isSelected ? "bg-[#E85D3F]/15" : "bg-neutral-100 group-hover:bg-neutral-200"
+                      isSelected ? "bg-neutral-900/10" : "bg-neutral-100 group-hover:bg-neutral-200"
                     }`}>
-                      <Icon className={`w-7 h-7 transition-colors ${isSelected ? "text-[#E85D3F]" : "text-neutral-500 group-hover:text-neutral-700"}`} />
+                      <Icon className={`w-7 h-7 transition-colors ${isSelected ? "text-neutral-900" : "text-neutral-500 group-hover:text-neutral-700"}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-lg text-neutral-900 mb-1">{data.name}</h3>
@@ -743,7 +744,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       </p>
                     </div>
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                      isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
+                      isSelected ? "border-neutral-900 bg-neutral-900" : "border-neutral-300"
                     }`}>
                       {isSelected && <Check className="w-4 h-4 text-white" />}
                     </div>
@@ -1942,7 +1943,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     onClick={() => toggleDriver(driver.id)}
                     className={`p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-200 relative ${
                       isSelected
-                        ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-md"
+                        ? "border-emerald-500 bg-emerald-50 shadow-md"
                         : "border-neutral-200 hover:border-neutral-300 bg-white"
                     }`}
                     data-testid={`driver-${driver.id}`}
@@ -1952,9 +1953,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     </span>
                     <div className="flex items-center md:items-start md:flex-col gap-3 md:gap-0 mt-1">
                       <div className={`w-10 h-10 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0 md:mb-3 ${
-                        isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
+                        isSelected ? "bg-emerald-100" : "bg-neutral-100"
                       }`}>
-                        <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
+                        <Icon className={`w-5 h-5 ${isSelected ? "text-emerald-600" : "text-neutral-500"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-neutral-900 text-sm md:mb-1">{driver.name}</h3>
@@ -1962,7 +1963,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         <p className="text-sm font-semibold text-emerald-600 hidden md:block">{driver.typicalGap}</p>
                       </div>
                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
+                        isSelected ? "border-emerald-500 bg-emerald-500" : "border-neutral-300"
                       }`}>
                         {isSelected && <Check className="w-4 h-4 text-white" />}
                       </div>
@@ -2003,16 +2004,16 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         onClick={() => toggleDriver(driver.id)}
                         className={`p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-200 ${
                           isSelected
-                            ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-md"
+                            ? "border-emerald-500 bg-emerald-50 shadow-md"
                             : "border-neutral-200 hover:border-neutral-300 bg-white"
                         }`}
                         data-testid={`driver-${driver.id}`}
                       >
                         <div className="flex items-center md:items-start md:flex-col gap-3 md:gap-0">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 md:mb-3 ${
-                            isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
+                            isSelected ? "bg-emerald-100" : "bg-neutral-100"
                           }`}>
-                            <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
+                            <Icon className={`w-5 h-5 ${isSelected ? "text-emerald-600" : "text-neutral-500"}`} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-neutral-900 text-sm md:mb-1">{driver.name}</h3>
@@ -2020,7 +2021,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                             <p className="text-sm font-semibold text-emerald-600 hidden md:block">{driver.typicalGap}</p>
                           </div>
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                            isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
+                            isSelected ? "border-emerald-500 bg-emerald-500" : "border-neutral-300"
                           }`}>
                             {isSelected && <Check className="w-4 h-4 text-white" />}
                           </div>
