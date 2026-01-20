@@ -761,7 +761,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     key={setting.id}
                     onClick={() => setting.available && setSelectedSetting(setting.id)}
                     disabled={!setting.available}
-                    className={`relative px-5 py-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center min-w-[100px] ${
+                    className={`relative px-5 py-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center justify-center min-w-[100px] min-h-[60px] ${
                       selectedSetting === setting.id
                         ? "bg-neutral-900 text-white"
                         : setting.available
