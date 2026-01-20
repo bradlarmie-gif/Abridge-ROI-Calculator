@@ -1108,7 +1108,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     That's <strong className="text-neutral-900">{coveragePercent}%</strong> of your providers with scribe support.
                   </p>
                   <p className="text-neutral-500 mt-1">
-                    <strong className="text-neutral-700">{100 - coveragePercent}%</strong> have no documentation help.
+                    <strong className="text-neutral-700">{100 - coveragePercent}%</strong> are self documenting.
                   </p>
                 </div>
               </div>
@@ -2027,7 +2027,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <div className="px-5 pb-5 border-t border-neutral-100">
                     <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
                       <p className="text-sm text-neutral-700 mb-2">
-                        <strong>{providersWithoutScribes}</strong> providers currently have no documentation help.
+                        <strong>{providersWithoutScribes}</strong> providers are currently self documenting.
                       </p>
                       <p className="text-sm text-neutral-600 font-mono">
                         {providersWithoutScribes} providers × {Math.round(encountersPerProvider).toLocaleString()} encounters × 3 min = {timeSavedNewProvidersHours.toLocaleString()} hours
