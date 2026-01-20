@@ -1010,8 +1010,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, situation: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   situation === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`overtime-situation-${opt}`}
               >
@@ -1069,10 +1069,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">1.5× base rate is typical</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(hoursEliminated * overtimeRate))}
             </span>
           </div>
@@ -1109,8 +1109,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, demand: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   demand === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`patient-access-demand-${opt}`}
               >
@@ -1134,8 +1134,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, realizationRate: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   realizationRate === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`patient-access-realization-${opt}`}
               >
@@ -1163,10 +1163,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Primary care: $150-200 | Specialty: $250-400</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(newVisits * revenuePerVisit))}
             </span>
           </div>
@@ -1242,10 +1242,10 @@ export default function ModelBuilder({
           </p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(prevented * replacementCost))}
             </span>
           </div>
@@ -1304,10 +1304,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Check with your finance team—typically $40-55</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(corrected * 0.7 * wrvuFactor))}
             </span>
           </div>
@@ -1371,10 +1371,10 @@ export default function ModelBuilder({
           </p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(recaptured * 1500))}
             </span>
           </div>
@@ -1430,10 +1430,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">For outpatient E/M visits</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(prevented * avgClaimValue))}
             </span>
           </div>
@@ -1490,8 +1490,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, improvementLevel: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   improvementLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`ed-improvement-${opt}`}
               >
@@ -1541,10 +1541,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Some retained patients would have been admitted (~15%). Conservative model excludes this by default.</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(baseValue))}
             </span>
           </div>
@@ -1573,8 +1573,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, edScribe: { ...prev.edScribe, hasScribes: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   hasScribes === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`ed-scribe-${opt ? "yes" : "no"}`}
               >
@@ -1651,10 +1651,10 @@ export default function ModelBuilder({
           </>
         )}
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(savings))}
             </span>
           </div>
@@ -1729,10 +1729,10 @@ export default function ModelBuilder({
           </div>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(prevented * replacementCost))}
             </span>
           </div>
@@ -1808,10 +1808,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Check with your finance team—typically $45-60 for ED</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(value))}
             </span>
           </div>
@@ -1873,10 +1873,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">ED claims are higher than outpatient: $500-900 typical</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(prevented * avgClaimValue))}
             </span>
           </div>
@@ -1957,10 +1957,10 @@ export default function ModelBuilder({
           </div>
         )}
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(calculateDriverValue("inpatientRounding"))}
             </span>
           </div>
@@ -2026,10 +2026,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Hospitalist replacement costs $600K-900K including recruiting, onboarding, and lost productivity</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(prevented * replacementCost))}
             </span>
           </div>
@@ -2090,10 +2090,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Typical CC adds $1,500-2,500; MCC adds $3,000-5,000 to reimbursement</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(captured * avgDRGUplift))}
             </span>
           </div>
@@ -2170,10 +2170,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Includes CDI specialist time, physician response time, and overhead ($30-60 typical)</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(queriesAvoided * costPerQuery))}
             </span>
           </div>
@@ -2235,10 +2235,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Inpatient claims are high-value: $3,500-6,000 typical</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(prevented * avgClaimValue))}
             </span>
           </div>
@@ -2310,8 +2310,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, reductionLevel: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   reductionLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`nursing-overtime-reduction-${opt}`}
               >
@@ -2338,10 +2338,10 @@ export default function ModelBuilder({
           </div>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(hoursEliminated * overtimeRate))}
             </span>
           </div>
@@ -2379,8 +2379,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, nursingDocTime: { ...prev.nursingDocTime, docBurden: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   docBurden === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`nursing-doc-time-burden-${opt}`}
               >
@@ -2404,8 +2404,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, nursingDocTime: { ...prev.nursingDocTime, reductionLevel: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   reductionLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`nursing-doc-time-reduction-${opt}`}
               >
@@ -2434,10 +2434,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">What portion of time savings can be valued? (~50% is typical)</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result (Soft Value)</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(dollarValue)}
             </span>
           </div>
@@ -2521,8 +2521,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, reductionLevel: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   reductionLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`nursing-agency-reduction-${opt}`}
               >
@@ -2535,10 +2535,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Documentation burden is one factor driving agency use. Conservative is realistic.</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(ftesConverted * premium))}
             </span>
           </div>
@@ -2626,8 +2626,8 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, preventionLevel: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   preventionLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                    : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`nursing-retention-prevention-${opt}`}
               >
@@ -2654,10 +2654,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">$40K-$60K is typical (recruiting, training, onboarding)</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(prevented * replacementCost))}
             </span>
           </div>
@@ -2730,10 +2730,10 @@ export default function ModelBuilder({
           <p className="text-xs text-[#6B7280]">Includes avoided audit findings, reduced remediation, compliance benefits</p>
         </div>
         
-        <div className="p-4 bg-[#E85D3F]/5 rounded-lg border border-[#E85D3F]/20">
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#111827]">Result (Compliance Value)</span>
-            <span className="font-mono font-bold text-[#E85D3F] text-xl">
+            <span className="font-mono font-bold text-emerald-600 text-xl">
               {formatCurrency(Math.round(operationalValue * (utilizationRate / 100)))}
             </span>
           </div>
@@ -3003,13 +3003,22 @@ export default function ModelBuilder({
                     </div>
                   </div>
                   
-                  <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
-                    <p className="text-sm text-[#111827]">
-                      <span className="font-medium">→</span>{" "}
-                      <span className="font-mono">{providers.toLocaleString()}</span> {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} ×{" "}
-                      <span className="font-mono">{encounters.toLocaleString()}</span> {isInpatientSetting ? "admissions" : "encounters"} ×{" "}
-                      <span className="font-mono">{utilizationRate}%</span> ={" "}
-                      <span className="font-mono font-semibold text-[#E85D3F]">{eligibleEncounters.toLocaleString()}</span> eligible {isInpatientSetting ? "admissions" : "encounters"}
+                  <div className="mt-8 p-5 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-xl border border-emerald-200">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <span className="text-sm font-medium text-emerald-800">Your Multiplier</span>
+                    </div>
+                    <div className="font-mono text-3xl font-bold text-emerald-700 mb-1">
+                      {eligibleEncounters.toLocaleString()}
+                    </div>
+                    <p className="text-sm text-emerald-700">
+                      eligible {isInpatientSetting ? "admissions" : "encounters"} per year
+                    </p>
+                    <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
+                      <ArrowRight className="w-3 h-3" />
+                      Everything below builds from this number
                     </p>
                   </div>
                 </div>
@@ -3030,6 +3039,7 @@ export default function ModelBuilder({
             <section className="bg-white rounded-2xl border border-neutral-200 p-8">
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Investment</h2>
+                <p className="text-sm text-[#6B7280]">What does this cost?</p>
               </div>
               
               {isNursingSetting ? (
@@ -3240,88 +3250,28 @@ export default function ModelBuilder({
             <div className="sticky top-24 bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-[#111827] mb-6">Live Model</h3>
               
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <h4 className="text-xs font-medium text-[#6B7280] uppercase tracking-wider">Your Inputs</h4>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-[#6B7280]">{isInpatientSetting ? "Hospitalists" : isEDSetting ? "ED Physicians" : "Providers"}</span>
-                    <span className="font-mono text-right text-[#111827]">{providers.toLocaleString()}</span>
-                    <span className="text-[#6B7280]">{isInpatientSetting ? "Admissions" : "Encounters"}</span>
-                    <span className="font-mono text-right text-[#111827]">{encounters.toLocaleString()}</span>
-                    <span className="text-[#6B7280]">Utilization</span>
-                    <span className="font-mono text-right text-[#111827]">{utilizationRate}%</span>
-                    <span className="text-[#6B7280]">Eligible</span>
-                    <span className="font-mono text-right font-medium text-[#E85D3F]">{eligibleEncounters.toLocaleString()}</span>
-                  </div>
-                </div>
-                
-                <div className="border-t border-neutral-100 pt-4 space-y-3">
-                  <h4 className="text-xs font-medium text-[#6B7280] uppercase tracking-wider">Your Value</h4>
-                  
-                  {timeSubtotal > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-                        <Clock className="w-4 h-4" />
-                        <span>Time Saved</span>
-                      </div>
-                      {Object.entries(driverResults)
-                        .filter(([_, d]) => d.category === "time")
-                        .map(([id, d]) => (
-                          <div key={id} className="flex justify-between text-sm pl-6">
-                            <span className="text-[#6B7280] truncate">{d.name}</span>
-                            <span className="font-mono text-[#111827]">{formatCurrency(d.value)}</span>
-                          </div>
-                        ))}
-                      <div className="flex justify-between text-sm pl-6 font-medium border-t border-neutral-50 pt-2">
-                        <span className="text-[#111827]">Subtotal</span>
-                        <span className="font-mono text-[#111827]">{formatCurrency(timeSubtotal)}</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {qualitySubtotal > 0 && (
-                    <div className="space-y-2 mt-4">
-                      <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-                        <FileX className="w-4 h-4" />
-                        <span>Doc Quality</span>
-                      </div>
-                      {Object.entries(driverResults)
-                        .filter(([_, d]) => d.category === "quality")
-                        .map(([id, d]) => (
-                          <div key={id} className="flex justify-between text-sm pl-6">
-                            <span className="text-[#6B7280] truncate">{d.name}</span>
-                            <span className="font-mono text-[#111827]">{formatCurrency(d.value)}</span>
-                          </div>
-                        ))}
-                      <div className="flex justify-between text-sm pl-6 font-medium border-t border-neutral-50 pt-2">
-                        <span className="text-[#111827]">Subtotal</span>
-                        <span className="font-mono text-[#111827]">{formatCurrency(qualitySubtotal)}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="border-t border-neutral-100 pt-4">
-                  <div className="flex justify-between items-center mb-2">
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2">
                     <span className="text-sm font-medium text-[#111827]">Total Benefit</span>
-                    <span className="font-mono font-semibold text-[#111827]">{formatCurrency(totalBenefit)}/yr</span>
+                    <span className="font-mono font-semibold text-emerald-600">{formatCurrency(totalBenefit)}/yr</span>
                   </div>
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-[#6B7280]">Investment</span>
                     <span className="font-mono text-[#6B7280]">{formatCurrency(totalInvestment)}/yr</span>
                   </div>
+                  <div className="border-t border-neutral-200 pt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-[#111827]">Net Gain</span>
+                      <span className="font-mono font-bold text-lg text-emerald-600">{formatCurrency(netGain)}/yr</span>
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="bg-neutral-100 rounded-xl p-4 border border-neutral-200">
-                  <div className="text-center mb-3">
-                    <span className="text-xs text-[#6B7280] uppercase tracking-wider">Net Gain</span>
-                    <div className="font-mono font-bold text-2xl text-emerald-600">{formatCurrency(netGain)}/yr</div>
-                  </div>
-                  <div className="flex justify-center text-sm">
-                    <div className="text-center">
-                      <div className="font-mono font-bold text-xl text-[#111827]">{roiMultiple.toFixed(1)}x</div>
-                      <div className="text-xs text-[#6B7280]">ROI</div>
-                    </div>
+                <div className="bg-neutral-100 rounded-xl p-5 border border-neutral-200">
+                  <div className="text-center">
+                    <div className="font-mono font-bold text-3xl text-[#111827] mb-1">{roiMultiple.toFixed(1)}x</div>
+                    <div className="text-xs text-[#6B7280] uppercase tracking-wider">Return on Investment</div>
                   </div>
                 </div>
                 

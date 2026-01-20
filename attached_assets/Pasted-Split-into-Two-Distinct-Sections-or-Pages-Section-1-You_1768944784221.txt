@@ -1,0 +1,69 @@
+Split into Two Distinct Sections (or Pages)
+Section 1: "Your Organization" — The baseline inputs
+
+Providers count
+Annual encounters
+Utilization rate
+Output: "65,000 eligible encounters" (this is the multiplier—make it feel like a milestone)
+
+Section 2: "Your Value Drivers" — The customization
+
+Each driver as an expandable card
+One open at a time (accordion style—when you open one, others close)
+Investment section at the bottom
+
+Consider making these two separate steps in the flow (Step 3a: Organization, Step 3b: Value Drivers) so each gets breathing room.
+
+Visual Hierarchy Fixes
+1. The "65,000 eligible encounters" output is buried
+This is THE number everything builds from. Right now it's a small line at the bottom of the Organization section.
+Make it a prominent callout:
+Copy→ 65,000 eligible encounters
+  This is your multiplier. Everything below builds from this.
+Styled as a highlighted box or with larger text and an arrow/icon indicating "this flows down."
+2. Result numbers should be green
+The dollar amounts ($216,667, $81,900, $52,650) are positive outcomes. Style them in green to reinforce "this is value you're gaining." The coral/orange should be reserved for the NET GAIN summary and CTAs.
+3. The Live Model sidebar is doing too much
+It's showing inputs AND value breakdown AND net gain. Simplify to just the essentials:
+CopyLIVE MODEL
+
+Total Benefit        $351,217/yr
+Investment           $84,000/yr
+─────────────────────────────
+NET GAIN             $267,217/yr
+ROI                  4.2x
+
+[ View Full Summary → ]
+Remove the itemized breakdown from the sidebar—that detail lives in the expanded driver cards on the left. The sidebar is just the scoreboard.
+4. One driver expanded at a time
+When "Patient Access" is expanded, "Accurate Level of Service" and "Clinician Retention" should be collapsed. This focuses the conversation and reduces visual overwhelm. Accordion behavior.
+5. The Investment section needs separation
+It currently runs right into the value drivers. Add a clear visual break—a horizontal rule or distinct card—and consider a header like:
+CopyYour Investment
+What does this cost?
+6. Button treatments in driver cards
+The "Yes, waitlists / Probably yes / Not sure" and "Conservative 15% / Typical 20% / Optimistic 30%" buttons are good but need cleaner styling:
+
+Selected state should be clearly filled (not just outlined)
+Unselected should be subtle/ghost style
+Equal widths for the button group
+
+
+Micro-interactions
+1. Numbers should animate
+When inputs change and the Result updates, the number should ease/count to the new value (200-300ms). This creates the feeling that the model is alive and responsive.
+2. Smooth accordion transitions
+When expanding/collapsing driver cards, the height transition should be smooth (250ms ease), not instant.
+
+Summary of Changes
+
+Split Organization and Value Drivers into two clearer sections (consider separate steps)
+Make "65,000 eligible encounters" a prominent milestone callout
+Style positive dollar results in green
+Simplify sidebar to just: Total Benefit, Investment, Net Gain, ROI
+Accordion behavior—one driver expanded at a time
+Clearer visual separation for Investment section
+Cleaner button group styling for the option selectors
+Animate number changes smoothly
+
+Add to Conversation
