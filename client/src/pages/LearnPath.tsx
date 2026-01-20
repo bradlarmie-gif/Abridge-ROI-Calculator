@@ -1524,17 +1524,20 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
               
               <button
                 onClick={() => handleSettingSelect("inpatient")}
-                className={`p-5 rounded-xl border-2 text-left transition-all ${
+                className={`relative p-5 rounded-xl border-2 text-left hover-elevate ${
                   selectedSetting === "inpatient"
                     ? "border-[#E85D3F] bg-[#FEF2F0]"
-                    : "border-neutral-200 bg-white hover-elevate"
+                    : "border-neutral-200 bg-white"
                 }`}
                 data-testid="card-inpatient"
               >
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
-                  selectedSetting === "inpatient" ? "bg-[#E85D3F]" : "bg-[#FEF2F0]"
-                }`}>
-                  <Building2 className={`w-5 h-5 ${selectedSetting === "inpatient" ? "text-white" : "text-[#E85D3F]"}`} />
+                {selectedSetting === "inpatient" && (
+                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#E85D3F] flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                )}
+                <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center mb-3">
+                  <Building2 className={`w-5 h-5 ${selectedSetting === "inpatient" ? "text-[#E85D3F]" : "text-[#6B7280]"}`} />
                 </div>
                 <h3 className="font-semibold text-[#111827] mb-1">Inpatient</h3>
                 <p className="text-sm text-[#6B7280]">Hospital admissions, rounding</p>
