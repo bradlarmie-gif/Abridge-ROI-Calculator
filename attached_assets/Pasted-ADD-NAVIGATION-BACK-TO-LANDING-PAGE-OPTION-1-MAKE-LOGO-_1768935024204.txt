@@ -1,0 +1,80 @@
+ADD NAVIGATION BACK TO LANDING PAGE
+
+## OPTION 1: MAKE LOGO CLICKABLE (Recommended)
+
+The "ABRIDGE" text in the header should be a clickable link 
+that returns to the landing/home page.
+
+Find the header component that shows:
+ABRIDGE    SWITCH    ● ● ● ● ●    ← Back
+
+Make "ABRIDGE" clickable:
+- Wrap in a link/button
+- On click: navigate to the landing page (home route)
+- Cursor: pointer on hover
+- Optional: subtle hover state (slight opacity change or underline)
+
+```jsx
+// Example
+<header>
+  <Link to="/" className="logo-link">
+    ABRIDGE
+  </Link>
+  <span className="flow-label">SWITCH</span>
+  {/* ... progress dots ... */}
+  <button onClick={goBack}>← Back</button>
+</header>
+
+// CSS
+.logo-link {
+  font-weight: 700;
+  color: #1F2937;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.logo-link:hover {
+  opacity: 0.7;
+}
+OPTION 2: ADD "START OVER" LINK ON SUMMARY PAGES
+On the final summary pages (both Ambient AI and Human Scribes),
+add a "Start Over" or "New Analysis" link.
+Location options:
+
+In the header: "← Back  |  ← Start Over"
+At the bottom with action buttons: [Edit Model] [Copy Link] [Let's Talk] [Start Over]
+In the "View assumptions" area
+
+jsxCopy// Header option
+<div className="header-nav">
+  <button onClick={goBack}>← Back</button>
+  <span className="divider">|</span>
+  <Link to="/">← Start Over</Link>
+</div>
+
+// Or button option at bottom
+<div className="actions">
+  <button onClick={editModel}>Edit Model</button>
+  <button onClick={copyLink}>Copy Link</button>
+  <button onClick={startConversation} className="primary">Let's Talk</button>
+  <Link to="/" className="start-over">Start new analysis</Link>
+</div>
+RECOMMENDED APPROACH
+Do BOTH:
+
+Make logo clickable on ALL pages (standard UX)
+Add subtle "Start new analysis" link on summary pages
+
+This gives users two ways to get home:
+
+Logo click (for those who expect it)
+Explicit link (for those who need it spelled out)
+
+Copy
+---
+
+## **THE SIMPLEST FIX**
+
+Just make the "ABRIDGE" logo clickable → goes to landing page.
+
+That's it. One change. Standard web convention. Everyone expects it.Add to Conversation
