@@ -314,36 +314,84 @@ function EditableInput({ value, onChange, type, min = 0, max, suffix = "", prefi
   );
 }
 
-// Default assumption values per driver
+// Default assumption values per driver - now with pathway structure
 const DEFAULT_ASSUMPTIONS = {
   patient_access: {
-    timeToVisitConversion: 20, // %
+    // Pathway 1: Additional Patient Visits
+    visitsEnabled: true,
+    visitConversion: 10, // % (conservative, was 20%)
     revenuePerVisit: 200, // $
-    utilizationRealization: 20, // %
+    // Pathway 2: Reduced Overtime (moved from separate driver)
+    overtimeEnabled: true,
+    otConversion: 40, // %
+    otHourlyRate: 75, // $
+    // Pathway 3: Utilization realization
+    utilizationEnabled: true,
+    utilizationRealization: 10, // % (conservative)
   },
   overtime: {
-    otConversionRate: 40, // % of hours that reduce OT
-    otHourlyRate: 100, // $ per hour
+    // Single pathway - efficiency-based
+    efficiencyEnabled: true,
+    otConversionRate: 40, // %
+    otHourlyRate: 100, // $
   },
   retention: {
+    // Single pathway - burnout reduction
+    retentionEnabled: true,
     turnoverRate: 8, // %
     replacementCost: 350000, // $
     realizationRate: 20, // %
     burnoutReduction: 25, // %
   },
   level_of_service: {
+    // Pathway 1: Under-coding correction
+    undercodingEnabled: true,
     emBillableRate: 80, // %
-    wrvuMultiplier: 0.7,
+    undercodingImprovement: 4, // % improvement
     wrvuValue: 45, // $
+    // Pathway 2: E/M Level optimization (optional)
+    emLevelEnabled: false,
+    emLevelUplift: 2, // %
   },
   denials: {
+    // Single pathway - reduced claim rejections
+    denialsEnabled: true,
     denialRate: 7, // %
     docRelatedRate: 35, // %
+    reductionRate: 30, // % reduction with better notes
     claimValue: 250, // $
   },
   hcc: {
+    // Single pathway - better HCC capture
+    hccEnabled: true,
     maPopulation: 30, // %
     rafValue: 1200, // $
+    captureImprovement: 15, // %
+  },
+};
+
+// Pathway metadata with context about when each applies
+const PATHWAY_CONTEXT = {
+  patient_access: {
+    visits: "Applies if you have appointment demand exceeding supply",
+    overtime: "Applies if after-hours documentation is common",
+    utilization: "Applies if more documented encounters = more captured revenue",
+  },
+  overtime: {
+    efficiency: "Applies if providers regularly work overtime on documentation",
+  },
+  retention: {
+    retention: "Applies if burnout and turnover are concerns for your organization",
+  },
+  level_of_service: {
+    undercoding: "Applies if providers tend to undercode for simplicity",
+    emLevel: "Applies if E/M level optimization is a strategic priority",
+  },
+  denials: {
+    denials: "Based on industry benchmarks for ambient AI documentation quality",
+  },
+  hcc: {
+    hcc: "Applies if you have Medicare Advantage patients and focus on RAF optimization",
   },
 };
 
@@ -558,7 +606,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const hccAssumptions = driverAssumptions.hcc;
     
     const revenuePerVisit = paAssumptions.revenuePerVisit;
-    const timeToVisitConversion = paAssumptions.timeToVisitConversion / 100;
+    const timeToVisitConversion = paAssumptions.visitConversion / 100;
     const utilizationRealizationRate = paAssumptions.utilizationRealization / 100;
     
     const otConversionRate = otAssumptions.otConversionRate / 100;
@@ -571,7 +619,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     
     const emBillableRate = losAssumptions.emBillableRate / 100;
     const avgWrvuValue = losAssumptions.wrvuValue;
-    const wrvuMultiplier = losAssumptions.wrvuMultiplier;
+    const wrvuMultiplier = 0.7; // Fixed wRVU multiplier
     
     const denialRate = denAssumptions.denialRate / 100;
     const docRelatedRate = denAssumptions.docRelatedRate / 100;
@@ -667,7 +715,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         fromEfficiency: {
           steps: [
             { label: `+${efficiencyGapHoursForAccess.toLocaleString()} hours returned`, value: '' },
-            { label: `× ${paAssumptions.timeToVisitConversion}% time-to-visit conversion`, value: '', editable: { key: 'timeToVisitConversion', driverId: 'patient_access' as DriverId, type: 'percent' as const } },
+            { label: `× ${paAssumptions.visitConversion}% time-to-visit conversion`, value: '', editable: { key: 'visitConversion', driverId: 'patient_access' as DriverId, type: 'percent' as const } },
             { label: `× $${revenuePerVisit} per visit`, value: '', editable: { key: 'revenuePerVisit', driverId: 'patient_access' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(efficiencyPatientAccessValue)}/year`, value: formatCurrency(efficiencyPatientAccessValue), isResult: true },
           ],
@@ -803,7 +851,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           steps: [
             { label: `+${utilizationGapEncounters.toLocaleString()} more encounters`, value: '' },
             { label: `× ${losAssumptions.emBillableRate}% E/M billable`, value: '', editable: { key: 'emBillableRate', driverId: 'level_of_service' as DriverId, type: 'percent' as const } },
-            { label: `× ${ABRIDGE_BENCHMARKS.underCoding}% under-coded × ${losAssumptions.wrvuMultiplier} wRVU × $${avgWrvuValue}`, value: '', editable: { key: 'wrvuValue', driverId: 'level_of_service' as DriverId, type: 'currency' as const } },
+            { label: `× ${ABRIDGE_BENCHMARKS.underCoding}% under-coded × 0.7 wRVU × $${avgWrvuValue}`, value: '', editable: { key: 'wrvuValue', driverId: 'level_of_service' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(utilizationLosValue)}/year`, value: formatCurrency(utilizationLosValue), isResult: true },
           ],
           subtotal: utilizationLosValue,
@@ -2365,14 +2413,51 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       
                       {isExpanded && (
                         <div className="px-4 pb-4 border-t border-neutral-100">
-                          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mt-4 mb-3">How We Calculated This:</p>
+                          {/* Gap description */}
+                          <div className="mt-4 mb-3 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                            <p className="text-sm text-neutral-700">
+                              <span className="font-medium">Your Gap:</span>{" "}
+                              {driverId === 'patient_access' && `+${calculations.efficiencyGapHours.toLocaleString()} hours/year returned from documentation efficiency`}
+                              {driverId === 'overtime' && `+${calculations.efficiencyGapHours.toLocaleString()} hours/year that can reduce overtime`}
+                              {driverId === 'retention' && `${providers} providers with documentation burden reduced`}
+                              {driverId === 'level_of_service' && `+${calculations.utilizationGapEncounters.toLocaleString()} more encounters with better documentation`}
+                              {driverId === 'denials' && `Better documentation quality across ${calculations.abridgeDocumentedEncounters.toLocaleString()} encounters`}
+                              {driverId === 'hcc' && `+${calculations.utilizationGapEncounters.toLocaleString()} more encounters with complete HCC capture`}
+                            </p>
+                          </div>
+                          
+                          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">How This Creates Value:</p>
                           
                           <div className="space-y-3">
-                            {/* From Efficiency Gap */}
+                            {/* Pathway: From Efficiency Gap */}
                             {values.gapBreakdown.fromEfficiency && (
-                              <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
-                                <p className="text-xs font-medium text-neutral-600 mb-2">From your efficiency gap:</p>
-                                <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                              <div className={`rounded-lg p-3 border transition-all ${
+                                driverAssumptions.patient_access.visitsEnabled ? "bg-neutral-50 border-neutral-200" : "bg-neutral-100/50 border-neutral-200/50 opacity-60"
+                              }`}>
+                                <div className="flex items-start gap-2 mb-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={driverId === 'patient_access' ? !!driverAssumptions.patient_access.visitsEnabled : true}
+                                    onChange={(e) => {
+                                      if (driverId === 'patient_access') {
+                                        updateDriverAssumption('patient_access', 'visitsEnabled', e.target.checked ? 1 : 0);
+                                      }
+                                    }}
+                                    className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
+                                    data-testid={`toggle-${driverId}-efficiency`}
+                                  />
+                                  <div className="flex-1">
+                                    <div className="flex justify-between items-center">
+                                      <p className="text-xs font-medium text-neutral-700">
+                                        {driverId === 'patient_access' ? 'Additional Patient Visits' : 'From efficiency gains'}
+                                      </p>
+                                      <span className="text-sm font-semibold text-emerald-600">
+                                        +{formatCurrency(values.gapBreakdown.fromEfficiency.subtotal)}/yr
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="ml-6 space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                                   {values.gapBreakdown.fromEfficiency.steps.map((step, i) => {
                                     if (step.editable) {
                                       const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
@@ -2399,14 +2484,44 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                     );
                                   })}
                                 </div>
+                                {driverId === 'patient_access' && (
+                                  <p className="ml-6 mt-2 text-xs text-neutral-500 flex items-center gap-1">
+                                    <Lightbulb className="w-3 h-3" />
+                                    {PATHWAY_CONTEXT.patient_access.visits}
+                                  </p>
+                                )}
                               </div>
                             )}
                             
-                            {/* From Utilization Gap */}
+                            {/* Pathway: From Utilization Gap */}
                             {values.gapBreakdown.fromUtilization && (
-                              <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
-                                <p className="text-xs font-medium text-neutral-600 mb-2">From your utilization gap:</p>
-                                <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                              <div className={`rounded-lg p-3 border transition-all ${
+                                driverAssumptions.patient_access.utilizationEnabled ? "bg-neutral-50 border-neutral-200" : "bg-neutral-100/50 border-neutral-200/50 opacity-60"
+                              }`}>
+                                <div className="flex items-start gap-2 mb-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={driverId === 'patient_access' ? !!driverAssumptions.patient_access.utilizationEnabled : true}
+                                    onChange={(e) => {
+                                      if (driverId === 'patient_access') {
+                                        updateDriverAssumption('patient_access', 'utilizationEnabled', e.target.checked ? 1 : 0);
+                                      }
+                                    }}
+                                    className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
+                                    data-testid={`toggle-${driverId}-utilization`}
+                                  />
+                                  <div className="flex-1">
+                                    <div className="flex justify-between items-center">
+                                      <p className="text-xs font-medium text-neutral-700">
+                                        {driverId === 'patient_access' ? 'Revenue from More Encounters' : 'From higher utilization'}
+                                      </p>
+                                      <span className="text-sm font-semibold text-emerald-600">
+                                        +{formatCurrency(values.gapBreakdown.fromUtilization.subtotal)}/yr
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="ml-6 space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                                   {values.gapBreakdown.fromUtilization.steps.map((step, i) => {
                                     if (step.editable) {
                                       const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
@@ -2433,14 +2548,36 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                     );
                                   })}
                                 </div>
+                                {driverId === 'patient_access' && (
+                                  <p className="ml-6 mt-2 text-xs text-neutral-500 flex items-center gap-1">
+                                    <Lightbulb className="w-3 h-3" />
+                                    {PATHWAY_CONTEXT.patient_access.utilization}
+                                  </p>
+                                )}
                               </div>
                             )}
                             
-                            {/* Direct / Quality Improvement */}
+                            {/* Pathway: Direct / Quality Improvement */}
                             {values.gapBreakdown.direct && (
                               <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
-                                <p className="text-xs font-medium text-neutral-600 mb-2">From documentation quality:</p>
-                                <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                                <div className="flex items-start gap-2 mb-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={true}
+                                    onChange={() => {}}
+                                    className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
+                                    data-testid={`toggle-${driverId}-direct`}
+                                  />
+                                  <div className="flex-1">
+                                    <div className="flex justify-between items-center">
+                                      <p className="text-xs font-medium text-neutral-700">From documentation quality</p>
+                                      <span className="text-sm font-semibold text-emerald-600">
+                                        +{formatCurrency(values.gapBreakdown.direct.subtotal)}/yr
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="ml-6 space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                                   {values.gapBreakdown.direct.steps.map((step, i) => {
                                     if (step.editable) {
                                       const currentValue = (driverAssumptions as any)[step.editable.driverId]?.[step.editable.key];
@@ -2467,6 +2604,12 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                     );
                                   })}
                                 </div>
+                                {driverId === 'denials' && (
+                                  <p className="ml-6 mt-2 text-xs text-neutral-500 flex items-center gap-1">
+                                    <Lightbulb className="w-3 h-3" />
+                                    {PATHWAY_CONTEXT.denials.denials}
+                                  </p>
+                                )}
                               </div>
                             )}
                             

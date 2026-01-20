@@ -1,0 +1,133 @@
+RESTRUCTURE DRIVER LOGIC TO BE MORE DEFENSIBLE
+
+## THE PROBLEM
+
+Current logic assumes all time saved = revenue.
+This is not defensible. A CFO will ask:
+- "Why 20% conversion?"
+- "What if we're already fully booked?"
+- "Not all time becomes patient visits."
+
+## THE FIX
+
+Instead of one calculation path, show MULTIPLE PATHWAYS 
+for how the gap creates value. Let the user select which apply.
+
+## NEW DRIVER STRUCTURE
+
+### PATIENT ACCESS (Revised)
+
+Input: +700 hours returned/year (from efficiency gap)
+
+Pathways (user selects which apply):
+
+PATHWAY 1: Additional Patient Visits
+- Applies if: Demand exists, slots unfilled, providers willing
+- Calculation: 
+  Hours × [10]% converts to visits × $[200]/visit
+- Toggle: ☑ Include this pathway
+
+PATHWAY 2: Reduced Overtime  
+- Applies if: Providers doing after-hours documentation
+- Calculation:
+  Hours × [40]% reduces OT × $[75]/hour OT rate
+- Toggle: ☑ Include this pathway
+
+PATHWAY 3: Retention Impact
+- Applies if: Burnout/turnover is a concern
+- Note: "See Clinician Retention driver for detailed calc"
+- Toggle: ☐ (links to separate driver)
+
+Driver Total = Sum of selected pathways
+
+### DOCUMENTATION-RELATED DENIALS (Revised)
+
+Input: Better documentation quality from Abridge
+
+Pathway 1: Reduced Claim Rejections
+- Current denial rate: [7]% of claims
+- Doc-related portion: [35]% of denials
+- Reduction with better notes: [30]%
+- Cost per denial: $[250]
+- Encounters: X
+- Calculation shown step by step
+
+This one is more straightforward — keep similar but 
+make ALL numbers editable.
+
+### LEVEL OF SERVICE ACCURACY (Revised)
+
+Input: More complete documentation supports appropriate coding
+
+Pathway 1: Under-coding Correction
+- Current under-coding rate: [8]%
+- With Abridge: [12]% (better capture)
+- Improvement: +4%
+- wRVU value: $[45]
+- Applicable encounters: X
+
+Pathway 2: E/M Level Optimization
+- [Optional — some orgs don't focus on this]
+
+### NEW UI PATTERN
+
+For each driver:
+┌─────────────────────────────────────────────────────────────────┐
+│  [Driver Name]                               +$XX,XXX/year      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  YOUR GAP: [description of input]                               │
+│                                                                 │
+│  HOW THIS CREATES VALUE:                                        │
+│                                                                 │
+│  ☑ [Pathway 1 Name]                           +$XX,XXX/year     │
+│    [Editable calculation with visible inputs]                   │
+│    ⓘ Applies if: [context for when this is realistic]          │
+│                                                                 │
+│  ☑ [Pathway 2 Name]                           +$XX,XXX/year     │
+│    [Editable calculation with visible inputs]                   │
+│    ⓘ Applies if: [context for when this is realistic]          │
+│                                                                 │
+│  ☐ [Pathway 3 Name]                           (not selected)    │
+│    [Grayed out, click to add]                                   │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│  Driver Total:                                +$XX,XXX/year     │
+│                                                                 │
+│  [Reset to defaults]                   [Remove this driver]     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+### REALISTIC DEFAULT ASSUMPTIONS
+
+Patient Access - Additional Visits:
+- Default: 10% conversion (conservative, not 20%)
+- Context: "Realistic if you have appointment demand exceeding supply"
+
+Patient Access - Reduced Overtime:
+- Default: 40% of hours reduce OT
+- Context: "Realistic if after-hours documentation is common"
+
+Denials:
+- Default: 30% reduction in doc-related denials
+- Context: "Based on industry benchmarks for ambient AI"
+
+Level of Service:
+- Default: 4% improvement in capture
+- Context: "Conservative estimate for under-coding correction"
+
+### THE CONSULTANT SCRIPT
+
+When presenting, you say:
+
+"Here's the time Abridge returns — 700 hours a year. 
+Now, not all of that becomes revenue. Let's be honest about that.
+
+But some of it can:
+- If you have unmet patient demand, some becomes visits.
+- If your providers are doing pajama time, some reduces overtime.
+- If burnout is driving turnover, some helps retention.
+
+Which of these apply to you? Let's turn off the ones that don't."
+
+That's defensible. That's consultative. That wins trust.
