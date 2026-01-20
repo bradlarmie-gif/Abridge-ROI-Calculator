@@ -885,14 +885,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const efficiencyNewVisits = Math.round(efficiencyUsableHours * 2);
     const efficiencyPatientAccessValue = efficiencyNewVisits * revenuePerVisit;
     
-    // Calculate utilization gap contribution to patient access
-    const utilizationNewEncounters = utilizationGapEncounters;
-    const utilizationPatientAccessValue = Math.round(utilizationNewEncounters * utilizationRealizationRate * revenuePerVisit);
-    
-    // Total = SUM of ENABLED pathways only (respects toggle state)
-    const patientAccessGap = 
-      (paAssumptions.visitsEnabled ? efficiencyPatientAccessValue : 0) + 
-      (paAssumptions.utilizationEnabled ? utilizationPatientAccessValue : 0);
+    // Total = efficiency pathway only (utilization pathway removed)
+    const patientAccessGap = paAssumptions.visitsEnabled ? efficiencyPatientAccessValue : 0;
     
     driverValues.patient_access = {
       their: theirPatientAccess,
@@ -920,17 +914,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           ],
           subtotal: efficiencyPatientAccessValue,
         },
-        fromUtilization: {
-          steps: [
-            { label: `+${utilizationNewEncounters.toLocaleString()} more encounters documented`, value: '' },
-            { label: `× ${paAssumptions.utilizationRealization}% realization rate`, value: '', editable: { key: 'utilizationRealization', driverId: 'patient_access' as DriverId, type: 'percent' as const } },
-            { label: `× $${revenuePerVisit} per visit`, value: '', editable: { key: 'revenuePerVisit', driverId: 'patient_access' as DriverId, type: 'currency' as const } },
-            { label: `= ${formatCurrency(utilizationPatientAccessValue)}/year`, value: formatCurrency(utilizationPatientAccessValue), isResult: true },
-          ],
-          subtotal: utilizationPatientAccessValue,
-        },
         total: patientAccessGap,
-        assumptions: [`${paAssumptions.utilizationRealization}% realization`, `$${revenuePerVisit}/visit`],
+        assumptions: [`${paAssumptions.visitConversion}% conversion`, `$${revenuePerVisit}/visit`],
       },
     };
     

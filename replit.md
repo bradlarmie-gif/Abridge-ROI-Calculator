@@ -60,7 +60,7 @@ The application operates entirely client-side, providing a responsive and intera
   - **Real-Time Recalculation**: Toggling a pathway immediately updates the driver total and overall gap
   - **PATHWAY_CONTEXT**: Context notes explain when each pathway applies (e.g., "Applies if you have appointment demand exceeding supply")
   - **Driver Pathways**:
-    - Patient Access: Additional Patient Visits (efficiency), Revenue from More Encounters (utilization)
+    - Patient Access: Additional Patient Visits (efficiency only)
     - Overtime: Overtime Reduction (efficiency)
     - Retention: Burnout Reduction (direct)
     - Level of Service: wRVU Uplift from Better Documentation (single pathway with losEnabled toggle)
