@@ -799,10 +799,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
         {step === 2 && (
           <div className="animate-in fade-in duration-300">
-            <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3" data-testid="text-step2-title">
+            <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3 text-center" data-testid="text-step2-title">
               Let's start with the basics.
             </h1>
-            <p className="text-base md:text-lg text-neutral-500 mb-6 md:mb-12">We'll build your baseline together.</p>
+            <p className="text-base md:text-lg text-neutral-500 mb-6 md:mb-12 text-center">We'll build your baseline together.</p>
 
             <div className="bg-neutral-50 rounded-2xl p-5 md:p-10 space-y-6 md:space-y-8">
               <div className="space-y-4 md:space-y-6">
