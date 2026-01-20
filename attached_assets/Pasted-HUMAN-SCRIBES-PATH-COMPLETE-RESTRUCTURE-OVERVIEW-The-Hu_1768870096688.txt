@@ -1,0 +1,190 @@
+HUMAN SCRIBES PATH - COMPLETE RESTRUCTURE
+
+## OVERVIEW
+The Human Scribes path needs to be simplified and made more defensible. 
+Key changes:
+1. Split the messy "cost comparison" page into multiple focused screens
+2. Don't claim 100% Abridge coverage (use 65% utilization benchmark)
+3. Separate "direct cost comparison" from "value drivers"
+4. Apply realization factors to make numbers believable
+5. Show math transparently
+
+## SCREEN-BY-SCREEN CHANGES
+
+### SCREEN 2: Scribe Program Details
+Change "67% have no documentation help" to:
+"67% of providers are self-documenting"
+
+Keep everything else on this screen.
+
+### SCREEN 3: Coverage Gap
+Change the "WITH ABRIDGE" section:
+
+OLD:
+- "All 30 providers covered"
+- "100% coverage at a fraction of the cost"
+
+NEW:
+- "All 30 providers have ACCESS to Abridge"
+- "Average utilization: 65% based on industry benchmarks"
+- "No per-provider cost barrier to scale"
+
+Change the bullet points at bottom:
+OLD:
+- "Spending extra time on documentation"
+- "Potentially seeing fewer patients"
+- "More likely to burn out"
+
+NEW (softer):
+- "Self-documenting after hours"
+- "Less time available for patient care"
+- "Higher administrative burden"
+
+### SCREEN 4: Cost Comparison - SIMPLIFY
+Remove the "What matters most to your organization" driver selection from this page entirely.
+This screen should ONLY show:
+
+1. Your Current Scribe Program: $425,000/year
+   - 10 of 30 providers covered
+   - Show the math: 10 scribes × $25/hr × 34 hrs × 50 weeks
+
+2. With Abridge card:
+   - Remove "Contact for pricing" 
+   - Replace with: "Pricing based on deployment size"
+   - "All 30 providers get access"
+   - "No per-hour costs"
+   - Add small note: "Your Abridge rep can provide specific pricing"
+
+3. Remove the "DIRECT COST DIFFERENCE: $425,000/year savings" box
+   - This assumes Abridge is free, which is misleading
+   - Instead, add: "See how Abridge creates value beyond cost →"
+
+4. CTA: "See hidden costs →"
+
+### SCREEN 5: Hidden Costs (KEEP, minor tweaks)
+This screen is mostly good. Keep:
+- Turnover & Training: $14,000/year
+- Management Overhead: $10,000/year
+- Coverage Gaps section (qualitative)
+- Total Hidden Costs: $24,000/year
+
+Change CTA from "See total value" to "See what else Abridge adds →"
+
+### SCREEN 6: What Scribes Can't Do (NEW SCREEN)
+Create a NEW screen between Hidden Costs and Summary.
+
+Title: "What scribes can't do"
+Subtitle: "Abridge isn't just documentation — it's documentation intelligence."
+
+Content:
+"Your scribes document encounters. Abridge does that AND helps with:"
+
+Show 3-4 value drivers with TOGGLES (not pre-selected cards):
+
+┌─────────────────────────────────────────────────────────────┐
+│  ☐ Coding Accuracy                                          │
+│     Suggests appropriate E/M levels based on documentation  │
+│     Typical improvement: 3-6% wRVU uplift                   │
+│     Include in my analysis                                  │
+├─────────────────────────────────────────────────────────────┤
+│  ☐ Denial Prevention                                        │
+│     Better documentation quality = fewer claim rejections   │
+│     Typical improvement: 20-30% reduction                   │
+│     Include in my analysis                                  │
+├─────────────────────────────────────────────────────────────┤
+│  ☐ HCC/Chronic Condition Capture                            │
+│     Surfaces conditions for proper risk adjustment          │
+│     Typical improvement: 10-15% capture rate                │
+│     Include in my analysis                                  │
+└─────────────────────────────────────────────────────────────┘
+
+Footer note:
+"These apply to ALL providers with Abridge access, not just those who had scribes.
+We'll apply conservative estimates in your summary."
+
+CTA: "Calculate my value →"
+
+If user selects NONE, that's fine — summary will just show cost-related value.
+
+### SCREEN 7: Summary Dashboard (RESTRUCTURE)
+
+Title: "Your value summary"
+Subtitle: "Here's what switching from scribes to Abridge could mean."
+
+SECTION 1: Direct Comparison
+┌─────────────────────────────────────────────────────────────┐
+│  WHAT YOU'RE SPENDING                                       │
+│  Current scribe program:              $425,000/year         │
+│  Hidden costs (turnover, mgmt):        $24,000/year         │
+│  ───────────────────────────────────────────────            │
+│  Total current cost:                  $449,000/year         │
+└─────────────────────────────────────────────────────────────┘
+
+SECTION 2: With Abridge (if we're not showing exact pricing)
+┌─────────────────────────────────────────────────────────────┐
+│  WITH ABRIDGE                                               │
+│  Contact your Abridge rep for deployment-specific pricing.  │
+│                                                             │
+│  What's included:                                           │
+│  • All 30 providers get access (vs. 10 with scribes)        │
+│  • No turnover/training costs                               │
+│  • No management overhead                                   │
+│  • 24/7 coverage, all locations                             │
+└─────────────────────────────────────────────────────────────┘
+
+SECTION 3: Additional Value (only if user selected drivers)
+┌─────────────────────────────────────────────────────────────┐
+│  ADDITIONAL VALUE FROM ABRIDGE                              │
+│  (Beyond cost comparison)                                   │
+│                                                             │
+│  Coding Accuracy:           +$XX,XXX/year                   │
+│  Denial Reduction:          +$XX,XXX/year                   │
+│  ─────────────────────────────────────                      │
+│  Subtotal:                  +$XX,XXX/year                   │
+│                                                             │
+│  Applied at 50% realization*: +$XX,XXX/year                 │
+│                                                             │
+│  * Conservative factor reflecting implementation ramp       │
+└─────────────────────────────────────────────────────────────┘
+
+SECTION 4: Bottom Line
+┌─────────────────────────────────────────────────────────────┐
+│  THE BOTTOM LINE                                            │
+│                                                             │
+│  Current spend you could redirect:     $449,000/year        │
+│  Plus additional value captured:       +$XX,XXX/year        │
+│                                                             │
+│  Talk to your Abridge rep about pricing for your specific   │
+│  deployment to calculate net savings.                       │
+└─────────────────────────────────────────────────────────────┘
+
+CTA buttons: [Save Analysis] [Share] [Talk to Abridge]
+
+
+## CALCULATION CHANGES
+
+For additional value drivers, apply these factors:
+
+```javascript
+// Realization factor for "squishy" value
+const realizationFactor = 0.50; // 50%
+
+// Only calculate for providers WITH Abridge access who would use it
+// Use 65% utilization, not 100%
+const activeProviders = totalProviders * 0.65;
+const encountersWithAbridge = activeProviders * encountersPerProvider;
+
+// Coding accuracy value
+if (selectedDrivers.includes('coding')) {
+  const wrvuUplift = 0.035; // 3.5%
+  const wrvuValue = 45; // $ per wRVU
+  const codingValue = encountersWithAbridge * wrvuUplift * wrvuValue * realizationFactor;
+}
+
+// Denial reduction value
+if (selectedDrivers.includes('denials')) {
+  const denialRate = 0.05; // 5% of claims denied
+  const denialCostPerClaim = 50; // $ per denied claim
+  const denialReduction = 0.30; // 30% reduction
+  const denialValue = encountersWithAbridge * denialRate * denialCostPerClaim * denialReduction * realizationFactor;
+}

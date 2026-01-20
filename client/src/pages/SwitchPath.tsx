@@ -66,7 +66,7 @@ interface SwitchPathProps {
 
 type SolutionType = "ambient" | "scribes" | "manual";
 type CareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
-type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 type DriverId = "patient_access" | "overtime" | "retention" | "level_of_service" | "denials" | "hcc";
 
@@ -275,21 +275,49 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   const [scribeManagementOverhead] = useState<number>(20000);
   const weeksPerYear = 50;
   
+  // Scribe value drivers (for "What scribes can't do" screen)
+  type ScribeDriverId = "coding" | "denials" | "hcc";
+  const [selectedScribeDrivers, setSelectedScribeDrivers] = useState<ScribeDriverId[]>([]);
+  const ABRIDGE_UTILIZATION = 0.65; // 65% average utilization benchmark
+  const REALIZATION_FACTOR = 0.50; // 50% conservative realization
+  
   // Derived scribe calculations
   const isScribePath = selectedSolution === "scribes";
   const providersWithoutScribes = Math.max(0, providers - providersWithScribes);
   const coveragePercent = providers > 0 ? Math.round((providersWithScribes / providers) * 100) : 0;
   const annualScribeCost = providersWithScribes * scribeHourlyCost * scribeHoursPerWeek * weeksPerYear;
-  const abridgeCostPerProvider = 0; // Placeholder - show "Contact for pricing"
-  const annualAbridgeCost = providers * abridgeCostPerProvider;
-  const directCostSavings = annualScribeCost - annualAbridgeCost;
   const annualTurnoverCost = Math.round(providersWithScribes * scribeTurnoverRate * scribeReplacementCost);
   const managementOverhead = providersWithScribes > 10 ? scribeManagementOverhead : 10000;
   const hiddenCosts = annualTurnoverCost + managementOverhead;
+  const totalCurrentCost = annualScribeCost + hiddenCosts;
   const encountersPerProvider = providers > 0 ? annualEncounters / providers : 2000;
+  
+  // Abridge value calculations (with 65% utilization)
+  const activeProviders = Math.round(providers * ABRIDGE_UTILIZATION);
+  const encountersWithAbridge = activeProviders * encountersPerProvider;
+  
+  // Time savings and coverage calculations
   const timeSavedNewProvidersHours = Math.round((providersWithoutScribes * encountersPerProvider * 3) / 60);
   const expandedCoverageValue = Math.round(timeSavedNewProvidersHours * 100); // $100/hr value
-  const totalScribeValue = directCostSavings + hiddenCosts + expandedCoverageValue;
+  const directCostSavings = annualScribeCost; // Cost that could be redirected
+  
+  // Additional value driver calculations (with realization factor)
+  const codingValue = selectedScribeDrivers.includes("coding") 
+    ? Math.round(encountersWithAbridge * 0.035 * 45 * REALIZATION_FACTOR) // 3.5% wRVU uplift × $45/wRVU
+    : 0;
+  const denialsValue = selectedScribeDrivers.includes("denials")
+    ? Math.round(encountersWithAbridge * 0.05 * 50 * 0.30 * REALIZATION_FACTOR) // 5% denial rate × $50/claim × 30% reduction
+    : 0;
+  const hccValue = selectedScribeDrivers.includes("hcc")
+    ? Math.round(encountersWithAbridge * 0.12 * 25 * REALIZATION_FACTOR) // 12% improved capture × $25 value
+    : 0;
+  const additionalValue = codingValue + denialsValue + hccValue;
+  const additionalValuePreRealization = selectedScribeDrivers.length > 0 
+    ? Math.round(additionalValue / REALIZATION_FACTOR)
+    : 0;
+  
+  // Total scribe value (must come after additionalValue)
+  const totalScribeValue = annualScribeCost + hiddenCosts + expandedCoverageValue + additionalValue;
 
   const solutionData = selectedSolution ? SOLUTION_DATA[selectedSolution] : null;
   
@@ -650,7 +678,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
           
           <div className="flex items-center gap-1 md:gap-1.5">
-            {[1, 2, 3, 4, 5, 6, 7].map((s) => (
+            {(isScribePath ? [1, 2, 3, 4, 5, 6, 7, 8] : [1, 2, 3, 4, 5, 6, 7]).map((s) => (
               <div
                 key={s}
                 className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full transition-all ${
@@ -1331,29 +1359,34 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-4">With Abridge</p>
                 <div className="relative h-10 rounded-full overflow-hidden bg-emerald-500">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">All {providers} providers covered</span>
+                    <span className="text-xs font-bold text-white">All {providers} providers have ACCESS to Abridge</span>
                   </div>
                 </div>
-                <p className="text-center text-sm text-emerald-600 mt-3 font-medium">
-                  100% coverage at a fraction of the cost
-                </p>
+                <div className="mt-3 space-y-1">
+                  <p className="text-center text-sm text-emerald-600 font-medium">
+                    Average utilization: {Math.round(ABRIDGE_UTILIZATION * 100)}% based on industry benchmarks
+                  </p>
+                  <p className="text-center text-xs text-emerald-600/70">
+                    No per-provider cost barrier to scale
+                  </p>
+                </div>
               </div>
             </div>
 
             <div className="mt-8 bg-amber-50 rounded-xl p-5 border border-amber-200/50">
-              <p className="text-amber-900 font-semibold mb-2">The {providersWithoutScribes} providers without scribes are:</p>
+              <p className="text-amber-900 font-semibold mb-2">The {providersWithoutScribes} self-documenting providers are:</p>
               <ul className="space-y-2 text-sm text-amber-800">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                  Spending extra time on documentation
+                  Self-documenting after hours
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                  Potentially seeing fewer patients
+                  Less time available for patient care
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                  More likely to burn out
+                  Higher administrative burden
                 </li>
               </ul>
             </div>
@@ -1382,46 +1415,37 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <div className="bg-neutral-100 rounded-2xl p-6 border border-neutral-200">
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-4">Your Current Scribe Program</p>
-                <p className="text-4xl font-bold text-neutral-700 mb-2 tabular-nums">{formatCurrency(annualScribeCost)}</p>
-                <p className="text-sm text-neutral-500 mb-4">annual cost</p>
-                <div className="border-t border-neutral-200 pt-4 space-y-2">
-                  <p className="text-sm text-neutral-600 flex justify-between">
-                    <span>Providers covered:</span>
-                    <span className="font-semibold">{providersWithScribes} of {providers}</span>
-                  </p>
-                  <p className="text-sm text-neutral-500">
-                    {providersWithScribes} scribes × ${scribeHourlyCost}/hr × {scribeHoursPerWeek} hrs/week × 50 weeks
+                <p className="text-4xl font-bold text-neutral-700 mb-2 tabular-nums">{formatCurrency(annualScribeCost)}/year</p>
+                <p className="text-sm text-neutral-500 mb-4">{providersWithScribes} of {providers} providers covered</p>
+                <div className="border-t border-neutral-200 pt-4">
+                  <p className="text-xs text-neutral-500 font-mono">
+                    {providersWithScribes} scribes × ${scribeHourlyCost}/hr × {scribeHoursPerWeek} hrs × 50 weeks
                   </p>
                 </div>
               </div>
 
               <div className="bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-200">
                 <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-4">With Abridge</p>
-                <p className="text-4xl font-bold text-emerald-700 mb-2 tabular-nums">
-                  {abridgeCostPerProvider === 0 ? "Contact for pricing" : formatCurrency(annualAbridgeCost)}
+                <p className="text-2xl font-bold text-emerald-700 mb-2">
+                  Pricing based on deployment size
                 </p>
-                <p className="text-sm text-emerald-600/80 mb-4">annual cost</p>
-                <div className="border-t border-emerald-200 pt-4 space-y-2">
-                  <p className="text-sm text-emerald-700 flex justify-between">
-                    <span>Providers covered:</span>
-                    <span className="font-semibold">All {providers}</span>
-                  </p>
-                  <p className="text-sm text-emerald-600/70">
-                    Unlimited encounters • No per-hour costs
+                <p className="text-sm text-emerald-600/80 mb-4">All {providers} providers get access</p>
+                <div className="border-t border-emerald-200 pt-4 space-y-1">
+                  <p className="text-sm text-emerald-700">No per-hour costs</p>
+                  <p className="text-xs text-emerald-600/70">
+                    Your Abridge rep can provide specific pricing
                   </p>
                 </div>
               </div>
             </div>
 
-            {directCostSavings > 0 && (
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200 text-center">
-                <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-2">Direct Cost Difference</p>
-                <p className="text-4xl font-bold text-emerald-600 mb-2 tabular-nums">{formatCurrency(directCostSavings)}/year</p>
-                <p className="text-emerald-700">
-                  savings + <strong>{providersWithoutScribes} more providers</strong> covered
-                </p>
+            <div className="bg-blue-50 rounded-xl p-5 border border-blue-200/50 flex items-center justify-between">
+              <div>
+                <p className="text-blue-900 font-medium">See how Abridge creates value beyond cost</p>
+                <p className="text-sm text-blue-700/80">Hidden costs, expanded coverage, and documentation intelligence</p>
               </div>
-            )}
+              <ArrowRight className="w-5 h-5 text-blue-600" />
+            </div>
 
             <div className="mt-12 flex justify-end">
               <Button
@@ -1521,7 +1545,131 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step6-scribe"
               >
-                See total value
+                See what else Abridge adds
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Human Scribes Step 7: What Scribes Can't Do */}
+        {step === 7 && isScribePath && (
+          <div className="animate-in fade-in duration-300">
+            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step7-scribe-title">
+              What scribes can't do
+            </h1>
+            <p className="text-lg text-neutral-500 mb-10">Abridge isn't just documentation — it's documentation intelligence.</p>
+
+            <div className="bg-neutral-50 rounded-2xl p-6 md:p-8 mb-8">
+              <p className="text-neutral-700 mb-6">Your scribes document encounters. Abridge does that <strong>AND</strong> helps with:</p>
+              
+              <div className="space-y-4">
+                {/* Coding Accuracy Toggle */}
+                <button
+                  onClick={() => setSelectedScribeDrivers(prev => 
+                    prev.includes("coding") ? prev.filter(d => d !== "coding") : [...prev, "coding"]
+                  )}
+                  className={`w-full p-5 rounded-xl border-2 transition-all text-left ${
+                    selectedScribeDrivers.includes("coding")
+                      ? "border-emerald-500 bg-emerald-50"
+                      : "border-neutral-200 bg-white hover:border-neutral-300"
+                  }`}
+                  data-testid="toggle-coding"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      selectedScribeDrivers.includes("coding")
+                        ? "bg-emerald-500 border-emerald-500"
+                        : "border-neutral-300"
+                    }`}>
+                      {selectedScribeDrivers.includes("coding") && (
+                        <Check className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-neutral-900">Coding Accuracy</p>
+                      <p className="text-sm text-neutral-600 mt-1">Suggests appropriate E/M levels based on documentation</p>
+                      <p className="text-sm text-emerald-600 mt-2 font-medium">Typical improvement: 3-6% wRVU uplift</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Denial Prevention Toggle */}
+                <button
+                  onClick={() => setSelectedScribeDrivers(prev => 
+                    prev.includes("denials") ? prev.filter(d => d !== "denials") : [...prev, "denials"]
+                  )}
+                  className={`w-full p-5 rounded-xl border-2 transition-all text-left ${
+                    selectedScribeDrivers.includes("denials")
+                      ? "border-emerald-500 bg-emerald-50"
+                      : "border-neutral-200 bg-white hover:border-neutral-300"
+                  }`}
+                  data-testid="toggle-denials"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      selectedScribeDrivers.includes("denials")
+                        ? "bg-emerald-500 border-emerald-500"
+                        : "border-neutral-300"
+                    }`}>
+                      {selectedScribeDrivers.includes("denials") && (
+                        <Check className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-neutral-900">Denial Prevention</p>
+                      <p className="text-sm text-neutral-600 mt-1">Better documentation quality = fewer claim rejections</p>
+                      <p className="text-sm text-emerald-600 mt-2 font-medium">Typical improvement: 20-30% reduction</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* HCC Capture Toggle */}
+                <button
+                  onClick={() => setSelectedScribeDrivers(prev => 
+                    prev.includes("hcc") ? prev.filter(d => d !== "hcc") : [...prev, "hcc"]
+                  )}
+                  className={`w-full p-5 rounded-xl border-2 transition-all text-left ${
+                    selectedScribeDrivers.includes("hcc")
+                      ? "border-emerald-500 bg-emerald-50"
+                      : "border-neutral-200 bg-white hover:border-neutral-300"
+                  }`}
+                  data-testid="toggle-hcc"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      selectedScribeDrivers.includes("hcc")
+                        ? "bg-emerald-500 border-emerald-500"
+                        : "border-neutral-300"
+                    }`}>
+                      {selectedScribeDrivers.includes("hcc") && (
+                        <Check className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-neutral-900">HCC / Chronic Condition Capture</p>
+                      <p className="text-sm text-neutral-600 mt-1">Surfaces conditions for proper risk adjustment</p>
+                      <p className="text-sm text-emerald-600 mt-2 font-medium">Typical improvement: 10-15% capture rate</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/50">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> These apply to ALL providers with Abridge access, not just those who had scribes.
+                We'll apply conservative estimates in your summary.
+              </p>
+            </div>
+
+            <div className="mt-12 flex justify-end">
+              <Button
+                onClick={handleContinue}
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                data-testid="button-continue-step7-scribe"
+              >
+                Calculate my value
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
@@ -1927,208 +2075,141 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {/* Human Scribes Step 7: Summary Dashboard */}
-        {step === 7 && isScribePath && (
+        {/* Human Scribes Step 8: Summary Dashboard */}
+        {step === 8 && isScribePath && (
           <div className="animate-in fade-in duration-300">
-            {/* YOUR INPUTS BAR */}
-            <div className="bg-neutral-100 rounded-xl p-4 border border-neutral-200 mb-8 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-neutral-600">
-                <strong>{providers}</strong> providers • <strong>{providersWithScribes}</strong> with scribes • <strong>${scribeHourlyCost}</strong>/hr • <strong>{scribeHoursPerWeek}</strong> hrs/week
-              </p>
-              <button
-                onClick={() => setStep(3)}
-                className="text-sm text-[#E85D3F] hover:underline font-medium"
-                data-testid="button-edit-inputs-scribe"
-              >
-                Edit
-              </button>
-            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step8-scribe-title">
+              Your value summary
+            </h1>
+            <p className="text-lg text-neutral-500 mb-8">Here's what switching from scribes to Abridge could mean.</p>
 
-            {/* HERO SECTION */}
-            <div className="text-center mb-10">
-              <p className="text-lg md:text-xl text-neutral-500 font-medium mb-3">
-                By switching from scribes to Abridge, you could capture
-              </p>
-              <div className="mb-3">
-                <span className="text-5xl md:text-7xl font-bold text-emerald-600 tabular-nums tracking-tight">
-                  <AnimatedNumber value={totalScribeValue} duration={1800} />
-                </span>
+            {/* SECTION 1: What You're Spending */}
+            <div className="bg-neutral-100 rounded-2xl p-6 mb-6 border border-neutral-200">
+              <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-4">What You're Spending</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-700">Current scribe program:</span>
+                  <span className="text-xl font-bold text-neutral-900 tabular-nums">{formatCurrency(annualScribeCost)}/year</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-700">Hidden costs (turnover, mgmt):</span>
+                  <span className="text-lg font-semibold text-neutral-700 tabular-nums">{formatCurrency(hiddenCosts)}/year</span>
+                </div>
+                <div className="border-t border-neutral-300 pt-3 mt-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-neutral-900">Total current cost:</span>
+                    <span className="text-2xl font-bold text-neutral-900 tabular-nums">{formatCurrency(totalCurrentCost)}/year</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-xl md:text-2xl font-bold text-neutral-900">
-                in annual value.
-              </p>
             </div>
 
-            {/* VALUE BREAKDOWN */}
-            <div className="space-y-3 mb-8">
-              <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider px-1">Value Breakdown</h3>
-              
-              <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
-                <button
-                  onClick={() => setExpandedScribeSections(prev => prev.includes("direct_savings") ? prev.filter(d => d !== "direct_savings") : [...prev, "direct_savings"])}
-                  className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
-                  data-testid="accordion-direct-savings"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 text-emerald-600" />
+            {/* SECTION 2: With Abridge */}
+            <div className="bg-emerald-50 rounded-2xl p-6 mb-6 border-2 border-emerald-200">
+              <h3 className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-4">With Abridge</h3>
+              <p className="text-emerald-800 font-medium mb-4">Contact your Abridge rep for deployment-specific pricing.</p>
+              <div className="space-y-2 text-sm text-emerald-700">
+                <p className="flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0" />
+                  All {providers} providers get access (vs. {providersWithScribes} with scribes)
+                </p>
+                <p className="flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0" />
+                  No turnover/training costs
+                </p>
+                <p className="flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0" />
+                  No management overhead
+                </p>
+                <p className="flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0" />
+                  24/7 coverage, all locations
+                </p>
+              </div>
+            </div>
+
+            {/* SECTION 3: Additional Value (only if drivers selected) */}
+            {selectedScribeDrivers.length > 0 && (
+              <div className="bg-blue-50 rounded-2xl p-6 mb-6 border border-blue-200">
+                <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-1">Additional Value from Abridge</h3>
+                <p className="text-xs text-blue-600/70 mb-4">(Beyond cost comparison)</p>
+                <div className="space-y-3">
+                  {selectedScribeDrivers.includes("coding") && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-neutral-700">Coding Accuracy:</span>
+                      <span className="font-semibold text-emerald-600 tabular-nums">+{formatCurrency(Math.round(codingValue / REALIZATION_FACTOR))}/year</span>
                     </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-neutral-900">Direct Cost Savings</p>
-                      <p className="text-xs text-neutral-500">Scribe spend eliminated minus Abridge cost</p>
+                  )}
+                  {selectedScribeDrivers.includes("denials") && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-neutral-700">Denial Reduction:</span>
+                      <span className="font-semibold text-emerald-600 tabular-nums">+{formatCurrency(Math.round(denialsValue / REALIZATION_FACTOR))}/year</span>
+                    </div>
+                  )}
+                  {selectedScribeDrivers.includes("hcc") && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-neutral-700">HCC Capture:</span>
+                      <span className="font-semibold text-emerald-600 tabular-nums">+{formatCurrency(Math.round(hccValue / REALIZATION_FACTOR))}/year</span>
+                    </div>
+                  )}
+                  <div className="border-t border-blue-200 pt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-neutral-700">Subtotal:</span>
+                      <span className="font-bold text-neutral-900 tabular-nums">+{formatCurrency(additionalValuePreRealization)}/year</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-emerald-600">+{formatCurrency(directCostSavings)}/year</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedScribeSections.includes("direct_savings") ? "rotate-180" : ""}`} />
-                  </div>
-                </button>
-                {expandedScribeSections.includes("direct_savings") && (
-                  <div className="px-5 pb-5 border-t border-neutral-100">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      <div className="bg-neutral-100 rounded-xl p-4">
-                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Current Scribe Cost</p>
-                        <p className="text-xl font-bold text-neutral-700">{formatCurrency(annualScribeCost)}/year</p>
-                        <p className="text-xs text-neutral-500 mt-1 font-mono">
-                          {providersWithScribes} × ${scribeHourlyCost}/hr × {scribeHoursPerWeek}hrs × 50wks
-                        </p>
-                      </div>
-                      <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-                        <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3">Abridge Cost</p>
-                        <p className="text-xl font-bold text-neutral-900">Contact for pricing</p>
-                        <p className="text-xs text-emerald-600 mt-1">All {providers} providers covered</p>
-                      </div>
+                  <div className="bg-blue-100 rounded-lg p-3 mt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-blue-800 font-medium">Applied at 50% realization*:</span>
+                      <span className="text-xl font-bold text-blue-900 tabular-nums">+{formatCurrency(additionalValue)}/year</span>
                     </div>
+                    <p className="text-xs text-blue-600 mt-1">* Conservative factor reflecting implementation ramp</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SECTION 4: The Bottom Line */}
+            <div className="bg-gradient-to-r from-neutral-800 to-neutral-900 rounded-2xl p-6 text-white">
+              <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-4">The Bottom Line</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-300">Current spend you could redirect:</span>
+                  <span className="text-xl font-bold text-white tabular-nums">{formatCurrency(totalCurrentCost)}/year</span>
+                </div>
+                {additionalValue > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-neutral-300">Plus additional value captured:</span>
+                    <span className="text-xl font-bold text-emerald-400 tabular-nums">+{formatCurrency(additionalValue)}/year</span>
                   </div>
                 )}
               </div>
-
-              <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
-                <button
-                  onClick={() => setExpandedScribeSections(prev => prev.includes("expanded_coverage") ? prev.filter(d => d !== "expanded_coverage") : [...prev, "expanded_coverage"])}
-                  className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
-                  data-testid="accordion-expanded-coverage"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-neutral-900">Expanded Coverage Value</p>
-                      <p className="text-xs text-neutral-500">{providersWithoutScribes} new providers with documentation support</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-emerald-600">+{formatCurrency(expandedCoverageValue)}/year</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedScribeSections.includes("expanded_coverage") ? "rotate-180" : ""}`} />
-                  </div>
-                </button>
-                {expandedScribeSections.includes("expanded_coverage") && (
-                  <div className="px-5 pb-5 border-t border-neutral-100">
-                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                      <p className="text-sm text-neutral-700 mb-2">
-                        <strong>{providersWithoutScribes}</strong> providers are currently self documenting.
-                      </p>
-                      <p className="text-sm text-neutral-600 font-mono">
-                        {providersWithoutScribes} providers × {Math.round(encountersPerProvider).toLocaleString()} encounters × 3 min = {timeSavedNewProvidersHours.toLocaleString()} hours
-                      </p>
-                      <p className="text-sm text-neutral-600 font-mono">
-                        {timeSavedNewProvidersHours.toLocaleString()} hours × $100/hr value = {formatCurrency(expandedCoverageValue)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-white rounded-2xl border-2 border-neutral-200 overflow-hidden">
-                <button
-                  onClick={() => setExpandedScribeSections(prev => prev.includes("hidden_costs") ? prev.filter(d => d !== "hidden_costs") : [...prev, "hidden_costs"])}
-                  className="w-full p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
-                  data-testid="accordion-hidden-costs"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                      <AlertTriangle className="w-5 h-5 text-amber-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-neutral-900">Turnover & Overhead Eliminated</p>
-                      <p className="text-xs text-neutral-500">No more recruiting, training, management</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-emerald-600">+{formatCurrency(hiddenCosts)}/year</span>
-                    <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform ${expandedScribeSections.includes("hidden_costs") ? "rotate-180" : ""}`} />
-                  </div>
-                </button>
-                {expandedScribeSections.includes("hidden_costs") && (
-                  <div className="px-5 pb-5 border-t border-neutral-100">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
-                        <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">Turnover Cost</p>
-                        <p className="text-lg font-bold text-neutral-900">{formatCurrency(annualTurnoverCost)}/year</p>
-                        <p className="text-xs text-neutral-600 mt-1">
-                          {providersWithScribes} × 35% turnover × $4,000
-                        </p>
-                      </div>
-                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                        <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">Management Overhead</p>
-                        <p className="text-lg font-bold text-neutral-900">{formatCurrency(managementOverhead)}/year</p>
-                        <p className="text-xs text-neutral-600 mt-1">
-                          Coordination, scheduling, QA
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <p className="text-sm text-neutral-400 mt-4 border-t border-neutral-700 pt-4">
+                Talk to your Abridge rep about pricing for your specific deployment to calculate net savings.
+              </p>
             </div>
 
-            {/* TOTAL VALUE */}
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border-2 border-emerald-400 mb-8">
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-600">Direct Cost Savings</span>
-                  <span className="font-medium text-emerald-600">+{formatCurrency(directCostSavings)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-600">Expanded Coverage Value</span>
-                  <span className="font-medium text-emerald-600">+{formatCurrency(expandedCoverageValue)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-600">Turnover & Overhead Eliminated</span>
-                  <span className="font-medium text-emerald-600">+{formatCurrency(hiddenCosts)}</span>
-                </div>
-              </div>
-              <div className="border-t border-emerald-300 pt-4 flex justify-between items-center">
-                <span className="text-lg font-bold text-neutral-900">Total Annual Value</span>
-                <span className="text-2xl font-bold text-emerald-600 tabular-nums">{formatCurrency(totalScribeValue)}</span>
-              </div>
-            </div>
-
-            {/* ACTION BUTTONS */}
-            <div className="flex flex-wrap justify-center gap-3">
+            {/* CTA Buttons */}
+            <div className="mt-10 flex flex-wrap gap-3 justify-center">
               <Button
-                variant="outline"
-                className="px-6 py-2.5 rounded-xl font-medium text-neutral-700 border-neutral-300 hover:bg-neutral-100"
-                data-testid="button-copy-link"
+                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-xl"
+                data-testid="button-talk-to-abridge"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Copy Link
+                Talk to Abridge
               </Button>
               <Button
                 variant="outline"
-                className="px-6 py-2.5 rounded-xl font-medium text-neutral-700 border-neutral-300 hover:bg-neutral-100"
-                data-testid="button-export-pdf"
+                className="px-6 py-3 h-auto text-base font-semibold rounded-xl border-2"
+                data-testid="button-save-analysis"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Export PDF
+                Save Analysis
               </Button>
               <Button
-                onClick={() => setStep(3)}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-6 py-2.5 rounded-xl font-medium"
-                data-testid="button-edit-inputs-main"
+                variant="outline"
+                className="px-6 py-3 h-auto text-base font-semibold rounded-xl border-2"
+                data-testid="button-share"
               >
-                Edit Inputs
+                Share
               </Button>
             </div>
           </div>
