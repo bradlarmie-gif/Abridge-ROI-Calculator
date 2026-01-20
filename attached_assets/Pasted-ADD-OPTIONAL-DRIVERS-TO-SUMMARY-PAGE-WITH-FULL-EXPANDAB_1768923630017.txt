@@ -1,0 +1,93 @@
+ADD OPTIONAL DRIVERS TO SUMMARY PAGE WITH FULL EXPANDABLE MATH
+
+## OVERVIEW
+
+The Summary page currently shows 3 drivers. We need to:
+1. Make ALL drivers optional/toggleable
+2. Add 3 more optional drivers (Retention, Locums, HCC)
+3. Every driver expands to show full calculation logic
+4. Every driver has adjustable assumptions inline
+
+## STRUCTURE
+
+### SECTION: "WHERE THAT VALUE SHOWS UP"
+
+Header row:
+"WHERE THAT VALUE SHOWS UP" ............... [Adjust drivers]
+
+Active drivers list (default: Patient Access, Level of Service, Denials):
+- Each driver is a collapsible row
+- Shows: Icon + Name + Value + Expand arrow
+- Expanded: Shows full math + adjustable inputs + [Remove driver] link
+
+### SECTION: "+ Add more drivers" (collapsed by default)
+
+When expanded, shows available optional drivers:
+
+┌─────────────────────────────────────────────────────────────────┐
+│  + Add more drivers                                             │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ ☐ Clinician Retention                                   │    │
+│  │   Reduced burnout → less turnover                       │    │
+│  │   Potential: $80-160K/year                              │    │
+│  │   [+ Add this driver]                                   │    │
+│  ├─────────────────────────────────────────────────────────┤    │
+│  │ ☐ Overtime & Locum Savings                              │    │
+│  │   Less after-hours work → reduced premium labor         │    │
+│  │   Potential: $40-90K/year                               │    │
+│  │   [+ Add this driver]                                   │    │
+│  ├─────────────────────────────────────────────────────────┤    │
+│  │ ☐ HCC Capture                                           │    │
+│  │   Better chronic condition documentation                │    │
+│  │   Potential: $100-300K/year                             │    │
+│  │   Note: Most relevant for Medicare Advantage            │    │
+│  │   [+ Add this driver]                                   │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+### BEHAVIOR
+
+When [+ Add this driver] is clicked:
+1. Driver moves from "Add more" section to active drivers list
+2. Driver expands to show assumptions (pre-filled with defaults)
+3. Total recalculates
+4. User can adjust assumptions inline
+
+When [Remove driver] is clicked (inside expanded driver):
+1. Driver moves back to "Add more" section
+2. Total recalculates
+
+### EXPANDED DRIVER FORMAT (for ALL drivers)
+
+┌─────────────────────────────────────────────────────────────────┐
+│  [Driver Name]                                    +$XXX/year    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  HOW WE CALCULATED THIS:                                        │
+│                                                                 │
+│  [Plain English explanation of the logic]                       │
+│                                                                 │
+│  [Math chain]:                                                  │
+│  Input A: [editable field]                                      │
+│  × Input B: [editable field]                                    │
+│  × Input C: [editable field]                                    │
+│  = Result                                                       │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│  [Remove this driver]                                           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+### CALCULATIONS FOR NEW DRIVERS
+
+CLINICIAN RETENTION:
+```javascript
+// Inputs (editable)
+const providersAtRisk = 2; // default
+const retentionImprovement = 0.5; // 50% default
+const costToReplace = 120000; // $120K default
+
+// Calculation
+const retentionValue = providersAtRisk * retentionImprovement * costToReplace;

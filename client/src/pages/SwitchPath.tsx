@@ -411,21 +411,45 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const maPopulation = 0.30;
     const avgRafValue = 1200;
     
+    type CalcStep = {
+      label: string;
+      value: string;
+      isResult?: boolean;
+    };
+    
     type DriverCalc = {
       their: number;
       abridge: number;
       gap: number;
       theirCalc: string[];
       abridgeCalc: string[];
+      // New transparent math structure
+      gapBreakdown: {
+        fromEfficiency?: {
+          steps: CalcStep[];
+          subtotal: number;
+        };
+        fromUtilization?: {
+          steps: CalcStep[];
+          subtotal: number;
+        };
+        direct?: {
+          steps: CalcStep[];
+          subtotal: number;
+        };
+        total: number;
+        assumptions: string[];
+      };
     };
     
+    const createEmptyGapBreakdown = () => ({ total: 0, assumptions: [] as string[] });
     const driverValues: Record<DriverId, DriverCalc> = {
-      patient_access: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [] },
-      overtime: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [] },
-      retention: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [] },
-      level_of_service: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [] },
-      denials: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [] },
-      hcc: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [] },
+      patient_access: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [], gapBreakdown: createEmptyGapBreakdown() },
+      overtime: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [], gapBreakdown: createEmptyGapBreakdown() },
+      retention: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [], gapBreakdown: createEmptyGapBreakdown() },
+      level_of_service: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [], gapBreakdown: createEmptyGapBreakdown() },
+      denials: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [], gapBreakdown: createEmptyGapBreakdown() },
+      hcc: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [], gapBreakdown: createEmptyGapBreakdown() },
     };
     
     const theirUsableHours = Math.round(theirTimeSavedHours * 0.20);
@@ -434,10 +458,24 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const abridgeNewVisits = Math.round(abridgeUsableHours * 2);
     const theirPatientAccess = theirNewVisits * revenuePerVisit;
     const abridgePatientAccess = abridgeNewVisits * revenuePerVisit;
+    
+    // Calculate efficiency gap contribution to patient access
+    const efficiencyGapHoursForAccess = efficiencyGapHours;
+    const efficiencyUsableHours = Math.round(efficiencyGapHoursForAccess * 0.20);
+    const efficiencyNewVisits = Math.round(efficiencyUsableHours * 2);
+    const efficiencyPatientAccessValue = efficiencyNewVisits * revenuePerVisit;
+    
+    // Calculate utilization gap contribution to patient access
+    const utilizationNewEncounters = utilizationGapEncounters;
+    const utilizationRealization = 0.20;
+    const utilizationPatientAccessValue = Math.round(utilizationNewEncounters * utilizationRealization * revenuePerVisit);
+    
+    const patientAccessGap = abridgePatientAccess - theirPatientAccess;
+    
     driverValues.patient_access = {
       their: theirPatientAccess,
       abridge: abridgePatientAccess,
-      gap: abridgePatientAccess - theirPatientAccess,
+      gap: patientAccessGap,
       theirCalc: [
         `${theirTimeSavedHours.toLocaleString()} hours returned`,
         `${theirUsableHours.toLocaleString()} usable (20% realization)`,
@@ -450,16 +488,42 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         `${abridgeNewVisits.toLocaleString()} new visits possible`,
         `${abridgeNewVisits.toLocaleString()} x $${revenuePerVisit} = ${formatCurrency(abridgePatientAccess)}/year`,
       ],
+      gapBreakdown: {
+        fromEfficiency: {
+          steps: [
+            { label: `+${efficiencyGapHoursForAccess.toLocaleString()} hours returned`, value: '' },
+            { label: `× 20% time-to-visit conversion`, value: '' },
+            { label: `× $${revenuePerVisit} per visit`, value: '' },
+            { label: `= ${formatCurrency(efficiencyPatientAccessValue)}/year`, value: formatCurrency(efficiencyPatientAccessValue), isResult: true },
+          ],
+          subtotal: efficiencyPatientAccessValue,
+        },
+        fromUtilization: {
+          steps: [
+            { label: `+${utilizationNewEncounters.toLocaleString()} more encounters documented`, value: '' },
+            { label: `× 20% realization rate`, value: '' },
+            { label: `× $${revenuePerVisit} per visit`, value: '' },
+            { label: `= ${formatCurrency(utilizationPatientAccessValue)}/year`, value: formatCurrency(utilizationPatientAccessValue), isResult: true },
+          ],
+          subtotal: utilizationPatientAccessValue,
+        },
+        total: patientAccessGap,
+        assumptions: [`20% realization rate`, `$${revenuePerVisit}/visit`],
+      },
     };
     
+    // Overtime calculations
     const theirOvertimeHours = Math.round(theirTimeSavedHours * 0.40);
     const abridgeOvertimeHours = Math.round(abridgeTimeSavedHours * 0.40);
     const theirOvertime = theirOvertimeHours * overtimeRate;
     const abridgeOvertime = abridgeOvertimeHours * overtimeRate;
+    const overtimeGap = abridgeOvertime - theirOvertime;
+    const efficiencyOvertimeValue = Math.round(efficiencyGapHours * 0.40 * overtimeRate);
+    
     driverValues.overtime = {
       their: theirOvertime,
       abridge: abridgeOvertime,
-      gap: abridgeOvertime - theirOvertime,
+      gap: overtimeGap,
       theirCalc: [
         `${theirTimeSavedHours.toLocaleString()} hours returned`,
         `${theirOvertimeHours.toLocaleString()} OT hours reduced (40%)`,
@@ -470,14 +534,31 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         `${abridgeOvertimeHours.toLocaleString()} OT hours reduced (40%)`,
         `${abridgeOvertimeHours.toLocaleString()} x $${overtimeRate} = ${formatCurrency(abridgeOvertime)}/year`,
       ],
+      gapBreakdown: {
+        fromEfficiency: {
+          steps: [
+            { label: `+${efficiencyGapHours.toLocaleString()} hours returned`, value: '' },
+            { label: `× 40% converts to OT reduction`, value: '' },
+            { label: `× $${overtimeRate}/hour OT rate`, value: '' },
+            { label: `= ${formatCurrency(efficiencyOvertimeValue)}/year`, value: formatCurrency(efficiencyOvertimeValue), isResult: true },
+          ],
+          subtotal: efficiencyOvertimeValue,
+        },
+        total: overtimeGap,
+        assumptions: [`40% OT conversion`, `$${overtimeRate}/hr OT rate`],
+      },
     };
     
+    // Retention calculations
     const theirRetention = Math.round(providers * turnoverRate * burnoutReduction * 0.5 * providerCost * 0.20);
     const abridgeRetention = Math.round(providers * turnoverRate * burnoutReduction * providerCost * 0.20);
+    const retentionGap = abridgeRetention - theirRetention;
+    const effectivenessGap = 0.50; // Abridge 100% vs current 50%
+    
     driverValues.retention = {
       their: theirRetention,
       abridge: abridgeRetention,
-      gap: abridgeRetention - theirRetention,
+      gap: retentionGap,
       theirCalc: [
         `${providers} providers x ${(turnoverRate * 100).toFixed(0)}% turnover`,
         `${burnoutReduction * 100}% burnout reduction x 50% effectiveness`,
@@ -490,8 +571,23 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         `x $${(providerCost / 1000)}K replacement x 20%`,
         `= ${formatCurrency(abridgeRetention)}/year`,
       ],
+      gapBreakdown: {
+        direct: {
+          steps: [
+            { label: `${providers} providers × ${(turnoverRate * 100).toFixed(0)}% turnover rate`, value: '' },
+            { label: `× ${burnoutReduction * 100}% burnout reduction`, value: '' },
+            { label: `× ${(effectivenessGap * 100).toFixed(0)}% higher effectiveness with Abridge`, value: '' },
+            { label: `× $${(providerCost / 1000).toFixed(0)}K replacement cost × 20%`, value: '' },
+            { label: `= ${formatCurrency(retentionGap)}/year`, value: formatCurrency(retentionGap), isResult: true },
+          ],
+          subtotal: retentionGap,
+        },
+        total: retentionGap,
+        assumptions: [`8% turnover rate`, `$${(providerCost / 1000).toFixed(0)}K replacement cost`, `20% realization`],
+      },
     };
     
+    // Level of Service calculations
     const theirEmBillable = Math.round(theirDocumentedEncounters * 0.80);
     const abridgeEmBillable = Math.round(abridgeDocumentedEncounters * 0.80);
     const theirUnderCoded = Math.round(theirEmBillable * (underCoding / 100));
@@ -500,10 +596,20 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const abridgeWrvuCapture = abridgeUnderCoded * 0.7 * avgWrvuValue * (ABRIDGE_BENCHMARKS.wrvuUplift / 100);
     const theirLos = Math.round(theirWrvuCapture);
     const abridgeLos = Math.round(abridgeWrvuCapture);
+    const losGap = abridgeLos - theirLos;
+    
+    // Calculate utilization contribution to LOS
+    const utilizationEmEncounters = Math.round(utilizationGapEncounters * 0.80);
+    const utilizationUnderCoded = Math.round(utilizationEmEncounters * (ABRIDGE_BENCHMARKS.underCoding / 100));
+    const utilizationLosValue = Math.round(utilizationUnderCoded * 0.7 * avgWrvuValue * (ABRIDGE_BENCHMARKS.wrvuUplift / 100));
+    
+    // Calculate rate improvement contribution
+    const rateImprovementLos = losGap - utilizationLosValue;
+    
     driverValues.level_of_service = {
       their: theirLos,
       abridge: abridgeLos,
-      gap: abridgeLos - theirLos,
+      gap: losGap,
       theirCalc: [
         `${theirEmBillable.toLocaleString()} E/M encounters (80%)`,
         `${theirUnderCoded.toLocaleString()} under-coded (${underCoding}%)`,
@@ -516,8 +622,31 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         `x 0.7 wRVU x $${avgWrvuValue} x ${ABRIDGE_BENCHMARKS.wrvuUplift}% uplift`,
         `= ${formatCurrency(abridgeLos)}/year`,
       ],
+      gapBreakdown: {
+        fromUtilization: {
+          steps: [
+            { label: `+${utilizationGapEncounters.toLocaleString()} more encounters`, value: '' },
+            { label: `× 80% E/M billable`, value: '' },
+            { label: `× ${ABRIDGE_BENCHMARKS.underCoding}% under-coded × 0.7 wRVU × $${avgWrvuValue}`, value: '' },
+            { label: `= ${formatCurrency(utilizationLosValue)}/year`, value: formatCurrency(utilizationLosValue), isResult: true },
+          ],
+          subtotal: utilizationLosValue,
+        },
+        direct: rateImprovementLos > 0 ? {
+          steps: [
+            { label: `Better documentation quality`, value: '' },
+            { label: `${ABRIDGE_BENCHMARKS.underCoding}% under-coding captured vs ${underCoding}%`, value: '' },
+            { label: `${ABRIDGE_BENCHMARKS.wrvuUplift}% wRVU uplift vs ${wrvuUplift}%`, value: '' },
+            { label: `= ${formatCurrency(rateImprovementLos)}/year`, value: formatCurrency(rateImprovementLos), isResult: true },
+          ],
+          subtotal: rateImprovementLos,
+        } : undefined,
+        total: losGap,
+        assumptions: [`${ABRIDGE_BENCHMARKS.underCoding}% under-coded`, `$${avgWrvuValue}/wRVU`],
+      },
     };
     
+    // Denials calculations
     const denialRate = 0.07;
     const docRelatedRate = 0.35;
     const theirDenials = Math.round(theirDocumentedEncounters * denialRate);
@@ -528,10 +657,21 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const abridgeDocDenials = Math.round(abridgeDenials * docRelatedRate);
     const abridgePrevented = Math.round(abridgeDocDenials * (ABRIDGE_BENCHMARKS.denialPrevention / 100));
     const abridgeDenialValue = abridgePrevented * avgClaimValue;
+    const denialsGap = abridgeDenialValue - theirDenialValue;
+    
+    // Calculate utilization contribution to denials
+    const utilizationDenials = Math.round(utilizationGapEncounters * denialRate);
+    const utilizationDocDenials = Math.round(utilizationDenials * docRelatedRate);
+    const utilizationPrevented = Math.round(utilizationDocDenials * (ABRIDGE_BENCHMARKS.denialPrevention / 100));
+    const utilizationDenialsValue = utilizationPrevented * avgClaimValue;
+    
+    // Calculate rate improvement contribution
+    const rateImprovementDenials = denialsGap - utilizationDenialsValue;
+    
     driverValues.denials = {
       their: theirDenialValue,
       abridge: abridgeDenialValue,
-      gap: abridgeDenialValue - theirDenialValue,
+      gap: denialsGap,
       theirCalc: [
         `${theirDocumentedEncounters.toLocaleString()} encounters x 7% denial rate`,
         `${theirDocDenials.toLocaleString()} doc-related (35%)`,
@@ -544,16 +684,48 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         `${abridgePrevented.toLocaleString()} prevented (${ABRIDGE_BENCHMARKS.denialPrevention}%)`,
         `x $${avgClaimValue} = ${formatCurrency(abridgeDenialValue)}/year`,
       ],
+      gapBreakdown: {
+        fromUtilization: utilizationDenialsValue > 0 ? {
+          steps: [
+            { label: `+${utilizationGapEncounters.toLocaleString()} more encounters documented`, value: '' },
+            { label: `× 7% denial rate × 35% doc-related`, value: '' },
+            { label: `× ${ABRIDGE_BENCHMARKS.denialPrevention}% prevention × $${avgClaimValue}/claim`, value: '' },
+            { label: `= ${formatCurrency(utilizationDenialsValue)}/year`, value: formatCurrency(utilizationDenialsValue), isResult: true },
+          ],
+          subtotal: utilizationDenialsValue,
+        } : undefined,
+        direct: rateImprovementDenials > 0 ? {
+          steps: [
+            { label: `Better documentation quality`, value: '' },
+            { label: `${ABRIDGE_BENCHMARKS.denialPrevention}% denial prevention vs ${denialPrevention}%`, value: '' },
+            { label: `Complete notes → fewer denials → savings`, value: '' },
+            { label: `= ${formatCurrency(rateImprovementDenials)}/year`, value: formatCurrency(rateImprovementDenials), isResult: true },
+          ],
+          subtotal: rateImprovementDenials,
+        } : undefined,
+        total: denialsGap,
+        assumptions: [`7% denial rate`, `35% doc-related`, `$${avgClaimValue}/claim`],
+      },
     };
     
+    // HCC calculations
     const theirHccPop = Math.round(theirDocumentedEncounters * maPopulation);
     const abridgeHccPop = Math.round(abridgeDocumentedEncounters * maPopulation);
     const theirHccValue = Math.round(theirHccPop * (hccImprovement / 100) * avgRafValue);
     const abridgeHccValue = Math.round(abridgeHccPop * (ABRIDGE_BENCHMARKS.hccImprovement / 100) * avgRafValue);
+    const hccGap = abridgeHccValue - theirHccValue;
+    
+    // Calculate utilization contribution to HCC
+    const utilizationHccPop = Math.round(utilizationGapEncounters * maPopulation);
+    const utilizationHccValue = Math.round(utilizationHccPop * (ABRIDGE_BENCHMARKS.hccImprovement / 100) * avgRafValue);
+    
+    // Calculate rate improvement contribution
+    const rateImprovementHcc = hccGap - utilizationHccValue;
+    
     driverValues.hcc = {
       their: theirHccValue,
       abridge: abridgeHccValue,
-      gap: abridgeHccValue - theirHccValue,
+      gap: hccGap,
       theirCalc: [
         `${theirHccPop.toLocaleString()} MA encounters (30%)`,
         `${hccImprovement}% HCC improvement`,
@@ -566,6 +738,28 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         `x $${avgRafValue.toLocaleString()} RAF value`,
         `= ${formatCurrency(abridgeHccValue)}/year`,
       ],
+      gapBreakdown: {
+        fromUtilization: utilizationHccValue > 0 ? {
+          steps: [
+            { label: `+${utilizationGapEncounters.toLocaleString()} more encounters`, value: '' },
+            { label: `× 30% MA population`, value: '' },
+            { label: `× ${ABRIDGE_BENCHMARKS.hccImprovement}% HCC improvement × $${avgRafValue.toLocaleString()} RAF`, value: '' },
+            { label: `= ${formatCurrency(utilizationHccValue)}/year`, value: formatCurrency(utilizationHccValue), isResult: true },
+          ],
+          subtotal: utilizationHccValue,
+        } : undefined,
+        direct: rateImprovementHcc > 0 ? {
+          steps: [
+            { label: `Better HCC capture rate`, value: '' },
+            { label: `${ABRIDGE_BENCHMARKS.hccImprovement}% improvement vs ${hccImprovement}%`, value: '' },
+            { label: `Complete notes → better coding → RAF value`, value: '' },
+            { label: `= ${formatCurrency(rateImprovementHcc)}/year`, value: formatCurrency(rateImprovementHcc), isResult: true },
+          ],
+          subtotal: rateImprovementHcc,
+        } : undefined,
+        total: hccGap,
+        assumptions: [`30% MA population`, `$${avgRafValue.toLocaleString()} RAF value`],
+      },
     };
     
     let totalGap = 0;
@@ -2029,21 +2223,66 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       
                       {isExpanded && (
                         <div className="px-4 pb-4 border-t border-neutral-100">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                            <div className="bg-neutral-100 rounded-lg p-3">
-                              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Your Current</p>
-                              <div className="space-y-0.5 text-xs text-neutral-600 font-mono">
-                                {values.theirCalc.map((line, i) => <p key={i}>{line}</p>)}
+                          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mt-4 mb-3">How We Calculated This:</p>
+                          
+                          <div className="space-y-3">
+                            {/* From Efficiency Gap */}
+                            {values.gapBreakdown.fromEfficiency && (
+                              <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
+                                <p className="text-xs font-medium text-neutral-600 mb-2">From your efficiency gap:</p>
+                                <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                                  {values.gapBreakdown.fromEfficiency.steps.map((step, i) => (
+                                    <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
+                                      {step.label}
+                                    </p>
+                                  ))}
+                                </div>
                               </div>
-                              <p className="mt-2 text-lg font-bold text-neutral-600">{formatCurrency(values.their)}/yr</p>
-                            </div>
-                            <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
-                              <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">With Abridge</p>
-                              <div className="space-y-0.5 text-xs text-neutral-700 font-mono">
-                                {values.abridgeCalc.map((line, i) => <p key={i}>{line}</p>)}
+                            )}
+                            
+                            {/* From Utilization Gap */}
+                            {values.gapBreakdown.fromUtilization && (
+                              <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
+                                <p className="text-xs font-medium text-neutral-600 mb-2">From your utilization gap:</p>
+                                <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                                  {values.gapBreakdown.fromUtilization.steps.map((step, i) => (
+                                    <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
+                                      {step.label}
+                                    </p>
+                                  ))}
+                                </div>
                               </div>
-                              <p className="mt-2 text-lg font-bold text-neutral-900">{formatCurrency(values.abridge)}/yr</p>
+                            )}
+                            
+                            {/* Direct / Quality Improvement */}
+                            {values.gapBreakdown.direct && (
+                              <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
+                                <p className="text-xs font-medium text-neutral-600 mb-2">From documentation quality:</p>
+                                <div className="space-y-0.5 text-sm text-neutral-700" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                                  {values.gapBreakdown.direct.steps.map((step, i) => (
+                                    <p key={i} className={step.isResult ? "font-semibold text-emerald-700 pt-1" : "text-neutral-600"}>
+                                      {step.label}
+                                    </p>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Total line */}
+                            <div className="border-t border-neutral-300 pt-3 mt-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-neutral-700">Total:</span>
+                                <span className="text-lg font-bold text-emerald-600">{formatCurrency(values.gap)}/year</span>
+                              </div>
                             </div>
+                            
+                            {/* Assumptions */}
+                            {values.gapBreakdown.assumptions.length > 0 && (
+                              <p className="text-xs text-neutral-500 pt-1">
+                                <span className="font-medium">Assumptions:</span>{" "}
+                                {values.gapBreakdown.assumptions.join(", ")}
+                              </p>
+                            )}
                           </div>
                         </div>
                       )}

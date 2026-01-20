@@ -1,0 +1,61 @@
+ADD TRANSPARENT MATH TO DRIVER EXPANSIONS ON SUMMARY PAGE
+
+## THE PROBLEM
+Users see a big number ($153K) but don't understand how we got there.
+The gaps (encounters, hours) don't obviously connect to dollars.
+
+## THE FIX
+When a user expands a driver (Patient Access, Denials, etc.), 
+show the calculation logic, not just the result.
+
+## EXPANDED DRIVER FORMAT
+
+When clicking the expand arrow on "Patient Access +$128,000/year":
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Patient Access                                  +$128,000/year │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  HOW WE CALCULATED THIS:                                        │
+│                                                                 │
+│  From your efficiency gap:                                      │
+│  +1,200 hours returned                                          │
+│  × 20% time-to-visit conversion                                 │
+│  × $200 per visit                                               │
+│  = $48,000/year                                                 │
+│                                                                 │
+│  From your utilization gap:                                     │
+│  +4,500 more encounters documented                              │
+│  × 20% realization rate                                         │
+│  × $200 per visit                                               │
+│  = $80,000/year                                                 │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│  Total: $128,000/year                                           │
+│                                                                 │
+│  Assumptions: 20% realization, $200/visit [Adjust]              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+## DO THIS FOR EACH DRIVER
+
+Denials:
+- Show: encounters × denial rate × denial cost × reduction %
+- Make it clear how documentation quality → fewer denials → savings
+
+Level of Service:
+- Show: E/M encounters × under-coding rate × wRVU value × uplift %
+- Make it clear how complete notes → proper coding → revenue
+
+## KEEP IT SCANNABLE
+- Use clear labels: "From your efficiency gap:", "From your utilization gap:"
+- Show the multiplication chain (A × B × C = D)
+- Put assumptions at the bottom with [Adjust] link
+- Don't write paragraphs — use math notation
+
+## THE GOAL
+A skeptical CFO should be able to expand each driver and say:
+"Okay, I see how they got that number. The assumptions are [X]. 
+I can adjust if I disagree."
+
+That's credibility. That's defensible. That's consultant energy.
