@@ -1,0 +1,61 @@
+AMBIENT AI PATH - EFFICIENCY GAP + DRIVER SELECTION FIXES
+
+## PAGE: EFFICIENCY GAP
+
+1. ADD CONTEXT ABOVE THE SLIDER
+   Before "How much time does Ambient AI save per encounter?" add:
+   
+   "Most ambient AI solutions return 1-2 minutes per encounter.
+   Abridge averages 3 minutes based on deeper workflow integration.
+   
+   Where does your current solution land?"
+
+2. ADD CREDIBILITY LINK
+   Next to "Abridge avg: 3 min" add small link:
+   "[See benchmark data →]" that opens modal with:
+   - "Based on time studies across 200+ deployments"
+   - "Outpatient: 2.5-4 min, Specialty: 2-3.5 min, ED: 3-5 min"
+   - "We use 3 min as conservative cross-setting average"
+
+3. FIX COMPARISON CARD CONTRAST
+   - Left card ("At your 1.5 min"): background #F3F4F6, muted text
+   - Right card ("At Abridge 3 min"): background #FEF7F7, confident text
+
+4. CONNECT THE +1,200 HOURS BOX
+   - Add subtle visual connector to cards above
+   - OR integrate into the comparison area
+
+5. ADD "SO WHAT" CONTEXT FOR HOURS
+   Below "+1,200 hours" add:
+   "That's ~[X] hours/week your providers get back"
+   OR "Equivalent to [X] FTE of documentation time"
+
+## PAGE: DRIVER SELECTION
+
+1. ADD CONTEXT BOX AT TOP
+   Before the cards, add info box:
+   
+   "You've identified two gaps:
+   • Utilization: [X]% → 65% = [Y] more encounters documented
+   • Efficiency: [X] min → 3 min = [Y] more hours returned
+   
+   Now let's see where that extra capacity and time creates value."
+
+2. PRE-SELECT TOP 3 DRIVERS
+   For the Ambient AI path, start with Patient Access, Level of Service, 
+   and Documentation-Related Denials selected
+   
+   Change subtitle to: "Most organizations switching from other ambient AI 
+   see value here. Deselect anything that doesn't apply to you."
+
+3. SHOW CALCULATED VALUES (not ranges)
+   Instead of "$60-120K" show estimated value based on their inputs:
+   "Based on your inputs: ~$85,000/year"
+   
+   The range feels generic. A calculated number feels personalized.
+
+4. MAKE SELECTED STATE MORE PROMINENT
+   Pre-selected cards should have:
+   - Subtle coral border
+   - Filled checkbox
+   - Slightly elevated appearance

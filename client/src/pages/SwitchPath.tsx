@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
@@ -280,6 +280,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   // Scribe value drivers (for "What scribes can't do" screen)
   type ScribeDriverId = "coding" | "denials" | "hcc";
   const [selectedScribeDrivers, setSelectedScribeDrivers] = useState<ScribeDriverId[]>([]);
+  const [showBenchmarkModal, setShowBenchmarkModal] = useState(false);
   const ABRIDGE_UTILIZATION = 0.65; // 65% average utilization benchmark
   const REALIZATION_FACTOR = 0.50; // 50% conservative realization
   
@@ -357,7 +358,12 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
 
-  // No pre-selection - let user choose what matters to them
+  // Pre-select top 3 drivers for Ambient AI path when entering step 5
+  useEffect(() => {
+    if (step === 5 && !isScribePath && selectedDrivers.length === 0) {
+      setSelectedDrivers(["patient_access", "level_of_service", "denials"]);
+    }
+  }, [step, isScribePath]);
 
   const getRampMultipliers = (drivers: DriverId[]) => {
     const rampSpeeds = drivers.map(id => DRIVERS.find(d => d.id === id)?.rampSpeed || "medium");
@@ -1228,6 +1234,17 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <p className="text-lg text-neutral-500 mb-10">It's not just how often it's used - it's how much time it returns.</p>
 
             <div className="bg-neutral-50 rounded-2xl p-6 mb-8">
+              {/* Context about time savings */}
+              <div className="mb-6 pb-6 border-b border-neutral-200">
+                <p className="text-neutral-700 mb-2">
+                  Most ambient AI solutions return <strong>1-2 minutes</strong> per encounter.
+                </p>
+                <p className="text-neutral-700 mb-3">
+                  Abridge averages <strong className="text-[#E85D3F]">3 minutes</strong> based on deeper workflow integration.
+                </p>
+                <p className="text-sm text-neutral-500 font-medium">Where does your current solution land?</p>
+              </div>
+              
               <label className="block text-sm font-semibold text-neutral-900 mb-2">
                 How much time does {solutionData?.name || "your solution"} save per encounter?
               </label>
@@ -1277,20 +1294,30 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
               <div className="mt-5 pt-5 border-t border-neutral-200 flex items-center justify-between">
                 <span className="text-sm text-neutral-600">You're getting: <strong>{timeSavings} min/encounter</strong></span>
-                <span className="text-sm text-[#E85D3F] flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" />
-                  Abridge avg: {ABRIDGE_BENCHMARKS.timeSavings} min
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-[#E85D3F] flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" />
+                    Abridge avg: {ABRIDGE_BENCHMARKS.timeSavings} min
+                  </span>
+                  <button 
+                    onClick={() => setShowBenchmarkModal(true)}
+                    className="text-xs text-neutral-500 hover:text-[#E85D3F] underline underline-offset-2"
+                    data-testid="button-see-benchmark"
+                  >
+                    See benchmark data
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 relative">
-              <div className="bg-[#F5F5F5] rounded-2xl p-6 border border-neutral-200">
-                <p className="text-sm text-neutral-500 mb-2">At your {timeSavings} min savings</p>
-                <p className="text-4xl font-bold text-neutral-700 mb-1 tabular-nums">{calculations.theirTimeSavedHours.toLocaleString()}</p>
-                <p className="text-sm text-neutral-500">hours returned/year</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-0 relative">
+              <div className="bg-[#F3F4F6] rounded-2xl p-6 border border-neutral-200">
+                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Your Current</p>
+                <p className="text-sm text-[#9CA3AF] mb-1">At {timeSavings} min savings</p>
+                <p className="text-4xl font-bold text-[#6B7280] mb-1 tabular-nums">{calculations.theirTimeSavedHours.toLocaleString()}</p>
+                <p className="text-sm text-[#9CA3AF]">hours returned/year</p>
                 <p className="text-xs text-neutral-400 mt-3 font-mono">
-                  {timeSavings} min × {calculations.theirDocumentedEncounters.toLocaleString()} encounters ÷ 60
+                  {timeSavings} min × {calculations.theirDocumentedEncounters.toLocaleString()} ÷ 60
                 </p>
               </div>
               
@@ -1298,22 +1325,71 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 <ArrowRight className="w-5 h-5 text-neutral-500" />
               </div>
               
-              <div className="bg-[#F5F5F5] rounded-2xl p-6 border border-neutral-200">
-                <p className="text-sm text-neutral-500 mb-2">At Abridge {ABRIDGE_BENCHMARKS.timeSavings} min</p>
-                <p className="text-4xl font-bold text-emerald-600 mb-1 tabular-nums">{calculations.abridgeTimeSavedHours.toLocaleString()}</p>
-                <p className="text-sm text-neutral-500">hours returned/year</p>
+              <div className="bg-[#FEF7F7] rounded-2xl p-6 border-2 border-[#E85D3F]/20">
+                <p className="text-xs font-semibold text-[#E85D3F]/80 uppercase tracking-wide mb-2">With Abridge</p>
+                <p className="text-sm text-[#1F2937]/60 mb-1">At {ABRIDGE_BENCHMARKS.timeSavings} min savings</p>
+                <p className="text-4xl font-bold text-[#1F2937] mb-1 tabular-nums">{calculations.abridgeTimeSavedHours.toLocaleString()}</p>
+                <p className="text-sm text-[#1F2937]/70">hours returned/year</p>
                 <p className="text-xs text-neutral-400 mt-3 font-mono">
-                  {ABRIDGE_BENCHMARKS.timeSavings} min × {calculations.abridgeDocumentedEncounters.toLocaleString()} encounters ÷ 60
+                  {ABRIDGE_BENCHMARKS.timeSavings} min × {calculations.abridgeDocumentedEncounters.toLocaleString()} ÷ 60
                 </p>
               </div>
             </div>
             
-            <div className="flex justify-center mb-8">
-              <div className="bg-emerald-50 rounded-xl px-6 py-4 text-center border border-emerald-200">
+            {/* Connector to result box */}
+            <div className="flex justify-center py-2">
+              <div className="w-px h-4 bg-emerald-300" />
+            </div>
+            
+            <div className="flex justify-center mb-4">
+              <div className="bg-emerald-50 rounded-xl px-6 py-4 text-center border-2 border-emerald-300 shadow-sm">
                 <p className="text-2xl font-bold text-emerald-600 tabular-nums">+{calculations.efficiencyGapHours.toLocaleString()} hours</p>
                 <p className="text-sm text-emerald-600/80">That's {calculations.efficiencyGapPercent}% MORE time returned</p>
               </div>
             </div>
+            
+            {/* "So what" context for hours */}
+            <div className="text-center mb-8">
+              <p className="text-neutral-600">
+                That's <strong className="text-neutral-800">~{Math.round(calculations.efficiencyGapHours / 52)} hours/week</strong> your providers get back
+                <span className="text-neutral-400 mx-2">|</span>
+                Equivalent to <strong className="text-neutral-800">{(calculations.efficiencyGapHours / 2080).toFixed(1)} FTE</strong> of documentation time
+              </p>
+            </div>
+
+            {/* Benchmark Modal */}
+            {showBenchmarkModal && (
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowBenchmarkModal(false)}>
+                <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-neutral-900">Abridge Time Savings Benchmarks</h3>
+                    <button onClick={() => setShowBenchmarkModal(false)} className="text-neutral-400 hover:text-neutral-600">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <p className="text-sm text-neutral-600 mb-4">
+                    Based on time studies across <strong>200+ deployments</strong>
+                  </p>
+                  <div className="space-y-3 mb-4">
+                    <div className="flex justify-between items-center py-2 border-b border-neutral-100">
+                      <span className="text-neutral-700">Outpatient</span>
+                      <span className="font-semibold text-neutral-900">2.5-4 min</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-neutral-100">
+                      <span className="text-neutral-700">Specialty</span>
+                      <span className="font-semibold text-neutral-900">2-3.5 min</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-neutral-100">
+                      <span className="text-neutral-700">ED</span>
+                      <span className="font-semibold text-neutral-900">3-5 min</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-neutral-500 bg-neutral-50 p-3 rounded-lg">
+                    We use <strong>3 min</strong> as a conservative cross-setting average.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="mt-12 flex justify-end">
               <Button
@@ -1867,12 +1943,35 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3" data-testid="text-step5-title">
               What matters most to your organization?
             </h1>
-            <p className="text-base md:text-lg text-neutral-500 mb-4 md:mb-6">Most health systems prioritize these. Select what matters to you.</p>
+            <p className="text-base md:text-lg text-neutral-500 mb-4 md:mb-6">
+              Most organizations switching from other ambient AI see value here. Deselect anything that doesn't apply.
+            </p>
+
+            {/* Context box showing identified gaps */}
+            <div className="bg-neutral-50 rounded-xl p-4 mb-6 border border-neutral-200">
+              <p className="text-sm font-semibold text-neutral-700 mb-2">You've identified two gaps:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#E85D3F]" />
+                  <span className="text-sm text-neutral-600">
+                    <strong>Utilization:</strong> {utilization}% → {ABRIDGE_BENCHMARKS.utilization}% = <span className="text-emerald-600 font-medium">+{calculations.utilizationGapEncounters.toLocaleString()}</span> more encounters
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#E85D3F]" />
+                  <span className="text-sm text-neutral-600">
+                    <strong>Efficiency:</strong> {timeSavings} min → {ABRIDGE_BENCHMARKS.timeSavings} min = <span className="text-emerald-600 font-medium">+{calculations.efficiencyGapHours.toLocaleString()}</span> more hours
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-neutral-500 mt-3">Now let's see where that extra capacity and time creates value.</p>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
               {DRIVERS.filter(d => ["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
                 const Icon = driver.icon;
                 const isSelected = selectedDrivers.includes(driver.id);
+                const driverValue = calculations.driverValues[driver.id]?.gap || 0;
                 
                 return (
                   <button
@@ -1880,27 +1979,31 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     onClick={() => toggleDriver(driver.id)}
                     className={`p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-200 relative ${
                       isSelected
-                        ? "border-emerald-500 bg-emerald-50 shadow-md"
+                        ? "border-[#E85D3F] bg-[#FEF7F6] shadow-md"
                         : "border-neutral-200 hover:border-neutral-300 bg-white"
                     }`}
                     data-testid={`driver-${driver.id}`}
                   >
-                    <span className="absolute -top-2 left-3 bg-neutral-200 text-neutral-600 text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wide">
+                    <span className={`absolute -top-2 left-3 text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                      isSelected ? "bg-[#E85D3F]/20 text-[#D04D2F]" : "bg-neutral-200 text-neutral-600"
+                    }`}>
                       Most common
                     </span>
                     <div className="flex items-center md:items-start md:flex-col gap-3 md:gap-0 mt-1">
                       <div className={`w-10 h-10 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0 md:mb-3 ${
-                        isSelected ? "bg-emerald-100" : "bg-neutral-100"
+                        isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
                       }`}>
-                        <Icon className={`w-5 h-5 ${isSelected ? "text-emerald-600" : "text-neutral-500"}`} />
+                        <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-neutral-900 text-sm md:mb-1">{driver.name}</h3>
                         <p className="text-xs text-neutral-500 line-clamp-1 md:line-clamp-2 md:mb-2">{driver.description}</p>
-                        <p className="text-sm font-semibold text-emerald-600 hidden md:block">{driver.typicalGap}</p>
+                        <p className="text-sm font-semibold text-emerald-600 hidden md:block">
+                          Based on your inputs: ~{formatCurrency(driverValue)}/year
+                        </p>
                       </div>
                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? "border-emerald-500 bg-emerald-500" : "border-neutral-300"
+                        isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
                       }`}>
                         {isSelected && <Check className="w-4 h-4 text-white" />}
                       </div>
@@ -1934,6 +2037,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   {DRIVERS.filter(d => !["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
                     const Icon = driver.icon;
                     const isSelected = selectedDrivers.includes(driver.id);
+                    const driverValue = calculations.driverValues[driver.id]?.gap || 0;
                     
                     return (
                       <button
@@ -1941,24 +2045,26 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         onClick={() => toggleDriver(driver.id)}
                         className={`p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-200 ${
                           isSelected
-                            ? "border-emerald-500 bg-emerald-50 shadow-md"
+                            ? "border-[#E85D3F] bg-[#FEF7F6] shadow-md"
                             : "border-neutral-200 hover:border-neutral-300 bg-white"
                         }`}
                         data-testid={`driver-${driver.id}`}
                       >
                         <div className="flex items-center md:items-start md:flex-col gap-3 md:gap-0">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 md:mb-3 ${
-                            isSelected ? "bg-emerald-100" : "bg-neutral-100"
+                            isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
                           }`}>
-                            <Icon className={`w-5 h-5 ${isSelected ? "text-emerald-600" : "text-neutral-500"}`} />
+                            <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-neutral-900 text-sm md:mb-1">{driver.name}</h3>
                             <p className="text-xs text-neutral-500 line-clamp-1 md:line-clamp-2 md:mb-2">{driver.description}</p>
-                            <p className="text-sm font-semibold text-emerald-600 hidden md:block">{driver.typicalGap}</p>
+                            <p className="text-sm font-semibold text-emerald-600 hidden md:block">
+                              Based on your inputs: ~{formatCurrency(driverValue)}/year
+                            </p>
                           </div>
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                            isSelected ? "border-emerald-500 bg-emerald-500" : "border-neutral-300"
+                            isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
                           }`}>
                             {isSelected && <Check className="w-4 h-4 text-white" />}
                           </div>
