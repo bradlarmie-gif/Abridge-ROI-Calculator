@@ -100,9 +100,16 @@ interface DriverInputs {
     locumHourlyRate: number;        // Avg locum cost per hour
   };
   patientAccess: {
-    demand: "yes" | "probably" | "not_sure";
-    realizationRate: "conservative" | "typical" | "optimistic";
-    revenuePerVisit: number;
+    // Step 1: Time Returned
+    timeSavedPerEncounter: number;     // Minutes saved per encounter (default 2.5)
+    // Step 2: Time Allocated to Access
+    accessAllocation: number;          // % of saved time → access potential (default 33%)
+    // Step 3: Conversion to Visits
+    conversionRate: number;            // % of access time → actual visits (default 60%)
+    // Step 4: New Visits
+    timePerVisit: number;              // Minutes per visit (default 30)
+    // Step 5: Revenue Impact
+    revenuePerVisit: number;           // Blended reimbursement per visit (default $200)
   };
   retention: {
     turnoverRate: number;
@@ -347,9 +354,11 @@ export default function ModelBuilder({
       locumHourlyRate: 275,          // $275/hr locum cost
     },
     patientAccess: {
-      demand: "probably",
-      realizationRate: "typical",
-      revenuePerVisit: 200,
+      timeSavedPerEncounter: 2.5,      // 2.5 min saved per encounter
+      accessAllocation: 33,            // 33% of saved time → access potential
+      conversionRate: 60,              // 60% of access time → actual visits
+      timePerVisit: 30,                // 30 min per visit
+      revenuePerVisit: 200,            // $200 blended reimbursement
     },
     retention: {
       turnoverRate: 6,
@@ -586,12 +595,33 @@ export default function ModelBuilder({
         return Math.round(annualOTSavings + annualLocumSavings);
       }
       case "patientAccess": {
-        const { realizationRate, revenuePerVisit } = driverInputs.patientAccess;
-        const timeSavedHours = (2.5 * eligibleEncounters) / 60;
-        const realizationPct = realizationRate === "conservative" ? 15 : realizationRate === "typical" ? 20 : 30;
-        const usableHours = timeSavedHours * (realizationPct / 100);
-        const newVisits = usableHours * 2;
-        return Math.round(newVisits * revenuePerVisit);
+        const {
+          timeSavedPerEncounter,
+          accessAllocation,
+          conversionRate,
+          timePerVisit,
+          revenuePerVisit,
+        } = driverInputs.patientAccess;
+        
+        // PATIENT ACCESS (5-step calculation)
+        // Step 1: Time Returned
+        const minutesReturned = eligibleEncounters * timeSavedPerEncounter;
+        const hoursReturned = minutesReturned / 60;
+        
+        // Step 2: Time Allocated to Access
+        const accessHours = hoursReturned * (accessAllocation / 100);
+        
+        // Step 3: Conversion to Visits
+        const usableHours = accessHours * (conversionRate / 100);
+        
+        // Step 4: New Visits
+        const usableMinutes = usableHours * 60;
+        const additionalVisits = usableMinutes / timePerVisit;
+        
+        // Step 5: Revenue Impact
+        const annualAccessRevenue = additionalVisits * revenuePerVisit;
+        
+        return Math.round(annualAccessRevenue);
       }
       case "retention": {
         const { turnoverRate, replacementCost } = driverInputs.retention;
@@ -824,8 +854,10 @@ export default function ModelBuilder({
           };
         case "patientAccess":
           return {
-            demand: driverInputs.patientAccess.demand,
-            realizationRate: driverInputs.patientAccess.realizationRate,
+            timeSavedPerEncounter: driverInputs.patientAccess.timeSavedPerEncounter,
+            accessAllocation: driverInputs.patientAccess.accessAllocation,
+            conversionRate: driverInputs.patientAccess.conversionRate,
+            timePerVisit: driverInputs.patientAccess.timePerVisit,
             revenuePerVisit: driverInputs.patientAccess.revenuePerVisit,
           };
         case "retention":
@@ -1413,93 +1445,256 @@ export default function ModelBuilder({
   };
   
   const renderPatientAccessInputs = () => {
-    const { demand, realizationRate, revenuePerVisit } = driverInputs.patientAccess;
-    const timeSavedHours = (2.5 * eligibleEncounters) / 60;
-    const realizationPct = realizationRate === "conservative" ? 15 : realizationRate === "typical" ? 20 : 30;
-    const usableHours = timeSavedHours * (realizationPct / 100);
-    const newVisits = usableHours * 2;
+    const {
+      timeSavedPerEncounter,
+      accessAllocation,
+      conversionRate,
+      timePerVisit,
+      revenuePerVisit,
+    } = driverInputs.patientAccess;
+
+    // PATIENT ACCESS CALCULATIONS (5-step)
+    // Step 1: Time Returned
+    const minutesReturned = eligibleEncounters * timeSavedPerEncounter;
+    const hoursReturned = minutesReturned / 60;
     
+    // Step 2: Time Allocated to Access
+    const accessHours = hoursReturned * (accessAllocation / 100);
+    
+    // Step 3: Conversion to Visits
+    const usableHours = accessHours * (conversionRate / 100);
+    
+    // Step 4: New Visits
+    const usableMinutes = usableHours * 60;
+    const additionalVisits = usableMinutes / timePerVisit;
+    
+    // Step 5: Revenue Impact
+    const annualAccessRevenue = additionalVisits * revenuePerVisit;
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
+
     return (
       <div className="space-y-6">
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Time returned (auto from base inputs):</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            2.5 min × {eligibleEncounters.toLocaleString()} encounters ÷ 60 = {Math.round(timeSavedHours).toLocaleString()} hours
+        {/* Theory Box */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+          <p className="text-sm font-semibold text-blue-800">The Theory</p>
+          <p className="text-xs text-blue-700">
+            When clinicians spend less time on documentation, they have capacity to see additional patients. 
+            Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but 
+            even a modest portion creates meaningful revenue.
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Do you have patient demand to fill new slots?</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(["yes", "probably", "not_sure"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, demand: opt } }))}
-                className={`p-3 rounded-lg border text-sm transition-all ${
-                  demand === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
-                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
-                data-testid={`patient-access-demand-${opt}`}
-              >
-                {opt === "yes" && "Yes, waitlists"}
-                {opt === "probably" && "Probably yes"}
-                {opt === "not_sure" && "Not sure"}
-              </button>
-            ))}
+
+        {/* Step 1: Time Returned */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Time Returned</p>
+          <p className="text-xs text-[#6B7280]">How much time does Abridge give back?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Encounters</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {eligibleEncounters.toLocaleString()}
+              </div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Utilization</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {utilizationRate}%
+              </div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Time Saved</label>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={timeSavedPerEncounter}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, timeSavedPerEncounter: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="pa-time-saved-input"
+                />
+                <span className="text-xs text-[#6B7280]">min</span>
+              </div>
+            </div>
           </div>
-          {demand === "not_sure" && (
-            <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">We'll use a conservative realization rate</p>
-          )}
-        </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">What portion of time savings can realistically become visits?</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(["conservative", "typical", "optimistic"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, realizationRate: opt } }))}
-                className={`p-3 rounded-lg border text-sm transition-all ${
-                  realizationRate === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
-                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
-                data-testid={`patient-access-realization-${opt}`}
-              >
-                {opt === "conservative" && "Conservative 15%"}
-                {opt === "typical" && "Typical 20%"}
-                {opt === "optimistic" && "Optimistic 30%"}
-              </button>
-            ))}
+          <div className="flex justify-end mt-2">
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(hoursReturned).toLocaleString()} hrs
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">This accounts for scheduling constraints, room availability, etc.</p>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">What's your average net revenue per visit?</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={revenuePerVisit}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, revenuePerVisit: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="patient-access-revenue-input"
-            />
+
+        <StepDivider />
+
+        {/* Step 2: Time Allocated to Access */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Time Allocated to Access</p>
+          <p className="text-xs text-[#6B7280]">What portion of saved time goes toward seeing more patients?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(hoursReturned).toLocaleString()} hrs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <Input
+                type="number"
+                value={accessAllocation}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, accessAllocation: Number(e.target.value) || 0 } }))}
+                className="w-16 text-center font-mono text-sm h-8"
+                data-testid="pa-access-allocation-input"
+              />
+              <span className="text-xs text-[#6B7280]">%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(accessHours).toLocaleString()} hrs
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">Primary care: $150-200 | Specialty: $250-400</p>
+          <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mt-2">
+            We assume saved time splits three ways: 1/3 quality of life, 1/3 access, 1/3 cost reduction
+          </p>
         </div>
-        
+
+        <StepDivider />
+
+        {/* Step 3: Conversion to Visits */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Conversion to Visits</p>
+          <p className="text-xs text-[#6B7280]">How much actually converts to patient visits?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(accessHours).toLocaleString()} hrs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <Input
+                type="number"
+                value={conversionRate}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, conversionRate: Number(e.target.value) || 0 } }))}
+                className="w-16 text-center font-mono text-sm h-8"
+                data-testid="pa-conversion-rate-input"
+              />
+              <span className="text-xs text-[#6B7280]">%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(usableHours).toLocaleString()} hrs
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Conversion depends on patient demand, room availability, and scheduling capacity. 60% is conservative.
+          </p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 4: New Visits */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: New Visits</p>
+          <p className="text-xs text-[#6B7280]">How many additional visits is that?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(usableHours).toLocaleString()} hrs
+              </div>
+              <span className="text-neutral-400">÷</span>
+              <Input
+                type="number"
+                value={timePerVisit}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, timePerVisit: Number(e.target.value) || 1 } }))}
+                className="w-16 text-center font-mono text-sm h-8"
+                data-testid="pa-time-per-visit-input"
+              />
+              <span className="text-xs text-[#6B7280]">min/visit</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(additionalVisits).toLocaleString()} visits
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 5: Revenue Impact */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 5: Revenue Impact</p>
+          <p className="text-xs text-[#6B7280]">What's the revenue value?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(additionalVisits).toLocaleString()} visits
+              </div>
+              <span className="text-neutral-400">×</span>
+              <span className="text-sm text-[#6B7280]">$</span>
+              <Input
+                type="number"
+                value={revenuePerVisit}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, revenuePerVisit: Number(e.target.value) || 0 } }))}
+                className="w-20 text-center font-mono text-sm h-8"
+                data-testid="pa-revenue-per-visit-input"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-1.5 font-mono text-sm font-bold text-emerald-600">
+                {formatCurrency(Math.round(annualAccessRevenue))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benchmark Box */}
+        <div className="p-4 bg-neutral-100 rounded-lg border border-neutral-200 space-y-2">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Benchmark: Revenue per Visit</p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Primary Care</span>
+              <span className="font-mono text-[#111827]">$100 - $150</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Specialty</span>
+              <span className="font-mono text-[#111827]">$175 - $300</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Procedural</span>
+              <span className="font-mono text-[#111827]">$300 - $600+</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Your input</span>
+              <span className="font-mono text-[#E85D3F] font-medium">${revenuePerVisit} (blended)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Result Summary */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-medium text-[#111827]">Annual Patient Access Revenue</span>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(newVisits * revenuePerVisit))}
+              {formatCurrency(Math.round(annualAccessRevenue))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(usableHours).toLocaleString()} usable hrs × 2 visits/hr × ${revenuePerVisit} = {formatCurrency(Math.round(newVisits * revenuePerVisit))}
+            {Math.round(additionalVisits).toLocaleString()} additional visits × ${revenuePerVisit}/visit
           </p>
         </div>
       </div>

@@ -1,0 +1,141 @@
+Final Math: Patient Access
+javascriptCopy// ============ PATIENT ACCESS ============
+
+// Inputs (user-editable)
+const providers = 40;                      // Total providers
+const annualEncounters = 80000;            // Total outpatient encounters
+const utilizationRate = 0.65;              // % of encounters using Abridge
+const timeSavedPerEncounter = 2.5;         // Minutes saved per encounter
+const accessAllocation = 0.33;             // % of saved time → access potential
+const conversionRate = 0.60;               // % of access time → actual visits
+const timePerVisit = 30;                   // Minutes per visit
+const revenuePerVisit = 200;               // Blended reimbursement per visit
+
+// Calculations
+
+// Step 1: Time Returned
+const eligibleEncounters = annualEncounters * utilizationRate;
+// 80,000 × 0.65 = 52,000 encounters
+
+const minutesReturned = eligibleEncounters * timeSavedPerEncounter;
+// 52,000 × 2.5 = 130,000 minutes
+
+const hoursReturned = minutesReturned / 60;
+// 130,000 ÷ 60 = 2,167 hrs
+
+// Step 2: Time Allocated to Access
+const accessHours = hoursReturned * accessAllocation;
+// 2,167 × 0.33 = 715 hrs
+
+// Step 3: Conversion to Visits
+const usableHours = accessHours * conversionRate;
+// 715 × 0.60 = 429 hrs
+
+// Step 4: New Visits
+const usableMinutes = usableHours * 60;
+// 429 × 60 = 25,740 minutes
+
+const additionalVisits = usableMinutes / timePerVisit;
+// 25,740 ÷ 30 = 858 visits
+
+// Step 5: Revenue Impact
+const annualAccessRevenue = additionalVisits * revenuePerVisit;
+// 858 × $200 = $171,600
+
+Final UI Step-Down:
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 🏥 Patient Access                                    $171,600   │
+│    Convert time into additional visits—if demand exists         │
+└─────────────────────────────────────────────────────────────────┘
+
+         ⬇ WHEN EXPANDED ⬇
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🏥 Patient Access                                    $171,600   │
+│    Convert time into additional visits—if demand exists         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ When clinicians spend less time on documentation, they have     │
+│ capacity to see additional patients. Not all saved time         │
+│ converts to visits—scheduling, room availability, and demand    │
+│ limit realization—but even a modest portion creates meaningful  │
+│ revenue.                                                        │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ STEP 1: TIME RETURNED                                           │
+│ How much time does Abridge give back?                           │
+│                                                                 │
+│ ┌────────────┐   ┌────────────┐   ┌────────────┐               │
+│ │ Encounters │ × │Utilization │ × │ Time Saved │               │
+│ │   80,000   │   │    65%     │   │  2.5 min   │               │
+│ └────────────┘   └────────────┘   └────────────┘               │
+│                                                                 │
+│                              Hours Returned: 2,167 hrs          │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: TIME ALLOCATED TO ACCESS                                │
+│ What portion of saved time goes toward seeing more patients?    │
+│                                                                 │
+│ ┌────────────────┐   ┌──────────────────┐                      │
+│ │ Hours Returned │ × │ Access Allocation│                      │
+│ │   2,167 hrs    │   │       33%        │                      │
+│ └────────────────┘   └──────────────────┘                      │
+│                                                                 │
+│                                Access Hours: 715 hrs            │
+│                                                                 │
+│ 💡 We assume saved time splits three ways:                      │
+│    1/3 quality of life • 1/3 access • 1/3 cost reduction       │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: CONVERSION TO VISITS                                    │
+│ How much actually converts to patient visits?                   │
+│                                                                 │
+│ ┌────────────────┐   ┌──────────────────┐                      │
+│ │  Access Hours  │ × │ Conversion Rate  │                      │
+│ │    715 hrs     │   │       60%        │                      │
+│ └────────────────┘   └──────────────────┘                      │
+│                                                                 │
+│                               Usable Hours: 429 hrs             │
+│                                                                 │
+│ 💡 Conversion depends on patient demand, room availability,     │
+│    and scheduling capacity. 60% is conservative.                │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 4: NEW VISITS                                              │
+│ How many additional visits is that?                             │
+│                                                                 │
+│ ┌────────────────┐   ┌──────────────────┐                      │
+│ │  Usable Hours  │ ÷ │  Time per Visit  │                      │
+│ │    429 hrs     │   │     30 min       │                      │
+│ └────────────────┘   └──────────────────┘                      │
+│                                                                 │
+│                          Additional Visits: 858 visits          │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 5: REVENUE IMPACT                                          │
+│ What's the revenue value?                                       │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │ Additional Visits│ × │ Revenue per Visit│                    │
+│ │       858        │   │      $200        │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                          Annual Revenue: $171,600               │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐│
+│ │ 📊 BENCHMARK: Revenue per Visit                             ││
+│ │                                                             ││
+│ │ Primary Care          $100 - $150                           ││
+│ │ Specialty             $175 - $300                           ││
+│ │ Procedural            $300 - $600+                          ││
+│ │                                                             ││
+│ │ Your input: $200 (blended avg)                              ││
+│ └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
