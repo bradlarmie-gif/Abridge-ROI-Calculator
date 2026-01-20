@@ -771,10 +771,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     title={!setting.available ? "Coming Q2 2025" : undefined}
                     data-testid={`button-setting-${setting.id}`}
                   >
-                    <span className="flex items-center gap-1">
-                      {selectedSetting === setting.id && <span>●</span>}
-                      {setting.label}
-                    </span>
+                    <span>{setting.label}</span>
                     {!setting.available && (
                       <span className="text-[11px] text-neutral-400 mt-0.5">Coming Soon</span>
                     )}
