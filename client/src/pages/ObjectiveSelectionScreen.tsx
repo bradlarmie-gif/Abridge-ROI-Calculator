@@ -2413,7 +2413,7 @@ export default function ObjectiveSelectionScreen({
                 <span className="hidden sm:inline">Back</span>
               </button>
             )}
-            <div className="flex flex-col gap-1 cursor-pointer" onClick={() => setCurrentPage("orientation")} data-testid="logo-home">
+            <div className="flex flex-col gap-1 cursor-pointer hover:opacity-70 transition-opacity" onClick={onBackToJourney} data-testid="logo-home">
               <span className="text-[18px] md:text-[20px] font-bold text-[#F03319] tracking-tight leading-none uppercase">
                 ABRIDGE
               </span>
