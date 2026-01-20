@@ -1,0 +1,49 @@
+REFRAME COST COMPARISON PAGE FOR SCRIBE PATH
+
+## THE PROBLEM
+We can't show Abridge pricing, so calling this "The cost comparison" 
+is misleading. We need to reframe.
+
+## THE FIX
+
+Change the page from a "comparison" to a "context" page:
+
+TITLE: "What you're spending today"
+SUBTITLE: "Let's put your scribe investment in context."
+
+REMOVE the side-by-side comparison layout.
+REMOVE the "WITH ABRIDGE" card entirely.
+
+INSTEAD, show ONE card with their scribe spend contextualized:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR CURRENT SCRIBE PROGRAM                                    │
+│                                                                 │
+│  $300,000/year                                                  │
+│                                                                 │
+│  12 scribes × $25/hr × 20 hrs × 50 weeks                        │
+│  Covering 12 of 30 providers (40%)                              │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│                                                                 │
+│  BREAKING IT DOWN:                                              │
+│                                                                 │
+│  $25,000 per month                                              │
+│  $6,250 per covered provider per year                           │
+│  $0 for the other 18 providers                                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+BELOW THE CARD, add context text:
+"Abridge pricing varies by deployment. Your rep can provide specifics.
+For now, let's look at the full cost of your scribe program — 
+including the costs that don't show up in the budget."
+
+CTA: "See the hidden costs →"
+
+## WHY THIS IS BETTER
+- No false comparison
+- Contextualizes their spend (per month, per provider)
+- Sets up the "hidden costs" conversation naturally
+- Honest about Abridge pricing being a separate conversation

@@ -1398,55 +1398,64 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step4-scribe"
               >
-                See the cost comparison
+                See your current spend
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
         )}
 
-        {/* Human Scribes Step 5: Cost Comparison */}
+        {/* Human Scribes Step 5: What You're Spending Today */}
         {step === 5 && isScribePath && (
           <div className="animate-in fade-in duration-300">
             <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3" data-testid="text-step5-scribe-title">
-              The cost comparison
+              What you're spending today
             </h1>
-            <p className="text-lg text-neutral-500 mb-10">Scribes vs. Abridge — the full picture.</p>
+            <p className="text-lg text-neutral-500 mb-10">Let's put your scribe investment in context.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <div className="bg-neutral-100 rounded-2xl p-6 border border-neutral-200">
-                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-4">Your Current Scribe Program</p>
-                <p className="text-4xl font-bold text-neutral-700 mb-2 tabular-nums">{formatCurrency(annualScribeCost)}/year</p>
-                <p className="text-sm text-neutral-500 mb-4">{providersWithScribes} of {providers} providers covered</p>
-                <div className="border-t border-neutral-200 pt-4">
-                  <p className="text-xs text-neutral-500 font-mono">
-                    {providersWithScribes} scribes × ${scribeHourlyCost}/hr × {scribeHoursPerWeek} hrs × 50 weeks
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-200">
-                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-4">With Abridge</p>
-                <p className="text-2xl font-bold text-emerald-700 mb-2">
-                  Pricing based on deployment size
-                </p>
-                <p className="text-sm text-emerald-600/80 mb-4">All {providers} providers get access</p>
-                <div className="border-t border-emerald-200 pt-4 space-y-1">
-                  <p className="text-sm text-emerald-700">No per-hour costs</p>
-                  <p className="text-xs text-emerald-600/70">
-                    Your Abridge rep can provide specific pricing
-                  </p>
+            <div className="bg-neutral-50 rounded-2xl p-6 md:p-8 border border-neutral-200">
+              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-4">Your Current Scribe Program</p>
+              <p className="text-4xl font-bold text-neutral-800 mb-2 tabular-nums">{formatCurrency(annualScribeCost)}/year</p>
+              <p className="text-sm text-neutral-500 mb-2 font-mono">
+                {providersWithScribes} scribes × ${scribeHourlyCost}/hr × {scribeHoursPerWeek} hrs × 50 weeks
+              </p>
+              <p className="text-sm text-neutral-500 mb-6">Covering {providersWithScribes} of {providers} providers ({coveragePercent}%)</p>
+              
+              <div className="border-t border-neutral-200 pt-6">
+                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-4">Breaking It Down</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-xl p-4 border border-neutral-200 text-center">
+                    <p className="text-2xl font-bold text-neutral-800 tabular-nums">{formatCurrency(Math.round(annualScribeCost / 12))}</p>
+                    <p className="text-xs text-neutral-500 mt-1">per month</p>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-neutral-200 text-center">
+                    <p className="text-2xl font-bold text-neutral-800 tabular-nums">{formatCurrency(Math.round(annualScribeCost / providersWithScribes))}</p>
+                    <p className="text-xs text-neutral-500 mt-1">per covered provider/year</p>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-neutral-200 text-center">
+                    <p className="text-2xl font-bold text-neutral-400">$0</p>
+                    <p className="text-xs text-neutral-500 mt-1">for the other {providersWithoutScribes} providers</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-12 flex justify-end">
+            <div className="mt-6 text-center">
+              <p className="text-sm text-neutral-500">
+                Abridge pricing varies by deployment. Your rep can provide specifics.
+              </p>
+              <p className="text-sm text-neutral-500 mt-1">
+                For now, let's look at the full cost of your scribe program — including the costs that don't show up in the budget.
+              </p>
+            </div>
+
+            <div className="mt-10 flex justify-end">
               <Button
                 onClick={handleContinue}
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step5-scribe"
               >
-                See hidden costs
+                See the hidden costs
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
