@@ -1165,7 +1165,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
               <div className="border-t border-neutral-200 pt-6 space-y-2">
                 <label className="block text-sm font-semibold text-neutral-900">
-                  Hours per week per scribe
+                  Hours each scribe works per week
                 </label>
                 <div className="flex items-center gap-3">
                   <input
@@ -1188,11 +1188,14 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <p className="text-lg text-blue-900 flex items-center gap-3">
                 <User className="w-6 h-6 text-blue-600" />
                 <span>
-                  Your annual scribe spend: <strong className="text-blue-950 font-semibold">{formatCurrency(annualScribeCost)}</strong>
+                  Your annual scribe spend: <strong className="text-2xl text-blue-950 font-bold">{formatCurrency(annualScribeCost)}</strong>
                 </span>
               </p>
               <p className="text-sm text-blue-700 mt-2 ml-9">
                 {providersWithScribes} scribes × ${scribeHourlyCost}/hr × {scribeHoursPerWeek} hrs/week × 50 weeks
+              </p>
+              <p className="text-xs text-blue-600/70 mt-1 ml-9">
+                Assumes 1 dedicated scribe per covered provider
               </p>
             </div>
 
