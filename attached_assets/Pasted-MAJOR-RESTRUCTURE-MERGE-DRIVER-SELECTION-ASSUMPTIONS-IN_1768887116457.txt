@@ -1,0 +1,83 @@
+MAJOR RESTRUCTURE: MERGE DRIVER SELECTION + ASSUMPTIONS INTO SUMMARY
+
+## DELETE THESE PAGES
+- "What matters most to your organization?" (driver selection)
+- "Fine-tune your assumptions"
+
+## UPDATE FLOW
+Ambient AI path is now 5 steps:
+1. Solution Selection
+2. Baseline
+3. Utilization Gap
+4. Efficiency Gap
+5. Summary Dashboard
+
+## REBUILD SUMMARY DASHBOARD
+
+### SECTION 1: THE HEADLINE
+- "Based on what you've told us, you're leaving"
+- $255,516 (large, coral)
+- "on the table. Every. Single. Year."
+- $X/month • $X/day • $X/hour
+
+### SECTION 2: THE GAPS (NEW)
+Add this section after the headline:
+
+"THE GAPS WE IDENTIFIED"
+- Utilization: [X]% → 65% = +[Y] encounters documented
+- Efficiency: [X] min → 3 min = +[Y] hours returned
+
+This connects the inputs to the output.
+
+### SECTION 3: VALUE BREAKDOWN (Replaces driver selection page)
+"WHERE THAT VALUE SHOWS UP"
+
+Show three driver rows (expandable):
+- Patient Access: +$160,000/year
+- Documentation-Related Denials: +$87,250/year  
+- Level of Service Accuracy: +$8,266/year
+
+Below the rows, small link:
+"[Adjust which drivers apply to you]"
+Clicking reveals toggles to turn drivers on/off
+Defaults to all on
+
+### SECTION 4: OVER TIME
+- 3-year cumulative graph
+- Comparison: Switch today vs Wait 6 months vs Cost of waiting
+- Same as before, but cleaner presentation
+
+### SECTION 5: THE DECISION (NEW)
+Add strategic framing:
+
+"THE DECISION
+
+You already invested in ambient AI.
+The question is whether you're getting full value.
+
+Every month at current state = $[X] in unrealized value."
+
+### SECTION 6: ASSUMPTIONS (Collapsed by default)
+"[View/edit assumptions]" — expandable
+
+When expanded, shows:
+- wRVU Uplift: [3.5]%
+- Under-coding Correction: [8]%
+- Denial Prevention: [30]%
+
+Small inputs, inline editing. No explanations needed.
+
+### SECTION 7: ACTIONS
+Three buttons:
+- [Edit Model] — secondary
+- [Copy Link] — secondary
+- [Let's Talk] — primary, coral
+
+## PROGRESS DOTS
+Update to show 5 steps instead of 7
+
+## CONSULTANT ENERGY
+The page should feel like a partner showing you insights,
+not software asking you to configure settings.
+
+No forms. No checkboxes. Just the answer with ability to refine.

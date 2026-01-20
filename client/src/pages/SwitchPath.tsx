@@ -324,9 +324,10 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
   const solutionData = selectedSolution ? SOLUTION_DATA[selectedSolution] : null;
   
-  // Step 7 is now the combined Summary Dashboard
+  // Summary Dashboard animations - Step 5 for Ambient AI, Step 7 for Human Scribes
+  const isSummaryStep = (step === 5 && !isScribePath) || (step === 7 && isScribePath);
   useEffect(() => {
-    if (step === 7) {
+    if (isSummaryStep) {
       setGapRevealStage(0);
       setChartAnimationStage(0);
       const revealTimers = [
@@ -339,7 +340,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       ];
       return () => revealTimers.forEach(clearTimeout);
     }
-  }, [step]);
+  }, [step, isSummaryStep]);
 
   useEffect(() => {
     if (selectedSolution) {
@@ -615,15 +616,15 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       case 2: return providers > 0 && annualEncounters > 0;
       case 3: return true;
       case 4: return true;
-      case 5: return selectedDrivers.length >= 2; // Driver Selection now Step 5
-      case 6: return true; // Performance Assumptions now Step 6
-      case 7: return true; // Summary Dashboard
+      case 5: return isScribePath ? true : true; // Ambient AI: Summary, Scribe: Scribe Details
+      case 6: return isScribePath ? true : true; // Scribe: Value Breakdown
+      case 7: return true; // Scribe: Summary Dashboard
       default: return false;
     }
   };
 
   const handleContinue = () => {
-    const maxStep = isScribePath ? 7 : 7;
+    const maxStep = isScribePath ? 7 : 5; // Ambient AI is now 5 steps
     if (step < maxStep) {
       setStep((step + 1) as Step);
     }
@@ -687,7 +688,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
           
           <div className="flex items-center gap-1 md:gap-1.5">
-            {(isScribePath ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4, 5, 6, 7]).map((s) => (
+            {(isScribePath ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4, 5]).map((s) => (
               <div
                 key={s}
                 className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full transition-all ${
@@ -1690,451 +1691,6 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           </div>
         )}
 
-        {step === 6 && !isScribePath && (() => {
-          // Calculate what each metric contributes to the total for real-time impact display
-          const getMetricImpact = (metricId: string, currentValue: number, defaultValue: number) => {
-            const diff = currentValue - defaultValue;
-            if (Math.abs(diff) < 0.1) return null;
-            
-            // Rough impact calculation based on metric type
-            const eligibleEncounters = calculations.abridgeDocumentedEncounters;
-            let impact = 0;
-            
-            if (metricId === "wrvuUplift") {
-              // wRVU impact: encounters × wRVU rate × uplift difference
-              impact = eligibleEncounters * 45 * (diff / 100); // $45 per wRVU average
-            } else if (metricId === "underCoding") {
-              // Under-coding impact
-              impact = eligibleEncounters * 15 * (diff / 100); // ~$15 per corrected code
-            } else if (metricId === "denialPrevention") {
-              // Denial prevention impact
-              impact = eligibleEncounters * 0.02 * 500 * (diff / 100); // 2% denial rate, $500 avg
-            } else if (metricId === "hccImprovement") {
-              // HCC capture impact
-              impact = eligibleEncounters * 0.15 * 1200 * (diff / 100); // 15% Medicare, $1200 RAF
-            }
-            
-            return Math.round(impact);
-          };
-
-          const hasRelevantMetrics = selectedDrivers.includes("level_of_service") || 
-                                     selectedDrivers.includes("patient_access") || 
-                                     selectedDrivers.includes("denials") || 
-                                     selectedDrivers.includes("hcc");
-
-          return (
-          <div className="animate-in fade-in duration-300">
-            <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2" data-testid="text-step6-title">
-              Fine-tune your assumptions
-            </h1>
-            <p className="text-base text-neutral-500 mb-6">
-              These are conservative industry benchmarks. Expand any row to customize.
-            </p>
-
-            {/* Use Defaults escape hatch */}
-            <div className="bg-[#F9FAFB] rounded-lg px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <p className="text-sm text-neutral-600">
-                Current estimated gap: <span className="font-bold text-[#E85D3F]">{formatCurrency(calculations.totalGap)}/year</span>
-              </p>
-              <Button
-                onClick={handleContinue}
-                variant="outline"
-                className="text-sm border-neutral-300 hover:bg-white"
-                data-testid="button-use-defaults"
-              >
-                Continue with defaults
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-
-            {hasRelevantMetrics && (
-            <div className="space-y-2">
-              {/* wRVU Uplift */}
-              {(selectedDrivers.includes("level_of_service") || selectedDrivers.includes("patient_access")) && (
-              <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
-                <button
-                  onClick={() => setWrvuKnown(!wrvuKnown)}
-                  className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-neutral-900">wRVU Uplift</p>
-                      <span className="text-lg font-bold text-neutral-700 tabular-nums">{wrvuUplift}%</span>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      If Abridge helps capture more complete visits, typical improvement is 3-6%. We're using {wrvuUplift}%.
-                    </p>
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-3 ${wrvuKnown ? "rotate-180" : ""}`} />
-                </button>
-                {wrvuKnown && (
-                  <div className="px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={wrvuUplift}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9.]/g, '');
-                          setWrvuUplift(val === "" ? 0 : parseFloat(val) || 0);
-                        }}
-                        className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm text-center font-semibold"
-                      />
-                      <span className="text-sm text-neutral-500">%</span>
-                      <button
-                        onClick={() => setWrvuUplift(solutionData?.typicalWrvuUplift || 3.5)}
-                        className="text-xs text-neutral-400 hover:text-neutral-600 ml-auto"
-                      >
-                        Reset to {solutionData?.typicalWrvuUplift || 3.5}%
-                      </button>
-                    </div>
-                    {(() => {
-                      const impact = getMetricImpact("wrvuUplift", wrvuUplift, solutionData?.typicalWrvuUplift || 3.5);
-                      if (impact && Math.abs(impact) > 500) {
-                        return (
-                          <p className={`text-xs mt-2 ${impact > 0 ? "text-emerald-600" : "text-amber-600"}`}>
-                            {impact > 0 ? "+" : ""}{formatCurrency(impact)}/year vs. default
-                          </p>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                )}
-              </div>
-              )}
-
-              {/* Under-coding Correction */}
-              {selectedDrivers.includes("level_of_service") && (
-              <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
-                <button
-                  onClick={() => setUnderCodingKnown(!underCodingKnown)}
-                  className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-neutral-900">Under-coding Correction</p>
-                      <span className="text-lg font-bold text-neutral-700 tabular-nums">{underCoding}%</span>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      Percentage of visits where Abridge captures complexity that would have been under-coded. Industry range: 5-12%.
-                    </p>
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-3 ${underCodingKnown ? "rotate-180" : ""}`} />
-                </button>
-                {underCodingKnown && (
-                  <div className="px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={underCoding}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9.]/g, '');
-                          setUnderCoding(val === "" ? 0 : parseFloat(val) || 0);
-                        }}
-                        className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm text-center font-semibold"
-                      />
-                      <span className="text-sm text-neutral-500">%</span>
-                      <button
-                        onClick={() => setUnderCoding(solutionData?.typicalUnderCoding || 8)}
-                        className="text-xs text-neutral-400 hover:text-neutral-600 ml-auto"
-                      >
-                        Reset to {solutionData?.typicalUnderCoding || 8}%
-                      </button>
-                    </div>
-                    {(() => {
-                      const impact = getMetricImpact("underCoding", underCoding, solutionData?.typicalUnderCoding || 8);
-                      if (impact && Math.abs(impact) > 500) {
-                        return (
-                          <p className={`text-xs mt-2 ${impact > 0 ? "text-emerald-600" : "text-amber-600"}`}>
-                            {impact > 0 ? "+" : ""}{formatCurrency(impact)}/year vs. default
-                          </p>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                )}
-              </div>
-              )}
-
-              {/* Denial Prevention */}
-              {selectedDrivers.includes("denials") && (
-              <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
-                <button
-                  onClick={() => setDenialKnown(!denialKnown)}
-                  className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-neutral-900">Denial Prevention</p>
-                      <span className="text-lg font-bold text-neutral-700 tabular-nums">{denialPrevention}%</span>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      Percentage of documentation-related denials that complete notes prevent. Industry range: 20-45%.
-                    </p>
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-3 ${denialKnown ? "rotate-180" : ""}`} />
-                </button>
-                {denialKnown && (
-                  <div className="px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={denialPrevention}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9.]/g, '');
-                          setDenialPrevention(val === "" ? 0 : parseFloat(val) || 0);
-                        }}
-                        className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm text-center font-semibold"
-                      />
-                      <span className="text-sm text-neutral-500">%</span>
-                      <button
-                        onClick={() => setDenialPrevention(solutionData?.typicalDenialPrevention || 30)}
-                        className="text-xs text-neutral-400 hover:text-neutral-600 ml-auto"
-                      >
-                        Reset to {solutionData?.typicalDenialPrevention || 30}%
-                      </button>
-                    </div>
-                    {(() => {
-                      const impact = getMetricImpact("denialPrevention", denialPrevention, solutionData?.typicalDenialPrevention || 30);
-                      if (impact && Math.abs(impact) > 500) {
-                        return (
-                          <p className={`text-xs mt-2 ${impact > 0 ? "text-emerald-600" : "text-amber-600"}`}>
-                            {impact > 0 ? "+" : ""}{formatCurrency(impact)}/year vs. default
-                          </p>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                )}
-              </div>
-              )}
-
-              {/* HCC Capture */}
-              {selectedDrivers.includes("hcc") && (
-              <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
-                <button
-                  onClick={() => setHccKnown(!hccKnown)}
-                  className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-neutral-900">HCC Capture Improvement</p>
-                      <span className="text-lg font-bold text-neutral-700 tabular-nums">{hccImprovement}%</span>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      Improvement in capturing chronic conditions for risk adjustment. Conservative range: 8-15%.
-                    </p>
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform flex-shrink-0 ml-3 ${hccKnown ? "rotate-180" : ""}`} />
-                </button>
-                {hccKnown && (
-                  <div className="px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={hccImprovement}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9.]/g, '');
-                          setHccImprovement(val === "" ? 0 : parseFloat(val) || 0);
-                        }}
-                        className="w-20 px-3 py-2 rounded-lg border border-neutral-200 text-sm text-center font-semibold"
-                      />
-                      <span className="text-sm text-neutral-500">%</span>
-                      <button
-                        onClick={() => setHccImprovement(solutionData?.typicalHccImprovement || 10)}
-                        className="text-xs text-neutral-400 hover:text-neutral-600 ml-auto"
-                      >
-                        Reset to {solutionData?.typicalHccImprovement || 10}%
-                      </button>
-                    </div>
-                    {(() => {
-                      const impact = getMetricImpact("hccImprovement", hccImprovement, solutionData?.typicalHccImprovement || 10);
-                      if (impact && Math.abs(impact) > 500) {
-                        return (
-                          <p className={`text-xs mt-2 ${impact > 0 ? "text-emerald-600" : "text-amber-600"}`}>
-                            {impact > 0 ? "+" : ""}{formatCurrency(impact)}/year vs. default
-                          </p>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                )}
-              </div>
-              )}
-            </div>
-            )}
-
-            {/* Info message when no drivers have relevant metrics */}
-            {!hasRelevantMetrics && (
-              <div className="bg-neutral-50 rounded-lg p-5 border border-neutral-200">
-                <p className="text-neutral-600 text-sm">
-                  The drivers you selected (Overtime, Retention) use time-based calculations from your earlier inputs.
-                </p>
-                <p className="text-xs text-neutral-400 mt-2">
-                  No additional assumptions needed.
-                </p>
-              </div>
-            )}
-
-            <div className="mt-8 flex justify-end">
-              <Button
-                onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-lg"
-                data-testid="button-continue-step6"
-              >
-                See Your Results
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-          );
-        })()}
-
-        {step === 5 && !isScribePath && (
-          <div className="animate-in fade-in duration-300">
-            <h1 className="text-2xl md:text-4xl font-bold text-neutral-900 mb-2 md:mb-3" data-testid="text-step5-title">
-              What matters most to your organization?
-            </h1>
-            <p className="text-base md:text-lg text-neutral-500 mb-4 md:mb-6">
-              We've pre-selected the most common value areas. Deselect anything that doesn't apply.
-            </p>
-
-            {/* Subtle context line */}
-            <div className="bg-[#F9FAFB] rounded-lg px-4 py-3 mb-6">
-              <p className="text-sm text-neutral-600">
-                Based on your gaps: <span className="font-medium">+{calculations.utilizationGapEncounters.toLocaleString()} encounters</span> • <span className="font-medium">+{calculations.efficiencyGapHours.toLocaleString()} hours</span>
-              </p>
-              <p className="text-xs text-neutral-400 mt-0.5">Here's where that creates value.</p>
-            </div>
-
-            {/* Main driver cards - simplified */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4">
-              {DRIVERS.filter(d => ["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
-                const Icon = driver.icon;
-                const isSelected = selectedDrivers.includes(driver.id);
-                const driverValue = calculations.driverValues[driver.id]?.gap || 0;
-                
-                return (
-                  <button
-                    key={driver.id}
-                    onClick={() => toggleDriver(driver.id)}
-                    className={`p-4 rounded-xl border text-left transition-all duration-200 ${
-                      isSelected
-                        ? "border-[#E85D3F] bg-white shadow-sm"
-                        : "border-[#E5E7EB] hover:border-neutral-300 bg-white"
-                    }`}
-                    data-testid={`driver-${driver.id}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <Icon className="w-5 h-5 text-[#6B7280] flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-[#1F2937] text-base mb-1">{driver.name}</h3>
-                          <p className="text-sm text-[#6B7280] line-clamp-2 mb-2">{driver.description}</p>
-                          <p className="text-base font-bold text-[#E85D3F]">~{formatCurrency(driverValue)}/year</p>
-                        </div>
-                      </div>
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
-                      }`}>
-                        {isSelected && <Check className="w-3 h-3 text-white" />}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Show more drivers button */}
-            {!showAllDrivers ? (
-              <button 
-                onClick={() => setShowAllDrivers(true)}
-                className="w-full py-2.5 border border-dashed border-neutral-300 rounded-lg text-neutral-500 hover:border-neutral-400 hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2 mb-20 text-sm"
-                data-testid="button-show-more-drivers"
-              >
-                <ChevronDown className="w-4 h-4" />
-                Show 3 more drivers
-              </button>
-            ) : (
-              <div className="mb-20">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide">Additional Drivers</p>
-                  <button 
-                    onClick={() => setShowAllDrivers(false)}
-                    className="text-xs text-neutral-400 hover:text-neutral-600"
-                  >
-                    Hide
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                  {DRIVERS.filter(d => !["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
-                    const Icon = driver.icon;
-                    const isSelected = selectedDrivers.includes(driver.id);
-                    const driverValue = calculations.driverValues[driver.id]?.gap || 0;
-                    
-                    return (
-                      <button
-                        key={driver.id}
-                        onClick={() => toggleDriver(driver.id)}
-                        className={`p-4 rounded-xl border text-left transition-all duration-200 ${
-                          isSelected
-                            ? "border-[#E85D3F] bg-white shadow-sm"
-                            : "border-[#E5E7EB] hover:border-neutral-300 bg-white"
-                        }`}
-                        data-testid={`driver-${driver.id}`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-start gap-3 flex-1 min-w-0">
-                            <Icon className="w-5 h-5 text-[#6B7280] flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-[#1F2937] text-base mb-1">{driver.name}</h3>
-                              <p className="text-sm text-[#6B7280] line-clamp-2 mb-2">{driver.description}</p>
-                              <p className="text-base font-bold text-[#E85D3F]">~{formatCurrency(driverValue)}/year</p>
-                            </div>
-                          </div>
-                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                            isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
-                          }`}>
-                            {isSelected && <Check className="w-3 h-3 text-white" />}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Unified footer - single row */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-4 md:px-6 py-3 shadow-lg z-50">
-              <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-                <p className="text-sm text-[#6B7280]">
-                  {selectedDrivers.length} of 6 selected
-                </p>
-                <p className="text-sm text-neutral-600 hidden md:block">
-                  Estimated gap: <span className="font-bold text-[#E85D3F] text-base">{formatCurrency(calculations.totalGap)}/year</span>
-                </p>
-                <Button
-                  onClick={handleContinue}
-                  disabled={!canContinue()}
-                  className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-6 py-2.5 h-auto text-sm font-semibold rounded-lg disabled:opacity-40"
-                  data-testid="button-continue-step5"
-                >
-                  Continue
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Human Scribes Step 7: Summary Dashboard */}
         {step === 7 && isScribePath && (() => {
           const monthlySpend = Math.round(totalCurrentCost / 12);
@@ -2277,10 +1833,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           );
         })()}
 
-        {step === 7 && !isScribePath && (
+        {/* AMBIENT AI SUMMARY DASHBOARD - Step 5 */}
+        {step === 5 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
-            {/* HERO SECTION */}
-            <div className="text-center mb-8">
+            {/* SECTION 1: THE HEADLINE */}
+            <div className="text-center mb-6">
               <p 
                 className="text-lg md:text-xl text-neutral-500 font-medium mb-2"
                 style={{
@@ -2299,7 +1856,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   transition: "all 0.6s ease-out"
                 }}
               >
-                <span className="text-5xl md:text-7xl font-bold text-emerald-600 tabular-nums tracking-tight">
+                <span className="text-5xl md:text-7xl font-bold text-[#E85D3F] tabular-nums tracking-tight">
                   {gapRevealStage >= 2 ? <AnimatedNumber value={calculations.totalGap} duration={1800} /> : "$0"}
                 </span>
               </div>
@@ -2327,50 +1884,83 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             </div>
 
-            {/* TAB NAVIGATION */}
+            {/* SECTION 2: THE GAPS WE IDENTIFIED */}
             <div 
-              className="flex justify-center gap-2 mb-8"
+              className="bg-neutral-50 rounded-xl p-5 mb-6 border border-neutral-200"
               style={{
-                opacity: gapRevealStage >= 5 ? 1 : 0,
-                transition: "all 0.3s ease-out"
+                opacity: gapRevealStage >= 4 ? 1 : 0,
+                transition: "all 0.4s ease-out"
               }}
             >
-              <button
-                onClick={() => setSummaryTab("drivers")}
-                className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
-                  summaryTab === "drivers"
-                    ? "bg-neutral-900 text-white"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                }`}
-                data-testid="tab-by-driver"
-              >
-                By Driver
-              </button>
-              <button
-                onClick={() => {
-                  setSummaryTab("time");
-                  // Trigger chart animation when switching to time tab
-                  setChartAnimationStage(0);
-                  setTimeout(() => setChartAnimationStage(1), 100);
-                  setTimeout(() => setChartAnimationStage(2), 400);
-                  setTimeout(() => setChartAnimationStage(3), 1000);
-                  setTimeout(() => setChartAnimationStage(4), 1600);
-                  setTimeout(() => setChartAnimationStage(5), 2000);
-                }}
-                className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
-                  summaryTab === "time"
-                    ? "bg-neutral-900 text-white"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                }`}
-                data-testid="tab-over-time"
-              >
-                Over Time
-              </button>
+              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">The Gaps We Identified</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-600">Utilization:</span>
+                  <span className="text-sm">
+                    <span className="text-neutral-500">{utilization}%</span>
+                    <span className="text-neutral-400 mx-2">→</span>
+                    <span className="font-semibold text-neutral-900">{ABRIDGE_BENCHMARKS.utilization}%</span>
+                    <span className="text-emerald-600 ml-2 font-medium">= +{calculations.utilizationGapEncounters.toLocaleString()} encounters</span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-600">Efficiency:</span>
+                  <span className="text-sm">
+                    <span className="text-neutral-500">{timeSavings} min</span>
+                    <span className="text-neutral-400 mx-2">→</span>
+                    <span className="font-semibold text-neutral-900">{ABRIDGE_BENCHMARKS.timeSavings} min</span>
+                    <span className="text-emerald-600 ml-2 font-medium">= +{calculations.efficiencyGapHours.toLocaleString()} hours</span>
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* BY DRIVER TAB - Start collapsed by default */}
-            {summaryTab === "drivers" && gapRevealStage >= 5 && (
-              <div className="space-y-2 mb-8">
+            {/* SECTION 3: VALUE BREAKDOWN - Where that value shows up */}
+            <div 
+              className="mb-6"
+              style={{
+                opacity: gapRevealStage >= 5 ? 1 : 0,
+                transition: "all 0.4s ease-out"
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Where That Value Shows Up</p>
+                <button
+                  onClick={() => setShowAllDrivers(!showAllDrivers)}
+                  className="text-xs text-neutral-400 hover:text-neutral-600"
+                >
+                  {showAllDrivers ? "Hide driver options" : "Adjust which drivers apply"}
+                </button>
+              </div>
+
+              {/* Driver toggles - shown when adjusting */}
+              {showAllDrivers && (
+                <div className="bg-neutral-50 rounded-lg p-4 mb-4 border border-neutral-200">
+                  <p className="text-xs text-neutral-500 mb-3">Toggle drivers on/off to see how they affect your total:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {DRIVERS.map((driver) => {
+                      const isSelected = selectedDrivers.includes(driver.id);
+                      return (
+                        <button
+                          key={driver.id}
+                          onClick={() => toggleDriver(driver.id)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                            isSelected
+                              ? "bg-neutral-900 text-white"
+                              : "bg-white text-neutral-500 border border-neutral-300 hover:border-neutral-400"
+                          }`}
+                          data-testid={`toggle-driver-${driver.id}`}
+                        >
+                          {driver.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Driver rows - collapsed */}
+              <div className="space-y-2">
                 {selectedDrivers.map((driverId) => {
                   const driver = DRIVERS.find(d => d.id === driverId);
                   const values = calculations.driverValues[driverId];
@@ -2429,11 +2019,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold text-neutral-600">TOTAL ANNUAL GAP</span>
-                    <span className="text-xl font-bold text-emerald-600">{formatCurrency(calculations.totalGap)}/year</span>
+                    <span className="text-xl font-bold text-[#E85D3F]">{formatCurrency(calculations.totalGap)}/year</span>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* OVER TIME TAB */}
             {summaryTab === "time" && (

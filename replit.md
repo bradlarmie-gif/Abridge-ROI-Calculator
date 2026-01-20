@@ -37,15 +37,20 @@ The application operates entirely client-side, providing a responsive and intera
 - **Nursing Utilization Rates**: 45/60/75% (vs 50/65/80% for providers)
 - **Nursing ROI Philosophy**: Focus on measurable workforce protection (overtime, agency, retention) rather than billing optimization since nurses don't bill
 - **Nursing Calculation Architecture**: The `calculateDriverValues` function in ObjectiveSelectionScreen.tsx includes dedicated nursing driver calculations that use nursing-specific state (staffedBeds, nurseFTEs) rather than provider-centric values (eligibleEncounters). Nursing driver IDs in the return object include both Explore-style (overtime_reduction) and ModelBuilder-style (nursingOvertime) keys for compatibility across flows.
-- **SWITCH Path (Complete - Premium 8-Step Rebuild)**: 8-step premium diagnostic conversation for prospects switching from other AI solutions:
-  - **Step 1 - Solution Selection**: 3 ultra-clean cards (Ambient AI, Human Scribes, No Solution Yet) + care setting pills
+- **SWITCH Path - Ambient AI (Streamlined 5-Step Flow)**: Simplified consultant-style flow for prospects switching from other ambient AI solutions:
+  - **Step 1 - Solution Selection**: Clean cards (Ambient AI, Human Scribes) + care setting pills
   - **Step 2 - Your Baseline**: Providers, annual encounters, utilization slider with gradient and emoji zones
-  - **Step 3 - Adoption Gap**: Beautiful spectrum visual with YOU vs ABRIDGE pointers and gap bracket
+  - **Step 3 - Utilization Gap**: Beautiful spectrum visual with YOU vs ABRIDGE pointers and gap bracket
   - **Step 4 - Efficiency Gap**: Time savings input with 3.0 min Abridge benchmark, side-by-side comparison cards
-  - **Step 5 - Performance Inputs (NEW)**: Progressive disclosure for wRVU uplift, undercoding %, denial prevention %, HCC improvement metrics
-  - **Step 6 - Driver Selection**: Premium card-based UI with large icons, typical gap ranges ($60-120K format), recap box showing three gap types
-  - **Step 7 - Value Gap Analysis**: Expandable accordions with side-by-side calculation cards (YOUR CURRENT vs WITH ABRIDGE) showing step-by-step math with proportional bars
-  - **Step 8 - Cost of Waiting**: S-curve area chart with driver-aware ramp-up based on driver speed (fast/medium/slow), switch now vs wait 6 months comparison cards
+  - **Step 5 - Summary Dashboard**: All-in-one results page featuring:
+    - **The Headline**: Large coral dollar amount with monthly/daily/hourly breakdown
+    - **The Gaps We Identified**: Utilization and efficiency gap visualization
+    - **Value Breakdown**: Expandable driver rows with toggle to adjust which drivers apply
+    - **Over Time Tab**: 3-year cumulative chart with switch now vs wait comparison
+    - **The Decision**: Dark section summarizing key metrics and monthly cost of waiting
+    - **Assumptions**: Collapsed by default, inline editing
+    - **Actions**: Let's Talk (primary), Copy Link (secondary), Edit model (tertiary)
+- **SWITCH Path - Human Scribes (7-Step Flow)**: Full flow for prospects switching from human scribes (unchanged)
 - **SWITCH Driver Ramp Speeds**: Fast (Overtime, Level of Service, Denials: 50% at 3mo), Medium (Patient Access: 35% at 3mo), Slow (Retention, HCC: 15% at 3mo)
 - **SWITCH Philosophy**: Build conceptual understanding BEFORE showing dollar amounts; let customer choose which drivers matter; show realistic non-linear projections
 - **SWITCH Abridge Benchmarks**: 65% utilization, 3.0 min time savings, 6% wRVU uplift, 12% undercoding, 45% denial prevention, 15% HCC improvement
