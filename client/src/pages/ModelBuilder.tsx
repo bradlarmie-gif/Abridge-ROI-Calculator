@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Slider } from "@/components/ui/slider";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
@@ -3089,11 +3090,10 @@ export default function ModelBuilder({
                     {includeImplementation && (
                       <div className="flex items-center gap-2">
                         <span className="text-[#6B7280]">$</span>
-                        <Input
-                          type="number"
+                        <FormattedNumberInput
                           value={implementationFee}
-                          onChange={(e) => setImplementationFee(Number(e.target.value) || 0)}
-                          className="w-28 font-mono"
+                          onChange={setImplementationFee}
+                          className="w-32"
                           data-testid="input-implementation-fee"
                         />
                       </div>
@@ -3162,11 +3162,10 @@ export default function ModelBuilder({
                       <label className="text-sm font-medium text-[#111827]">Annual enterprise cost</label>
                       <div className="flex items-center gap-2">
                         <span className="text-[#6B7280]">$</span>
-                        <Input
-                          type="number"
+                        <FormattedNumberInput
                           value={enterpriseAnnual}
-                          onChange={(e) => setEnterpriseAnnual(Number(e.target.value) || 0)}
-                          className="w-40 font-mono"
+                          onChange={setEnterpriseAnnual}
+                          className="w-40"
                           data-testid="input-enterprise-annual"
                         />
                         <span className="text-sm text-[#6B7280]">/year</span>
@@ -3206,11 +3205,10 @@ export default function ModelBuilder({
                     {includeImplementation && (
                       <div className="flex items-center gap-2">
                         <span className="text-[#6B7280]">$</span>
-                        <Input
-                          type="number"
+                        <FormattedNumberInput
                           value={implementationFee}
-                          onChange={(e) => setImplementationFee(Number(e.target.value) || 0)}
-                          className="w-28 font-mono"
+                          onChange={setImplementationFee}
+                          className="w-32"
                           data-testid="input-implementation-fee"
                         />
                       </div>
