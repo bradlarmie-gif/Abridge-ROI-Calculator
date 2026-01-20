@@ -1296,7 +1296,7 @@ function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: 
           
           <div className="text-right">
             <div className="text-xs text-[#6B7280] mb-1">{step.output.label}</div>
-            <div className="font-mono text-[#E85D3F] font-bold text-lg border-b-2 border-[#E85D3F] pb-1 px-2">
+            <div className="font-mono text-emerald-600 font-bold text-lg border-b-2 border-emerald-600 pb-1 px-2">
               {step.output.value}
             </div>
           </div>
@@ -1349,7 +1349,7 @@ function DriverAccordion({
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-[#E85D3F] font-semibold">
+          <span className="text-emerald-600 font-semibold">
             ${driver.referenceValue.toLocaleString()}
           </span>
           {isExpanded ? (
@@ -1672,7 +1672,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           <div className="border-t border-neutral-200 pt-4">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[#6B7280]">→</span>
-              <span className="text-lg font-bold text-[#E85D3F]">~{config?.referenceScenario.eligibleEncounters.toLocaleString()}</span>
+              <span className="text-lg font-bold text-emerald-600">~{config?.referenceScenario.eligibleEncounters.toLocaleString()}</span>
               <span className="text-[#111827]">Abridge-documented encounters/year</span>
             </div>
             <p className="text-sm text-[#6B7280] mt-2">
@@ -1804,7 +1804,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             <div className="border-t-2 border-neutral-200 pt-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="font-bold text-[#111827]">TOTAL POTENTIAL VALUE</span>
-                <span className="font-mono font-bold text-[#E85D3F] text-2xl">
+                <span className="font-mono font-bold text-emerald-600 text-2xl">
                   ${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}
                 </span>
               </div>
@@ -1830,7 +1830,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             </p>
             
             <p className="text-[#6B7280] mb-4 max-w-xl mx-auto">
-              The reference scenario showed potential value of <span className="font-semibold text-[#E85D3F]">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-{config?.referenceScenario.providerLabel === "physicians" ? "physician ED" : config?.referenceScenario.providerLabel === "nurses" ? "nurse deployment" : config?.referenceScenario.providerLabel === "hospitalists" ? "hospitalist program" : "provider practice"}. But your {selectedSetting === "inpatient" ? "program" : "organization"} is different.
+              The reference scenario showed potential value of <span className="font-semibold text-emerald-600">${(timeDrivers.reduce((sum, d) => sum + d.referenceValue, 0) + qualityDrivers.reduce((sum, d) => sum + d.referenceValue, 0)).toLocaleString()}</span> for a {config?.referenceScenario.providers}-{config?.referenceScenario.providerLabel === "physicians" ? "physician ED" : config?.referenceScenario.providerLabel === "nurses" ? "nurse deployment" : config?.referenceScenario.providerLabel === "hospitalists" ? "hospitalist program" : "provider practice"}. But your {selectedSetting === "inpatient" ? "program" : "organization"} is different.
             </p>
             
             <p className="text-[#6B7280] mb-8">

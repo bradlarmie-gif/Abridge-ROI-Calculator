@@ -903,7 +903,7 @@ export default function ModelBuilder({
             <span className="font-medium text-[#111827]">{DRIVER_NAMES[driverId]}</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-mono font-semibold text-[#E85D3F] text-lg">{formatCurrency(value)}</span>
+            <span className="font-mono font-semibold text-emerald-600 text-lg">{formatCurrency(value)}</span>
             {isExpanded ? (
               <ChevronUp className="w-5 h-5 text-neutral-400" />
             ) : (
