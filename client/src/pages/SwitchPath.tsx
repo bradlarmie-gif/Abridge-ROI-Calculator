@@ -1442,7 +1442,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-neutral-500">
-                Abridge pricing varies by deployment. Your rep can provide specifics.
+                Abridge pricing varies by deployment. Your Sales Director can provide specifics.
               </p>
               <p className="text-sm text-neutral-500 mt-1">
                 For now, let's look at the full cost of your scribe program — including the costs that don't show up in the budget.
