@@ -270,7 +270,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   
   // Scribe summary accordion state (separate from driver accordions)
   const [expandedScribeSections, setExpandedScribeSections] = useState<string[]>([]);
-  const [scribeTurnoverRate] = useState<number>(0.35);
+  const [scribeTurnoverRate, setScribeTurnoverRate] = useState<number>(35);
+  const [managementHoursPerWeek, setManagementHoursPerWeek] = useState<number>(5);
+  const [hasScribeManagement, setHasScribeManagement] = useState<boolean>(true);
   const [scribeReplacementCost] = useState<number>(4000);
   const [scribeManagementOverhead] = useState<number>(20000);
   const weeksPerYear = 50;
@@ -286,8 +288,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
   const providersWithoutScribes = Math.max(0, providers - providersWithScribes);
   const coveragePercent = providers > 0 ? Math.round((providersWithScribes / providers) * 100) : 0;
   const annualScribeCost = providersWithScribes * scribeHourlyCost * scribeHoursPerWeek * weeksPerYear;
-  const annualTurnoverCost = Math.round(providersWithScribes * scribeTurnoverRate * scribeReplacementCost);
-  const managementOverhead = providersWithScribes > 10 ? scribeManagementOverhead : 10000;
+  const annualTurnoverCost = Math.round(providersWithScribes * (scribeTurnoverRate / 100) * scribeReplacementCost);
+  const managementOverhead = hasScribeManagement ? (managementHoursPerWeek * 50 * 50) : 0; // $50/hr × hours × 50 weeks
   const hiddenCosts = annualTurnoverCost + managementOverhead;
   const totalCurrentCost = annualScribeCost + hiddenCosts;
   const encountersPerProvider = providers > 0 ? annualEncounters / providers : 2000;
@@ -1470,78 +1472,131 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             </h1>
             <p className="text-lg text-neutral-500 mb-10">Scribes come with operational overhead.</p>
 
-            <div className="space-y-4">
-              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-6 h-6 text-amber-600" />
+            {/* Section 1: Quantified Costs */}
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-4">Quantified Costs</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Turnover & Training Card */}
+                <div className="bg-white rounded-2xl p-5 border border-neutral-200">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <h3 className="font-semibold text-neutral-900">Turnover & Training</h3>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-neutral-900 mb-2">Turnover & Training</h3>
-                    <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
-                      <p className="text-sm text-neutral-600">Average scribe turnover: <strong>35% annually</strong></p>
-                      <p className="text-sm text-neutral-600">Your {providersWithScribes} scribes = <strong>~{Math.round(providersWithScribes * 0.35)} replacements/year</strong></p>
-                      <p className="text-sm text-neutral-600">Cost to recruit + train: <strong>$4,000 each</strong></p>
-                      <div className="border-t border-neutral-200 pt-3 mt-3">
-                        <p className="text-lg font-bold text-amber-700">Annual turnover cost: {formatCurrency(annualTurnoverCost)}</p>
-                      </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-neutral-600">Annual turnover rate:</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={scribeTurnoverRate}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9]/g, '');
+                          setScribeTurnoverRate(val === "" ? 0 : Math.min(parseInt(val, 10), 100));
+                        }}
+                        className="w-14 px-2 py-1 rounded-lg border-2 border-neutral-300 bg-white text-sm font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F]"
+                        data-testid="input-turnover-rate"
+                      />
+                      <span className="text-sm text-neutral-600">%</span>
+                      <span className="text-xs text-neutral-400">(typical: 30-40%)</span>
+                    </div>
+                    
+                    <div className="bg-neutral-50 rounded-lg p-3 text-sm text-neutral-600 space-y-1">
+                      <p>Your {providersWithScribes} scribes × {scribeTurnoverRate}% = <strong>~{Math.round(providersWithScribes * (scribeTurnoverRate / 100))} replacements/year</strong></p>
+                      <p>× $4,000 to recruit + train</p>
+                    </div>
+                    
+                    <div className="pt-2 border-t border-neutral-100">
+                      <p className="text-lg font-bold text-amber-700 tabular-nums">Annual cost: {formatCurrency(annualTurnoverCost)}</p>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <Settings className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-neutral-900 mb-2">Management Overhead</h3>
-                    <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
-                      <p className="text-sm text-neutral-600">Scribe coordinator/manager time</p>
-                      <p className="text-sm text-neutral-600">Scheduling, QA, HR issues</p>
-                      <div className="border-t border-neutral-200 pt-3 mt-3">
-                        <p className="text-lg font-bold text-blue-700">Estimated: {formatCurrency(managementOverhead)}/year</p>
-                      </div>
+                {/* Management Overhead Card */}
+                <div className="bg-white rounded-2xl p-5 border border-neutral-200">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <Settings className="w-5 h-5 text-blue-600" />
                     </div>
+                    <h3 className="font-semibold text-neutral-900">Management Overhead</h3>
                   </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-6 h-6 text-neutral-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-neutral-900 mb-2">Coverage Gaps</h3>
-                    <div className="bg-neutral-50 rounded-xl p-4">
-                      <p className="text-sm text-neutral-700 font-medium mb-3">Scribes don't cover:</p>
-                      <ul className="space-y-1.5 text-sm text-neutral-600">
-                        <li>• Night shifts</li>
-                        <li>• Weekends</li>
-                        <li>• Sick days / PTO</li>
-                        <li>• All locations</li>
-                      </ul>
-                      <div className="border-t border-neutral-200 pt-3 mt-3">
-                        <p className="text-sm font-semibold text-emerald-600 flex items-center gap-2">
-                          <Sparkles className="w-4 h-4" />
-                          Abridge works 24/7, every location, no exceptions.
-                        </p>
+                  
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!hasScribeManagement}
+                        onChange={(e) => setHasScribeManagement(!e.target.checked)}
+                        className="w-4 h-4 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-500"
+                        data-testid="checkbox-no-management"
+                      />
+                      <span className="text-sm text-neutral-600">We don't have dedicated scribe management</span>
+                    </label>
+                    
+                    {hasScribeManagement ? (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-neutral-600">Hours/week managing scribes:</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={managementHoursPerWeek}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9]/g, '');
+                              setManagementHoursPerWeek(val === "" ? 0 : parseInt(val, 10));
+                            }}
+                            className="w-14 px-2 py-1 rounded-lg border-2 border-neutral-300 bg-white text-sm font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F]"
+                            data-testid="input-management-hours"
+                          />
+                          <span className="text-sm text-neutral-600">hrs</span>
+                        </div>
+                        
+                        <div className="bg-neutral-50 rounded-lg p-3 text-sm text-neutral-600">
+                          <p>{managementHoursPerWeek} hrs × $50/hr × 50 weeks</p>
+                        </div>
+                        
+                        <div className="pt-2 border-t border-neutral-100">
+                          <p className="text-lg font-bold text-blue-700 tabular-nums">Annual cost: {formatCurrency(managementOverhead)}</p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="pt-2 border-t border-neutral-100">
+                        <p className="text-lg font-bold text-neutral-400 tabular-nums">Annual cost: $0</p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200 text-center">
-              <p className="text-sm font-semibold text-amber-600 uppercase tracking-wide mb-2">Total Hidden Costs</p>
-              <p className="text-4xl font-bold text-amber-700 tabular-nums">{formatCurrency(hiddenCosts)}/year</p>
-              <p className="text-sm text-amber-600 mt-1">(Turnover + Management overhead)</p>
+            {/* Subtotal */}
+            <div className="bg-neutral-100 rounded-xl p-4 mb-8">
+              <div className="flex justify-between items-center">
+                <p className="text-sm font-semibold text-neutral-700">Total quantified hidden costs:</p>
+                <p className="text-2xl font-bold text-neutral-800 tabular-nums">{formatCurrency(hiddenCosts)}/year</p>
+              </div>
             </div>
 
-            <div className="mt-12 flex justify-end">
+            {/* Section 2: Also Consider */}
+            <div className="mb-8">
+              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">Also Consider</p>
+              
+              <div className="border-l-2 border-neutral-200 pl-4 py-2">
+                <p className="text-sm text-neutral-600 mb-2">
+                  <strong className="text-neutral-700">Coverage Gaps</strong> — Scribes don't cover nights, weekends, sick days, or all locations.
+                </p>
+                <p className="text-sm text-emerald-600 flex items-center gap-1.5">
+                  <Check className="w-4 h-4" />
+                  Abridge works 24/7, every location, no exceptions.
+                </p>
+                <p className="text-xs text-neutral-400 mt-2 italic">Not quantified in total above</p>
+              </div>
+            </div>
+
+            <div className="mt-10 flex justify-end">
               <Button
                 onClick={handleContinue}
                 className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
