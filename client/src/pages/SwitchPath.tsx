@@ -919,9 +919,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         <p className="text-xs md:text-sm text-[#9CA3AF] mb-0.5 md:mb-1">Industry Avg</p>
                         <p className="text-xl md:text-2xl font-bold text-[#6B7280]">45%</p>
                       </div>
-                      <div className="bg-[#F3F4F6] rounded-xl p-3 md:p-4 text-center border border-[#E5E7EB]">
-                        <p className="text-xs md:text-sm text-[#9CA3AF] mb-0.5 md:mb-1">Abridge Avg</p>
-                        <p className="text-xl md:text-2xl font-bold text-[#6B7280]">65%</p>
+                      <div className="bg-[#FEF7F6] rounded-xl p-3 md:p-4 text-center border border-[#E85D3F]/20">
+                        <p className="text-xs md:text-sm text-[#E85D3F]/70 mb-0.5 md:mb-1">Abridge Avg</p>
+                        <p className="text-xl md:text-2xl font-bold text-[#D04D2F]">65%</p>
                       </div>
                     </div>
                   </div>
@@ -1042,7 +1042,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 relative">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-0 relative">
               <div className="relative bg-[#F3F4F6] rounded-2xl p-6 border border-neutral-200">
                 <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Your Current</p>
                 <p className="text-sm text-[#9CA3AF] mb-1">At {utilization}% utilization</p>
@@ -1054,9 +1054,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 <ArrowRight className="w-5 h-5 text-neutral-500" />
               </div>
               
-              <div className="relative bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-200">
-                <div className="absolute top-4 right-4 text-emerald-100 font-bold text-4xl">A</div>
-                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">With Abridge</p>
+              <div className="relative bg-[#FEF7F7] rounded-2xl p-6 border-2 border-[#E85D3F]/20">
+                <div className="absolute top-4 right-4 text-[#E85D3F]/10 font-bold text-4xl">A</div>
+                <p className="text-xs font-semibold text-[#E85D3F]/80 uppercase tracking-wide mb-2">With Abridge</p>
                 <p className="text-sm text-[#1F2937]/60 mb-1">At {ABRIDGE_BENCHMARKS.utilization}% utilization</p>
                 <p className="text-4xl font-bold text-[#1F2937] mb-1 tabular-nums">{calculations.abridgeDocumentedEncounters.toLocaleString()}</p>
                 <p className="text-sm text-[#1F2937]/70">encounters documented/year</p>
@@ -1067,8 +1067,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             </div>
             
+            {/* Connector bracket to result box */}
+            <div className="flex justify-center py-2">
+              <div className="w-px h-4 bg-emerald-300" />
+            </div>
+            
             <div className="flex justify-center mb-8">
-              <div className="bg-emerald-50 rounded-xl px-6 py-4 text-center border border-emerald-200">
+              <div className="bg-emerald-50 rounded-xl px-6 py-4 text-center border-2 border-emerald-300 shadow-sm">
                 <p className="text-2xl font-bold text-emerald-600 tabular-nums">+{calculations.utilizationGapEncounters.toLocaleString()}</p>
                 <p className="text-sm text-emerald-600/80">additional encounters/year</p>
               </div>
@@ -1078,7 +1083,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <p className="text-amber-900">
                 That <strong>{ABRIDGE_BENCHMARKS.utilization - utilization}%</strong> utilization gap = <strong>{calculations.utilizationGapPercent}%</strong> more encounters being documented.
               </p>
-              <p className="text-neutral-600 font-medium mt-1">This is where value leaks.</p>
+              <p className="text-amber-900 font-semibold mt-2 text-lg">This is where value leaks.</p>
             </div>
 
             <div className="mt-12 flex justify-end">
