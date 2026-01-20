@@ -63,9 +63,14 @@ The application operates entirely client-side, providing a responsive and intera
     - Patient Access: Additional Patient Visits (efficiency), Revenue from More Encounters (utilization)
     - Overtime: Overtime Reduction (efficiency)
     - Retention: Burnout Reduction (direct)
-    - Level of Service: Under-coding Correction (utilization), E/M Level Optimization (direct)
+    - Level of Service: wRVU Uplift from Better Documentation (single pathway with losEnabled toggle)
     - Denials: Denial Prevention (utilization + direct)
     - HCC Capture: HCC Capture (utilization + direct)
+- **Level of Service Calculation (January 2026 Refactor)**: Simplified wRVU-based approach replacing previous undercoding/emLevel split:
+  - Inputs: emBillableRate (80%), avgWrvuPerEncounter (1.5), wrvuUpliftPercent (5%), conversionFactor ($35/wRVU)
+  - Formula: (encounters × utilization × emBillableRate × wRVU/enc × uplift%) × $/wRVU
+  - Single toggle (losEnabled) instead of two separate pathways
+  - Transparent step-by-step breakdown in UI: encounters → E/M billable → baseline wRVUs → Abridge uplift → incremental wRVUs → dollar value
   - **Generalized UI Helpers**: getEfficiencyState, getUtilizationState, getDirectState functions provide consistent pathway rendering across all drivers
 
 ## User Preferences
