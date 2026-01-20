@@ -2663,32 +2663,6 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               />
                             )}
                             
-                            {/* Patient Access - Utilization Pathway */}
-                            {driverId === 'patient_access' && values.gapBreakdown.fromUtilization && (
-                              <PathwayCard
-                                title="Revenue from More Encounters"
-                                enabled={!!driverAssumptions.patient_access.utilizationEnabled}
-                                onToggle={(enabled) => updateDriverAssumption('patient_access', 'utilizationEnabled', enabled ? 1 : 0)}
-                                canToggle={true}
-                                subtotal={values.gapBreakdown.fromUtilization.subtotal}
-                                summary={PATHWAY_SUMMARIES.patient_access_utilization(
-                                  calculations.utilizationGapEncounters,
-                                  driverAssumptions.patient_access.utilizationRealization,
-                                  driverAssumptions.patient_access.revenuePerVisit
-                                )}
-                                inputs={[
-                                  { label: 'Additional encounters', value: calculations.utilizationGapEncounters },
-                                  { label: 'Realization rate', value: driverAssumptions.patient_access.utilizationRealization, editable: { key: 'utilizationRealization', driverId: 'patient_access', type: 'percent' } },
-                                  { label: 'Revenue per visit', value: driverAssumptions.patient_access.revenuePerVisit, editable: { key: 'revenuePerVisit', driverId: 'patient_access', type: 'currency' } },
-                                  { label: 'Result', value: 0, isResult: true },
-                                ]}
-                                context={PATHWAY_CONTEXT.patient_access.utilization}
-                                driverAssumptions={driverAssumptions}
-                                updateDriverAssumption={updateDriverAssumption}
-                                testIdPrefix="patient_access-utilization"
-                              />
-                            )}
-                            
                             {/* Overtime - Efficiency Pathway */}
                             {driverId === 'overtime' && values.gapBreakdown.fromEfficiency && (
                               <PathwayCard
