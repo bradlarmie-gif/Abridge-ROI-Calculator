@@ -1,0 +1,136 @@
+FIX SPACING ON SUMMARY PAGE HEADERS - BOTH PATHS
+
+## PROBLEM
+The header sections on both Human Scribes and Ambient AI summaries
+feel cramped. Text is too tight together. Needs more breathing room.
+
+## HUMAN SCRIBES SUMMARY HEADER
+
+Current structure:
+- "THE REAL QUESTION" (label)
+- "What would you do with $228,100/year?" (headline)
+- Subtitle about scribe program
+
+Spacing fixes:
+1. Gap between label and headline: increase to 16px
+2. Gap between headline and divider line: increase to 24px
+3. Add a subtle centered divider line (60px wide, 2px tall, light gray)
+4. Gap between divider and subtitle: 16px
+
+CSS:
+```css
+.scribe-summary-header {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #E85D3F;
+  margin-bottom: 16px;
+}
+
+.main-headline {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1F2937;
+  line-height: 1.3;
+  margin-bottom: 24px;
+}
+
+.divider {
+  width: 60px;
+  height: 2px;
+  background: #E5E7EB;
+  margin: 0 auto 16px auto;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #6B7280;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto;
+}
+AMBIENT AI SUMMARY HEADER
+Current structure:
+
+"Based on what you've told us, you're leaving" (lead-in)
+"$182,150" (big number)
+"on the table. Every. Single. Year." (tagline)
+"$X/month • $X/day • $X/hour" (breakdown)
+
+Spacing fixes:
+
+Gap between lead-in and big number: 12px
+Gap between big number and tagline: 12px
+Gap between tagline and breakdown: 24px
+Overall section padding: 48px top, 32px bottom
+
+CSS:
+cssCopy.ambient-summary-header {
+  text-align: center;
+  padding: 48px 24px 32px;
+}
+
+.lead-in {
+  font-size: 18px;
+  color: #6B7280;
+  margin-bottom: 12px;
+}
+
+.big-number {
+  font-size: 64px;
+  font-weight: 700;
+  color: #E85D3F;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.tagline {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 24px;
+}
+
+.breakdown {
+  font-size: 15px;
+  color: #9CA3AF;
+  letter-spacing: 0.5px;
+}
+
+.breakdown .separator {
+  margin: 0 12px;
+  color: #D1D5DB;
+}
+GENERAL PRINCIPLES
+
+When in doubt, add more vertical space
+Headlines need room to breathe
+Big numbers should feel important, not cramped
+Use consistent spacing increments (8px, 16px, 24px, 32px, 48px)
+Muted text (gray) should have slightly more space around it
+
+TEST
+After changes, the headers should feel:
+
+Calm, not rushed
+Confident, not cramped
+Premium, not crowded
+
+Compare to Stripe's pricing page or Apple's product pages
+for reference on typographic spacing.
+Copy
+---
+
+## **THE VISUAL DIFFERENCE**
+
+**Before:** Everything crammed together, feels like a Word doc
+
+**After:** Breathing room, feels like a premium landing page
+
+The content is the same. The spacing makes it feel worth $200K.Add to Conversation

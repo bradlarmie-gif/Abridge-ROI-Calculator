@@ -2332,13 +2332,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           return (
           <div className="animate-in fade-in duration-300">
             {/* SECTION 1: THE HOOK */}
-            <div className="text-center mb-10">
-              <p className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-2">The real question</p>
-              <h1 className="text-3xl md:text-5xl font-bold text-neutral-900 mb-4" data-testid="text-step8-scribe-title">
+            <div className="text-center pt-12 pb-8 mb-10">
+              <p className="text-xs font-semibold text-[#E85D3F] uppercase tracking-[2px] mb-4">The real question</p>
+              <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 leading-tight mb-6" data-testid="text-step8-scribe-title">
                 What would you do with {formatCurrency(totalCurrentCost)}/year?
               </h1>
-              <div className="w-16 h-1 bg-neutral-200 mx-auto mb-4"></div>
-              <p className="text-lg text-neutral-600 max-w-xl mx-auto">
+              <div className="w-[60px] h-0.5 bg-neutral-200 mx-auto mb-4"></div>
+              <p className="text-lg text-neutral-500 leading-relaxed max-w-[500px] mx-auto">
                 That's what you're spending on a scribe program that covers {providersWithScribes} of {providers} providers.
               </p>
             </div>
@@ -2467,9 +2467,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         {step === 5 && !isScribePath && (
           <div className="animate-in fade-in duration-300">
             {/* SECTION 1: THE HEADLINE */}
-            <div className="text-center mb-6">
+            <div className="text-center pt-12 pb-8 mb-8">
               <p 
-                className="text-lg md:text-xl text-neutral-500 font-medium mb-2"
+                className="text-lg md:text-xl text-neutral-500 font-medium mb-3"
                 style={{
                   opacity: gapRevealStage >= 1 ? 1 : 0,
                   transform: gapRevealStage >= 1 ? "translateY(0)" : "translateY(10px)",
@@ -2479,19 +2479,19 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 Based on what you've told us, you're leaving
               </p>
               <div 
-                className="mb-2"
+                className="mb-3"
                 style={{
                   opacity: gapRevealStage >= 2 ? 1 : 0,
                   transform: gapRevealStage >= 2 ? "scale(1)" : "scale(0.9)",
                   transition: "all 0.6s ease-out"
                 }}
               >
-                <span className="text-5xl md:text-7xl font-bold text-[#E85D3F] tabular-nums tracking-tight">
+                <span className="text-6xl md:text-7xl font-bold text-[#E85D3F] tabular-nums tracking-tight leading-none">
                   {gapRevealStage >= 2 ? <AnimatedNumber value={calculations.totalGap} duration={1800} /> : "$0"}
                 </span>
               </div>
               <p 
-                className="text-xl md:text-2xl font-bold text-neutral-900"
+                className="text-xl md:text-2xl font-semibold text-neutral-900 mb-6"
                 style={{
                   opacity: gapRevealStage >= 3 ? 1 : 0,
                   transition: "all 0.4s ease-out"
@@ -2500,16 +2500,16 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 on the table. Every. Single. Year.
               </p>
               <div 
-                className="flex items-center justify-center gap-4 mt-4 text-sm text-neutral-500"
+                className="flex items-center justify-center gap-3 text-[15px] text-neutral-400 tracking-wide"
                 style={{
                   opacity: gapRevealStage >= 4 ? 1 : 0,
                   transition: "all 0.4s ease-out"
                 }}
               >
                 <span>{formatCurrency(calculations.monthlyGap)}/month</span>
-                <span className="text-neutral-300">•</span>
+                <span className="text-neutral-300 mx-1">•</span>
                 <span>{formatCurrency(Math.round(calculations.totalGap / 365))}/day</span>
-                <span className="text-neutral-300">•</span>
+                <span className="text-neutral-300 mx-1">•</span>
                 <span>{formatCurrency(Math.round(calculations.totalGap / 2080))}/hour</span>
               </div>
             </div>
