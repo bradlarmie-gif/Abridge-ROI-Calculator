@@ -2371,18 +2371,18 @@ export default function ObjectiveSelectionScreen({
     const categorySubtitle = CATEGORY_SUBTITLES[category];
 
     return (
-      <div key={category} className={isFirst ? "mt-8" : "mt-12"}>
-        <div className="mb-5">
-          <div className="flex items-center gap-2 mb-1">
+      <div key={category} className={isFirst ? "pt-4" : "pt-10"}>
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
             <CategoryIcon className="h-4 w-4 text-[#111827]" />
             <span className="text-sm font-semibold text-[#111827] uppercase tracking-[0.05em]">
               {categoryLabel}
             </span>
           </div>
-          <p className="text-sm text-[#6B7280] italic">{categorySubtitle}</p>
-          <div className="border-b border-[#E5E7EB] mt-3" />
+          <p className="text-sm text-[#6B7280] italic mb-4">{categorySubtitle}</p>
+          <div className="border-b border-[#E5E7EB]" />
         </div>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {levers.map((lever) => (
             <PriorityCard
               key={lever.id}
@@ -2651,23 +2651,6 @@ export default function ObjectiveSelectionScreen({
               </p>
             </div>
 
-            <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg px-5 py-4 mb-8 flex items-start gap-3">
-              <Lightbulb className="w-4 h-4 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-semibold text-[#1E40AF] mb-2">Selecting your priorities</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium text-[#1E40AF]">Most organizations select 2-3 drivers.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-3.5 h-3.5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium text-[#1E40AF]">You'll see detailed calculations for each selected driver in the next step.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
             <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
               <div>
                 {leversByCategory && (
@@ -2707,7 +2690,8 @@ export default function ObjectiveSelectionScreen({
                       <p className="text-xs font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-1">
                         Strategic Priorities
                       </p>
-                      <p className="text-[13px] text-[#6B7280] mb-4">Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6} drivers</p>
+                      <p className="text-[13px] text-[#6B7280] mb-1">Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6} drivers</p>
+                      <p className="text-[12px] text-[#9CA3AF] mb-4">Most organizations select 2-3</p>
                       
                       {selectedLeverIds.size < 2 ? (
                         <p className="text-sm text-[#6B7280] leading-relaxed">
