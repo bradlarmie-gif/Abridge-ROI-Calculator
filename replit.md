@@ -54,6 +54,19 @@ The application operates entirely client-side, providing a responsive and intera
 - **SWITCH Driver Ramp Speeds**: Fast (Overtime, Level of Service, Denials: 50% at 3mo), Medium (Patient Access: 35% at 3mo), Slow (Retention, HCC: 15% at 3mo)
 - **SWITCH Philosophy**: Build conceptual understanding BEFORE showing dollar amounts; let customer choose which drivers matter; show realistic non-linear projections
 - **SWITCH Abridge Benchmarks**: 65% utilization, 3.0 min time savings, 6% wRVU uplift, 12% undercoding, 45% denial prevention, 15% HCC improvement
+- **Defensible Pathway Toggle System (January 2026)**: Each driver now shows multiple defensible value pathways that can be individually toggled:
+  - **Pathway-Specific Enabled Flags**: Each driver tracks which pathways are enabled (e.g., patient_access has visitsEnabled and utilizationEnabled)
+  - **CFO-Defensible Structure**: "Your Gap" → "How This Creates Value" → Individual pathway sections with checkbox, subtotal, and "Applies if..." context
+  - **Real-Time Recalculation**: Toggling a pathway immediately updates the driver total and overall gap
+  - **PATHWAY_CONTEXT**: Context notes explain when each pathway applies (e.g., "Applies if you have appointment demand exceeding supply")
+  - **Driver Pathways**:
+    - Patient Access: Additional Patient Visits (efficiency), Revenue from More Encounters (utilization)
+    - Overtime: Overtime Reduction (efficiency)
+    - Retention: Burnout Reduction (direct)
+    - Level of Service: Under-coding Correction (utilization), E/M Level Optimization (direct)
+    - Denials: Denial Prevention (utilization + direct)
+    - HCC Capture: HCC Capture (utilization + direct)
+  - **Generalized UI Helpers**: getEfficiencyState, getUtilizationState, getDirectState functions provide consistent pathway rendering across all drivers
 
 ## User Preferences
 
