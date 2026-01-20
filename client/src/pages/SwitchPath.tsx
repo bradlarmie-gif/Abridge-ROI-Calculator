@@ -1944,30 +1944,19 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               What matters most to your organization?
             </h1>
             <p className="text-base md:text-lg text-neutral-500 mb-4 md:mb-6">
-              Most organizations switching from other ambient AI see value here. Deselect anything that doesn't apply.
+              We've pre-selected the most common value areas. Deselect anything that doesn't apply.
             </p>
 
-            {/* Context box showing identified gaps */}
-            <div className="bg-neutral-50 rounded-xl p-4 mb-6 border border-neutral-200">
-              <p className="text-sm font-semibold text-neutral-700 mb-2">You've identified two gaps:</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#E85D3F]" />
-                  <span className="text-sm text-neutral-600">
-                    <strong>Utilization:</strong> {utilization}% → {ABRIDGE_BENCHMARKS.utilization}% = <span className="text-emerald-600 font-medium">+{calculations.utilizationGapEncounters.toLocaleString()}</span> more encounters
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#E85D3F]" />
-                  <span className="text-sm text-neutral-600">
-                    <strong>Efficiency:</strong> {timeSavings} min → {ABRIDGE_BENCHMARKS.timeSavings} min = <span className="text-emerald-600 font-medium">+{calculations.efficiencyGapHours.toLocaleString()}</span> more hours
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs text-neutral-500 mt-3">Now let's see where that extra capacity and time creates value.</p>
+            {/* Subtle context line */}
+            <div className="bg-[#F9FAFB] rounded-lg px-4 py-3 mb-6">
+              <p className="text-sm text-neutral-600">
+                Based on your gaps: <span className="font-medium">+{calculations.utilizationGapEncounters.toLocaleString()} encounters</span> • <span className="font-medium">+{calculations.efficiencyGapHours.toLocaleString()} hours</span>
+              </p>
+              <p className="text-xs text-neutral-400 mt-0.5">Here's where that creates value.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
+            {/* Main driver cards - simplified */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4">
               {DRIVERS.filter(d => ["patient_access", "denials", "level_of_service"].includes(d.id)).map((driver) => {
                 const Icon = driver.icon;
                 const isSelected = selectedDrivers.includes(driver.id);
@@ -1977,35 +1966,26 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <button
                     key={driver.id}
                     onClick={() => toggleDriver(driver.id)}
-                    className={`p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-200 relative ${
+                    className={`p-4 rounded-xl border text-left transition-all duration-200 ${
                       isSelected
-                        ? "border-[#E85D3F] bg-[#FEF7F6] shadow-md"
-                        : "border-neutral-200 hover:border-neutral-300 bg-white"
+                        ? "border-[#E85D3F] bg-white shadow-sm"
+                        : "border-[#E5E7EB] hover:border-neutral-300 bg-white"
                     }`}
                     data-testid={`driver-${driver.id}`}
                   >
-                    <span className={`absolute -top-2 left-3 text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wide ${
-                      isSelected ? "bg-[#E85D3F]/20 text-[#D04D2F]" : "bg-neutral-200 text-neutral-600"
-                    }`}>
-                      Most common
-                    </span>
-                    <div className="flex items-center md:items-start md:flex-col gap-3 md:gap-0 mt-1">
-                      <div className={`w-10 h-10 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0 md:mb-3 ${
-                        isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
-                      }`}>
-                        <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <Icon className="w-5 h-5 text-[#6B7280] flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-[#1F2937] text-base mb-1">{driver.name}</h3>
+                          <p className="text-sm text-[#6B7280] line-clamp-2 mb-2">{driver.description}</p>
+                          <p className="text-base font-bold text-[#E85D3F]">~{formatCurrency(driverValue)}/year</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-neutral-900 text-sm md:mb-1">{driver.name}</h3>
-                        <p className="text-xs text-neutral-500 line-clamp-1 md:line-clamp-2 md:mb-2">{driver.description}</p>
-                        <p className="text-sm font-semibold text-emerald-600 hidden md:block">
-                          Based on your inputs: ~{formatCurrency(driverValue)}/year
-                        </p>
-                      </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                         isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
                       }`}>
-                        {isSelected && <Check className="w-4 h-4 text-white" />}
+                        {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
                     </div>
                   </button>
@@ -2013,19 +1993,20 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               })}
             </div>
 
+            {/* Show more drivers button */}
             {!showAllDrivers ? (
               <button 
                 onClick={() => setShowAllDrivers(true)}
-                className="w-full py-2.5 md:py-3 border-2 border-dashed border-neutral-300 rounded-xl text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2 mb-6 md:mb-8 text-sm md:text-base"
+                className="w-full py-2.5 border border-dashed border-neutral-300 rounded-lg text-neutral-500 hover:border-neutral-400 hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2 mb-20 text-sm"
                 data-testid="button-show-more-drivers"
               >
                 <ChevronDown className="w-4 h-4" />
                 Show 3 more drivers
               </button>
             ) : (
-              <div className="mb-6 md:mb-8">
-                <div className="flex items-center justify-between mb-3 md:mb-4">
-                  <p className="text-xs md:text-sm font-semibold text-neutral-500 uppercase tracking-wide">Additional Drivers</p>
+              <div className="mb-20">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide">Additional Drivers</p>
                   <button 
                     onClick={() => setShowAllDrivers(false)}
                     className="text-xs text-neutral-400 hover:text-neutral-600"
@@ -2043,30 +2024,26 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       <button
                         key={driver.id}
                         onClick={() => toggleDriver(driver.id)}
-                        className={`p-4 md:p-5 rounded-xl border-2 text-left transition-all duration-200 ${
+                        className={`p-4 rounded-xl border text-left transition-all duration-200 ${
                           isSelected
-                            ? "border-[#E85D3F] bg-[#FEF7F6] shadow-md"
-                            : "border-neutral-200 hover:border-neutral-300 bg-white"
+                            ? "border-[#E85D3F] bg-white shadow-sm"
+                            : "border-[#E5E7EB] hover:border-neutral-300 bg-white"
                         }`}
                         data-testid={`driver-${driver.id}`}
                       >
-                        <div className="flex items-center md:items-start md:flex-col gap-3 md:gap-0">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 md:mb-3 ${
-                            isSelected ? "bg-[#E85D3F]/10" : "bg-neutral-100"
-                          }`}>
-                            <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-neutral-500"}`} />
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            <Icon className="w-5 h-5 text-[#6B7280] flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-[#1F2937] text-base mb-1">{driver.name}</h3>
+                              <p className="text-sm text-[#6B7280] line-clamp-2 mb-2">{driver.description}</p>
+                              <p className="text-base font-bold text-[#E85D3F]">~{formatCurrency(driverValue)}/year</p>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-neutral-900 text-sm md:mb-1">{driver.name}</h3>
-                            <p className="text-xs text-neutral-500 line-clamp-1 md:line-clamp-2 md:mb-2">{driver.description}</p>
-                            <p className="text-sm font-semibold text-emerald-600 hidden md:block">
-                              Based on your inputs: ~{formatCurrency(driverValue)}/year
-                            </p>
-                          </div>
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                             isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
                           }`}>
-                            {isSelected && <Check className="w-4 h-4 text-white" />}
+                            {isSelected && <Check className="w-3 h-3 text-white" />}
                           </div>
                         </div>
                       </button>
@@ -2076,42 +2053,22 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
             )}
 
-            {selectedDrivers.length > 0 && (
-              <div className="bg-emerald-50 rounded-xl p-3 md:p-4 border border-emerald-200 mb-6 md:mb-8">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs md:text-sm text-emerald-700 font-medium">Estimated Annual Gap</p>
-                    <p className="text-xs text-emerald-600/70">{selectedDrivers.length} driver{selectedDrivers.length !== 1 ? "s" : ""} selected</p>
-                  </div>
-                  <p className="text-xl md:text-2xl font-bold text-emerald-600 tabular-nums">
-                    {formatCurrency(calculations.totalGap)}/year
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-neutral-200 -mx-6 px-4 md:px-6 py-4 md:py-5 mt-6 md:mt-8 shadow-xl z-10">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm md:text-base font-semibold text-neutral-900 truncate">
-                    {selectedDrivers.length} of 6 selected
-                  </p>
-                  <p className="text-xs md:text-sm text-neutral-500">
-                    {selectedDrivers.length < 2 
-                      ? "Select at least 2" 
-                      : selectedDrivers.length >= 4 
-                        ? "Great selection!" 
-                        : "Select 2-4 areas"}
-                  </p>
-                </div>
+            {/* Unified footer - single row */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-4 md:px-6 py-3 shadow-lg z-50">
+              <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                <p className="text-sm text-[#6B7280]">
+                  {selectedDrivers.length} of 6 selected
+                </p>
+                <p className="text-sm text-neutral-600 hidden md:block">
+                  Estimated gap: <span className="font-bold text-[#E85D3F] text-base">{formatCurrency(calculations.totalGap)}/year</span>
+                </p>
                 <Button
                   onClick={handleContinue}
                   disabled={!canContinue()}
-                  className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-4 md:px-8 py-2.5 md:py-3 h-auto text-sm md:text-base font-semibold rounded-xl disabled:opacity-40 shadow-lg flex-shrink-0"
+                  className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-6 py-2.5 h-auto text-sm font-semibold rounded-lg disabled:opacity-40"
                   data-testid="button-continue-step5"
                 >
-                  <span className="hidden md:inline">Continue</span>
-                  <span className="md:hidden">Continue</span>
+                  Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
