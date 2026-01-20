@@ -344,14 +344,12 @@ const DEFAULT_ASSUMPTIONS = {
     burnoutReduction: 25, // %
   },
   level_of_service: {
-    // Pathway 1: Under-coding correction
-    undercodingEnabled: true,
-    emBillableRate: 80, // %
-    undercodingImprovement: 4, // % improvement
-    wrvuValue: 45, // $
-    // Pathway 2: E/M Level optimization (optional)
-    emLevelEnabled: false,
-    emLevelUplift: 2, // %
+    // Single pathway: wRVU uplift from better documentation
+    losEnabled: true,
+    emBillableRate: 80, // % of encounters that are E/M billable
+    avgWrvuPerEncounter: 1.5, // wRVU per E/M encounter (primary care typical: 1.3-1.8)
+    wrvuUpliftPercent: 5, // % uplift with Abridge (typical 3-9%)
+    conversionFactor: 35, // $/wRVU (Medicare ~$33-37)
   },
   denials: {
     // Single pathway - reduced claim rejections
@@ -384,8 +382,7 @@ const PATHWAY_CONTEXT = {
     retention: "Applies if burnout and turnover are concerns for your organization",
   },
   level_of_service: {
-    undercoding: "Applies if providers tend to undercode for simplicity",
-    emLevel: "Applies if E/M level optimization is a strategic priority",
+    wrvu: "Better documentation supports appropriate E/M coding and higher wRVU capture. Primary care avg: 1.3-1.8 wRVU, Specialty: 1.5-2.5 wRVU",
   },
   denials: {
     denials: "Based on industry benchmarks for ambient AI documentation quality",
@@ -617,10 +614,6 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const retentionRealization = retAssumptions.realizationRate / 100;
     const burnoutReduction = retAssumptions.burnoutReduction / 100;
     
-    const emBillableRate = losAssumptions.emBillableRate / 100;
-    const avgWrvuValue = losAssumptions.wrvuValue;
-    const wrvuMultiplier = 0.7; // Fixed wRVU multiplier
-    
     const denialRate = denAssumptions.denialRate / 100;
     const docRelatedRate = denAssumptions.docRelatedRate / 100;
     const avgClaimValue = denAssumptions.claimValue;
@@ -815,68 +808,73 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       },
     };
     
-    // Level of Service calculations using editable assumptions
-    const theirEmBillable = Math.round(theirDocumentedEncounters * emBillableRate);
-    const abridgeEmBillable = Math.round(abridgeDocumentedEncounters * emBillableRate);
-    const theirUnderCoded = Math.round(theirEmBillable * (underCoding / 100));
-    const abridgeUnderCoded = Math.round(abridgeEmBillable * (ABRIDGE_BENCHMARKS.underCoding / 100));
-    const theirWrvuCapture = theirUnderCoded * wrvuMultiplier * avgWrvuValue * (wrvuUplift / 100);
-    const abridgeWrvuCapture = abridgeUnderCoded * wrvuMultiplier * avgWrvuValue * (ABRIDGE_BENCHMARKS.wrvuUplift / 100);
-    const theirLos = Math.round(theirWrvuCapture);
-    const abridgeLos = Math.round(abridgeWrvuCapture);
-    const losGap = abridgeLos - theirLos;
+    // Level of Service calculations - wRVU-based approach
+    // Step 1: Encounters documented with Abridge
+    const encountersWithAbridge = abridgeDocumentedEncounters;
     
-    // Calculate utilization contribution to LOS
-    const utilizationEmEncounters = Math.round(utilizationGapEncounters * emBillableRate);
-    const utilizationUnderCoded = Math.round(utilizationEmEncounters * (ABRIDGE_BENCHMARKS.underCoding / 100));
-    const utilizationLosValueRaw = Math.round(utilizationUnderCoded * wrvuMultiplier * avgWrvuValue * (ABRIDGE_BENCHMARKS.wrvuUplift / 100));
-    // Apply enabled flag to utilization pathway
-    const utilizationLosValue = losAssumptions.undercodingEnabled ? utilizationLosValueRaw : 0;
+    // Step 2: E/M billable encounters
+    const losEmBillableRate = losAssumptions.emBillableRate / 100;
+    const emEncounters = Math.round(encountersWithAbridge * losEmBillableRate);
     
-    // Calculate rate improvement contribution (only if E/M level optimization enabled)
-    const rateImprovementLosRaw = losGap - utilizationLosValueRaw;
-    const rateImprovementLos = losAssumptions.emLevelEnabled ? rateImprovementLosRaw : 0;
+    // Step 3: Current wRVU baseline
+    const avgWrvuPerEncounter = losAssumptions.avgWrvuPerEncounter;
+    const currentWRVUs = Math.round(emEncounters * avgWrvuPerEncounter);
     
-    // Level of service total respects enabled pathways
-    const losGapTotal = utilizationLosValue + rateImprovementLos;
+    // Step 4: wRVU uplift percentage
+    const wrvuUpliftPct = losAssumptions.wrvuUpliftPercent / 100;
+    
+    // Step 5: wRVUs with Abridge uplift  
+    const wrvuWithAbridge = Math.round(emEncounters * avgWrvuPerEncounter * (1 + wrvuUpliftPct));
+    
+    // Step 6: Incremental wRVUs
+    const incrementalWRVUs = wrvuWithAbridge - currentWRVUs;
+    
+    // Step 7: Dollar value
+    const losConversionFactor = losAssumptions.conversionFactor;
+    const losValueRaw = Math.round(incrementalWRVUs * losConversionFactor);
+    
+    // Apply enabled flag
+    const losGapTotal = losAssumptions.losEnabled ? losValueRaw : 0;
     
     driverValues.level_of_service = {
-      their: theirLos,
-      abridge: abridgeLos,
+      their: 0,
+      abridge: losValueRaw,
       gap: losGapTotal,
       theirCalc: [
-        `${theirEmBillable.toLocaleString()} E/M encounters (80%)`,
-        `${theirUnderCoded.toLocaleString()} under-coded (${underCoding}%)`,
-        `x 0.7 wRVU x $${avgWrvuValue} x ${wrvuUplift}% uplift`,
-        `= ${formatCurrency(theirLos)}/year`,
+        `${emEncounters.toLocaleString()} E/M encounters`,
+        `× ${avgWrvuPerEncounter} wRVU/encounter`,
+        `= ${currentWRVUs.toLocaleString()} wRVUs (baseline)`,
       ],
       abridgeCalc: [
-        `${abridgeEmBillable.toLocaleString()} E/M encounters (80%)`,
-        `${abridgeUnderCoded.toLocaleString()} under-coded (${ABRIDGE_BENCHMARKS.underCoding}%)`,
-        `x 0.7 wRVU x $${avgWrvuValue} x ${ABRIDGE_BENCHMARKS.wrvuUplift}% uplift`,
-        `= ${formatCurrency(abridgeLos)}/year`,
+        `${emEncounters.toLocaleString()} E/M encounters`,
+        `× ${avgWrvuPerEncounter} × (1 + ${losAssumptions.wrvuUpliftPercent}%)`,
+        `= ${wrvuWithAbridge.toLocaleString()} wRVUs`,
+        `+${incrementalWRVUs.toLocaleString()} incremental`,
+        `× $${losConversionFactor} = ${formatCurrency(losValueRaw)}/year`,
       ],
       gapBreakdown: {
-        fromUtilization: {
+        direct: {
           steps: [
-            { label: `+${utilizationGapEncounters.toLocaleString()} more encounters`, value: '' },
-            { label: `× ${losAssumptions.emBillableRate}% E/M billable`, value: '', editable: { key: 'emBillableRate', driverId: 'level_of_service' as DriverId, type: 'percent' as const } },
-            { label: `× ${ABRIDGE_BENCHMARKS.underCoding}% under-coded × 0.7 wRVU × $${avgWrvuValue}`, value: '', editable: { key: 'wrvuValue', driverId: 'level_of_service' as DriverId, type: 'currency' as const } },
-            { label: `= ${formatCurrency(utilizationLosValue)}/year`, value: formatCurrency(utilizationLosValue), isResult: true },
+            { label: `Encounters documented with Abridge:`, value: '' },
+            { label: `${annualEncounters.toLocaleString()} × ${utilization}% = ${encountersWithAbridge.toLocaleString()}`, value: '' },
+            { label: `E/M billable: × ${losAssumptions.emBillableRate}% = ${emEncounters.toLocaleString()}`, value: '', editable: { key: 'emBillableRate', driverId: 'level_of_service' as DriverId, type: 'percent' as const } },
+            { label: ``, value: '' },
+            { label: `Current wRVU production:`, value: '' },
+            { label: `${emEncounters.toLocaleString()} × ${avgWrvuPerEncounter} wRVU/enc = ${currentWRVUs.toLocaleString()} wRVUs`, value: '', editable: { key: 'avgWrvuPerEncounter', driverId: 'level_of_service' as DriverId, type: 'number' as const } },
+            { label: ``, value: '' },
+            { label: `With Abridge (${losAssumptions.wrvuUpliftPercent}% uplift):`, value: '', editable: { key: 'wrvuUpliftPercent', driverId: 'level_of_service' as DriverId, type: 'percent' as const } },
+            { label: `${emEncounters.toLocaleString()} × ${avgWrvuPerEncounter} × 1.0${losAssumptions.wrvuUpliftPercent < 10 ? '0' : ''}${losAssumptions.wrvuUpliftPercent} = ${wrvuWithAbridge.toLocaleString()} wRVUs`, value: '' },
+            { label: ``, value: '' },
+            { label: `Incremental wRVUs: +${incrementalWRVUs.toLocaleString()}`, value: '' },
+            { label: ``, value: '' },
+            { label: `Value:`, value: '' },
+            { label: `${incrementalWRVUs.toLocaleString()} wRVUs × $${losConversionFactor}/wRVU`, value: '', editable: { key: 'conversionFactor', driverId: 'level_of_service' as DriverId, type: 'currency' as const } },
+            { label: `= ${formatCurrency(losValueRaw)}/year`, value: formatCurrency(losValueRaw), isResult: true },
           ],
-          subtotal: utilizationLosValue,
+          subtotal: losValueRaw,
         },
-        direct: rateImprovementLos > 0 ? {
-          steps: [
-            { label: `Better documentation quality`, value: '' },
-            { label: `${ABRIDGE_BENCHMARKS.underCoding}% under-coding captured vs ${underCoding}%`, value: '' },
-            { label: `${ABRIDGE_BENCHMARKS.wrvuUplift}% wRVU uplift vs ${wrvuUplift}%`, value: '' },
-            { label: `= ${formatCurrency(rateImprovementLos)}/year`, value: formatCurrency(rateImprovementLos), isResult: true },
-          ],
-          subtotal: rateImprovementLos,
-        } : undefined,
         total: losGapTotal,
-        assumptions: [`${losAssumptions.emBillableRate}% E/M billable`, `$${avgWrvuValue}/wRVU`],
+        assumptions: [`${losAssumptions.emBillableRate}% E/M billable`, `${avgWrvuPerEncounter} wRVU/enc`, `${losAssumptions.wrvuUpliftPercent}% uplift`, `$${losConversionFactor}/wRVU`],
       },
     };
     
@@ -2526,7 +2524,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               // Determine enabled state and toggle key based on driver
                               const getUtilizationState = () => {
                                 if (driverId === 'patient_access') return { enabled: !!driverAssumptions.patient_access.utilizationEnabled, key: 'utilizationEnabled', label: 'Revenue from More Encounters', context: PATHWAY_CONTEXT.patient_access.utilization };
-                                if (driverId === 'level_of_service') return { enabled: !!driverAssumptions.level_of_service.undercodingEnabled, key: 'undercodingEnabled', label: 'Under-coding Correction', context: PATHWAY_CONTEXT.level_of_service.undercoding };
+                                if (driverId === 'level_of_service') return { enabled: true, key: null, label: 'From higher utilization', context: null };
                                 if (driverId === 'denials') return { enabled: !!driverAssumptions.denials.denialsEnabled, key: 'denialsEnabled', label: 'Denial Prevention (Volume)', context: null };
                                 if (driverId === 'hcc') return { enabled: !!driverAssumptions.hcc.hccEnabled, key: 'hccEnabled', label: 'HCC Capture (Volume)', context: PATHWAY_CONTEXT.hcc.hcc };
                                 return { enabled: true, key: null, label: 'From higher utilization', context: null };
@@ -2600,7 +2598,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               // Determine enabled state and toggle key based on driver
                               const getDirectState = () => {
                                 if (driverId === 'retention') return { enabled: !!driverAssumptions.retention.retentionEnabled, key: 'retentionEnabled', label: 'Burnout Reduction', context: PATHWAY_CONTEXT.retention.retention };
-                                if (driverId === 'level_of_service') return { enabled: !!driverAssumptions.level_of_service.emLevelEnabled, key: 'emLevelEnabled', label: 'E/M Level Optimization', context: PATHWAY_CONTEXT.level_of_service.emLevel };
+                                if (driverId === 'level_of_service') return { enabled: !!driverAssumptions.level_of_service.losEnabled, key: 'losEnabled', label: 'wRVU Uplift from Better Documentation', context: PATHWAY_CONTEXT.level_of_service.wrvu };
                                 if (driverId === 'denials') return { enabled: !!driverAssumptions.denials.denialsEnabled, key: 'denialsEnabled', label: 'Denial Prevention (Quality)', context: PATHWAY_CONTEXT.denials.denials };
                                 if (driverId === 'hcc') return { enabled: !!driverAssumptions.hcc.hccEnabled, key: 'hccEnabled', label: 'HCC Capture (Quality)', context: null };
                                 return { enabled: true, key: null, label: 'From documentation quality', context: null };
