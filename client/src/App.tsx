@@ -10,7 +10,8 @@ import ObjectiveSelectionScreen, {
   type SelectedLever,
 } from "@/pages/ObjectiveSelectionScreen";
 import RoiCalculator from "@/pages/RoiCalculator";
-import ModelBuilder, { type ModelResults } from "@/pages/ModelBuilder";
+import ModelBuilder, { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
+import InvestmentPage from "@/pages/InvestmentPage";
 import SummaryCommandCenter from "@/pages/SummaryCommandCenter";
 import ExpandPath from "@/pages/ExpandPath";
 import SwitchPath from "@/pages/SwitchPath";
@@ -19,7 +20,7 @@ import LearnPath from "@/pages/LearnPath";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "journey" | "explore" | "model-builder" | "calculator" | "expand" | "switch" | "learn";
+type AppView = "journey" | "explore" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn";
 type SummaryTab = "executive" | "detailed" | "methodology" | "scenarios" | "sensitivity";
 
 interface SelectionState {
@@ -36,6 +37,7 @@ export default function App() {
   });
 
   const [seedInputs, setSeedInputs] = useState<Partial<RoiInputs>>({});
+  const [valueResults, setValueResults] = useState<ValueResults | null>(null);
   const [modelResults, setModelResults] = useState<ModelResults | null>(null);
   const [summaryActiveTab, setSummaryActiveTab] = useState<SummaryTab>("executive");
 
@@ -49,9 +51,18 @@ export default function App() {
     setCurrentView("model-builder");
   };
 
-  const handleModelComplete = (results: ModelResults) => {
+  const handleValueComplete = (results: ValueResults) => {
+    setValueResults(results);
+    setCurrentView("investment");
+  };
+
+  const handleInvestmentComplete = (results: ModelResults) => {
     setModelResults(results);
     setCurrentView("calculator");
+  };
+
+  const handleBackToValue = () => {
+    setCurrentView("model-builder");
   };
 
   const handleBackToExplore = () => {
@@ -96,8 +107,17 @@ export default function App() {
             selectedSettings={selectionState.selectedSettings}
             selectedLevers={selectionState.selectedLevers}
             onBack={handleBackToExplore}
-            onComplete={handleModelComplete}
-            initialResults={modelResults}
+            onComplete={handleValueComplete}
+            initialResults={valueResults}
+          />
+        )}
+
+        {currentView === "investment" && hasSelection && valueResults && (
+          <InvestmentPage
+            selectedSettings={selectionState.selectedSettings}
+            valueResults={valueResults}
+            onBack={handleBackToValue}
+            onComplete={handleInvestmentComplete}
           />
         )}
 

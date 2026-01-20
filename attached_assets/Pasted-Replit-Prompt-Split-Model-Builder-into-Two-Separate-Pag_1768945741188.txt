@@ -1,0 +1,181 @@
+Replit Prompt: Split Model Builder into Two Separate Pages
+Context: This is an ROI calculator used during live Zoom sales conversations. The current "Build Your Model" page is trying to do too much—organization inputs, value drivers, AND investment all on one scrolling page. It feels like a form, not a premium experience. We need to split this into two distinct pages with clear purpose, pacing, and visual confidence. Think Apple's product configuration: one step at a time, each step feels intentional.
+
+NEW STRUCTURE: Two Pages
+Page 1: "Your Value" (Step 3 of 5)
+This page is ONLY about understanding the value. No investment, no cost. Just: here's your organization, here are your drivers, here's what value looks like.
+Page 2: "Your Investment" (Step 4 of 5)
+This page is ONLY about the cost and the final ROI. Simple inputs, clear math, big reveal.
+Update the step indicator in the header from "Step 3 of 4" to reflect 5 steps:
+
+Care Setting
+Strategic Priorities
+Your Value
+Your Investment
+Summary
+
+
+PAGE 1: "Your Value"
+Layout: Two-column. Left column is the main content (70% width). Right column is the sticky Live Model sidebar (30% width).
+Left Column Content:
+Section A: Your Organization
+Card with white background, subtle border, generous padding (24px).
+Contents:
+
+Header: "Your Organization" (20px bold)
+Subtext: "Let's start with the basics" (14px gray)
+Three inputs stacked vertically with good spacing (20px between each):
+
+"How many providers are in scope?" → Number input, helper text below: "This is your starting point. Could be a pilot or full deployment."
+"Annual encounters for these providers?" → Number input with comma formatting, helper text: "~2,000/provider is typical for primary care, ~1,500 for specialty"
+"Expected utilization rate?" → Three-button toggle: "Early 50%" | "Typical 65%" (selected) | "Aggressive 80%", helper text: "What percentage of encounters will use Abridge?"
+
+
+
+Section B: Your Multiplier (THE MILESTONE)
+This is the output of Section A. It needs to feel like a result, not just another field.
+Styled as a prominent callout card with light emerald/green background (subtle, not neon). Full width within the left column.
+Contents:
+
+Small label: "Your Multiplier" (12px caps, gray)
+Giant number: "65,000" (48px bold, dark emerald green)
+Subtitle: "eligible encounters per year" (16px, dark gray)
+Arrow + text below: "→ Everything below builds from this number" (14px, emerald, italic or medium weight)
+
+Section C: Your Value Drivers
+Header: "Your Value Drivers" (20px bold)
+Subtext: "Expand each driver to customize the calculation" (14px gray)
+Three driver cards in accordion style (only one open at a time):
+Each collapsed card shows:
+
+Left: Icon + Driver name (16px medium)
+Right: Dollar value in GREEN (e.g., "$216,667") + chevron down
+
+Each expanded card shows:
+
+"The Theory" section: Light gray background box with the explanation text
+"Your Calculation" section: Shows the auto-calculated inputs and formula
+Input fields specific to that driver (sliders, number inputs, button toggles)
+"Result" box at bottom: Light green background, shows formula on left (small mono text) and result dollar amount on right (24px bold green)
+
+Green color for all positive dollar values: use a professional green like #059669 (emerald-600) or similar. Not neon, not lime. Confident, financial green.
+Bottom of Page 1:
+A clear CTA button: "Continue to Investment →" (coral/orange brand color, full width of left column or centered, 48px height, 16px bold white text)
+
+Right Column: Live Model Sidebar
+Sticky positioned, follows scroll. Clean white card with subtle shadow.
+Contents:
+
+Header: "Live Model" (16px bold)
+Divider line
+"YOUR VALUE" label (12px caps gray)
+List of selected drivers with their values:
+CopyPatient Access              $216,667
+Clinician Retention          $52,650
+Accurate Level of Service    $81,900
+Each value in green, aligned right.
+Divider line
+"Total Value" row: bold, larger text (18px), value in green: "$351,217/yr"
+Spacer
+Muted text: "Investment calculated in next step"
+No CTA button in sidebar on this page (the CTA is in the main content)
+
+
+PAGE 2: "Your Investment"
+Layout: Centered single-column layout (max-width 600px), no sidebar. This page is simple and focused.
+Header area:
+
+Back link: "← Back to Value" (14px, gray, top left)
+Page title: "Your Investment" (32px bold, centered)
+Subtitle: "What does this cost?" (16px gray, centered)
+
+Section A: Investment Inputs
+Card with white background, generous padding.
+Contents:
+
+"Pricing model" label + two-button toggle: "Per clinician/month" (selected) | "Enterprise annual"
+"Cost per clinician" label + input: "$ [140] /month"
+"Contract term" label + three-button toggle: "1 yr" | "2 yrs" | "3 yrs"
+Checkbox: "Add implementation fee" with conditional input if checked
+Calculation display at bottom of card: "50 providers × $140 × 12 = $84,000/year" (mono text, gray background bar)
+
+Section B: The Result (THE REVEAL)
+This is the moment. It needs to land.
+Large card, centered, with subtle shadow or border. Maybe a very light gray or off-white background to set it apart.
+Layout:
+Copy┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│   Total Annual Value              $351,217              │
+│   (green, 14px label, 32px number)                      │
+│                                                         │
+│   Annual Investment                $84,000              │
+│   (gray, 14px label, 32px number)                       │
+│                                                         │
+│   ─────────────────────────────────────────────────     │
+│                                                         │
+│              NET GAIN                                   │
+│              $267,217/yr                                │
+│   (centered, "NET GAIN" 12px caps gray,                 │
+│    dollar amount 48px bold green)                       │
+│                                                         │
+│              4.2x                                       │
+│              RETURN ON INVESTMENT                       │
+│   (centered, 36px bold black, 12px caps gray label)     │
+│                                                         │
+│              ~4 months to payback                       │
+│   (centered, 16px gray italic)                          │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+Bottom of Page 2:
+CTA button: "View Full Summary →" (coral/orange, centered, 48px height, 16px bold white text)
+Secondary link below: "← Edit value drivers" (14px gray, centered)
+
+Visual Polish Details
+Typography:
+
+Page titles: 32px bold
+Section headers: 20px bold
+Card labels: 14px medium gray
+Input labels: 14px medium black
+Helper text: 13px regular gray
+Big numbers (multiplier, net gain): 48px bold
+Dollar values in cards: 18-24px bold green
+Mono/code text (formulas): 13px monospace gray
+
+Spacing:
+
+Page padding: 48px top, 32px sides minimum
+Between sections: 32px
+Inside cards: 24px padding
+Between inputs: 20px
+
+Colors:
+
+Positive values/results: Emerald green #059669
+CTA buttons: Brand coral/orange
+Backgrounds: White cards on light gray page background (#f9fafb)
+Subtle borders: #e5e7eb
+
+Animations:
+
+Number changes should animate (count up/down, 200ms ease)
+Accordion expand/collapse: 250ms ease height transition
+Page transitions: subtle fade (150ms)
+
+Buttons (toggles):
+
+Selected: Solid fill with brand color (coral for options, could also do dark gray), white text
+Unselected: White background, gray border, gray text
+Hover on unselected: Light gray background
+All buttons in a group should be equal width
+
+
+Summary
+
+Split into two pages: "Your Value" (Step 3) and "Your Investment" (Step 4)
+Page 1 has sidebar with live value tally; Page 2 is single-column focused on cost and reveal
+"Your Multiplier" (65,000 encounters) is a prominent milestone callout
+All positive dollar values are green
+The Net Gain / ROI reveal on Page 2 should feel like a moment—big, centered, confident
+Clean typography hierarchy, generous spacing, smooth animations
+Update step indicator to show 5 steps total

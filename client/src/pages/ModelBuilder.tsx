@@ -32,12 +32,25 @@ import {
   FileText,
 } from "lucide-react";
 
+export interface ValueResults {
+  providers: number;
+  encounters: number;
+  utilizationRate: number;
+  eligibleEncounters: number;
+  driverResults: Record<string, DriverResult>;
+  totalBenefit: number;
+  nursingStaffedBeds?: number;
+  nursingFTEs?: number;
+  nursingUnitType?: "med-surg" | "icu" | "mixed";
+  nursingDocEventsPerBedPerYear?: number;
+}
+
 interface ModelBuilderProps {
   selectedSettings: CareSettingType[];
   selectedLevers: SelectedLever[];
   onBack: () => void;
-  onComplete: (results: ModelResults) => void;
-  initialResults?: ModelResults | null;
+  onComplete: (results: ValueResults) => void;
+  initialResults?: ValueResults | null;
 }
 
 export interface ModelResults {
@@ -292,21 +305,14 @@ export default function ModelBuilder({
   const [documentationEvents, setDocumentationEvents] = useState<number>(
     (initialResults?.nursingStaffedBeds ?? 200) * (initialResults?.nursingDocEventsPerBedPerYear ?? 750)
   );
-  const [costPerBedPerMonth, setCostPerBedPerMonth] = useState<number>(
-    initialResults?.nursingCostPerBedPerMonth ?? 75
-  );
+  const [costPerBedPerMonth, setCostPerBedPerMonth] = useState<number>(75);
   // Track whether user has manually edited nurse FTEs (to avoid auto-overwriting)
   const [nurseFTEsManuallyEdited, setNurseFTEsManuallyEdited] = useState<boolean>(false);
   
-  const [pricingModel, setPricingModel] = useState<"per_clinician" | "enterprise">(
-    initialResults?.pricingModel ?? "per_clinician"
-  );
-  const [costPerMonth, setCostPerMonth] = useState<number>(
-    initialResults?.costPerMonth ?? 140
-  );
-  const [enterpriseAnnual, setEnterpriseAnnual] = useState<number>(
-    initialResults?.enterpriseAnnual ?? 500000
-  );
+  // Investment-related state (kept for calculations but not used on this page)
+  const [pricingModel, setPricingModel] = useState<"per_clinician" | "enterprise">("per_clinician");
+  const [costPerMonth, setCostPerMonth] = useState<number>(140);
+  const [enterpriseAnnual, setEnterpriseAnnual] = useState<number>(500000);
   const [contractTerm, setContractTerm] = useState<1 | 2 | 3 | number>(1);
   const [includeImplementation, setIncludeImplementation] = useState(false);
   const [implementationFee, setImplementationFee] = useState<number>(25000);
@@ -854,7 +860,7 @@ export default function ModelBuilder({
       }
     };
 
-    const results: ModelResults = {
+    const results: ValueResults = {
       providers,
       encounters,
       utilizationRate,
@@ -866,20 +872,12 @@ export default function ModelBuilder({
         ])
       ),
       totalBenefit,
-      investment: totalInvestment,
-      netGain,
-      roiMultiple,
-      paybackMonths,
-      costPerMonth,
-      enterpriseAnnual,
-      pricingModel,
       // Include nursing-specific fields when in nursing mode
       ...(isNursingSetting && {
         nursingStaffedBeds: staffedBeds,
         nursingFTEs: nurseFTEs,
         nursingUnitType: unitType,
         nursingDocEventsPerBedPerYear: 750,
-        nursingCostPerBedPerMonth: costPerBedPerMonth,
       }),
     };
     onComplete(results);
@@ -2774,8 +2772,8 @@ export default function ModelBuilder({
             <img src={abridgeLogo} alt="Abridge" className="h-6" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-[#6B7280]">Step 3 of 4</span>
-            <span className="text-sm font-medium text-[#111827]">Build Your Model</span>
+            <span className="text-sm text-[#6B7280]">Step 3 of 5</span>
+            <span className="text-sm font-medium text-[#111827]">Your Value</span>
           </div>
         </div>
       </header>
@@ -3036,251 +3034,39 @@ export default function ModelBuilder({
               </div>
             </section>
             
-            <section className="bg-white rounded-2xl border border-neutral-200 p-8">
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Investment</h2>
-                <p className="text-sm text-[#6B7280]">What does this cost?</p>
-              </div>
-              
-              {isNursingSetting ? (
-                /* Nursing per-bed pricing */
-                <div className="space-y-6">
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-xs text-blue-800 flex items-start gap-2">
-                      <DollarSign className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                      <span>Abridge Nursing uses per-bed pricing. Your cost stays fixed as utilization increases.</span>
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">Cost per staffed bed</label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#6B7280]">$</span>
-                      <Input
-                        type="number"
-                        value={costPerBedPerMonth}
-                        onChange={(e) => setCostPerBedPerMonth(Number(e.target.value) || 0)}
-                        className="w-24 font-mono"
-                        data-testid="input-cost-per-bed"
-                      />
-                      <span className="text-sm text-[#6B7280]">/bed/month</span>
-                    </div>
-                    <p className="text-xs text-[#6B7280]">$60-90/bed/month is typical</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">Contract term</label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3].map(term => (
-                        <button
-                          key={term}
-                          onClick={() => setContractTerm(term as 1 | 2 | 3)}
-                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                            contractTerm === term
-                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
-                          }`}
-                          data-testid={`contract-term-${term}`}
-                        >
-                          {term} yr{term > 1 ? "s" : ""}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={includeImplementation}
-                      onChange={(e) => setIncludeImplementation(e.target.checked)}
-                      className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
-                      data-testid="checkbox-implementation"
-                    />
-                    <label className="text-sm text-[#111827]">Add implementation fee</label>
-                    {includeImplementation && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#6B7280]">$</span>
-                        <FormattedNumberInput
-                          value={implementationFee}
-                          onChange={setImplementationFee}
-                          className="w-32"
-                          data-testid="input-implementation-fee"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
-                    <p className="text-sm text-[#111827]">
-                      <span className="font-mono">{staffedBeds}</span> beds ×{" "}
-                      <span className="font-mono">${costPerBedPerMonth}</span>/bed × 12 ={" "}
-                      <span className="font-mono font-semibold">{formatCurrency(annualInvestment)}</span>/year
-                      {includeImplementation && (
-                        <span className="text-[#6B7280]"> + {formatCurrency(implementationFee)} implementation</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                /* Standard per-clinician or enterprise pricing */
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">Pricing model</label>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setPricingModel("per_clinician")}
-                        className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                          pricingModel === "per_clinician"
-                            ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                            : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
-                        }`}
-                        data-testid="pricing-per-clinician"
-                      >
-                        Per clinician/month
-                      </button>
-                      <button
-                        onClick={() => setPricingModel("enterprise")}
-                        className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                          pricingModel === "enterprise"
-                            ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                            : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
-                        }`}
-                        data-testid="pricing-enterprise"
-                      >
-                        Enterprise annual
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {pricingModel === "per_clinician" ? (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-[#111827]">Cost per clinician</label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#6B7280]">$</span>
-                        <Input
-                          type="number"
-                          value={costPerMonth}
-                          onChange={(e) => setCostPerMonth(Number(e.target.value) || 0)}
-                          className="w-24 font-mono"
-                          data-testid="input-cost-per-month"
-                        />
-                        <span className="text-sm text-[#6B7280]">/month</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-[#111827]">Annual enterprise cost</label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#6B7280]">$</span>
-                        <FormattedNumberInput
-                          value={enterpriseAnnual}
-                          onChange={setEnterpriseAnnual}
-                          className="w-40"
-                          data-testid="input-enterprise-annual"
-                        />
-                        <span className="text-sm text-[#6B7280]">/year</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">Contract term</label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3].map(term => (
-                        <button
-                          key={term}
-                          onClick={() => setContractTerm(term as 1 | 2 | 3)}
-                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                            contractTerm === term
-                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
-                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
-                          }`}
-                          data-testid={`contract-term-${term}`}
-                        >
-                          {term} yr{term > 1 ? "s" : ""}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={includeImplementation}
-                      onChange={(e) => setIncludeImplementation(e.target.checked)}
-                      className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
-                      data-testid="checkbox-implementation"
-                    />
-                    <label className="text-sm text-[#111827]">Add implementation fee</label>
-                    {includeImplementation && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#6B7280]">$</span>
-                        <FormattedNumberInput
-                          value={implementationFee}
-                          onChange={setImplementationFee}
-                          className="w-32"
-                          data-testid="input-implementation-fee"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
-                    <p className="text-sm text-[#111827]">
-                      {pricingModel === "per_clinician" ? (
-                        <>
-                          <span className="font-mono">{providers}</span> providers ×{" "}
-                          <span className="font-mono">${costPerMonth}</span> × 12 ={" "}
-                          <span className="font-mono font-semibold">{formatCurrency(annualInvestment)}</span>/year
-                        </>
-                      ) : (
-                        <span className="font-mono font-semibold">{formatCurrency(enterpriseAnnual)}</span>
-                      )}
-                      {includeImplementation && (
-                        <span className="text-[#6B7280]"> + {formatCurrency(implementationFee)} implementation</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </section>
           </div>
           
           <div className="w-[35%]">
             <div className="sticky top-24 bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-[#111827] mb-6">Live Model</h3>
+              <h3 className="text-lg font-semibold text-[#111827] mb-4">Live Model</h3>
               
               <div className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm font-medium text-[#111827]">Total Benefit</span>
-                    <span className="font-mono font-semibold text-emerald-600">{formatCurrency(totalBenefit)}/yr</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-[#6B7280]">Investment</span>
-                    <span className="font-mono text-[#6B7280]">{formatCurrency(totalInvestment)}/yr</span>
-                  </div>
-                  <div className="border-t border-neutral-200 pt-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-semibold text-[#111827]">Net Gain</span>
-                      <span className="font-mono font-bold text-lg text-emerald-600">{formatCurrency(netGain)}/yr</span>
+                <div className="text-xs uppercase tracking-wider text-[#6B7280] mb-2">Your Value</div>
+                
+                <div className="space-y-2">
+                  {activeDrivers.map(driverId => (
+                    <div key={driverId} className="flex justify-between items-center py-1">
+                      <span className="text-sm text-[#111827]">{DRIVER_NAMES[driverId]}</span>
+                      <span className="font-mono text-sm text-emerald-600">{formatCurrency(driverResults[driverId]?.value || 0)}</span>
                     </div>
+                  ))}
+                </div>
+                
+                <div className="border-t border-neutral-200 pt-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-[#111827]">Total Value</span>
+                    <span className="font-mono font-bold text-lg text-emerald-600">{formatCurrency(totalBenefit)}/yr</span>
                   </div>
                 </div>
                 
-                <div className="bg-neutral-100 rounded-xl p-5 border border-neutral-200">
-                  <div className="text-center">
-                    <div className="font-mono font-bold text-3xl text-[#111827] mb-1">{roiMultiple.toFixed(1)}x</div>
-                    <div className="text-xs text-[#6B7280] uppercase tracking-wider">Return on Investment</div>
-                  </div>
-                </div>
+                <p className="text-xs text-[#6B7280] text-center py-2">Investment calculated in next step</p>
                 
                 <Button
                   onClick={handleComplete}
-                  className="w-full bg-[#E85D3F] border-[#E85D3F] text-white"
-                  data-testid="button-view-summary"
+                  className="w-full h-12 bg-[#E85D3F] hover:bg-[#D14D32] border-[#E85D3F] text-white text-base font-semibold"
+                  data-testid="button-continue-investment"
                 >
-                  View Full Summary
+                  Continue to Investment
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
