@@ -1,0 +1,116 @@
+MAKE ALL DRIVER ASSUMPTIONS EDITABLE + FIX MATH DISPLAY
+
+## PROBLEM 1: Assumptions aren't editable
+Users can see the math but can't adjust it. If they disagree with 
+"20% realization" or "$200/visit" they have no recourse.
+
+## PROBLEM 2: Math doesn't add up
+The displayed subtotals don't match the total. Fix the calculation logic.
+
+## THE FIX
+
+### EDITABLE INPUT FORMAT
+
+Every assumption in the calculation should be an inline editable field:
+
+INSTEAD OF:
+"× 20% time-to-visit conversion"
+
+SHOW:
+"× [20]% time-to-visit conversion"
+     ↑ This is an input field
+
+Styling for editable values:
+- Subtle bottom border or box
+- Slightly different background (e.g., #F9FAFB)
+- On hover: cursor becomes text cursor
+- On focus: border highlights
+
+### BEHAVIOR
+
+1. User clicks on [20] → field becomes editable
+2. User types new value (e.g., 15)
+3. User clicks away or presses Enter
+4. Calculation updates immediately:
+   - Subtotal for that section updates
+   - Driver total updates
+   - Page total updates (in real-time, with smooth animation)
+
+### EXPANDED DRIVER FORMAT (REVISED)
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Patient Access                                   +$XXX,XXX/yr  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  FROM YOUR EFFICIENCY GAP:                                      │
+│  +1,200 hours returned                                          │
+│  × [  20  ]% converts to additional visits                      │
+│  × $[ 200 ] revenue per visit                                   │
+│  ─────────────────────────────────────────────────────────────  │
+│  = $48,000/year                                                 │
+│                                                                 │
+│  FROM YOUR UTILIZATION GAP:                                     │
+│  +9,000 more encounters documented                              │
+│  × [  20  ]% realization rate                                   │
+│  × $[ 200 ] revenue per visit                                   │
+│  ─────────────────────────────────────────────────────────────  │
+│  = $360,000/year                                                │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│  DRIVER TOTAL:                              $408,000/year       │
+│                                                                 │
+│  [Reset to defaults]                     [Remove this driver]   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+### EDITABLE FIELDS PER DRIVER
+
+PATIENT ACCESS:
+- Time-to-visit conversion %: default 20%
+- Revenue per visit: default $200
+
+LEVEL OF SERVICE ACCURACY:
+- % E/M billable: default 80%
+- % under-coded: default 8% (current) vs 12% (Abridge)
+- wRVU value: default $45
+- wRVU multiplier: default 0.7
+
+DOCUMENTATION-RELATED DENIALS:
+- % doc-related denials: default 35%
+- Denial cost per claim: default $250
+- Prevention rate with Abridge: default 45%
+
+CLINICIAN RETENTION (optional driver):
+- Providers at risk: default 2
+- Retention improvement: default 50%
+- Cost to replace: default $150,000
+
+OVERTIME & LOCUM SAVINGS (optional driver):
+- % hours that reduce OT: default 25%
+- OT/Locum cost per hour: default $150
+
+HCC CAPTURE (optional driver):
+- % Medicare Advantage patients: default 30%
+- HCC improvement rate: default 10%
+- RAF value per capture: default $1,200
+
+### CALCULATION LOGIC
+
+Make sure the math actually adds up:
+
+```javascript
+// Patient Access example
+const efficiencyHours = 1200;
+const conversionRate = 0.20; // editable
+const revenuePerVisit = 200; // editable
+
+const efficiencyValue = efficiencyHours * conversionRate * revenuePerVisit;
+
+const utilizationEncounters = 9000;
+const realizationRate = 0.20; // editable
+// revenuePerVisit shared
+
+const utilizationValue = utilizationEncounters * realizationRate * revenuePerVisit;
+
+const driverTotal = efficiencyValue + utilizationValue;
+// This should display correctly as the sum of both

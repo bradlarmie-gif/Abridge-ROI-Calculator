@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mic, User, Keyboard, Sparkles, Clock, DollarSign, ChevronDown, ChevronUp, Download, MessageSquare, Frown, Meh, Smile, PartyPopper, Users, Calendar, BadgeDollarSign, Heart, FileCheck, ShieldCheck, Lightbulb, Check, AlertTriangle, Target, BarChart3, Settings, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
@@ -2155,39 +2155,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Where That Value Shows Up</p>
-                <button
-                  onClick={() => setShowAllDrivers(!showAllDrivers)}
-                  className="text-xs text-neutral-400 hover:text-neutral-600"
-                >
-                  {showAllDrivers ? "Hide driver options" : "Adjust which drivers apply"}
-                </button>
               </div>
-
-              {/* Driver toggles - shown when adjusting */}
-              {showAllDrivers && (
-                <div className="bg-neutral-50 rounded-lg p-4 mb-4 border border-neutral-200">
-                  <p className="text-xs text-neutral-500 mb-3">Toggle drivers on/off to see how they affect your total:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {DRIVERS.map((driver) => {
-                      const isSelected = selectedDrivers.includes(driver.id);
-                      return (
-                        <button
-                          key={driver.id}
-                          onClick={() => toggleDriver(driver.id)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                            isSelected
-                              ? "bg-neutral-900 text-white"
-                              : "bg-white text-neutral-500 border border-neutral-300 hover:border-neutral-400"
-                          }`}
-                          data-testid={`toggle-driver-${driver.id}`}
-                        >
-                          {driver.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               {/* Driver rows - collapsed */}
               <div className="space-y-2">
@@ -2283,6 +2251,21 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                 {values.gapBreakdown.assumptions.join(", ")}
                               </p>
                             )}
+                            
+                            {/* Remove driver link */}
+                            <div className="border-t border-neutral-200 pt-3 mt-3">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleDriver(driverId);
+                                  setExpandedDrivers(prev => prev.filter(id => id !== driverId));
+                                }}
+                                className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
+                                data-testid={`remove-driver-${driverId}`}
+                              >
+                                Remove this driver
+                              </button>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -2297,6 +2280,67 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     <span className="text-xl font-bold text-[#E85D3F]">{formatCurrency(calculations.totalGap)}/year</span>
                   </div>
                 </div>
+                
+                {/* Add More Drivers Section */}
+                {DRIVERS.filter(d => !selectedDrivers.includes(d.id)).length > 0 && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setShowAllDrivers(!showAllDrivers)}
+                      className="w-full flex items-center justify-between p-3 rounded-lg border border-dashed border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50/50 transition-colors"
+                      data-testid="button-add-more-drivers"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Plus className="w-4 h-4 text-neutral-500" />
+                        <span className="text-sm font-medium text-neutral-600">Add more drivers</span>
+                        <span className="text-xs text-neutral-400">
+                          ({DRIVERS.filter(d => !selectedDrivers.includes(d.id)).length} available)
+                        </span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform ${showAllDrivers ? "rotate-180" : ""}`} />
+                    </button>
+                    
+                    {showAllDrivers && (
+                      <div className="mt-3 space-y-2">
+                        {DRIVERS.filter(d => !selectedDrivers.includes(d.id)).map((driver) => {
+                          const Icon = driver.icon;
+                          const values = calculations.driverValues[driver.id];
+                          return (
+                            <div
+                              key={driver.id}
+                              className="bg-white rounded-lg p-4 border border-neutral-200 hover:border-neutral-300 transition-colors"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start gap-3">
+                                  <div className="p-2 rounded-lg bg-neutral-100">
+                                    <Icon className="w-4 h-4 text-neutral-500" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-neutral-900">{driver.name}</p>
+                                    <p className="text-sm text-neutral-600 mt-0.5">{driver.description}</p>
+                                    <p className="text-xs text-neutral-400 mt-1">{driver.context}</p>
+                                    <p className="text-sm font-medium text-emerald-600 mt-2">
+                                      Potential: {values ? `+${formatCurrency(values.gap)}/year` : driver.typicalGap + "/year"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    toggleDriver(driver.id);
+                                    setExpandedDrivers(prev => [...prev, driver.id]);
+                                  }}
+                                  className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors whitespace-nowrap"
+                                  data-testid={`add-driver-${driver.id}`}
+                                >
+                                  + Add this driver
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               </>
               )}
