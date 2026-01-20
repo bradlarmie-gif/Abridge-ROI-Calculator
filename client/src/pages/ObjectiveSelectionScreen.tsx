@@ -1012,18 +1012,10 @@ function PriorityCard({
               <LeverIcon className={`w-5 h-5 ${isSelected ? "text-[#E8532F]" : "text-neutral-600"}`} />
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h4 className="text-base font-medium text-[#111827] leading-snug">
-                  {lever.label}
-                </h4>
-                {contextTag && (
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${getTagColors(contextTag.color)}`}>
-                    {getTagIcon(contextTag.icon)}
-                    {contextTag.text}
-                  </span>
-                )}
-              </div>
-              <p className="mt-1 text-sm text-[#6B7280] leading-relaxed">
+              <h4 className="text-base font-medium text-[#111827] leading-snug mb-1">
+                {lever.label}
+              </h4>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
                 {lever.description}
               </p>
               {valueRange && (
