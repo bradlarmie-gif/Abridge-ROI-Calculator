@@ -1367,26 +1367,26 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <p className="text-center text-sm text-emerald-600 font-medium">
                     Average utilization: {Math.round(ABRIDGE_UTILIZATION * 100)}% based on industry benchmarks
                   </p>
-                  <p className="text-center text-xs text-emerald-600/70">
+                  <p className="text-center text-xs text-neutral-400">
                     No per-provider cost barrier to scale
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 bg-amber-50 rounded-xl p-5 border border-amber-200/50">
-              <p className="text-amber-900 font-semibold mb-2">The {providersWithoutScribes} self-documenting providers are:</p>
-              <ul className="space-y-2 text-sm text-amber-800">
+            <div className="mt-8 bg-neutral-100 rounded-xl p-5 border border-neutral-200">
+              <p className="text-neutral-800 font-semibold mb-2">The {providersWithoutScribes} self-documenting providers are:</p>
+              <ul className="space-y-2 text-sm text-neutral-600">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full" />
                   Self-documenting after hours
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full" />
                   Less time available for patient care
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full" />
                   Higher administrative burden
                 </li>
               </ul>
