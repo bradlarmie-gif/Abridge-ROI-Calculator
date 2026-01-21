@@ -505,11 +505,6 @@ export default function SwitchAmbientSetup({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-[#111827]">{metric.name}</span>
-                            {metric.recommended && (
-                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">
-                                Recommended
-                              </span>
-                            )}
                           </div>
                           <p className="text-sm text-[#6B7280]">{metric.description}</p>
                           <p className="text-xs text-[#9CA3AF] mt-0.5">Source: {metric.source}</p>
