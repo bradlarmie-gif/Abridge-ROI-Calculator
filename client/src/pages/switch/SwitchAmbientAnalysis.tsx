@@ -1,8 +1,8 @@
 import { useState, ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, Users, ClipboardList, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Users, ClipboardList, Shield, ChevronDown, ChevronUp, BarChart3, Clock, DollarSign, Moon, FileCheck, Heart, Lightbulb, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { AmbientInputs, AmbientCalculations, AmbientBenchmarks } from './SwitchAmbientFlow';
+import { AmbientInputs, AmbientCalculations, AmbientBenchmarks, MetricTier } from './SwitchAmbientFlow';
 
 interface DriverItem {
   id: string;
@@ -15,9 +15,25 @@ interface DriverItem {
     explanation: string;
   };
   impact?: string;
-  isSpeculative?: boolean;
-  isSupporting?: boolean;
+  tier?: MetricTier;
+  change?: string;
+  insight?: string;
+  lowEstimate?: number;
+  highEstimate?: number;
+  timeframe?: string;
 }
+
+const getIconComponent = (iconName?: string): ReactNode => {
+  switch (iconName) {
+    case 'BarChart3': return <BarChart3 className="w-5 h-5" />;
+    case 'Clock': return <Clock className="w-5 h-5" />;
+    case 'DollarSign': return <DollarSign className="w-5 h-5" />;
+    case 'Moon': return <Moon className="w-5 h-5" />;
+    case 'FileCheck': return <FileCheck className="w-5 h-5" />;
+    case 'Heart': return <Heart className="w-5 h-5" />;
+    default: return <ClipboardList className="w-5 h-5" />;
+  }
+};
 
 interface SwitchAmbientAnalysisProps {
   inputs: AmbientInputs;
@@ -106,15 +122,25 @@ export default function SwitchAmbientAnalysis({
     name: item.metric,
     description: item.gap,
     value: item.value,
-    icon: <ClipboardList className="w-5 h-5" />,
+    icon: getIconComponent(item.icon),
     details: {
       formula: item.calculation,
       explanation: item.explanation
     },
     impact: item.impact,
-    isSpeculative: item.isSpeculative,
-    isSupporting: item.isSupporting
+    tier: item.tier,
+    change: item.change,
+    insight: item.insight,
+    lowEstimate: item.lowEstimate,
+    highEstimate: item.highEstimate,
+    timeframe: item.timeframe
   }));
+  
+  // Group drivers by tier
+  const primaryDrivers = advancedDrivers.filter(d => d.tier === 'primary');
+  const operationalMetrics = advancedDrivers.filter(d => d.tier === 'operational');
+  const longtermMetrics = advancedDrivers.filter(d => d.tier === 'longterm');
+  const primaryTotal = primaryDrivers.reduce((sum, d) => sum + d.value, 0);
   
   const drivers: DriverItem[] = inputs.mode === 'advanced' && advancedDrivers.length > 0 ? advancedDrivers : quickDrivers;
   
@@ -269,101 +295,234 @@ export default function SwitchAmbientAnalysis({
               </div>
             </section>
             
-            <section>
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">WHERE THAT VALUE SHOWS UP</h2>
-              
-              <div className="space-y-3">
-                {drivers.map(driver => (
-                  <div
-                    key={driver.id}
-                    className={`rounded-xl transition-all ${
-                      driver.isSupporting 
-                        ? 'bg-slate-50 border border-dashed border-slate-200' 
-                        : driver.isSpeculative 
-                          ? 'bg-white border-l-4 border-l-amber-400 border border-slate-200' 
-                          : `bg-white border ${expandedDriver === driver.id ? 'border-slate-800' : 'border-slate-200 hover:border-slate-300'}`
-                    }`}
-                  >
-                    <button
-                      onClick={() => toggleDriver(driver.id)}
-                      className="w-full flex items-center gap-4 p-5"
-                      data-testid={`button-driver-${driver.id}`}
+            {/* Quick Mode: Original driver layout */}
+            {inputs.mode === 'quick' && (
+              <section>
+                <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">WHERE THAT VALUE SHOWS UP</h2>
+                
+                <div className="space-y-3">
+                  {quickDrivers.map(driver => (
+                    <div
+                      key={driver.id}
+                      className={`bg-white rounded-xl border transition-all ${
+                        expandedDriver === driver.id ? 'border-slate-800' : 'border-slate-200 hover:border-slate-300'
+                      }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        driver.isSupporting ? 'bg-slate-100 text-slate-400' : 'bg-slate-50 text-slate-500'
-                      }`}>
-                        {driver.icon}
-                      </div>
-                      <div className="flex-1 text-left">
-                        <span className={`block text-sm font-semibold ${driver.isSupporting ? 'text-slate-600' : 'text-slate-900'}`}>
-                          {driver.name}
-                        </span>
-                        <span className="block text-xs text-slate-500">{driver.description}</span>
-                        {driver.impact && (
-                          <span className={`block text-xs font-medium mt-1 ${driver.isSupporting ? 'text-slate-400' : 'text-emerald-600'}`}>
-                            {driver.impact}
-                          </span>
-                        )}
-                      </div>
-                      {driver.isSupporting ? (
-                        <span className="text-sm font-medium text-slate-400" data-testid={`text-driver-value-${driver.id}`}>
-                          (Supporting metric)
-                        </span>
-                      ) : driver.value > 0 ? (
-                        <span className={`text-base font-bold ${driver.isSpeculative ? 'text-amber-600' : 'text-emerald-600'}`} data-testid={`text-driver-value-${driver.id}`}>
-                          {driver.isSpeculative && '~'}+${formatNumber(driver.value)}/yr
-                        </span>
-                      ) : (
+                      <button
+                        onClick={() => toggleDriver(driver.id)}
+                        className="w-full flex items-center gap-4 p-5"
+                        data-testid={`button-driver-${driver.id}`}
+                      >
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 text-slate-500">
+                          {driver.icon}
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="block text-sm font-semibold text-slate-900">{driver.name}</span>
+                          <span className="block text-xs text-slate-500">{driver.description}</span>
+                        </div>
                         <span className="text-base font-bold text-emerald-600" data-testid={`text-driver-value-${driver.id}`}>
-                          +$0/yr
+                          +${formatNumber(driver.value)}/yr
                         </span>
+                        {expandedDriver === driver.id ? (
+                          <ChevronUp className="w-5 h-5 text-slate-400" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-slate-400" />
+                        )}
+                      </button>
+                      
+                      {expandedDriver === driver.id && (
+                        <div className="px-5 pb-5 pt-0 border-t border-slate-100 bg-slate-50">
+                          <div className="pt-4">
+                            <span className="block text-xs font-semibold text-slate-400 mb-1">CALCULATION</span>
+                            <span className="block text-sm text-slate-600 font-mono">{driver.details.formula}</span>
+                          </div>
+                          <div className="mt-4">
+                            <span className="block text-xs font-semibold text-slate-400 mb-1">WHY THIS MATTERS</span>
+                            <p className="text-sm text-slate-600 leading-relaxed">{driver.details.explanation}</p>
+                          </div>
+                        </div>
                       )}
-                      {expandedDriver === driver.id ? (
-                        <ChevronUp className="w-5 h-5 text-slate-400" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-slate-400" />
-                      )}
-                    </button>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-200 rounded-xl mt-4">
+                  <span className="text-sm font-semibold text-slate-600">TOTAL ANNUAL GAP</span>
+                  <span className="text-xl font-bold text-slate-900" data-testid="text-total-annual-gap">
+                    ${formatNumber(calculations.totalAnnualGap)}/year
+                  </span>
+                </div>
+              </section>
+            )}
+            
+            {/* Advanced Mode: Tiered layout */}
+            {inputs.mode === 'advanced' && (
+              <div className="space-y-6">
+                
+                {/* TIER 1: Primary Value Drivers */}
+                {primaryDrivers.length > 0 && (
+                  <section className="bg-white border border-slate-200 rounded-2xl p-6">
+                    <div className="flex items-baseline gap-3 mb-5">
+                      <h2 className="text-xs font-semibold text-slate-800 tracking-wide">PRIMARY VALUE DRIVERS</h2>
+                      <span className="text-xs text-slate-500">Concrete, measurable impact</span>
+                    </div>
                     
-                    {expandedDriver === driver.id && (
-                      <div className="px-5 pb-5 pt-0 border-t border-slate-100 bg-slate-50">
-                        <div className="pt-4">
-                          <span className="block text-xs font-semibold text-slate-400 mb-1">CALCULATION</span>
-                          <span className="block text-sm text-slate-600 font-mono">{driver.details.formula}</span>
-                        </div>
-                        <div className="mt-4">
-                          <span className="block text-xs font-semibold text-slate-400 mb-1">WHY THIS MATTERS</span>
-                          <p className="text-sm text-slate-600 leading-relaxed">{driver.details.explanation}</p>
-                        </div>
-                        
-                        {driver.isSpeculative && (
-                          <div className="flex items-center gap-2 mt-4 p-3 bg-amber-50 rounded-lg">
-                            <span className="text-xs text-amber-800">
-                              This is an estimated value. Actual impact depends on your specific situation.
+                    <div className="space-y-3">
+                      {primaryDrivers.map(driver => (
+                        <div
+                          key={driver.id}
+                          className={`bg-white rounded-xl border transition-all ${
+                            expandedDriver === driver.id ? 'border-slate-800' : 'border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <button
+                            onClick={() => toggleDriver(driver.id)}
+                            className="w-full flex items-center gap-4 p-5"
+                            data-testid={`button-driver-${driver.id}`}
+                          >
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 text-slate-500">
+                              {driver.icon}
+                            </div>
+                            <div className="flex-1 text-left">
+                              <span className="block text-sm font-semibold text-slate-900">{driver.name}</span>
+                              <span className="block text-xs text-slate-500">{driver.description}</span>
+                              {driver.impact && (
+                                <span className="block text-xs font-medium mt-1 text-emerald-600">{driver.impact}</span>
+                              )}
+                            </div>
+                            <span className="text-base font-bold text-emerald-600" data-testid={`text-driver-value-${driver.id}`}>
+                              +${formatNumber(driver.value)}/yr
                             </span>
+                            {expandedDriver === driver.id ? (
+                              <ChevronUp className="w-5 h-5 text-slate-400" />
+                            ) : (
+                              <ChevronDown className="w-5 h-5 text-slate-400" />
+                            )}
+                          </button>
+                          
+                          {expandedDriver === driver.id && (
+                            <div className="px-5 pb-5 pt-0 border-t border-slate-100 bg-slate-50">
+                              <div className="pt-4">
+                                <span className="block text-xs font-semibold text-slate-400 mb-1">CALCULATION</span>
+                                <span className="block text-sm text-slate-600 font-mono">{driver.details.formula}</span>
+                              </div>
+                              <div className="mt-4">
+                                <span className="block text-xs font-semibold text-slate-400 mb-1">WHY THIS MATTERS</span>
+                                <p className="text-sm text-slate-600 leading-relaxed">{driver.details.explanation}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-5 bg-slate-50 rounded-xl mt-4">
+                      <span className="text-xs font-semibold text-slate-500 tracking-wide">PRIMARY TOTAL</span>
+                      <span className="text-xl font-bold text-emerald-600" data-testid="text-primary-total">
+                        ${formatNumber(primaryTotal)}/year
+                      </span>
+                    </div>
+                  </section>
+                )}
+                
+                {/* TIER 2: Operational Improvements */}
+                {operationalMetrics.length > 0 && (
+                  <section className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                    <div className="flex items-baseline gap-3 mb-5">
+                      <h2 className="text-xs font-semibold text-slate-800 tracking-wide">OPERATIONAL IMPROVEMENTS</h2>
+                      <span className="text-xs text-slate-500">Important indicators, harder to dollarize</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {operationalMetrics.map(metric => (
+                        <div key={metric.id} className="bg-white border border-slate-200 rounded-xl p-5">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500">
+                              {metric.icon}
+                            </div>
+                            <span className="text-sm font-semibold text-slate-900">{metric.name}</span>
                           </div>
-                        )}
-                        
-                        {driver.isSupporting && (
-                          <div className="flex items-center gap-2 mt-4 p-3 bg-slate-100 rounded-lg">
-                            <span className="text-xs text-slate-600">
-                              This metric supports the wRVU improvement above. Not counted separately to avoid double-counting.
-                            </span>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-500">{metric.description}</span>
+                            </div>
+                            {metric.change && (
+                              <span className="inline-block text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
+                                {metric.change}
+                              </span>
+                            )}
+                            <p className="text-lg font-bold text-slate-900">{metric.impact}</p>
+                            {metric.insight && (
+                              <p className="text-xs text-slate-500">{metric.insight}</p>
+                            )}
                           </div>
-                        )}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-start gap-2 mt-4 p-3 bg-white rounded-lg border border-slate-100">
+                      <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-xs text-slate-600">
+                        These improvements contribute to retention and operational efficiency but are difficult to assign direct dollar values.
+                      </span>
+                    </div>
+                  </section>
+                )}
+                
+                {/* TIER 3: Long-Term Value (Speculative) */}
+                {longtermMetrics.length > 0 && (
+                  <section className="bg-amber-50/50 border border-amber-200/50 rounded-2xl p-6">
+                    <div className="flex items-baseline gap-3 mb-5">
+                      <h2 className="text-xs font-semibold text-slate-800 tracking-wide">LONG-TERM VALUE POTENTIAL</h2>
+                      <span className="text-xs text-slate-500">
+                        Speculative — typically measurable after {longtermMetrics[0]?.timeframe || '12-18 months'}
+                      </span>
+                    </div>
+                    
+                    <div className="bg-white border border-amber-200 rounded-xl p-5">
+                      <div className="flex items-start gap-2 mb-4 p-3 bg-amber-50 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-xs text-amber-800">
+                          These values are estimates based on industry correlations. Actual results depend on your specific situation.
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      
+                      {longtermMetrics.map(metric => (
+                        <div key={metric.id} className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-100 text-amber-600">
+                            {metric.icon}
+                          </div>
+                          <div className="flex-1">
+                            <span className="block text-sm font-semibold text-slate-900">{metric.name}</span>
+                            <span className="block text-xs text-slate-500">{metric.description}</span>
+                            {metric.timeframe && (
+                              <span className="block text-xs text-amber-600 mt-1">
+                                Typically measurable after {metric.timeframe}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <span className="block text-xs text-slate-500">Potential:</span>
+                            <span className="block text-base font-bold text-amber-600">
+                              ~${formatNumber(metric.lowEstimate || 0)} - ${formatNumber(metric.highEstimate || 0)}/yr
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                
+                {/* Total for Advanced Mode */}
+                <div className="flex items-center justify-between p-5 bg-slate-800 text-white rounded-xl">
+                  <span className="text-sm font-semibold">ESTIMATED ANNUAL GAP</span>
+                  <span className="text-xl font-bold" data-testid="text-total-annual-gap">
+                    ${formatNumber(calculations.totalAnnualGap)}/year
+                  </span>
+                </div>
               </div>
-              
-              <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-200 rounded-xl mt-4">
-                <span className="text-sm font-semibold text-slate-600">TOTAL ANNUAL GAP</span>
-                <span className="text-xl font-bold text-slate-900" data-testid="text-total-annual-gap">
-                  ${formatNumber(calculations.totalAnnualGap)}/year
-                </span>
-              </div>
-            </section>
+            )}
           </div>
         )}
         
