@@ -1,0 +1,423 @@
+I need you to make the following 5 UX/UI improvements across the entire Explore section (Outpatient, ED, Inpatient, Nursing setup pages). Apply these changes globally to all setup/input pages in the Explore flow.
+
+## 1. STANDARDIZE INPUT FIELD WIDTHS
+
+All number input fields should have consistent width of 200px. Currently some are wider, some narrower. Make them all the same.
+
+```css
+/* Apply to all setup pages */
+.setup-field input[type="text"],
+.setup-field input[type="number"],
+input.setup-input,
+input.number-input {
+  width: 200px;
+  max-width: 200px;
+  padding: 14px 18px;
+  font-size: 18px;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  transition: all 0.15s;
+}
+
+.setup-field input:focus,
+input.setup-input:focus,
+input.number-input:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+2. INCREASE CARD PADDING AND SPACING
+The setup cards feel cramped. Increase internal padding and spacing between fields.
+cssCopy/* Setup card container */
+.setup-card,
+.organization-card,
+.input-card,
+[class*="setup"] > div:first-child {
+  padding: 48px 56px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Spacing between input fields */
+.setup-field,
+.input-group,
+.form-field {
+  margin-bottom: 36px;
+}
+
+/* Last field before the baseline box should have more space */
+.setup-field:last-of-type,
+.input-group:last-of-type {
+  margin-bottom: 48px;
+}
+
+/* Field labels */
+.setup-field label,
+.input-group label,
+.field-label {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+
+/* Helper text under inputs */
+.setup-field .hint,
+.setup-field .helper-text,
+.input-hint,
+.field-hint {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+3. RENAME "YOUR MULTIPLIER" TO "YOUR BASELINE" AND SHOW FORMULA
+The green summary box at the bottom should be renamed and show the formula so users understand where the number comes from.
+For each setup page, update the multiplier/summary box:
+Change the label from:
+
+"Your Multiplier" → "YOUR BASELINE"
+
+Add a formula line showing the calculation:
+
+Outpatient: {providers} providers × {encounters} encounters × {utilization}% = {result}
+ED: {physicians} physicians × {encounters} encounters × {utilization}% = {result}
+Inpatient: {hospitalists} hospitalists × {admissions} admissions × {utilization}% = {result}
+Nursing: {beds} beds × {events_per_bed} events × {utilization}% = {result}
+
+Updated component structure:
+jsxCopy<div className="baseline-box">
+  <div className="baseline-header">
+    <TrendingUp size={20} className="baseline-icon" />
+    <span className="baseline-label">YOUR BASELINE</span>
+  </div>
+  
+  <div className="baseline-value">
+    {formatNumber(eligibleEncounters)}
+  </div>
+  
+  <div className="baseline-unit">
+    eligible {unitType} per year
+  </div>
+  
+  <div className="baseline-formula">
+    {providers} providers × {formatNumber(encounters)} encounters × {utilization}% utilization
+  </div>
+  
+  <div className="baseline-note">
+    <ArrowRight size={14} />
+    <span>Everything below builds from this number</span>
+  </div>
+</div>
+CSS for the baseline box:
+cssCopy.baseline-box,
+.multiplier-box,
+.summary-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #a7f3d0;
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 16px;
+}
+
+.baseline-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.baseline-icon {
+  color: #059669;
+}
+
+.baseline-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  letter-spacing: 0.08em;
+}
+
+.baseline-value {
+  font-size: 52px;
+  font-weight: 700;
+  color: #059669;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.baseline-unit {
+  font-size: 16px;
+  font-weight: 500;
+  color: #065f46;
+  margin-bottom: 20px;
+}
+
+.baseline-formula {
+  font-size: 14px;
+  color: #64748b;
+  padding: 16px 0;
+  border-top: 1px solid #a7f3d0;
+  font-family: monospace;
+  letter-spacing: -0.02em;
+}
+
+.baseline-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #059669;
+  margin-top: 12px;
+}
+
+.baseline-note svg {
+  color: #059669;
+}
+4. ADD PROGRESS INDICATOR TO SETUP PAGES
+Add a simple progress indicator at the top of each setup page so users know where they are in the flow.
+Add this to the header area of each Explore setup page:
+jsxCopy// Add below the "Back" button, before the card
+<div className="setup-progress">
+  <div className="progress-steps">
+    <span className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>1</span>
+    <span className="progress-line"></span>
+    <span className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>2</span>
+    <span className="progress-line"></span>
+    <span className={`progress-step ${currentStep >= 3 ? 'active' : ''}`}>3</span>
+    <span className="progress-line"></span>
+    <span className={`progress-step ${currentStep >= 4 ? 'active' : ''}`}>4</span>
+  </div>
+  <div className="progress-labels">
+    <span>Setup</span>
+    <span>Metrics</span>
+    <span>Results</span>
+    <span>Summary</span>
+  </div>
+</div>
+CSS for progress indicator:
+cssCopy.setup-progress {
+  max-width: 400px;
+  margin: 0 auto 40px auto;
+}
+
+.progress-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.progress-step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.progress-step.active {
+  background: #f97316;
+  color: white;
+}
+
+.progress-step.complete {
+  background: #059669;
+  color: white;
+}
+
+.progress-line {
+  width: 60px;
+  height: 2px;
+  background: #e2e8f0;
+}
+
+.progress-step.active ~ .progress-line,
+.progress-step.complete + .progress-line {
+  background: #f97316;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 0 8px;
+}
+
+.progress-labels span {
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+  width: 60px;
+}
+5. ADD TOOLTIPS/CONTEXT TO UTILIZATION RATE OPTIONS
+Make the utilization rate chips more informative by adding context about when to use each option.
+Update the utilization section structure:
+jsxCopy<div className="utilization-section">
+  <label className="field-label">Expected utilization rate?</label>
+  <p className="field-description">What percentage of encounters will use Abridge?</p>
+  
+  <div className="utilization-chips">
+    <button 
+      className={`utilization-chip ${utilization === 'conservative' ? 'selected' : ''}`}
+      onClick={() => setUtilization('conservative')}
+    >
+      <span className="chip-label">Conservative</span>
+      <span className="chip-value">50%</span>
+      <span className="chip-context">Early rollout or cautious adoption</span>
+    </button>
+    
+    <button 
+      className={`utilization-chip ${utilization === 'typical' ? 'selected' : ''}`}
+      onClick={() => setUtilization('typical')}
+    >
+      <span className="chip-label">Typical</span>
+      <span className="chip-value">65%</span>
+      <span className="chip-context">Standard deployment with good change management</span>
+    </button>
+    
+    <button 
+      className={`utilization-chip ${utilization === 'aggressive' ? 'selected' : ''}`}
+      onClick={() => setUtilization('aggressive')}
+    >
+      <span className="chip-label">Aggressive</span>
+      <span className="chip-value">80%</span>
+      <span className="chip-context">High-adoption org with strong leadership mandate</span>
+    </button>
+  </div>
+  
+  <p className="utilization-hint">
+    <Lightbulb size={14} />
+    <span>Not sure? Start with Typical — you can adjust later.</span>
+  </p>
+</div>
+CSS for enhanced utilization chips:
+cssCopy.utilization-section {
+  margin-bottom: 40px;
+}
+
+.field-label {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.field-description {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.utilization-chips {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.utilization-chip {
+  flex: 1;
+  min-width: 160px;
+  max-width: 200px;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.utilization-chip:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.utilization-chip.selected {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+
+.chip-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.utilization-chip.selected .chip-label {
+  color: #c2410c;
+}
+
+.chip-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.utilization-chip.selected .chip-value {
+  color: #ea580c;
+}
+
+.chip-context {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.utilization-chip.selected .chip-context {
+  color: #c2410c;
+}
+
+.utilization-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.utilization-hint svg {
+  color: #f59e0b;
+}
+
+/* Responsive: Stack chips on mobile */
+@media (max-width: 640px) {
+  .utilization-chips {
+    flex-direction: column;
+  }
+  
+  .utilization-chip {
+    max-width: none;
+  }
+}
+
+APPLY THESE CHANGES TO ALL EXPLORE SETUP PAGES:
+
+OutpatientSetup.tsx (or equivalent)
+EDSetup.tsx (or equivalent)
+InpatientSetup.tsx (or equivalent)
+NursingSetup.tsx (or equivalent)
+
+And update the shared CSS file (likely Explore.css or Setup.css or global styles).
+Make sure to:
+
+Update all input field classes to use consistent widths
+Update all setup cards to use consistent padding
+Change "Your Multiplier" to "YOUR BASELINE" with formula in all 4 settings
+Add progress indicator component to all setup pages
+Update utilization chip components with the new enhanced structure
+
+The goal is visual consistency and improved clarity across the entire Explore section.

@@ -6007,17 +6007,36 @@ export default function ModelBuilder({
         </Button>
         <div className="flex gap-8">
           <div className="flex-1 max-w-[65%] space-y-8">
-            <section className="bg-white rounded-2xl border border-neutral-200 p-8">
-              <div className="mb-6">
+            {/* Progress Indicator */}
+            <div className="max-w-[400px] mx-auto mb-10">
+              <div className="flex items-center justify-center gap-0">
+                <span className="w-8 h-8 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-sm font-semibold">1</span>
+                <span className="w-16 h-0.5 bg-slate-200"></span>
+                <span className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-sm font-semibold">2</span>
+                <span className="w-16 h-0.5 bg-slate-200"></span>
+                <span className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-sm font-semibold">3</span>
+                <span className="w-16 h-0.5 bg-slate-200"></span>
+                <span className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-sm font-semibold">4</span>
+              </div>
+              <div className="flex justify-between mt-3 px-0">
+                <span className="text-xs text-[#EA2C00] font-medium w-14 text-center">Setup</span>
+                <span className="text-xs text-slate-400 w-14 text-center">Metrics</span>
+                <span className="text-xs text-slate-400 w-14 text-center">Results</span>
+                <span className="text-xs text-slate-400 w-14 text-center">Summary</span>
+              </div>
+            </div>
+            
+            <section className="bg-white rounded-2xl border border-neutral-200 p-10">
+              <div className="mb-8">
                 <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Organization</h2>
                 <p className="text-sm text-[#6B7280]">Let's start with the basics</p>
               </div>
               
               {isNursingSetting ? (
                 /* Nursing-specific organization inputs */
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">
+                <div className="space-y-8">
+                  <div className="space-y-3">
+                    <label className="text-base font-semibold text-[#111827]">
                       How many staffed beds are in scope?
                     </label>
                     <Input
@@ -6025,16 +6044,16 @@ export default function ModelBuilder({
                       value={staffedBeds}
                       onChange={(e) => setStaffedBeds(Number(e.target.value) || 0)}
                       placeholder="e.g., 200"
-                      className="max-w-xs font-mono"
+                      className="w-[200px] font-mono text-lg py-3"
                       data-testid="input-staffed-beds"
                     />
-                    <p className="text-xs text-[#6B7280] flex items-center gap-1">
-                      <Lightbulb className="w-3 h-3" /> This is your billing unit for Abridge Nursing
+                    <p className="text-sm text-[#6B7280] flex items-center gap-1 mt-2">
+                      <Lightbulb className="w-3.5 h-3.5" /> This is your billing unit for Abridge Nursing
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">
+                  <div className="space-y-3">
+                    <label className="text-base font-semibold text-[#111827]">
                       How many nurse FTEs support these beds?
                     </label>
                     <Input
@@ -6045,28 +6064,28 @@ export default function ModelBuilder({
                         setNurseFTEsManuallyEdited(true); // User has manually edited, stop auto-calc
                       }}
                       placeholder="e.g., 300"
-                      className="max-w-xs font-mono"
+                      className="w-[200px] font-mono text-lg py-3"
                       data-testid="input-nurse-ftes"
                     />
-                    <p className="text-xs text-[#6B7280] flex items-center gap-1">
-                      <Lightbulb className="w-3 h-3" /> ~1.5 FTEs per bed is typical for med-surg. Higher for ICU (~2.5-3.0)
+                    <p className="text-sm text-[#6B7280] flex items-center gap-1 mt-2">
+                      <Lightbulb className="w-3.5 h-3.5" /> ~1.5 FTEs per bed is typical for med-surg. Higher for ICU (~2.5-3.0)
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">What type of unit(s)?</label>
-                    <p className="text-xs text-[#6B7280] mb-2">
+                  <div className="space-y-3">
+                    <label className="text-base font-semibold text-[#111827]">What type of unit(s)?</label>
+                    <p className="text-sm text-[#6B7280] mb-2">
                       Unit type affects documentation burden and staffing ratios
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       {(["med-surg", "icu", "mixed"] as const).map(type => (
                         <button
                           key={type}
                           onClick={() => setUnitType(type)}
-                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                          className={`px-5 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
                             unitType === type
-                              ? "border-[#EA2C00] bg-[#EA2C00]/5 text-[#EA2C00]"
-                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                              ? "border-[#EA2C00] bg-[#FEF0EC] text-[#EA2C00]"
+                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300 bg-white"
                           }`}
                           data-testid={`unit-type-${type}`}
                         >
@@ -6078,41 +6097,65 @@ export default function ModelBuilder({
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">Expected utilization rate?</label>
-                    <p className="text-xs text-[#6B7280] mb-2">
-                      Nursing adoption can be slower than provider adoption
+                  <div className="space-y-3">
+                    <label className="text-base font-semibold text-[#111827]">Expected utilization rate?</label>
+                    <p className="text-sm text-[#6B7280] mb-3">
+                      What percentage of documentation events will use Abridge?
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-4 flex-wrap">
                       {([45, 60, 75] as const).map(rate => (
                         <button
                           key={rate}
                           onClick={() => setUtilizationRate(rate)}
-                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                          className={`flex-1 min-w-[140px] max-w-[180px] p-5 rounded-xl border-2 text-left transition-all flex flex-col gap-1 ${
                             utilizationRate === rate
-                              ? "border-[#EA2C00] bg-[#EA2C00]/5 text-[#EA2C00]"
-                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                              ? "border-[#EA2C00] bg-[#FEF0EC]"
+                              : "border-neutral-200 bg-white hover:border-neutral-300"
                           }`}
                           data-testid={`utilization-${rate}`}
                         >
-                          {rate === 45 && "Early 45%"}
-                          {rate === 60 && "Typical 60%"}
-                          {rate === 75 && "Aggressive 75%"}
+                          <span className={`text-xs font-medium ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-500"}`}>
+                            {rate === 45 && "Conservative"}
+                            {rate === 60 && "Typical"}
+                            {rate === 75 && "Aggressive"}
+                          </span>
+                          <span className={`text-2xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
+                            {rate}%
+                          </span>
+                          <span className={`text-xs leading-relaxed ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-400"}`}>
+                            {rate === 45 && "Early rollout or cautious adoption"}
+                            {rate === 60 && "Standard deployment with good change management"}
+                            {rate === 75 && "High-adoption org with strong leadership"}
+                          </span>
                         </button>
                       ))}
                     </div>
+                    <p className="text-sm text-slate-500 flex items-center gap-2 mt-3">
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Not sure? Start with Typical — you can adjust later.</span>
+                    </p>
                   </div>
                   
-                  <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-100">
-                    <p className="text-sm text-[#111827]">
-                      <span className="font-medium">→</span>{" "}
-                      <span className="font-mono">{staffedBeds.toLocaleString()}</span> beds │{" "}
-                      <span className="font-mono">{nurseFTEs.toLocaleString()}</span> nurses │ {unitType === "med-surg" ? "Med-Surg" : unitType === "icu" ? "ICU" : "Mixed"}
+                  {/* YOUR BASELINE Section - Nursing */}
+                  <div className="mt-10 p-8 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <TrendingUp className="w-5 h-5 text-emerald-600" />
+                      <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Your Baseline</span>
+                    </div>
+                    <div className="font-mono text-5xl font-bold text-emerald-700 mb-2">
+                      {Math.round(documentationEvents * (utilizationRate / 100)).toLocaleString()}
+                    </div>
+                    <p className="text-base font-medium text-emerald-700 mb-5">
+                      Abridge-documented events per year
                     </p>
-                    <p className="text-sm text-[#111827] mt-1">
-                      <span className="font-mono">{documentationEvents.toLocaleString()}</span> events ×{" "}
-                      <span className="font-mono">{utilizationRate}%</span> ={" "}
-                      <span className="font-mono font-semibold text-[#EA2C00]">{Math.round(documentationEvents * (utilizationRate / 100)).toLocaleString()}</span> Abridge-documented events/year
+                    <div className="pt-5 border-t border-emerald-200">
+                      <p className="font-mono text-sm text-slate-500 tracking-tight">
+                        {nurseFTEs.toLocaleString()} nurse FTEs × ~500 events/FTE × {utilizationRate}% utilization
+                      </p>
+                    </div>
+                    <p className="text-sm text-emerald-600 mt-4 flex items-center gap-2">
+                      <ArrowRight className="w-4 h-4" />
+                      Everything below builds from this number
                     </p>
                   </div>
                   
@@ -6129,9 +6172,9 @@ export default function ModelBuilder({
                 </div>
               ) : (
                 /* Standard provider/encounter inputs */
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">
+                <div className="space-y-9">
+                  <div className="space-y-3">
+                    <label className="text-base font-semibold text-[#111827]">
                       {isInpatientSetting ? "How many hospitalists are in scope?" : isEDSetting ? "How many ED physicians are in scope?" : "How many providers are in scope?"}
                     </label>
                     <Input
@@ -6143,10 +6186,10 @@ export default function ModelBuilder({
                         setProviders(val === "" ? 0 : parseInt(val, 10));
                       }}
                       placeholder={isInpatientSetting ? "e.g., 20" : isEDSetting ? "e.g., 25" : "e.g., 50"}
-                      className="max-w-xs font-mono"
+                      className="w-[200px] font-mono text-lg py-3"
                       data-testid="input-providers"
                     />
-                    <p className="text-xs text-[#6B7280]">
+                    <p className="text-sm text-[#6B7280] mt-2">
                       {isInpatientSetting
                         ? "Include all hospitalists who will use Abridge for documentation"
                         : isEDSetting 
@@ -6155,8 +6198,8 @@ export default function ModelBuilder({
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">
+                  <div className="space-y-3">
+                    <label className="text-base font-semibold text-[#111827]">
                       {isInpatientSetting 
                         ? `Annual admissions for these hospitalists?` 
                         : `Annual encounters for these ${isEDSetting ? "physicians" : "providers"}?`}
@@ -6170,10 +6213,10 @@ export default function ModelBuilder({
                         setEncounters(val === "" ? 0 : parseInt(val, 10));
                       }}
                       placeholder={isInpatientSetting ? "e.g., 8,000" : isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
-                      className="max-w-xs font-mono"
+                      className="w-[200px] font-mono text-lg py-3"
                       data-testid="input-encounters"
                     />
-                    <p className="text-xs text-[#6B7280]">
+                    <p className="text-sm text-[#6B7280] mt-2">
                       {isInpatientSetting
                         ? "~400/hospitalist is typical for a hospitalist program"
                         : isEDSetting 
@@ -6182,66 +6225,100 @@ export default function ModelBuilder({
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#111827]">Expected utilization rate?</label>
-                    <p className="text-xs text-[#6B7280] mb-2">
+                  <div className="space-y-3">
+                    <label className="text-base font-semibold text-[#111827]">Expected utilization rate?</label>
+                    <p className="text-sm text-[#6B7280] mb-3">
                       {isEDSetting 
-                        ? "ED adoption is typically higher than outpatient"
+                        ? "What percentage of encounters will use Abridge?"
                         : isInpatientSetting 
                           ? "What percentage of admissions will use Abridge?"
                           : "What percentage of encounters will use Abridge?"}
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-4 flex-wrap">
                       {(isEDSetting ? [55, 70, 85] as const : isInpatientSetting ? [50, 65, 80] as const : [50, 65, 80] as const).map(rate => (
                         <button
                           key={rate}
                           onClick={() => setUtilizationRate(rate)}
-                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                          className={`flex-1 min-w-[140px] max-w-[180px] p-5 rounded-xl border-2 text-left transition-all flex flex-col gap-1 ${
                             utilizationRate === rate
-                              ? "border-[#EA2C00] bg-[#EA2C00]/5 text-[#EA2C00]"
-                              : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
+                              ? "border-[#EA2C00] bg-[#FEF0EC]"
+                              : "border-neutral-200 bg-white hover:border-neutral-300"
                           }`}
                           data-testid={`utilization-${rate}`}
                         >
-                          {isInpatientSetting ? (
-                            <>
-                              {rate === 50 && "Conservative 50%"}
-                              {rate === 65 && "Typical 65%"}
-                              {rate === 80 && "Aggressive 80%"}
-                            </>
-                          ) : isEDSetting ? (
-                            <>
-                              {rate === 55 && "Early 55%"}
-                              {rate === 70 && "Typical 70%"}
-                              {rate === 85 && "Aggressive 85%"}
-                            </>
-                          ) : (
-                            <>
-                              {rate === 50 && "Early 50%"}
-                              {rate === 65 && "Typical 65%"}
-                              {rate === 80 && "Aggressive 80%"}
-                            </>
-                          )}
+                          <span className={`text-xs font-medium ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-500"}`}>
+                            {isInpatientSetting ? (
+                              <>
+                                {rate === 50 && "Conservative"}
+                                {rate === 65 && "Typical"}
+                                {rate === 80 && "Aggressive"}
+                              </>
+                            ) : isEDSetting ? (
+                              <>
+                                {rate === 55 && "Conservative"}
+                                {rate === 70 && "Typical"}
+                                {rate === 85 && "Aggressive"}
+                              </>
+                            ) : (
+                              <>
+                                {rate === 50 && "Conservative"}
+                                {rate === 65 && "Typical"}
+                                {rate === 80 && "Aggressive"}
+                              </>
+                            )}
+                          </span>
+                          <span className={`text-2xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
+                            {rate}%
+                          </span>
+                          <span className={`text-xs leading-relaxed ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-400"}`}>
+                            {isInpatientSetting ? (
+                              <>
+                                {rate === 50 && "Early rollout or cautious adoption"}
+                                {rate === 65 && "Standard deployment with good change management"}
+                                {rate === 80 && "High-adoption org with strong leadership"}
+                              </>
+                            ) : isEDSetting ? (
+                              <>
+                                {rate === 55 && "Early rollout or cautious adoption"}
+                                {rate === 70 && "Standard deployment with good change management"}
+                                {rate === 85 && "High-adoption org with strong leadership"}
+                              </>
+                            ) : (
+                              <>
+                                {rate === 50 && "Early rollout or cautious adoption"}
+                                {rate === 65 && "Standard deployment with good change management"}
+                                {rate === 80 && "High-adoption org with strong leadership"}
+                              </>
+                            )}
+                          </span>
                         </button>
                       ))}
                     </div>
+                    <p className="text-sm text-slate-500 flex items-center gap-2 mt-3">
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Not sure? Start with Typical — you can adjust later.</span>
+                    </p>
                   </div>
                   
-                  <div className="mt-8 p-5 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-xl border border-emerald-200">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-emerald-600" />
-                      </div>
-                      <span className="text-sm font-medium text-emerald-800">Your Multiplier</span>
+                  {/* YOUR BASELINE Section */}
+                  <div className="mt-10 p-8 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <TrendingUp className="w-5 h-5 text-emerald-600" />
+                      <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Your Baseline</span>
                     </div>
-                    <div className="font-mono text-3xl font-bold text-emerald-700 mb-1">
+                    <div className="font-mono text-5xl font-bold text-emerald-700 mb-2">
                       {eligibleEncounters.toLocaleString()}
                     </div>
-                    <p className="text-sm text-emerald-700">
+                    <p className="text-base font-medium text-emerald-700 mb-5">
                       eligible {isInpatientSetting ? "admissions" : "encounters"} per year
                     </p>
-                    <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
-                      <ArrowRight className="w-3 h-3" />
+                    <div className="pt-5 border-t border-emerald-200">
+                      <p className="font-mono text-sm text-slate-500 tracking-tight">
+                        {providers.toLocaleString()} {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} × {encounters.toLocaleString()} {isInpatientSetting ? "admissions" : "encounters"} × {utilizationRate}% utilization
+                      </p>
+                    </div>
+                    <p className="text-sm text-emerald-600 mt-4 flex items-center gap-2">
+                      <ArrowRight className="w-4 h-4" />
                       Everything below builds from this number
                     </p>
                   </div>
