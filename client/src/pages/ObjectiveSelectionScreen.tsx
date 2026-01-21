@@ -2576,7 +2576,6 @@ export default function ObjectiveSelectionScreen({
                         <span className="text-base font-medium text-[#111827]">
                           {CARE_SETTING_LABELS[selectedSetting]}
                         </span>
-                        <Check className="w-5 h-5 text-[#EA2C00]" />
                       </div>
                     ) : (
                       <p className="text-sm text-[#9CA3AF] italic">No setting selected</p>
@@ -2738,7 +2737,6 @@ export default function ObjectiveSelectionScreen({
                         <span className="text-base font-medium text-[#111827]">
                           {CARE_SETTING_LABELS[selectedSetting]}
                         </span>
-                        <Check className="w-4 h-4 text-[#EA2C00]" />
                       </div>
                     </div>
                     

@@ -1,0 +1,125 @@
+I need to make the utilization rate chips more compact. The current version is too bulky/tall. Here's the updated design:
+
+**The chips should be:**
+- Horizontal row, not tall cards
+- Context text as a tooltip on hover OR removed entirely
+- Cleaner, tighter design
+
+**Updated structure:**
+
+```jsx
+<div className="utilization-section">
+  <label className="field-label">Expected utilization rate?</label>
+  <p className="field-description">What percentage of encounters will use Abridge?</p>
+  
+  <div className="utilization-chips">
+    <button 
+      className={`utilization-chip ${utilization === 50 ? 'selected' : ''}`}
+      onClick={() => setUtilization(50)}
+    >
+      <span className="chip-label">Conservative</span>
+      <span className="chip-value">50%</span>
+    </button>
+    
+    <button 
+      className={`utilization-chip ${utilization === 65 ? 'selected' : ''}`}
+      onClick={() => setUtilization(65)}
+    >
+      <span className="chip-label">Typical</span>
+      <span className="chip-value">65%</span>
+    </button>
+    
+    <button 
+      className={`utilization-chip ${utilization === 80 ? 'selected' : ''}`}
+      onClick={() => setUtilization(80)}
+    >
+      <span className="chip-label">Aggressive</span>
+      <span className="chip-value">80%</span>
+    </button>
+  </div>
+  
+  <p className="utilization-hint">
+    💡 Not sure? Start with Typical — you can adjust later.
+  </p>
+</div>
+Updated CSS — Compact horizontal chips:
+cssCopy.utilization-section {
+  margin-bottom: 32px;
+}
+
+.utilization-chips {
+  display: flex;
+  gap: 12px;
+}
+
+.utilization-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 120px;
+}
+
+.utilization-chip:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.utilization-chip.selected {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+
+.chip-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.utilization-chip.selected .chip-label {
+  color: #c2410c;
+}
+
+.chip-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.utilization-chip.selected .chip-value {
+  color: #ea580c;
+}
+
+.utilization-hint {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Remove the tall card styles we added before */
+.chip-context {
+  display: none; /* Hide context text - was making it too bulky */
+}
+The result should look like:
+CopyExpected utilization rate?
+What percentage of encounters will use Abridge?
+
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│ Conservative│  │   Typical   │  │ Aggressive  │
+│     50%     │  │     65%     │  │     80%     │
+└─────────────┘  └─────────────┘  └─────────────┘
+                      ✓ selected
+
+💡 Not sure? Start with Typical — you can adjust later.
+Height should be approximately 70-80px per chip, not 120px+
+Apply this to all Explore setup pages (Outpatient, ED, Inpatient, Nursing).
+Copy
+---
+
+This should make the chips much more compact — similar to your original design but with the selected state being clearer. The context text is removed (it was making them too tall) and replaced with just the single hint line below.Add to Conversation
