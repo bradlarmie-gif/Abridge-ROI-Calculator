@@ -135,8 +135,8 @@ export default function SwitchAdvancedComparison({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 md:px-10 py-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -173,7 +173,7 @@ export default function SwitchAdvancedComparison({
         </div>
       </header>
       
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 py-12">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
             How you compare
@@ -183,7 +183,7 @@ export default function SwitchAdvancedComparison({
           </p>
         </div>
         
-        <section className="bg-white rounded-2xl border border-slate-200 p-8 text-center mb-8">
+        <section className="bg-white rounded-2xl border border-slate-200 p-10 text-center mb-10">
           <span className="text-xs font-semibold text-slate-400 tracking-wide">OVERALL BENCHMARK ACHIEVEMENT</span>
           
           <div className="relative mt-6 mb-4 mx-auto max-w-md">
@@ -230,7 +230,7 @@ export default function SwitchAdvancedComparison({
               const badge = getBadgeStyle(comparison.percentOfBenchmark);
               
               return (
-                <div key={comparison.id} className="bg-white rounded-2xl border border-slate-200 p-6" data-testid={`comparison-card-${comparison.id}`}>
+                <div key={comparison.id} className="bg-white rounded-2xl border border-slate-200 p-8" data-testid={`comparison-card-${comparison.id}`}>
                   <div className="flex items-start justify-between mb-5">
                     <div>
                       <h3 className="text-lg font-semibold text-slate-900">{comparison.name}</h3>
@@ -287,7 +287,7 @@ export default function SwitchAdvancedComparison({
           </div>
         </section>
         
-        <section className="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-8">
+        <section className="bg-slate-50 border border-slate-200 rounded-2xl p-8 mb-10">
           <p className="text-sm text-slate-600 mb-3">
             These gaps represent <strong className="text-slate-900">unrealized value</strong> — not because your current solution 
             is bad, but because small differences across multiple dimensions compound into significant overall impact.
@@ -298,8 +298,8 @@ export default function SwitchAdvancedComparison({
         </section>
       </main>
       
-      <footer className="sticky bottom-0 bg-white border-t border-slate-200 p-4">
-        <div className="max-w-3xl mx-auto">
+      <footer className="sticky bottom-0 bg-white border-t border-slate-200 px-6 md:px-10 py-4">
+        <div className="max-w-5xl mx-auto">
           <Button
             onClick={onNext}
             className="w-full bg-[#E85D3F] hover:bg-[#d54e32] text-white py-6 text-base font-medium"

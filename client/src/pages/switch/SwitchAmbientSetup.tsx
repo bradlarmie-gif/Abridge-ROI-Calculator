@@ -174,8 +174,8 @@ export default function SwitchAmbientSetup({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 md:px-10 py-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -212,7 +212,7 @@ export default function SwitchAmbientSetup({
         </div>
       </header>
       
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 py-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight">
             Let's see where you stand
@@ -260,7 +260,7 @@ export default function SwitchAmbientSetup({
             <section className="mb-8">
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">YOUR SETUP</h2>
               
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 p-8">
                 <label className="block text-sm font-medium text-slate-700 mb-4">
                   Providers using your current solution
                 </label>
@@ -283,8 +283,8 @@ export default function SwitchAmbientSetup({
               </div>
             </section>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <section className="bg-white rounded-2xl border border-slate-200 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+              <section className="bg-white rounded-2xl border border-slate-200 p-8">
                 <div className="mb-5">
                   <h3 className="text-xs font-semibold text-slate-400 tracking-wide">UTILIZATION</h3>
                   <p className="text-sm text-slate-500 mt-1">What % of encounters use the tool?</p>
@@ -321,7 +321,7 @@ export default function SwitchAmbientSetup({
                 </div>
               </section>
               
-              <section className="bg-white rounded-2xl border border-slate-200 p-6">
+              <section className="bg-white rounded-2xl border border-slate-200 p-8">
                 <div className="mb-5">
                   <h3 className="text-xs font-semibold text-slate-400 tracking-wide">EFFICIENCY</h3>
                   <p className="text-sm text-slate-500 mt-1">Time saved per encounter?</p>

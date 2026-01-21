@@ -129,8 +129,8 @@ export default function SwitchAmbientAnalysis({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 md:px-10 py-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -167,7 +167,7 @@ export default function SwitchAmbientAnalysis({
         </div>
       </header>
       
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 py-12">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
             The gap analysis
@@ -197,7 +197,7 @@ export default function SwitchAmbientAnalysis({
             <section>
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE GAPS WE IDENTIFIED</h2>
               
-              <div className="bg-white rounded-xl border border-slate-200 p-5 mb-3">
+              <div className="bg-white rounded-xl border border-slate-200 p-6 mb-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700">Utilization</span>
                   <span className="text-sm text-slate-500">
@@ -223,7 +223,7 @@ export default function SwitchAmbientAnalysis({
                 </div>
               </div>
               
-              <div className="bg-white rounded-xl border border-slate-200 p-5">
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700">Efficiency</span>
                   <span className="text-sm text-slate-500">
@@ -253,7 +253,7 @@ export default function SwitchAmbientAnalysis({
             <section>
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">HOW THIS TRANSLATES TO VALUE</h2>
               
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <div className="bg-white rounded-xl border border-slate-200 p-8">
                 <p className="text-sm text-slate-600 mb-5">
                   When utilization and efficiency improve together, the impact is <strong>multiplicative</strong>:
                 </p>
@@ -311,7 +311,7 @@ export default function SwitchAmbientAnalysis({
                 
                 {/* TIER 1: Primary Value Drivers */}
                 {primaryDrivers.length > 0 && (
-                  <section className="bg-white border border-slate-200 rounded-2xl p-6">
+                  <section className="bg-white border border-slate-200 rounded-2xl p-8">
                     <div className="flex items-baseline gap-3 mb-5">
                       <h2 className="text-xs font-semibold text-slate-800 tracking-wide">PRIMARY VALUE DRIVERS</h2>
                       <span className="text-xs text-slate-500">Concrete, measurable impact</span>

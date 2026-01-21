@@ -66,8 +66,8 @@ export default function SwitchAmbientConclusion({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 md:px-10 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -104,7 +104,7 @@ export default function SwitchAmbientConclusion({
         </div>
       </header>
       
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-6 md:px-10 py-12">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-4">
             The cost of staying put
@@ -116,7 +116,7 @@ export default function SwitchAmbientConclusion({
         
         <div className="space-y-8">
             {/* Chart Section */}
-            <section className="bg-white rounded-2xl border border-slate-200 p-8">
+            <section className="bg-white rounded-2xl border border-slate-200 p-10">
               <div className="flex justify-center gap-8 mb-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <div className="w-6 h-1 bg-emerald-600 rounded" />
@@ -222,7 +222,7 @@ export default function SwitchAmbientConclusion({
             </section>
             
             {/* Your Key Gaps */}
-            <section className="bg-white rounded-2xl border border-slate-200 p-8">
+            <section className="bg-white rounded-2xl border border-slate-200 p-10">
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">YOUR KEY GAPS</h2>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -259,7 +259,7 @@ export default function SwitchAmbientConclusion({
             </section>
             
             {/* Cost of Waiting */}
-            <section className="bg-white rounded-2xl border border-slate-200 p-8">
+            <section className="bg-white rounded-2xl border border-slate-200 p-10">
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE COST OF WAITING</h2>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
