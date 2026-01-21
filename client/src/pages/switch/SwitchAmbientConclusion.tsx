@@ -144,18 +144,15 @@ export default function SwitchAmbientConclusion({
         
         {activeTab === 'trajectory' && (
           <div className="space-y-6">
+            {/* Chart Section */}
             <section className="bg-white rounded-2xl border border-slate-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-semibold text-slate-400 tracking-wide">3-YEAR VALUE TRAJECTORY</h2>
-              </div>
-              
               <div className="flex justify-center gap-8 mb-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <div className="w-6 h-1 bg-emerald-600 rounded" />
                   Switch to Abridge
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <div className="w-6 h-1 bg-slate-400 rounded" style={{ borderStyle: 'dashed' }} />
+                  <div className="w-6 h-0.5 bg-slate-400 border-t-2 border-dashed border-slate-400" />
                   Stay with current
                 </div>
               </div>
@@ -220,7 +217,7 @@ export default function SwitchAmbientConclusion({
               </div>
               
               <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-slate-100">
-                <span className="text-2xl">↕</span>
+                <span className="text-2xl text-emerald-600">↕</span>
                 <div>
                   <span className="text-2xl font-bold text-emerald-600">{formatCurrency(threeYearGap)}</span>
                   <span className="text-sm text-slate-500 ml-2">3-year gap</span>
@@ -228,11 +225,74 @@ export default function SwitchAmbientConclusion({
               </div>
             </section>
             
+            {/* Understanding the Gap */}
+            <section className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-lg">💡</span>
+                <h2 className="text-xs font-semibold text-amber-800 tracking-wide">UNDERSTANDING THE GAP</h2>
+              </div>
+              
+              <p className="text-sm text-slate-700 mb-4">
+                The gap between these two lines represents unrealized value — not because your current solution is bad, but because ambient AI ROI is <strong>multiplicative</strong>:
+              </p>
+              
+              <div className="bg-white rounded-xl p-4 mb-4 text-center">
+                <span className="text-sm font-mono text-slate-800">
+                  Utilization × Efficiency × Quality = <strong>Total Value</strong>
+                </span>
+                <p className="text-xs text-slate-500 mt-2">
+                  Small gaps in each dimension compound into large gaps overall.
+                </p>
+              </div>
+              
+              <p className="text-sm text-slate-600">
+                If your utilization is <strong>{Math.round(utilizationRatio * 100)}%</strong> of potential, and your efficiency is <strong>{Math.round(efficiencyRatio * 100)}%</strong> of potential, you're capturing roughly <strong>{Math.round(currentCaptureRate * 100)}%</strong> of the value you could be.
+              </p>
+            </section>
+            
+            {/* Your Key Gaps */}
             <section className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">COST OF WAITING</h2>
+              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">YOUR KEY GAPS</h2>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
+                <div className="border border-slate-200 rounded-xl p-5">
+                  <span className="block text-xs font-semibold text-slate-400 tracking-wide mb-2">UTILIZATION</span>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-2xl font-bold text-slate-900">{inputs.utilization}%</span>
+                    <span className="text-slate-400">→</span>
+                    <span className="text-2xl font-bold text-emerald-600">{benchmarks.utilization}%</span>
+                  </div>
+                  <p className="text-sm text-slate-500">
+                    You're at <strong className="text-slate-700">{Math.round(utilizationRatio * 100)}%</strong> of Abridge benchmark
+                  </p>
+                </div>
+                
+                <div className="border border-slate-200 rounded-xl p-5">
+                  <span className="block text-xs font-semibold text-slate-400 tracking-wide mb-2">EFFICIENCY</span>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-2xl font-bold text-slate-900">{inputs.efficiency} min</span>
+                    <span className="text-slate-400">→</span>
+                    <span className="text-2xl font-bold text-emerald-600">{benchmarks.efficiency} min</span>
+                  </div>
+                  <p className="text-sm text-slate-500">
+                    You're at <strong className="text-slate-700">{Math.round(efficiencyRatio * 100)}%</strong> of Abridge benchmark
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-slate-50 rounded-xl p-4 text-center">
+                <p className="text-sm text-slate-700">
+                  <strong>Combined:</strong> You're capturing roughly <strong className="text-emerald-600">{Math.round(currentCaptureRate * 100)}%</strong> of potential ambient AI value.
+                </p>
+              </div>
+            </section>
+            
+            {/* Cost of Waiting */}
+            <section className="bg-white rounded-2xl border border-slate-200 p-6">
+              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE COST OF WAITING</h2>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
                   <span className="block text-xs font-semibold text-slate-500 tracking-wide">SWITCH NOW</span>
                   <span className="block text-xs text-slate-400 mt-1">3-year value</span>
                   <span className="block text-2xl font-bold text-emerald-600 mt-2" data-testid="text-3yr-value">
@@ -240,24 +300,47 @@ export default function SwitchAmbientConclusion({
                   </span>
                 </div>
                 
-                <div className="bg-white border border-slate-200 rounded-xl p-5 text-center">
+                <div className="bg-white border border-slate-200 rounded-xl p-5">
                   <span className="block text-xs font-semibold text-slate-500 tracking-wide">WAIT 6 MONTHS</span>
                   <span className="block text-xs text-slate-400 mt-1">3-year value</span>
                   <span className="block text-2xl font-bold text-slate-900 mt-2" data-testid="text-3yr-if-wait">
                     {formatCurrency(calculations.threeYearIfWait)}
                   </span>
+                  <span className="block text-xs text-red-600 mt-1">Lost: {formatCurrency(calculations.wait6MonthsLoss)}</span>
                 </div>
               </div>
               
-              <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
-                <span className="block text-sm text-red-800">Cost of waiting 6 months</span>
-                <span className="block text-3xl font-bold text-red-600 mt-2" data-testid="text-wait-cost">
-                  {formatCurrency(calculations.wait6MonthsLoss)}
-                </span>
-                <p className="text-sm text-red-700 mt-2">
-                  That's value you'll never recover
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+                <span className="text-amber-600">⚠️</span>
+                <p className="text-sm text-amber-800">
+                  Every month at current state = <strong>~{formatCurrency(calculations.monthlyGap)}</strong> in unrealized value
                 </p>
               </div>
+            </section>
+            
+            {/* Important to Know */}
+            <section className="bg-white rounded-2xl border border-slate-200 p-6">
+              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">IMPORTANT TO KNOW</h2>
+              
+              <p className="text-sm text-slate-600 mb-3">These estimates are based on:</p>
+              <ul className="space-y-2 text-sm text-slate-600 mb-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-slate-400">•</span>
+                  Your self-reported metrics (utilization, efficiency)
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-slate-400">•</span>
+                  Abridge benchmarks from similar deployments
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-slate-400">•</span>
+                  Conservative assumptions about adoption and ramp
+                </li>
+              </ul>
+              
+              <p className="text-sm text-slate-600">
+                A conversation with our team can help validate and refine these estimates for your specific situation.
+              </p>
             </section>
           </div>
         )}
