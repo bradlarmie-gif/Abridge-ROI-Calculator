@@ -271,7 +271,7 @@ export default function SwitchAmbientSetup({
                 <div className="text-center mb-4">
                   <span className="text-xs font-semibold text-slate-400 tracking-wide">YOUR ESTIMATE</span>
                   <span className="block text-4xl font-bold text-slate-900 mt-1" data-testid="text-utilization-value">
-                    {inputs.utilization}%
+                    {inputs.utilization > 0 ? `${inputs.utilization}%` : '—'}
                   </span>
                 </div>
                 
@@ -280,7 +280,7 @@ export default function SwitchAmbientSetup({
                     type="range"
                     min={20}
                     max={90}
-                    value={inputs.utilization}
+                    value={inputs.utilization || 20}
                     onChange={(e) => setInputs({ ...inputs, utilization: Number(e.target.value) })}
                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-700"
                     data-testid="slider-utilization"
@@ -308,7 +308,7 @@ export default function SwitchAmbientSetup({
                 <div className="text-center mb-4">
                   <span className="text-xs font-semibold text-slate-400 tracking-wide">YOUR ESTIMATE</span>
                   <span className="block text-4xl font-bold text-slate-900 mt-1" data-testid="text-efficiency-value">
-                    {inputs.efficiency} min
+                    {inputs.efficiency > 0 ? `${inputs.efficiency} min` : '—'}
                   </span>
                 </div>
                 
@@ -318,7 +318,7 @@ export default function SwitchAmbientSetup({
                     min={0.5}
                     max={5}
                     step={0.5}
-                    value={inputs.efficiency}
+                    value={inputs.efficiency || 0.5}
                     onChange={(e) => setInputs({ ...inputs, efficiency: Number(e.target.value) })}
                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-700"
                     data-testid="slider-efficiency"

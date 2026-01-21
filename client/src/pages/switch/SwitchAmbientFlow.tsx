@@ -90,8 +90,8 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
   const [inputs, setInputs] = useState<AmbientInputs>({
     mode: 'quick',
     providerRange: '50-100',
-    utilization: 50,
-    efficiency: 1.5,
+    utilization: 0,
+    efficiency: 0,
     providers: 75,
     encountersPerProvider: 2000,
     totalEncounters: 150000,
