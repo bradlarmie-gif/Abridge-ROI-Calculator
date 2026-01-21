@@ -1,0 +1,702 @@
+Proposed Fix: Tiered Metric Hierarchy
+Tier 1: Primary Value Drivers (Concrete, Defensible)
+These have clear, defensible math:
+
+Utilization Gap → More encounters documented
+Time Savings → Hours returned
+wRVU Capture → Revenue from better coding
+
+Tier 2: Supporting Indicators (Show but don't dollarize)
+These matter but are harder to value directly:
+
+Work Outside of Work → Shows quality of life improvement
+Chart Closure → Shows operational efficiency
+
+Tier 3: Long-Term Value (Speculative, separate section)
+These have value but over longer time horizons:
+
+Clinician Retention → Derived from satisfaction + WOW
+Satisfaction → Leading indicator
+
+
+New Layout Proposal:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ESTIMATED ANNUAL GAP                                                           │
+│                                                                                 │
+│                          $216,992                                               │
+│                                                                                 │
+│          $18,083/month    ·    $594/day                                         │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  PRIMARY VALUE DRIVERS                                                          │
+│  Concrete, measurable impact                                                    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  📊  Utilization                           50% → 65%       +$11,250/yr  │    │
+│  │      +22,500 additional encounters documented                           │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ⏱️  Time Savings                         2 min → 4 min    +$60,938/yr  │    │
+│  │      +3,250 hours returned to providers                                 │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  💰  wRVU Capture                         2% → 5% lift    +$144,804/yr  │    │
+│  │      +4,388 additional wRVUs captured                                   │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  PRIMARY TOTAL                                              $216,992/year       │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  OPERATIONAL IMPROVEMENTS                                                       │
+│  Important indicators, harder to dollarize                                      │
+│                                                                                 │
+│  ┌───────────────────────────────────┐  ┌───────────────────────────────────┐   │
+│  │                                   │  │                                   │   │
+│  │  🌙  Work Outside of Work         │  │  📄  Chart Closure                │   │
+│  │                                   │  │                                   │   │
+│  │  5 hrs/week → 2 hrs/week          │  │  34% → 78% within 24h             │   │
+│  │  -3 hrs/week per provider         │  │  +44pp improvement                │   │
+│  │                                   │  │                                   │   │
+│  │  ┌───────────────────────────┐    │  │  ┌───────────────────────────┐    │   │
+│  │  │ 10,800 hrs/year           │    │  │  │ Faster billing cycles     │    │   │
+│  │  │ returned to providers     │    │  │  │ Improved cash flow        │    │   │
+│  │  └───────────────────────────┘    │  │  └───────────────────────────┘    │   │
+│  │                                   │  │                                   │   │
+│  └───────────────────────────────────┘  └───────────────────────────────────┘   │
+│                                                                                 │
+│  💡 These improvements contribute to retention and operational efficiency       │
+│     but are difficult to assign direct dollar values.                           │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  LONG-TERM VALUE POTENTIAL                                                      │
+│  Speculative — typically measurable after 12-18 months                          │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ⚠️  These values are estimates based on industry correlations.         │    │
+│  │      Actual results depend on your specific situation.                  │    │
+│  │                                                                         │    │
+│  │  ┌───────────────────────────────────────────────────────────────────┐  │    │
+│  │  │                                                                   │  │    │
+│  │  │  😊  Clinician Retention                      Potential: ~$50-100K │  │    │
+│  │  │      Based on satisfaction improvement + reduced WOW              │  │    │
+│  │  │      Typically measurable after 12-18 months                      │  │    │
+│  │  │                                                                   │  │    │
+│  │  └───────────────────────────────────────────────────────────────────┘  │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Metrics to Keep vs Remove:
+MetricKeep?WhyUtilization✅ YesClear math, foundationalTime Savings✅ YesClear math, concretewRVU Capture✅ YesClear math, revenue-basedWork Outside of Work✅ Yes, but no $Show hours, not dollarsLevel of Service❌ RemoveDouble-counts with wRVU, confusingChart Closure✅ Yes, but no $Show improvement, not fake dollarsSatisfaction⚠️ MaybeRoll into Retention sectionRetention✅ Yes, speculativeShow as potential, not concrete
+
+Simplified Advanced Mode Inputs:
+Instead of 6+ metrics, focus on the ones that matter:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  COMPARE YOUR METRICS                                                           │
+│  Enter what you're seeing with your current solution                            │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  PRIMARY METRICS (drive the ROI)                                        │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │ ☑️  Utilization                                    RECOMMENDED  │    │    │
+│  │  │     What % of encounters use the tool?                          │    │    │
+│  │  │                                                                 │    │    │
+│  │  │     Your current: ┌────┐ %    Abridge avg: 65%                  │    │    │
+│  │  │                   │ 50 │                                        │    │    │
+│  │  │                   └────┘                                        │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │ ☑️  Time Savings                                   RECOMMENDED  │    │    │
+│  │  │     Minutes saved per encounter                                 │    │    │
+│  │  │                                                                 │    │    │
+│  │  │     Your current: ┌────┐ min   Abridge avg: 3-5 min             │    │    │
+│  │  │                   │ 2  │                                        │    │    │
+│  │  │                   └────┘                                        │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │ ☑️  wRVU Lift                                      RECOMMENDED  │    │    │
+│  │  │     % improvement in wRVU capture                               │    │    │
+│  │  │                                                                 │    │    │
+│  │  │     Your current: ┌────┐ %    Abridge avg: 5%                   │    │    │
+│  │  │                   │ 2  │                                        │    │    │
+│  │  │                   └────┘                                        │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ADDITIONAL CONTEXT (optional, helps paint full picture)                │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │ ☐  Work Outside of Work                                         │    │    │
+│  │  │     Hours worked after scheduled time                           │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │ ☐  Chart Closure                                                │    │    │
+│  │  │     % of charts closed within 24 hours                          │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Code for Cleaned Up Calculations:
+jsxCopy// ============ CLEANED UP VALUE CALCULATIONS ============
+
+const calculateAdvancedValues = (inputs, benchmarks) => {
+  const providers = inputs.providers || 75;
+  const encounters = inputs.totalEncounters || providers * 2000;
+  const abridgeUtilization = benchmarks.utilization || 65;
+  const currentUtilization = inputs.utilization || 50;
+  const abridgeEncounters = Math.round(encounters * (abridgeUtilization / 100));
+  
+  // ========== PRIMARY VALUE DRIVERS ==========
+  const primaryDrivers = [];
+  
+  // 1. UTILIZATION
+  if (currentUtilization < abridgeUtilization) {
+    const additionalEncounters = Math.round(encounters * ((abridgeUtilization - currentUtilization) / 100));
+    const valuePerEncounter = 0.50; // Very conservative
+    
+    primaryDrivers.push({
+      id: 'utilization',
+      name: 'Utilization',
+      icon: 'BarChart3',
+      current: `${currentUtilization}%`,
+      benchmark: `${abridgeUtilization}%`,
+      impact: `+${formatNumber(additionalEncounters)} encounters documented`,
+      value: Math.round(additionalEncounters * valuePerEncounter),
+      calculation: `${formatNumber(additionalEncounters)} encounters × $${valuePerEncounter}/encounter`,
+      explanation: 'More encounters with complete documentation. This is a conservative estimate — primary value flows through other metrics.'
+    });
+  }
+  
+  // 2. TIME SAVINGS
+  const currentTimeSavings = inputs.metricValues?.timeSavings;
+  const abridgeTimeSavings = 4; // Conservative benchmark
+  
+  if (currentTimeSavings !== undefined && currentTimeSavings < abridgeTimeSavings) {
+    const additionalMinutes = (abridgeTimeSavings - currentTimeSavings) * abridgeEncounters;
+    const additionalHours = Math.round(additionalMinutes / 60);
+    const hourlyValue = 37.50;
+    const conversionRate = 0.50;
+    
+    primaryDrivers.push({
+      id: 'timeSavings',
+      name: 'Time Savings',
+      icon: 'Clock',
+      current: `${currentTimeSavings} min`,
+      benchmark: `${abridgeTimeSavings} min`,
+      impact: `+${formatNumber(additionalHours)} hours/year`,
+      value: Math.round(additionalHours * hourlyValue * conversionRate),
+      calculation: `${formatNumber(additionalHours)} hrs × $${hourlyValue}/hr × ${conversionRate * 100}% conversion`,
+      explanation: 'Time returned to providers. 50% conversion accounts for time going to quality of life vs. realized productivity.'
+    });
+  }
+  
+  // 3. wRVU CAPTURE
+  const currentWrvuLift = inputs.metricValues?.wrvuLift;
+  const abridgeWrvuLift = 5;
+  
+  if (currentWrvuLift !== undefined && currentWrvuLift < abridgeWrvuLift) {
+    const liftDelta = abridgeWrvuLift - currentWrvuLift;
+    const baseWrvuPerEncounter = 1.5;
+    const baselineWrvus = abridgeEncounters * baseWrvuPerEncounter;
+    const additionalWrvus = Math.round(baselineWrvus * (liftDelta / 100));
+    const conversionFactor = 33;
+    
+    primaryDrivers.push({
+      id: 'wrvuCapture',
+      name: 'wRVU Capture',
+      icon: 'DollarSign',
+      current: `${currentWrvuLift}% lift`,
+      benchmark: `${abridgeWrvuLift}% lift`,
+      impact: `+${formatNumber(additionalWrvus)} wRVUs/year`,
+      value: Math.round(additionalWrvus * conversionFactor),
+      calculation: `${formatNumber(additionalWrvus)} wRVUs × $${conversionFactor}/wRVU (Medicare)`,
+      explanation: 'Better documentation captures clinical complexity that supports accurate coding.'
+    });
+  }
+  
+  const primaryTotal = primaryDrivers.reduce((sum, d) => sum + d.value, 0);
+  
+  // ========== OPERATIONAL IMPROVEMENTS (NO DOLLAR VALUE) ==========
+  const operationalMetrics = [];
+  
+  // Work Outside of Work
+  const currentWow = inputs.metricValues?.workOutsideWork;
+  const abridgeWow = 2;
+  
+  if (currentWow !== undefined && currentWow > abridgeWow) {
+    const hoursSavedPerWeek = currentWow - abridgeWow;
+    const annualHoursSaved = hoursSavedPerWeek * providers * 48;
+    
+    operationalMetrics.push({
+      id: 'workOutsideWork',
+      name: 'Work Outside of Work',
+      icon: 'Moon',
+      current: `${currentWow} hrs/week`,
+      benchmark: `${abridgeWow} hrs/week`,
+      change: `-${hoursSavedPerWeek} hrs/week per provider`,
+      impact: `${formatNumber(annualHoursSaved)} hours/year returned to providers`,
+      insight: 'Reduced after-hours work correlates with lower burnout and better retention over time.'
+    });
+  }
+  
+  // Chart Closure
+  const currentChartClosure = inputs.metricValues?.chartClosure24h;
+  const abridgeChartClosure = 78;
+  
+  if (currentChartClosure !== undefined && currentChartClosure < abridgeChartClosure) {
+    const improvement = abridgeChartClosure - currentChartClosure;
+    
+    operationalMetrics.push({
+      id: 'chartClosure',
+      name: 'Chart Closure (24h)',
+      icon: 'FileCheck',
+      current: `${currentChartClosure}%`,
+      benchmark: `${abridgeChartClosure}%`,
+      change: `+${improvement}pp improvement`,
+      impact: 'Faster chart closure',
+      insight: 'Charts closed within 24 hours can be billed immediately, improving cash flow and reducing A/R days.'
+    });
+  }
+  
+  // ========== LONG-TERM VALUE (SPECULATIVE) ==========
+  let retentionPotential = null;
+  
+  // Only show if we have WOW or satisfaction data
+  if (currentWow && currentWow > 3) {
+    // Very rough estimate: reduced WOW → reduced turnover → saved replacement costs
+    // This is speculative and should be clearly labeled
+    const estimatedTurnoverReduction = 0.10; // 10% of turnover attributable to doc burden
+    const avgTurnover = providers * 0.18;
+    const preventedDepartures = avgTurnover * estimatedTurnoverReduction;
+    const replacementCost = 400000;
+    const lowEstimate = Math.round(preventedDepartures * replacementCost * 0.10);
+    const highEstimate = Math.round(preventedDepartures * replacementCost * 0.25);
+    
+    retentionPotential = {
+      lowEstimate,
+      highEstimate,
+      timeframe: '12-18 months',
+      basis: 'Correlation between reduced documentation burden and lower turnover',
+      caveat: 'Actual results depend on your specific turnover patterns and causes.'
+    };
+  }
+  
+  return {
+    primaryDrivers,
+    primaryTotal,
+    operationalMetrics,
+    retentionPotential
+  };
+};
+
+Updated Component Structure:
+jsxCopy// ============ ANALYSIS PAGE — CLEANED UP ============
+
+export default function SwitchAmbientAnalysis({ inputs, calculations, benchmarks, ... }) {
+  
+  const { primaryDrivers, primaryTotal, operationalMetrics, retentionPotential } = 
+    calculateAdvancedValues(inputs, benchmarks);
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      {/* ... */}
+      
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>The gap analysis</h1>
+          <p className="page-subtitle">
+            Based on your inputs, here's the estimated difference between 
+            your current state and Abridge benchmarks.
+          </p>
+        </div>
+        
+        {/* Hero Gap — Only shows PRIMARY total */}
+        <section className="hero-gap-section">
+          <span className="hero-label">ESTIMATED ANNUAL GAP</span>
+          <span className="hero-value">${formatNumber(primaryTotal)}</span>
+          <div className="hero-breakdown">
+            <span>${formatNumber(Math.round(primaryTotal / 12))}/month</span>
+            <span className="separator">·</span>
+            <span>${formatNumber(Math.round(primaryTotal / 365))}/day</span>
+          </div>
+        </section>
+        
+        {/* Primary Value Drivers */}
+        <section className="primary-drivers-section">
+          <div className="section-header-row">
+            <h2 className="section-label">PRIMARY VALUE DRIVERS</h2>
+            <span className="section-sublabel">Concrete, measurable impact</span>
+          </div>
+          
+          <div className="drivers-list">
+            {primaryDrivers.map((driver, index) => (
+              <PrimaryDriverCard 
+                key={driver.id}
+                driver={driver}
+                isExpanded={expandedDriver === driver.id}
+                onToggle={() => toggleDriver(driver.id)}
+              />
+            ))}
+          </div>
+          
+          <div className="primary-total">
+            <span className="total-label">PRIMARY TOTAL</span>
+            <span className="total-value">${formatNumber(primaryTotal)}/year</span>
+          </div>
+        </section>
+        
+        {/* Operational Improvements — No Dollar Values */}
+        {operationalMetrics.length > 0 && (
+          <section className="operational-section">
+            <div className="section-header-row">
+              <h2 className="section-label">OPERATIONAL IMPROVEMENTS</h2>
+              <span className="section-sublabel">Important indicators, harder to dollarize</span>
+            </div>
+            
+            <div className="operational-grid">
+              {operationalMetrics.map(metric => (
+                <OperationalMetricCard key={metric.id} metric={metric} />
+              ))}
+            </div>
+            
+            <div className="operational-note">
+              <Lightbulb size={16} />
+              <span>
+                These improvements contribute to retention and operational efficiency 
+                but are difficult to assign direct dollar values.
+              </span>
+            </div>
+          </section>
+        )}
+        
+        {/* Long-Term Value — Clearly Speculative */}
+        {retentionPotential && (
+          <section className="speculative-section">
+            <div className="section-header-row">
+              <h2 className="section-label">LONG-TERM VALUE POTENTIAL</h2>
+              <span className="section-sublabel">
+                Speculative — typically measurable after {retentionPotential.timeframe}
+              </span>
+            </div>
+            
+            <div className="speculative-card">
+              <div className="speculative-warning">
+                <AlertTriangle size={16} />
+                <span>
+                  These values are estimates based on industry correlations. 
+                  Actual results depend on your specific situation.
+                </span>
+              </div>
+              
+              <div className="speculative-content">
+                <div className="speculative-metric">
+                  <Heart size={20} className="speculative-icon" />
+                  <div className="speculative-info">
+                    <span className="speculative-name">Clinician Retention</span>
+                    <span className="speculative-basis">{retentionPotential.basis}</span>
+                  </div>
+                  <div className="speculative-range">
+                    <span className="range-label">Potential:</span>
+                    <span className="range-value">
+                      ${formatNumber(retentionPotential.lowEstimate)} - ${formatNumber(retentionPotential.highEstimate)}/year
+                    </span>
+                  </div>
+                </div>
+                
+                <p className="speculative-caveat">{retentionPotential.caveat}</p>
+              </div>
+            </div>
+          </section>
+        )}
+        
+      </main>
+      
+      {/* Footer */}
+      {/* ... */}
+      
+    </div>
+  );
+}
+
+CSS for Clean Hierarchy:
+cssCopy/* Primary Drivers Section */
+.primary-drivers-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.section-sublabel {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.primary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-top: 16px;
+}
+
+.primary-total .total-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.03em;
+}
+
+.primary-total .total-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #059669;
+}
+
+/* Operational Section — Visually Distinct */
+.operational-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.operational-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .operational-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.operational-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.operational-card .metric-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.operational-card .metric-icon {
+  width: 36px;
+  height: 36px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+
+.operational-card .metric-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.operational-card .metric-change {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.operational-card .change-value {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.operational-card .change-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.operational-card .metric-impact {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.operational-card .metric-insight {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.operational-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  background: #fffbeb;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.operational-note svg {
+  color: #d97706;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Speculative Section — Clearly Different */
+.speculative-section {
+  margin-bottom: 24px;
+}
+
+.speculative-card {
+  background: white;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.speculative-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  background: #fef3c7;
+  border-bottom: 1px dashed #fcd34d;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.speculative-warning svg {
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.speculative-content {
+  padding: 24px;
+}
+
+.speculative-metric {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.speculative-icon {
+  color: #f59e0b;
+}
+
+.speculative-info {
+  flex: 1;
+}
+
+.speculative-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.speculative-basis {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.speculative-range {
+  text-align: right;
+}
+
+.range-label {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.range-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #d97706;
+}
+
+.speculative-caveat {
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+  margin: 0;
+}
+
+Summary of Changes:
+ChangeWhyRemove Level of ServiceDouble-counts with wRVU, math was wrongRemove Chart Closure $Keep metric, remove fake dollar value3-tier hierarchyPrimary ($$) → Operational (no $$) → Speculative (range)Primary total onlyHero number is just defensible metricsOperational as contextShows improvement without fake dollarsSpeculative clearly labeledRange, not precise number, with caveatsVisual distinctionPrimary = solid, Operational = gray bg, Speculative =

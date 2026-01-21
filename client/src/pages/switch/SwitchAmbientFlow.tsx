@@ -31,6 +31,8 @@ export interface AmbientBenchmarks {
   efficiency: number;
 }
 
+export type MetricTier = 'primary' | 'operational' | 'longterm';
+
 export interface MetricBreakdownItem {
   metric: string;
   gap: string;
@@ -38,8 +40,13 @@ export interface MetricBreakdownItem {
   value: number;
   calculation: string;
   explanation: string;
-  isSpeculative?: boolean;
-  isSupporting?: boolean;
+  tier: MetricTier;
+  icon?: string;
+  change?: string;
+  insight?: string;
+  lowEstimate?: number;
+  highEstimate?: number;
+  timeframe?: string;
 }
 
 export interface AmbientCalculations {
@@ -135,27 +142,31 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
     if (inputs.mode === 'advanced') {
       const abridgeEncounters = Math.round(totalEncounters * (benchmarks.utilization / 100));
       
-      // 1. UTILIZATION — Show as context, minimal direct value
+      // ========== TIER 1: PRIMARY VALUE DRIVERS ==========
+      
+      // 1. UTILIZATION — Primary driver
       if (inputs.utilization < benchmarks.utilization) {
         const addlEncounters = Math.round(totalEncounters * ((benchmarks.utilization - inputs.utilization) / 100));
-        const vpEncounter = 0.50; // Very conservative: $0.50/encounter for documentation completeness
+        const vpEncounter = 0.50;
         metricBreakdown.push({
           metric: 'Utilization',
           gap: `${inputs.utilization}% → ${benchmarks.utilization}%`,
           impact: `+${formatNum(addlEncounters)} encounters documented`,
           value: Math.round(addlEncounters * vpEncounter),
           calculation: `${formatNum(addlEncounters)} encounters × $${vpEncounter}/encounter`,
-          explanation: 'More encounters with complete documentation. Primary value flows through other metrics.'
+          explanation: 'More encounters with complete documentation. Primary value flows through other metrics.',
+          tier: 'primary',
+          icon: 'BarChart3'
         });
       }
       
-      // 2. TIME SAVINGS — Conservative conversion
+      // 2. TIME SAVINGS — Primary driver
       const timeSavingsValue = inputs.metricValues.timeSavings;
       const abridgeTimeSavings = 4;
       if (selected.includes('timeSavings') && timeSavingsValue !== undefined && timeSavingsValue < abridgeTimeSavings) {
         const additionalMinutes = (abridgeTimeSavings - timeSavingsValue) * abridgeEncounters;
         const additionalHrs = Math.round(additionalMinutes / 60);
-        const hourlyValue = 37.50; // Conservative rate
+        const hourlyValue = 37.50;
         const conversionRate = 0.50;
         metricBreakdown.push({
           metric: 'Time Savings',
@@ -163,31 +174,13 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           impact: `+${formatNum(additionalHrs)} hours/year`,
           value: Math.round(additionalHrs * hourlyValue * conversionRate),
           calculation: `${formatNum(additionalHrs)} hours × $${hourlyValue}/hr × ${conversionRate * 100}% conversion`,
-          explanation: 'Time returned to providers. 50% conversion accounts for time going to quality of life vs. realized value.'
+          explanation: 'Time returned to providers. 50% conversion accounts for time going to quality of life vs. realized value.',
+          tier: 'primary',
+          icon: 'Clock'
         });
       }
       
-      // 3. WORK OUTSIDE OF WORK — Speculative retention value, capped
-      const wowValue = inputs.metricValues.workOutsideWork;
-      const abridgeWow = 2;
-      if (selected.includes('workOutsideWork') && wowValue !== undefined && wowValue > abridgeWow) {
-        const hoursSavedPerWeek = wowValue - abridgeWow;
-        const annualHoursSaved = hoursSavedPerWeek * providers * 48;
-        // Speculative retention: 75 providers × 18% turnover × 10% reduction × $400K × 10% attribution
-        const speculativeRetentionValue = Math.round(providers * 0.18 * 0.10 * 400000 * 0.10);
-        const value = Math.min(speculativeRetentionValue, 25000); // Capped at $25,000
-        metricBreakdown.push({
-          metric: 'Work Outside of Work',
-          gap: `${wowValue} hrs/week → ${abridgeWow} hrs/week`,
-          impact: `-${hoursSavedPerWeek} hrs/week per provider (${formatNum(annualHoursSaved)} hrs/year total)`,
-          value: value,
-          calculation: 'Estimated retention impact (speculative)',
-          explanation: 'Reduced after-hours work correlates with lower burnout. Direct financial impact is through retention over 12-18 months.',
-          isSpeculative: true
-        });
-      }
-      
-      // 4. wRVU CAPTURE — This is the primary financial driver
+      // 3. wRVU CAPTURE — Primary driver (core financial metric)
       const wrvuValue = inputs.metricValues.wrvuLift;
       const abridgeWrvuLift = 5;
       if (selected.includes('wrvuLift') && wrvuValue !== undefined && wrvuValue < abridgeWrvuLift) {
@@ -195,66 +188,95 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
         const baseWrvuPerEncounter = 1.5;
         const baselineWrvus = abridgeEncounters * baseWrvuPerEncounter;
         const additionalWrvus = Math.round(baselineWrvus * (liftDelta / 100));
-        const conversionFactor = 33; // Medicare conversion factor
+        const conversionFactor = 33;
         metricBreakdown.push({
           metric: 'wRVU Capture',
           gap: `${wrvuValue}% lift → ${abridgeWrvuLift}% lift`,
           impact: `+${formatNum(additionalWrvus)} wRVUs/year`,
           value: Math.round(additionalWrvus * conversionFactor),
           calculation: `${formatNum(additionalWrvus)} wRVUs × $${conversionFactor}/wRVU (Medicare)`,
-          explanation: 'Better documentation captures clinical complexity that supports accurate coding.'
+          explanation: 'Better documentation captures clinical complexity that supports accurate coding.',
+          tier: 'primary',
+          icon: 'DollarSign'
         });
       }
       
-      // 5. LEVEL OF SERVICE — Supporting metric, value captured in wRVU
-      const losValue = inputs.metricValues.levelOfService;
-      const abridgeLos = 4.1;
-      if (selected.includes('levelOfService') && losValue !== undefined && losValue < abridgeLos) {
-        const levelDelta = (abridgeLos - losValue).toFixed(1);
+      // ========== TIER 2: OPERATIONAL IMPROVEMENTS (no dollar values) ==========
+      
+      // Work Outside of Work — Operational indicator
+      const wowValue = inputs.metricValues.workOutsideWork;
+      const abridgeWow = 2;
+      if (selected.includes('workOutsideWork') && wowValue !== undefined && wowValue > abridgeWow) {
+        const hoursSavedPerWeek = wowValue - abridgeWow;
+        const annualHoursSaved = hoursSavedPerWeek * providers * 48;
         metricBreakdown.push({
-          metric: 'Level of Service',
-          gap: `${losValue} avg → ${abridgeLos} avg`,
-          impact: `+${levelDelta} average level`,
-          value: 0, // Explicitly zero - captured in wRVU
-          calculation: 'Value captured in wRVU Capture above',
-          explanation: 'Higher average E/M level from more complete documentation. Financial impact reflected in wRVU improvement.',
-          isSupporting: true
+          metric: 'Work Outside of Work',
+          gap: `${wowValue} hrs/week → ${abridgeWow} hrs/week`,
+          impact: `${formatNum(annualHoursSaved)} hours/year returned to providers`,
+          value: 0, // No dollar value - operational indicator
+          calculation: `${hoursSavedPerWeek} hrs/week × ${providers} providers × 48 weeks`,
+          explanation: 'Reduced after-hours work correlates with lower burnout and better retention over time.',
+          tier: 'operational',
+          icon: 'Moon',
+          change: `-${hoursSavedPerWeek} hrs/week per provider`,
+          insight: 'Contributes to retention and provider well-being.'
         });
       }
       
-      // 6. CHART CLOSURE (24h) — Optional metric
+      // Chart Closure — Operational indicator
       const chartClosureValue = inputs.metricValues.chartClosure24h;
-      if (selected.includes('chartClosure24h') && chartClosureValue !== undefined && chartClosureValue < 78) {
-        const closureDelta = 78 - chartClosureValue;
+      const abridgeChartClosure = 78;
+      if (selected.includes('chartClosure24h') && chartClosureValue !== undefined && chartClosureValue < abridgeChartClosure) {
+        const closureDelta = abridgeChartClosure - chartClosureValue;
         metricBreakdown.push({
           metric: 'Chart Closure (24h)',
-          gap: `${chartClosureValue}% → 78%`,
+          gap: `${chartClosureValue}% → ${abridgeChartClosure}%`,
           impact: `+${closureDelta.toFixed(0)}pp improvement`,
-          value: Math.round(closureDelta * providers * 50),
-          calculation: `${closureDelta.toFixed(0)}pp × ${providers} providers × $50/provider quality bonus`,
-          explanation: 'Faster chart closure improves billing cycles and quality metrics.'
+          value: 0, // No dollar value - operational indicator
+          calculation: `${chartClosureValue}% current → ${abridgeChartClosure}% benchmark`,
+          explanation: 'Charts closed within 24 hours can be billed immediately, improving cash flow and reducing A/R days.',
+          tier: 'operational',
+          icon: 'FileCheck',
+          change: `+${closureDelta.toFixed(0)}pp improvement`,
+          insight: 'Faster billing cycles, improved cash flow.'
         });
       }
       
-      // 7. CLINICIAN SATISFACTION — Optional speculative metric
+      // ========== TIER 3: LONG-TERM VALUE (speculative) ==========
+      
+      // Clinician Retention — derived from WOW and satisfaction data
+      const hasWowData = wowValue !== undefined && wowValue > 3;
       const satisfactionValue = inputs.metricValues.satisfaction;
-      if (selected.includes('satisfaction') && satisfactionValue !== undefined && satisfactionValue < 8.5) {
-        const satDelta = 8.5 - satisfactionValue;
-        const speculativeValue = Math.round(satDelta * providers * 1000); // More conservative
+      const hasSatisfactionData = satisfactionValue !== undefined && satisfactionValue < 8.5;
+      
+      if (hasWowData || hasSatisfactionData) {
+        // Very rough estimate: reduced WOW/improved satisfaction → reduced turnover → saved replacement costs
+        const estimatedTurnoverReduction = 0.10; // 10% of turnover attributable to doc burden
+        const avgTurnover = providers * 0.18;
+        const preventedDepartures = avgTurnover * estimatedTurnoverReduction;
+        const replacementCost = 400000;
+        const lowEstimate = Math.round(preventedDepartures * replacementCost * 0.10);
+        const highEstimate = Math.round(preventedDepartures * replacementCost * 0.25);
+        
         metricBreakdown.push({
-          metric: 'Clinician Satisfaction',
-          gap: `${satisfactionValue}/10 → 8.5/10`,
-          impact: `+${satDelta.toFixed(1)} pts improvement`,
-          value: Math.min(speculativeValue, 20000), // Capped
-          calculation: 'Estimated retention/engagement impact (speculative)',
-          explanation: 'Higher satisfaction correlates with reduced turnover and recruitment costs.',
-          isSpeculative: true
+          metric: 'Clinician Retention',
+          gap: 'Based on satisfaction improvement + reduced after-hours work',
+          impact: `Potential: $${formatNum(lowEstimate)} - $${formatNum(highEstimate)}/year`,
+          value: 0, // Not counted in primary total
+          calculation: `${providers} providers × 18% turnover × 10% reduction × $${formatNum(replacementCost)} cost × 10-25% attribution`,
+          explanation: 'Actual results depend on your specific turnover patterns and causes.',
+          tier: 'longterm',
+          icon: 'Heart',
+          lowEstimate,
+          highEstimate,
+          timeframe: '12-18 months',
+          insight: 'Typically measurable after 12-18 months'
         });
       }
     }
     
-    // Total only sums non-supporting items
-    const advancedTotalGap = metricBreakdown.filter(item => !item.isSupporting).reduce((sum, item) => sum + item.value, 0);
+    // Total only sums primary tier items
+    const advancedTotalGap = metricBreakdown.filter(item => item.tier === 'primary').reduce((sum, item) => sum + item.value, 0);
     const utilizationValue = Math.round(additionalEncounters * valuePerEncounter);
     const efficiencyValue = Math.round(additionalHours * valuePerHour);
     const quickTotalGap = utilizationValue + efficiencyValue;
