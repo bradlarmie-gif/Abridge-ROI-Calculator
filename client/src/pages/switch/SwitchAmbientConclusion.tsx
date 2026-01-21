@@ -1,4 +1,4 @@
-import { ArrowLeft, Phone, Link2, Edit3 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ComposedChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks } from './SwitchAmbientFlow';
@@ -288,65 +288,7 @@ export default function SwitchAmbientConclusion({
                 </p>
               </div>
             </section>
-            
-            {/* Important to Know */}
-            <section className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">IMPORTANT TO KNOW</h2>
-              
-              <p className="text-sm text-slate-600 mb-3">These estimates are based on:</p>
-              <ul className="space-y-2 text-sm text-slate-600 mb-4">
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400">•</span>
-                  Your self-reported metrics (utilization, efficiency)
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400">•</span>
-                  Abridge benchmarks from similar deployments
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400">•</span>
-                  Conservative assumptions about adoption and ramp
-                </li>
-              </ul>
-              
-              <p className="text-sm text-slate-600">
-                A conversation with our team can help validate and refine these estimates for your specific situation.
-              </p>
-            </section>
           </div>
-        
-        <div className="flex flex-col items-center gap-4">
-          <Button
-            size="lg"
-            className="bg-[#E85D3F] text-white"
-            data-testid="button-lets-talk"
-          >
-            <Phone className="w-4 h-4" />
-            Let's Talk
-          </Button>
-          
-          <div className="flex gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm text-slate-500 flex items-center gap-1"
-              data-testid="button-copy-link"
-            >
-              <Link2 className="w-4 h-4" />
-              Copy link
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBackToJourney}
-              className="text-sm text-slate-500 flex items-center gap-1"
-              data-testid="button-edit-inputs"
-            >
-              <Edit3 className="w-4 h-4" />
-              Edit inputs
-            </Button>
-          </div>
-        </div>
       </main>
     </div>
   );
