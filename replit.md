@@ -16,7 +16,7 @@ Preferred communication style: Simple, everyday language.
 The application guides users through multi-step processes:
 -   **Explore Path**: A 4-step sales-led flow (Care Setting → Strategic Priorities → Model Builder → Summary) for new prospects across Outpatient, Emergency Department, Inpatient, and Nursing care settings.
 -   **Switch Path (Ambient AI)**: A streamlined 3-page flow (after Solution Selection) for prospects switching from other ambient AI solutions. Pages: Setup (provider range chips, utilization/efficiency sliders with Abridge benchmarks, live gap visualization showing YOU vs ABRIDGE) → Analysis (annual gap hero with monthly/daily breakdown, Value Breakdown tab with expandable driver cards, Over Time tab with 3-year chart and cost of waiting) → Conclusion (situation summary, context about benchmarks, 3-year value highlight, CTAs). Uses slider-based inputs with real-time gap calculations.
--   **Switch Path (Human Scribes)**: A 5-step cost-focused flow for prospects switching from human scribes to Abridge. Pages: Setup (organization info, scribe coverage, hourly costs) → Coverage Reality (current vs full coverage visualization) → Hidden Costs (turnover/training, management overhead) → Full Picture (total investment summary with breakdown) → Comparison (3-year side-by-side scribes vs Abridge with savings). Uses editable inline inputs and real-time calculations with coral (#E85D3F) CTAs and emerald for positive savings values.
+-   **Switch Path (Human Scribes)**: A 5-step cost-focused flow for prospects switching from human scribes to Abridge. Pages: Setup (organization info, scribe coverage, hourly costs) → Coverage Reality (current vs full coverage visualization) → Hidden Costs (turnover/training, management overhead) → Full Picture (total investment summary with breakdown) → Comparison (3-year side-by-side scribes vs Abridge with savings). Uses editable inline inputs and real-time calculations with coral (#EA2C00) CTAs and emerald for positive savings values.
 -   **Expand Path**: A 5-step performance analysis flow for current Abridge customers (Setting Selection → Deployment Setup → Performance Dashboard → ROI Story → Journey Expansion).
 -   **Care Setting Selection**: Users choose a healthcare environment.
 -   **Strategic Priorities Selection**: Users identify relevant ROI levers.
@@ -44,7 +44,8 @@ The application guides users through multi-step processes:
 -   **Pure Functions**: ROI calculation logic in `roi-calculator.ts`.
 -   **Reusable Components**: Extensive use of reusable UI components.
 -   **Eligible Encounters Foundation**: All driver calculations derived from `eligible encounters`.
--   **UI/UX**: Adheres to Material Design principles for enterprise data applications. Uses Inter and JetBrains Mono fonts. Color palette includes Abridge Red, muted grays, and greens for financial indicators. Responsive design using Tailwind's breakpoints.
+-   **UI/UX**: Adheres to Material Design principles for enterprise data applications. Uses Inter and JetBrains Mono fonts. Color palette includes Abridge Cadmium Red (#EA2C00) for CTAs with #d12700 hover, muted grays, and emerald-600 for positive financial indicators. Responsive design using Tailwind's breakpoints.
+-   **GlobalHeader Component**: Fixed 72px header used across Switch pages with: Abridge logo on left (clickable to home), "ROI Calculator · {pageName}" centered, progress dots on right. Back button placed in page content below header.
 
 ### Directory Structure
 -   `/client/src/pages/`: Main application screens.

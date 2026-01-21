@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Sparkles, TrendingUp, TrendingDown } from 'lucide-react';
-import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import { Button } from '@/components/ui/button';
+import { GlobalHeader } from '@/components/GlobalHeader';
 import { AmbientInputs, AmbientBenchmarks } from './SwitchAmbientFlow';
 
 interface ComparisonItem {
@@ -136,47 +136,19 @@ export default function SwitchAdvancedComparison({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 md:px-10 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="text-slate-500 flex items-center gap-1"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-          
-          <div className="flex items-center gap-3">
-            <img 
-              src={abridgeLogo} 
-              alt="Abridge" 
-              className="h-6"
-            />
-            <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
-          </div>
-          
-          <div className="flex gap-1.5">
-            {Array.from({ length: totalSteps }, (_, i) => (
-              <span
-                key={i}
-                className={`h-2 rounded-full transition-all ${
-                  i === currentStep - 1 
-                    ? 'w-6 bg-slate-800' 
-                    : i < currentStep 
-                      ? 'w-2 bg-slate-800' 
-                      : 'w-2 bg-slate-200'
-                }`}
-                data-testid={`progress-dot-${i + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      </header>
+      <GlobalHeader pageName="Switch Comparison" currentStep={currentStep} totalSteps={totalSteps} />
       
-      <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 py-12">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 pt-[96px] pb-12">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         <div className="text-center mb-10">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
             How you compare
