@@ -118,8 +118,9 @@ interface DriverInputs {
     replacementCost: number;       // Cost to replace a provider (default $400K)
   };
   levelOfService: {
-    underCodingRate: number;
-    wrvuFactor: number;
+    avgWrvuPerEncounter: number;
+    wrvuImprovementRate: number;
+    conversionFactor: number;
   };
   hcc: {
     riskBasedPct: number;
@@ -369,8 +370,9 @@ export default function ModelBuilder({
       replacementCost: 400000,       // $400K replacement cost
     },
     levelOfService: {
-      underCodingRate: 10,
-      wrvuFactor: 45,
+      avgWrvuPerEncounter: 1.5,
+      wrvuImprovementRate: 5,
+      conversionFactor: 33,
     },
     hcc: {
       riskBasedPct: 35,
@@ -646,11 +648,13 @@ export default function ModelBuilder({
         return Math.round(annualRetentionSavings);
       }
       case "levelOfService": {
-        const { underCodingRate, wrvuFactor } = driverInputs.levelOfService;
-        const emEncounters = eligibleEncounters * 0.80;
-        const underCoded = emEncounters * (underCodingRate / 100);
-        const corrected = underCoded * 0.50;
-        return Math.round(corrected * 0.7 * wrvuFactor);
+        const { avgWrvuPerEncounter, wrvuImprovementRate, conversionFactor } = driverInputs.levelOfService;
+        // Step 1: Baseline wRVUs
+        const baselineWrvus = eligibleEncounters * avgWrvuPerEncounter;
+        // Step 2: wRVU Improvement
+        const wrvuGain = baselineWrvus * (wrvuImprovementRate / 100);
+        // Step 3: Revenue Impact
+        return Math.round(wrvuGain * conversionFactor);
       }
       case "hcc": {
         const { riskBasedPct, captureRate } = driverInputs.hcc;
@@ -883,8 +887,9 @@ export default function ModelBuilder({
           };
         case "levelOfService":
           return {
-            underCodingRate: driverInputs.levelOfService.underCodingRate,
-            wrvuFactor: driverInputs.levelOfService.wrvuFactor,
+            avgWrvuPerEncounter: driverInputs.levelOfService.avgWrvuPerEncounter,
+            wrvuImprovementRate: driverInputs.levelOfService.wrvuImprovementRate,
+            conversionFactor: driverInputs.levelOfService.conversionFactor,
           };
         case "hcc":
           return {
@@ -1986,61 +1991,171 @@ export default function ModelBuilder({
   };
   
   const renderLevelOfServiceInputs = () => {
-    const { underCodingRate, wrvuFactor } = driverInputs.levelOfService;
-    const emEncounters = eligibleEncounters * 0.80;
-    const underCoded = emEncounters * (underCodingRate / 100);
-    const corrected = underCoded * 0.50;
+    const { avgWrvuPerEncounter, wrvuImprovementRate, conversionFactor } = driverInputs.levelOfService;
+
+    // ACCURATE LEVEL OF SERVICE CALCULATIONS (3-step)
+    // Step 1: Baseline wRVUs
+    const baselineWrvus = eligibleEncounters * avgWrvuPerEncounter;
     
+    // Step 2: wRVU Improvement
+    const wrvuGain = baselineWrvus * (wrvuImprovementRate / 100);
+    
+    // Step 3: Revenue Impact
+    const annualAlosRevenue = wrvuGain * conversionFactor;
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
+
     return (
       <div className="space-y-6">
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">E/M encounters (auto):</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {eligibleEncounters.toLocaleString()} eligible × 80% E/M = {Math.round(emEncounters).toLocaleString()} E/M encounters
+        {/* Theory Box */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+          <p className="text-sm font-semibold text-blue-800">The Theory</p>
+          <p className="text-xs text-blue-700">
+            Physicians under time pressure document less than the full clinical picture. 
+            AI-assisted documentation captures the complexity that supports accurate coding—not 
+            upcoding, just getting credit for work already done.
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What's your estimated under-coding rate?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{underCodingRate}%</span>
+
+        {/* Step 1: Baseline wRVUs */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Baseline wRVUs</p>
+          <p className="text-xs text-[#6B7280]">What's your current productivity?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Eligible Encounters</label>
+                <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-3 py-1.5">
+                  {eligibleEncounters.toLocaleString()}
+                </div>
+              </div>
+              <span className="text-neutral-400 pt-5">×</span>
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Avg wRVU/Encounter</label>
+                <Input
+                  type="number"
+                  value={avgWrvuPerEncounter}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, levelOfService: { ...prev.levelOfService, avgWrvuPerEncounter: Number(e.target.value) || 0 } }))}
+                  className="w-20 text-center font-mono text-sm h-8"
+                  step="0.1"
+                  data-testid="los-wrvu-per-encounter-input"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {baselineWrvus.toLocaleString()} wRVUs
+              </div>
+            </div>
           </div>
-          <Slider
-            value={[underCodingRate]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, levelOfService: { ...prev.levelOfService, underCodingRate: val } }))}
-            min={5}
-            max={20}
-            step={1}
-            className="w-full"
-            data-testid="los-under-coding-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Most organizations under-code 8-15% of visits</p>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Don't know your wRVUs? We estimate using 1.5 wRVU per encounter (typical outpatient blend).
+          </p>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">What's your wRVU conversion factor?</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={wrvuFactor}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, levelOfService: { ...prev.levelOfService, wrvuFactor: Number(e.target.value) || 0 } }))}
-              className="w-24 font-mono"
-              data-testid="los-wrvu-input"
-            />
+
+        <StepDivider />
+
+        {/* Step 2: wRVU Improvement */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: wRVU Improvement</p>
+          <p className="text-xs text-[#6B7280]">How much does Abridge improve capture?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {baselineWrvus.toLocaleString()} wRVUs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={wrvuImprovementRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, levelOfService: { ...prev.levelOfService, wrvuImprovementRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="los-improvement-rate-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {wrvuGain.toLocaleString()} wRVU gain
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">Check with your finance team—typically $40-55</p>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            On average, Abridge improves wRVU capture by 5% through more complete documentation of clinical complexity.
+          </p>
         </div>
-        
+
+        <StepDivider />
+
+        {/* Step 3: Revenue Impact */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Revenue Impact</p>
+          <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {wrvuGain.toLocaleString()} wRVUs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <span className="text-sm text-[#6B7280]">$</span>
+              <Input
+                type="number"
+                value={conversionFactor}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, levelOfService: { ...prev.levelOfService, conversionFactor: Number(e.target.value) || 0 } }))}
+                className="w-20 text-center font-mono text-sm h-8"
+                data-testid="los-conversion-factor-input"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-1.5 font-mono text-sm font-bold text-emerald-600">
+                {formatCurrency(Math.round(annualAlosRevenue))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benchmark Box */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Benchmark: Conversion Factor
+          </p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Medicare (2024)</span>
+              <span className="font-mono text-slate-700">$33</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Commercial (typical)</span>
+              <span className="font-mono text-slate-700">$45 - $65</span>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 pt-2 border-t border-slate-200 mt-2">
+            We anchor to Medicare for conservatism. If your payer mix is commercial-heavy, 
+            actual results may be 30-50% higher.
+          </p>
+        </div>
+
+        {/* Result Summary */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-medium text-[#111827]">Annual Revenue</span>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(corrected * 0.7 * wrvuFactor))}
+              {formatCurrency(Math.round(annualAlosRevenue))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(underCoded).toLocaleString()} under-coded × 50% corrected × 0.7 wRVU × ${wrvuFactor}
+            {wrvuGain.toLocaleString()} wRVU gain × ${conversionFactor} conversion factor
           </p>
         </div>
       </div>

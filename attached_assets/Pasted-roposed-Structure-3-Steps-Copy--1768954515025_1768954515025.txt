@@ -1,0 +1,91 @@
+roposed Structure (3 Steps):
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 📋 Accurate Level of Service                        $128,700    │
+│    Capture the complexity you're already delivering             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ Physicians under time pressure document less than the full      │
+│ clinical picture. AI-assisted documentation captures the        │
+│ complexity that supports accurate coding—not upcoding, just     │
+│ getting credit for work already done.                           │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ STEP 1: BASELINE wRVUs                                          │
+│ What's your current productivity?                               │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │Eligible Encounters│ × │ Avg wRVU/Encounter│                   │
+│ │     52,000       │   │       1.5         │                   │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                        Baseline wRVUs: 78,000                   │
+│                                                                 │
+│ 💡 Don't know your wRVUs? We estimate using 1.5 wRVU per        │
+│    encounter (typical outpatient blend).                        │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: wRVU IMPROVEMENT                                        │
+│ How much does Abridge improve capture?                          │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │  Baseline wRVUs  │ × │ Improvement Rate │                    │
+│ │     78,000       │   │       5%         │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                           wRVU Gain: 3,900                      │
+│                                                                 │
+│ 💡 On average, Abridge improves wRVU capture by 5% through      │
+│    more complete documentation of clinical complexity.          │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: REVENUE IMPACT                                          │
+│ What's the dollar value?                                        │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────────┐                  │
+│ │    wRVU Gain     │ × │ Conversion Factor  │                  │
+│ │     3,900        │   │       $33          │                  │
+│ └──────────────────┘   └────────────────────┘                  │
+│                                                                 │
+│                       Annual Revenue: $128,700                  │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK: Conversion Factor                             │ │
+│ │                                                             │ │
+│ │ Medicare (2024)            $33                              │ │
+│ │ Commercial (typical)       $45 - $65                        │ │
+│ │                                                             │ │
+│ │ Your input: $33 (Medicare baseline)                         │ │
+│ │                                                             │ │
+│ │ 💡 We anchor to Medicare for conservatism. If your payer    │ │
+│ │    mix is commercial-heavy, actual results may be 30-50%    │ │
+│ │    higher.                                                  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Final Code for Replit:
+javascriptCopy// ============ ACCURATE LEVEL OF SERVICE ============
+
+// Inputs (from earlier in flow or user-editable)
+const eligibleEncounters = 52000;          // From utilization calc
+const avgWrvuPerEncounter = 1.5;           // Default, editable
+const wrvuImprovementRate = 0.05;          // 5% - Abridge benchmark
+const conversionFactor = 33;               // Medicare CF - conservative
+
+// Calculations
+
+// Step 1: Baseline wRVUs
+const baselineWrvus = eligibleEncounters * avgWrvuPerEncounter;
+// 52,000 × 1.5 = 78,000 wRVUs
+
+// Step 2: wRVU Improvement
+const wrvuGain = baselineWrvus * wrvuImprovementRate;
+// 78,000 × 0.05 = 3,900 wRVUs
+
+// Step 3: Revenue Impact
+const annualAlosRevenue = wrvuGain * conversionFactor;
+// 3,900 × $33 = $128,700
