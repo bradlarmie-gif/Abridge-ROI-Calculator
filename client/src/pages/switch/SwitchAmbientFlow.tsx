@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import SwitchAmbientSetup from './SwitchAmbientSetup';
+import SwitchAdvancedComparison from './SwitchAdvancedComparison';
 import SwitchAmbientAnalysis from './SwitchAmbientAnalysis';
 import SwitchAmbientConclusion from './SwitchAmbientConclusion';
 
@@ -98,7 +99,7 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
     metricValues: {}
   });
   
-  const totalSteps = 3;
+  const totalSteps = inputs.mode === 'advanced' ? 4 : 3;
   
   const goNext = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
   const goBack = () => {
@@ -329,9 +330,9 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
     };
   }, [inputs, benchmarks.utilization, benchmarks.efficiency]);
   
-  return (
-    <div className="min-h-screen bg-[#FAFAFA]">
-      {currentStep === 1 && (
+  const renderQuickModeSteps = () => {
+    if (currentStep === 1) {
+      return (
         <SwitchAmbientSetup
           inputs={inputs}
           setInputs={setInputs}
@@ -342,8 +343,10 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           onNext={goNext}
           onBack={goBack}
         />
-      )}
-      {currentStep === 2 && (
+      );
+    }
+    if (currentStep === 2) {
+      return (
         <SwitchAmbientAnalysis
           inputs={inputs}
           calculations={calculations}
@@ -353,8 +356,10 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           onNext={goNext}
           onBack={goBack}
         />
-      )}
-      {currentStep === 3 && (
+      );
+    }
+    if (currentStep === 3) {
+      return (
         <SwitchAmbientConclusion
           inputs={inputs}
           calculations={calculations}
@@ -364,7 +369,70 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           onBack={goBack}
           onBackToJourney={onBackToJourney}
         />
-      )}
+      );
+    }
+    return null;
+  };
+  
+  const renderAdvancedModeSteps = () => {
+    if (currentStep === 1) {
+      return (
+        <SwitchAmbientSetup
+          inputs={inputs}
+          setInputs={setInputs}
+          calculations={calculations}
+          benchmarks={benchmarks}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      );
+    }
+    if (currentStep === 2) {
+      return (
+        <SwitchAdvancedComparison
+          inputs={inputs}
+          benchmarks={benchmarks}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      );
+    }
+    if (currentStep === 3) {
+      return (
+        <SwitchAmbientAnalysis
+          inputs={inputs}
+          calculations={calculations}
+          benchmarks={benchmarks}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      );
+    }
+    if (currentStep === 4) {
+      return (
+        <SwitchAmbientConclusion
+          inputs={inputs}
+          calculations={calculations}
+          benchmarks={benchmarks}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onBack={goBack}
+          onBackToJourney={onBackToJourney}
+        />
+      );
+    }
+    return null;
+  };
+  
+  return (
+    <div className="min-h-screen bg-[#FAFAFA]">
+      {inputs.mode === 'quick' ? renderQuickModeSteps() : renderAdvancedModeSteps()}
     </div>
   );
 }

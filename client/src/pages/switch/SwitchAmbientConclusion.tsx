@@ -104,9 +104,9 @@ export default function SwitchAmbientConclusion({
         </div>
       </header>
       
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-4">
             The cost of staying put
           </h1>
           <p className="text-base text-slate-500">
@@ -114,9 +114,9 @@ export default function SwitchAmbientConclusion({
           </p>
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Chart Section */}
-            <section className="bg-white rounded-2xl border border-slate-200 p-6">
+            <section className="bg-white rounded-2xl border border-slate-200 p-8">
               <div className="flex justify-center gap-8 mb-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <div className="w-6 h-1 bg-emerald-600 rounded" />
@@ -197,7 +197,7 @@ export default function SwitchAmbientConclusion({
             </section>
             
             {/* Understanding the Gap */}
-            <section className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+            <section className="bg-amber-50 border border-amber-200 rounded-2xl p-8">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-lg">💡</span>
                 <h2 className="text-xs font-semibold text-amber-800 tracking-wide">UNDERSTANDING THE GAP</h2>
@@ -222,7 +222,7 @@ export default function SwitchAmbientConclusion({
             </section>
             
             {/* Your Key Gaps */}
-            <section className="bg-white rounded-2xl border border-slate-200 p-6">
+            <section className="bg-white rounded-2xl border border-slate-200 p-8">
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">YOUR KEY GAPS</h2>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -259,7 +259,7 @@ export default function SwitchAmbientConclusion({
             </section>
             
             {/* Cost of Waiting */}
-            <section className="bg-white rounded-2xl border border-slate-200 p-6">
+            <section className="bg-white rounded-2xl border border-slate-200 p-8">
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE COST OF WAITING</h2>
               
               <div className="grid grid-cols-2 gap-4 mb-4">

@@ -1,7 +1,6 @@
 import { useState, ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, Users, ClipboardList, Shield, ChevronDown, ChevronUp, BarChart3, Clock, DollarSign, Moon, FileCheck, Heart, Lightbulb, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks, MetricTier } from './SwitchAmbientFlow';
 
 interface DriverItem {
@@ -49,16 +48,6 @@ function formatNumber(value: number): string {
   return value.toLocaleString();
 }
 
-function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  }
-  if (value >= 1000) {
-    return `$${Math.round(value / 1000)}K`;
-  }
-  return `$${formatNumber(value)}`;
-}
-
 export default function SwitchAmbientAnalysis({
   inputs,
   calculations,
@@ -69,17 +58,7 @@ export default function SwitchAmbientAnalysis({
   onBack
 }: SwitchAmbientAnalysisProps) {
   
-  const [activeTab, setActiveTab] = useState<'breakdown' | 'overtime'>('breakdown');
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
-  
-  const chartData = [
-    { period: 'Today', value: 0 },
-    { period: '3 mo', value: Math.round(calculations.year1Value * 0.25) },
-    { period: '6 mo', value: Math.round(calculations.year1Value * 0.5) },
-    { period: 'Year 1', value: calculations.year1Value },
-    { period: 'Year 2', value: calculations.year1Value + calculations.year2Value },
-    { period: 'Year 3', value: calculations.threeYearTotal }
-  ];
   
   const quickDrivers: DriverItem[] = [
     {
@@ -325,96 +304,9 @@ export default function SwitchAmbientAnalysis({
           </div>
         )}
         
-        {/* Advanced Mode: Detailed driver breakdown with tabs */}
+        {/* Advanced Mode: Tiered layout - no tabs, just driver breakdown */}
         {inputs.mode === 'advanced' && (
           <>
-            <div className="flex gap-2 mb-6">
-              <button
-                onClick={() => setActiveTab('breakdown')}
-                className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all ${
-                  activeTab === 'breakdown'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
-                }`}
-                data-testid="tab-breakdown"
-              >
-                Value Breakdown
-              </button>
-              <button
-                onClick={() => setActiveTab('overtime')}
-                className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all ${
-                  activeTab === 'overtime'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
-                }`}
-                data-testid="tab-overtime"
-              >
-                Over Time
-              </button>
-            </div>
-            
-            {activeTab === 'breakdown' && (
-              <div className="space-y-6">
-                <section>
-                  <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE GAPS WE IDENTIFIED</h2>
-                  
-                  <div className="bg-white rounded-xl border border-slate-200 p-5 mb-3">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-semibold text-slate-700">Utilization</span>
-                      <span className="text-sm text-slate-500">
-                        {inputs.utilization}% → {benchmarks.utilization}% = +{formatNumber(calculations.additionalEncounters)} enc
-                      </span>
-                    </div>
-                    <div className="relative h-3 bg-slate-100 rounded-full">
-                      <div 
-                        className="absolute top-0 left-0 h-full bg-slate-400 rounded-l-full"
-                        style={{ width: `${inputs.utilization}%` }}
-                      />
-                      <div 
-                        className="absolute top-0 h-full bg-emerald-500 rounded-r-full"
-                        style={{ 
-                          left: `${inputs.utilization}%`,
-                          width: `${benchmarks.utilization - inputs.utilization}%` 
-                        }}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-2 text-xs">
-                      <span className="text-slate-400" style={{ marginLeft: `${inputs.utilization - 3}%` }}>YOU</span>
-                      <span className="text-emerald-600" style={{ marginRight: `${100 - benchmarks.utilization - 5}%` }}>ABRIDGE</span>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white rounded-xl border border-slate-200 p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-semibold text-slate-700">Efficiency</span>
-                      <span className="text-sm text-slate-500">
-                        {inputs.efficiency}m → {benchmarks.efficiency}m = +{formatNumber(calculations.additionalHours)} hours
-                      </span>
-                    </div>
-                    <div className="relative h-3 bg-slate-100 rounded-full">
-                      <div 
-                        className="absolute top-0 left-0 h-full bg-slate-400 rounded-l-full"
-                        style={{ width: `${(inputs.efficiency / 5) * 100}%` }}
-                      />
-                      <div 
-                        className="absolute top-0 h-full bg-emerald-500 rounded-r-full"
-                        style={{ 
-                          left: `${(inputs.efficiency / 5) * 100}%`,
-                          width: `${((benchmarks.efficiency - inputs.efficiency) / 5) * 100}%` 
-                        }}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-2 text-xs">
-                      <span className="text-slate-400" style={{ marginLeft: `${(inputs.efficiency / 5) * 100 - 3}%` }}>YOU</span>
-                      <span className="text-emerald-600" style={{ marginRight: `${100 - (benchmarks.efficiency / 5) * 100 - 5}%` }}>ABRIDGE</span>
-                    </div>
-                  </div>
-                </section>
-              </div>
-            )}
-            
-            {/* Advanced Mode: Tiered layout */}
-            {inputs.mode === 'advanced' && (
               <div className="space-y-6">
                 
                 {/* TIER 1: Primary Value Drivers */}
@@ -580,116 +472,6 @@ export default function SwitchAmbientAnalysis({
                   </span>
                 </div>
               </div>
-            )}
-              
-            {activeTab === 'overtime' && (
-              <div className="space-y-6">
-            <section>
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">3-YEAR CUMULATIVE VALUE GAP</h2>
-              
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#059669" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="#059669" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <XAxis 
-                        dataKey="period" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12, fill: '#94a3b8' }}
-                      />
-                      <YAxis 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12, fill: '#94a3b8' }}
-                        tickFormatter={(value) => formatCurrency(value)}
-                      />
-                      <Tooltip 
-                        formatter={(value: number) => [`$${formatNumber(value)}`, 'Value']}
-                        contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="value" 
-                        stroke="#059669" 
-                        strokeWidth={3}
-                        fill="url(#colorValue)" 
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-slate-100">
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <div className="w-6 h-1 bg-emerald-600 rounded" />
-                    Switch to Abridge
-                  </div>
-                </div>
-              </div>
-            </section>
-            
-            <section>
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">HOW IT ADDS UP</h2>
-              
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-                <p className="text-sm text-slate-700 mb-4">
-                  Abridge customers typically see value ramp over time:
-                </p>
-                <ul className="space-y-2 text-sm text-slate-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-600 font-semibold">Quick wins (0-3 mo):</span>
-                    Utilization jumps as providers adopt
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-600 font-semibold">Optimization (3-12 mo):</span>
-                    Efficiency gains compound
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-600 font-semibold">Full ramp (Year 2+):</span>
-                    Organization-wide benefits realized
-                  </li>
-                </ul>
-              </div>
-            </section>
-            
-            <section>
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">COST OF WAITING</h2>
-              
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
-                  <span className="block text-xs font-semibold text-slate-500 tracking-wide">SWITCH NOW</span>
-                  <span className="block text-xs text-slate-400 mt-1">3-year value</span>
-                  <span className="block text-2xl font-bold text-emerald-600 mt-2" data-testid="text-3yr-value">
-                    {formatCurrency(calculations.threeYearTotal)}
-                  </span>
-                </div>
-                
-                <div className="bg-white border border-slate-200 rounded-xl p-5 text-center">
-                  <span className="block text-xs font-semibold text-slate-500 tracking-wide">WAIT 6 MONTHS</span>
-                  <span className="block text-xs text-slate-400 mt-1">3-year value</span>
-                  <span className="block text-2xl font-bold text-slate-900 mt-2" data-testid="text-3yr-if-wait">
-                    {formatCurrency(calculations.threeYearIfWait)}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
-                <span className="block text-sm text-red-800">Cost of waiting 6 months</span>
-                <span className="block text-3xl font-bold text-red-600 mt-2" data-testid="text-wait-cost">
-                  {formatCurrency(calculations.wait6MonthsLoss)}
-                </span>
-                <p className="text-sm text-red-700 mt-2">
-                  That's value you'll never recover
-                </p>
-              </div>
-            </section>
-          </div>
-        )}
           </>
         )}
         
