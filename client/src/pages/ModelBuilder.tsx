@@ -180,8 +180,10 @@ interface DriverInputs {
   };
   // Inpatient (Hospitalist) drivers
   inpatientRetention: {
-    turnoverRate: number;
-    replacementCost: number;
+    turnoverRate: number;        // % annual turnover (default 15%)
+    burnoutAttribution: number;  // % of turnover that's burnout-related (default 50%)
+    abridgeImpact: number;       // % of burnout turnover Abridge can prevent (default 30%)
+    replacementCost: number;     // Cost to replace a hospitalist (default $500,000)
   };
   inpatientCCMCC: {
     gapRate: number;           // % of admissions with documentation gaps (default 40%)
@@ -449,8 +451,10 @@ export default function ModelBuilder({
     },
     // Inpatient defaults
     inpatientRetention: {
-      turnoverRate: 15,
-      replacementCost: 750000,
+      turnoverRate: 15,          // 15% annual turnover
+      burnoutAttribution: 50,    // 50% burnout-related
+      abridgeImpact: 30,         // 30% Abridge can prevent
+      replacementCost: 500000,   // $500K replacement cost
     },
     inpatientCCMCC: {
       gapRate: 40,             // 40% of admissions have documentation gaps
@@ -786,12 +790,16 @@ export default function ModelBuilder({
       }
       // Inpatient Drivers
       case "inpatientRetention": {
-        const { turnoverRate, replacementCost } = driverInputs.inpatientRetention;
-        const departures = providers * (turnoverRate / 100);
-        const burnoutRelated = departures * 0.55; // Hospitalists have higher burnout-driven turnover
-        const docDriven = burnoutRelated * 0.35;
-        const prevented = docDriven * 0.35 * (utilizationRate / 100);
-        return Math.round(prevented * replacementCost);
+        const { turnoverRate, burnoutAttribution, abridgeImpact, replacementCost } = driverInputs.inpatientRetention;
+        // Step 1: Baseline Turnover
+        const annualDepartures = providers * (turnoverRate / 100);
+        // Step 2: Burnout-Related
+        const preventableDepartures = annualDepartures * (burnoutAttribution / 100);
+        // Step 3: Abridge Attribution
+        const departuresAvoided = preventableDepartures * (abridgeImpact / 100);
+        // Step 4: Cost Savings
+        const annualValue = departuresAvoided * replacementCost;
+        return Math.round(annualValue);
       }
       case "inpatientCCMCC": {
         const { gapRate, improvementRate, drgWeightIncrease, baseDrgPayment, realizationRate } = driverInputs.inpatientCCMCC;
@@ -1030,6 +1038,8 @@ export default function ModelBuilder({
         case "inpatientRetention":
           return {
             turnoverRate: driverInputs.inpatientRetention.turnoverRate,
+            burnoutAttribution: driverInputs.inpatientRetention.burnoutAttribution,
+            abridgeImpact: driverInputs.inpatientRetention.abridgeImpact,
             replacementCost: driverInputs.inpatientRetention.replacementCost,
           };
         case "inpatientCCMCC":
@@ -4028,68 +4038,235 @@ export default function ModelBuilder({
   
   // Inpatient render functions
   const renderInpatientRetentionInputs = () => {
-    const { turnoverRate, replacementCost } = driverInputs.inpatientRetention;
-    const departures = providers * (turnoverRate / 100);
-    const burnoutRelated = departures * 0.55;
-    const docDriven = burnoutRelated * 0.35;
-    const prevented = docDriven * 0.35 * (utilizationRate / 100);
+    const { turnoverRate, burnoutAttribution, abridgeImpact, replacementCost } = driverInputs.inpatientRetention;
+    
+    // Step 1: Baseline Turnover
+    const annualDepartures = providers * (turnoverRate / 100);
+    // Step 2: Burnout-Related
+    const preventableDepartures = annualDepartures * (burnoutAttribution / 100);
+    // Step 3: Abridge Attribution
+    const departuresAvoided = preventableDepartures * (abridgeImpact / 100);
+    // Step 4: Cost Savings
+    const annualValue = departuresAvoided * replacementCost;
+    // Years to retain one hospitalist
+    const yearsToRetainOne = departuresAvoided > 0 ? 1 / departuresAvoided : 0;
     
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Current annual hospitalist turnover rate</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{turnoverRate}%</span>
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Hospitalists spend 2+ hours per day on documentation — much of it after rounds or at home. This drives burnout and turnover. Replacing a hospitalist costs $400-600K when you factor in recruiting, lost revenue, and onboarding.
+              </p>
+            </div>
           </div>
-          <Slider
-            value={[turnoverRate]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, turnoverRate: val } }))}
-            min={8}
-            max={25}
-            step={1}
-            className="w-full"
-            data-testid="inpatient-retention-turnover-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Hospitalist turnover is typically 15-20% (among highest in medicine)</p>
         </div>
-        
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Calculation breakdown:</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {providers} hospitalists × {turnoverRate}% = {departures.toFixed(1)} departures
-          </p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {departures.toFixed(1)} × 55% burnout-related × 35% doc-driven = {docDriven.toFixed(2)} doc-related
-          </p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {docDriven.toFixed(2)} × 35% prevention × {utilizationRate}% adoption = {prevented.toFixed(2)} prevented
-          </p>
-        </div>
-        
+
+        {/* Step 1: Baseline Turnover */}
         <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Hospitalist replacement cost</label>
           <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={replacementCost}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, replacementCost: Number(e.target.value) || 0 } }))}
-              className="w-40 font-mono"
-              data-testid="inpatient-retention-cost-input"
-            />
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Baseline Turnover</span>
           </div>
-          <p className="text-xs text-[#6B7280]">Hospitalist replacement costs $600K-900K including recruiting, onboarding, and lost productivity</p>
+          <p className="text-sm text-[#6B7280]">What's the current turnover situation?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Hospitalists</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{providers}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Turnover Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={turnoverRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, turnoverRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-retention-turnover-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{annualDepartures.toFixed(1)} departures/year</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            Hospitalist turnover averages 15-20%. Higher than most specialties due to workload and schedule demands.
+          </p>
         </div>
-        
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 2: Burnout-Related */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Burnout-Related</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">How much is burnout-driven?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Annual Departures</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{annualDepartures.toFixed(1)}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Burnout Attribution</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={burnoutAttribution}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, burnoutAttribution: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-retention-burnout-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{preventableDepartures.toFixed(1)} preventable</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            ~50% of hospitalist departures cite burnout as a primary factor. Documentation burden is consistently the top complaint.
+          </p>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 3: Abridge Attribution */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Attribution</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">What can Abridge prevent?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Preventable</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{preventableDepartures.toFixed(1)}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Abridge Impact</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={abridgeImpact}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, abridgeImpact: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-retention-impact-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{departuresAvoided.toFixed(2)} departures avoided</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            Documentation is a major burnout driver, but not the only one. We conservatively estimate Abridge impacts 30% of burnout-related turnover.
+          </p>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 4: Cost Savings */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">What's the dollar value?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Departures Avoided</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{departuresAvoided.toFixed(2)}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Replacement Cost</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <span className="text-sm text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={replacementCost}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, replacementCost: Number(e.target.value) || 0 } }))}
+                  className="w-24 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-retention-cost-input"
+                />
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-emerald-600">{formatCurrency(Math.round(annualValue))}</span>
+          </div>
+          
+          {/* Benchmark: Hospitalist Replacement Cost */}
+          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+              <span className="text-xs font-semibold text-[#6B7280]">Benchmark: Hospitalist Replacement Cost</span>
+            </div>
+            <div className="space-y-1.5 text-xs text-[#6B7280]">
+              <div className="flex justify-between"><span>Recruiting + signing bonus</span><span className="font-mono">$75K - $150K</span></div>
+              <div className="flex justify-between"><span>Lost revenue during vacancy</span><span className="font-mono">$250K - $400K</span></div>
+              <div className="flex justify-between"><span>Onboarding & ramp-up</span><span className="font-mono">$50K - $75K</span></div>
+            </div>
+            <p className="text-xs text-neutral-400 mt-3">
+              Total: $400K - $600K
+            </p>
+          </div>
+          
+          {/* What This Means */}
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart3 className="h-4 w-4 text-blue-600" />
+              <span className="text-xs font-semibold text-blue-800">What This Means</span>
+            </div>
+            <div className="text-xs text-blue-800">
+              <p>Over ~{yearsToRetainOne.toFixed(1)} years, expect to retain 1 additional hospitalist you would have otherwise lost to burnout.</p>
+              <p className="mt-2">
+                <span className="font-medium">Total savings: </span>{formatCurrency(replacementCost)}
+              </p>
+              <p>
+                <span className="font-medium">Annualized: </span>{formatCurrency(Math.round(annualValue))}/year
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(prevented * replacementCost))}
+            <span className="font-medium text-[#111827]">Annual Value</span>
+            <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="inpatient-retention-result">
+              {formatCurrency(Math.round(annualValue))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {prevented.toFixed(2)} prevented × ${replacementCost.toLocaleString()}
+            {departuresAvoided.toFixed(2)} departures avoided × ${replacementCost.toLocaleString()} replacement cost
+          </p>
+        </div>
+        
+        {/* Timeline Note */}
+        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            Retention impact typically measurable after 12-18 months.
           </p>
         </div>
       </div>

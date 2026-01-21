@@ -1,0 +1,130 @@
+❤️  Hospitalist Retention                          $225,000  ∧  │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Hospitalist programs face a retention crisis — turnover rates   │
+│ of 15-20% are common. Documentation burden is the #1 cited      │
+│ frustration. Reducing this burden improves retention.           │
+└─────────────────────────────────────────────────────────────────┘
+
+📋 Your Calculation
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Hospitalists spend 2+ hours per day on documentation — much     │
+│ of it after rounds or at home. This drives burnout and          │
+│ turnover. Replacing a hospitalist costs $400-600K when you      │
+│ factor in recruiting, lost revenue, and onboarding.             │
+└─────────────────────────────────────────────────────────────────┘
+
+STEP 1: BASELINE TURNOVER
+What's the current turnover situation?
+
+Hospitalists                 Turnover Rate
+┌─────────────┐              ┌─────────────┐
+│      20     │      ×       │     15      │ %     =    3.0 departures/year
+└─────────────┘              └─────────────┘
+
+Hospitalist turnover averages 15-20%. Higher than most specialties 
+due to workload and schedule demands.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 2: BURNOUT-RELATED
+How much is burnout-driven?
+
+Annual Departures            Burnout Attribution
+┌─────────────┐              ┌─────────────┐
+│     3.0     │      ×       │     50      │ %     =    1.5 preventable
+└─────────────┘              └─────────────┘
+
+~50% of hospitalist departures cite burnout as a primary factor. 
+Documentation burden is consistently the top complaint.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 3: ABRIDGE ATTRIBUTION
+What can Abridge prevent?
+
+Preventable                  Abridge Impact
+┌─────────────┐              ┌─────────────┐
+│     1.5     │      ×       │     30      │ %     =    0.45 departures avoided
+└─────────────┘              └─────────────┘
+
+Documentation is a major burnout driver, but not the only one. 
+We conservatively estimate Abridge impacts 30% of burnout-related 
+turnover.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 4: COST SAVINGS
+What's the dollar value?
+
+Departures Avoided           Replacement Cost
+┌─────────────┐              ┌─────────────┐
+│    0.45     │      ×       │ $ 500,000   │        =    $225,000
+└─────────────┘              └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 Benchmark: Hospitalist Replacement Cost                      │
+│                                                                 │
+│ Recruiting + signing bonus           $75K - $150K               │
+│ Lost revenue during vacancy          $250K - $400K              │
+│ Onboarding & ramp-up                 $50K - $75K                │
+│                                                                 │
+│ Total: $400K - $600K                                            │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 What This Means                                              │
+│                                                                 │
+│ Over ~2 years, expect to retain 1 additional hospitalist        │
+│ you would have otherwise lost to burnout.                       │
+│                                                                 │
+│ Total savings: $500,000                                         │
+│ Annualized: $225,000/year                                       │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   Annual Value                                     $225,000     │
+│   0.45 departures avoided × $500,000 replacement cost           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+⚠️ Retention impact typically measurable after 12-18 months.
+
+Code for Replit:
+javascriptCopy// ============ HOSPITALIST RETENTION ============
+
+// Inputs (user-editable)
+const hospitalists = 20;
+const turnoverRate = 0.15;                 // 15% - higher than avg
+const burnoutAttribution = 0.50;           // 50% burnout-related
+const abridgeImpact = 0.30;                // 30% Abridge can prevent
+const replacementCost = 500000;            // $500K replacement cost
+
+// Calculations
+
+// Step 1: Baseline Turnover
+const annualDepartures = hospitalists * turnoverRate;
+// 20 × 0.15 = 3.0 departures/year
+
+// Step 2: Burnout-Related
+const preventableDepartures = annualDepartures * burnoutAttribution;
+// 3.0 × 0.50 = 1.5 preventable
+
+// Step 3: Abridge Attribution
+const departuresAvoided = preventableDepartures * abridgeImpact;
+// 1.5 × 0.30 = 0.45 avoided
+
+// Step 4: Cost Savings
+const annualRetentionSavings = departuresAvoided * replacementCost;
+// 0.45 × $500,000 = $225,000
+
+// Dynamic framing
+const yearsToRetainOne = 1 / departuresAvoided;
+// 1 / 0.45 = 2.2 years
