@@ -268,7 +268,7 @@ export default function SummaryCommandCenter({
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
-      <GlobalHeader pageName="Explore Summary" currentStep={4} totalSteps={4} onLogoClick={onBackToJourney} />
+      <GlobalHeader pageName="Explore Summary" currentStep={6} totalSteps={6} onLogoClick={onBackToJourney} />
 
       <div className="max-w-6xl mx-auto px-6 pt-[96px] pb-8 space-y-8">
         {/* Action bar */}

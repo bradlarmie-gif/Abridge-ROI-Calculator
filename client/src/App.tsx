@@ -11,6 +11,7 @@ import ObjectiveSelectionScreen, {
 } from "@/pages/ObjectiveSelectionScreen";
 import RoiCalculator from "@/pages/RoiCalculator";
 import ModelBuilder, { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
+import BaselineSetup, { type BaselineInfo } from "@/pages/BaselineSetup";
 import InvestmentPage from "@/pages/InvestmentPage";
 import SummaryCommandCenter from "@/pages/SummaryCommandCenter";
 import { ExpandFlow } from "@/pages/expand";
@@ -20,7 +21,7 @@ import LearnPath from "@/pages/LearnPath";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "journey" | "explore" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn";
+type AppView = "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -41,8 +42,10 @@ export default function App() {
   });
 
   const [seedInputs, setSeedInputs] = useState<Partial<RoiInputs>>({});
+  const [baselineInfo, setBaselineInfo] = useState<BaselineInfo | null>(null);
   const [valueResults, setValueResults] = useState<ValueResults | null>(null);
   const [modelResults, setModelResults] = useState<ModelResults | null>(null);
+
   const handleSelectionComplete = (
     selectedSettings: CareSettingType[],
     selectedLevers: SelectedLever[],
@@ -50,7 +53,16 @@ export default function App() {
   ) => {
     setSelectionState({ selectedSettings, selectedLevers });
     setSeedInputs(seed);
+    navigateTo("baseline-setup");
+  };
+
+  const handleBaselineComplete = (baseline: BaselineInfo) => {
+    setBaselineInfo(baseline);
     navigateTo("model-builder");
+  };
+
+  const handleBackToBaseline = () => {
+    navigateTo("baseline-setup");
   };
 
   const handleValueComplete = (results: ValueResults) => {
@@ -104,13 +116,25 @@ export default function App() {
           />
         )}
 
-        {currentView === "model-builder" && hasSelection && (
-          <ModelBuilder
+        {currentView === "baseline-setup" && hasSelection && (
+          <BaselineSetup
             selectedSettings={selectionState.selectedSettings}
             selectedLevers={selectionState.selectedLevers}
             onBack={handleBackToExplore}
+            onComplete={handleBaselineComplete}
+            initialBaseline={baselineInfo}
+            onBackToJourney={handleBackToJourney}
+          />
+        )}
+
+        {currentView === "model-builder" && hasSelection && baselineInfo && (
+          <ModelBuilder
+            selectedSettings={selectionState.selectedSettings}
+            selectedLevers={selectionState.selectedLevers}
+            onBack={handleBackToBaseline}
             onComplete={handleValueComplete}
             initialResults={valueResults}
+            initialBaseline={baselineInfo}
             onBackToJourney={handleBackToJourney}
           />
         )}
@@ -121,6 +145,7 @@ export default function App() {
             valueResults={valueResults}
             onBack={handleBackToValue}
             onComplete={handleInvestmentComplete}
+            onBackToJourney={handleBackToJourney}
           />
         )}
 

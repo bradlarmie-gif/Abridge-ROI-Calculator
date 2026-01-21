@@ -1,0 +1,241 @@
+Update the "Your Journey with Abridge" section on the Explore Summary page with a more sophisticated visualization showing the network effect of scaling.
+
+## 1. UPDATE THE CHART
+
+Change from a single curved line to showing TWO lines:
+
+**Line 1: Linear Projection (dashed/dotted gray line)**
+- Starts at pilot value (e.g., $537K at 50 providers)
+- Goes straight to a linear endpoint (e.g., $2.1M at 200 providers)
+- This represents "just adding more providers at the same rate"
+- Style: Dashed line, gray color (#94a3b8)
+
+**Line 2: Actual Value Curve (solid green line with gradient fill)**
+- Starts at same pilot value
+- Curves UPWARD (convex/accelerating) to full scale value (e.g., $2.5M at 200 providers)
+- This represents actual value with compounding effects
+- Style: Solid line, green color (#059669), with light green gradient fill below
+
+**The Gap Between Lines:**
+- Shade the area between the two lines with a subtle green gradient
+- This visually represents the "network effect" or "compounding value"
+- Add a small annotation pointing to the gap: "Network Effect +$XXX"
+
+**Calculate the values:**
+```javascript
+// Linear projection (simple multiplication)
+const linearValueAtFullScale = (pilotValue / pilotProviders) * fullScaleProviders;
+
+// Actual value (from the model with higher utilization)
+const actualValueAtFullScale = calculateValueWithUtilization(fullScaleProviders, targetUtilization);
+
+// Network effect = the difference
+const networkEffect = actualValueAtFullScale - linearValueAtFullScale;
+2. UPDATE THE LEGEND
+Below the chart, add a simple legend:
+Copy━━━ Actual value (with compounding)     · · · Linear projection
+3. ADD "THE COMPOUNDING EFFECT" CALLOUT BOX
+Below the chart, add an insight box explaining WHY there's a gap:
+jsxCopy<div className="compounding-effect-box">
+  <div className="box-header">
+    <Lightbulb size={18} />
+    <span>THE COMPOUNDING EFFECT</span>
+  </div>
+  <p>
+    The gap between the lines represents value that compounds as you 
+    scale — not just more of the same:
+  </p>
+  <ul>
+    <li>📈 <strong>Utilization:</strong> 65% → 75% as adoption matures</li>
+    <li>👥 <strong>Retention:</strong> Benefits materialize after 6-12 months</li>
+    <li>🔄 <strong>Efficiency:</strong> Shared learnings, optimized workflows</li>
+  </ul>
+</div>
+4. UPDATE THE THREE SUMMARY CARDS
+Change the third card from "EXPANSION POTENTIAL" to "NETWORK EFFECT":
+jsxCopy<div className="summary-cards">
+  <div className="summary-card pilot">
+    <span className="card-label">PILOT (TODAY)</span>
+    <span className="card-value">${formatNumber(pilotValue)}</span>
+    <span className="card-sublabel">annual value</span>
+    <span className="card-roi">{pilotROI}x ROI</span>
+  </div>
+  
+  <div className="summary-card full-scale">
+    <span className="card-label">FULL SCALE</span>
+    <span className="card-value">${formatNumber(fullScaleValue)}</span>
+    <span className="card-sublabel">annual value</span>
+    <span className="card-roi">{fullScaleROI}x ROI</span>
+  </div>
+  
+  <div className="summary-card network-effect">
+    <span className="card-label">NETWORK EFFECT</span>
+    <span className="card-value">+${formatNumber(networkEffect)}</span>
+    <span className="card-sublabel">compounding value</span>
+    <span className="card-roi">Beyond linear projection</span>
+  </div>
+</div>
+5. CSS FOR THE COMPOUNDING EFFECT BOX
+cssCopy.compounding-effect-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.compounding-effect-box .box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.compounding-effect-box .box-header span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  letter-spacing: 0.05em;
+}
+
+.compounding-effect-box .box-header svg {
+  color: #059669;
+}
+
+.compounding-effect-box p {
+  font-size: 15px;
+  color: #065f46;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.compounding-effect-box ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compounding-effect-box li {
+  font-size: 14px;
+  color: #065f46;
+  padding: 8px 0;
+  border-bottom: 1px solid #a7f3d0;
+}
+
+.compounding-effect-box li:last-child {
+  border-bottom: none;
+}
+
+/* Network effect card styling */
+.summary-card.network-effect {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 2px solid #059669;
+}
+
+.summary-card.network-effect .card-value {
+  color: #059669;
+}
+6. CHART IMPLEMENTATION (Recharts)
+jsxCopy<ResponsiveContainer width="100%" height={350}>
+  <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+    <defs>
+      <linearGradient id="networkEffectGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#059669" stopOpacity={0.15} />
+        <stop offset="100%" stopColor="#059669" stopOpacity={0.02} />
+      </linearGradient>
+    </defs>
+    
+    <XAxis 
+      dataKey="providers" 
+      axisLine={false}
+      tickLine={false}
+      tick={{ fill: '#64748b', fontSize: 12 }}
+      label={{ value: 'PROVIDERS', position: 'bottom', fill: '#94a3b8', fontSize: 11 }}
+    />
+    <YAxis 
+      axisLine={false}
+      tickLine={false}
+      tick={{ fill: '#64748b', fontSize: 12 }}
+      tickFormatter={(v) => `$${(v / 1000000).toFixed(1)}M`}
+      width={60}
+    />
+    
+    {/* Area between the two lines (network effect) */}
+    <Area 
+      type="monotone" 
+      dataKey="actualValue" 
+      stroke="none"
+      fill="url(#networkEffectGradient)"
+    />
+    
+    {/* Linear projection line (dashed) */}
+    <Line 
+      type="linear" 
+      dataKey="linearValue" 
+      stroke="#94a3b8" 
+      strokeWidth={2}
+      strokeDasharray="6 4"
+      dot={false}
+    />
+    
+    {/* Actual value line (solid curve) */}
+    <Line 
+      type="monotone" 
+      dataKey="actualValue" 
+      stroke="#059669" 
+      strokeWidth={3}
+      dot={false}
+    />
+    
+    {/* Pilot point */}
+    <ReferenceDot 
+      x={pilotProviders} 
+      y={pilotValue} 
+      r={8} 
+      fill="#f97316" 
+      stroke="white" 
+      strokeWidth={2}
+    />
+    
+    {/* Full scale point */}
+    <ReferenceDot 
+      x={fullScaleProviders} 
+      y={actualValueAtFullScale} 
+      r={8} 
+      fill="#059669" 
+      stroke="white" 
+      strokeWidth={2}
+    />
+    
+  </ComposedChart>
+</ResponsiveContainer>
+7. CHART DATA STRUCTURE
+javascriptCopy// Generate chart data points
+const generateChartData = () => {
+  const data = [];
+  const valuePerProviderLinear = pilotValue / pilotProviders;
+  
+  for (let providers = pilotProviders; providers <= fullScaleProviders; providers += 10) {
+    // Linear projection (simple multiplication)
+    const linearValue = valuePerProviderLinear * providers;
+    
+    // Actual value (with utilization scaling)
+    // Utilization increases from pilotUtilization to targetUtilization as providers increase
+    const utilizationScale = pilotUtilization + 
+      ((targetUtilization - pilotUtilization) * 
+       ((providers - pilotProviders) / (fullScaleProviders - pilotProviders)));
+    
+    // Value increases faster than linear due to utilization + other compounding effects
+    const actualValue = (providers * encountersPerProvider * (utilizationScale / 100) * valuePerEncounter) 
+      * (1 + (providers / fullScaleProviders) * 0.15); // 15% compounding factor at full scale
+    
+    data.push({
+      providers,
+      linearValue: Math.round(linearValue),
+      actualValue: Math.round(actualValue)
+    });
+  }
+  
+  return data;
+};
+The goal is to show visually that scaling with Abridge isn't just "more of the same" — it's compounding value that grows faster than a linear projection would suggest.

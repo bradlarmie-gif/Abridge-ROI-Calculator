@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
-import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import {
@@ -17,6 +17,7 @@ interface InvestmentPageProps {
   valueResults: ValueResults;
   onBack: () => void;
   onComplete: (results: ModelResults) => void;
+  onBackToJourney: () => void;
 }
 
 const formatCurrency = (value: number): string => {
@@ -67,6 +68,7 @@ export default function InvestmentPage({
   valueResults,
   onBack,
   onComplete,
+  onBackToJourney,
 }: InvestmentPageProps) {
   const isNursingSetting = selectedSettings.includes("nursing");
   const activeSetting = selectedSettings[0] || "outpatient";
@@ -130,28 +132,20 @@ export default function InvestmentPage({
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
-      {/* Header */}
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-between">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back</span>
-          </button>
-          
-          <img src={abridgeLogo} alt="Abridge" className="h-6" />
-          
-          <div className="text-sm text-[#6B7280]">
-            Step <span className="font-semibold text-[#111827]">4</span> of <span className="font-semibold text-[#111827]">5</span>
-            <span className="ml-2 text-[#111827]">Your Investment</span>
-          </div>
-        </div>
-      </header>
+      <GlobalHeader pageName="Your Investment" currentStep={5} totalSteps={6} onLogoClick={onBackToJourney} />
 
-      <div className="max-w-6xl mx-auto px-8 py-12">
+      <div className="max-w-6xl mx-auto px-8 pt-[96px] pb-12">
+        {/* Back button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="mb-6 -ml-2 text-slate-600 hover:text-slate-900"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Value Drivers
+        </Button>
         {/* Page Title */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-[#111827] mb-2">Your Investment</h1>

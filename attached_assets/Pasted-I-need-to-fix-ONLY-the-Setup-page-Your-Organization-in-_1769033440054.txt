@@ -1,0 +1,130 @@
+I need to fix ONLY the Setup page ("Your Organization") in the Explore section. Keep everything else (Value Drivers, Investment, Summary) exactly as-is.
+
+## Changes to the Setup Page:
+
+### 1. Make utilization chips compact (remove description text inside chips)
+
+The chips should be simple and horizontal — label + percentage only. No description text inside the chip.
+
+```jsx
+<div className="utilization-section">
+  <label className="field-label">Expected utilization rate?</label>
+  <p className="field-hint">What percentage of encounters will use Abridge?</p>
+  
+  <div className="utilization-chips">
+    <button 
+      className={`utilization-chip ${utilization === 50 ? 'selected' : ''}`}
+      onClick={() => setUtilization(50)}
+    >
+      <span className="chip-label">Conservative</span>
+      <span className="chip-value">50%</span>
+    </button>
+    
+    <button 
+      className={`utilization-chip ${utilization === 65 ? 'selected' : ''}`}
+      onClick={() => setUtilization(65)}
+    >
+      <span className="chip-label">Typical</span>
+      <span className="chip-value">65%</span>
+    </button>
+    
+    <button 
+      className={`utilization-chip ${utilization === 80 ? 'selected' : ''}`}
+      onClick={() => setUtilization(80)}
+    >
+      <span className="chip-label">Aggressive</span>
+      <span className="chip-value">80%</span>
+    </button>
+  </div>
+  
+  <p className="utilization-hint">
+    💡 Not sure? Start with Typical — you can adjust later.
+  </p>
+</div>
+2. CSS for compact utilization chips
+cssCopy.utilization-chips {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.utilization-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 32px;
+  min-width: 130px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.utilization-chip:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.utilization-chip.selected {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+
+.chip-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.utilization-chip.selected .chip-label {
+  color: #c2410c;
+}
+
+.chip-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.utilization-chip.selected .chip-value {
+  color: #ea580c;
+}
+
+/* Remove any description/context text inside chips */
+.chip-context,
+.chip-description {
+  display: none !important;
+}
+
+.utilization-hint {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #64748b;
+}
+3. The result should look like this:
+CopyExpected utilization rate?
+What percentage of encounters will use Abridge?
+
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ Conservative │  │    Typical   │  │  Aggressive  │
+│     50%      │  │     65%      │  │     80%      │
+└──────────────┘  └──────────────┘  └──────────────┘
+
+💡 Not sure? Start with Typical — you can adjust later.
+Each chip should be approximately:
+
+Height: ~80px (not 150px+ like current)
+Width: ~130px
+Clean, minimal, easy to scan
+
+4. Apply to ALL Explore setup pages:
+
+Outpatient setup
+ED setup
+Inpatient setup
+Nursing setup
+
+DO NOT change anything on the Value Drivers, Investment, or Summary pages.
