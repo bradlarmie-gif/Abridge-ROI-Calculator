@@ -1608,13 +1608,18 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            When clinicians spend less time on documentation, they have capacity to see additional patients. 
-            Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but 
-            even a modest portion creates meaningful revenue.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                When clinicians spend less time on documentation, they have capacity to see additional patients. 
+                Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but 
+                even a modest portion creates meaningful revenue.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Step 1: Time Returned */}
@@ -1898,13 +1903,18 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            Documentation burden is the #1 driver of physician burnout. Reducing this burden improves 
-            satisfaction and retention. Replacing a physician costs $400K-$800K+ when you factor in 
-            recruiting, lost revenue during vacancy, and onboarding.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                Documentation burden is the #1 driver of physician burnout. Reducing this burden improves 
+                satisfaction and retention. Replacing a physician costs $400K-$800K+ when you factor in 
+                recruiting, lost revenue during vacancy, and onboarding.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Small Provider Warning */}
@@ -2119,13 +2129,18 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            Physicians under time pressure document less than the full clinical picture. 
-            AI-assisted documentation captures the complexity that supports accurate coding—not 
-            upcoding, just getting credit for work already done.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                Physicians under time pressure document less than the full clinical picture. 
+                AI-assisted documentation captures the complexity that supports accurate coding—not 
+                upcoding, just getting credit for work already done.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Step 1: Baseline wRVUs */}
@@ -2295,14 +2310,19 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            Risk adjustment relies on complete documentation of chronic conditions. Physicians 
-            discuss multiple conditions per visit, but time pressure means not all make it to 
-            the note. Abridge captures what's said, recovering HCC opportunities that would 
-            otherwise be missed.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                Risk adjustment relies on complete documentation of chronic conditions. Physicians 
+                discuss multiple conditions per visit, but time pressure means not all make it to 
+                the note. Abridge captures what's said, recovering HCC opportunities that would 
+                otherwise be missed.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Step 1: Risk-Based Encounters */}
@@ -2604,14 +2624,19 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            Most denials are recoverable—you appeal, you win, it just costs time. But a portion 
-            of documentation-related denials are written off without appeal, either because the 
-            MDM can't support it or the rework cost exceeds the claim value. Abridge captures 
-            the clinical reasoning that saves these.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                Most denials are recoverable—you appeal, you win, it just costs time. But a portion 
+                of documentation-related denials are written off without appeal, either because the 
+                MDM can't support it or the rework cost exceeds the claim value. Abridge captures 
+                the clinical reasoning that saves these.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Step 1: Total Denials */}
@@ -2870,13 +2895,18 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            When patients leave without being seen, you lose that revenue entirely. Faster documentation 
-            means faster throughput, shorter wait times, and fewer walkouts. Some retained patients 
-            are simple ED visits—but some would have been admitted.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                When patients leave without being seen, you lose that revenue entirely. Faster documentation 
+                means faster throughput, shorter wait times, and fewer walkouts. Some retained patients 
+                are simple ED visits—but some would have been admitted.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Step 1: Current LWBS */}
@@ -3315,13 +3345,18 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            ED physicians face extreme burnout—over 65% report symptoms. Documentation burden extends shifts 
-            and destroys work-life balance. Reducing this burden improves retention. Replacing an ED physician 
-            costs $750K-$1.2M when you factor in recruiting, signing bonuses, and coverage gaps.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                ED physicians face extreme burnout—over 65% report symptoms. Documentation burden extends shifts 
+                and destroys work-life balance. Reducing this burden improves retention. Replacing an ED physician 
+                costs $750K-$1.2M when you factor in recruiting, signing bonuses, and coverage gaps.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Small Group Warning */}
@@ -3585,12 +3620,17 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            ED physicians under time pressure document less than the full clinical picture—especially during 
-            high-volume surges. AI-assisted documentation captures the complexity that supports accurate coding.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                ED physicians under time pressure document less than the full clinical picture—especially during 
+                high-volume surges. AI-assisted documentation captures the complexity that supports accurate coding.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Step 1: Baseline wRVUs */}
@@ -3800,13 +3840,18 @@ export default function ModelBuilder({
     return (
       <div className="space-y-6">
         {/* Theory Box */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
-          <p className="text-sm font-semibold text-blue-800">The Theory</p>
-          <p className="text-xs text-blue-700">
-            ED claims face intense payer scrutiny. Medical necessity, level of service, and procedure 
-            documentation are common denial triggers. Most denials are recoverable with rework—but some 
-            are written off entirely. Abridge captures the clinical detail that saves these claims.
-          </p>
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                ED claims face intense payer scrutiny. Medical necessity, level of service, and procedure 
+                documentation are common denial triggers. Most denials are recoverable with rework—but some 
+                are written off entirely. Abridge captures the clinical detail that saves these claims.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Step 1: Total Denials */}
