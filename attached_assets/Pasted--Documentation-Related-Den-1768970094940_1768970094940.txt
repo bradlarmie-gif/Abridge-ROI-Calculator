@@ -1,0 +1,105 @@
+┌─────────────────────────────────────────────────────────────────┐
+│ 🛡️  Documentation-Related Denials                  $315,000  ∧ │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Inpatient claims face rigorous payer review. Medical necessity, │
+│ level of care, and clinical indicators must be clearly          │
+│ documented. Incomplete notes lead to costly denials and appeals.│
+└─────────────────────────────────────────────────────────────────┘
+
+📋 Your Calculation
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Most inpatient denials are appealed due to high stakes — but    │
+│ some are lost forever when documentation can't support the      │
+│ claim. Medical necessity wasn't captured. Status criteria       │
+│ weren't documented. Abridge captures the clinical reasoning     │
+│ that makes the difference.                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+STEP 1: TOTAL DENIALS
+How many claims are denied?
+
+Admissions                   Denial Rate
+┌─────────────┐              ┌─────────────┐
+│    8,000    │      ×       │     5       │ %     =    400 annual denials
+└─────────────┘              └─────────────┘
+
+Inpatient denial rates typically range 5-10%. Varies by payer mix 
+and case complexity.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 2: DOCUMENTATION-RELATED
+How many are caused by documentation gaps?
+
+Total Denials                Doc-Related %
+┌─────────────┐              ┌─────────────┐
+│     400     │      ×       │     35      │ %     =    140 doc denials
+└─────────────┘              └─────────────┘
+
+35-40% of inpatient denials stem from documentation gaps: medical 
+necessity, level of care, status (IP vs Obs).
+
+────────────────────────────────────────────────────────────────────
+
+STEP 3: WRITTEN OFF
+How many are lost without successful appeal?
+
+Doc Denials                  Write-Off %
+┌─────────────┐              ┌─────────────┐
+│     140     │      ×       │     25      │ %     =    35 claims written off
+└─────────────┘              └─────────────┘
+
+Due to high claim values, most are appealed. But ~25% are 
+ultimately written off — documentation can't support the appeal. 
+These claims are lost forever.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 4: ABRIDGE RECOVERY
+How many can Abridge save?
+
+Written Off                  Capture Rate
+┌─────────────┐              ┌─────────────┐
+│      35     │      ×       │     75      │ %     =    26 claims recovered
+└─────────────┘              └─────────────┘
+
+Abridge captures the clinical reasoning and medical necessity that 
+physicians discuss but don't document — preventing denials or 
+winning appeals.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 5: VALUE RECOVERED
+What's the revenue impact?
+
+Claims Recovered             Avg Claim Value
+┌─────────────┐              ┌─────────────┐
+│      26     │      ×       │ $  12,000   │        =    $315,000
+└─────────────┘              └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 Benchmark: Inpatient Claim Value                             │
+│                                                                 │
+│ Low complexity admission             $6,000 - $10,000           │
+│ Medium complexity                    $10,000 - $18,000          │
+│ High complexity / ICU                $20,000 - $50,000+         │
+│                                                                 │
+│ Blended average: ~$12,000                                       │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   Annual Value                                     $315,000     │
+│   26 claims recovered × $12,000 avg claim                       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+⚠️ Denial patterns vary by payer. Work with your revenue cycle 
+   team to validate rates for your specific payer mix.

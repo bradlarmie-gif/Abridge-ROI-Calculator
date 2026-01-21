@@ -196,8 +196,11 @@ interface DriverInputs {
     costPerQuery: number;   // Fully loaded cost per query (default $50)
   };
   inpatientDenials: {
-    denialRate: number;
-    avgClaimValue: number;
+    denialRate: number;      // % of admissions denied (default 5%)
+    docRelatedPct: number;   // % of denials that are doc-related (default 35%)
+    writeOffPct: number;     // % of doc denials written off (default 25%)
+    captureRate: number;     // % of write-offs Abridge can recover (default 75%)
+    avgClaimValue: number;   // Average inpatient claim value (default $12,000)
   };
   // Nursing-specific drivers
   nursingOvertime: {
@@ -462,8 +465,11 @@ export default function ModelBuilder({
       costPerQuery: 50,     // $50 fully loaded cost per query
     },
     inpatientDenials: {
-      denialRate: 6,
-      avgClaimValue: 4500,
+      denialRate: 5,          // 5% of admissions denied
+      docRelatedPct: 35,      // 35% are doc-related
+      writeOffPct: 25,        // 25% written off
+      captureRate: 75,        // 75% Abridge can recover
+      avgClaimValue: 12000,   // $12,000 average claim
     },
     // Nursing defaults
     nursingOvertime: {
@@ -810,11 +816,18 @@ export default function ModelBuilder({
         return Math.round(annualSavings);
       }
       case "inpatientDenials": {
-        const { denialRate, avgClaimValue } = driverInputs.inpatientDenials;
-        const totalDenials = encounters * (denialRate / 100);
-        const docRelated = totalDenials * 0.45; // Inpatient denials are often documentation-related
-        const prevented = docRelated * 0.40 * (utilizationRate / 100);
-        return Math.round(prevented * avgClaimValue);
+        const { denialRate, docRelatedPct, writeOffPct, captureRate, avgClaimValue } = driverInputs.inpatientDenials;
+        // Step 1: Total Denials
+        const totalDenials = eligibleEncounters * (denialRate / 100);
+        // Step 2: Documentation-Related
+        const docDenials = totalDenials * (docRelatedPct / 100);
+        // Step 3: Written Off
+        const writtenOff = docDenials * (writeOffPct / 100);
+        // Step 4: Abridge Recovery
+        const claimsRecovered = writtenOff * (captureRate / 100);
+        // Step 5: Value Recovered
+        const annualValue = claimsRecovered * avgClaimValue;
+        return Math.round(annualValue);
       }
       // Nursing Drivers
       case "nursingOvertime": {
@@ -1036,6 +1049,9 @@ export default function ModelBuilder({
         case "inpatientDenials":
           return {
             denialRate: driverInputs.inpatientDenials.denialRate,
+            docRelatedPct: driverInputs.inpatientDenials.docRelatedPct,
+            writeOffPct: driverInputs.inpatientDenials.writeOffPct,
+            captureRate: driverInputs.inpatientDenials.captureRate,
             avgClaimValue: driverInputs.inpatientDenials.avgClaimValue,
           };
         default:
@@ -4489,64 +4505,257 @@ export default function ModelBuilder({
   };
   
   const renderInpatientDenialsInputs = () => {
-    const { denialRate, avgClaimValue } = driverInputs.inpatientDenials;
-    const totalDenials = encounters * (denialRate / 100);
-    const docRelated = totalDenials * 0.45;
-    const prevented = docRelated * 0.40 * (utilizationRate / 100);
+    const { denialRate, docRelatedPct, writeOffPct, captureRate, avgClaimValue } = driverInputs.inpatientDenials;
+    
+    // Step 1: Total Denials
+    const totalDenials = eligibleEncounters * (denialRate / 100);
+    // Step 2: Documentation-Related
+    const docDenials = totalDenials * (docRelatedPct / 100);
+    // Step 3: Written Off
+    const writtenOff = docDenials * (writeOffPct / 100);
+    // Step 4: Abridge Recovery
+    const claimsRecovered = writtenOff * (captureRate / 100);
+    // Step 5: Value Recovered
+    const annualValue = claimsRecovered * avgClaimValue;
     
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Current inpatient denial rate</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{denialRate}%</span>
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Most inpatient denials are appealed due to high stakes — but some are lost forever when documentation can't support the claim. Medical necessity wasn't captured. Status criteria weren't documented. Abridge captures the clinical reasoning that makes the difference.
+              </p>
+            </div>
           </div>
-          <Slider
-            value={[denialRate]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, denialRate: val } }))}
-            min={3}
-            max={12}
-            step={1}
-            className="w-full"
-            data-testid="inpatient-denials-rate-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Inpatient denial rates are typically 5-8%</p>
         </div>
-        
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Doc-related portion:</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(totalDenials).toLocaleString()} denials × 45% doc-related = {Math.round(docRelated).toLocaleString()} doc denials
-          </p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(docRelated).toLocaleString()} × 40% prevention × {utilizationRate}% adoption = {Math.round(prevented).toLocaleString()} prevented
-          </p>
-        </div>
-        
+
+        {/* Step 1: Total Denials */}
         <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Average inpatient claim value</label>
           <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={avgClaimValue}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, avgClaimValue: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="inpatient-denials-claim-input"
-            />
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Total Denials</span>
           </div>
-          <p className="text-xs text-[#6B7280]">Inpatient claims are high-value: $3,500-6,000 typical</p>
+          <p className="text-sm text-[#6B7280]">How many claims are denied?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Admissions</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{eligibleEncounters.toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Denial Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={denialRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, denialRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-denials-rate-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(totalDenials).toLocaleString()} annual denials</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            Inpatient denial rates typically range 5-10%. Varies by payer mix and case complexity.
+          </p>
         </div>
-        
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 2: Documentation-Related */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Related</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">How many are caused by documentation gaps?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Total Denials</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(totalDenials).toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Doc-Related %</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={docRelatedPct}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, docRelatedPct: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-denials-doc-related-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(docDenials).toLocaleString()} doc denials</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            35-40% of inpatient denials stem from documentation gaps: medical necessity, level of care, status (IP vs Obs).
+          </p>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 3: Written Off */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Written Off</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">How many are lost without successful appeal?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Doc Denials</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(docDenials).toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Write-Off %</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={writeOffPct}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, writeOffPct: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-denials-writeoff-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(writtenOff).toLocaleString()} claims written off</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            Due to high claim values, most are appealed. But ~25% are ultimately written off — documentation can't support the appeal. These claims are lost forever.
+          </p>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 4: Abridge Recovery */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Abridge Recovery</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">How many can Abridge save?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Written Off</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(writtenOff).toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Capture Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={captureRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, captureRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-denials-capture-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(claimsRecovered).toLocaleString()} claims recovered</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            Abridge captures the clinical reasoning and medical necessity that physicians discuss but don't document — preventing denials or winning appeals.
+          </p>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 5: Value Recovered */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 5: Value Recovered</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">What's the revenue impact?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Claims Recovered</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(claimsRecovered).toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Avg Claim Value</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <span className="text-sm text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={avgClaimValue}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, avgClaimValue: Number(e.target.value) || 0 } }))}
+                  className="w-20 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-denials-claim-input"
+                />
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-emerald-600">{formatCurrency(Math.round(annualValue))}</span>
+          </div>
+          
+          {/* Benchmark: Inpatient Claim Value */}
+          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+              <span className="text-xs font-semibold text-[#6B7280]">Benchmark: Inpatient Claim Value</span>
+            </div>
+            <div className="space-y-1.5 text-xs text-[#6B7280]">
+              <div className="flex justify-between"><span>Low complexity admission</span><span className="font-mono">$6,000 - $10,000</span></div>
+              <div className="flex justify-between"><span>Medium complexity</span><span className="font-mono">$10,000 - $18,000</span></div>
+              <div className="flex justify-between"><span>High complexity / ICU</span><span className="font-mono">$20,000 - $50,000+</span></div>
+            </div>
+            <p className="text-xs text-neutral-400 mt-3">
+              Blended average: ~$12,000
+            </p>
+          </div>
+        </div>
+
+        {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(prevented * avgClaimValue))}
+            <span className="font-medium text-[#111827]">Annual Value</span>
+            <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="inpatient-denials-result">
+              {formatCurrency(Math.round(annualValue))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(prevented).toLocaleString()} prevented × ${avgClaimValue.toLocaleString()}
+            {Math.round(claimsRecovered).toLocaleString()} claims recovered × ${avgClaimValue.toLocaleString()} avg claim
+          </p>
+        </div>
+        
+        {/* Revenue Cycle Note */}
+        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            Denial patterns vary by payer. Work with your revenue cycle team to validate rates for your specific payer mix.
           </p>
         </div>
       </div>
