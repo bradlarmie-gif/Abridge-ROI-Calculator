@@ -1,0 +1,101 @@
+📋 Accurate Level of Service                        $185,625    │
+│    Capture the complexity you're already delivering             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ ED physicians under time pressure document less than the full   │
+│ clinical picture — especially during high-volume surges.        │
+│ AI-assisted documentation captures the complexity that          │
+│ supports accurate coding.                                       │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ STEP 1: BASELINE wRVUs                                          │
+│ What's your current productivity?                               │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────────┐                  │
+│ │ Annual ED Visits │ × │ Avg wRVU/Encounter │                  │
+│ │     45,000       │   │        2.5         │                  │
+│ └──────────────────┘   └────────────────────┘                  │
+│                                                                 │
+│                      Baseline wRVUs: 112,500                    │
+│                                                                 │
+│ 💡 Don't know your wRVUs? We estimate using 2.5 wRVU per        │
+│    encounter (typical ED blend across acuity levels).           │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK: ED wRVU per Encounter                         │ │
+│ │                                                             │ │
+│ │ Low acuity mix (urgent care-like)       1.5 - 2.0           │ │
+│ │ Typical community ED                    2.0 - 2.5           │ │
+│ │ High acuity / trauma center             2.5 - 3.5           │ │
+│ │                                                             │ │
+│ │ Your input: 2.5                                             │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: wRVU IMPROVEMENT                                        │
+│ How much does Abridge improve capture?                          │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │  Baseline wRVUs  │ × │ Improvement Rate │                    │
+│ │    112,500       │   │       5%         │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                         wRVU Gain: 5,625                        │
+│                                                                 │
+│ 💡 On average, Abridge improves wRVU capture by 5% through      │
+│    more complete documentation of clinical complexity —         │
+│    especially during high-volume periods when documentation     │
+│    typically suffers.                                           │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: REVENUE IMPACT                                          │
+│ What's the dollar value?                                        │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────────┐                  │
+│ │    wRVU Gain     │ × │ Conversion Factor  │                  │
+│ │     5,625        │   │       $33          │                  │
+│ └──────────────────┘   └────────────────────┘                  │
+│                                                                 │
+│                       Annual Revenue: $185,625                  │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK: Conversion Factor                             │ │
+│ │                                                             │ │
+│ │ Medicare (2024)            $33                              │ │
+│ │ Commercial (typical)       $45 - $65                        │ │
+│ │                                                             │ │
+│ │ Your input: $33 (Medicare baseline)                         │ │
+│ │                                                             │ │
+│ │ 💡 We anchor to Medicare for conservatism. If your payer    │ │
+│ │    mix is commercial-heavy, actual results may be 30-50%    │ │
+│ │    higher.                                                  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Final Code for Replit:
+javascriptCopy// ============ ED ACCURATE LEVEL OF SERVICE ============
+
+// Inputs (user-editable)
+const annualEdVisits = 45000;              // From earlier in flow
+const avgWrvuPerEncounter = 2.5;           // Default 2.5, adjustable
+const wrvuImprovementRate = 0.05;          // 5% - Abridge benchmark
+const conversionFactor = 33;               // Medicare CF - conservative
+
+// Calculations
+
+// Step 1: Baseline wRVUs
+const baselineWrvus = annualEdVisits * avgWrvuPerEncounter;
+// 45,000 × 2.5 = 112,500 wRVUs
+
+// Step 2: wRVU Improvement
+const wrvuGain = baselineWrvus * wrvuImprovementRate;
+// 112,500 × 0.05 = 5,625 wRVUs
+
+// Step 3: Revenue Impact
+const annualAlosRevenue = wrvuGain * conversionFactor;
+// 5,625 × $33 = $185,625

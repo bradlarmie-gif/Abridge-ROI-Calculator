@@ -162,9 +162,10 @@ interface DriverInputs {
     replacementCost: number;
   };
   edLevelOfService: {
-    underCodingRate: number;
-    wrvuDelta: number;
-    wrvuConversion: number;
+    annualEdVisits: number;
+    avgWrvuPerEncounter: number;
+    wrvuImprovementRate: number;
+    conversionFactor: number;
   };
   edDenials: {
     denialRate: number;
@@ -428,9 +429,10 @@ export default function ModelBuilder({
       replacementCost: 800000,
     },
     edLevelOfService: {
-      underCodingRate: 12,
-      wrvuDelta: 1.2,
-      wrvuConversion: 50,
+      annualEdVisits: 45000,
+      avgWrvuPerEncounter: 2.5,
+      wrvuImprovementRate: 5,
+      conversionFactor: 33,
     },
     edDenials: {
       denialRate: 10,
@@ -752,11 +754,13 @@ export default function ModelBuilder({
         return Math.round(departuresAvoided * replacementCost);
       }
       case "edLevelOfService": {
-        const { underCodingRate, wrvuDelta, wrvuConversion } = driverInputs.edLevelOfService;
-        const emEncounters = eligibleEncounters * 0.90; // ED is 90% vs 80% for outpatient
-        const underCoded = emEncounters * (underCodingRate / 100);
-        const corrected = underCoded * 0.50;
-        return Math.round(corrected * wrvuDelta * wrvuConversion);
+        const { annualEdVisits, avgWrvuPerEncounter, wrvuImprovementRate, conversionFactor } = driverInputs.edLevelOfService;
+        // Step 1: Baseline wRVUs
+        const baselineWrvus = annualEdVisits * avgWrvuPerEncounter;
+        // Step 2: wRVU Improvement
+        const wrvuGain = baselineWrvus * (wrvuImprovementRate / 100);
+        // Step 3: Revenue Impact
+        return Math.round(wrvuGain * conversionFactor);
       }
       case "edDenials": {
         const { denialRate, avgClaimValue } = driverInputs.edDenials;
@@ -989,9 +993,10 @@ export default function ModelBuilder({
           };
         case "edLevelOfService":
           return {
-            underCodingRate: driverInputs.edLevelOfService.underCodingRate,
-            wrvuDelta: driverInputs.edLevelOfService.wrvuDelta,
-            wrvuConversion: driverInputs.edLevelOfService.wrvuConversion,
+            annualEdVisits: driverInputs.edLevelOfService.annualEdVisits,
+            avgWrvuPerEncounter: driverInputs.edLevelOfService.avgWrvuPerEncounter,
+            wrvuImprovementRate: driverInputs.edLevelOfService.wrvuImprovementRate,
+            conversionFactor: driverInputs.edLevelOfService.conversionFactor,
           };
         case "edDenials":
           return {
@@ -3523,78 +3528,208 @@ export default function ModelBuilder({
   };
   
   const renderEdLevelOfServiceInputs = () => {
-    const { underCodingRate, wrvuDelta, wrvuConversion } = driverInputs.edLevelOfService;
-    const emEncounters = eligibleEncounters * 0.90;
-    const underCoded = emEncounters * (underCodingRate / 100);
-    const corrected = underCoded * 0.50;
-    const value = corrected * wrvuDelta * wrvuConversion;
+    const { annualEdVisits, avgWrvuPerEncounter, wrvuImprovementRate, conversionFactor } = driverInputs.edLevelOfService;
+
+    // ED ACCURATE LEVEL OF SERVICE CALCULATIONS (3-step)
+    // Step 1: Baseline wRVUs
+    const baselineWrvus = annualEdVisits * avgWrvuPerEncounter;
     
+    // Step 2: wRVU Improvement
+    const wrvuGain = baselineWrvus * (wrvuImprovementRate / 100);
+    
+    // Step 3: Revenue Impact
+    const annualRevenue = wrvuGain * conversionFactor;
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
+
     return (
       <div className="space-y-6">
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">E/M encounters (auto):</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {eligibleEncounters.toLocaleString()} eligible × 90% E/M = {Math.round(emEncounters).toLocaleString()} E/M encounters
+        {/* Theory Box */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+          <p className="text-sm font-semibold text-blue-800">The Theory</p>
+          <p className="text-xs text-blue-700">
+            ED physicians under time pressure document less than the full clinical picture—especially during 
+            high-volume surges. AI-assisted documentation captures the complexity that supports accurate coding.
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What's your estimated under-coding rate?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{underCodingRate}%</span>
+
+        {/* Step 1: Baseline wRVUs */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Baseline wRVUs</p>
+          <p className="text-xs text-[#6B7280]">What's your current productivity?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Annual ED Visits</label>
+                <Input
+                  type="number"
+                  value={annualEdVisits}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, annualEdVisits: Number(e.target.value) || 0 } }))}
+                  className="w-28 text-center font-mono text-sm h-8"
+                  data-testid="ed-los-visits-input"
+                />
+              </div>
+              <span className="text-neutral-400 pt-5">×</span>
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Avg wRVU/Encounter</label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={avgWrvuPerEncounter}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, avgWrvuPerEncounter: Number(e.target.value) || 0 } }))}
+                  className="w-20 text-center font-mono text-sm h-8"
+                  data-testid="ed-los-wrvu-per-enc-input"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {baselineWrvus.toLocaleString()} wRVUs
+              </div>
+            </div>
           </div>
-          <Slider
-            value={[underCodingRate]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, underCodingRate: val } }))}
-            min={5}
-            max={20}
-            step={1}
-            className="w-full"
-            data-testid="ed-los-under-coding-slider"
-          />
-          <p className="text-xs text-[#6B7280]">ED under-coding is typically 10-15% (higher than outpatient due to pace)</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(emEncounters).toLocaleString()} × {underCodingRate}% = {Math.round(underCoded).toLocaleString()} under-coded visits
+
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Don't know your wRVUs? We estimate using 2.5 wRVU per encounter (typical ED blend across acuity levels).
+          </p>
+
+          {/* Benchmark Box */}
+          <div className="p-3 bg-slate-100 rounded-lg border border-slate-200 mt-3 space-y-2">
+            <p className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+              <BarChart3 className="w-3 h-3" />
+              Benchmark: ED wRVU per Encounter
+            </p>
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">Low acuity mix (urgent care-like)</span>
+                <span className="font-mono text-slate-700">1.5 - 2.0</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">Typical community ED</span>
+                <span className="font-mono text-slate-700">2.0 - 2.5</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">High acuity / trauma center</span>
+                <span className="font-mono text-slate-700">2.5 - 3.5</span>
+              </div>
+              <div className="flex justify-between text-xs pt-1 border-t border-slate-200">
+                <span className="text-slate-600">Your input</span>
+                <span className="font-mono text-slate-700">{avgWrvuPerEncounter}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 2: wRVU Improvement */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: wRVU Improvement</p>
+          <p className="text-xs text-[#6B7280]">How much does Abridge improve capture?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {baselineWrvus.toLocaleString()} wRVUs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={wrvuImprovementRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, wrvuImprovementRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="ed-los-improvement-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {wrvuGain.toLocaleString()} wRVU gain
+              </div>
+            </div>
+          </div>
+
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            On average, Abridge improves wRVU capture by 5% through more complete documentation of clinical 
+            complexity—especially during high-volume periods when documentation typically suffers.
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">wRVU delta per corrected visit</label>
-          <Input
-            type="number"
-            step="0.1"
-            value={wrvuDelta}
-            onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, wrvuDelta: Number(e.target.value) || 0 } }))}
-            className="w-24 font-mono"
-            data-testid="ed-wrvu-delta-input"
-          />
-          <p className="text-xs text-[#6B7280]">ED wRVU deltas are larger than outpatient (~1.0-1.4)</p>
-        </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">wRVU conversion factor</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={wrvuConversion}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, wrvuConversion: Number(e.target.value) || 0 } }))}
-              className="w-24 font-mono"
-              data-testid="ed-wrvu-conversion-input"
-            />
+
+        <StepDivider />
+
+        {/* Step 3: Revenue Impact */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Revenue Impact</p>
+          <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {wrvuGain.toLocaleString()} wRVUs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={conversionFactor}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, conversionFactor: Number(e.target.value) || 0 } }))}
+                  className="w-20 text-center font-mono text-sm h-8"
+                  data-testid="ed-los-conversion-input"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-semibold text-emerald-600">
+                {formatCurrency(Math.round(annualRevenue))}
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">Check with your finance team—typically $45-60 for ED</p>
+
+          {/* Conversion Factor Benchmark */}
+          <div className="p-3 bg-slate-100 rounded-lg border border-slate-200 mt-3 space-y-2">
+            <p className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+              <BarChart3 className="w-3 h-3" />
+              Benchmark: Conversion Factor
+            </p>
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">Medicare (2024)</span>
+                <span className="font-mono text-slate-700">$33</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">Commercial (typical)</span>
+                <span className="font-mono text-slate-700">$45 - $65</span>
+              </div>
+              <div className="flex justify-between text-xs pt-1 border-t border-slate-200">
+                <span className="text-slate-600">Your input</span>
+                <span className="font-mono text-slate-700">${conversionFactor} (Medicare baseline)</span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              We anchor to Medicare for conservatism. If your payer mix is commercial-heavy, actual results may be 30-50% higher.
+            </p>
+          </div>
         </div>
-        
+
+        {/* Result Summary */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-medium text-[#111827]">Annual Value</span>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(value))}
+              {formatCurrency(Math.round(annualRevenue))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(corrected).toLocaleString()} corrected × {wrvuDelta} wRVU × ${wrvuConversion}
+            {wrvuGain.toLocaleString()} wRVU gain × ${conversionFactor}/wRVU
           </p>
         </div>
       </div>
