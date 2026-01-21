@@ -1,0 +1,190 @@
+UI Behavior:
+Default state: Admissions ON at 10%
+When toggled OFF:
+
+Admission section collapses/grays out
+Math recalculates to ED visits only
+Total drops to ~$170K
+
+When toggled ON:
+
+Admission section visible
+Admission % adjustable (default 10%)
+Full value shown
+
+
+Final Code for Replit:
+javascriptCopy// ============ ED PATIENT THROUGHPUT (LWBS) ============
+
+// Inputs (user-editable)
+const annualEdVisits = 45000;              // Annual ED volume
+const lwbsRate = 0.035;                    // 3.5% LWBS rate, adjustable
+const improvementRate = 0.20;              // 20% LWBS reduction
+const avgEdVisitRevenue = 600;             // Avg ED visit revenue, adjustable
+
+// Admission toggle
+const includeAdmissions = true;            // Toggle ON/OFF
+const admissionPercent = 0.10;             // 10% default, adjustable when ON
+const avgAdmissionRevenue = 15000;         // Avg admission revenue, adjustable
+
+// Calculations
+
+// Step 1: Current LWBS
+const patientsLeaving = annualEdVisits * lwbsRate;
+// 45,000 × 0.035 = 1,575 patients
+
+// Step 2: Patients Retained
+const patientsRetained = patientsLeaving * improvementRate;
+// 1,575 × 0.20 = 315 patients
+
+// Step 3: Revenue Mix
+let edVisitPatients, admissionPatients, edVisitRevenue, admissionRevenue;
+
+if (includeAdmissions) {
+  // Split between ED visits and admissions
+  edVisitPatients = patientsRetained * (1 - admissionPercent);
+  admissionPatients = patientsRetained * admissionPercent;
+  
+  edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
+  admissionRevenue = admissionPatients * avgAdmissionRevenue;
+} else {
+  // All ED visits, no admissions
+  edVisitPatients = patientsRetained;
+  admissionPatients = 0;
+  
+  edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
+  admissionRevenue = 0;
+}
+
+// Step 4: Total Value
+const totalLwbsRevenue = edVisitRevenue + admissionRevenue;
+
+// With admissions ON (default):
+// ED: 284 × $600 = $170,400
+// Admissions: 31 × $15,000 = $465,000
+// Total: $635,400
+
+// With admissions OFF:
+// ED: 315 × $600 = $189,000
+// Total: $189,000
+
+Final UI Structure:
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 🏥 Patient Throughput (LWBS)                        $635,400    │
+│    Keep patients from walking out—capture that revenue          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ When patients leave without being seen, you lose that revenue   │
+│ entirely. Faster documentation means faster throughput,         │
+│ shorter wait times, and fewer walkouts. Some retained patients  │
+│ are simple ED visits — but some would have been admitted.       │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ STEP 1: CURRENT LWBS                                            │
+│ How many patients are you losing?                               │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────┐                        │
+│ │ Annual ED Visits │ × │  LWBS Rate   │                        │
+│ │     45,000       │   │     3.5%     │                        │
+│ └──────────────────┘   └──────────────┘                        │
+│                                                                 │
+│                       Patients Leaving: 1,575                   │
+│                                                                 │
+│ 💡 National LWBS average: 3-4%. High-volume EDs may see 5-8%.   │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: PATIENTS RETAINED                                       │
+│ How much can faster throughput help?                            │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │ Patients Leaving │ × │ Improvement Rate │                    │
+│ │     1,575        │   │       20%        │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                      Patients Retained: 315                     │
+│                                                                 │
+│ 💡 Faster documentation = faster throughput = shorter waits.    │
+│    20% LWBS reduction is conservative for high-LWBS EDs.        │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: REVENUE RECAPTURED                                      │
+│ What would those patients have generated?                       │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ED VISITS                                        $170,400   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │ Patients (90%)   │ × │ Avg ED Revenue   │                    │
+│ │      284         │   │      $600        │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                        ED Revenue: $170,400                     │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ADMISSIONS                              [TOGGLE: ✓ ON]      │ │
+│ │ Include admission revenue for retained patients   $465,000  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │ Patients         │ × │ Avg Admission    │                    │
+│ │ 31 (10%)         │   │    $15,000       │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                     Admission Revenue: $465,000                 │
+│                                                                 │
+│ 💡 LWBS patients skew lower acuity, so admission rate (10%)     │
+│    is below typical ED average (15-20%). Adjust if needed.      │
+│                                                                 │
+│ ⚠️ Turn OFF if your hospital is at bed capacity and cannot      │
+│    accept additional admissions.                                │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 4: TOTAL VALUE                                             │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  ED Visit Revenue:           $170,400                     │  │
+│  │  Admission Revenue:          $465,000                     │  │
+│  │  ─────────────────────────────────                        │  │
+│  │  TOTAL ANNUAL VALUE:         $635,400                     │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK                                                │ │
+│ │                                                             │ │
+│ │ Average ED Visit              $400 - $1,000                 │ │
+│ │ Average Admission             $10,000 - $25,000             │ │
+│ │ LWBS Admission Rate           5% - 15%                      │ │
+│ │                                                             │ │
+│ │ Your inputs: $600 ED / $15,000 Admission / 10%              │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+When Admissions Toggle is OFF:
+Copy│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ADMISSIONS                              [TOGGLE: ○ OFF]     │ │
+│ │ Include admission revenue for retained patients             │ │
+│ │                                                             │ │
+│ │ ┌─────────────────────────────────────────────────────────┐ │ │
+│ │ │ 💡 Admission revenue excluded. Enable if your hospital  │ │ │
+│ │ │    has bed capacity to accept additional admissions.    │ │ │
+│ │ └─────────────────────────────────────────────────────────┘ │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 4: TOTAL VALUE                                             │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  ED Visit Revenue:           $189,000                     │  │
+│  │  ─────────────────────────────────                        │  │
+│  │  TOTAL ANNUAL VALUE:         $189,000                     │  │
+│  └───────────────────────────────────────────────────────────┘  │

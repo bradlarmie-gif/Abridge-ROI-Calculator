@@ -140,10 +140,13 @@ interface DriverInputs {
   };
   // ED-specific drivers
   edThroughput: {
+    annualEdVisits: number;
     lwbsRate: number;
-    improvementLevel: "conservative" | "typical" | "aggressive";
-    revenuePerVisit: number;
+    improvementRate: number;
+    avgEdVisitRevenue: number;
     includeAdmissions: boolean;
+    admissionPercent: number;
+    avgAdmissionRevenue: number;
   };
   edScribe: {
     hasScribes: boolean;
@@ -400,10 +403,13 @@ export default function ModelBuilder({
     },
     // ED defaults
     edThroughput: {
+      annualEdVisits: 45000,
       lwbsRate: 3.5,
-      improvementLevel: "typical",
-      revenuePerVisit: 600,
-      includeAdmissions: false,
+      improvementRate: 20,
+      avgEdVisitRevenue: 600,
+      includeAdmissions: true,
+      admissionPercent: 10,
+      avgAdmissionRevenue: 15000,
     },
     edScribe: {
       hasScribes: true,
@@ -700,16 +706,26 @@ export default function ModelBuilder({
       }
       // ED Drivers
       case "edThroughput": {
-        const { lwbsRate, improvementLevel, revenuePerVisit, includeAdmissions } = driverInputs.edThroughput;
-        const patientsLeaving = encounters * (lwbsRate / 100);
-        const improvementPct = improvementLevel === "conservative" ? 15 : improvementLevel === "typical" ? 20 : 30;
-        const patientsRetained = patientsLeaving * (improvementPct / 100) * (utilizationRate / 100);
-        let baseValue = patientsRetained * revenuePerVisit;
+        const { annualEdVisits, lwbsRate, improvementRate, avgEdVisitRevenue, includeAdmissions, admissionPercent, avgAdmissionRevenue } = driverInputs.edThroughput;
+        // Step 1: Current LWBS
+        const patientsLeaving = annualEdVisits * (lwbsRate / 100);
+        // Step 2: Patients Retained
+        const patientsRetained = patientsLeaving * (improvementRate / 100);
+        // Step 3: Revenue Mix
+        let edVisitPatients, admissionPatients, edVisitRevenue, admissionRevenue;
         if (includeAdmissions) {
-          const admissionRevenue = patientsRetained * 0.15 * 12000;
-          baseValue += admissionRevenue;
+          edVisitPatients = patientsRetained * (1 - admissionPercent / 100);
+          admissionPatients = patientsRetained * (admissionPercent / 100);
+          edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
+          admissionRevenue = admissionPatients * avgAdmissionRevenue;
+        } else {
+          edVisitPatients = patientsRetained;
+          admissionPatients = 0;
+          edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
+          admissionRevenue = 0;
         }
-        return Math.round(baseValue);
+        // Step 4: Total Value
+        return Math.round(edVisitRevenue + admissionRevenue);
       }
       case "edScribe": {
         const { hasScribes, scribeFTEs, costPerFTE, reductionLevel } = driverInputs.edScribe;
@@ -939,10 +955,13 @@ export default function ModelBuilder({
         // ED drivers
         case "edThroughput":
           return {
+            annualEdVisits: driverInputs.edThroughput.annualEdVisits,
             lwbsRate: driverInputs.edThroughput.lwbsRate,
-            improvementLevel: driverInputs.edThroughput.improvementLevel,
-            revenuePerVisit: driverInputs.edThroughput.revenuePerVisit,
+            improvementRate: driverInputs.edThroughput.improvementRate,
+            avgEdVisitRevenue: driverInputs.edThroughput.avgEdVisitRevenue,
             includeAdmissions: driverInputs.edThroughput.includeAdmissions,
+            admissionPercent: driverInputs.edThroughput.admissionPercent,
+            avgAdmissionRevenue: driverInputs.edThroughput.avgAdmissionRevenue,
           };
         case "edScribe":
           return {
@@ -2763,106 +2782,299 @@ export default function ModelBuilder({
   // ============================================================================
   
   const renderEdThroughputInputs = () => {
-    const { lwbsRate, improvementLevel, revenuePerVisit, includeAdmissions } = driverInputs.edThroughput;
-    const patientsLeaving = encounters * (lwbsRate / 100);
-    const improvementPct = improvementLevel === "conservative" ? 15 : improvementLevel === "typical" ? 20 : 30;
-    const patientsRetained = patientsLeaving * (improvementPct / 100) * (utilizationRate / 100);
-    let baseValue = patientsRetained * revenuePerVisit;
+    const { annualEdVisits, lwbsRate, improvementRate, avgEdVisitRevenue, includeAdmissions, admissionPercent, avgAdmissionRevenue } = driverInputs.edThroughput;
+
+    // ED PATIENT THROUGHPUT (LWBS) CALCULATIONS (4-step)
+    // Step 1: Current LWBS
+    const patientsLeaving = annualEdVisits * (lwbsRate / 100);
+    
+    // Step 2: Patients Retained
+    const patientsRetained = patientsLeaving * (improvementRate / 100);
+    
+    // Step 3: Revenue Mix
+    let edVisitPatients, admissionPatients, edVisitRevenue, admissionRevenue;
     if (includeAdmissions) {
-      baseValue += patientsRetained * 0.15 * 12000;
+      edVisitPatients = patientsRetained * (1 - admissionPercent / 100);
+      admissionPatients = patientsRetained * (admissionPercent / 100);
+      edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
+      admissionRevenue = admissionPatients * avgAdmissionRevenue;
+    } else {
+      edVisitPatients = patientsRetained;
+      admissionPatients = 0;
+      edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
+      admissionRevenue = 0;
     }
     
+    // Step 4: Total Value
+    const totalLwbsRevenue = edVisitRevenue + admissionRevenue;
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
+
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What's your current LWBS rate?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{lwbsRate}%</span>
-          </div>
-          <Slider
-            value={[lwbsRate * 10]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, lwbsRate: val / 10 } }))}
-            min={10}
-            max={80}
-            step={5}
-            className="w-full"
-            data-testid="ed-lwbs-slider"
-          />
-          <p className="text-xs text-[#6B7280]">National average is 2-4%. High-volume urban EDs can be 5-8%</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {encounters.toLocaleString()} visits × {lwbsRate}% LWBS = {Math.round(patientsLeaving).toLocaleString()} patients leaving
+        {/* Theory Box */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+          <p className="text-sm font-semibold text-blue-800">The Theory</p>
+          <p className="text-xs text-blue-700">
+            When patients leave without being seen, you lose that revenue entirely. Faster documentation 
+            means faster throughput, shorter wait times, and fewer walkouts. Some retained patients 
+            are simple ED visits—but some would have been admitted.
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Expected throughput improvement</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(["conservative", "typical", "aggressive"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, improvementLevel: opt } }))}
-                className={`p-3 rounded-lg border text-sm transition-all ${
-                  improvementLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
-                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
-                data-testid={`ed-improvement-${opt}`}
-              >
-                {opt === "conservative" && "Conservative (15%)"}
-                {opt === "typical" && "Typical (20%)"}
-                {opt === "aggressive" && "Aggressive (30%)"}
-              </button>
-            ))}
+
+        {/* Step 1: Current LWBS */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current LWBS</p>
+          <p className="text-xs text-[#6B7280]">How many patients are you losing?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Annual ED Visits</label>
+                <Input
+                  type="number"
+                  value={annualEdVisits}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, annualEdVisits: Number(e.target.value) || 0 } }))}
+                  className="w-28 text-center font-mono text-sm h-8"
+                  data-testid="ed-annual-visits-input"
+                />
+              </div>
+              <span className="text-neutral-400 pt-5">×</span>
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">LWBS Rate</label>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={lwbsRate}
+                    onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, lwbsRate: Number(e.target.value) || 0 } }))}
+                    className="w-16 text-center font-mono text-sm h-8"
+                    step="0.5"
+                    data-testid="ed-lwbs-rate-input"
+                  />
+                  <span className="text-xs text-[#6B7280]">%</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(patientsLeaving).toLocaleString()} patients leaving
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">Abridge customers typically see 15-25% LWBS reduction</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(patientsLeaving).toLocaleString()} × {improvementPct}% improvement = {Math.round(patientsRetained).toLocaleString()} patients retained
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            National LWBS average: 3-4%. High-volume EDs may see 5-8%.
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Revenue per ED visit</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={revenuePerVisit}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, revenuePerVisit: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="ed-revenue-input"
-            />
+
+        <StepDivider />
+
+        {/* Step 2: Patients Retained */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Patients Retained</p>
+          <p className="text-xs text-[#6B7280]">How much can faster throughput help?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(patientsLeaving).toLocaleString()} leaving
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={improvementRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, improvementRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="ed-improvement-rate-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(patientsRetained).toLocaleString()} patients retained
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">Ranges from $450 (low acuity) to $1,200 (high acuity)</p>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Faster documentation = faster throughput = shorter waits. 20% LWBS reduction is conservative for high-LWBS EDs.
+          </p>
         </div>
-        
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={includeAdmissions}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, includeAdmissions: e.target.checked } }))}
-              className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
-              data-testid="ed-admissions-checkbox"
-            />
-            <span className="text-sm text-[#111827]">Include downstream admission revenue</span>
-          </label>
-          {includeAdmissions && (
-            <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded ml-6">
-              Adding admission revenue ({Math.round(patientsRetained).toLocaleString()} × 15% admission rate × $12,000 = {formatCurrency(patientsRetained * 0.15 * 12000)}). This is aggressive.
-            </p>
-          )}
-          <p className="text-xs text-[#6B7280]">Some retained patients would have been admitted (~15%). Conservative model excludes this by default.</p>
+
+        <StepDivider />
+
+        {/* Step 3: Revenue Recaptured */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-4">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Revenue Recaptured</p>
+          <p className="text-xs text-[#6B7280]">What would those patients have generated?</p>
+          
+          {/* ED Visits Section */}
+          <div className="p-3 bg-white rounded-lg border border-neutral-200 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-[#111827]">ED Visits</span>
+              <span className="font-mono text-sm font-semibold text-emerald-600">
+                {formatCurrency(Math.round(edVisitRevenue))}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="font-mono text-sm bg-neutral-50 border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(edVisitPatients).toLocaleString()} patients ({includeAdmissions ? 100 - admissionPercent : 100}%)
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={avgEdVisitRevenue}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, avgEdVisitRevenue: Number(e.target.value) || 0 } }))}
+                  className="w-20 text-center font-mono text-sm h-8"
+                  data-testid="ed-visit-revenue-input"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Admissions Section with Toggle */}
+          <div className={`p-3 rounded-lg border space-y-3 transition-all ${
+            includeAdmissions 
+              ? "bg-white border-neutral-200" 
+              : "bg-neutral-100 border-neutral-200"
+          }`}>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-[#111827]">Admissions</span>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeAdmissions}
+                    onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, includeAdmissions: e.target.checked } }))}
+                    className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
+                    data-testid="ed-admissions-toggle"
+                  />
+                  <span className="text-xs text-[#6B7280]">{includeAdmissions ? "ON" : "OFF"}</span>
+                </label>
+              </div>
+              <span className={`font-mono text-sm font-semibold ${includeAdmissions ? "text-emerald-600" : "text-neutral-400"}`}>
+                {formatCurrency(Math.round(admissionRevenue))}
+              </span>
+            </div>
+            
+            {includeAdmissions ? (
+              <>
+                <p className="text-xs text-[#6B7280]">Include admission revenue for retained patients</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      value={admissionPercent}
+                      onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, admissionPercent: Number(e.target.value) || 0 } }))}
+                      className="w-14 text-center font-mono text-sm h-8"
+                      data-testid="ed-admission-percent-input"
+                    />
+                    <span className="text-xs text-[#6B7280]">%</span>
+                  </div>
+                  <span className="text-xs text-[#6B7280]">of {Math.round(patientsRetained).toLocaleString()} =</span>
+                  <div className="font-mono text-sm bg-neutral-50 border border-neutral-200 rounded px-2 py-1.5">
+                    {Math.round(admissionPatients).toLocaleString()} patients
+                  </div>
+                  <span className="text-neutral-400">×</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-[#6B7280]">$</span>
+                    <Input
+                      type="number"
+                      value={avgAdmissionRevenue}
+                      onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, avgAdmissionRevenue: Number(e.target.value) || 0 } }))}
+                      className="w-24 text-center font-mono text-sm h-8"
+                      data-testid="ed-admission-revenue-input"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded">
+                  LWBS patients skew lower acuity, so admission rate (10%) is below typical ED average (15-20%). Adjust if needed.
+                </p>
+                <div className="p-2 bg-amber-50 rounded border border-amber-200">
+                  <p className="text-xs text-amber-700 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    Turn OFF if your hospital is at bed capacity and cannot accept additional admissions.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-neutral-500 bg-neutral-200 px-2 py-1 rounded">
+                Admission revenue excluded. Enable if your hospital has bed capacity to accept additional admissions.
+              </p>
+            )}
+          </div>
         </div>
-        
+
+        <StepDivider />
+
+        {/* Step 4: Total Value */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Total Value</p>
+          
+          <div className="p-3 bg-white rounded-lg border border-neutral-200 space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-[#6B7280]">ED Visit Revenue:</span>
+              <span className="font-mono text-emerald-600">{formatCurrency(Math.round(edVisitRevenue))}</span>
+            </div>
+            {includeAdmissions && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-[#6B7280]">Admission Revenue:</span>
+                <span className="font-mono text-emerald-600">{formatCurrency(Math.round(admissionRevenue))}</span>
+              </div>
+            )}
+            <div className="border-t border-neutral-200 pt-2 flex justify-between items-center">
+              <span className="font-medium text-[#111827]">Total Annual Value:</span>
+              <span className="font-mono font-bold text-emerald-600 text-lg">
+                {formatCurrency(Math.round(totalLwbsRevenue))}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Benchmark Box */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Benchmark: Revenue Ranges
+          </p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Average ED Visit</span>
+              <span className="font-mono text-slate-700">$400 - $1,000</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Average Admission</span>
+              <span className="font-mono text-slate-700">$10,000 - $25,000</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">LWBS Admission Rate</span>
+              <span className="font-mono text-slate-700">5% - 15%</span>
+            </div>
+            <div className="flex justify-between text-xs pt-1 border-t border-slate-200">
+              <span className="text-slate-600">Your inputs</span>
+              <span className="font-mono text-slate-700">
+                ${avgEdVisitRevenue} ED / ${avgAdmissionRevenue.toLocaleString()} Adm / {admissionPercent}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Result Summary */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-medium text-[#111827]">Annual Value</span>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(baseValue))}
+              {formatCurrency(Math.round(totalLwbsRevenue))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(patientsRetained).toLocaleString()} retained × ${revenuePerVisit}{includeAdmissions ? " + admission revenue" : ""}
+            {Math.round(patientsRetained).toLocaleString()} retained × (${avgEdVisitRevenue} ED{includeAdmissions ? ` + ${admissionPercent}% admissions @ $${avgAdmissionRevenue.toLocaleString()}` : ""})
           </p>
         </div>
       </div>
