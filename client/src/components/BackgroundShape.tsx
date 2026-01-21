@@ -1,53 +1,27 @@
 export function BackgroundShape() {
   return (
     <>
-      {/* Top-left decoration */}
-      <svg 
-        className="absolute pointer-events-none"
-        style={{ 
-          width: '550px', 
-          height: '550px', 
-          top: '-180px', 
-          left: '-180px', 
-          transform: 'rotate(-8deg)',
-          zIndex: 0 
-        }}
-        viewBox="0 0 400 400" 
-        fill="none" 
-        xmlns="http://www.w3.org/2000/svg"
+      {/* Right half of "A" - positioned on right side of screen */}
+      <div 
+        className="fixed top-0 right-0 h-full pointer-events-none"
+        style={{ zIndex: 0 }}
         aria-hidden="true"
       >
-        <path 
-          d="M200 50 L280 350 L240 350 L225 290 L175 290 L160 350 L120 350 L200 50 Z M200 120 L185 240 L215 240 Z" 
-          fill="#EA2C00" 
-          opacity="0.035"
-        />
-        <circle cx="200" cy="315" r="25" fill="#EA2C00" opacity="0.035"/>
-      </svg>
-
-      {/* Bottom-right decoration */}
-      <svg 
-        className="absolute pointer-events-none"
-        style={{ 
-          width: '650px', 
-          height: '650px', 
-          bottom: '-220px', 
-          right: '-220px', 
-          transform: 'rotate(12deg)',
-          zIndex: 0 
-        }}
-        viewBox="0 0 500 500" 
-        fill="none" 
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <path 
-          d="M250 80 L340 420 L295 420 L278 355 L222 355 L205 420 L160 420 L250 80 Z M250 160 L233 305 L267 305 Z" 
-          fill="#EA2C00" 
-          opacity="0.035"
-        />
-        <circle cx="250" cy="385" r="30" fill="#EA2C00" opacity="0.035"/>
-      </svg>
+        <svg 
+          viewBox="0 0 500 1000" 
+          preserveAspectRatio="xMinYMid slice"
+          className="h-full w-auto"
+          style={{ opacity: 0.06 }}
+        >
+          {/* Right half of "A" - only showing from center (x=0) to right edge */}
+          {/* Outer right leg: from peak down-right */}
+          {/* Inner arch: curved cutout on the left side */}
+          <path 
+            d="M0 0 L500 1000 L350 1000 L350 700 Q0 550 0 550 L0 0 Z" 
+            fill="#EA2C00"
+          />
+        </svg>
+      </div>
     </>
   );
 }
