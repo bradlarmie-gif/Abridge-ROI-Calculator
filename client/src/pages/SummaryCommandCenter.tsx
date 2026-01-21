@@ -2,38 +2,38 @@ import { useState, useMemo } from "react";
 import {
   ArrowLeft,
   Pencil,
-  FileText,
   Share2,
-  ChevronDown,
   Clock,
-  FileCheck,
   TrendingUp,
-  ChevronRight,
-  Plus,
   Download,
   Copy,
   Check,
-  AlertCircle,
-  Target,
   Users,
   DollarSign,
   BarChart3,
-  Lightbulb,
-  Info,
-  Heart,
-  Shield,
-  CheckCircle,
-  Link2,
+  Plus,
+  Mail,
+  FileText,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 
 // ============================================================================
 // TYPES
 // ============================================================================
-
-type ViewMode = "executive" | "detailed" | "methodology" | "scenarios" | "sensitivity";
 
 interface SummaryCommandCenterProps {
   selectedSettings: CareSettingType[];
@@ -41,8 +41,6 @@ interface SummaryCommandCenterProps {
   modelResults: ModelResults;
   onBack: () => void;
   onEditModel: () => void;
-  activeTab?: ViewMode;
-  onTabChange?: (tab: ViewMode) => void;
 }
 
 // ============================================================================
@@ -61,467 +59,51 @@ const formatCurrency = (value: number): string => {
   }).format(value);
 };
 
-const formatNumber = (value: number): string => {
-  return new Intl.NumberFormat("en-US").format(value);
+const formatCompactCurrency = (value: number): string => {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(2)}M`;
+  }
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}K`;
+  }
+  return `$${value}`;
 };
 
 // ============================================================================
-// DRIVER METADATA
+// DRIVER CATEGORY MAPPING
 // ============================================================================
 
-const DRIVER_METADATA: Record<string, {
-  name: string;
-  category: "time" | "quality";
-  categoryLabel: string;
-  icon: typeof Clock;
-  description: string;
-  methodology: {
-    logic: string;
-    formula: string;
-    assumptions: { label: string; value: string; source: string }[];
-    factors: { increase: string[]; decrease: string[] };
-    validation: string[];
-  };
-}> = {
-  overtime: {
-    name: "Overtime & Locum Savings",
-    category: "time",
-    categoryLabel: "Capacity & Labor",
-    icon: Clock,
-    description: "After-hours documentation reduction",
-    methodology: {
-      logic: "When clinicians spend less time on documentation, overtime hours decrease. Abridge reduces documentation time by an average of 70%, eliminating the need for after-hours charting.",
-      formula: "OT Hours Saved = Eligible Encounters × Time Saved per Encounter × OT Reduction Rate\nAnnual Savings = OT Hours Saved × Hourly OT Rate",
-      assumptions: [
-        { label: "Documentation time reduction", value: "70%", source: "Abridge deployment data (n=200+)" },
-        { label: "OT reduction rate", value: "50-80%", source: "Customer surveys" },
-        { label: "Average OT hourly rate", value: "$150/hr", source: "Industry benchmark" },
-      ],
-      factors: {
-        increase: ["Higher baseline overtime", "More after-hours documentation", "Higher hourly rates"],
-        decrease: ["Already low overtime", "Part-time providers", "Scribes already in use"],
-      },
-      validation: ["Review current overtime reports", "Survey providers on after-hours documentation time"],
-    },
-  },
-  patientAccess: {
-    name: "Patient Access",
-    category: "time",
-    categoryLabel: "Capacity & Labor",
-    icon: Users,
-    description: "Time returned → visit capacity",
-    methodology: {
-      logic: "Time saved on documentation can be converted to additional patient visits. Each 15-20 minutes saved enables approximately one additional visit per day.",
-      formula: "New Visits = Eligible Encounters × Time Saved × Visit Conversion Rate\nAnnual Value = New Visits × Revenue per Visit",
-      assumptions: [
-        { label: "Time saved per encounter", value: "3-5 min", source: "Abridge benchmark data" },
-        { label: "Visit conversion rate", value: "25-40%", source: "Customer implementations" },
-        { label: "Revenue per visit", value: "$150-250", source: "Organization input" },
-      ],
-      factors: {
-        increase: ["High patient demand", "Waitlist exists", "Revenue maximization focus"],
-        decrease: ["No patient demand", "Scheduling constraints", "Preference for work-life balance"],
-      },
-      validation: ["Check current patient waitlist", "Review scheduling capacity", "Confirm revenue per visit"],
-    },
-  },
-  retention: {
-    name: "Clinician Retention",
-    category: "time",
-    categoryLabel: "Capacity & Labor",
-    icon: Users,
-    description: "Reduced turnover from lower admin burden",
-    methodology: {
-      logic: "Documentation burden is a leading cause of clinician burnout and turnover. Reducing this burden improves satisfaction and retention.",
-      formula: "Departures Avoided = Providers × Turnover Reduction Rate\nAnnual Savings = Departures Avoided × Replacement Cost",
-      assumptions: [
-        { label: "Turnover reduction", value: "0.5-2%", source: "HR industry studies" },
-        { label: "Replacement cost", value: "$250,000-500,000", source: "MGMA benchmarks" },
-      ],
-      factors: {
-        increase: ["High current turnover", "Documentation cited in exit interviews", "Competitive job market"],
-        decrease: ["Low baseline turnover", "Other retention initiatives", "Small provider count"],
-      },
-      validation: ["Review exit interview data", "Calculate current replacement costs", "Survey provider satisfaction"],
-    },
-  },
-  levelOfService: {
-    name: "Accurate Level of Service",
-    category: "quality",
-    categoryLabel: "Revenue & Risk",
-    icon: DollarSign,
-    description: "Accurate wRVU capture from better documentation",
-    methodology: {
-      logic: "Better documentation captures the true complexity of patient encounters, leading to more accurate (often higher) coding levels.",
-      formula: "Visits Affected = Eligible Encounters × Improvement Rate\nAnnual Value = Visits Affected × wRVU Improvement × wRVU Rate",
-      assumptions: [
-        { label: "Coding improvement rate", value: "5-15%", source: "Coding analysis studies" },
-        { label: "Average wRVU uplift", value: "0.3-0.5 wRVU", source: "Customer data" },
-        { label: "wRVU rate", value: "$40-60", source: "Organization input" },
-      ],
-      factors: {
-        increase: ["Current undercoding patterns", "Complex patient population", "Detailed documentation requirements"],
-        decrease: ["Already optimized coding", "Simple visit types", "Existing CDI programs"],
-      },
-      validation: ["Review current coding distribution", "Analyze E/M level patterns", "Compare to specialty benchmarks"],
-    },
-  },
-  hccCapture: {
-    name: "HCC & Chronic Condition Capture",
-    category: "quality",
-    categoryLabel: "Revenue & Risk",
-    icon: FileCheck,
-    description: "Improved risk adjustment from complete documentation",
-    methodology: {
-      logic: "Comprehensive documentation ensures all chronic conditions are captured, improving risk adjustment scores and associated revenue.",
-      formula: "Conditions Captured = Eligible Encounters × Capture Rate Improvement\nAnnual Value = Conditions Captured × Average HCC Value",
-      assumptions: [
-        { label: "HCC capture improvement", value: "3-8%", source: "Risk adjustment studies" },
-        { label: "Average HCC value", value: "$1,000-3,000", source: "CMS data + customer mix" },
-      ],
-      factors: {
-        increase: ["Value-based contracts", "High chronic condition prevalence", "Current documentation gaps"],
-        decrease: ["Fee-for-service only", "Existing robust capture", "Low-acuity population"],
-      },
-      validation: ["Review HCC capture rates", "Analyze RAF score trends", "Compare to expected vs. actual"],
-    },
-  },
-  denials: {
-    name: "Documentation-Related Denials",
-    category: "quality",
-    categoryLabel: "Revenue & Risk",
-    icon: AlertCircle,
-    description: "Reduced claim denials from complete documentation",
-    methodology: {
-      logic: "Complete, accurate documentation reduces claim denials related to insufficient documentation or coding errors.",
-      formula: "Denials Avoided = Total Claims × Current Denial Rate × Reduction Rate\nAnnual Value = Denials Avoided × Average Claim Value",
-      assumptions: [
-        { label: "Documentation denial reduction", value: "30-50%", source: "Revenue cycle studies" },
-        { label: "Average claim value", value: "$200-400", source: "Organization data" },
-      ],
-      factors: {
-        increase: ["High current denial rate", "Documentation-related denials common", "Complex payer mix"],
-        decrease: ["Low denial rates", "Denials not documentation-related", "Strong existing processes"],
-      },
-      validation: ["Analyze denial reasons", "Review documentation-related denials specifically", "Calculate rework costs"],
-    },
-  },
-  // ED-specific drivers
-  edThroughput: {
-    name: "Patient Throughput / LWBS Reduction",
-    category: "time",
-    categoryLabel: "Capacity & Throughput",
-    icon: Clock,
-    description: "Reduced left-without-being-seen rates through faster documentation",
-    methodology: {
-      logic: "Faster documentation means faster disposition, reducing ED wait times and LWBS rates. Each minute saved per encounter compounds across high-volume ED operations.",
-      formula: "LWBS Avoided = Annual Encounters × LWBS Rate × Reduction Rate\nAnnual Value = LWBS Avoided × Lost Revenue per LWBS",
-      assumptions: [
-        { label: "LWBS rate", value: "2-5%", source: "ED operational data" },
-        { label: "LWBS reduction with Abridge", value: "15-25%", source: "ED deployment data" },
-        { label: "Lost revenue per LWBS", value: "$500-800", source: "ED billing analysis" },
-      ],
-      factors: {
-        increase: ["High baseline LWBS rate", "High ED volume", "Admission revenue potential"],
-        decrease: ["Already low LWBS", "Staffing is primary bottleneck", "Low patient volume"],
-      },
-      validation: ["Review current LWBS rates", "Calculate average ED revenue per visit", "Analyze admission conversion rates"],
-    },
-  },
-  edScribe: {
-    name: "Scribe Cost Reduction",
-    category: "time",
-    categoryLabel: "Capacity & Labor",
-    icon: Users,
-    description: "Reduced scribe FTE requirements",
-    methodology: {
-      logic: "Abridge can replace or reduce scribe coverage, converting variable scribe costs to a more predictable technology investment.",
-      formula: "FTE Reduction = Current Scribe FTEs × Reduction Rate\nAnnual Savings = FTE Reduction × Annual Scribe Cost",
-      assumptions: [
-        { label: "Scribe FTE reduction", value: "50-75%", source: "ED deployment data" },
-        { label: "Annual scribe cost per FTE", value: "$45,000-65,000", source: "Industry benchmarks" },
-      ],
-      factors: {
-        increase: ["Large current scribe program", "High scribe costs", "Scribe turnover issues"],
-        decrease: ["No scribes currently", "Scribes valued for non-documentation tasks", "Contract restrictions"],
-      },
-      validation: ["Confirm current scribe FTEs and costs", "Review scribe contract terms", "Assess non-documentation scribe duties"],
-    },
-  },
-  edRetention: {
-    name: "Physician Retention",
-    category: "time",
-    categoryLabel: "Capacity & Labor",
-    icon: Users,
-    description: "Reduced turnover from lower admin burden",
-    methodology: {
-      logic: "ED physicians face high burnout from documentation burden. Reducing this burden improves satisfaction and retention, avoiding costly replacement.",
-      formula: "Departures Avoided = Physicians × Turnover Reduction Rate\nAnnual Savings = Departures Avoided × Replacement Cost",
-      assumptions: [
-        { label: "Turnover reduction", value: "0.5-2%", source: "HR industry studies" },
-        { label: "ED physician replacement cost", value: "$750,000-1,200,000", source: "MGMA + ED-specific data" },
-      ],
-      factors: {
-        increase: ["High current turnover", "Documentation cited in exit interviews", "Competitive job market"],
-        decrease: ["Low baseline turnover", "Other retention initiatives", "Small physician count"],
-      },
-      validation: ["Review exit interview data", "Calculate current replacement costs", "Survey physician satisfaction"],
-    },
-  },
-  edLevelOfService: {
-    name: "Level-of-Service Accuracy",
-    category: "quality",
-    categoryLabel: "Revenue & Risk",
-    icon: DollarSign,
-    description: "Accurate E/M and wRVU capture from comprehensive documentation",
-    methodology: {
-      logic: "ED encounters often involve high complexity that is under-documented. Better documentation captures true complexity, improving coding accuracy.",
-      formula: "Visits Affected = Eligible Encounters × Improvement Rate\nAnnual Value = Visits Affected × wRVU Improvement × wRVU Rate",
-      assumptions: [
-        { label: "Coding improvement rate", value: "8-15%", source: "ED coding analysis" },
-        { label: "Average wRVU uplift", value: "0.8-1.5 wRVU", source: "ED customer data" },
-        { label: "wRVU rate", value: "$45-70", source: "Organization input" },
-      ],
-      factors: {
-        increase: ["Current undercoding patterns", "High-acuity patient mix", "Complex procedures common"],
-        decrease: ["Already optimized coding", "Strong existing CDI", "Low-acuity ED"],
-      },
-      validation: ["Review current E/M level distribution", "Compare to ED benchmarks", "Analyze missed documentation elements"],
-    },
-  },
-  edDenials: {
-    name: "Documentation-Related Denials",
-    category: "quality",
-    categoryLabel: "Revenue & Risk",
-    icon: AlertCircle,
-    description: "Reduced claim denials from complete ED documentation",
-    methodology: {
-      logic: "ED documentation is particularly prone to denials due to time pressure. Complete, real-time documentation reduces these denials.",
-      formula: "Denials Avoided = Total Claims × Current Denial Rate × Doc-Related % × Reduction Rate\nAnnual Value = Denials Avoided × Average ED Claim Value",
-      assumptions: [
-        { label: "ED denial rate", value: "8-12%", source: "ED billing data" },
-        { label: "Documentation-related %", value: "40%", source: "Denial analysis" },
-        { label: "Documentation denial reduction", value: "30-50%", source: "Revenue cycle studies" },
-        { label: "Average ED claim value", value: "$500-850", source: "Organization data" },
-      ],
-      factors: {
-        increase: ["High current denial rate", "Time pressure in documentation", "Complex payer mix"],
-        decrease: ["Low denial rates", "Denials not documentation-related", "Strong existing processes"],
-      },
-      validation: ["Analyze ED-specific denial reasons", "Review documentation-related denials", "Calculate rework costs"],
-    },
-  },
-  // Inpatient (Hospitalist) Drivers
-  inpatientRetention: {
-    name: "Hospitalist Retention",
-    category: "time",
-    categoryLabel: "Workforce Sustainability",
-    icon: Heart,
-    description: "Reduced hospitalist turnover through documentation burden relief",
-    methodology: {
-      logic: "Hospitalist medicine has among the highest turnover in healthcare (15-20% typical). Documentation burden is a primary contributor to burnout and departures.",
-      formula: "Departures Avoided = Hospitalists × Turnover Rate × Burnout Factor × Prevention Rate\nAnnual Savings = Departures Avoided × Replacement Cost",
-      assumptions: [
-        { label: "Hospitalist turnover rate", value: "15-20%", source: "SHM data" },
-        { label: "Burnout-driven departures", value: "55%", source: "Industry studies" },
-        { label: "Documentation-related burnout", value: "35%", source: "Hospitalist surveys" },
-        { label: "Replacement cost", value: "$600,000-900,000", source: "MGMA + hospitalist-specific data" },
-      ],
-      factors: {
-        increase: ["High current turnover", "Exit interviews citing documentation", "Competitive market"],
-        decrease: ["Low baseline turnover", "Other retention initiatives", "Small group size"],
-      },
-      validation: ["Review exit interview data", "Calculate current replacement costs", "Survey hospitalist satisfaction"],
-    },
-  },
-  inpatientCCMCC: {
-    name: "CC/MCC Capture (DRG Optimization)",
-    category: "quality",
-    categoryLabel: "Revenue & Risk",
-    icon: DollarSign,
-    description: "Improved DRG weight through complete complication/comorbidity documentation",
-    methodology: {
-      logic: "Complete documentation of complications and comorbidities directly impacts DRG weight and reimbursement. Many CC/MCC opportunities go uncaptured due to rushed documentation.",
-      formula: "CC/MCC Captured = Admissions × Missed CC Rate × Capture Improvement\nAnnual Value = CC/MCC Captured × Average DRG Uplift",
-      assumptions: [
-        { label: "Admissions with missed CC/MCC", value: "15-25%", source: "CDI audit data" },
-        { label: "Capture improvement rate", value: "40%", source: "Customer experience" },
-        { label: "Average DRG uplift", value: "$1,500-3,500", source: "Case mix analysis" },
-      ],
-      factors: {
-        increase: ["High complexity patient mix", "Current CDI query rate", "Under-documented specialties"],
-        decrease: ["Strong existing CDI", "Simple patient mix", "Already optimized capture"],
-      },
-      validation: ["Review CC/MCC capture rates", "Analyze CDI query patterns", "Compare to CMI benchmarks"],
-    },
-  },
-  inpatientCDI: {
-    name: "CDI Query Reduction",
-    category: "quality",
-    categoryLabel: "Operational Efficiency",
-    icon: FileText,
-    description: "Fewer CDI queries through complete initial documentation",
-    methodology: {
-      logic: "Better initial documentation means fewer CDI queries. Each avoided query saves time for both the CDI team and the hospitalist—operational efficiency everyone appreciates.",
-      formula: "Queries Avoided = Admissions × Query Rate × Reduction Rate\nAnnual Value = Queries Avoided × Cost per Query",
-      assumptions: [
-        { label: "Queries per admission", value: "0.10-0.25", source: "CDI operational data" },
-        { label: "Expected reduction", value: "30-50%", source: "Customer experience" },
-        { label: "Cost per query", value: "$30-60", source: "CDI team analysis" },
-      ],
-      factors: {
-        increase: ["High query volume", "Documentation gaps common", "CDI team capacity constraints"],
-        decrease: ["Low current query rate", "Strong documentation culture", "Small admission volume"],
-      },
-      validation: ["Track query volume and types", "Measure response time impact", "Survey CDI team satisfaction"],
-    },
-  },
-  inpatientDenials: {
-    name: "Documentation-Related Denials",
-    category: "quality",
-    categoryLabel: "Revenue & Risk",
-    icon: AlertCircle,
-    description: "Reduced high-dollar inpatient claim denials through complete documentation",
-    methodology: {
-      logic: "Inpatient denials are high-dollar events. Medical necessity and clinical rationale documentation gaps are primary drivers of preventable denials.",
-      formula: "Denials Avoided = Admissions × Denial Rate × Doc-Related % × Prevention Rate\nAnnual Value = Denials Avoided × Average Claim Value",
-      assumptions: [
-        { label: "Inpatient denial rate", value: "5-8%", source: "Hospital billing data" },
-        { label: "Documentation-related %", value: "45%", source: "Denial analysis" },
-        { label: "Prevention rate", value: "40%", source: "Revenue cycle studies" },
-        { label: "Average inpatient claim", value: "$3,500-6,000", source: "Organization data" },
-      ],
-      factors: {
-        increase: ["High denial rate", "Medical necessity challenges", "Complex payer mix"],
-        decrease: ["Low denial rates", "Denials not doc-related", "Strong utilization review"],
-      },
-      validation: ["Analyze denial reasons", "Review medical necessity denials", "Calculate appeals rate"],
-    },
-  },
-  // Nursing Drivers
-  nursingOvertime: {
-    name: "Nursing Overtime Reduction",
-    category: "time",
-    categoryLabel: "Workforce Protection",
-    icon: Clock,
-    description: "Reduced nursing overtime from documentation burden",
-    methodology: {
-      logic: "Nurses spend 25-35% of their time on documentation. Reducing this burden directly reduces overtime driven by charting catch-up.",
-      formula: "OT Hours Saved = Nurse FTEs × Weekly OT Hours × Doc Portion × Reduction Rate\nAnnual Savings = OT Hours Saved × 50 weeks × OT Rate",
-      assumptions: [
-        { label: "Documentation portion of OT", value: "40-60%", source: "Nursing surveys" },
-        { label: "Reduction rate", value: "45-75%", source: "Pilot data" },
-        { label: "OT rate multiplier", value: "1.5x base", source: "Standard labor law" },
-      ],
-      factors: {
-        increase: ["High baseline overtime", "Chronic understaffing", "Documentation-heavy workflows"],
-        decrease: ["Low overtime baseline", "Adequate staffing", "Already optimized workflows"],
-      },
-      validation: ["Review overtime reports by unit", "Survey nurses on documentation time", "Compare shift-end departure times"],
-    },
-  },
-  nursingHAPI: {
-    name: "HAPI Prevention",
-    category: "quality",
-    categoryLabel: "Quality & Safety",
-    icon: Shield,
-    description: "Reduced hospital-acquired pressure injuries through better documentation",
-    methodology: {
-      logic: "Better documentation supports timely skin assessments and turning protocols. While the causal link is indirect, improved documentation correlates with reduced HAPI rates.",
-      formula: "Value = (Staffed Beds / 200) × HAPIs/Year × Cost/HAPI × Documentation Impact %",
-      assumptions: [
-        { label: "Preventable HAPIs", value: "~5 per 200 beds", source: "Industry benchmarks" },
-        { label: "Cost per HAPI", value: "$50K-$150K", source: "CMS data" },
-        { label: "Documentation impact", value: "20%", source: "Conservative estimate" },
-      ],
-      factors: {
-        increase: ["Higher acuity patients", "ICU/long-stay units", "Current HAPI rates above benchmark"],
-        decrease: ["Already low HAPI rates", "Strong prevention protocols", "Short lengths of stay"],
-      },
-      validation: ["Review HAPI incidence by unit", "Audit skin assessment documentation", "Compare turning protocol compliance"],
-    },
-  },
-  nursingAgency: {
-    name: "Agency & Travel Nurse Reduction",
-    category: "time",
-    categoryLabel: "Workforce Protection",
-    icon: Users,
-    description: "Convert expensive agency staff to permanent FTEs",
-    methodology: {
-      logic: "Agency nurses cost 2-3x permanent staff. Improving work conditions through reduced documentation burden helps retain staff and reduce agency dependence.",
-      formula: "Premium Saved = Agency FTEs × (Agency Cost - Staff Cost) × Conversion Rate\nAnnual Value = Premium × Utilization Rate",
-      assumptions: [
-        { label: "Agency cost premium", value: "2-3x", source: "Staffing industry data" },
-        { label: "Conversion rate", value: "5-20%", source: "Conservative estimate" },
-        { label: "Annual agency FTE cost", value: "$180-220K", source: "Agency contracts" },
-      ],
-      factors: {
-        increase: ["High agency utilization", "Large cost premium", "Retention challenges"],
-        decrease: ["Low agency use", "Competitive local market", "Union constraints"],
-      },
-      validation: ["Review agency spend by unit", "Calculate per-FTE premium", "Analyze turnover patterns"],
-    },
-  },
-  nursingRetention: {
-    name: "Nurse Retention",
-    category: "time",
-    categoryLabel: "Workforce Protection",
-    icon: Heart,
-    description: "Reduced turnover from burnout prevention",
-    methodology: {
-      logic: "Nursing turnover is a $50K+ event. Documentation burden drives burnout, which drives turnover. Reducing this burden improves retention.",
-      formula: "Turnover Prevented = Nurse FTEs × Turnover Rate × Burnout % × Doc Attribution × Prevention Rate\nAnnual Value = Nurses Retained × Replacement Cost",
-      assumptions: [
-        { label: "Nursing turnover rate", value: "18-25%", source: "Industry benchmarks" },
-        { label: "Burnout-driven turnover", value: "50-60%", source: "Nursing surveys" },
-        { label: "Documentation attribution", value: "25-35%", source: "Exit interviews" },
-        { label: "Replacement cost", value: "$50-80K", source: "HR data" },
-      ],
-      factors: {
-        increase: ["High turnover", "Burnout signals", "Documentation complaints"],
-        decrease: ["Low turnover", "Strong culture", "Competitive compensation"],
-      },
-      validation: ["Review exit interview data", "Survey current staff on burnout", "Calculate true replacement cost"],
-    },
-  },
-  nursingSurvey: {
-    name: "Survey & Compliance Readiness",
-    category: "quality",
-    categoryLabel: "Additional Benefits",
-    icon: CheckCircle,
-    description: "Real-time documentation supports audit confidence",
-    methodology: {
-      logic: "Complete, timely documentation reduces compliance risk and supports survey readiness. This is qualitative value that strengthens the overall ROI narrative.",
-      formula: "Not quantified — qualitative value only",
-      assumptions: [
-        { label: "Quantified value", value: "N/A", source: "Qualitative driver" },
-      ],
-      factors: {
-        increase: ["Regulatory scrutiny", "Upcoming surveys", "Prior deficiencies"],
-        decrease: ["Strong compliance history", "Low regulatory risk"],
-      },
-      validation: ["Review prior survey findings", "Audit documentation timeliness"],
-    },
-  },
-  nursingCareCoordination: {
-    name: "Care Coordination",
-    category: "quality",
-    categoryLabel: "Additional Benefits",
-    icon: Link2,
-    description: "Better handoffs through complete documentation",
-    methodology: {
-      logic: "Complete, timely documentation improves handoffs between shifts and departments. This is qualitative value that improves patient outcomes.",
-      formula: "Not quantified — qualitative value only",
-      assumptions: [
-        { label: "Quantified value", value: "N/A", source: "Qualitative driver" },
-      ],
-      factors: {
-        increase: ["Handoff issues", "Care continuity concerns", "Interdepartmental gaps"],
-        decrease: ["Strong handoff processes", "Good care continuity"],
-      },
-      validation: ["Review handoff quality metrics", "Survey staff on care coordination"],
-    },
-  },
+const DRIVER_CATEGORIES: Record<string, { category: "labor" | "revenue"; label: string }> = {
+  overtime: { category: "labor", label: "Overtime Reduction" },
+  nursingOvertime: { category: "labor", label: "Overtime Reduction" },
+  patient_access: { category: "revenue", label: "Patient Access" },
+  retention: { category: "labor", label: "Provider Retention" },
+  nursingRetention: { category: "labor", label: "Nurse Retention" },
+  nursingAgency: { category: "labor", label: "Agency Reduction" },
+  level_of_service: { category: "revenue", label: "Level of Service" },
+  hcc_capture: { category: "revenue", label: "HCC Capture" },
+  denials: { category: "revenue", label: "Denial Prevention" },
+  nursingHAPI: { category: "revenue", label: "HAPI Prevention" },
+  nursingSurvey: { category: "labor", label: "Staff Satisfaction" },
+  nursingCareCoordination: { category: "labor", label: "Care Coordination" },
+  edThroughput: { category: "revenue", label: "Patient Throughput" },
+  edScribe: { category: "labor", label: "Scribe Cost Reduction" },
+  edRetention: { category: "labor", label: "Physician Retention" },
+  edLevelOfService: { category: "revenue", label: "Level-of-Service Accuracy" },
+  edDenials: { category: "revenue", label: "Documentation-Related Denials" },
+  inpatientRounding: { category: "labor", label: "Rounding Efficiency" },
+  inpatientRetention: { category: "labor", label: "Hospitalist Retention" },
+  inpatientCCMCC: { category: "revenue", label: "CC/MCC Capture" },
+  inpatientCDI: { category: "labor", label: "CDI Query Reduction" },
+  inpatientDenials: { category: "revenue", label: "Documentation-Related Denials" },
+};
+
+// Setting-specific configuration
+const settingConfig: Record<string, { unitName: string; unitNamePlural: string }> = {
+  outpatient: { unitName: "provider", unitNamePlural: "providers" },
+  ed: { unitName: "provider", unitNamePlural: "providers" },
+  inpatient: { unitName: "hospitalist", unitNamePlural: "hospitalists" },
+  nursing: { unitName: "staffed bed", unitNamePlural: "staffed beds" },
 };
 
 // ============================================================================
@@ -534,1074 +116,572 @@ export default function SummaryCommandCenter({
   modelResults,
   onBack,
   onEditModel,
-  activeTab = "executive",
-  onTabChange,
 }: SummaryCommandCenterProps) {
-  const [localActiveMode, setLocalActiveMode] = useState<ViewMode>(activeTab);
+  const [copied, setCopied] = useState(false);
+  const [expandedUnits, setExpandedUnits] = useState(0);
   
-  const activeMode = activeTab;
-  const setActiveMode = (tab: ViewMode) => {
-    setLocalActiveMode(tab);
-    onTabChange?.(tab);
-  };
-  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
-  const [expandedDrivers, setExpandedDrivers] = useState<Set<string>>(new Set());
-  const [copiedLink, setCopiedLink] = useState(false);
-
-  // Calculate derived values
-  const settingLabel = selectedSettings.length > 0 
-    ? CARE_SETTING_LABELS[selectedSettings[0]] || "Outpatient" 
-    : "Outpatient";
-  
-  const isEDSetting = selectedSettings.includes("ed");
+  const activeSetting = selectedSettings[0] || "outpatient";
+  const config = settingConfig[activeSetting] || settingConfig.outpatient;
   const isNursingSetting = selectedSettings.includes("nursing");
-  const isInpatientSetting = selectedSettings.includes("inpatient");
-
-  // Categorize drivers by type
-  const categorizedDrivers = useMemo(() => {
-    const timeDrivers: { id: string; name: string; value: number }[] = [];
-    const qualityDrivers: { id: string; name: string; value: number }[] = [];
-
-    Object.entries(modelResults.driverResults).forEach(([id, driver]) => {
-      const metadata = DRIVER_METADATA[id];
-      if (metadata?.category === "time") {
-        timeDrivers.push({ id, name: driver.name, value: driver.value });
-      } else {
-        qualityDrivers.push({ id, name: driver.name, value: driver.value });
+  
+  // Get current units (providers or beds)
+  const currentUnits = isNursingSetting 
+    ? (modelResults.nursingStaffedBeds || 200)
+    : modelResults.providers;
+  
+  // Initialize expanded units on first render
+  useMemo(() => {
+    if (expandedUnits === 0) {
+      setExpandedUnits(currentUnits * 5);
+    }
+  }, [currentUnits, expandedUnits]);
+  
+  // Core calculations
+  const totalAnnualValue = modelResults.totalBenefit;
+  const annualInvestment = modelResults.investment || 0;
+  const netValue = totalAnnualValue - annualInvestment;
+  const roiMultiple = annualInvestment > 0 ? (totalAnnualValue / annualInvestment) : 0;
+  const paybackMonths = totalAnnualValue > 0 ? Math.round((annualInvestment / totalAnnualValue) * 12) : 0;
+  
+  // Value per unit (for scaling)
+  const valuePerUnit = currentUnits > 0 ? totalAnnualValue / currentUnits : 0;
+  const investmentPerUnit = currentUnits > 0 ? annualInvestment / currentUnits : 0;
+  
+  // Expanded calculations
+  const expandedValue = valuePerUnit * expandedUnits;
+  const expandedInvestment = investmentPerUnit * expandedUnits;
+  const expandedNet = expandedValue - expandedInvestment;
+  const expansionDelta = expandedNet - netValue;
+  
+  // Parse driver results for breakdown
+  const valueBreakdown = useMemo(() => {
+    const breakdown: { id: string; name: string; value: number; category: "labor" | "revenue" }[] = [];
+    const driverResults = modelResults.driverResults || {};
+    
+    Object.entries(driverResults).forEach(([key, result]) => {
+      if (result && result.value > 0) {
+        const meta = DRIVER_CATEGORIES[key];
+        breakdown.push({
+          id: key,
+          name: result.name || meta?.label || key,
+          value: result.value,
+          category: meta?.category || "revenue"
+        });
       }
     });
-
-    return { timeDrivers, qualityDrivers };
+    
+    return breakdown.sort((a, b) => b.value - a.value);
   }, [modelResults.driverResults]);
-
-  const timeTotal = categorizedDrivers.timeDrivers.reduce((sum, d) => sum + d.value, 0);
-  const qualityTotal = categorizedDrivers.qualityDrivers.reduce((sum, d) => sum + d.value, 0);
-  const timePercent = modelResults.totalBenefit > 0 ? Math.round((timeTotal / modelResults.totalBenefit) * 100) : 0;
-  const qualityPercent = 100 - timePercent;
-
-  // Multi-year projections
-  const multiYear = useMemo(() => {
-    const year1Benefit = modelResults.totalBenefit;
-    const year2Benefit = year1Benefit * 1.1; // 10% improvement
-    const year3Benefit = year1Benefit * 1.2; // 20% improvement
-
-    const annualCost = modelResults.investment;
-
-    return {
-      year1: { benefit: year1Benefit, cost: annualCost, net: year1Benefit - annualCost },
-      year2: { benefit: year2Benefit, cost: annualCost, net: year2Benefit - annualCost },
-      year3: { benefit: year3Benefit, cost: annualCost, net: year3Benefit - annualCost },
-      total: {
-        benefit: year1Benefit + year2Benefit + year3Benefit,
-        cost: annualCost * 3,
-        net: (year1Benefit - annualCost) + (year2Benefit - annualCost) + (year3Benefit - annualCost),
-      },
-    };
-  }, [modelResults]);
-
-  // Scenario comparisons
-  const scenarios = useMemo(() => {
-    const current = {
-      providers: modelResults.providers,
-      encounters: modelResults.encounters,
-      utilization: modelResults.utilizationRate,
-      benefit: modelResults.totalBenefit,
-      investment: modelResults.investment,
-      net: modelResults.netGain,
-      roi: modelResults.roiMultiple,
-      perProvider: modelResults.netGain / modelResults.providers,
-    };
-
-    const pilot = {
-      providers: 10,
-      encounters: 10 * 2000,
-      utilization: 0.5,
-      benefit: Math.round(current.benefit * (10 / current.providers) * 0.8),
-      investment: 10 * 140 * 12,
-      net: 0,
-      roi: 0,
-      perProvider: 0,
-    };
-    pilot.net = pilot.benefit - pilot.investment;
-    pilot.roi = pilot.investment > 0 ? pilot.benefit / pilot.investment : 0;
-    pilot.perProvider = pilot.net / pilot.providers;
-
-    const full = {
-      providers: current.providers * 2,
-      encounters: current.encounters * 2,
-      utilization: 0.75,
-      benefit: Math.round(current.benefit * 2.2),
-      investment: Math.round(current.investment * 1.8), // Volume discount
-      net: 0,
-      roi: 0,
-      perProvider: 0,
-    };
-    full.net = full.benefit - full.investment;
-    full.roi = full.investment > 0 ? full.benefit / full.investment : 0;
-    full.perProvider = full.net / full.providers;
-
-    return { current, pilot, full };
-  }, [modelResults]);
-
-  // Sensitivity analysis
-  const sensitivity = useMemo(() => {
-    const variables = [
-      {
-        name: "Utilization Rate",
-        low: { value: "50%", netValue: modelResults.netGain * 0.77, roi: modelResults.roiMultiple * 0.77 },
-        current: { value: `${Math.round(modelResults.utilizationRate * 100)}%`, netValue: modelResults.netGain, roi: modelResults.roiMultiple },
-        high: { value: "85%", netValue: modelResults.netGain * 1.31, roi: modelResults.roiMultiple * 1.31 },
-      },
-      {
-        name: "Time Savings Realization",
-        low: { value: "50%", netValue: modelResults.netGain * 0.7, roi: modelResults.roiMultiple * 0.7 },
-        current: { value: "70%", netValue: modelResults.netGain, roi: modelResults.roiMultiple },
-        high: { value: "90%", netValue: modelResults.netGain * 1.3, roi: modelResults.roiMultiple * 1.3 },
-      },
-      {
-        name: "Documentation Quality Impact",
-        low: { value: "Conservative", netValue: modelResults.netGain * 0.75, roi: modelResults.roiMultiple * 0.75 },
-        current: { value: "Typical", netValue: modelResults.netGain, roi: modelResults.roiMultiple },
-        high: { value: "Aggressive", netValue: modelResults.netGain * 1.4, roi: modelResults.roiMultiple * 1.4 },
-      },
+  
+  // Group by category
+  const laborDrivers = valueBreakdown.filter(d => d.category === "labor");
+  const revenueDrivers = valueBreakdown.filter(d => d.category === "revenue");
+  const laborValue = laborDrivers.reduce((sum, d) => sum + d.value, 0);
+  const revenueValue = revenueDrivers.reduce((sum, d) => sum + d.value, 0);
+  const laborPercent = totalAnnualValue > 0 ? Math.round((laborValue / totalAnnualValue) * 100) : 0;
+  const revenuePercent = 100 - laborPercent;
+  
+  // Chart data for scaling
+  const scaleData = useMemo(() => {
+    const points = [
+      { units: currentUnits, value: totalAnnualValue, isCurrent: true, isExpanded: false },
     ];
-
-    // Breakeven calculation: what utilization would give ROI = 1x?
-    const breakevenUtilization = modelResults.investment / modelResults.totalBenefit * modelResults.utilizationRate;
-    const breakevenPercentWrong = Math.round((1 - (modelResults.investment / modelResults.totalBenefit)) * 100);
-
-    return { variables, breakevenUtilization, breakevenPercentWrong };
-  }, [modelResults]);
-
-  const toggleDriver = (driverId: string) => {
-    setExpandedDrivers(prev => {
-      const next = new Set(prev);
-      if (next.has(driverId)) {
-        next.delete(driverId);
-      } else {
-        next.add(driverId);
+    
+    // Add scale points
+    const multipliers = [2, 3, 4, 5, 6, 7, 8];
+    multipliers.forEach(m => {
+      const u = Math.round(currentUnits * m);
+      if (u <= expandedUnits * 1.2) {
+        points.push({ 
+          units: u, 
+          value: valuePerUnit * u, 
+          isCurrent: false, 
+          isExpanded: u === expandedUnits 
+        });
       }
-      return next;
     });
-  };
-
+    
+    // Add expanded point if not already included
+    if (!points.find(p => p.units === expandedUnits)) {
+      points.push({ 
+        units: expandedUnits, 
+        value: expandedValue, 
+        isCurrent: false, 
+        isExpanded: true 
+      });
+    }
+    
+    return points.sort((a, b) => a.units - b.units);
+  }, [currentUnits, expandedUnits, totalAnnualValue, valuePerUnit, expandedValue]);
+  
+  // Multi-year projection (10% growth)
+  const yearlyGrowth = 1.10;
+  const year1Value = totalAnnualValue;
+  const year2Value = totalAnnualValue * yearlyGrowth;
+  const year3Value = totalAnnualValue * yearlyGrowth * yearlyGrowth;
+  const threeYearNetTotal = (year1Value + year2Value + year3Value) - (annualInvestment * 3);
+  
+  // Price per unit
+  const pricePerUnit = modelResults.costPerMonth || (isNursingSetting ? 75 : 150);
+  
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
-
-  const tabs: { id: ViewMode; label: string }[] = [
-    { id: "executive", label: "Executive Summary" },
-    { id: "detailed", label: "Detailed Breakdown" },
-    { id: "methodology", label: "Methodology" },
-    { id: "scenarios", label: "Scenarios" },
-    { id: "sensitivity", label: "Sensitivity" },
-  ];
-
-  // ============================================================================
-  // RENDER FUNCTIONS
-  // ============================================================================
-
-  const renderPersistentHeader = () => (
-    <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          {/* Back link + Model summary */}
-          <div className="flex items-center gap-6">
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-              data-testid="button-back-to-model-builder"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm font-medium">Back to Model Builder</span>
-            </button>
-            <div className="hidden md:flex items-center gap-3 text-sm text-gray-600">
-              <span className="font-medium text-gray-900">{settingLabel}</span>
-              <span className="text-gray-300">│</span>
-              <span>
-                {isNursingSetting 
-                  ? `${formatNumber(modelResults.nursingStaffedBeds || 0)} beds / ${formatNumber(modelResults.nursingFTEs || 0)} nurse FTEs`
-                  : `${formatNumber(modelResults.providers)} ${isEDSetting ? "physicians" : isInpatientSetting ? "hospitalists" : "providers"}`
-                }
-              </span>
-              <span className="text-gray-300">│</span>
-              <span className="font-semibold text-emerald-600">{formatCurrency(modelResults.netGain)} net value</span>
-              <span className="text-gray-300">│</span>
-              <span className="font-semibold text-emerald-600">{modelResults.roiMultiple.toFixed(1)}x ROI</span>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onEditModel}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              data-testid="button-edit-model"
-            >
-              <Pencil className="h-4 w-4" />
-              Edit Model
-            </button>
-
-            <div className="relative">
-              <button
-                onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                data-testid="button-export"
-              >
-                <FileText className="h-4 w-4" />
-                Export
-                <ChevronDown className="h-4 w-4" />
-              </button>
-
-              {exportDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    Export as PDF (Executive)
-                  </button>
-                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    Export as PDF (Full Detail)
-                  </button>
-                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Export as Slides
-                  </button>
-                  <div className="border-t border-gray-100 my-1" />
-                  <button
-                    onClick={handleCopyLink}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    {copiedLink ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                    {copiedLink ? "Link Copied!" : "Copy Link"}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <button
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#E85D3F] rounded-lg hover:bg-[#d14e32] transition-colors"
-              data-testid="button-share"
-            >
-              <Share2 className="h-4 w-4" />
-              Share
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex gap-1 border-b border-gray-200 -mb-px overflow-x-auto">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveMode(tab.id)}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeMode === tab.id
-                  ? "text-[#E85D3F] border-[#E85D3F]"
-                  : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-              }`}
-              data-testid={`tab-${tab.id}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderExecutiveSummary = () => (
-    <div className="space-y-8">
-      {/* Hero Metrics */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-emerald-600 mb-2" data-testid="metric-net-value">
-              {formatCurrency(modelResults.netGain)}
-            </div>
-            <div className="text-sm text-gray-500 uppercase tracking-wide">Net Annual Value</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-emerald-600 mb-2" data-testid="metric-roi">
-              {modelResults.roiMultiple.toFixed(1)}x
-            </div>
-            <div className="text-sm text-gray-500 uppercase tracking-wide">Return on Investment</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-emerald-600 mb-2" data-testid="metric-payback">
-              {modelResults.paybackMonths.toFixed(1)} mo
-            </div>
-            <div className="text-sm text-gray-500 uppercase tracking-wide">Payback Period</div>
-          </div>
-        </div>
-        <div className="flex items-center justify-center gap-8 text-sm text-gray-600 border-t border-gray-100 pt-6">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-gray-400" />
-            <span>Total Annual Benefit: <span className="font-semibold">{formatCurrency(modelResults.totalBenefit)}</span></span>
-          </div>
-          <span className="text-gray-300">│</span>
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-gray-400" />
-            <span>Annual Investment: <span className="font-semibold">{formatCurrency(modelResults.investment)}</span></span>
-          </div>
-        </div>
-      </div>
-
-      {/* The Value Story */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">The Value Story</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Time Saved Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                </div>
-                <span className="font-medium text-gray-900">TIME SAVED</span>
-              </div>
-              <div className="text-right">
-                <div className="text-xl font-bold text-emerald-600">{formatCurrency(timeTotal)}</div>
-                <div className="text-sm text-gray-500">{timePercent}%</div>
-              </div>
-            </div>
-            <ul className="space-y-2 text-sm text-gray-600">
-              {categorizedDrivers.timeDrivers.map(driver => (
-                <li key={driver.id} className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                  {driver.name}: {formatCurrency(driver.value)}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Documentation Quality Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                  <FileCheck className="h-5 w-5 text-emerald-600" />
-                </div>
-                <span className="font-medium text-gray-900">DOC QUALITY</span>
-              </div>
-              <div className="text-right">
-                <div className="text-xl font-bold text-emerald-600">{formatCurrency(qualityTotal)}</div>
-                <div className="text-sm text-gray-500">{qualityPercent}%</div>
-              </div>
-            </div>
-            <ul className="space-y-2 text-sm text-gray-600">
-              {categorizedDrivers.qualityDrivers.map(driver => (
-                <li key={driver.id} className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  {driver.name}: {formatCurrency(driver.value)}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Split Bar */}
-        <div className="mt-4 h-3 rounded-full overflow-hidden flex bg-gray-100">
-          <div className="bg-blue-500 h-full" style={{ width: `${timePercent}%` }} />
-          <div className="bg-emerald-500 h-full" style={{ width: `${qualityPercent}%` }} />
-        </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-500">
-          <span>Time Saved ({timePercent}%)</span>
-          <span>Documentation Quality ({qualityPercent}%)</span>
-        </div>
-      </div>
-
-      {/* Multi-Year View */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Multi-Year Projection</h3>
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-3 text-left font-medium text-gray-500"></th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500">Year 1</th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500">Year 2</th>
-                <th className="px-6 py-3 text-right font-medium text-gray-500">Year 3</th>
-                <th className="px-6 py-3 text-right font-medium text-gray-900 bg-emerald-50">3-Year Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">Value</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(multiYear.year1.benefit)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(multiYear.year2.benefit)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(multiYear.year3.benefit)}</td>
-                <td className="px-6 py-4 text-right font-semibold text-gray-900 bg-emerald-50">{formatCurrency(multiYear.total.benefit)}</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">Cost</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(multiYear.year1.cost)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(multiYear.year2.cost)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(multiYear.year3.cost)}</td>
-                <td className="px-6 py-4 text-right font-semibold text-gray-900 bg-emerald-50">{formatCurrency(multiYear.total.cost)}</td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 font-medium text-gray-900">Net Value</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{formatCurrency(multiYear.year1.net)}</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{formatCurrency(multiYear.year2.net)}</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{formatCurrency(multiYear.year3.net)}</td>
-                <td className="px-6 py-4 text-right font-bold text-emerald-600 bg-emerald-50">{formatCurrency(multiYear.total.net)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Key Assumptions */}
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Assumptions</h3>
-        <ul className="space-y-2 text-sm text-gray-600 mb-4">
-          <li className="flex items-start gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
-            <span>
-              {isNursingSetting 
-                ? `${formatNumber(modelResults.nursingStaffedBeds || 0)} staffed beds with ${formatNumber(modelResults.nursingFTEs || 0)} nurse FTEs`
-                : `${formatNumber(modelResults.providers)} ${isEDSetting ? "physicians" : isInpatientSetting ? "hospitalists" : "providers"} with ${formatNumber(modelResults.encounters)} annual ${isInpatientSetting ? "admissions" : "encounters"}`
-              }
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
-            <span>
-              {isNursingSetting
-                ? `${Math.round(modelResults.utilizationRate * 100)}% adoption rate across nursing documentation`
-                : `${Math.round(modelResults.utilizationRate * 100)}% adoption rate = ${formatNumber(modelResults.eligibleEncounters)} eligible ${isInpatientSetting ? "admissions" : "encounters"}`
-              }
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
-            <span>
-              Investment of {formatCurrency(modelResults.investment)} annually
-              {isNursingSetting && ` (${formatCurrency(modelResults.nursingCostPerBedPerMonth || 75)}/bed/month)`}
-            </span>
-          </li>
-        </ul>
-        <div className="flex gap-4">
-          <button
-            onClick={() => setActiveMode("methodology")}
-            className="text-sm font-medium text-[#E85D3F] hover:text-[#d14e32] flex items-center gap-1"
-          >
-            See full methodology
-            <ChevronRight className="h-4 w-4" />
-          </button>
-          <button
-            onClick={onEditModel}
-            className="text-sm font-medium text-[#E85D3F] hover:text-[#d14e32] flex items-center gap-1"
-          >
-            Adjust assumptions
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderDetailedBreakdown = () => (
-    <div className="space-y-8">
-      {/* Your Baseline */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Your Baseline</h3>
-          <button
-            onClick={onEditModel}
-            className="inline-flex items-center gap-1 text-sm font-medium text-[#E85D3F] hover:text-[#d14e32]"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Edit
-          </button>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {isNursingSetting ? (
-            <>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.nursingStaffedBeds || 0)}</div>
-                <div className="text-sm text-gray-500">Staffed Beds</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.nursingFTEs || 0)}</div>
-                <div className="text-sm text-gray-500">Nurse FTEs</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{Math.round(modelResults.utilizationRate * 100)}%</div>
-                <div className="text-sm text-gray-500">Adoption Rate</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-emerald-600">{modelResults.nursingUnitType || "Mixed"}</div>
-                <div className="text-sm text-gray-500">Unit Type</div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.providers)}</div>
-                <div className="text-sm text-gray-500">{isEDSetting ? "ED Physicians" : isInpatientSetting ? "Hospitalists" : "Providers"}</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{formatNumber(modelResults.encounters)}</div>
-                <div className="text-sm text-gray-500">Annual {isInpatientSetting ? "Admissions" : "Encounters"}</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{Math.round(modelResults.utilizationRate * 100)}%</div>
-                <div className="text-sm text-gray-500">Utilization</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-emerald-600">{formatNumber(modelResults.eligibleEncounters)}</div>
-                <div className="text-sm text-gray-500">Eligible {isInpatientSetting ? "Admissions" : "Encounters"}</div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Time Saved Benefits */}
-      {categorizedDrivers.timeDrivers.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Time Saved Benefits</h3>
-            <span className="text-lg font-bold text-emerald-600">{formatCurrency(timeTotal)}</span>
-          </div>
-          <div className="space-y-3">
-            {categorizedDrivers.timeDrivers.map(driver => renderDriverAccordion(driver.id))}
-          </div>
-        </div>
-      )}
-
-      {/* Documentation Quality Benefits */}
-      {categorizedDrivers.qualityDrivers.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Documentation Quality Benefits</h3>
-            <span className="text-lg font-bold text-emerald-600">{formatCurrency(qualityTotal)}</span>
-          </div>
-          <div className="space-y-3">
-            {categorizedDrivers.qualityDrivers.map(driver => renderDriverAccordion(driver.id))}
-          </div>
-        </div>
-      )}
-
-      {/* Add Another Driver */}
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Another Driver</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {Object.entries(DRIVER_METADATA)
-            .filter(([id]) => !modelResults.driverResults[id])
-            .slice(0, 4)
-            .map(([id, meta]) => (
-              <div key={id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-gray-900">{meta.name}</div>
-                  <div className="text-sm text-gray-500">{meta.description}</div>
-                </div>
-                <button
-                  onClick={onEditModel}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#E85D3F] border border-[#E85D3F] rounded-lg hover:bg-[#E85D3F] hover:text-white transition-colors"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add
-                </button>
-              </div>
-            ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderDriverAccordion = (driverId: string) => {
-    const driver = modelResults.driverResults[driverId];
-    const metadata = DRIVER_METADATA[driverId];
-    if (!driver || !metadata) return null;
-
-    const isExpanded = expandedDrivers.has(driverId);
-    const Icon = metadata.icon;
-
-    return (
-      <div key={driverId} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <button
-          onClick={() => toggleDriver(driverId)}
-          className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-          data-testid={`accordion-detail-${driverId}`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-              <Icon className="h-5 w-5 text-gray-600" />
-            </div>
-            <div className="text-left">
-              <div className="font-medium text-gray-900">{driver.name}</div>
-              <div className="text-sm text-gray-500">{metadata.description}</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-lg font-bold text-emerald-600">{formatCurrency(driver.value)}</span>
-            <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-          </div>
-        </button>
-
-        {isExpanded && (
-          <div className="px-6 pb-6 border-t border-gray-100 pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Your Inputs */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Your Inputs</h4>
-                  <button
-                    onClick={onEditModel}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-[#E85D3F]"
-                  >
-                    <Pencil className="h-3 w-3" />
-                    Change
-                  </button>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Eligible Encounters</span>
-                    <span className="font-medium">{formatNumber(modelResults.eligibleEncounters)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Driver Value</span>
-                    <span className="font-medium text-emerald-600">{formatCurrency(driver.value)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Your Calculation */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Your Calculation</h4>
-                <div className="bg-blue-50 rounded-lg p-4 text-sm font-mono">
-                  <div className="text-gray-600">{formatNumber(modelResults.eligibleEncounters)} encounters</div>
-                  <div className="text-gray-600">× driver rate</div>
-                  <div className="border-t border-blue-200 my-2" />
-                  <div className="font-bold text-emerald-600">= {formatCurrency(driver.value)}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Abridge Assumptions */}
-            <div className="mt-6">
-              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Abridge Assumptions</h4>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="space-y-2 text-sm">
-                  {metadata.methodology.assumptions.slice(0, 2).map((assumption, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
-                      <span className="text-gray-600">
-                        <span className="font-medium">{assumption.label}:</span> {assumption.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 text-xs text-gray-500 flex items-center gap-1">
-                  <Info className="h-3 w-3" />
-                  Based on 200+ deployments
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderMethodology = () => (
-    <div className="space-y-8">
-      {/* The Core Framework */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">The Core Framework</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <Clock className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 mb-1">Time Saved</h4>
-              <p className="text-sm text-gray-600">
-                Abridge reduces documentation time, freeing clinicians for patient care, eliminating overtime, and improving work-life balance.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-              <FileCheck className="h-6 w-6 text-emerald-600" />
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 mb-1">Documentation Quality</h4>
-              <p className="text-sm text-gray-600">
-                Comprehensive, accurate notes improve coding accuracy, capture chronic conditions, and reduce claim denials.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="h-4 rounded-full overflow-hidden flex bg-gray-100">
-          <div className="bg-blue-500 h-full" style={{ width: `${timePercent}%` }} />
-          <div className="bg-emerald-500 h-full" style={{ width: `${qualityPercent}%` }} />
-        </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-500">
-          <span>Time Saved ({timePercent}%)</span>
-          <span>Documentation Quality ({qualityPercent}%)</span>
-        </div>
-      </div>
-
-      {/* Driver Methodologies */}
-      {Object.entries(modelResults.driverResults).map(([driverId, driver]) => {
-        const metadata = DRIVER_METADATA[driverId];
-        if (!metadata) return null;
-        const Icon = metadata.icon;
-
-        return (
-          <div key={driverId} className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Icon className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">{driver.name}</h3>
-                <p className="text-sm text-gray-500">{metadata.categoryLabel}</p>
-              </div>
-            </div>
-
-            {/* The Logic */}
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">The Logic</h4>
-              <p className="text-sm text-gray-600">{metadata.methodology.logic}</p>
-            </div>
-
-            {/* The Formula */}
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">The Formula</h4>
-              <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 text-sm overflow-x-auto">
-                {metadata.methodology.formula}
-              </pre>
-            </div>
-
-            {/* Key Assumptions */}
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Key Assumptions & Sources</h4>
-              <div className="space-y-3">
-                {metadata.methodology.assumptions.map((assumption, i) => (
-                  <div key={i} className="bg-gray-50 rounded-lg p-3 flex items-start justify-between">
-                    <div>
-                      <div className="font-medium text-gray-900">{assumption.label}</div>
-                      <div className="text-sm text-gray-500">{assumption.source}</div>
-                    </div>
-                    <div className="font-mono text-sm font-medium text-[#E85D3F]">{assumption.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* What Would Change This */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="bg-emerald-50 rounded-lg p-4">
-                <h5 className="text-sm font-medium text-emerald-800 mb-2">Would Increase Value</h5>
-                <ul className="space-y-1 text-sm text-emerald-700">
-                  {metadata.methodology.factors.increase.map((factor, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <TrendingUp className="h-3 w-3" />
-                      {factor}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-red-50 rounded-lg p-4">
-                <h5 className="text-sm font-medium text-red-800 mb-2">Would Decrease Value</h5>
-                <ul className="space-y-1 text-sm text-red-700">
-                  {metadata.methodology.factors.decrease.map((factor, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <TrendingUp className="h-3 w-3 rotate-180" />
-                      {factor}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* How to Validate */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">How to Validate</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                {metadata.methodology.validation.map((step, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-gray-400" />
-                    {step}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        );
-      })}
-
-      {/* What We Don't Include */}
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">What We Don't Include</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Our goal is to provide defensible, not inflated, projections. We intentionally exclude:
-        </p>
-        <ul className="space-y-2 text-sm text-gray-600">
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-            Soft benefits like provider satisfaction or patient experience improvements
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-            Long-term strategic value of data and analytics
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-            Potential legal/compliance risk reduction
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-            Training and onboarding time savings
-          </li>
-        </ul>
-      </div>
-
-      {/* Export */}
-      <div className="flex gap-4">
-        <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-          <Download className="h-4 w-4" />
-          Download as PDF
-        </button>
-        <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-          <Copy className="h-4 w-4" />
-          Copy to Clipboard
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderScenarios = () => (
-    <div className="space-y-8">
-      {/* Comparison Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4 text-left font-medium text-gray-500"></th>
-                <th className="px-6 py-4 text-right font-medium text-gray-900 bg-[#E85D3F]/10">Current Model</th>
-                <th className="px-6 py-4 text-right font-medium text-gray-500">Pilot (10)</th>
-                <th className="px-6 py-4 text-right font-medium text-gray-500">Full Deployment</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">{isEDSetting ? "ED Physicians" : "Providers"}</td>
-                <td className="px-6 py-4 text-right font-semibold bg-[#E85D3F]/5">{formatNumber(scenarios.current.providers)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatNumber(scenarios.pilot.providers)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatNumber(scenarios.full.providers)}</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">Encounters</td>
-                <td className="px-6 py-4 text-right font-semibold bg-[#E85D3F]/5">{formatNumber(scenarios.current.encounters)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatNumber(scenarios.pilot.encounters)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatNumber(scenarios.full.encounters)}</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">Utilization</td>
-                <td className="px-6 py-4 text-right font-semibold bg-[#E85D3F]/5">{Math.round(scenarios.current.utilization * 100)}%</td>
-                <td className="px-6 py-4 text-right text-gray-600">{Math.round(scenarios.pilot.utilization * 100)}%</td>
-                <td className="px-6 py-4 text-right text-gray-600">{Math.round(scenarios.full.utilization * 100)}%</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">Annual Benefit</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600 bg-[#E85D3F]/5">{formatCurrency(scenarios.current.benefit)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(scenarios.pilot.benefit)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(scenarios.full.benefit)}</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">Investment</td>
-                <td className="px-6 py-4 text-right font-semibold bg-[#E85D3F]/5">{formatCurrency(scenarios.current.investment)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(scenarios.pilot.investment)}</td>
-                <td className="px-6 py-4 text-right text-gray-600">{formatCurrency(scenarios.full.investment)}</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">Net Value</td>
-                <td className="px-6 py-4 text-right font-bold text-emerald-600 bg-[#E85D3F]/5">{formatCurrency(scenarios.current.net)}</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{formatCurrency(scenarios.pilot.net)}</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{formatCurrency(scenarios.full.net)}</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="px-6 py-4 font-medium text-gray-900">ROI</td>
-                <td className="px-6 py-4 text-right font-bold text-emerald-600 bg-[#E85D3F]/5">{scenarios.current.roi.toFixed(1)}x</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{scenarios.pilot.roi.toFixed(1)}x</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{scenarios.full.roi.toFixed(1)}x</td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 font-medium text-gray-900">Per-Provider Value</td>
-                <td className="px-6 py-4 text-right font-bold text-emerald-600 bg-[#E85D3F]/5">{formatCurrency(scenarios.current.perProvider)}</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{formatCurrency(scenarios.pilot.perProvider)}</td>
-                <td className="px-6 py-4 text-right font-semibold text-emerald-600">{formatCurrency(scenarios.full.perProvider)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Insight Callout */}
-      <div className="bg-blue-50 rounded-xl p-6 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-          <Lightbulb className="h-5 w-5 text-blue-600" />
-        </div>
-        <div>
-          <h4 className="font-medium text-blue-900 mb-1">Insight</h4>
-          <p className="text-sm text-blue-800">
-            Per-provider value increases with scale due to volume pricing and higher utilization rates. 
-            A full deployment generates{" "}
-            <span className="font-semibold">{formatCurrency(scenarios.full.perProvider - scenarios.pilot.perProvider)}</span> more per provider than a pilot.
-          </p>
-        </div>
-      </div>
-
-      {/* Quick Scenarios */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Scenarios</h3>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={onEditModel}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            What if we added ED?
-          </button>
-          <button
-            onClick={onEditModel}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            What if utilization reached 80%?
-          </button>
-          {Object.entries(DRIVER_METADATA)
-            .filter(([id]) => !modelResults.driverResults[id])
-            .slice(0, 2)
-            .map(([id, meta]) => (
-              <button
-                key={id}
-                onClick={onEditModel}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                What if we included {meta.name}?
-              </button>
-            ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderSensitivity = () => (
-    <div className="space-y-8">
-      {/* Current Model Reference */}
-      <div className="bg-emerald-50 rounded-xl p-6 text-center">
-        <div className="text-3xl font-bold text-emerald-600 mb-1" data-testid="sensitivity-current-value">
-          {formatCurrency(modelResults.netGain)} net annual value
-        </div>
-        <div className="text-lg text-emerald-700">({modelResults.roiMultiple.toFixed(1)}x ROI)</div>
-      </div>
-
-      {/* Variable Sensitivity */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Variable Sensitivity</h3>
-        <div className="space-y-4">
-          {sensitivity.variables.map((variable, index) => (
-            <div key={index} className="bg-white rounded-xl border border-gray-200 p-6">
-              <h4 className="font-medium text-gray-900 mb-4">{variable.name}</h4>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-500 mb-1">Low</div>
-                  <div className="font-mono text-lg font-medium text-gray-700">{variable.low.value}</div>
-                  <div className="text-sm text-gray-600 mt-2">{formatCurrency(variable.low.netValue)}</div>
-                  <div className="text-xs text-gray-500">{variable.low.roi.toFixed(1)}x ROI</div>
-                </div>
-                <div className="bg-emerald-50 rounded-lg p-4 border-2 border-emerald-200">
-                  <div className="text-sm text-emerald-600 mb-1">Current</div>
-                  <div className="font-mono text-lg font-bold text-emerald-700">{variable.current.value}</div>
-                  <div className="text-sm text-emerald-600 mt-2 font-semibold">{formatCurrency(variable.current.netValue)}</div>
-                  <div className="text-xs text-emerald-500">{variable.current.roi.toFixed(1)}x ROI</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-500 mb-1">High</div>
-                  <div className="font-mono text-lg font-medium text-gray-700">{variable.high.value}</div>
-                  <div className="text-sm text-gray-600 mt-2">{formatCurrency(variable.high.netValue)}</div>
-                  <div className="text-xs text-gray-500">{variable.high.roi.toFixed(1)}x ROI</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Breakeven Analysis */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Breakeven Analysis</h3>
-        <p className="text-sm text-gray-600 mb-4">Your model breaks even (ROI = 1x) if:</p>
-        <ul className="space-y-2 text-sm text-gray-600 mb-6">
-          <li className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-500" />
-            Utilization drops to {Math.round(sensitivity.breakevenUtilization * 100)}%
-          </li>
-          <li className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-500" />
-            All driver values are reduced by {100 - Math.round(modelResults.investment / modelResults.totalBenefit * 100)}%
-          </li>
-        </ul>
-        <div className="bg-emerald-50 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-              <Check className="h-5 w-5 text-emerald-600" />
-            </div>
-            <div>
-              <div className="font-medium text-emerald-800">Robust Model</div>
-              <div className="text-sm text-emerald-700">
-                The model would need to be <span className="font-bold">{sensitivity.breakevenPercentWrong}% wrong</span> to not deliver positive ROI.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Line */}
-      <div className="bg-gray-900 rounded-xl p-6 text-center">
-        <BarChart3 className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
-        <div className="text-lg font-semibold text-white mb-2">Bottom Line</div>
-        <p className="text-gray-300 text-sm max-w-xl mx-auto">
-          This model is robust. Even under pessimistic assumptions where utilization drops and driver values are reduced, 
-          Abridge delivers positive ROI. The breakeven threshold is significantly below your projected performance.
-        </p>
-      </div>
-    </div>
-  );
-
-  // ============================================================================
-  // MAIN RENDER
-  // ============================================================================
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {renderPersistentHeader()}
+    <div className="min-h-screen bg-[#f9fafb]">
+      {/* Header */}
+      <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left side - breadcrumb */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={onBack}
+                className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors"
+                data-testid="button-back"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm">Back to Model Builder</span>
+              </button>
+              
+              <div className="hidden md:flex items-center gap-2 text-sm">
+                <span className="px-2 py-1 bg-neutral-100 rounded text-[#111827] font-medium">
+                  {CARE_SETTING_LABELS[activeSetting]}
+                </span>
+                <span className="text-neutral-300">│</span>
+                <span className="text-[#6B7280]">{currentUnits} {config.unitNamePlural}</span>
+                <span className="text-neutral-300">│</span>
+                <span className="text-emerald-600 font-semibold">{formatCurrency(netValue)} net value</span>
+              </div>
+            </div>
+            
+            {/* Right side - actions */}
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onEditModel}
+                className="gap-2"
+                data-testid="button-edit-model"
+              >
+                <Pencil className="w-4 h-4" />
+                Edit Model
+              </Button>
+              <Button
+                size="sm"
+                className="gap-2 bg-[#E85D3F] hover:bg-[#D14D32]"
+                data-testid="button-export"
+              >
+                <Share2 className="w-4 h-4" />
+                Export & Share
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      {/* Close dropdown when clicking outside */}
-      {exportDropdownOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setExportDropdownOpen(false)}
-        />
-      )}
+      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+        
+        {/* ============ YOUR ROI AT A GLANCE ============ */}
+        <section className="bg-white rounded-2xl border border-neutral-200 p-8">
+          <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider text-center mb-8">
+            Your ROI at a Glance
+          </h2>
+          
+          {/* Hero Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Net Annual Value */}
+            <div className="bg-emerald-50 rounded-xl p-6 text-center border border-emerald-100">
+              <div className="font-mono font-bold text-4xl text-emerald-600 mb-2" data-testid="summary-net-value">
+                {formatCurrency(netValue)}
+              </div>
+              <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+                Net Annual Value
+              </div>
+            </div>
+            
+            {/* ROI Multiple */}
+            <div className="bg-[#111827] rounded-xl p-6 text-center">
+              <div className="font-mono font-bold text-4xl text-white mb-2" data-testid="summary-roi">
+                {roiMultiple.toFixed(1)}x
+              </div>
+              <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                Return on Investment
+              </div>
+            </div>
+            
+            {/* Payback Period */}
+            <div className="bg-neutral-100 rounded-xl p-6 text-center border border-neutral-200">
+              <div className="font-mono font-bold text-4xl text-[#111827] mb-2" data-testid="summary-payback">
+                {paybackMonths < 1 ? "<1" : paybackMonths} mo
+              </div>
+              <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+                Payback Period
+              </div>
+            </div>
+          </div>
+          
+          {/* Subtext */}
+          <div className="flex flex-wrap justify-center gap-6 text-sm text-[#6B7280]">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-500" />
+              <span>Total Annual Value: <span className="font-semibold text-[#111827]">{formatCurrency(totalAnnualValue)}</span></span>
+            </div>
+            <span className="text-neutral-300 hidden sm:inline">│</span>
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-neutral-400" />
+              <span>Annual Investment: <span className="font-semibold text-[#111827]">{formatCurrency(annualInvestment)}</span></span>
+            </div>
+          </div>
+        </section>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {activeMode === "executive" && renderExecutiveSummary()}
-        {activeMode === "detailed" && renderDetailedBreakdown()}
-        {activeMode === "methodology" && renderMethodology()}
-        {activeMode === "scenarios" && renderScenarios()}
-        {activeMode === "sensitivity" && renderSensitivity()}
-      </main>
+        {/* ============ SCALE YOUR IMPACT ============ */}
+        <section className="bg-white rounded-2xl border border-neutral-200 p-8">
+          <div className="mb-6">
+            <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-1">
+              Scale Your Impact
+            </h2>
+            <p className="text-sm text-[#6B7280]">See how value grows as you expand</p>
+          </div>
+          
+          {/* Expansion Slider */}
+          <div className="mb-8 p-6 bg-neutral-50 rounded-xl">
+            <div className="flex justify-between text-sm text-[#6B7280] mb-4">
+              <span>Current: <span className="font-semibold text-[#111827]">{currentUnits} {config.unitNamePlural}</span></span>
+              <span>Expanded: <span className="font-semibold text-emerald-600">{expandedUnits} {config.unitNamePlural}</span></span>
+            </div>
+            <Slider
+              value={[expandedUnits]}
+              onValueChange={([val]) => setExpandedUnits(val)}
+              min={currentUnits}
+              max={currentUnits * 10}
+              step={Math.max(1, Math.round(currentUnits / 10))}
+              className="w-full"
+              data-testid="expansion-slider"
+            />
+          </div>
+          
+          {/* Chart */}
+          <div className="h-64 mb-8">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={scaleData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+                <XAxis 
+                  dataKey="units" 
+                  tickFormatter={(v) => `${v}`}
+                  tick={{ fontSize: 12, fill: "#6B7280" }}
+                  axisLine={{ stroke: "#E5E7EB" }}
+                  tickLine={false}
+                />
+                <YAxis 
+                  tickFormatter={(v) => formatCompactCurrency(v)}
+                  tick={{ fontSize: 12, fill: "#6B7280" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatCurrency(value), 'Value']}
+                  labelFormatter={(label) => `${label} ${config.unitNamePlural}`}
+                  contentStyle={{ 
+                    backgroundColor: "white", 
+                    border: "1px solid #E5E7EB",
+                    borderRadius: "8px",
+                    padding: "8px 12px"
+                  }}
+                />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                  {scaleData.map((entry, index) => (
+                    <Cell 
+                      key={index} 
+                      fill={entry.isCurrent ? "#E85D3F" : entry.isExpanded ? "#059669" : "#E5E7EB"} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="text-center text-xs text-[#6B7280] uppercase tracking-wider mt-2">
+              {config.unitNamePlural.toUpperCase()}
+            </div>
+          </div>
+          
+          {/* Comparison Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Current State */}
+            <div className="p-6 bg-neutral-50 rounded-xl border-2 border-[#E85D3F]">
+              <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-4">Current State</div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-[#6B7280]">{config.unitNamePlural}</span>
+                  <span className="font-mono font-semibold text-[#111827]">{currentUnits}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-[#6B7280]">Annual Value</span>
+                  <span className="font-mono font-semibold text-[#111827]">{formatCurrency(totalAnnualValue)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-[#6B7280]">Investment</span>
+                  <span className="font-mono text-[#6B7280]">{formatCurrency(annualInvestment)}</span>
+                </div>
+                <div className="border-t border-neutral-200 pt-2 mt-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-[#111827]">Net Value</span>
+                    <span className="font-mono font-bold text-emerald-600">{formatCurrency(netValue)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Expanded State */}
+            <div className="p-6 bg-emerald-50 rounded-xl border-2 border-emerald-500">
+              <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-4">Expanded State</div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-[#6B7280]">{config.unitNamePlural}</span>
+                  <span className="font-mono font-semibold text-[#111827]">{expandedUnits}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-[#6B7280]">Annual Value</span>
+                  <span className="font-mono font-semibold text-[#111827]">{formatCurrency(expandedValue)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-[#6B7280]">Investment</span>
+                  <span className="font-mono text-[#6B7280]">{formatCurrency(expandedInvestment)}</span>
+                </div>
+                <div className="border-t border-emerald-200 pt-2 mt-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-[#111827]">Net Value</span>
+                    <span className="font-mono font-bold text-emerald-600">{formatCurrency(expandedNet)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Expansion Potential */}
+          <div className="text-center p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mr-2">Expansion Potential:</span>
+            <span className="font-mono font-bold text-2xl text-emerald-600">+{formatCurrency(expansionDelta)}/year</span>
+          </div>
+        </section>
+
+        {/* ============ VALUE BREAKDOWN ============ */}
+        <section className="bg-white rounded-2xl border border-neutral-200 p-8">
+          <div className="mb-6">
+            <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-1">
+              Value Breakdown
+            </h2>
+            <p className="text-sm text-[#6B7280]">Where your ROI comes from</p>
+          </div>
+          
+          {/* Category Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Labor & Efficiency */}
+            <div className="p-6 bg-neutral-50 rounded-xl border border-neutral-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <Clock className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <span className="text-sm font-semibold text-[#111827] uppercase">Labor & Efficiency</span>
+                </div>
+                <span className="font-mono font-bold text-lg text-[#111827]">{formatCurrency(laborValue)}</span>
+              </div>
+              <p className="text-sm text-[#6B7280] mb-4">{laborPercent}% of total value</p>
+              <div className="space-y-3">
+                {laborDrivers.map((driver, i) => (
+                  <div key={i} className="flex justify-between items-center p-3 bg-white rounded-lg border border-neutral-100">
+                    <span className="text-sm text-[#111827]">{driver.name}</span>
+                    <span className="font-mono font-semibold text-emerald-600">{formatCurrency(driver.value)}</span>
+                  </div>
+                ))}
+                {laborDrivers.length === 0 && (
+                  <p className="text-sm text-[#6B7280] italic">No labor drivers selected</p>
+                )}
+              </div>
+            </div>
+            
+            {/* Revenue & Quality */}
+            <div className="p-6 bg-neutral-50 rounded-xl border border-neutral-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <span className="text-sm font-semibold text-[#111827] uppercase">Revenue & Quality</span>
+                </div>
+                <span className="font-mono font-bold text-lg text-[#111827]">{formatCurrency(revenueValue)}</span>
+              </div>
+              <p className="text-sm text-[#6B7280] mb-4">{revenuePercent}% of total value</p>
+              <div className="space-y-3">
+                {revenueDrivers.map((driver, i) => (
+                  <div key={i} className="flex justify-between items-center p-3 bg-white rounded-lg border border-neutral-100">
+                    <span className="text-sm text-[#111827]">{driver.name}</span>
+                    <span className="font-mono font-semibold text-emerald-600">{formatCurrency(driver.value)}</span>
+                  </div>
+                ))}
+                {revenueDrivers.length === 0 && (
+                  <p className="text-sm text-[#6B7280] italic">No revenue drivers selected</p>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Visual Bar */}
+          <div className="h-8 flex rounded-lg overflow-hidden">
+            {laborPercent > 0 && (
+              <div 
+                className="bg-amber-400 flex items-center justify-center text-xs font-medium text-amber-900"
+                style={{ width: `${laborPercent}%` }}
+              >
+                {laborPercent > 15 && `Labor & Efficiency (${laborPercent}%)`}
+              </div>
+            )}
+            {revenuePercent > 0 && (
+              <div 
+                className="bg-emerald-400 flex items-center justify-center text-xs font-medium text-emerald-900"
+                style={{ width: `${revenuePercent}%` }}
+              >
+                {revenuePercent > 15 && `Revenue & Quality (${revenuePercent}%)`}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ============ INVESTMENT DETAILS ============ */}
+        <section className="bg-white rounded-2xl border border-neutral-200 p-8">
+          <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-6">
+            Investment Details
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Your Configuration */}
+            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+              <h3 className="text-sm font-semibold text-[#111827] mb-4">Your Configuration</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Setting</span>
+                  <span className="font-medium text-[#111827]">{CARE_SETTING_LABELS[activeSetting]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280] capitalize">{config.unitNamePlural}</span>
+                  <span className="font-medium text-[#111827]">{currentUnits}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Price</span>
+                  <span className="font-mono text-[#111827]">${pricePerUnit}/{config.unitName}/month</span>
+                </div>
+                <div className="border-t border-slate-300 pt-3 mt-3">
+                  <div className="flex justify-between">
+                    <span className="font-medium text-[#111827]">Annual Investment</span>
+                    <span className="font-mono font-bold text-[#111827]">{formatCurrency(annualInvestment)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Multi-Year Projection */}
+            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+              <h3 className="text-sm font-semibold text-[#111827] mb-4">Multi-Year Projection</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-[#6B7280]">
+                      <th className="text-left pb-2"></th>
+                      <th className="text-right pb-2">Year 1</th>
+                      <th className="text-right pb-2">Year 2</th>
+                      <th className="text-right pb-2">Year 3</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="py-1 text-[#6B7280]">Value</td>
+                      <td className="py-1 text-right font-mono">{formatCompactCurrency(year1Value)}</td>
+                      <td className="py-1 text-right font-mono">{formatCompactCurrency(year2Value)}</td>
+                      <td className="py-1 text-right font-mono">{formatCompactCurrency(year3Value)}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-1 text-[#6B7280]">Cost</td>
+                      <td className="py-1 text-right font-mono text-[#6B7280]">{formatCompactCurrency(annualInvestment)}</td>
+                      <td className="py-1 text-right font-mono text-[#6B7280]">{formatCompactCurrency(annualInvestment)}</td>
+                      <td className="py-1 text-right font-mono text-[#6B7280]">{formatCompactCurrency(annualInvestment)}</td>
+                    </tr>
+                    <tr className="border-t border-slate-300">
+                      <td className="py-2 font-medium text-[#111827]">Net</td>
+                      <td className="py-2 text-right font-mono font-medium text-emerald-600">{formatCompactCurrency(year1Value - annualInvestment)}</td>
+                      <td className="py-2 text-right font-mono font-medium text-emerald-600">{formatCompactCurrency(year2Value - annualInvestment)}</td>
+                      <td className="py-2 text-right font-mono font-medium text-emerald-600">{formatCompactCurrency(year3Value - annualInvestment)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 pt-4 border-t border-slate-300 flex justify-between items-center">
+                <span className="text-sm font-medium text-[#111827]">3-Year Total Net Value</span>
+                <span className="font-mono font-bold text-lg text-emerald-600">{formatCurrency(threeYearNetTotal)}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ KEY ASSUMPTIONS ============ */}
+        <section className="bg-white rounded-2xl border border-neutral-200 p-8">
+          <h2 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-4">
+            Key Assumptions
+          </h2>
+          <ul className="space-y-2 text-sm text-[#6B7280]">
+            <li className="flex items-start gap-2">
+              <span className="text-[#111827]">•</span>
+              <span>{currentUnits} {config.unitNamePlural} with {formatCurrency(modelResults.encounters * modelResults.utilizationRate / 100)} eligible {isNursingSetting ? "documentation events" : "encounters"}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-[#111827]">•</span>
+              <span>{modelResults.utilizationRate}% adoption rate for eligible {isNursingSetting ? "documentation" : "encounters"}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-[#111827]">•</span>
+              <span>Investment of {formatCurrency(annualInvestment)} annually</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-[#111827]">•</span>
+              <span>Value grows ~10% annually with increased adoption and expansion</span>
+            </li>
+          </ul>
+        </section>
+
+        {/* ============ ACTIONS ============ */}
+        <section className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+          <Button
+            variant="outline"
+            className="gap-2 w-full sm:w-auto"
+            onClick={onEditModel}
+            data-testid="button-add-driver"
+          >
+            <Plus className="w-4 h-4" />
+            Add Another Driver
+          </Button>
+          
+          <div className="flex gap-3 w-full sm:w-auto">
+            <Button variant="outline" className="gap-2 flex-1 sm:flex-none" data-testid="button-export-pdf">
+              <FileText className="w-4 h-4" />
+              Export PDF
+            </Button>
+            <Button variant="outline" className="gap-2 flex-1 sm:flex-none" data-testid="button-share-email">
+              <Mail className="w-4 h-4" />
+              Share via Email
+            </Button>
+            <Button 
+              variant="outline" 
+              className="gap-2 flex-1 sm:flex-none"
+              onClick={handleCopyLink}
+              data-testid="button-copy-link"
+            >
+              {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+              {copied ? "Copied!" : "Copy Link"}
+            </Button>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

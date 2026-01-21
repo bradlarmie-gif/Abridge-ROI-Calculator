@@ -1,0 +1,533 @@
+                                                                                 │
+│ ← Back to Model Builder    │ Inpatient │ 20 hospitalists │ $576,900 net value   │
+│                                                                                 │
+│                                              ┌──────────┐  ┌──────────────────┐ │
+│                                              │✏️ Edit   │  │ 📤 Export & Share│ │
+│                                              │  Model   │  │                  │ │
+│                                              └──────────┘  └──────────────────┘ │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│ ┌─────────────────────────────────────────────────────────────────────────────┐ │
+│ │                                                                             │ │
+│ │                          YOUR ROI AT A GLANCE                               │ │
+│ │                                                                             │ │
+│ │    ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐         │ │
+│ │    │                 │   │                 │   │                 │         │ │
+│ │    │   $576,900      │   │     14.7x       │   │    1.0 mo       │         │ │
+│ │    │                 │   │                 │   │                 │         │ │
+│ │    │  NET ANNUAL     │   │   RETURN ON     │   │    PAYBACK      │         │ │
+│ │    │    VALUE        │   │  INVESTMENT     │   │    PERIOD       │         │ │
+│ │    │                 │   │                 │   │                 │         │ │
+│ │    └─────────────────┘   └─────────────────┘   └─────────────────┘         │ │
+│ │                                                                             │ │
+│ │         Total Annual Value: $618,900    │    Annual Investment: $42,000     │ │
+│ │                                                                             │ │
+│ └─────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│ ┌─────────────────────────────────────────────────────────────────────────────┐ │
+│ │                                                                             │ │
+│ │  SCALE YOUR IMPACT                                                          │ │
+│ │  See how value grows as you expand                                          │ │
+│ │                                                                             │ │
+│ │  ┌───────────────────────────────────────────────────────────────────────┐  │ │
+│ │  │                                                                       │  │ │
+│ │  │                              📊 VALUE BY SCALE                        │  │ │
+│ │  │                                                                       │  │ │
+│ │  │   $3.0M ┤                                                      ████   │  │ │
+│ │  │         │                                                      ████   │  │ │
+│ │  │   $2.5M ┤                                                ████  ████   │  │ │
+│ │  │         │                                                ████  ████   │  │ │
+│ │  │   $2.0M ┤                                          ████  ████  ████   │  │ │
+│ │  │         │                                          ████  ████  ████   │  │ │
+│ │  │   $1.5M ┤                                    ████  ████  ████  ████   │  │ │
+│ │  │         │                                    ████  ████  ████  ████   │  │ │
+│ │  │   $1.0M ┤                              ████  ████  ████  ████  ████   │  │ │
+│ │  │         │                              ████  ████  ████  ████  ████   │  │ │
+│ │  │   $0.5M ┤  ▓▓▓▓                  ████  ████  ████  ████  ████  ████   │  │ │
+│ │  │         │  ▓▓▓▓  YOU ARE HERE    ████  ████  ████  ████  ████  ████   │  │ │
+│ │  │      $0 ┼──▓▓▓▓────────────────────────────────────────────────────   │  │ │
+│ │  │            20      40       60      80     100     120     150        │  │ │
+│ │  │                         PROVIDERS                                     │  │ │
+│ │  │                                                                       │  │ │
+│ │  └───────────────────────────────────────────────────────────────────────┘  │ │
+│ │                                                                             │ │
+│ │  ┌─────────────────────────────────────────────────────────────────────┐    │ │
+│ │  │                                                                     │    │ │
+│ │  │   MODEL EXPANSION          Current         Expanded        Delta    │    │ │
+│ │  │   ──────────────────────────────────────────────────────────────    │    │ │
+│ │  │                                                                     │    │ │
+│ │  │   Providers                   20    →    ┌────────┐                 │    │ │
+│ │  │                                          │  100   │        +80      │    │ │
+│ │  │                                          └────────┘                 │    │ │
+│ │  │                                                                     │    │ │
+│ │  │   Annual Value           $618,900       $3,094,500    +$2,475,600   │    │ │
+│ │  │   Annual Investment       $42,000         $210,000      +$168,000   │    │ │
+│ │  │   Net Value              $576,900       $2,884,500    +$2,307,600   │    │ │
+│ │  │   ROI                       14.7x            14.7x          same    │    │ │
+│ │  │                                                                     │    │ │
+│ │  └─────────────────────────────────────────────────────────────────────┘    │ │
+│ │                                                                             │ │
+│ └─────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  VALUE BREAKDOWN                                                                │
+│  Where your ROI comes from                                                      │
+│                                                                                 │
+│  ┌─────────────────────────────────────┐  ┌─────────────────────────────────┐  │
+│  │                                     │  │                                 │  │
+│  │  ⏱️ LABOR & EFFICIENCY    $225,000  │  │  📊 REVENUE & QUALITY  $393,900 │  │
+│  │     36% of total value              │  │     64% of total value          │  │
+│  │                                     │  │                                 │  │
+│  │  ┌─────────────────────────────┐    │  │  ┌─────────────────────────┐    │  │
+│  │  │ Hospitalist      $225,000   │    │  │  │ CC/MCC Capture $374,400│    │  │
+│  │  │ Retention                   │    │  │  │                        │    │  │
+│  │  └─────────────────────────────┘    │  │  ├────────────────────────┤    │  │
+│  │                                     │  │  │ CDI Query      $19,500 │    │  │
+│  │                                     │  │  │ Reduction              │    │  │
+│  │                                     │  │  └────────────────────────┘    │  │
+│  │                                     │  │                                 │  │
+│  └─────────────────────────────────────┘  └─────────────────────────────────┘  │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │ ████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│   │
+│  │ Labor & Efficiency (36%)              Revenue & Quality (64%)          │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  INVESTMENT DETAILS                                                             │
+│                                                                                 │
+│  ┌────────────────────────────────┐  ┌────────────────────────────────────┐    │
+│  │                                │  │                                    │    │
+│  │  YOUR CONFIGURATION            │  │  MULTI-YEAR PROJECTION             │    │
+│  │                                │  │                                    │    │
+│  │  Setting: Inpatient            │  │         Year 1    Year 2   Year 3  │    │
+│  │  Providers: 20                 │  │  ────────────────────────────────  │    │
+│  │  Price: $175/provider/month    │  │  Value   $618,900  $680,790 $748,869│    │
+│  │  Term: 1 year                  │  │  Cost     $42,000   $42,000  $42,000│    │
+│  │                                │  │  Net     $576,900  $638,790 $706,869│    │
+│  │  Annual Investment: $42,000    │  │  ────────────────────────────────  │    │
+│  │                                │  │  3-Year Total Net Value: $1.92M    │    │
+│  │                                │  │                                    │    │
+│  └────────────────────────────────┘  └────────────────────────────────────┘    │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  KEY ASSUMPTIONS                                                                │
+│                                                                                 │
+│  • 20 hospitalists with 8,000 annual admissions                                 │
+│  • 65% adoption rate = 5,200 eligible admissions                                │
+│  • Investment of $42,000 annually                                               │
+│  • Value grows 10% annually with increased adoption and expansion               │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌─────────────────────────────┐    ┌─────────────────────────────────────┐    │
+│  │                             │    │                                     │    │
+│  │  + Add Another Driver       │    │  📤 Export as PDF                   │    │
+│  │                             │    │                                     │    │
+│  └─────────────────────────────┘    │  📧 Share via Email                 │    │
+│                                      │                                     │    │
+│                                      │  📊 Download Data                   │    │
+│                                      │                                     │    │
+│                                      └─────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+The "Scale Your Impact" Section — This Is Key
+This is where the magic happens. The user can:
+
+See their current state (highlighted bar in chart)
+Drag a slider or input to model expansion
+See the value grow in real-time
+
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  SCALE YOUR IMPACT                                                              │
+│  See how value grows as you expand                                              │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │                      DRAG TO MODEL EXPANSION                              │  │
+│  │                                                                           │  │
+│  │   Current: 20 providers                     Expanded: 100 providers       │  │
+│  │   ├─────────●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┤   │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │   ┌─────────────────────────────────────────────────────────────────────┐ │  │
+│  │   │                                                                     │ │  │
+│  │   │   $3.5M │                                                           │ │  │
+│  │   │         │                                                    ┌────┐ │ │  │
+│  │   │   $3.0M │                                                    │    │ │ │  │
+│  │   │         │                                              ┌────┐│    │ │ │  │
+│  │   │   $2.5M │                                              │    ││    │ │ │  │
+│  │   │         │                                        ┌────┐│    ││    │ │ │  │
+│  │   │   $2.0M │                                        │    ││    ││    │ │ │  │
+│  │   │         │                                  ┌────┐│    ││    ││    │ │ │  │
+│  │   │   $1.5M │                                  │    ││    ││    ││    │ │ │  │
+│  │   │         │                            ┌────┐│    ││    ││    ││    │ │ │  │
+│  │   │   $1.0M │                            │    ││    ││    ││    ││    │ │ │  │
+│  │   │         │                      ┌────┐│    ││    ││    ││    ││    │ │ │  │
+│  │   │   $0.5M │  ┌────┐               │    ││    ││    ││    ││    ││    │ │ │  │
+│  │   │         │  │▓▓▓▓│ YOU          │    ││    ││    ││    ││    ││████│ │ │  │
+│  │   │      $0 │──│▓▓▓▓│──────────────│    ││    ││    ││    ││    ││████│ │ │  │
+│  │   │         │  └────┘              └────┘└────┘└────┘└────┘└────┘└────┘ │ │  │
+│  │   │            20     40     60     80    100   120   140   160   180   │ │  │
+│  │   │                                                                     │ │  │
+│  │   │                            PROVIDERS                                │ │  │
+│  │   └─────────────────────────────────────────────────────────────────────┘ │  │
+│  │                                                                           │  │
+│  │   ┌─────────────────────────┐        ┌─────────────────────────────────┐  │  │
+│  │   │  CURRENT STATE          │        │  EXPANDED STATE                 │  │  │
+│  │   │                         │        │                                 │  │  │
+│  │   │  20 providers           │   →    │  100 providers                  │  │  │
+│  │   │  $618,900 value         │        │  $3,094,500 value               │  │  │
+│  │   │  $42,000 investment     │        │  $210,000 investment            │  │  │
+│  │   │  $576,900 net           │        │  $2,884,500 net                 │  │  │
+│  │   │                         │        │                                 │  │  │
+│  │   │  ▓▓▓▓                   │        │  ████████████████████████       │  │  │
+│  │   └─────────────────────────┘        └─────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │                      EXPANSION POTENTIAL: +$2,307,600/year                │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Code for Replit — Summary Page:
+jsxCopy// ============ SUMMARY PAGE COMPONENT ============
+
+import { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+
+export default function SummaryPage({
+  setting,
+  currentUnits, // providers or beds
+  unitName, // "providers" or "staffed beds"
+  totalAnnualValue,
+  annualInvestment,
+  valueBreakdown, // array of { category, name, value }
+  pricePerUnit,
+  contractTerm
+}) {
+  
+  // Expansion modeling state
+  const [expandedUnits, setExpandedUnits] = useState(currentUnits * 5);
+  
+  // Calculations
+  const netValue = totalAnnualValue - annualInvestment;
+  const roiMultiple = (totalAnnualValue / annualInvestment).toFixed(1);
+  const paybackMonths = Math.round((annualInvestment / totalAnnualValue) * 12);
+  
+  // Value per unit (for scaling)
+  const valuePerUnit = totalAnnualValue / currentUnits;
+  const investmentPerUnit = annualInvestment / currentUnits;
+  
+  // Expanded calculations
+  const expandedValue = valuePerUnit * expandedUnits;
+  const expandedInvestment = investmentPerUnit * expandedUnits;
+  const expandedNet = expandedValue - expandedInvestment;
+  const expansionDelta = expandedNet - netValue;
+  
+  // Chart data
+  const scaleData = [
+    { units: currentUnits, value: totalAnnualValue, isCurrent: true },
+    { units: Math.round(currentUnits * 2), value: valuePerUnit * currentUnits * 2, isCurrent: false },
+    { units: Math.round(currentUnits * 3), value: valuePerUnit * currentUnits * 3, isCurrent: false },
+    { units: Math.round(currentUnits * 4), value: valuePerUnit * currentUnits * 4, isCurrent: false },
+    { units: Math.round(currentUnits * 5), value: valuePerUnit * currentUnits * 5, isCurrent: false },
+    { units: expandedUnits, value: expandedValue, isExpanded: true },
+  ].sort((a, b) => a.units - b.units);
+  
+  // Multi-year projection (10% growth)
+  const yearlyGrowth = 1.10;
+  const year1Value = totalAnnualValue;
+  const year2Value = totalAnnualValue * yearlyGrowth;
+  const year3Value = totalAnnualValue * yearlyGrowth * yearlyGrowth;
+  
+  // Group value breakdown by category
+  const laborValue = valueBreakdown
+    .filter(d => d.category === 'labor')
+    .reduce((sum, d) => sum + d.value, 0);
+  const revenueValue = valueBreakdown
+    .filter(d => d.category === 'revenue')
+    .reduce((sum, d) => sum + d.value, 0);
+  
+  const laborPercent = Math.round((laborValue / totalAnnualValue) * 100);
+  const revenuePercent = 100 - laborPercent;
+  
+  return (
+    <div className="summary-page">
+      
+      {/* Header */}
+      <div className="summary-header">
+        <div className="header-left">
+          <button className="back-link">← Back to Model Builder</button>
+          <div className="breadcrumb">
+            <span className="setting-badge">{setting}</span>
+            <span className="divider">│</span>
+            <span>{currentUnits} {unitName}</span>
+            <span className="divider">│</span>
+            <span className="highlight">${netValue.toLocaleString()} net value</span>
+            <span className="divider">│</span>
+            <span className="highlight">{roiMultiple}x ROI</span>
+          </div>
+        </div>
+        <div className="header-actions">
+          <button className="secondary-button">✏️ Edit Model</button>
+          <button className="primary-button">📤 Export & Share</button>
+        </div>
+      </div>
+      
+      {/* Hero Metrics */}
+      <div className="hero-section">
+        <h2>YOUR ROI AT A GLANCE</h2>
+        <div className="hero-metrics">
+          <div className="hero-metric">
+            <div className="metric-value green">${netValue.toLocaleString()}</div>
+            <div className="metric-label">NET ANNUAL VALUE</div>
+          </div>
+          <div className="hero-metric">
+            <div className="metric-value">{roiMultiple}x</div>
+            <div className="metric-label">RETURN ON INVESTMENT</div>
+          </div>
+          <div className="hero-metric">
+            <div className="metric-value">{paybackMonths < 1 ? '<1' : paybackMonths} mo</div>
+            <div className="metric-label">PAYBACK PERIOD</div>
+          </div>
+        </div>
+        <div className="hero-subtext">
+          <span>📈 Total Annual Value: ${totalAnnualValue.toLocaleString()}</span>
+          <span className="divider">│</span>
+          <span>💰 Annual Investment: ${annualInvestment.toLocaleString()}</span>
+        </div>
+      </div>
+      
+      {/* Scale Your Impact */}
+      <div className="scale-section">
+        <div className="section-header">
+          <h2>SCALE YOUR IMPACT</h2>
+          <p>See how value grows as you expand</p>
+        </div>
+        
+        <div className="scale-content">
+          {/* Slider */}
+          <div className="expansion-slider">
+            <div className="slider-labels">
+              <span>Current: {currentUnits} {unitName}</span>
+              <span>Expanded: {expandedUnits} {unitName}</span>
+            </div>
+            <input
+              type="range"
+              min={currentUnits}
+              max={currentUnits * 10}
+              value={expandedUnits}
+              onChange={(e) => setExpandedUnits(Number(e.target.value))}
+              className="slider"
+            />
+          </div>
+          
+          {/* Chart */}
+          <div className="scale-chart">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={scaleData}>
+                <XAxis dataKey="units" tickFormatter={(v) => `${v}`} />
+                <YAxis tickFormatter={(v) => `$${(v/1000000).toFixed(1)}M`} />
+                <Tooltip 
+                  formatter={(value) => [`$${value.toLocaleString()}`, 'Value']}
+                  labelFormatter={(label) => `${label} ${unitName}`}
+                />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {scaleData.map((entry, index) => (
+                    <Cell 
+                      key={index} 
+                      fill={entry.isCurrent ? '#f97316' : entry.isExpanded ? '#059669' : '#e2e8f0'} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Comparison Cards */}
+          <div className="comparison-cards">
+            <div className="comparison-card current">
+              <h3>CURRENT STATE</h3>
+              <div className="card-content">
+                <p className="card-units">{currentUnits} {unitName}</p>
+                <p className="card-value">${totalAnnualValue.toLocaleString()} value</p>
+                <p className="card-investment">${annualInvestment.toLocaleString()} investment</p>
+                <p className="card-net">${netValue.toLocaleString()} net</p>
+              </div>
+              <div className="card-bar current-bar"></div>
+            </div>
+            
+            <div className="comparison-arrow">→</div>
+            
+            <div className="comparison-card expanded">
+              <h3>EXPANDED STATE</h3>
+              <div className="card-content">
+                <p className="card-units">{expandedUnits} {unitName}</p>
+                <p className="card-value">${expandedValue.toLocaleString()} value</p>
+                <p className="card-investment">${expandedInvestment.toLocaleString()} investment</p>
+                <p className="card-net">${expandedNet.toLocaleString()} net</p>
+              </div>
+              <div className="card-bar expanded-bar"></div>
+            </div>
+          </div>
+          
+          {/* Expansion Potential */}
+          <div className="expansion-potential">
+            <span>EXPANSION POTENTIAL:</span>
+            <span className="potential-value">+${expansionDelta.toLocaleString()}/year</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Value Breakdown */}
+      <div className="breakdown-section">
+        <div className="section-header">
+          <h2>VALUE BREAKDOWN</h2>
+          <p>Where your ROI comes from</p>
+        </div>
+        
+        <div className="breakdown-cards">
+          <div className="breakdown-card">
+            <div className="card-header">
+              <span className="card-icon">⏱️</span>
+              <span className="card-title">LABOR & EFFICIENCY</span>
+              <span className="card-value">${laborValue.toLocaleString()}</span>
+            </div>
+            <p className="card-percent">{laborPercent}% of total value</p>
+            <div className="card-drivers">
+              {valueBreakdown
+                .filter(d => d.category === 'labor')
+                .map((driver, i) => (
+                  <div className="driver-row" key={i}>
+                    <span>{driver.name}</span>
+                    <span>${driver.value.toLocaleString()}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+          
+          <div className="breakdown-card">
+            <div className="card-header">
+              <span className="card-icon">📊</span>
+              <span className="card-title">REVENUE & QUALITY</span>
+              <span className="card-value">${revenueValue.toLocaleString()}</span>
+            </div>
+            <p className="card-percent">{revenuePercent}% of total value</p>
+            <div className="card-drivers">
+              {valueBreakdown
+                .filter(d => d.category === 'revenue')
+                .map((driver, i) => (
+                  <div className="driver-row" key={i}>
+                    <span>{driver.name}</span>
+                    <span>${driver.value.toLocaleString()}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+        
+        {/* Visual Bar */}
+        <div className="breakdown-bar">
+          <div className="bar-segment labor" style={{width: `${laborPercent}%`}}>
+            Labor & Efficiency ({laborPercent}%)
+          </div>
+          <div className="bar-segment revenue" style={{width: `${revenuePercent}%`}}>
+            Revenue & Quality ({revenuePercent}%)
+          </div>
+        </div>
+      </div>
+      
+      {/* Investment Details */}
+      <div className="investment-section">
+        <div className="section-header">
+          <h2>INVESTMENT DETAILS</h2>
+        </div>
+        
+        <div className="investment-grid">
+          <div className="config-card">
+            <h3>YOUR CONFIGURATION</h3>
+            <div className="config-details">
+              <p><strong>Setting:</strong> {setting}</p>
+              <p><strong>{unitName}:</strong> {currentUnits}</p>
+              <p><strong>Price:</strong> ${pricePerUnit}/{unitName.slice(0, -1)}/month</p>
+              <p><strong>Term:</strong> {contractTerm} year{contractTerm > 1 ? 's' : ''}</p>
+              <div className="config-divider"></div>
+              <p className="config-total"><strong>Annual Investment:</strong> ${annualInvestment.toLocaleString()}</p>
+            </div>
+          </div>
+          
+          <div className="projection-card">
+            <h3>MULTI-YEAR PROJECTION</h3>
+            <table className="projection-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Year 1</th>
+                  <th>Year 2</th>
+                  <th>Year 3</th>
+                  <th>3-Year Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Value</td>
+                  <td>${year1Value.toLocaleString()}</td>
+                  <td>${Math.round(year2Value).toLocaleString()}</td>
+                  <td>${Math.round(year3Value).toLocaleString()}</td>
+                  <td className="total">${Math.round(year1Value + year2Value + year3Value).toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>Cost</td>
+                  <td>${annualInvestment.toLocaleString()}</td>
+                  <td>${annualInvestment.toLocaleString()}</td>
+                  <td>${annualInvestment.toLocaleString()}</td>
+                  <td className="total">${(annualInvestment * 3).toLocaleString()}</td>
+                </tr>
+                <tr className="net-row">
+                  <td>Net</td>
+                  <td>${(year1Value - annualInvestment).toLocaleString()}</td>
+                  <td>${Math.round(year2Value - annualInvestment).toLocaleString()}</td>
+                  <td>${Math.round(year3Value - annualInvestment).toLocaleString()}</td>
+                  <td className="total highlight">${Math.round((year1Value + year2Value + year3Value) - (annualInvestment * 3)).toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      {/* Key Assumptions */}
+      <div className="assumptions-section">
+        <h2>KEY ASSUMPTIONS</h2>
+        <ul>
+          <li>{currentUnits} {unitName} with associated volume</li>
+          <li>65% adoption rate for eligible encounters</li>
+          <li>Investment of ${annualInvestment.toLocaleString()} annually</li>
+          <li>Value grows 10% annually with increased adoption</li>
+        </ul>
+      </div>
+      
+      {/* Actions */}
+      <div className="actions-section">
+        <button className="add-driver-button">+ Add Another Driver</button>
+        <div className="export-options">
+          <button>📤 Export as PDF</button>
+          <button>📧 Share via Email</button>
+          <button>📊 Download Data</button>
+        </div>
+      </div>
+      
+    </div>
+  );
+}
