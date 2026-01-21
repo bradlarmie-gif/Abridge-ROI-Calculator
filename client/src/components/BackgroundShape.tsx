@@ -8,12 +8,13 @@ export function BackgroundShape() {
         aria-hidden="true"
       >
         <svg 
-          viewBox="0 0 400 800" 
-          className="h-[120vh] w-auto opacity-[0.06]"
-          style={{ transform: 'translateX(50%)' }}
+          viewBox="0 0 800 900" 
+          className="h-[140vh] w-auto opacity-[0.06]"
+          style={{ transform: 'translateX(45%)' }}
         >
+          {/* Wide proportional "A" with thick strokes */}
           <path 
-            d="M200 50 L350 750 L280 750 L250 650 L150 650 L120 750 L50 750 L200 50 Z M200 200 L165 550 L235 550 L200 200 Z" 
+            d="M400 50 L750 850 L620 850 L555 680 L245 680 L180 850 L50 850 L400 50 Z M400 250 L295 550 L505 550 L400 250 Z" 
             fill="#EA2C00"
             fillRule="evenodd"
           />
