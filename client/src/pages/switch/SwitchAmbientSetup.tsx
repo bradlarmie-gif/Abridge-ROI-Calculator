@@ -66,18 +66,6 @@ const advancedMetrics: AdvancedMetric[] = [
     step: 0.5
   },
   {
-    id: 'levelOfService',
-    name: 'Average Level of Service',
-    description: 'Weighted E/M level (1-5 scale)',
-    unit: 'avg level',
-    benchmark: '4.1',
-    benchmarkValue: 4.1,
-    recommended: true,
-    min: 1,
-    max: 5,
-    step: 0.1
-  },
-  {
     id: 'wrvuLift',
     name: 'wRVU Lift',
     description: '% improvement in wRVU capture',
@@ -101,18 +89,6 @@ const advancedMetrics: AdvancedMetric[] = [
     max: 100,
     step: 1
   },
-  {
-    id: 'satisfaction',
-    name: 'Clinician Satisfaction',
-    description: 'Provider satisfaction score (1-10)',
-    unit: '/10',
-    benchmark: '8.5/10',
-    benchmarkValue: 8.5,
-    recommended: false,
-    min: 1,
-    max: 10,
-    step: 0.5
-  }
 ];
 
 export default function SwitchAmbientSetup({

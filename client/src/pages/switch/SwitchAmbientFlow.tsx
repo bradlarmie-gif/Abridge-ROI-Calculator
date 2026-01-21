@@ -94,7 +94,7 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
     providers: 75,
     encountersPerProvider: 2000,
     totalEncounters: 150000,
-    selectedMetrics: ['timeSavings', 'workOutsideWork', 'levelOfService', 'wrvuLift'],
+    selectedMetrics: ['timeSavings', 'workOutsideWork', 'wrvuLift'],
     metricValues: {}
   });
   
