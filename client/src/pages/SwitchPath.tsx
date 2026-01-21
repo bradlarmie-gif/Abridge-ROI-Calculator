@@ -1329,9 +1329,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 key={s}
                 className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full transition-all ${
                   s === step
-                    ? "w-4 md:w-6 bg-[#E85D3F]"
+                    ? "w-4 md:w-6 bg-[#EA2C00]"
                     : s < step
-                    ? "bg-[#E85D3F]/40"
+                    ? "bg-[#EA2C00]/40"
                     : "bg-neutral-200"
                 }`}
               />
@@ -1372,7 +1372,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                     onClick={() => setSelectedSolution(solution)}
                     className={`group relative flex items-center gap-5 p-5 rounded-2xl border-2 text-left transition-all duration-300 ${
                       isSelected
-                        ? "border-[#E85D3F] bg-[#E85D3F]/5 shadow-lg"
+                        ? "border-[#EA2C00] bg-[#EA2C00]/5 shadow-lg"
                         : "border-neutral-200 hover:border-neutral-300 hover:shadow-md bg-white"
                     }`}
                     data-testid={`card-solution-${solution}`}
@@ -1389,7 +1389,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       </p>
                     </div>
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                      isSelected ? "border-[#E85D3F] bg-[#E85D3F]" : "border-neutral-300"
+                      isSelected ? "border-[#EA2C00] bg-[#EA2C00]" : "border-neutral-300"
                     }`}>
                       {isSelected && <Check className="w-4 h-4 text-white" />}
                     </div>
@@ -1429,7 +1429,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <Button
                 onClick={handleContinue}
                 disabled={!canContinue()}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 md:px-10 py-2.5 md:py-3 h-auto text-sm md:text-base font-semibold rounded-xl transition-all disabled:opacity-40 w-full md:w-auto"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-8 md:px-10 py-2.5 md:py-3 h-auto text-sm md:text-base font-semibold rounded-xl transition-all disabled:opacity-40 w-full md:w-auto"
                 data-testid="button-continue-step1"
               >
                 Continue
@@ -1460,7 +1460,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         setProviders(val === "" ? 0 : parseInt(val, 10));
                       }}
                       placeholder="50"
-                      className="w-20 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-lg md:text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                      className="w-20 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-lg md:text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00] transition-all"
                       data-testid="input-providers"
                     />
                     <span className="text-base md:text-xl text-neutral-700">providers</span>
@@ -1479,14 +1479,14 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         setAnnualEncounters(val === "" ? 0 : parseInt(val, 10));
                       }}
                       placeholder="100,000"
-                      className="w-28 md:w-32 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-lg md:text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                      className="w-28 md:w-32 px-3 py-2 rounded-lg border-2 border-neutral-300 bg-white text-lg md:text-xl font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00] transition-all"
                       data-testid="input-encounters"
                     />
                     <span className="text-base md:text-xl text-neutral-700">encounters/year</span>
                     {providers > 0 && annualEncounters === 0 && (
                       <button
                         onClick={() => setAnnualEncounters(providers * 2000)}
-                        className="px-3 py-2 bg-[#E85D3F]/10 hover:bg-[#E85D3F]/20 text-[#E85D3F] text-xs md:text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                        className="px-3 py-2 bg-[#EA2C00]/10 hover:bg-[#EA2C00]/20 text-[#EA2C00] text-xs md:text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
                         data-testid="button-auto-calculate"
                         title={`Auto-fill: ${providers} providers × 2,000 = ${(providers * 2000).toLocaleString()}`}
                       >
@@ -1547,7 +1547,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         min={10}
                         max={90}
                         step={5}
-                        className="absolute inset-0 [&_[role=slider]]:w-10 [&_[role=slider]]:h-10 [&_[role=slider]]:bg-white [&_[role=slider]]:border-2 [&_[role=slider]]:border-neutral-400 [&_[role=slider]]:shadow-lg [&_[role=slider]]:rounded-full [&_[role=slider]]:cursor-grab [&_[role=slider]]:active:cursor-grabbing [&_[role=slider]]:hover:border-[#E85D3F] [&_[role=slider]]:focus-visible:ring-2 [&_[role=slider]]:focus-visible:ring-[#E85D3F]/30 [&_.relative]:bg-transparent [&_.relative]:h-3 [&_[class*='bg-primary']]:bg-transparent"
+                        className="absolute inset-0 [&_[role=slider]]:w-10 [&_[role=slider]]:h-10 [&_[role=slider]]:bg-white [&_[role=slider]]:border-2 [&_[role=slider]]:border-neutral-400 [&_[role=slider]]:shadow-lg [&_[role=slider]]:rounded-full [&_[role=slider]]:cursor-grab [&_[role=slider]]:active:cursor-grabbing [&_[role=slider]]:hover:border-[#EA2C00] [&_[role=slider]]:focus-visible:ring-2 [&_[role=slider]]:focus-visible:ring-[#EA2C00]/30 [&_.relative]:bg-transparent [&_.relative]:h-3 [&_[class*='bg-primary']]:bg-transparent"
                         data-testid="slider-utilization"
                       />
                     </div>
@@ -1562,8 +1562,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         <p className="text-xs md:text-sm text-[#9CA3AF] mb-0.5 md:mb-1">Industry Avg</p>
                         <p className="text-xl md:text-2xl font-bold text-[#6B7280]">45%</p>
                       </div>
-                      <div className="bg-[#FEF7F6] rounded-xl p-3 md:p-4 text-center border border-[#E85D3F]/20">
-                        <p className="text-xs md:text-sm text-[#E85D3F]/70 mb-0.5 md:mb-1">Abridge Avg</p>
+                      <div className="bg-[#FEF7F6] rounded-xl p-3 md:p-4 text-center border border-[#EA2C00]/20">
+                        <p className="text-xs md:text-sm text-[#EA2C00]/70 mb-0.5 md:mb-1">Abridge Avg</p>
                         <p className="text-xl md:text-2xl font-bold text-[#D04D2F]">65%</p>
                       </div>
                     </div>
@@ -1587,7 +1587,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <Button
                 onClick={handleContinue}
                 disabled={!canContinue()}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step2"
               >
                 Continue
@@ -1644,11 +1644,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         animation: "slideInFromRight 0.5s ease-out 0.4s both"
                       }}
                     >
-                      <span className="text-xs font-bold text-[#E85D3F] bg-[#E85D3F]/10 px-3 py-1.5 rounded-lg border-2 border-[#E85D3F] shadow-md whitespace-nowrap">
+                      <span className="text-xs font-bold text-[#EA2C00] bg-[#EA2C00]/10 px-3 py-1.5 rounded-lg border-2 border-[#EA2C00] shadow-md whitespace-nowrap">
                         ABRIDGE ({ABRIDGE_BENCHMARKS.utilization}%)
                       </span>
-                      <div className="w-0.5 h-5 bg-[#E85D3F]" />
-                      <div className="w-5 h-5 rounded-full bg-[#E85D3F] border-2 border-white shadow-lg" />
+                      <div className="w-0.5 h-5 bg-[#EA2C00]" />
+                      <div className="w-5 h-5 rounded-full bg-[#EA2C00] border-2 border-white shadow-lg" />
                     </div>
 
                     {utilization < ABRIDGE_BENCHMARKS.utilization && (
@@ -1661,12 +1661,12 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                             animation: "fadeIn 0.4s ease-out 0.6s both"
                           }}
                         >
-                          <div className="h-6 border-2 border-[#E85D3F] border-t-0 rounded-b-lg" />
+                          <div className="h-6 border-2 border-[#EA2C00] border-t-0 rounded-b-lg" />
                           <div 
                             className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap"
                             style={{ animation: "pulse 2s ease-in-out infinite" }}
                           >
-                            <span className="text-sm font-bold text-[#E85D3F] bg-[#E85D3F]/10 px-3 py-1 rounded-full border border-[#E85D3F]/30">
+                            <span className="text-sm font-bold text-[#EA2C00] bg-[#EA2C00]/10 px-3 py-1 rounded-full border border-[#EA2C00]/30">
                               +{ABRIDGE_BENCHMARKS.utilization - utilization}% gap
                             </span>
                           </div>
@@ -1697,9 +1697,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 <ArrowRight className="w-5 h-5 text-neutral-500" />
               </div>
               
-              <div className="relative bg-[#FEF7F7] rounded-2xl p-6 border-2 border-[#E85D3F]/20">
-                <div className="absolute top-4 right-4 text-[#E85D3F]/10 font-bold text-4xl">A</div>
-                <p className="text-xs font-semibold text-[#E85D3F]/80 uppercase tracking-wide mb-2">With Abridge</p>
+              <div className="relative bg-[#FEF7F7] rounded-2xl p-6 border-2 border-[#EA2C00]/20">
+                <div className="absolute top-4 right-4 text-[#EA2C00]/10 font-bold text-4xl">A</div>
+                <p className="text-xs font-semibold text-[#EA2C00]/80 uppercase tracking-wide mb-2">With Abridge</p>
                 <p className="text-sm text-[#1F2937]/60 mb-1">At {ABRIDGE_BENCHMARKS.utilization}% utilization</p>
                 <p className="text-4xl font-bold text-[#1F2937] mb-1 tabular-nums">{calculations.abridgeDocumentedEncounters.toLocaleString()}</p>
                 <p className="text-sm text-[#1F2937]/70">encounters documented/year</p>
@@ -1732,7 +1732,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <div className="mt-12 flex justify-end">
               <Button
                 onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step3"
               >
                 Next: See the efficiency gap
@@ -1765,7 +1765,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       const num = val === "" ? 0 : Math.min(parseInt(val, 10), providers);
                       setProvidersWithScribes(num);
                     }}
-                    className="w-24 px-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                    className="w-24 px-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00] transition-all"
                     data-testid="input-providers-with-scribes"
                   />
                   <span className="text-lg text-neutral-600">of {providers} providers</span>
@@ -1804,7 +1804,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                         const val = e.target.value.replace(/[^0-9]/g, '');
                         setScribeHourlyCost(val === "" ? 0 : parseInt(val, 10));
                       }}
-                      className="w-28 pl-8 pr-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                      className="w-28 pl-8 pr-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00] transition-all"
                       data-testid="input-scribe-hourly-cost"
                     />
                   </div>
@@ -1826,7 +1826,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       setScribeHoursPerWeek(val === "" ? 0 : parseInt(val, 10));
                     }}
-                    className="w-24 px-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F] transition-all"
+                    className="w-24 px-4 py-3 rounded-xl border-2 border-neutral-300 bg-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00] transition-all"
                     data-testid="input-scribe-hours"
                   />
                   <span className="text-lg text-neutral-600">hours/week</span>
@@ -1853,7 +1853,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <Button
                 onClick={handleContinue}
                 disabled={providersWithScribes === 0 || scribeHourlyCost === 0}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl disabled:opacity-40"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl disabled:opacity-40"
                 data-testid="button-continue-step3-scribe"
               >
                 See the coverage gap
@@ -1877,7 +1877,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   Most ambient AI solutions return <strong>1-2 minutes</strong> per encounter.
                 </p>
                 <p className="text-neutral-700 mb-3">
-                  Abridge averages <strong className="text-[#E85D3F]">3 minutes</strong> based on deeper workflow integration.
+                  Abridge averages <strong className="text-[#EA2C00]">3 minutes</strong> based on deeper workflow integration.
                 </p>
                 <p className="text-sm text-neutral-500 font-medium">Where does your current solution land?</p>
               </div>
@@ -1923,7 +1923,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                       setTimeSavings(solutionData.typicalTimeSavings);
                     }
                   }}
-                  className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
+                  className="w-4 h-4 rounded border-neutral-300 text-[#EA2C00] focus:ring-[#EA2C00]"
                   data-testid="checkbox-not-sure"
                 />
                 <span className="text-sm text-neutral-600">Not sure / Haven't measured</span>
@@ -1932,13 +1932,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               <div className="mt-5 pt-5 border-t border-neutral-200 flex items-center justify-between">
                 <span className="text-sm text-neutral-600">You're getting: <strong>{timeSavings} min/encounter</strong></span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#E85D3F] flex items-center gap-1.5">
+                  <span className="text-sm text-[#EA2C00] flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4" />
                     Abridge avg: {ABRIDGE_BENCHMARKS.timeSavings} min
                   </span>
                   <button 
                     onClick={() => setShowBenchmarkModal(true)}
-                    className="text-xs text-neutral-500 hover:text-[#E85D3F] underline underline-offset-2"
+                    className="text-xs text-neutral-500 hover:text-[#EA2C00] underline underline-offset-2"
                     data-testid="button-see-benchmark"
                   >
                     See benchmark data
@@ -1962,8 +1962,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 <ArrowRight className="w-5 h-5 text-neutral-500" />
               </div>
               
-              <div className="bg-[#FEF7F7] rounded-2xl p-6 border-2 border-[#E85D3F]/20">
-                <p className="text-xs font-semibold text-[#E85D3F]/80 uppercase tracking-wide mb-2">With Abridge</p>
+              <div className="bg-[#FEF7F7] rounded-2xl p-6 border-2 border-[#EA2C00]/20">
+                <p className="text-xs font-semibold text-[#EA2C00]/80 uppercase tracking-wide mb-2">With Abridge</p>
                 <p className="text-sm text-[#1F2937]/60 mb-1">At {ABRIDGE_BENCHMARKS.timeSavings} min savings</p>
                 <p className="text-4xl font-bold text-[#1F2937] mb-1 tabular-nums">{calculations.abridgeTimeSavedHours.toLocaleString()}</p>
                 <p className="text-sm text-[#1F2937]/70">hours returned/year</p>
@@ -2031,7 +2031,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <div className="mt-12 flex justify-end">
               <Button
                 onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step4"
               >
                 Continue
@@ -2115,7 +2115,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <div className="mt-12 flex justify-end">
               <Button
                 onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step4-scribe"
               >
                 See your current spend
@@ -2172,7 +2172,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <div className="mt-10 flex justify-end">
               <Button
                 onClick={handleContinue}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step5-scribe"
               >
                 See the hidden costs
@@ -2215,7 +2215,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                           const val = e.target.value.replace(/[^0-9]/g, '');
                           setScribeTurnoverRate(val === "" ? 0 : Math.min(parseInt(val, 10), 100));
                         }}
-                        className="w-14 px-2 py-1 rounded-lg border-2 border-neutral-300 bg-white text-sm font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F]"
+                        className="w-14 px-2 py-1 rounded-lg border-2 border-neutral-300 bg-white text-sm font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]"
                         data-testid="input-turnover-rate"
                       />
                       <span className="text-sm text-neutral-600">%</span>
@@ -2266,7 +2266,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                               const val = e.target.value.replace(/[^0-9]/g, '');
                               setManagementHoursPerWeek(val === "" ? 0 : parseInt(val, 10));
                             }}
-                            className="w-14 px-2 py-1 rounded-lg border-2 border-neutral-300 bg-white text-sm font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/30 focus:border-[#E85D3F]"
+                            className="w-14 px-2 py-1 rounded-lg border-2 border-neutral-300 bg-white text-sm font-semibold text-center focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]"
                             data-testid="input-management-hours"
                           />
                           <span className="text-sm text-neutral-600">hrs</span>
@@ -2317,7 +2317,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             <div className="mt-10 flex justify-end">
               <Button
                 onClick={() => setStep(7)}
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-10 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-continue-step6-scribe"
               >
                 Calculate my value
@@ -2339,7 +2339,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
           <div className="animate-in fade-in duration-300">
             {/* SECTION 1: THE HOOK */}
             <div className="text-center pt-12 pb-8 mb-10">
-              <p className="text-xs font-semibold text-[#E85D3F] uppercase tracking-[2px] mb-4">The real question</p>
+              <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-[2px] mb-4">The real question</p>
               <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 leading-tight mb-6" data-testid="text-step8-scribe-title">
                 What would you do with {formatCurrency(totalCurrentCost)}/year?
               </h1>
@@ -2431,7 +2431,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             {/* SECTION 5: ACTIONS */}
             <div className="flex flex-wrap gap-3 justify-center mb-6">
               <Button
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-xl"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-8 py-3 h-auto text-base font-semibold rounded-xl"
                 data-testid="button-talk-to-abridge"
               >
                 Talk to Abridge
@@ -2492,7 +2492,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   transition: "all 0.6s ease-out"
                 }}
               >
-                <span className="text-6xl md:text-7xl font-bold text-[#E85D3F] tabular-nums tracking-tight leading-none">
+                <span className="text-6xl md:text-7xl font-bold text-[#EA2C00] tabular-nums tracking-tight leading-none">
                   {gapRevealStage >= 2 ? <AnimatedNumber value={calculations.totalGap} duration={1800} /> : "$0"}
                 </span>
               </div>
@@ -2833,7 +2833,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold text-neutral-600">TOTAL ANNUAL GAP</span>
-                    <span className="text-xl font-bold text-[#E85D3F]">
+                    <span className="text-xl font-bold text-[#EA2C00]">
                       <AnimatedNumber value={calculations.totalGap} duration={500} />/year
                     </span>
                   </div>
@@ -2929,8 +2929,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                             <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
                           </linearGradient>
                           <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#E85D3F" stopOpacity={0.08}/>
-                            <stop offset="95%" stopColor="#E85D3F" stopOpacity={0.02}/>
+                            <stop offset="5%" stopColor="#EA2C00" stopOpacity={0.08}/>
+                            <stop offset="95%" stopColor="#EA2C00" stopOpacity={0.02}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
@@ -2957,8 +2957,8 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                       <span className="font-semibold text-neutral-600">{formatCurrency(currentVal)}</span>
                                     </div>
                                     <div className="flex justify-between pt-1 border-t border-neutral-100">
-                                      <span className="text-[#E85D3F] font-medium">Gap:</span>
-                                      <span className="font-bold text-[#E85D3F]">+{formatCurrency(gap)}</span>
+                                      <span className="text-[#EA2C00] font-medium">Gap:</span>
+                                      <span className="font-bold text-[#EA2C00]">+{formatCurrency(gap)}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -3040,15 +3040,15 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   </div>
                   
                   {/* Cost of Waiting row */}
-                  <div className="p-4 bg-[#E85D3F]/5">
+                  <div className="p-4 bg-[#EA2C00]/5">
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="text-sm font-bold text-[#E85D3F] uppercase tracking-wide">Cost of Waiting</p>
+                        <p className="text-sm font-bold text-[#EA2C00] uppercase tracking-wide">Cost of Waiting</p>
                         <p className="text-xs text-neutral-600 mt-0.5">
                           That's <span className="font-semibold">{formatCurrency(Math.round(calculations.costOfWaiting / 6))}/month</span> you can never recapture.
                         </p>
                       </div>
-                      <p className="text-2xl font-bold text-[#E85D3F]">{formatCurrency(calculations.costOfWaiting)}</p>
+                      <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(calculations.costOfWaiting)}</p>
                     </div>
                   </div>
                 </div>
@@ -3084,7 +3084,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </div>
               <div className="mt-4 pt-4 border-t border-neutral-700">
                 <p className="text-sm text-neutral-400">
-                  Every month you stay at current state costs <span className="font-semibold text-[#E85D3F]">~{formatCurrency(calculations.monthlyGap)}</span> in value you could be capturing.
+                  Every month you stay at current state costs <span className="font-semibold text-[#EA2C00]">~{formatCurrency(calculations.monthlyGap)}</span> in value you could be capturing.
                 </p>
               </div>
             </div>
@@ -3122,7 +3122,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             >
               {/* Primary CTA */}
               <Button
-                className="bg-[#E85D3F] hover:bg-[#D04D2F] text-white px-10 py-4 h-auto text-lg font-bold rounded-xl shadow-lg"
+                className="bg-[#EA2C00] hover:bg-[#D04D2F] text-white px-10 py-4 h-auto text-lg font-bold rounded-xl shadow-lg"
                 data-testid="button-lets-talk"
               >
                 <MessageSquare className="w-5 h-5 mr-2" />

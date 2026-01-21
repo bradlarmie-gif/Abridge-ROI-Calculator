@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight, Sparkles, TrendingUp, TrendingDown } from 'lucide-react';
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import { Button } from '@/components/ui/button';
 import { AmbientInputs, AmbientBenchmarks } from './SwitchAmbientFlow';
 
@@ -148,10 +149,12 @@ export default function SwitchAdvancedComparison({
             Back
           </Button>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-              A
-            </div>
+          <div className="flex items-center gap-3">
+            <img 
+              src={abridgeLogo} 
+              alt="Abridge" 
+              className="h-6"
+            />
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
           </div>
           
@@ -302,7 +305,7 @@ export default function SwitchAdvancedComparison({
         <div className="max-w-5xl mx-auto">
           <Button
             onClick={onNext}
-            className="w-full bg-[#E85D3F] hover:bg-[#d54e32] text-white py-6 text-base font-medium"
+            className="w-full bg-[#EA2C00] hover:bg-[#d12700] text-white py-6 text-base font-medium"
             data-testid="button-continue"
           >
             See the value breakdown

@@ -69,7 +69,7 @@ export default function SwitchYourSituation({
             Back
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#E85D3F] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#EA2C00] flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-wide">SWITCH</span>
@@ -82,7 +82,7 @@ export default function SwitchYourSituation({
               key={step}
               className={`w-2 h-2 rounded-full transition-colors ${
                 step === currentStep
-                  ? "bg-[#E85D3F]"
+                  ? "bg-[#EA2C00]"
                   : step < currentStep
                   ? "bg-slate-400"
                   : "bg-slate-200"
@@ -112,7 +112,7 @@ export default function SwitchYourSituation({
                   onClick={() => updateSituation("scale", option.id)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     situation.scale === option.id
-                      ? "bg-[#E85D3F] text-white"
+                      ? "bg-[#EA2C00] text-white"
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
                   data-testid={`button-scale-${option.id}`}
@@ -137,7 +137,7 @@ export default function SwitchYourSituation({
                   onClick={() => updateSituation("utilization", option.id)}
                   className={`w-full p-4 rounded-lg text-left transition-all border-2 ${
                     situation.utilization === option.id
-                      ? "border-[#E85D3F] bg-white"
+                      ? "border-[#EA2C00] bg-white"
                       : "border-slate-200 bg-white"
                   }`}
                   data-testid={`button-utilization-${option.id}`}
@@ -146,12 +146,12 @@ export default function SwitchYourSituation({
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                         situation.utilization === option.id
-                          ? "border-[#E85D3F]"
+                          ? "border-[#EA2C00]"
                           : "border-slate-300"
                       }`}
                     >
                       {situation.utilization === option.id && (
-                        <div className="w-2 h-2 rounded-full bg-[#E85D3F]" />
+                        <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                       )}
                     </div>
                     <div>
@@ -163,7 +163,7 @@ export default function SwitchYourSituation({
               ))}
             </div>
             <div className="mt-4 p-3 bg-slate-50 rounded-lg flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#E85D3F]" />
+              <Sparkles className="w-4 h-4 text-[#EA2C00]" />
               <span className="text-sm text-slate-600">
                 Reference: Abridge customers average <strong>65%</strong> utilization.
               </span>
@@ -184,7 +184,7 @@ export default function SwitchYourSituation({
                   onClick={() => updateSituation("efficiency", option.id)}
                   className={`w-full p-4 rounded-lg text-left transition-all border-2 ${
                     situation.efficiency === option.id
-                      ? "border-[#E85D3F] bg-white"
+                      ? "border-[#EA2C00] bg-white"
                       : "border-slate-200 bg-white"
                   }`}
                   data-testid={`button-efficiency-${option.id}`}
@@ -193,12 +193,12 @@ export default function SwitchYourSituation({
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                         situation.efficiency === option.id
-                          ? "border-[#E85D3F]"
+                          ? "border-[#EA2C00]"
                           : "border-slate-300"
                       }`}
                     >
                       {situation.efficiency === option.id && (
-                        <div className="w-2 h-2 rounded-full bg-[#E85D3F]" />
+                        <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                       )}
                     </div>
                     <div>
@@ -210,7 +210,7 @@ export default function SwitchYourSituation({
               ))}
             </div>
             <div className="mt-4 p-3 bg-slate-50 rounded-lg flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#E85D3F]" />
+              <Sparkles className="w-4 h-4 text-[#EA2C00]" />
               <span className="text-sm text-slate-600">
                 Reference: Abridge customers average <strong>3-5 min</strong>/encounter.
               </span>
@@ -224,7 +224,7 @@ export default function SwitchYourSituation({
             disabled={!canContinue}
             className={`px-8 py-3 rounded-lg font-medium flex items-center gap-2 ${
               canContinue
-                ? "bg-[#E85D3F] text-white"
+                ? "bg-[#EA2C00] text-white"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
             data-testid="button-see-comparison"

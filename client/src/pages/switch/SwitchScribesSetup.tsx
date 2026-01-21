@@ -57,7 +57,7 @@ export default function SwitchScribesSetup({
           </Button>
           
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#E85D3F] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#EA2C00] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
               A
             </div>
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
@@ -160,7 +160,7 @@ export default function SwitchScribesSetup({
                   max={data.totalProviders}
                   value={data.providersWithScribes ?? 0}
                   onChange={(e) => setData({ ...data, providersWithScribes: Number(e.target.value) })}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#E85D3F] mb-2"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00] mb-2"
                   data-testid="slider-scribe-coverage"
                 />
                 <div className="flex justify-between text-xs text-slate-400 mb-5">
@@ -173,7 +173,7 @@ export default function SwitchScribesSetup({
             {calculations.coveragePercent >= 0 && data.providersWithScribes !== null && (
               <div className="flex gap-6 pt-4 border-t border-slate-100">
                 <div>
-                  <span className="block text-3xl font-bold text-[#E85D3F]" data-testid="text-coverage-percent">
+                  <span className="block text-3xl font-bold text-[#EA2C00]" data-testid="text-coverage-percent">
                     {calculations.coveragePercent}%
                   </span>
                   <span className="text-sm text-slate-500">with scribes</span>
@@ -257,7 +257,7 @@ export default function SwitchScribesSetup({
             disabled={!canContinue}
             className={`px-8 py-3 rounded-lg font-medium flex items-center gap-2 ${
               canContinue
-                ? "bg-[#E85D3F] text-white"
+                ? "bg-[#EA2C00] text-white"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
             data-testid="button-continue"

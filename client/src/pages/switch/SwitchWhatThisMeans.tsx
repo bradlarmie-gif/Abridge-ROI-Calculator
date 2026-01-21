@@ -123,7 +123,7 @@ export default function SwitchWhatThisMeans({
             Back
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#E85D3F] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#EA2C00] flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-wide">SWITCH</span>
@@ -270,7 +270,7 @@ export default function SwitchWhatThisMeans({
 
         <div className="flex flex-col items-center gap-4">
           <Button
-            className="px-8 py-3 rounded-lg font-medium bg-[#E85D3F] hover:bg-[#D94E32] text-white transition-all flex items-center gap-2"
+            className="px-8 py-3 rounded-lg font-medium bg-[#EA2C00] hover:bg-[#D94E32] text-white transition-all flex items-center gap-2"
             data-testid="button-lets-talk"
           >
             <Phone className="w-4 h-4" />

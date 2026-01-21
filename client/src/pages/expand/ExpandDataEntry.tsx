@@ -148,7 +148,7 @@ export default function ExpandDataEntry({
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back</span>
           </button>
-          <span className="text-sm font-medium text-[#E85D3F]">ABRIDGE</span>
+          <span className="text-sm font-medium text-[#EA2C00]">ABRIDGE</span>
           <div className="flex items-center gap-2 text-xs text-[#6B7280]">
             <span className="font-semibold text-[#111827]">Step 2</span>
             <span>of 5</span>

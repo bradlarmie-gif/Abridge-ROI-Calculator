@@ -51,7 +51,7 @@ export default function SwitchScribesHiddenCosts({
           </Button>
           
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#E85D3F] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#EA2C00] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
               A
             </div>
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
@@ -87,7 +87,7 @@ export default function SwitchScribesHiddenCosts({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-white rounded-2xl border border-slate-200 p-6">
             <div className="flex items-center gap-3 mb-5">
-              <Users className="w-5 h-5 text-[#E85D3F]" />
+              <Users className="w-5 h-5 text-[#EA2C00]" />
               <h3 className="font-semibold text-slate-900">Turnover & Training</h3>
             </div>
             
@@ -116,7 +116,7 @@ export default function SwitchScribesHiddenCosts({
             
             <div className="flex justify-between items-center pt-4 border-t border-slate-200">
               <span className="text-sm text-slate-500">Annual cost:</span>
-              <span className="text-xl font-bold text-[#E85D3F]" data-testid="text-turnover-cost">
+              <span className="text-xl font-bold text-[#EA2C00]" data-testid="text-turnover-cost">
                 ${formatNumber(calculations.turnoverCost)}
               </span>
             </div>
@@ -124,7 +124,7 @@ export default function SwitchScribesHiddenCosts({
           
           <div className="bg-white rounded-2xl border border-slate-200 p-6">
             <div className="flex items-center gap-3 mb-5">
-              <Settings className="w-5 h-5 text-[#E85D3F]" />
+              <Settings className="w-5 h-5 text-[#EA2C00]" />
               <h3 className="font-semibold text-slate-900">Management Overhead</h3>
             </div>
             
@@ -152,7 +152,7 @@ export default function SwitchScribesHiddenCosts({
             
             <div className="flex justify-between items-center pt-4 border-t border-slate-200">
               <span className="text-sm text-slate-500">Annual cost:</span>
-              <span className="text-xl font-bold text-[#E85D3F]" data-testid="text-management-cost">
+              <span className="text-xl font-bold text-[#EA2C00]" data-testid="text-management-cost">
                 ${formatNumber(calculations.managementCost)}
               </span>
             </div>
@@ -219,7 +219,7 @@ export default function SwitchScribesHiddenCosts({
         <div className="flex justify-center">
           <Button
             onClick={onNext}
-            className="px-8 py-3 rounded-lg font-medium bg-[#E85D3F] text-white flex items-center gap-2"
+            className="px-8 py-3 rounded-lg font-medium bg-[#EA2C00] text-white flex items-center gap-2"
             data-testid="button-continue"
           >
             Continue

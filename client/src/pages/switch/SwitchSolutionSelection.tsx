@@ -128,7 +128,7 @@ export default function SwitchSolutionSelection({
             size="lg"
             onClick={onNext}
             disabled={!canContinue}
-            className={canContinue ? "bg-[#E85D3F] text-white" : ""}
+            className={canContinue ? "bg-[#EA2C00] text-white" : ""}
             data-testid="button-continue"
           >
             Continue

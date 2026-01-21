@@ -24,7 +24,7 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
                 <span className="text-sm">Back</span>
               </button>
             )}
-            <span className="text-lg font-bold text-[#E85D3F] tracking-tight">ABRIDGE</span>
+            <span className="text-lg font-bold text-[#EA2C00] tracking-tight">ABRIDGE</span>
             <span className="text-neutral-300">|</span>
             <span className="text-sm text-[#6B7280]">ROI Calculator</span>
           </div>
@@ -135,7 +135,7 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
             Don't have results yet?{" "}
             <button 
               onClick={onExplore} 
-              className="font-semibold text-[#E85D3F] hover:underline"
+              className="font-semibold text-[#EA2C00] hover:underline"
               data-testid="link-explore"
             >
               Use Explore

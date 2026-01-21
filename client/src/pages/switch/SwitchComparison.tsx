@@ -90,7 +90,7 @@ export default function SwitchComparison({
             Back
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#E85D3F] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#EA2C00] flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-wide">SWITCH</span>
@@ -103,7 +103,7 @@ export default function SwitchComparison({
               key={step}
               className={`w-2 h-2 rounded-full transition-colors ${
                 step === currentStep
-                  ? "bg-[#E85D3F]"
+                  ? "bg-[#EA2C00]"
                   : step < currentStep
                   ? "bg-slate-400"
                   : "bg-slate-200"
@@ -211,7 +211,7 @@ export default function SwitchComparison({
         <div className="flex justify-center">
           <Button
             onClick={onNext}
-            className="px-8 py-3 rounded-lg font-medium bg-[#E85D3F] text-white flex items-center gap-2"
+            className="px-8 py-3 rounded-lg font-medium bg-[#EA2C00] text-white flex items-center gap-2"
             data-testid="button-what-this-means"
           >
             What this means

@@ -1149,7 +1149,7 @@ export default function ModelBuilder({
             
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Calculator className="w-4 h-4 text-[#E85D3F]" />
+                <Calculator className="w-4 h-4 text-[#EA2C00]" />
                 <span className="text-sm font-medium text-[#111827]">Your Calculation</span>
               </div>
               
@@ -1422,7 +1422,7 @@ export default function ModelBuilder({
                   type="checkbox"
                   checked={includeLocum}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, includeLocum: e.target.checked } }))}
-                  className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
+                  className="w-4 h-4 rounded border-neutral-300 text-[#EA2C00] focus:ring-[#EA2C00]"
                   data-testid="include-locum-checkbox"
                 />
                 <span className="text-sm font-semibold text-[#111827] uppercase tracking-wide">Locum Avoidance</span>
@@ -1820,7 +1820,7 @@ export default function ModelBuilder({
             </div>
             <div className="flex justify-between">
               <span className="text-[#6B7280]">Your input</span>
-              <span className="font-mono text-[#E85D3F] font-medium">${revenuePerVisit} (blended)</span>
+              <span className="font-mono text-[#EA2C00] font-medium">${revenuePerVisit} (blended)</span>
             </div>
           </div>
         </div>
@@ -3017,7 +3017,7 @@ export default function ModelBuilder({
                     type="checkbox"
                     checked={includeAdmissions}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, includeAdmissions: e.target.checked } }))}
-                    className="w-4 h-4 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
+                    className="w-4 h-4 rounded border-neutral-300 text-[#EA2C00] focus:ring-[#EA2C00]"
                     data-testid="ed-admissions-toggle"
                   />
                   <span className="text-xs text-[#6B7280]">{includeAdmissions ? "ON" : "OFF"}</span>
@@ -3163,7 +3163,7 @@ export default function ModelBuilder({
                 onClick={() => setDriverInputs(prev => ({ ...prev, edScribe: { ...prev.edScribe, hasScribes: opt } }))}
                 className={`p-3 rounded-lg border text-sm transition-all ${
                   hasScribes === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                    ? "border-[#EA2C00] bg-[#EA2C00] text-white shadow-sm"
                     : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                 }`}
                 data-testid={`ed-scribe-${opt ? "yes" : "no"}`}
@@ -3220,7 +3220,7 @@ export default function ModelBuilder({
                     onClick={() => setDriverInputs(prev => ({ ...prev, edScribe: { ...prev.edScribe, reductionLevel: opt } }))}
                     className={`p-3 rounded-lg border text-sm transition-all ${
                       reductionLevel === opt
-                        ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                        ? "border-[#EA2C00] bg-[#EA2C00]/5 text-[#EA2C00]"
                         : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
                     }`}
                     data-testid={`ed-scribe-reduction-${opt}`}
@@ -6039,7 +6039,7 @@ export default function ModelBuilder({
                           onClick={() => setUnitType(type)}
                           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                             unitType === type
-                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                              ? "border-[#EA2C00] bg-[#EA2C00]/5 text-[#EA2C00]"
                               : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
                           }`}
                           data-testid={`unit-type-${type}`}
@@ -6064,7 +6064,7 @@ export default function ModelBuilder({
                           onClick={() => setUtilizationRate(rate)}
                           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                             utilizationRate === rate
-                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                              ? "border-[#EA2C00] bg-[#EA2C00]/5 text-[#EA2C00]"
                               : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
                           }`}
                           data-testid={`utilization-${rate}`}
@@ -6086,7 +6086,7 @@ export default function ModelBuilder({
                     <p className="text-sm text-[#111827] mt-1">
                       <span className="font-mono">{documentationEvents.toLocaleString()}</span> events ×{" "}
                       <span className="font-mono">{utilizationRate}%</span> ={" "}
-                      <span className="font-mono font-semibold text-[#E85D3F]">{Math.round(documentationEvents * (utilizationRate / 100)).toLocaleString()}</span> Abridge-documented events/year
+                      <span className="font-mono font-semibold text-[#EA2C00]">{Math.round(documentationEvents * (utilizationRate / 100)).toLocaleString()}</span> Abridge-documented events/year
                     </p>
                   </div>
                   
@@ -6172,7 +6172,7 @@ export default function ModelBuilder({
                           onClick={() => setUtilizationRate(rate)}
                           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                             utilizationRate === rate
-                              ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]"
+                              ? "border-[#EA2C00] bg-[#EA2C00]/5 text-[#EA2C00]"
                               : "border-neutral-200 text-[#6B7280] hover:border-neutral-300"
                           }`}
                           data-testid={`utilization-${rate}`}
@@ -6396,7 +6396,7 @@ export default function ModelBuilder({
                 
                 <Button
                   onClick={handleComplete}
-                  className="w-full h-12 bg-[#E85D3F] hover:bg-[#D14D32] border-[#E85D3F] text-white text-base font-semibold"
+                  className="w-full h-12 bg-[#EA2C00] hover:bg-[#d12700] border-[#EA2C00] text-white text-base font-semibold"
                   data-testid="button-continue-investment"
                 >
                   Continue to Investment

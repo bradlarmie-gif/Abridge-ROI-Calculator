@@ -307,7 +307,7 @@ export default function SummaryCommandCenter({
               </Button>
               <Button
                 size="sm"
-                className="gap-2 bg-[#E85D3F] hover:bg-[#D14D32]"
+                className="gap-2 bg-[#EA2C00] hover:bg-[#d12700]"
                 data-testid="button-export"
               >
                 <Share2 className="w-4 h-4" />
@@ -380,7 +380,7 @@ export default function SummaryCommandCenter({
               <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                 <defs>
                   <linearGradient id="valueGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#E85D3F" stopOpacity={1} />
+                    <stop offset="0%" stopColor="#EA2C00" stopOpacity={1} />
                     <stop offset="50%" stopColor="#94a3b8" stopOpacity={1} />
                     <stop offset="100%" stopColor="#059669" stopOpacity={1} />
                   </linearGradient>
@@ -428,7 +428,7 @@ export default function SummaryCommandCenter({
                   x={pilot.providers} 
                   y={pilot.value} 
                   r={10} 
-                  fill="#E85D3F" 
+                  fill="#EA2C00" 
                   stroke="white"
                   strokeWidth={3}
                 />
@@ -449,7 +449,7 @@ export default function SummaryCommandCenter({
           {/* Chart Annotations */}
           <div className="flex justify-between px-20 mb-8">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#E85D3F]" />
+              <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />
               <span className="text-sm font-medium text-[#6B7280]">You are here</span>
             </div>
             <div className="flex items-center gap-2">
@@ -461,7 +461,7 @@ export default function SummaryCommandCenter({
           {/* Model Your Scenario Panel */}
           <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-6 mb-6">
             <div className="flex items-center gap-2 mb-6">
-              <Target className="w-5 h-5 text-[#E85D3F]" />
+              <Target className="w-5 h-5 text-[#EA2C00]" />
               <h3 className="text-sm font-semibold text-[#111827] uppercase tracking-wide">
                 Model Your Scenario
               </h3>
@@ -472,7 +472,7 @@ export default function SummaryCommandCenter({
               <div className="flex-1 bg-white rounded-xl border-2 border-orange-200 p-5">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="p-2 bg-orange-100 rounded-lg">
-                    <MapPin className="w-5 h-5 text-[#E85D3F]" />
+                    <MapPin className="w-5 h-5 text-[#EA2C00]" />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#111827] uppercase tracking-wide">Your Pilot</h4>
@@ -489,7 +489,7 @@ export default function SummaryCommandCenter({
                       onChange={(e) => setPilotUnits(Math.max(1, Number(e.target.value)))}
                       min={1}
                       max={500}
-                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F]"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
                       data-testid="input-pilot-units"
                     />
                   </div>
@@ -502,7 +502,7 @@ export default function SummaryCommandCenter({
                       onChange={(e) => setEncountersPerUnit(Math.max(100, Number(e.target.value)))}
                       min={100}
                       max={5000}
-                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F]"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
                       data-testid="input-encounters-per-unit"
                     />
                   </div>
@@ -516,7 +516,7 @@ export default function SummaryCommandCenter({
                         onChange={(e) => setPilotUtilization(Math.min(90, Math.max(10, Number(e.target.value))))}
                         min={10}
                         max={90}
-                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F]"
+                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
                         data-testid="input-pilot-utilization"
                       />
                       <span className="text-[#6B7280] font-medium">%</span>

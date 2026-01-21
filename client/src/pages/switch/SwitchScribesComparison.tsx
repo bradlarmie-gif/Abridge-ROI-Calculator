@@ -55,7 +55,7 @@ export default function SwitchScribesComparison({
           </Button>
           
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#E85D3F] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#EA2C00] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
               A
             </div>
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
@@ -125,7 +125,7 @@ export default function SwitchScribesComparison({
             
             <div className="bg-emerald-50 rounded-2xl border-2 border-emerald-500 p-6">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#E85D3F] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#EA2C00] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
                   A
                 </div>
                 <span className="font-semibold text-emerald-900">Abridge</span>
@@ -246,7 +246,7 @@ export default function SwitchScribesComparison({
         
         <div className="flex flex-col items-center gap-4">
           <Button
-            className="px-8 py-3 rounded-lg font-medium bg-[#E85D3F] text-white flex items-center gap-2"
+            className="px-8 py-3 rounded-lg font-medium bg-[#EA2C00] text-white flex items-center gap-2"
             data-testid="button-lets-talk"
           >
             <Phone className="w-4 h-4" />

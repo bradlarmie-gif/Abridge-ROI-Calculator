@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import { Button } from '@/components/ui/button';
 import { ComposedChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks } from './SwitchAmbientFlow';
@@ -79,10 +80,12 @@ export default function SwitchAmbientConclusion({
             Back
           </Button>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-              A
-            </div>
+          <div className="flex items-center gap-3">
+            <img 
+              src={abridgeLogo} 
+              alt="Abridge" 
+              className="h-6"
+            />
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
           </div>
           

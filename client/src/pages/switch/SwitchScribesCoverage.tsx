@@ -43,7 +43,7 @@ export default function SwitchScribesCoverage({
           </Button>
           
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#E85D3F] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#EA2C00] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
               A
             </div>
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
@@ -82,7 +82,7 @@ export default function SwitchScribesCoverage({
           <div className="bg-white rounded-2xl border border-slate-200 p-6">
             <div className="flex h-12 rounded-lg overflow-hidden mb-4" data-testid="coverage-bar">
               <div 
-                className="bg-[#E85D3F] flex items-center justify-center px-4 min-w-fit"
+                className="bg-[#EA2C00] flex items-center justify-center px-4 min-w-fit"
                 style={{ width: `${Math.max(calculations.coveragePercent, 20)}%` }}
               >
                 <span className="text-sm font-semibold text-white whitespace-nowrap">
@@ -100,7 +100,7 @@ export default function SwitchScribesCoverage({
             
             <div className="flex gap-8">
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-[#E85D3F]" data-testid="text-coverage-percent">
+                <span className="text-4xl font-bold text-[#EA2C00]" data-testid="text-coverage-percent">
                   {calculations.coveragePercent}%
                 </span>
                 <span className="text-sm text-slate-500">covered</span>
@@ -119,7 +119,7 @@ export default function SwitchScribesCoverage({
           <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">WHAT FULL COVERAGE WOULD COST</h2>
           
           <div className="bg-white rounded-2xl border border-slate-200 p-6">
-            <div className="h-12 bg-gradient-to-r from-[#E85D3F] to-[#F07B5F] rounded-lg flex items-center justify-center mb-5" data-testid="full-coverage-bar">
+            <div className="h-12 bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] rounded-lg flex items-center justify-center mb-5" data-testid="full-coverage-bar">
               <span className="text-sm font-semibold text-white">
                 {data.totalProviders} providers with scribes
               </span>
@@ -203,7 +203,7 @@ export default function SwitchScribesCoverage({
         <div className="flex justify-center">
           <Button
             onClick={onNext}
-            className="px-8 py-3 rounded-lg font-medium bg-[#E85D3F] text-white flex items-center gap-2"
+            className="px-8 py-3 rounded-lg font-medium bg-[#EA2C00] text-white flex items-center gap-2"
             data-testid="button-continue"
           >
             Continue

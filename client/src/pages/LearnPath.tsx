@@ -1341,7 +1341,7 @@ function DriverAccordion({
       >
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center flex-shrink-0">
-            <Icon className="w-5 h-5 text-[#E85D3F]" />
+            <Icon className="w-5 h-5 text-[#EA2C00]" />
           </div>
           <div className="text-left">
             <h4 className="font-semibold text-[#111827]">{driver.name}</h4>
@@ -1365,7 +1365,7 @@ function DriverAccordion({
           {/* The Theory */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Lightbulb className="w-4 h-4 text-[#E85D3F]" />
+              <Lightbulb className="w-4 h-4 text-[#EA2C00]" />
               <span className="text-sm font-semibold text-[#111827]">The Theory</span>
             </div>
             <p className="text-sm text-[#6B7280] leading-relaxed">{driver.theory}</p>
@@ -1374,7 +1374,7 @@ function DriverAccordion({
           {/* How We Calculate It */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Calculator className="w-4 h-4 text-[#E85D3F]" />
+              <Calculator className="w-4 h-4 text-[#EA2C00]" />
               <span className="text-sm font-semibold text-[#111827]">How We Calculate It</span>
             </div>
             <div className="space-y-0">
@@ -1503,18 +1503,18 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                     onClick={() => handleSettingSelect(setting)}
                     className={`relative p-5 rounded-xl border-2 text-left hover-elevate ${
                       isSelected 
-                        ? "border-[#E85D3F] bg-[#FEF2F0]" 
+                        ? "border-[#EA2C00] bg-[#FEF2F0]" 
                         : "border-neutral-200 bg-white"
                     }`}
                     data-testid={`setting-${setting}`}
                   >
                     {isSelected && (
-                      <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#E85D3F] flex items-center justify-center">
+                      <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#EA2C00] flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
                     <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center mb-3">
-                      <Icon className={`w-5 h-5 ${isSelected ? "text-[#E85D3F]" : "text-[#6B7280]"}`} />
+                      <Icon className={`w-5 h-5 ${isSelected ? "text-[#EA2C00]" : "text-[#6B7280]"}`} />
                     </div>
                     <h3 className="font-semibold text-[#111827] mb-1">{cfg.name}</h3>
                     <p className="text-sm text-[#6B7280]">{cfg.subtitle}</p>
@@ -1526,18 +1526,18 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                 onClick={() => handleSettingSelect("inpatient")}
                 className={`relative p-5 rounded-xl border-2 text-left hover-elevate ${
                   selectedSetting === "inpatient"
-                    ? "border-[#E85D3F] bg-[#FEF2F0]"
+                    ? "border-[#EA2C00] bg-[#FEF2F0]"
                     : "border-neutral-200 bg-white"
                 }`}
                 data-testid="card-inpatient"
               >
                 {selectedSetting === "inpatient" && (
-                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#E85D3F] flex items-center justify-center">
+                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#EA2C00] flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 )}
                 <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center mb-3">
-                  <Building2 className={`w-5 h-5 ${selectedSetting === "inpatient" ? "text-[#E85D3F]" : "text-[#6B7280]"}`} />
+                  <Building2 className={`w-5 h-5 ${selectedSetting === "inpatient" ? "text-[#EA2C00]" : "text-[#6B7280]"}`} />
                 </div>
                 <h3 className="font-semibold text-[#111827] mb-1">Inpatient</h3>
                 <p className="text-sm text-[#6B7280]">Hospital admissions, rounding</p>
@@ -1548,7 +1548,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
               onClick={handleContinue}
               disabled={!selectedSetting}
               size="lg"
-              className="w-full bg-[#E85D3F] border-[#E85D3F] text-white font-semibold"
+              className="w-full bg-[#EA2C00] border-[#EA2C00] text-white font-semibold"
               data-testid="button-show-math"
             >
               Show Me the Math
@@ -1577,8 +1577,8 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             <img src={abridgeLogo} alt="Abridge" className="h-6 hidden sm:block" data-testid="img-logo-methodology" />
             {config && (
               <div className="flex items-center gap-2 px-3 py-1 bg-[#FEF2F0] rounded-full">
-                <config.icon className="w-4 h-4 text-[#E85D3F]" />
-                <span className="text-sm font-medium text-[#E85D3F]">{config.name}</span>
+                <config.icon className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-sm font-medium text-[#EA2C00]">{config.name}</span>
               </div>
             )}
           </div>
@@ -1594,9 +1594,9 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
         </div>
 
         {/* THE INSIGHT - Framing Statement */}
-        <div className="bg-[#F8F9FA] border-l-4 border-[#E85D3F] rounded-r-lg p-5 mb-8" data-testid="insight-callout">
+        <div className="bg-[#F8F9FA] border-l-4 border-[#EA2C00] rounded-r-lg p-5 mb-8" data-testid="insight-callout">
           <div className="flex items-center gap-2 mb-2">
-            <Lightbulb className="w-4 h-4 text-[#E85D3F]" />
+            <Lightbulb className="w-4 h-4 text-[#EA2C00]" />
             <span className="text-xs font-bold text-[#111827] tracking-wide">THE INSIGHT</span>
           </div>
           <p className="text-[#111827] mb-3">
@@ -1612,11 +1612,11 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
         <div className={`grid grid-cols-1 gap-6 mb-8 ${selectedSetting === "nursing" ? "md:grid-cols-[2fr_1fr]" : "md:grid-cols-2"}`}>
           <button
             onClick={() => document.getElementById('time-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className={`p-6 bg-white border rounded-xl text-left hover-elevate ${selectedSetting === "nursing" ? "border-[#E85D3F] border-2" : "border-[#E5E7EB]"}`}
+            className={`p-6 bg-white border rounded-xl text-left hover-elevate ${selectedSetting === "nursing" ? "border-[#EA2C00] border-2" : "border-[#E5E7EB]"}`}
             data-testid="framework-time-card"
           >
-            <Clock className="w-8 h-8 text-[#E85D3F] mb-3" />
-            <h3 className="font-bold text-[#111827] text-lg mb-2">Time Saved {selectedSetting === "nursing" && <span className="text-xs font-normal text-[#E85D3F] ml-2">PRIMARY</span>}</h3>
+            <Clock className="w-8 h-8 text-[#EA2C00] mb-3" />
+            <h3 className="font-bold text-[#111827] text-lg mb-2">Time Saved {selectedSetting === "nursing" && <span className="text-xs font-normal text-[#EA2C00] ml-2">PRIMARY</span>}</h3>
             <p className="text-sm text-[#6B7280] mb-4">
               {config?.timeSavedSubtitle}
             </p>
@@ -1635,7 +1635,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             className={`p-6 bg-white border border-[#E5E7EB] rounded-xl text-left hover-elevate ${selectedSetting === "nursing" ? "opacity-75" : ""}`}
             data-testid="framework-quality-card"
           >
-            <FileText className="w-8 h-8 text-[#E85D3F] mb-3" />
+            <FileText className="w-8 h-8 text-[#EA2C00] mb-3" />
             <h3 className="font-bold text-[#111827] text-lg mb-2">Doc Quality {selectedSetting === "nursing" && <span className="text-xs font-normal text-[#6B7280] ml-2">SUPPORTING</span>}</h3>
             <p className="text-sm text-[#6B7280] mb-4">
               {config?.docQualitySubtitle}
@@ -1688,7 +1688,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
         <div className="mb-10" id="time-section">
           <div className="border-t border-neutral-200 pt-6 mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-[#E85D3F]" />
+              <Clock className="w-5 h-5 text-[#EA2C00]" />
               <span className="font-bold text-[#111827]">Time Saved Benefits</span>
             </div>
           </div>
@@ -1709,7 +1709,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
         <div className="mb-10" id="quality-section">
           <div className="border-t border-neutral-200 pt-6 mb-4">
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#E85D3F]" />
+              <FileText className="w-5 h-5 text-[#EA2C00]" />
               <span className="font-bold text-[#111827]">Documentation Quality Benefits</span>
             </div>
           </div>
@@ -1762,7 +1762,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             {/* Time Saved Breakdown */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Clock className="w-4 h-4 text-[#E85D3F]" />
+                <Clock className="w-4 h-4 text-[#EA2C00]" />
                 <span className="text-sm font-semibold text-[#111827]">Time Saved Benefits</span>
               </div>
               <div className="space-y-2 pl-6">
@@ -1784,7 +1784,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
             {/* Quality Breakdown */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <FileText className="w-4 h-4 text-[#E85D3F]" />
+                <FileText className="w-4 h-4 text-[#EA2C00]" />
                 <span className="text-sm font-semibold text-[#111827]">Documentation Quality Benefits</span>
               </div>
               <div className="space-y-2 pl-6">
@@ -1854,7 +1854,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
               <Button
                 onClick={handleStartCalculator}
                 size="lg"
-                className="bg-[#E85D3F] border-[#E85D3F] text-white font-semibold px-8"
+                className="bg-[#EA2C00] border-[#EA2C00] text-white font-semibold px-8"
                 data-testid="button-build-roi"
               >
                 Build My ROI Model

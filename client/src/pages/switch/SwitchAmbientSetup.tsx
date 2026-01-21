@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, ArrowRight, Sparkles, Settings, Zap, Check, Clock, Moon, DollarSign, FileCheck, Lightbulb } from 'lucide-react';
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks, AmbientMode, MetricValues } from './SwitchAmbientFlow';
@@ -187,10 +188,12 @@ export default function SwitchAmbientSetup({
             Back
           </Button>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-              A
-            </div>
+          <div className="flex items-center gap-3">
+            <img 
+              src={abridgeLogo} 
+              alt="Abridge" 
+              className="h-6"
+            />
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
           </div>
           
@@ -552,7 +555,7 @@ export default function SwitchAmbientSetup({
           <Button
             size="lg"
             onClick={onNext}
-            className="bg-[#E85D3F] text-white"
+            className="bg-[#EA2C00] text-white"
             data-testid="button-see-analysis"
           >
             See full analysis

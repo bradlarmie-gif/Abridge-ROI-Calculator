@@ -30,14 +30,14 @@ export default function ExpandPath({ onBack }: ExpandPathProps) {
 
         <div className="text-center py-24">
           <div className="w-16 h-16 rounded-2xl bg-[#FEF2F0] flex items-center justify-center mx-auto mb-6">
-            <TrendingUp className="w-8 h-8 text-[#E85D3F]" />
+            <TrendingUp className="w-8 h-8 text-[#EA2C00]" />
           </div>
           <h1 className="text-3xl font-bold text-[#111827] mb-4">Expand Path</h1>
           <p className="text-lg text-[#6B7280] max-w-md mx-auto mb-8">
             Model expansion to new care settings or more providers based on your current Abridge results.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FEF2F0] rounded-full">
-            <span className="text-sm font-medium text-[#E85D3F]">Coming Soon</span>
+            <span className="text-sm font-medium text-[#EA2C00]">Coming Soon</span>
           </div>
         </div>
       </div>

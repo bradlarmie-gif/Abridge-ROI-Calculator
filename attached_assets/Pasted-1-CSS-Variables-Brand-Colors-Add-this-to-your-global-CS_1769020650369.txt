@@ -1,0 +1,483 @@
+1. CSS Variables & Brand Colors
+Add this to your global CSS:
+cssCopy:root {
+  --abridge-red: #EA2C00;
+  --abridge-red-hover: #d12700;
+  --abridge-gray-50: #F9FAFB;
+  --abridge-gray-100: #F3F4F6;
+  --abridge-gray-600: #4B5563;
+  --abridge-gray-900: #111827;
+  --spacing-unit: 8px;
+  --max-width: 1200px;
+  --border-radius: 12px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+2. Global Header Component
+Every page needs this:
+htmlCopy<header class="global-header">
+  <a href="/" class="logo-link" aria-label="Return to home">
+    <img src="/abridge-logo.svg" alt="Abridge" class="abridge-logo" />
+  </a>
+</header>
+cssCopy.global-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 48px;
+  background: white;
+  z-index: 1000;
+  border-bottom: 1px solid var(--abridge-gray-100);
+}
+
+.logo-link {
+  display: inline-block;
+  transition: opacity 0.2s ease;
+}
+
+.logo-link:hover {
+  opacity: 0.8;
+}
+
+.abridge-logo {
+  height: 32px;
+  width: auto;
+}
+
+/* Add padding to body to account for fixed header */
+body {
+  padding-top: 80px;
+}
+3. Landing Page with Big "A" Treatment
+htmlCopy<div class="landing-page">
+  <!-- Massive background A -->
+  <div class="hero-background">
+    <svg class="giant-a" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Abridge A shape -->
+      <path d="M100 20 L140 180 L115 180 L108 150 L92 150 L85 180 L60 180 L100 20 Z M100 70 L95 120 L105 120 Z" 
+            fill="var(--abridge-red)" 
+            opacity="0.03"/>
+      <circle cx="100" cy="160" r="15" fill="var(--abridge-red)" opacity="0.03"/>
+    </svg>
+  </div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">
+      Model the impact of ambient documentation
+    </h1>
+    <p class="hero-subtitle">
+      Understand where the value actually comes from.
+    </p>
+
+    <div class="pathway-cards">
+      <!-- Explore Card -->
+      <div class="pathway-card">
+        <div class="card-icon">
+          <svg><!-- compass icon --></svg>
+        </div>
+        <h3>Explore</h3>
+        <p class="card-label">New to Abridge?</p>
+        <p class="card-description">
+          Build your first ROI model and see what ambient documentation could deliver for your organization
+        </p>
+        <button class="cta-button">
+          Get Started →
+        </button>
+      </div>
+
+      <!-- Expand Card -->
+      <div class="pathway-card">
+        <div class="card-icon">
+          <svg><!-- trending up icon --></svg>
+        </div>
+        <h3>Expand</h3>
+        <p class="card-label">Already using Abridge?</p>
+        <p class="card-description">
+          Model what expansion to new settings or more providers could look like based on your current results
+        </p>
+        <button class="cta-button">
+          Load Your Results →
+        </button>
+      </div>
+
+      <!-- Switch Card -->
+      <div class="pathway-card">
+        <div class="card-icon">
+          <svg><!-- switch icon --></svg>
+        </div>
+        <h3>Switch</h3>
+        <p class="card-label">Using another solution?</p>
+        <p class="card-description">
+          See how Abridge compares and what switching could mean for your ROI
+        </p>
+        <button class="cta-button">
+          Compare Solutions →
+        </button>
+      </div>
+    </div>
+
+    <div class="methodology-link">
+      <svg class="book-icon" width="20" height="20"><!-- book icon --></svg>
+      <a href="/methodology">Just want to understand how ambient ROI works? Learn the methodology →</a>
+    </div>
+
+    <div class="social-proof">
+      <p class="proof-label">Trusted by 200+ health system partners</p>
+      <div class="partner-logos">
+        <span>Epic</span>
+        <span>Oracle Health</span>
+        <span>MEDITECH</span>
+      </div>
+    </div>
+  </div>
+</div>
+4. Landing Page Styles
+cssCopy.landing-page {
+  position: relative;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.giant-a {
+  position: absolute;
+  width: 140vh;
+  height: 140vh;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.4;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: var(--max-width);
+  padding: 0 48px;
+  width: 100%;
+}
+
+.hero-title {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--abridge-gray-900);
+  margin-bottom: 16px;
+  max-width: 800px;
+}
+
+.hero-subtitle {
+  font-size: 20px;
+  color: var(--abridge-gray-600);
+  margin-bottom: 64px;
+  max-width: 600px;
+}
+
+.pathway-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.pathway-card {
+  background: white;
+  border: 1px solid var(--abridge-gray-100);
+  border-radius: var(--border-radius);
+  padding: 32px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.pathway-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--abridge-red);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: rgba(234, 44, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.card-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--abridge-red);
+}
+
+.pathway-card h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--abridge-gray-900);
+  margin-bottom: 8px;
+}
+
+.card-label {
+  font-size: 14px;
+  color: var(--abridge-red);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.card-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--abridge-gray-600);
+  margin-bottom: 24px;
+  min-height: 72px;
+}
+
+.cta-button {
+  width: 100%;
+  background: var(--abridge-red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cta-button:hover {
+  background: var(--abridge-red-hover);
+  transform: translateX(2px);
+}
+
+.cta-button:active {
+  transform: translateX(0px);
+}
+
+.methodology-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 64px;
+}
+
+.methodology-link a {
+  color: var(--abridge-red);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.methodology-link a:hover {
+  opacity: 0.8;
+}
+
+.book-icon {
+  stroke: var(--abridge-red);
+}
+
+.social-proof {
+  text-align: center;
+  padding-top: 48px;
+  border-top: 1px solid var(--abridge-gray-100);
+}
+
+.proof-label {
+  font-size: 13px;
+  color: var(--abridge-gray-600);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.partner-logos {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: center;
+}
+
+.partner-logos span {
+  font-size: 16px;
+  color: var(--abridge-gray-600);
+  font-weight: 500;
+  opacity: 0.6;
+}
+5. Button Component System
+cssCopy/* Primary CTA */
+.btn-primary {
+  background: var(--abridge-red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background: var(--abridge-red-hover);
+  box-shadow: 0 4px 12px rgba(234, 44, 0, 0.2);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Secondary button */
+.btn-secondary {
+  background: white;
+  color: var(--abridge-red);
+  border: 1px solid var(--abridge-red);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(234, 44, 0, 0.04);
+}
+6. Progress Stepper (for multi-step flows)
+htmlCopy<div class="progress-stepper">
+  <div class="step active completed">
+    <div class="step-number">1</div>
+    <div class="step-label">Care Setting</div>
+  </div>
+  <div class="step-connector completed"></div>
+  <div class="step active">
+    <div class="step-number">2</div>
+    <div class="step-label">Strategic Priorities</div>
+  </div>
+  <div class="step-connector"></div>
+  <div class="step">
+    <div class="step-number">3</div>
+    <div class="step-label">Value Methodology</div>
+  </div>
+  <div class="step-connector"></div>
+  <div class="step">
+    <div class="step-number">4</div>
+    <div class="step-label">Model Setup</div>
+  </div>
+</div>
+cssCopy.progress-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--abridge-gray-100);
+  color: var(--abridge-gray-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+  background: var(--abridge-red);
+  color: white;
+}
+
+.step.completed .step-number {
+  background: var(--abridge-red);
+  color: white;
+}
+
+.step-label {
+  font-size: 13px;
+  color: var(--abridge-gray-600);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.step.active .step-label {
+  color: var(--abridge-gray-900);
+  font-weight: 600;
+}
+
+.step-connector {
+  width: 80px;
+  height: 2px;
+  background: var(--abridge-gray-100);
+  margin: 0 8px 20px 8px;
+}
+
+.step-connector.completed {
+  background: var(--abridge-red);
+}
+
+WHAT TO PUT IN REPLIT
+Create these files:
+style.css - Put all the CSS above
+index.html - Your landing page with the giant A
+app.js - Handle routing between the 3 flows
+javascriptCopy// Simple routing
+const routes = {
+  '/': 'landing',
+  '/explore': 'explore-flow',
+  '/expand': 'expand-flow',
+  '/switch': 'switch-flow'
+};
+
+// Make logo clickable to return home
+document.querySelector('.logo-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  navigateTo('/');
+});

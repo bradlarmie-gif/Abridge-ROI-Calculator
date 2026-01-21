@@ -28,16 +28,16 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       data-testid={testId}
     >
       <div className="w-12 h-12 rounded-xl bg-[#FEF2F0] flex items-center justify-center mb-6">
-        <Icon className="w-6 h-6 text-[#E85D3F]" />
+        <Icon className="w-6 h-6 text-[#EA2C00]" />
       </div>
       
       <h3 className="text-xl font-semibold text-[#111827] mb-1">{title}</h3>
-      <p className="text-sm text-[#E85D3F] font-medium mb-3">{subtitle}</p>
+      <p className="text-sm text-[#EA2C00] font-medium mb-3">{subtitle}</p>
       <p className="text-[#6B7280] text-sm leading-relaxed flex-1 mb-6">{description}</p>
       
       <Button
         variant="outline"
-        className="w-full border-[#E85D3F] text-[#E85D3F]"
+        className="w-full border-[#EA2C00] text-[#EA2C00]"
         data-testid={`${testId}-button`}
       >
         {buttonText}
@@ -116,7 +116,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           >
             <BookOpen className="w-5 h-5 text-[#6B7280]" />
             <span className="text-[#6B7280] text-sm">Just want to understand how ambient ROI works?</span>
-            <span className="text-[#E85D3F] text-sm font-medium flex items-center gap-1">
+            <span className="text-[#EA2C00] text-sm font-medium flex items-center gap-1">
               Learn the methodology
               <ChevronRight className="w-4 h-4" />
             </span>

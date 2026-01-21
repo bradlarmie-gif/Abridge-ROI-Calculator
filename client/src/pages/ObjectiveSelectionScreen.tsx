@@ -874,8 +874,8 @@ function CareSettingRow({
         disabled
           ? "cursor-not-allowed bg-white border border-dashed border-[#D1D5DB]"
           : selected
-            ? "bg-[#FEF2F0] border-2 border-[#E85D3F] shadow-[0_0_0_3px_rgba(232,93,63,0.1)]"
-            : "bg-white border border-[#E5E7EB] hover:border-[#E85D3F] hover:shadow-md cursor-pointer"
+            ? "bg-[#FEF2F0] border-2 border-[#EA2C00] shadow-[0_0_0_3px_rgba(232,93,63,0.1)]"
+            : "bg-white border border-[#E5E7EB] hover:border-[#EA2C00] hover:shadow-md cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
@@ -883,14 +883,14 @@ function CareSettingRow({
         <div
           className={`flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0 ${
             selected
-              ? "bg-[#E85D3F]"
+              ? "bg-[#EA2C00]"
               : disabled
                 ? "bg-neutral-100"
                 : "bg-neutral-100 group-hover:bg-[#FEF2F0]"
           }`}
         >
           <Icon
-            className={`w-6 h-6 ${selected ? "text-white" : disabled ? "text-neutral-400" : "text-neutral-600 group-hover:text-[#E85D3F]"}`}
+            className={`w-6 h-6 ${selected ? "text-white" : disabled ? "text-neutral-400" : "text-neutral-600 group-hover:text-[#EA2C00]"}`}
           />
         </div>
         
@@ -912,11 +912,11 @@ function CareSettingRow({
         
         <div className="flex-shrink-0">
           {selected ? (
-            <div className="w-6 h-6 rounded-full bg-[#E85D3F] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-[#EA2C00] flex items-center justify-center">
               <Check className="w-4 h-4 text-white" />
             </div>
           ) : !disabled ? (
-            <div className="w-6 h-6 rounded-full border-2 border-[#D1D5DB] group-hover:border-[#E85D3F]" />
+            <div className="w-6 h-6 rounded-full border-2 border-[#D1D5DB] group-hover:border-[#EA2C00]" />
           ) : null}
         </div>
       </div>

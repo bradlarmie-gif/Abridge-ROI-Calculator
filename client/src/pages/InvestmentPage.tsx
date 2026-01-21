@@ -175,7 +175,7 @@ export default function InvestmentPage({
                   onClick={() => setPricingModel("per_unit_monthly")}
                   className={`p-4 rounded-xl border-2 text-sm font-medium transition-all ${
                     pricingModel === "per_unit_monthly"
-                      ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                      ? "border-[#EA2C00] bg-[#EA2C00] text-white shadow-sm"
                       : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                   }`}
                   data-testid="pricing-per-unit"
@@ -186,7 +186,7 @@ export default function InvestmentPage({
                   onClick={() => setPricingModel("enterprise_annual")}
                   className={`p-4 rounded-xl border-2 text-sm font-medium transition-all ${
                     pricingModel === "enterprise_annual"
-                      ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                      ? "border-[#EA2C00] bg-[#EA2C00] text-white shadow-sm"
                       : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                   }`}
                   data-testid="pricing-enterprise"
@@ -247,7 +247,7 @@ export default function InvestmentPage({
                     onClick={() => setContractTerm(term)}
                     className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${
                       contractTerm === term
-                        ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
+                        ? "border-[#EA2C00] bg-[#EA2C00] text-white shadow-sm"
                         : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
                     }`}
                     data-testid={`contract-term-${term}`}
@@ -267,7 +267,7 @@ export default function InvestmentPage({
                   type="checkbox"
                   checked={includeImplementation}
                   onChange={(e) => setIncludeImplementation(e.target.checked)}
-                  className="w-5 h-5 rounded border-neutral-300 text-[#E85D3F] focus:ring-[#E85D3F]"
+                  className="w-5 h-5 rounded border-neutral-300 text-[#EA2C00] focus:ring-[#EA2C00]"
                   data-testid="checkbox-implementation"
                 />
                 <span className="text-sm font-medium text-[#111827]">Add implementation fee</span>
@@ -396,7 +396,7 @@ export default function InvestmentPage({
         <div className="mt-10 max-w-md mx-auto space-y-4">
           <Button
             onClick={handleComplete}
-            className="w-full h-14 bg-[#E85D3F] hover:bg-[#D14D32] border-[#E85D3F] text-white text-base font-semibold rounded-xl"
+            className="w-full h-14 bg-[#EA2C00] hover:bg-[#d12700] border-[#EA2C00] text-white text-base font-semibold rounded-xl"
             data-testid="button-view-summary"
           >
             View Full Summary

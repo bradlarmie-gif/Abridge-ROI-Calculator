@@ -48,7 +48,7 @@ export default function SwitchScribesFullPicture({
           </Button>
           
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#E85D3F] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#EA2C00] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
               A
             </div>
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
@@ -165,7 +165,7 @@ export default function SwitchScribesFullPicture({
         <div className="flex justify-center">
           <Button
             onClick={onNext}
-            className="px-8 py-3 rounded-lg font-medium bg-[#E85D3F] text-white flex items-center gap-2"
+            className="px-8 py-3 rounded-lg font-medium bg-[#EA2C00] text-white flex items-center gap-2"
             data-testid="button-see-comparison"
           >
             See the comparison

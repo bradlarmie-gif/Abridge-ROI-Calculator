@@ -1,5 +1,6 @@
 import { useState, ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, Users, ClipboardList, Shield, ChevronDown, ChevronUp, BarChart3, Clock, DollarSign, Moon, FileCheck, Heart, Lightbulb, AlertTriangle } from 'lucide-react';
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import { Button } from '@/components/ui/button';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks, MetricTier } from './SwitchAmbientFlow';
 
@@ -142,10 +143,12 @@ export default function SwitchAmbientAnalysis({
             Back
           </Button>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-              A
-            </div>
+          <div className="flex items-center gap-3">
+            <img 
+              src={abridgeLogo} 
+              alt="Abridge" 
+              className="h-6"
+            />
             <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
           </div>
           
@@ -479,7 +482,7 @@ export default function SwitchAmbientAnalysis({
           <Button
             size="lg"
             onClick={onNext}
-            className="bg-[#E85D3F] text-white"
+            className="bg-[#EA2C00] text-white"
             data-testid="button-what-means"
           >
             What this means

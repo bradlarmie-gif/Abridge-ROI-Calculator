@@ -78,7 +78,7 @@ export default function SwitchMetricAwareness({
             Back
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#E85D3F] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#EA2C00] flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
             <span className="font-semibold text-slate-900 tracking-wide">SWITCH</span>
@@ -91,7 +91,7 @@ export default function SwitchMetricAwareness({
               key={step}
               className={`w-2 h-2 rounded-full transition-colors ${
                 step === currentStep
-                  ? "bg-[#E85D3F]"
+                  ? "bg-[#EA2C00]"
                   : step < currentStep
                   ? "bg-slate-400"
                   : "bg-slate-200"
@@ -140,7 +140,7 @@ export default function SwitchMetricAwareness({
                       key={option.id}
                       className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
                         metricAwareness[metric.id] === option.id
-                          ? "bg-white border-2 border-[#E85D3F]"
+                          ? "bg-white border-2 border-[#EA2C00]"
                           : "bg-white border border-slate-200"
                       }`}
                       data-testid={`option-${metric.id}-${option.id}`}
@@ -155,12 +155,12 @@ export default function SwitchMetricAwareness({
                       <div
                         className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                           metricAwareness[metric.id] === option.id
-                            ? "border-[#E85D3F]"
+                            ? "border-[#EA2C00]"
                             : "border-slate-300"
                         }`}
                       >
                         {metricAwareness[metric.id] === option.id && (
-                          <div className="w-2 h-2 rounded-full bg-[#E85D3F]" />
+                          <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                         )}
                       </div>
                       <span className="text-sm text-slate-700">{option.label}</span>
@@ -182,7 +182,7 @@ export default function SwitchMetricAwareness({
             disabled={!allAnswered}
             className={`px-8 py-3 rounded-lg font-medium flex items-center gap-2 ${
               allAnswered
-                ? "bg-[#E85D3F] text-white"
+                ? "bg-[#EA2C00] text-white"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
             data-testid="button-continue"
