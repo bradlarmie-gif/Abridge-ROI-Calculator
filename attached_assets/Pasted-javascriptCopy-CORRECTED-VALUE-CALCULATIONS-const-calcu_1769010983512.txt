@@ -1,0 +1,230 @@
+javascriptCopy// ============ CORRECTED VALUE CALCULATIONS ============
+
+const calculateValueFromMetrics = (inputs, benchmarks) => {
+  const values = [];
+  const providers = inputs.providers || 75;
+  const encounters = inputs.totalEncounters || providers * 2000;
+  const abridgeUtilization = benchmarks.utilization || 65;
+  const abridgeEncounters = Math.round(encounters * (abridgeUtilization / 100));
+  
+  // 1. UTILIZATION — Show as context, minimal direct value
+  if (inputs.utilization < abridgeUtilization) {
+    const additionalEncounters = Math.round(encounters * ((abridgeUtilization - inputs.utilization) / 100));
+    
+    // Very conservative: $0.50/encounter for "documentation completeness"
+    // OR set to 0 and just show as context
+    const valuePerEncounter = 0.50;
+    const value = Math.round(additionalEncounters * valuePerEncounter);
+    
+    values.push({
+      metric: 'Utilization',
+      gap: `${inputs.utilization}% → ${abridgeUtilization}%`,
+      impact: `+${formatNumber(additionalEncounters)} encounters documented`,
+      value: value, // $11,250 for 22,500 encounters
+      calculation: `${formatNumber(additionalEncounters)} encounters × $${valuePerEncounter}/encounter`,
+      explanation: 'More encounters with complete documentation. Primary value flows through other metrics.'
+    });
+  }
+  
+  // 2. TIME SAVINGS — Conservative conversion
+  const timeSavingsValue = inputs.metricValues?.timeSavings;
+  const abridgeTimeSavings = 4; // Conservative benchmark
+  
+  if (timeSavingsValue !== undefined && timeSavingsValue < abridgeTimeSavings) {
+    const additionalMinutes = (abridgeTimeSavings - timeSavingsValue) * abridgeEncounters;
+    const additionalHours = Math.round(additionalMinutes / 60);
+    
+    // Conservative: $37.50/hr × 50% conversion = $18.75 effective rate
+    const hourlyValue = 37.50;
+    const conversionRate = 0.50;
+    const value = Math.round(additionalHours * hourlyValue * conversionRate);
+    
+    values.push({
+      metric: 'Time Savings',
+      gap: `${timeSavingsValue} min → ${abridgeTimeSavings} min/encounter`,
+      impact: `+${formatNumber(additionalHours)} hours/year`,
+      value: value,
+      calculation: `${formatNumber(additionalHours)} hours × $${hourlyValue}/hr × ${conversionRate * 100}% conversion`,
+      explanation: 'Time returned to providers. 50% conversion accounts for time going to quality of life vs. realized value.'
+    });
+  }
+  
+  // 3. WORK OUTSIDE OF WORK — Show improvement, minimal direct value
+  const wowValue = inputs.metricValues?.workOutsideWork;
+  const abridgeWow = 2;
+  
+  if (wowValue !== undefined && wowValue > abridgeWow) {
+    const hoursSavedPerWeek = wowValue - abridgeWow;
+    const annualHoursSaved = hoursSavedPerWeek * providers * 48;
+    
+    // DON'T calculate direct dollar value — this is a leading indicator
+    // Instead, show it as quality of life improvement
+    // If you MUST show value, make it very conservative
+    
+    // Option: Link to retention potential (but flag as speculative)
+    const speculativeRetentionValue = Math.round(providers * 0.18 * 0.10 * 400000 * 0.10);
+    // 75 providers × 18% turnover × 10% reduction × $400K × 10% attribution = ~$54,000
+    // Cap at $25,000 to be conservative
+    const value = Math.min(speculativeRetentionValue, 25000);
+    
+    values.push({
+      metric: 'Work Outside of Work',
+      gap: `${wowValue} hrs/week → ${abridgeWow} hrs/week`,
+      impact: `-${hoursSavedPerWeek} hrs/week per provider (${formatNumber(annualHoursSaved)} hrs/year total)`,
+      value: value,
+      calculation: `Estimated retention impact (speculative)`,
+      explanation: 'Reduced after-hours work correlates with lower burnout. Direct financial impact is through retention over 12-18 months.',
+      isSpeculative: true
+    });
+  }
+  
+  // 4. wRVU CAPTURE — This is correct, keep as-is
+  const wrvuValue = inputs.metricValues?.wrvuLift;
+  const abridgeWrvuLift = 5;
+  
+  if (wrvuValue !== undefined && wrvuValue < abridgeWrvuLift) {
+    const liftDelta = abridgeWrvuLift - wrvuValue;
+    const baseWrvuPerEncounter = 1.5;
+    const baselineWrvus = abridgeEncounters * baseWrvuPerEncounter;
+    const additionalWrvus = Math.round(baselineWrvus * (liftDelta / 100));
+    const conversionFactor = 33; // Medicare
+    const value = Math.round(additionalWrvus * conversionFactor);
+    
+    values.push({
+      metric: 'wRVU Capture',
+      gap: `${wrvuValue}% lift → ${abridgeWrvuLift}% lift`,
+      impact: `+${formatNumber(additionalWrvus)} wRVUs/year`,
+      value: value,
+      calculation: `${formatNumber(additionalWrvus)} wRVUs × $${conversionFactor}/wRVU (Medicare)`,
+      explanation: 'Better documentation captures clinical complexity that supports accurate coding.'
+    });
+  }
+  
+  // 5. LEVEL OF SERVICE — DO NOT show separate value (double-counting with wRVU)
+  // Instead, show it as a supporting metric
+  const losValue = inputs.metricValues?.levelOfService;
+  const abridgeLos = 4.1;
+  
+  if (losValue !== undefined && losValue < abridgeLos) {
+    const levelDelta = (abridgeLos - losValue).toFixed(1);
+    
+    // NO DOLLAR VALUE — this is captured in wRVU
+    values.push({
+      metric: 'Level of Service',
+      gap: `${losValue} avg → ${abridgeLos} avg`,
+      impact: `+${levelDelta} average level`,
+      value: 0, // Explicitly zero
+      calculation: 'Value captured in wRVU Capture above',
+      explanation: 'Higher average E/M level from more complete documentation. Financial impact reflected in wRVU improvement.',
+      isSupporting: true // Flag to display differently
+    });
+  }
+  
+  return values;
+};
+
+Updated Display Logic:
+jsxCopy// In the drivers list, handle speculative and supporting metrics differently
+
+{values.map((item, index) => (
+  <div 
+    key={item.metric}
+    className={`driver-card ${expandedDriver === index ? 'expanded' : ''} ${item.isSpeculative ? 'speculative' : ''} ${item.isSupporting ? 'supporting' : ''}`}
+  >
+    <div className="driver-card-header" onClick={() => toggleDriver(index)}>
+      <div className="driver-icon">{getMetricIcon(item.metric)}</div>
+      <div className="driver-info">
+        <span className="driver-name">{item.metric}</span>
+        <span className="driver-gap">{item.gap}</span>
+        <span className="driver-impact">{item.impact}</span>
+      </div>
+      
+      {item.value > 0 ? (
+        <span className={`driver-value ${item.isSpeculative ? 'speculative' : ''}`}>
+          {item.isSpeculative && '~'}+${formatNumber(item.value)}/yr
+        </span>
+      ) : (
+        <span className="driver-value supporting">
+          (Supporting metric)
+        </span>
+      )}
+      
+      <ChevronDown size={18} />
+    </div>
+    
+    {expandedDriver === index && (
+      <div className="driver-card-body">
+        {/* ... calculation and explanation ... */}
+        
+        {item.isSpeculative && (
+          <div className="speculative-warning">
+            <AlertTriangle size={14} />
+            <span>This is an estimated value. Actual impact depends on your specific situation.</span>
+          </div>
+        )}
+        
+        {item.isSupporting && (
+          <div className="supporting-note">
+            <Info size={14} />
+            <span>This metric supports the wRVU improvement above. Not counted separately to avoid double-counting.</span>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+))}
+
+{/* Total only sums non-supporting items */}
+<div className="drivers-total">
+  <span className="total-label">TOTAL ANNUAL GAP</span>
+  <span className="total-value">
+    ${formatNumber(values.filter(v => !v.isSupporting).reduce((sum, item) => sum + item.value, 0))}/year
+  </span>
+</div>
+
+Expected New Output:
+MetricValueNotesUtilization$11,25022,500 enc × $0.50Time Savings$60,9383,250 hrs × $37.50 × 50%Work Outside of Work$25,000Speculative retention (capped)wRVU Capture$144,8044,388 wRVUs × $33 ✓Level of Service$0Supporting metric (not counted)TOTAL~$242,000/yearMuch more believable
+
+CSS for Speculative/Supporting:
+cssCopy.driver-value.speculative {
+  color: #d97706;
+}
+
+.driver-value.supporting {
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.driver-card.speculative {
+  border-left: 3px solid #fbbf24;
+}
+
+.driver-card.supporting {
+  background: #f8fafc;
+  border: 1px dashed #e2e8f0;
+}
+
+.speculative-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fffbeb;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #92400e;
+}
+
+.supporting-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #64748b;
+}

@@ -15,6 +15,8 @@ interface DriverItem {
     explanation: string;
   };
   impact?: string;
+  isSpeculative?: boolean;
+  isSupporting?: boolean;
 }
 
 interface SwitchAmbientAnalysisProps {
@@ -109,7 +111,9 @@ export default function SwitchAmbientAnalysis({
       formula: item.calculation,
       explanation: item.explanation
     },
-    impact: item.impact
+    impact: item.impact,
+    isSpeculative: item.isSpeculative,
+    isSupporting: item.isSupporting
   }));
   
   const drivers: DriverItem[] = inputs.mode === 'advanced' && advancedDrivers.length > 0 ? advancedDrivers : quickDrivers;
@@ -272,8 +276,12 @@ export default function SwitchAmbientAnalysis({
                 {drivers.map(driver => (
                   <div
                     key={driver.id}
-                    className={`bg-white rounded-xl border transition-all ${
-                      expandedDriver === driver.id ? 'border-slate-800' : 'border-slate-200 hover:border-slate-300'
+                    className={`rounded-xl transition-all ${
+                      driver.isSupporting 
+                        ? 'bg-slate-50 border border-dashed border-slate-200' 
+                        : driver.isSpeculative 
+                          ? 'bg-white border-l-4 border-l-amber-400 border border-slate-200' 
+                          : `bg-white border ${expandedDriver === driver.id ? 'border-slate-800' : 'border-slate-200 hover:border-slate-300'}`
                     }`}
                   >
                     <button
@@ -281,19 +289,35 @@ export default function SwitchAmbientAnalysis({
                       className="w-full flex items-center gap-4 p-5"
                       data-testid={`button-driver-${driver.id}`}
                     >
-                      <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-500">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        driver.isSupporting ? 'bg-slate-100 text-slate-400' : 'bg-slate-50 text-slate-500'
+                      }`}>
                         {driver.icon}
                       </div>
                       <div className="flex-1 text-left">
-                        <span className="block text-sm font-semibold text-slate-900">{driver.name}</span>
+                        <span className={`block text-sm font-semibold ${driver.isSupporting ? 'text-slate-600' : 'text-slate-900'}`}>
+                          {driver.name}
+                        </span>
                         <span className="block text-xs text-slate-500">{driver.description}</span>
                         {driver.impact && (
-                          <span className="block text-xs font-medium text-emerald-600 mt-1">{driver.impact}</span>
+                          <span className={`block text-xs font-medium mt-1 ${driver.isSupporting ? 'text-slate-400' : 'text-emerald-600'}`}>
+                            {driver.impact}
+                          </span>
                         )}
                       </div>
-                      <span className="text-base font-bold text-emerald-600" data-testid={`text-driver-value-${driver.id}`}>
-                        +${formatNumber(driver.value)}/yr
-                      </span>
+                      {driver.isSupporting ? (
+                        <span className="text-sm font-medium text-slate-400" data-testid={`text-driver-value-${driver.id}`}>
+                          (Supporting metric)
+                        </span>
+                      ) : driver.value > 0 ? (
+                        <span className={`text-base font-bold ${driver.isSpeculative ? 'text-amber-600' : 'text-emerald-600'}`} data-testid={`text-driver-value-${driver.id}`}>
+                          {driver.isSpeculative && '~'}+${formatNumber(driver.value)}/yr
+                        </span>
+                      ) : (
+                        <span className="text-base font-bold text-emerald-600" data-testid={`text-driver-value-${driver.id}`}>
+                          +$0/yr
+                        </span>
+                      )}
                       {expandedDriver === driver.id ? (
                         <ChevronUp className="w-5 h-5 text-slate-400" />
                       ) : (
@@ -311,6 +335,22 @@ export default function SwitchAmbientAnalysis({
                           <span className="block text-xs font-semibold text-slate-400 mb-1">WHY THIS MATTERS</span>
                           <p className="text-sm text-slate-600 leading-relaxed">{driver.details.explanation}</p>
                         </div>
+                        
+                        {driver.isSpeculative && (
+                          <div className="flex items-center gap-2 mt-4 p-3 bg-amber-50 rounded-lg">
+                            <span className="text-xs text-amber-800">
+                              This is an estimated value. Actual impact depends on your specific situation.
+                            </span>
+                          </div>
+                        )}
+                        
+                        {driver.isSupporting && (
+                          <div className="flex items-center gap-2 mt-4 p-3 bg-slate-100 rounded-lg">
+                            <span className="text-xs text-slate-600">
+                              This metric supports the wRVU improvement above. Not counted separately to avoid double-counting.
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
