@@ -53,12 +53,12 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
       <GlobalHeader pageName="Home" />
       {/* Giant A background on right */}
       <div 
-        className="absolute -right-20 top-0 bottom-0 w-[60%] pointer-events-none z-0"
+        className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none z-0"
         style={{
           backgroundImage: `url(${abridgeABg})`,
           backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center center',
-          backgroundSize: 'contain',
+          backgroundPosition: 'left center',
+          backgroundSize: 'cover',
           opacity: 0.65,
         }}
       />
