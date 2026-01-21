@@ -1,0 +1,391 @@
+.landing-page {
+  position: relative;
+  min-height: calc(100vh - 72px);
+  background: #FAFAFA;
+  overflow: hidden;
+}
+
+.hero-bg-a {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background-image: url('abridge-a-bg.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: cover;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 48px;
+}
+IF IT'S STILL NOT SHOWING, TRY THESE PATH VARIATIONS:
+cssCopy/* Option 1: Root level */
+background-image: url('abridge-a-bg.png');
+
+/* Option 2: With forward slash */
+background-image: url('/abridge-a-bg.png');
+
+/* Option 3: In images folder */
+background-image: url('images/abridge-a-bg.png');
+
+/* Option 4: With ./ */
+background-image: url('./abridge-a-bg.png');
+COMPLETE HTML STRUCTURE
+htmlCopy<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abridge ROI Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="global-header">
+    <div class="header-container">
+      <a href="/" class="logo-link">
+        <svg width="120" height="24" viewBox="0 0 120 24">
+          <text x="0" y="19" font-family="-apple-system, sans-serif" font-size="20" font-weight="700" fill="#EA2C00">ABRIDGE</text>
+        </svg>
+      </a>
+      <div class="header-context">
+        <a href="/" class="nav-link">ROI Calculator</a>
+        <a href="/" class="nav-link">Home</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Landing Page -->
+  <div class="landing-page">
+    <!-- Giant A background on right -->
+    <div class="hero-bg-a"></div>
+    
+    <!-- Content -->
+    <div class="hero-content">
+      <h1 class="hero-title">Model the impact of ambient documentation</h1>
+      <p class="hero-subtitle">Understand where the value actually comes from.</p>
+
+      <p class="section-label">WHAT BRINGS YOU HERE TODAY?</p>
+
+      <div class="pathway-cards">
+        <!-- Explore Card -->
+        <div class="pathway-card">
+          <div class="card-icon" style="background: rgba(234, 44, 0, 0.08);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA2C00" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <h3>Explore</h3>
+          <p class="card-label">New to Abridge?</p>
+          <p class="card-description">
+            Build your first ROI model and see what ambient documentation could deliver for your organization
+          </p>
+          <button class="cta-button">Get Started →</button>
+        </div>
+
+        <!-- Expand Card -->
+        <div class="pathway-card">
+          <div class="card-icon" style="background: rgba(234, 44, 0, 0.08);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA2C00" stroke-width="2">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline points="17 6 23 6 23 12"/>
+            </svg>
+          </div>
+          <h3>Expand</h3>
+          <p class="card-label">Already using Abridge?</p>
+          <p class="card-description">
+            Model what expansion to new settings or more providers could look like based on your current results
+          </p>
+          <button class="cta-button">Load Your Results →</button>
+        </div>
+
+        <!-- Switch Card -->
+        <div class="pathway-card">
+          <div class="card-icon" style="background: rgba(234, 44, 0, 0.08);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA2C00" stroke-width="2">
+              <polyline points="17 1 21 5 17 9"/>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+              <polyline points="7 23 3 19 7 15"/>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+          </div>
+          <h3>Switch</h3>
+          <p class="card-label">Using another solution?</p>
+          <p class="card-description">
+            See how Abridge compares and what switching could mean for your ROI
+          </p>
+          <button class="cta-button">Compare Solutions →</button>
+        </div>
+      </div>
+
+      <div class="methodology-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EA2C00" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <a href="/methodology">Just want to understand how ambient ROI works? Learn the methodology →</a>
+      </div>
+
+      <div class="social-proof">
+        <p class="proof-label">Used by 200+ health system partners</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+COMPLETE CSS
+cssCopy/* Reset & Variables */
+:root {
+  --abridge-red: #EA2C00;
+  --abridge-red-hover: #d12700;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-600: #4B5563;
+  --gray-900: #111827;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-top: 72px;
+}
+
+/* Header */
+.global-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom: 1px solid #E5E7EB;
+  z-index: 1000;
+  height: 72px;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 48px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.logo-link:hover {
+  opacity: 0.7;
+}
+
+.header-context {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-link {
+  font-size: 14px;
+  color: var(--gray-600);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--abridge-red);
+}
+
+/* Landing Page */
+.landing-page {
+  position: relative;
+  min-height: calc(100vh - 72px);
+  background: #FAFAFA;
+  overflow: hidden;
+}
+
+.hero-bg-a {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background-image: url('abridge-a-bg.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: cover;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 48px;
+}
+
+.hero-title {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+  max-width: 900px;
+}
+
+.hero-subtitle {
+  font-size: 20px;
+  color: var(--gray-600);
+  margin-bottom: 64px;
+  max-width: 600px;
+}
+
+.section-label {
+  font-size: 13px;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin-bottom: 32px;
+  font-weight: 600;
+}
+
+.pathway-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.pathway-card {
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 32px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pathway-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--abridge-red);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.pathway-card h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.card-label {
+  font-size: 14px;
+  color: var(--abridge-red);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.card-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--gray-600);
+  margin-bottom: 24px;
+  min-height: 72px;
+}
+
+.cta-button {
+  width: 100%;
+  background: var(--abridge-red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cta-button:hover {
+  background: var(--abridge-red-hover);
+  transform: translateX(2px);
+}
+
+.methodology-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 64px;
+}
+
+.methodology-link a {
+  color: var(--abridge-red);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.methodology-link a:hover {
+  opacity: 0.8;
+}
+
+.social-proof {
+  text-align: center;
+  padding-top: 48px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.proof-label {
+  font-size: 13px;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+DEBUG: If the image still doesn't show
+Add this JavaScript to check the path:
+javascriptCopy// Add to app.js
+console.log('Checking image path...');
+const bgElement = document.querySelector('.hero-bg-a');
+if (bgElement) {
+  const style = window.getComputedStyle(bgElement);
+  console.log('Background image:', style.backgroundImage);
+}

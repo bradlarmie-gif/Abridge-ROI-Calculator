@@ -1,7 +1,7 @@
 import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BackgroundShape } from "@/components/BackgroundShape";
 import { GlobalHeader } from "@/components/GlobalHeader";
+import abridgeABg from "@assets/abridge-a-bg_1769025961657.png";
 
 interface JourneySelectorProps {
   onSelectExplore: () => void;
@@ -49,9 +49,19 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
 
 export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn }: JourneySelectorProps) {
   return (
-    <div className="min-h-screen bg-white relative">
+    <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
       <GlobalHeader pageName="Home" />
-      <BackgroundShape />
+      {/* Giant A background on right */}
+      <div 
+        className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none z-0"
+        style={{
+          backgroundImage: `url(${abridgeABg})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'left center',
+          backgroundSize: 'cover',
+          opacity: 0.4,
+        }}
+      />
       <div className="max-w-6xl mx-auto px-6 pt-[96px] pb-8 relative z-10">
         <section className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-bold text-[#111827] mb-4 tracking-tight">
