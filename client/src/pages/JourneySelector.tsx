@@ -59,7 +59,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'left center',
           backgroundSize: 'cover',
-          opacity: 0.4,
+          opacity: 0.6,
         }}
       />
       <div className="max-w-6xl mx-auto px-6 pt-[96px] pb-8 relative z-10">
