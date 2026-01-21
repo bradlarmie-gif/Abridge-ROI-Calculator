@@ -9,8 +9,8 @@ export interface ScribeData {
   totalProviders: number | null;
   annualEncounters: number | null;
   providersWithScribes: number | null;
-  hourlyRate: number;
-  hoursPerWeek: number;
+  hourlyRate: number | null;
+  hoursPerWeek: number | null;
   turnoverRate: number;
   managementHoursPerWeek: number;
   managementHourlyRate: number;
@@ -44,8 +44,8 @@ export default function SwitchScribesFlow({ onBack, onBackToJourney }: SwitchScr
     totalProviders: null,
     annualEncounters: null,
     providersWithScribes: null,
-    hourlyRate: 22,
-    hoursPerWeek: 32,
+    hourlyRate: null,
+    hoursPerWeek: null,
     turnoverRate: 35,
     managementHoursPerWeek: 6,
     managementHourlyRate: 60,
@@ -99,7 +99,7 @@ export default function SwitchScribesFlow({ onBack, onBackToJourney }: SwitchScr
     
     const monthlySpend = Math.round(totalInvestment / 12);
     
-    const costPerScribe = hourlyRate * hoursPerWeek * 50;
+    const costPerScribe = (hourlyRate ?? 0) * (hoursPerWeek ?? 0) * 50;
     const fullCoverageCost = totalProviders
       ? totalProviders * costPerScribe
       : 0;
