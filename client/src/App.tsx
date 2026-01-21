@@ -13,7 +13,7 @@ import RoiCalculator from "@/pages/RoiCalculator";
 import ModelBuilder, { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import InvestmentPage from "@/pages/InvestmentPage";
 import SummaryCommandCenter from "@/pages/SummaryCommandCenter";
-import ExpandPath from "@/pages/ExpandPath";
+import { ExpandFlow } from "@/pages/expand";
 import SwitchPath from "@/pages/SwitchPath";
 import LearnPath from "@/pages/LearnPath";
 
@@ -21,7 +21,6 @@ import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
 type AppView = "journey" | "explore" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn";
-type SummaryTab = "executive" | "detailed" | "methodology" | "scenarios" | "sensitivity";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -39,8 +38,6 @@ export default function App() {
   const [seedInputs, setSeedInputs] = useState<Partial<RoiInputs>>({});
   const [valueResults, setValueResults] = useState<ValueResults | null>(null);
   const [modelResults, setModelResults] = useState<ModelResults | null>(null);
-  const [summaryActiveTab, setSummaryActiveTab] = useState<SummaryTab>("executive");
-
   const handleSelectionComplete = (
     selectedSettings: CareSettingType[],
     selectedLevers: SelectedLever[],
@@ -128,13 +125,14 @@ export default function App() {
             modelResults={modelResults}
             onBack={handleBackToModelBuilder}
             onEditModel={handleBackToModelBuilder}
-            activeTab={summaryActiveTab}
-            onTabChange={setSummaryActiveTab}
           />
         )}
 
         {currentView === "expand" && (
-          <ExpandPath onBack={handleBackToJourney} />
+          <ExpandFlow 
+            onBackToJourney={handleBackToJourney}
+            onGoToExplore={() => setCurrentView("explore")}
+          />
         )}
 
         {currentView === "switch" && (

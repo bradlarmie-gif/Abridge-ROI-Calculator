@@ -1,0 +1,1520 @@
+I need to build the "Expand" flow for current Abridge customers. This is a performance dashboard, not a calculator. It should feel like the same quality UX/UI we've built for the Explore flow.
+
+## OVERVIEW
+
+This flow is for customers already using Abridge who want to:
+1. See how their deployment is performing
+2. Understand their results with distributions (bell curves), not just averages
+3. Calculate their actual ROI from real data
+4. Model expansion opportunities
+
+## PAGE STRUCTURE
+
+### Page 1: Setting Selection
+- Outpatient is active
+- ED, Inpatient, Nursing are blurred/locked with "Coming Soon"
+- Link back to Explore if they don't have results yet
+
+### Page 2: Your Deployment + Metrics
+- Enter: Providers, Annual Encounters, Utilization Rate, Months on Abridge
+- Select metrics to analyze (checkboxes):
+  - Time Savings (recommended)
+  - Level of Service (recommended)
+  - Chart Closure Time (recommended)
+  - wRVU Capture (recommended)
+  - Work After Hours (optional)
+
+### Page 3: Your Performance (Main Dashboard)
+For each selected metric, show:
+- Before/After comparison
+- Distribution visualization (bell curve showing % of providers benefiting)
+- Benchmark comparison
+- Trend over time (where applicable)
+
+Key insight: Show "X% of providers seeing meaningful benefit" — not just averages.
+
+### Page 4: Your ROI Story
+- Conservative calculation from their actual data
+- Full breakdown with math shown
+- "Defensible" framing with conversion rates explained
+
+### Page 5: Your Journey
+- Timeline chart showing current state → expansion potential
+- Editable inputs for full scale opportunity
+- Combined potential calculation
+
+## DESIGN SYSTEM
+
+Use the same design system as Explore:
+- Clean white/gray backgrounds
+- Orange (#f97316) for current/pilot state
+- Green (#059669) for targets/success
+- Gray (#94a3b8) for intermediate states
+- Rounded cards with subtle shadows
+- Clear section headers
+- Inline benchmarks and insights
+
+## KEY VISUALIZATIONS
+
+1. Bell Curve Distribution:
+- Shows how metric is distributed across providers
+- Highlights median
+- Shows % in each segment (low/medium/high benefit)
+- Key stat: "X% of providers seeing meaningful benefit"
+
+2. E/M Level of Service Shift:
+- Horizontal bar comparison (before vs after)
+- Shows percentage point change for each level
+- Insight about what the shift means
+
+3. Trend Over Time:
+- Line chart showing progression by month
+- Markers for key milestones
+
+4. Journey Timeline:
+- Curved area chart showing value over time
+- "You are here" marker
+- Expansion potential visualization
+
+Full Component Code:
+Main App Structure
+jsxCopy// ============ EXPAND FLOW - MAIN STRUCTURE ============
+
+import { useState } from 'react';
+import SettingSelection from './ExpandSettingSelection';
+import DeploymentSetup from './ExpandDeploymentSetup';
+import PerformanceDashboard from './ExpandPerformanceDashboard';
+import ROIStory from './ExpandROIStory';
+import JourneyExpansion from './ExpandJourneyExpansion';
+
+export default function ExpandFlow() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [deploymentData, setDeploymentData] = useState({
+    setting: 'outpatient',
+    providers: 150,
+    annualEncounters: 195000,
+    utilizationRate: 72,
+    monthsOnAbridge: 6
+  });
+  const [selectedMetrics, setSelectedMetrics] = useState([
+    'timeSavings',
+    'levelOfService',
+    'chartClosure',
+    'wrvuCapture'
+  ]);
+  const [metricsData, setMetricsData] = useState({
+    timeSavings: { before: 12, after: 4.5 },
+    levelOfService: {
+      before: { '99215': 35, '99214': 45, '99213': 15, '99212': 4, '99211': 1 },
+      after: { '99215': 42, '99214': 44, '99213': 11, '99212': 2, '99211': 1 }
+    },
+    chartClosure: { before: 36, after: 4.2 },
+    wrvuCapture: { before: 1.42, after: 1.49 }
+  });
+
+  const steps = [
+    { id: 1, name: 'Setting', component: SettingSelection },
+    { id: 2, name: 'Setup', component: DeploymentSetup },
+    { id: 3, name: 'Performance', component: PerformanceDashboard },
+    { id: 4, name: 'ROI', component: ROIStory },
+    { id: 5, name: 'Journey', component: JourneyExpansion }
+  ];
+
+  const CurrentStepComponent = steps.find(s => s.id === currentStep)?.component;
+
+  return (
+    <div className="expand-flow">
+      <CurrentStepComponent
+        deploymentData={deploymentData}
+        setDeploymentData={setDeploymentData}
+        selectedMetrics={selectedMetrics}
+        setSelectedMetrics={setSelectedMetrics}
+        metricsData={metricsData}
+        setMetricsData={setMetricsData}
+        onNext={() => setCurrentStep(prev => Math.min(prev + 1, 5))}
+        onBack={() => setCurrentStep(prev => Math.max(prev - 1, 1))}
+        currentStep={currentStep}
+      />
+    </div>
+  );
+}
+
+Page 1: Setting Selection
+jsxCopy// ============ SETTING SELECTION ============
+
+export default function ExpandSettingSelection({ onNext }) {
+  return (
+    <div className="expand-page setting-selection">
+      
+      <header className="page-header">
+        <div className="brand">
+          <span className="brand-name">ABRIDGE</span>
+          <span className="brand-sub">ROI Calculator</span>
+        </div>
+      </header>
+      
+      <main className="page-content">
+        <div className="page-title">
+          <h1>Analyze Your Results</h1>
+          <p>See how your Abridge deployment is performing</p>
+        </div>
+        
+        <div className="settings-grid">
+          
+          {/* Outpatient - Active */}
+          <div className="setting-card active" onClick={onNext}>
+            <div className="setting-icon">📊</div>
+            <h3>Outpatient</h3>
+            <p className="setting-status">Available</p>
+            <p className="setting-description">
+              Analyze your outpatient deployment results
+            </p>
+            <button className="setting-button">
+              Load Your Results →
+            </button>
+          </div>
+          
+          {/* ED - Coming Soon */}
+          <div className="setting-card disabled">
+            <div className="setting-icon">🏥</div>
+            <h3>Emergency Department</h3>
+            <p className="setting-status coming-soon">Coming Soon</p>
+            <p className="setting-description blurred">
+              Analyze your ED deployment results
+            </p>
+          </div>
+          
+          {/* Inpatient - Coming Soon */}
+          <div className="setting-card disabled">
+            <div className="setting-icon">🏨</div>
+            <h3>Inpatient</h3>
+            <p className="setting-status coming-soon">Coming Soon</p>
+            <p className="setting-description blurred">
+              Analyze your inpatient deployment results
+            </p>
+          </div>
+          
+          {/* Nursing - Coming Soon */}
+          <div className="setting-card disabled">
+            <div className="setting-icon">💉</div>
+            <h3>Nursing</h3>
+            <p className="setting-status coming-soon">Coming Soon</p>
+            <p className="setting-description blurred">
+              Analyze your nursing deployment results
+            </p>
+          </div>
+          
+        </div>
+        
+        <div className="explore-link">
+          <span>💡</span>
+          <p>Don't have results yet? <a href="/explore">Use Explore</a> to project potential ROI.</p>
+        </div>
+        
+      </main>
+      
+    </div>
+  );
+}
+
+Page 2: Deployment Setup + Metrics Selection
+jsxCopy// ============ DEPLOYMENT SETUP ============
+
+export default function ExpandDeploymentSetup({
+  deploymentData,
+  setDeploymentData,
+  selectedMetrics,
+  setSelectedMetrics,
+  onNext,
+  onBack
+}) {
+  
+  const abridgeEncounters = Math.round(
+    deploymentData.annualEncounters * (deploymentData.utilizationRate / 100)
+  );
+  
+  const toggleMetric = (metric) => {
+    if (selectedMetrics.includes(metric)) {
+      setSelectedMetrics(selectedMetrics.filter(m => m !== metric));
+    } else {
+      setSelectedMetrics([...selectedMetrics, metric]);
+    }
+  };
+  
+  const metrics = [
+    {
+      id: 'timeSavings',
+      name: 'Time Savings',
+      description: 'Time in notes per appointment',
+      source: 'Clarity data',
+      recommended: true
+    },
+    {
+      id: 'levelOfService',
+      name: 'Level of Service',
+      description: 'E/M code distribution shift',
+      source: 'Clarity data',
+      recommended: true
+    },
+    {
+      id: 'chartClosure',
+      name: 'Chart Closure Time',
+      description: 'Time from visit to chart completion',
+      source: 'Clarity data',
+      recommended: true
+    },
+    {
+      id: 'wrvuCapture',
+      name: 'wRVU Capture',
+      description: 'wRVUs per encounter',
+      source: 'Clarity data',
+      recommended: true
+    },
+    {
+      id: 'workAfterHours',
+      name: 'Work After Hours',
+      description: 'Hours worked outside scheduled time',
+      source: 'Survey data',
+      recommended: false
+    }
+  ];
+  
+  return (
+    <div className="expand-page deployment-setup">
+      
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>← Back</button>
+        <div className="step-indicator">Step 1 of 4 · Your Setup</div>
+      </header>
+      
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>Your Outpatient Deployment</h1>
+          <p>Tell us about your Abridge setup</p>
+        </div>
+        
+        {/* Deployment Basics */}
+        <section className="input-section">
+          <h2>DEPLOYMENT BASICS</h2>
+          
+          <div className="input-grid four-col">
+            
+            <div className="input-group">
+              <label>Providers using Abridge</label>
+              <input
+                type="number"
+                value={deploymentData.providers}
+                onChange={(e) => setDeploymentData({
+                  ...deploymentData,
+                  providers: Number(e.target.value)
+                })}
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Total annual encounters</label>
+              <input
+                type="number"
+                value={deploymentData.annualEncounters}
+                onChange={(e) => setDeploymentData({
+                  ...deploymentData,
+                  annualEncounters: Number(e.target.value)
+                })}
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Utilization rate</label>
+              <div className="input-with-suffix">
+                <input
+                  type="number"
+                  value={deploymentData.utilizationRate}
+                  onChange={(e) => setDeploymentData({
+                    ...deploymentData,
+                    utilizationRate: Number(e.target.value)
+                  })}
+                />
+                <span className="suffix">%</span>
+              </div>
+            </div>
+            
+            <div className="input-group">
+              <label>Months on Abridge</label>
+              <input
+                type="number"
+                value={deploymentData.monthsOnAbridge}
+                onChange={(e) => setDeploymentData({
+                  ...deploymentData,
+                  monthsOnAbridge: Number(e.target.value)
+                })}
+              />
+            </div>
+            
+          </div>
+          
+          <div className="calculated-stat">
+            <span className="stat-icon">●</span>
+            <span className="stat-text">
+              {abridgeEncounters.toLocaleString()} encounters documented with Abridge
+            </span>
+          </div>
+          
+        </section>
+        
+        {/* Metrics Selection */}
+        <section className="input-section">
+          <h2>WHAT DO YOU WANT TO MEASURE?</h2>
+          <p className="section-subtitle">Select the metrics you have data for</p>
+          
+          <div className="metrics-list">
+            {metrics.map(metric => (
+              <div
+                key={metric.id}
+                className={`metric-card ${selectedMetrics.includes(metric.id) ? 'selected' : ''}`}
+                onClick={() => toggleMetric(metric.id)}
+              >
+                <div className="metric-checkbox">
+                  {selectedMetrics.includes(metric.id) ? '☑️' : '☐'}
+                </div>
+                <div className="metric-content">
+                  <div className="metric-header">
+                    <h3>{metric.name}</h3>
+                    {metric.recommended && (
+                      <span className="metric-badge">RECOMMENDED</span>
+                    )}
+                  </div>
+                  <p className="metric-description">{metric.description}</p>
+                  <p className="metric-source">Source: {metric.source}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="metrics-hint">
+            <span>💡</span>
+            <p>More metrics = more complete picture. Select at least one to continue.</p>
+          </div>
+          
+        </section>
+        
+        <div className="page-actions">
+          <button
+            className="primary-button"
+            onClick={onNext}
+            disabled={selectedMetrics.length === 0}
+          >
+            Enter Your Data →
+          </button>
+        </div>
+        
+      </main>
+      
+    </div>
+  );
+}
+
+Page 3: Performance Dashboard (The Heart of It)
+jsxCopy// ============ PERFORMANCE DASHBOARD ============
+
+import { useMemo } from 'react';
+import BellCurveChart from './BellCurveChart';
+import LevelOfServiceChart from './LevelOfServiceChart';
+import TrendChart from './TrendChart';
+
+export default function ExpandPerformanceDashboard({
+  deploymentData,
+  selectedMetrics,
+  metricsData,
+  setMetricsData,
+  onNext,
+  onBack
+}) {
+  
+  const abridgeEncounters = Math.round(
+    deploymentData.annualEncounters * (deploymentData.utilizationRate / 100)
+  );
+  
+  // Calculate derived values
+  const timeSavingsCalc = useMemo(() => {
+    if (!selectedMetrics.includes('timeSavings')) return null;
+    const { before, after } = metricsData.timeSavings;
+    const savings = before - after;
+    const totalHours = (savings * abridgeEncounters) / 60;
+    return {
+      before,
+      after,
+      savings,
+      percentReduction: Math.round((savings / before) * 100),
+      totalHours: Math.round(totalHours),
+      // Simulated distribution data
+      distribution: generateDistribution(savings, 0.3),
+      percentBenefiting: 92
+    };
+  }, [metricsData.timeSavings, abridgeEncounters, selectedMetrics]);
+  
+  const wrvuCalc = useMemo(() => {
+    if (!selectedMetrics.includes('wrvuCapture')) return null;
+    const { before, after } = metricsData.wrvuCapture;
+    const lift = after - before;
+    const liftPercent = (lift / before) * 100;
+    const totalWrvuGain = lift * abridgeEncounters;
+    return {
+      before,
+      after,
+      lift,
+      liftPercent: liftPercent.toFixed(1),
+      totalWrvuGain: Math.round(totalWrvuGain),
+      distribution: generateDistribution(liftPercent, 0.4),
+      percentBenefiting: 85
+    };
+  }, [metricsData.wrvuCapture, abridgeEncounters, selectedMetrics]);
+  
+  const chartClosureCalc = useMemo(() => {
+    if (!selectedMetrics.includes('chartClosure')) return null;
+    const { before, after } = metricsData.chartClosure;
+    const reduction = before - after;
+    const percentFaster = Math.round((reduction / before) * 100);
+    return {
+      before,
+      after,
+      reduction,
+      percentFaster,
+      // Simulated trend data
+      trend: [
+        { month: 'M1', value: before },
+        { month: 'M2', value: before * 0.6 },
+        { month: 'M3', value: before * 0.35 },
+        { month: 'M4', value: before * 0.2 },
+        { month: 'M5', value: after * 1.2 },
+        { month: 'M6', value: after }
+      ]
+    };
+  }, [metricsData.chartClosure, selectedMetrics]);
+  
+  const losCalc = useMemo(() => {
+    if (!selectedMetrics.includes('levelOfService')) return null;
+    const { before, after } = metricsData.levelOfService;
+    const shifts = {};
+    Object.keys(before).forEach(level => {
+      shifts[level] = after[level] - before[level];
+    });
+    return { before, after, shifts };
+  }, [metricsData.levelOfService, selectedMetrics]);
+  
+  return (
+    <div className="expand-page performance-dashboard">
+      
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>← Back</button>
+        <div className="step-indicator">Step 2 of 4 · Your Performance</div>
+      </header>
+      
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>Your Performance</h1>
+          <p>{deploymentData.providers} providers · {deploymentData.monthsOnAbridge} months on Abridge</p>
+        </div>
+        
+        {/* Time Savings */}
+        {timeSavingsCalc && (
+          <section className="metric-section">
+            <div className="metric-header-row">
+              <div className="metric-icon">⏱️</div>
+              <h2>TIME SAVINGS</h2>
+            </div>
+            
+            {/* Before/After/Change */}
+            <div className="before-after-card">
+              <div className="ba-item">
+                <span className="ba-label">BEFORE</span>
+                <div className="ba-value-group">
+                  <input
+                    type="number"
+                    value={metricsData.timeSavings.before}
+                    onChange={(e) => setMetricsData({
+                      ...metricsData,
+                      timeSavings: { ...metricsData.timeSavings, before: Number(e.target.value) }
+                    })}
+                    className="ba-input"
+                  />
+                  <span className="ba-unit">min in notes</span>
+                </div>
+              </div>
+              
+              <div className="ba-arrow">→</div>
+              
+              <div className="ba-item">
+                <span className="ba-label">AFTER</span>
+                <div className="ba-value-group">
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={metricsData.timeSavings.after}
+                    onChange={(e) => setMetricsData({
+                      ...metricsData,
+                      timeSavings: { ...metricsData.timeSavings, after: Number(e.target.value) }
+                    })}
+                    className="ba-input"
+                  />
+                  <span className="ba-unit">min in notes</span>
+                </div>
+              </div>
+              
+              <div className="ba-equals">=</div>
+              
+              <div className="ba-item result">
+                <span className="ba-label">CHANGE</span>
+                <div className="ba-result">
+                  <span className="ba-result-value">-{timeSavingsCalc.savings} min/enc</span>
+                  <span className="ba-result-percent">{timeSavingsCalc.percentReduction}% reduction</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Distribution */}
+            <div className="distribution-section">
+              <h3>PROVIDER DISTRIBUTION</h3>
+              <p className="distribution-subtitle">How are savings distributed across your providers?</p>
+              
+              <BellCurveChart
+                data={timeSavingsCalc.distribution}
+                median={timeSavingsCalc.savings}
+                unit="min"
+                segments={[
+                  { label: '< 3 min', percent: 8, range: 'low' },
+                  { label: '3-10 min', percent: 72, range: 'mid' },
+                  { label: '> 10 min', percent: 20, range: 'high' }
+                ]}
+              />
+              
+              <div className="distribution-insight success">
+                <span className="insight-icon">✅</span>
+                <span className="insight-text">
+                  {timeSavingsCalc.percentBenefiting}% of providers are saving meaningful time
+                </span>
+              </div>
+            </div>
+            
+            {/* Benchmark */}
+            <div className="benchmark-card">
+              <span className="benchmark-icon">📊</span>
+              <div className="benchmark-content">
+                <span className="benchmark-label">BENCHMARK</span>
+                <p>Average time savings across Abridge customers: <strong>5-8 min/encounter</strong></p>
+                <p>You're at: <strong>{timeSavingsCalc.savings} min</strong> — Above average ✓</p>
+              </div>
+            </div>
+            
+          </section>
+        )}
+        
+        {/* Level of Service */}
+        {losCalc && (
+          <section className="metric-section">
+            <div className="metric-header-row">
+              <div className="metric-icon">📋</div>
+              <h2>LEVEL OF SERVICE</h2>
+            </div>
+            
+            <div className="los-comparison">
+              <h3>E/M DISTRIBUTION SHIFT</h3>
+              
+              <LevelOfServiceChart
+                before={losCalc.before}
+                after={losCalc.after}
+                shifts={losCalc.shifts}
+              />
+              
+              <div className="los-insight">
+                <span className="insight-icon">💡</span>
+                <div className="insight-content">
+                  <strong>+{losCalc.shifts['99215']} percentage point shift to Level 5</strong>
+                  <p>This suggests more complete documentation of complex visits. Not upcoding — capturing work already being done.</p>
+                </div>
+              </div>
+            </div>
+            
+          </section>
+        )}
+        
+        {/* Chart Closure Time */}
+        {chartClosureCalc && (
+          <section className="metric-section">
+            <div className="metric-header-row">
+              <div className="metric-icon">📄</div>
+              <h2>CHART CLOSURE TIME</h2>
+            </div>
+            
+            {/* Before/After */}
+            <div className="before-after-card">
+              <div className="ba-item">
+                <span className="ba-label">BEFORE</span>
+                <div className="ba-value-group">
+                  <input
+                    type="number"
+                    value={metricsData.chartClosure.before}
+                    onChange={(e) => setMetricsData({
+                      ...metricsData,
+                      chartClosure: { ...metricsData.chartClosure, before: Number(e.target.value) }
+                    })}
+                    className="ba-input"
+                  />
+                  <span className="ba-unit">hours to close</span>
+                </div>
+              </div>
+              
+              <div className="ba-arrow">→</div>
+              
+              <div className="ba-item">
+                <span className="ba-label">AFTER</span>
+                <div className="ba-value-group">
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={metricsData.chartClosure.after}
+                    onChange={(e) => setMetricsData({
+                      ...metricsData,
+                      chartClosure: { ...metricsData.chartClosure, after: Number(e.target.value) }
+                    })}
+                    className="ba-input"
+                  />
+                  <span className="ba-unit">hours to close</span>
+                </div>
+              </div>
+              
+              <div className="ba-equals">=</div>
+              
+              <div className="ba-item result">
+                <span className="ba-label">CHANGE</span>
+                <div className="ba-result">
+                  <span className="ba-result-value">{chartClosureCalc.percentFaster}% faster</span>
+                  <span className="ba-result-percent">-{chartClosureCalc.reduction.toFixed(1)} hours</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Trend */}
+            <div className="trend-section">
+              <h3>TREND OVER TIME</h3>
+              
+              <TrendChart data={chartClosureCalc.trend} unit="hours" />
+              
+              <div className="trend-insight">
+                <span className="insight-icon">💡</span>
+                <span className="insight-text">
+                  Claims submitted faster = improved cash flow
+                </span>
+              </div>
+            </div>
+            
+          </section>
+        )}
+        
+        {/* wRVU Capture */}
+        {wrvuCalc && (
+          <section className="metric-section">
+            <div className="metric-header-row">
+              <div className="metric-icon">💰</div>
+              <h2>wRVU CAPTURE</h2>
+            </div>
+            
+            {/* Before/After */}
+            <div className="before-after-card">
+              <div className="ba-item">
+                <span className="ba-label">BEFORE</span>
+                <div className="ba-value-group">
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={metricsData.wrvuCapture.before}
+                    onChange={(e) => setMetricsData({
+                      ...metricsData,
+                      wrvuCapture: { ...metricsData.wrvuCapture, before: Number(e.target.value) }
+                    })}
+                    className="ba-input"
+                  />
+                  <span className="ba-unit">wRVU/enc</span>
+                </div>
+              </div>
+              
+              <div className="ba-arrow">→</div>
+              
+              <div className="ba-item">
+                <span className="ba-label">AFTER</span>
+                <div className="ba-value-group">
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={metricsData.wrvuCapture.after}
+                    onChange={(e) => setMetricsData({
+                      ...metricsData,
+                      wrvuCapture: { ...metricsData.wrvuCapture, after: Number(e.target.value) }
+                    })}
+                    className="ba-input"
+                  />
+                  <span className="ba-unit">wRVU/enc</span>
+                </div>
+              </div>
+              
+              <div className="ba-equals">=</div>
+              
+              <div className="ba-item result">
+                <span className="ba-label">CHANGE</span>
+                <div className="ba-result">
+                  <span className="ba-result-value">+{wrvuCalc.liftPercent}% lift</span>
+                  <span className="ba-result-percent">+{wrvuCalc.lift.toFixed(2)} wRVU/enc</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Distribution */}
+            <div className="distribution-section">
+              <h3>PROVIDER DISTRIBUTION</h3>
+              
+              <BellCurveChart
+                data={wrvuCalc.distribution}
+                median={parseFloat(wrvuCalc.liftPercent)}
+                unit="%"
+                xAxisLabel="wRVU lift"
+                segments={[
+                  { label: '< 2% lift', percent: 15, range: 'low' },
+                  { label: '2-7% lift', percent: 65, range: 'mid' },
+                  { label: '> 7% lift', percent: 20, range: 'high' }
+                ]}
+              />
+              
+              <div className="distribution-insight success">
+                <span className="insight-icon">✅</span>
+                <span className="insight-text">
+                  {wrvuCalc.percentBenefiting}% of providers seeing meaningful wRVU improvement
+                </span>
+              </div>
+            </div>
+            
+            {/* Benchmark */}
+            <div className="benchmark-card">
+              <span className="benchmark-icon">📊</span>
+              <div className="benchmark-content">
+                <span className="benchmark-label">BENCHMARK</span>
+                <p>Average wRVU lift across Abridge customers: <strong>3-6%</strong></p>
+                <p>You're at: <strong>{wrvuCalc.liftPercent}%</strong> — On track ✓</p>
+              </div>
+            </div>
+            
+          </section>
+        )}
+        
+        <div className="page-actions">
+          <button className="primary-button" onClick={onNext}>
+            See Your ROI →
+          </button>
+        </div>
+        
+      </main>
+      
+    </div>
+  );
+}
+
+// Helper to generate simulated distribution data
+function generateDistribution(median, variance) {
+  const points = [];
+  for (let i = 0; i <= 20; i++) {
+    const x = median * (0.2 + (i / 20) * 1.6);
+    const y = Math.exp(-Math.pow(x - median, 2) / (2 * Math.pow(median * variance, 2)));
+    points.push({ x: x.toFixed(1), y: y * 100 });
+  }
+  return points;
+}
+
+Bell Curve Component
+jsxCopy// ============ BELL CURVE CHART COMPONENT ============
+
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine } from 'recharts';
+
+export default function BellCurveChart({ data, median, unit, segments, xAxisLabel }) {
+  return (
+    <div className="bell-curve-container">
+      
+      {/* Chart */}
+      <div className="bell-curve-chart">
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <defs>
+              <linearGradient id="bellGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#059669" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
+            
+            <XAxis
+              dataKey="x"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748b', fontSize: 11 }}
+              tickFormatter={(v) => `${v}${unit}`}
+            />
+            
+            <YAxis hide />
+            
+            <Area
+              type="monotone"
+              dataKey="y"
+              stroke="#059669"
+              strokeWidth={2}
+              fill="url(#bellGradient)"
+            />
+            
+            <ReferenceLine
+              x={median.toFixed(1)}
+              stroke="#1e293b"
+              strokeWidth={2}
+              strokeDasharray="4 4"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+        
+        {/* Median Label */}
+        <div className="median-label">
+          <span className="median-marker">▲</span>
+          <span className="median-text">MEDIAN</span>
+          <span className="median-value">{median} {unit}</span>
+        </div>
+      </div>
+      
+      {/* Segments */}
+      <div className="bell-curve-segments">
+        {segments.map((segment, i) => (
+          <div key={i} className={`segment segment-${segment.range}`}>
+            <span className="segment-percent">{segment.percent}%</span>
+            <span className="segment-label">{segment.label}</span>
+            <div className="segment-bar" style={{ width: `${segment.percent}%` }}></div>
+          </div>
+        ))}
+      </div>
+      
+    </div>
+  );
+}
+
+Level of Service Chart Component
+jsxCopy// ============ LEVEL OF SERVICE CHART ============
+
+export default function LevelOfServiceChart({ before, after, shifts }) {
+  const levels = ['99215', '99214', '99213', '99212', '99211'];
+  
+  return (
+    <div className="los-chart">
+      
+      <div className="los-columns">
+        <div className="los-column-header">BEFORE</div>
+        <div className="los-column-header">AFTER</div>
+        <div className="los-column-header">CHANGE</div>
+      </div>
+      
+      {levels.map(level => {
+        const beforeVal = before[level];
+        const afterVal = after[level];
+        const shift = shifts[level];
+        const isPositive = shift > 0;
+        const isNegative = shift < 0;
+        
+        return (
+          <div key={level} className="los-row">
+            <div className="los-level">{level}</div>
+            
+            <div className="los-bar-container before">
+              <div
+                className="los-bar before-bar"
+                style={{ width: `${beforeVal * 2}%` }}
+              ></div>
+              <span className="los-value">{beforeVal}%</span>
+            </div>
+            
+            <div className="los-bar-container after">
+              <div
+                className="los-bar after-bar"
+                style={{ width: `${afterVal * 2}%` }}
+              ></div>
+              <span className="los-value">{afterVal}%</span>
+            </div>
+            
+            <div className={`los-shift ${isPositive ? 'positive' : ''} ${isNegative ? 'negative' : ''}`}>
+              {isPositive && '↑'}
+              {isNegative && '↓'}
+              {shift !== 0 ? `${Math.abs(shift)}pp` : '—'}
+            </div>
+          </div>
+        );
+      })}
+      
+    </div>
+  );
+}
+
+Trend Chart Component
+jsxCopy// ============ TREND CHART COMPONENT ============
+
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+
+export default function TrendChart({ data, unit }) {
+  return (
+    <div className="trend-chart">
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <XAxis
+            dataKey="month"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#64748b', fontSize: 12 }}
+          />
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#64748b', fontSize: 12 }}
+            tickFormatter={(v) => `${v}${unit === 'hours' ? 'h' : ''}`}
+          />
+          <Tooltip
+            formatter={(value) => [`${value} ${unit}`, 'Time to close']}
+            contentStyle={{
+              background: '#1e293b',
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white'
+            }}
+          />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#059669"
+            strokeWidth={3}
+            dot={{ fill: '#059669', strokeWidth: 0, r: 5 }}
+            activeDot={{ r: 7, fill: '#059669' }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+Page 4: ROI Story (Brief — similar to Explore)
+jsxCopy// ============ ROI STORY ============
+
+export default function ExpandROIStory({
+  deploymentData,
+  metricsData,
+  selectedMetrics,
+  onNext,
+  onBack
+}) {
+  
+  const abridgeEncounters = Math.round(
+    deploymentData.annualEncounters * (deploymentData.utilizationRate / 100)
+  );
+  
+  // Investment calculation
+  const pricePerProvider = 150; // Default outpatient
+  const annualInvestment = deploymentData.providers * pricePerProvider * 12;
+  
+  // Time savings value
+  const timeSavings = metricsData.timeSavings.before - metricsData.timeSavings.after;
+  const totalHoursSaved = (timeSavings * abridgeEncounters) / 60;
+  const realizedHours = totalHoursSaved * 0.5; // 50% conversion
+  const hourlyValue = 75;
+  const timeSavingsValue = Math.round(realizedHours * hourlyValue);
+  
+  // wRVU value
+  const wrvuLift = metricsData.wrvuCapture.after - metricsData.wrvuCapture.before;
+  const totalWrvuGain = wrvuLift * abridgeEncounters;
+  const conversionFactor = 33;
+  const realizationRate = 0.5;
+  const wrvuValue = Math.round(totalWrvuGain * conversionFactor * realizationRate);
+  
+  // Totals
+  const totalValue = timeSavingsValue + wrvuValue;
+  const netValue = totalValue - annualInvestment;
+  const roi = (totalValue / annualInvestment).toFixed(1);
+  const paybackMonths = Math.round((annualInvestment / totalValue) * 12);
+  
+  return (
+    <div className="expand-page roi-story">
+      
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>← Back</button>
+        <div className="step-indicator">Step 3 of 4 · Your ROI</div>
+      </header>
+      
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>Your ROI Story</h1>
+          <p>Based on your actual Abridge data</p>
+        </div>
+        
+        {/* Hero ROI */}
+        <section className="roi-hero">
+          <div className="roi-metric">
+            <span className="roi-value green">${netValue.toLocaleString()}</span>
+            <span className="roi-label">NET ANNUAL VALUE</span>
+          </div>
+          <div className="roi-metric">
+            <span className="roi-value">{roi}x</span>
+            <span className="roi-label">ROI</span>
+          </div>
+          <div className="roi-metric">
+            <span className="roi-value">{paybackMonths} mo</span>
+            <span className="roi-label">PAYBACK</span>
+          </div>
+        </section>
+        
+        <div className="roi-summary-line">
+          <span>Total Value: ${totalValue.toLocaleString()}</span>
+          <span className="divider">│</span>
+          <span>Investment: ${annualInvestment.toLocaleString()}</span>
+        </div>
+        
+        <div className="conservative-note">
+          <span>⚠️</span>
+          <span>Conservative estimate — uses typical conversion rates</span>
+        </div>
+        
+        {/* Value Breakdown */}
+        <section className="value-breakdown">
+          <h2>VALUE BREAKDOWN</h2>
+          <p className="section-subtitle">How we calculated this</p>
+          
+          {/* Time Savings */}
+          <div className="breakdown-card">
+            <div className="breakdown-header">
+              <span className="breakdown-icon">⏱️</span>
+              <span className="breakdown-title">TIME SAVINGS</span>
+              <span className="breakdown-value">${timeSavingsValue.toLocaleString()}</span>
+            </div>
+            <div className="breakdown-math">
+              <p><strong>Your data:</strong></p>
+              <ul>
+                <li>{timeSavings} minutes saved per encounter</li>
+                <li>{abridgeEncounters.toLocaleString()} Abridge encounters</li>
+                <li>= {totalHoursSaved.toLocaleString()} hours returned annually</li>
+              </ul>
+              <p><strong>Conversion:</strong></p>
+              <ul>
+                <li>50% of time converts to realized value</li>
+                <li>${hourlyValue}/hr productivity value</li>
+                <li>= {realizedHours.toLocaleString()} hrs × ${hourlyValue} = ${timeSavingsValue.toLocaleString()}</li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* wRVU */}
+          <div className="breakdown-card">
+            <div className="breakdown-header">
+              <span className="breakdown-icon">💰</span>
+              <span className="breakdown-title">wRVU LIFT</span>
+              <span className="breakdown-value">${wrvuValue.toLocaleString()}</span>
+            </div>
+            <div className="breakdown-math">
+              <p><strong>Your data:</strong></p>
+              <ul>
+                <li>{((wrvuLift / metricsData.wrvuCapture.before) * 100).toFixed(1)}% wRVU lift ({metricsData.wrvuCapture.before} → {metricsData.wrvuCapture.after})</li>
+                <li>{abridgeEncounters.toLocaleString()} Abridge encounters</li>
+                <li>= {totalWrvuGain.toLocaleString()} additional wRVUs captured</li>
+              </ul>
+              <p><strong>Conversion:</strong></p>
+              <ul>
+                <li>${conversionFactor} Medicare conversion factor (conservative)</li>
+                <li>50% realization rate (audit/coding variability)</li>
+                <li>= {totalWrvuGain.toLocaleString()} × ${conversionFactor} × 50% = ${wrvuValue.toLocaleString()}</li>
+              </ul>
+            </div>
+          </div>
+          
+        </section>
+        
+        {/* About These Numbers */}
+        <section className="about-numbers">
+          <h3>💡 ABOUT THESE NUMBERS</h3>
+          <p>We apply conservative conversion rates to your data:</p>
+          <ul>
+            <li><strong>Time savings:</strong> 50% of saved time converts to value (the rest improves quality of life)</li>
+            <li><strong>wRVU lift:</strong> 50% realization after coding/audit (not every improvement results in billed change)</li>
+            <li><strong>Medicare rates:</strong> We use $33/wRVU as baseline (commercial payers pay 30-50% more)</li>
+          </ul>
+          <p className="about-footer">These are real, defensible numbers you can share with finance.</p>
+        </section>
+        
+        <div className="page-actions">
+          <button className="primary-button" onClick={onNext}>
+            See Your Journey →
+          </button>
+        </div>
+        
+      </main>
+      
+    </div>
+  );
+}
+
+Page 5: Journey Expansion (Similar to Explore Summary)
+The Journey page follows the same pattern we built for Explore — showing current state, expansion potential, and the curved growth chart.
+
+CSS Styles (Key Sections):
+cssCopy/* ============ EXPAND FLOW STYLES ============ */
+
+/* Setting Selection */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.setting-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.setting-card.active {
+  cursor: pointer;
+  border-color: #f97316;
+}
+
+.setting-card.active:hover {
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.15);
+  transform: translateY(-2px);
+}
+
+.setting-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.setting-card.disabled .setting-description {
+  filter: blur(2px);
+}
+
+.setting-status.coming-soon {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Metrics Selection */
+.metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.metric-card:hover {
+  border-color: #f97316;
+}
+
+.metric-card.selected {
+  background: #fff7ed;
+  border-color: #f97316;
+}
+
+.metric-badge {
+  background: #059669;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+/* Before/After Cards */
+.before-after-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.ba-item {
+  flex: 1;
+}
+
+.ba-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.ba-input {
+  width: 80px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.ba-unit {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.ba-arrow {
+  font-size: 24px;
+  color: #94a3b8;
+}
+
+.ba-item.result .ba-result {
+  background: #ecfdf5;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.ba-result-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.ba-result-percent {
+  display: block;
+  font-size: 13px;
+  color: #047857;
+}
+
+/* Distribution Section */
+.distribution-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.distribution-section h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px 0;
+}
+
+.distribution-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 24px 0;
+}
+
+.distribution-insight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #ecfdf5;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.distribution-insight.success .insight-icon {
+  font-size: 18px;
+}
+
+.distribution-insight .insight-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #065f46;
+}
+
+/* Bell Curve Segments */
+.bell-curve-segments {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.segment {
+  flex: 1;
+  text-align: center;
+}
+
+.segment-percent {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.segment-label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.segment-bar {
+  height: 8px;
+  border-radius: 4px;
+  margin: 0 auto;
+}
+
+.segment-low .segment-bar {
+  background: #94a3b8;
+}
+
+.segment-mid .segment-bar {
+  background: #059669;
+}
+
+.segment-high .segment-bar {
+  background: #047857;
+}
+
+/* Level of Service Chart */
+.los-chart {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.los-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 80px;
+  gap: 16px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.los-row:last-child {
+  border-bottom: none;
+}
+
+.los-level {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.los-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.los-bar {
+  height: 24px;
+  border-radius: 4px;
+}
+
+.before-bar {
+  background: #94a3b8;
+}
+
+.after-bar {
+  background: #059669;
+}
+
+.los-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.los-shift {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.los-shift.positive {
+  color: #059669;
+}
+
+.los-shift.negative {
+  color: #f97316;
+}
+
+/* Benchmark Card */
+.benchmark-card {
+  display: flex;
+  gap: 16px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.benchmark-icon {
+  font-size: 20px;
+}
+
+.benchmark-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.benchmark-content p {
+  font-size: 14px;
+  color: #475569;
+  margin: 0 0 4px 0;
+}
+
+/* Metric Sections */
+.metric-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.metric-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.metric-icon {
+  font-size: 24px;
+}
+
+.metric-header-row h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
