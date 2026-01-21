@@ -268,11 +268,6 @@ export default function ExpandDeploymentSetup({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-[#111827]">{metric.name}</h3>
-                      {metric.recommended && (
-                        <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-semibold rounded tracking-wide">
-                          RECOMMENDED
-                        </span>
-                      )}
                     </div>
                     <p className="text-sm text-[#6B7280]">{metric.description}</p>
                     <p className="text-xs text-neutral-400 mt-1">Source: {metric.source}</p>
