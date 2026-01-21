@@ -309,27 +309,6 @@ const DRIVER_METADATA: Record<string, {
     },
   },
   // Inpatient (Hospitalist) Drivers
-  inpatientRounding: {
-    name: "Rounding Efficiency & Time Savings",
-    category: "time",
-    categoryLabel: "Time & Efficiency",
-    icon: Clock,
-    description: "Time returned to bedside care, teaching, and discharge planning",
-    methodology: {
-      logic: "Hospitalists spend significant time on documentation during and after rounds. Saving 3-5 minutes per admission compounds across daily census to return hours to patient care.",
-      formula: "Hours Saved = Eligible Admissions × Minutes Saved / 60\nAnnual Value = Hours Saved × Hourly Wage (or FTE Value)",
-      assumptions: [
-        { label: "Minutes saved per admission", value: "3-5 min", source: "Hospitalist time studies" },
-        { label: "Average daily census", value: "12-18 patients", source: "SHM benchmarks" },
-        { label: "Hospitalist hourly wage", value: "$130-180/hr", source: "Organization data" },
-      ],
-      factors: {
-        increase: ["High documentation burden", "Teaching responsibilities", "Complex patient mix"],
-        decrease: ["Existing dictation efficiency", "Low admission volume", "Strong scribe support"],
-      },
-      validation: ["Track rounding time pre/post", "Survey hospitalist satisfaction", "Monitor discharge timing"],
-    },
-  },
   inpatientRetention: {
     name: "Hospitalist Retention",
     category: "time",

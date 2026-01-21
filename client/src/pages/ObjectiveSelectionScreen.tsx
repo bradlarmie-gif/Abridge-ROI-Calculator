@@ -124,7 +124,6 @@ const LEVER_ICONS: Record<string, typeof Users> = {
   safety_event_reduction: AlertTriangle,
   ccmcc_support: Building2,
   // Inpatient (Hospitalist) drivers
-  inpatientRounding: Clock,
   inpatientRetention: HeartPulse,
   inpatientCCMCC: DollarSign,
   inpatientCDI: FileText,
@@ -157,7 +156,6 @@ const LEVER_KEY_METRICS: Record<string, string> = {
   safety_event_reduction: "Risk exposure reduction",
   ccmcc_support: "CC/MCC capture support",
   // Inpatient (Hospitalist) drivers
-  inpatientRounding: "Hours returned to bedside care",
   inpatientRetention: "Hospitalist departures avoided",
   inpatientCCMCC: "DRG weight improvement",
   inpatientCDI: "CDI queries avoided",
@@ -182,7 +180,6 @@ const LEVER_CONTEXT_TAGS: Record<string, { icon: string; text: string; color: st
   edLevelOfService: { icon: "check", text: "Universal—ED visits are often under-documented", color: "green" },
   edDenials: { icon: "dollar", text: "ED claims face heavy payer scrutiny", color: "amber" },
   // Inpatient (Hospitalist) drivers
-  inpatientRounding: { icon: "zap", text: "Immediate impact—measurable within weeks", color: "green" },
   inpatientRetention: { icon: "alert", text: "Hospitalist turnover is a crisis (15-20% typical)", color: "amber" },
   inpatientCCMCC: { icon: "dollar", text: "Directly impacts DRG weight and reimbursement", color: "emerald" },
   inpatientCDI: { icon: "check", text: "Operational efficiency—CDI teams love this", color: "green" },
@@ -207,7 +204,6 @@ const LEVER_VALUE_RANGES: Record<string, { min: number; max: number; perProvider
   edLevelOfService: { min: 150000, max: 300000, perProviders: 25 },
   edDenials: { min: 200000, max: 450000, perProviders: 25 },
   // Inpatient (Hospitalist) drivers
-  inpatientRounding: { min: 150000, max: 350000, perProviders: 20 },
   inpatientRetention: { min: 100000, max: 250000, perProviders: 20 },
   inpatientCCMCC: { min: 250000, max: 500000, perProviders: 20 },
   inpatientCDI: { min: 20000, max: 50000, perProviders: 20 },
@@ -2358,8 +2354,15 @@ export default function ObjectiveSelectionScreen({
   ) => {
     if (levers.length === 0) return null;
     const CategoryIcon = CATEGORY_ICONS[category];
-    const categoryLabel =
-      category === "time" ? "Capacity & Labor" : "Revenue & Risk";
+    // Map categories to their display labels
+    const categoryLabels: Record<LeverCategory, string> = {
+      time: "Capacity & Labor",
+      documentation: "Revenue & Risk",
+      capacityLabor: "Capacity & Labor",
+      qualityRevenue: "Revenue & Risk",
+      documentationQuality: "Documentation Quality",
+    };
+    const categoryLabel = categoryLabels[category] || "Drivers";
     const categorySubtitle = CATEGORY_SUBTITLES[category];
 
     return (
@@ -2647,10 +2650,29 @@ export default function ObjectiveSelectionScreen({
               <div>
                 {leversByCategory && (
                   <div>
-                    {renderCategorySection("time", leversByCategory.time, true)}
-                    {renderCategorySection(
+                    {/* Time and Documentation categories (Outpatient, ED) */}
+                    {leversByCategory.time.length > 0 && renderCategorySection("time", leversByCategory.time, true)}
+                    {leversByCategory.documentation.length > 0 && renderCategorySection(
                       "documentation",
                       leversByCategory.documentation,
+                      false,
+                    )}
+                    {/* Capacity & Labor category (Inpatient, Nursing) */}
+                    {leversByCategory.capacityLabor.length > 0 && renderCategorySection(
+                      "capacityLabor",
+                      leversByCategory.capacityLabor,
+                      true,
+                    )}
+                    {/* Quality & Revenue category (Inpatient) */}
+                    {leversByCategory.qualityRevenue.length > 0 && renderCategorySection(
+                      "qualityRevenue",
+                      leversByCategory.qualityRevenue,
+                      false,
+                    )}
+                    {/* Documentation Quality category (Nursing) */}
+                    {leversByCategory.documentationQuality.length > 0 && renderCategorySection(
+                      "documentationQuality",
+                      leversByCategory.documentationQuality,
                       false,
                     )}
                   </div>

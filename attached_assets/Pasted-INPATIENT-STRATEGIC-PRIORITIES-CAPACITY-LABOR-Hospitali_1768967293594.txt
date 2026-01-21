@@ -1,0 +1,261 @@
+INPATIENT STRATEGIC PRIORITIES
+│
+├── CAPACITY & LABOR
+│   └── Hospitalist Retention
+│       Address the #1 driver of hospitalist turnover.
+│       Typical range: $100K-$250K for 20 providers
+│
+└── REVENUE & RISK
+    ├── CC/MCC Capture (DRG Optimization)
+    │   Document the complexity you're managing.
+    │   Typical range: $250K-$500K for 20 providers
+    │
+    ├── CDI Query Reduction
+    │   Better initial documentation = less rework.
+    │   Typical range: $20K-$50K for 20 providers
+    │
+    └── Documentation-Related Denials
+        Protect your reimbursement.
+        Typical range: $150K-$400K for 20 providers
+
+Code for Replit — Inpatient Strategic Priorities:
+jsxCopy// ============ INPATIENT STRATEGIC PRIORITIES ============
+
+const inpatientDrivers = {
+  capacityAndLabor: {
+    category: "CAPACITY & LABOR",
+    description: "Workforce efficiency and utilization",
+    icon: "👥",
+    drivers: [
+      {
+        id: "hospitalist-retention",
+        name: "Hospitalist Retention",
+        subtitle: "Address the #1 driver of hospitalist turnover.",
+        typicalRange: "$100K-$250K for 20 providers",
+        icon: "❤️",
+        enabled: true
+      }
+    ]
+  },
+  revenueAndRisk: {
+    category: "REVENUE & RISK",
+    description: "Clinical and financial accuracy",
+    icon: "💰",
+    drivers: [
+      {
+        id: "cc-mcc-capture",
+        name: "CC/MCC Capture (DRG Optimization)",
+        subtitle: "Document the complexity you're managing.",
+        typicalRange: "$250K-$500K for 20 providers",
+        icon: "📊",
+        enabled: true
+      },
+      {
+        id: "cdi-query-reduction",
+        name: "CDI Query Reduction",
+        subtitle: "Better initial documentation = less rework.",
+        typicalRange: "$20K-$50K for 20 providers",
+        icon: "📝",
+        enabled: true
+      },
+      {
+        id: "documentation-denials",
+        name: "Documentation-Related Denials",
+        subtitle: "Protect your reimbursement.",
+        typicalRange: "$150K-$400K for 20 providers",
+        icon: "🛡️",
+        enabled: true
+      }
+    ]
+  }
+};
+
+Full Page Component:
+jsxCopy// ============ INPATIENT STRATEGIC PRIORITIES PAGE ============
+
+export default function InpatientStrategicPriorities() {
+  const [selectedDrivers, setSelectedDrivers] = useState([]);
+  
+  const toggleDriver = (driverId) => {
+    if (selectedDrivers.includes(driverId)) {
+      setSelectedDrivers(selectedDrivers.filter(id => id !== driverId));
+    } else {
+      setSelectedDrivers([...selectedDrivers, driverId]);
+    }
+  };
+  
+  const canContinue = selectedDrivers.length >= 2;
+  
+  return (
+    <div className="strategic-priorities-page">
+      
+      {/* Header */}
+      <div className="page-header">
+        <h1>Strategic Priorities</h1>
+      </div>
+      
+      {/* Main Content */}
+      <div className="content-layout">
+        
+        {/* Left: Driver Selection */}
+        <div className="driver-selection">
+          
+          <div className="selection-header">
+            <h2>What outcomes matter most right now?</h2>
+            <p>Select 2-5 strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.</p>
+            <div className="methodology-note">
+              <span className="icon">📊</span>
+              Based on proven methodologies from 200+ health system partners
+            </div>
+          </div>
+          
+          {/* Category: Capacity & Labor */}
+          <div className="driver-category">
+            <div className="category-header">
+              <span className="category-icon">👥</span>
+              <div className="category-text">
+                <h3>CAPACITY & LABOR</h3>
+                <p>Workforce efficiency and utilization</p>
+              </div>
+            </div>
+            
+            <div className="driver-list">
+              
+              {/* Hospitalist Retention */}
+              <div 
+                className={`driver-card ${selectedDrivers.includes('hospitalist-retention') ? 'selected' : ''}`}
+                onClick={() => toggleDriver('hospitalist-retention')}
+              >
+                <div className="driver-icon">❤️</div>
+                <div className="driver-content">
+                  <h4>Hospitalist Retention</h4>
+                  <p>Address the #1 driver of hospitalist turnover.</p>
+                  <div className="typical-range">
+                    <span className="range-icon">📊</span>
+                    Typical range: $100K-$250K for 20 providers
+                  </div>
+                </div>
+                <div className="checkbox">
+                  {selectedDrivers.includes('hospitalist-retention') && <span>✓</span>}
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+          {/* Category: Revenue & Risk */}
+          <div className="driver-category">
+            <div className="category-header">
+              <span className="category-icon">💰</span>
+              <div className="category-text">
+                <h3>REVENUE & RISK</h3>
+                <p>Clinical and financial accuracy</p>
+              </div>
+            </div>
+            
+            <div className="driver-list">
+              
+              {/* CC/MCC Capture */}
+              <div 
+                className={`driver-card ${selectedDrivers.includes('cc-mcc-capture') ? 'selected' : ''}`}
+                onClick={() => toggleDriver('cc-mcc-capture')}
+              >
+                <div className="driver-icon">📊</div>
+                <div className="driver-content">
+                  <h4>CC/MCC Capture (DRG Optimization)</h4>
+                  <p>Document the complexity you're managing.</p>
+                  <div className="typical-range">
+                    <span className="range-icon">📊</span>
+                    Typical range: $250K-$500K for 20 providers
+                  </div>
+                </div>
+                <div className="checkbox">
+                  {selectedDrivers.includes('cc-mcc-capture') && <span>✓</span>}
+                </div>
+              </div>
+              
+              {/* CDI Query Reduction */}
+              <div 
+                className={`driver-card ${selectedDrivers.includes('cdi-query-reduction') ? 'selected' : ''}`}
+                onClick={() => toggleDriver('cdi-query-reduction')}
+              >
+                <div className="driver-icon">📝</div>
+                <div className="driver-content">
+                  <h4>CDI Query Reduction</h4>
+                  <p>Better initial documentation = less rework.</p>
+                  <div className="typical-range">
+                    <span className="range-icon">📊</span>
+                    Typical range: $20K-$50K for 20 providers
+                  </div>
+                </div>
+                <div className="checkbox">
+                  {selectedDrivers.includes('cdi-query-reduction') && <span>✓</span>}
+                </div>
+              </div>
+              
+              {/* Documentation-Related Denials */}
+              <div 
+                className={`driver-card ${selectedDrivers.includes('documentation-denials') ? 'selected' : ''}`}
+                onClick={() => toggleDriver('documentation-denials')}
+              >
+                <div className="driver-icon">🛡️</div>
+                <div className="driver-content">
+                  <h4>Documentation-Related Denials</h4>
+                  <p>Protect your reimbursement.</p>
+                  <div className="typical-range">
+                    <span className="range-icon">📊</span>
+                    Typical range: $150K-$400K for 20 providers
+                  </div>
+                </div>
+                <div className="checkbox">
+                  {selectedDrivers.includes('documentation-denials') && <span>✓</span>}
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+        </div>
+        
+        {/* Right: Sidebar */}
+        <div className="selection-sidebar">
+          
+          <h3>YOUR SELECTIONS</h3>
+          
+          <div className="sidebar-section">
+            <label>CARE SETTING</label>
+            <div className="setting-value">
+              Inpatient
+              <span className="checkmark">✓</span>
+            </div>
+          </div>
+          
+          <div className="sidebar-section">
+            <label>STRATEGIC PRIORITIES</label>
+            <p className="helper-text">Select 2-5 drivers</p>
+            <p className="helper-subtext">Most organizations select 2-3</p>
+          </div>
+          
+          <div className="selection-status">
+            {selectedDrivers.length < 2 ? (
+              <p className="status-warning">Choose at least 2 drivers to continue</p>
+            ) : (
+              <p className="status-ready">{selectedDrivers.length} drivers selected</p>
+            )}
+          </div>
+          
+          <button 
+            className={`continue-button ${canContinue ? 'enabled' : 'disabled'}`}
+            disabled={!canContinue}
+            onClick={() => navigateToModel(selectedDrivers)}
+          >
+            Build Your Model →
+          </button>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+  );
+}

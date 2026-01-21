@@ -179,11 +179,6 @@ interface DriverInputs {
     avgClaimValue: number;
   };
   // Inpatient (Hospitalist) drivers
-  inpatientRounding: {
-    minutesSavedPerAdmission: number;
-    hourlyWage: number;
-    fteValuedHours: boolean;
-  };
   inpatientRetention: {
     turnoverRate: number;
     replacementCost: number;
@@ -247,7 +242,6 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
   edLevelOfService: BarChart3,
   edDenials: FileX,
   // Inpatient drivers
-  inpatientRounding: Clock,
   inpatientRetention: Heart,
   inpatientCCMCC: DollarSign,
   inpatientCDI: FileText,
@@ -274,7 +268,6 @@ const DRIVER_NAMES: Record<string, string> = {
   edLevelOfService: "Level-of-Service Accuracy",
   edDenials: "Documentation-Related Denials",
   // Inpatient drivers
-  inpatientRounding: "Rounding Efficiency & Time Savings",
   inpatientRetention: "Hospitalist Retention",
   inpatientCCMCC: "CC/MCC Capture (DRG Optimization)",
   inpatientCDI: "CDI Query Reduction",
@@ -301,7 +294,6 @@ const DRIVER_THEORIES: Record<string, string> = {
   edLevelOfService: "ED visits are complex and fast-paced. Under-documentation is common, leading to under-coding. AI-assisted documentation captures the full clinical picture for accurate E/M levels.",
   edDenials: "ED claims face intense payer scrutiny. Complete, clear documentation at the point of care reduces denials for insufficient clinical rationale and medical necessity.",
   // Inpatient drivers
-  inpatientRounding: "Hospitalists spend significant time on documentation during and after rounds. Saving 3-5 minutes per admission returns hours to bedside care, teaching, and discharge planning.",
   inpatientRetention: "Hospitalist medicine has some of the highest turnover in healthcare (15-20% typical). Documentation burden is a primary contributor to burnout and departures.",
   inpatientCCMCC: "Complete documentation of complications and comorbidities drives DRG weight and reimbursement. Many CC/MCC opportunities go uncaptured due to rushed documentation.",
   inpatientCDI: "Better initial documentation means fewer CDI queries. Each avoided query saves time for both the CDI team and the hospitalist—operational efficiency everyone appreciates.",
@@ -450,11 +442,6 @@ export default function ModelBuilder({
       avgClaimValue: 650,
     },
     // Inpatient defaults
-    inpatientRounding: {
-      minutesSavedPerAdmission: 4,
-      hourlyWage: 150,
-      fteValuedHours: false,
-    },
     inpatientRetention: {
       turnoverRate: 15,
       replacementCost: 750000,
@@ -561,7 +548,6 @@ export default function ModelBuilder({
       edLevelOfService: "edLevelOfService",
       edDenials: "edDenials",
       // Inpatient mappings
-      inpatientRounding: "inpatientRounding",
       inpatientRetention: "inpatientRetention",
       inpatientCCMCC: "inpatientCCMCC",
       inpatientCDI: "inpatientCDI",
@@ -592,7 +578,7 @@ export default function ModelBuilder({
         return ["edThroughput", "edLevelOfService", "edDenials"];
       }
       if (isInpatientSetting) {
-        return ["inpatientRounding", "inpatientCCMCC", "inpatientDenials"];
+        return ["inpatientRetention", "inpatientCCMCC", "inpatientDenials"];
       }
       return ["overtime", "patientAccess", "levelOfService"];
     }
@@ -787,18 +773,6 @@ export default function ModelBuilder({
         return Math.round(claimsRecovered * avgClaimValue);
       }
       // Inpatient Drivers
-      case "inpatientRounding": {
-        const { minutesSavedPerAdmission, hourlyWage, fteValuedHours } = driverInputs.inpatientRounding;
-        const totalMinutes = eligibleEncounters * minutesSavedPerAdmission;
-        const hoursSaved = totalMinutes / 60;
-        if (fteValuedHours) {
-          // Value as FTE savings (hospitalist costs ~$300K fully loaded)
-          const fteSaved = hoursSaved / 2000;
-          return Math.round(fteSaved * 300000);
-        }
-        // Value as time savings at hourly rate
-        return Math.round(hoursSaved * hourlyWage);
-      }
       case "inpatientRetention": {
         const { turnoverRate, replacementCost } = driverInputs.inpatientRetention;
         const departures = providers * (turnoverRate / 100);
@@ -876,7 +850,7 @@ export default function ModelBuilder({
   
   const driverResults = useMemo(() => {
     const results: Record<string, { name: string; value: number; category: "time" | "quality" }> = {};
-    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRounding", "inpatientRetention", "nursingOvertime", "nursingDocTime", "nursingAgency", "nursingRetention"];
+    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRetention", "nursingOvertime", "nursingDocTime", "nursingAgency", "nursingRetention"];
     activeDrivers.forEach(id => {
       results[id] = {
         name: DRIVER_NAMES[id],
@@ -1025,12 +999,6 @@ export default function ModelBuilder({
             avgClaimValue: driverInputs.edDenials.avgClaimValue,
           };
         // Inpatient drivers
-        case "inpatientRounding":
-          return {
-            minutesSavedPerAdmission: driverInputs.inpatientRounding.minutesSavedPerAdmission,
-            hourlyWage: driverInputs.inpatientRounding.hourlyWage,
-            fteValuedHours: driverInputs.inpatientRounding.fteValuedHours,
-          };
         case "inpatientRetention":
           return {
             turnoverRate: driverInputs.inpatientRetention.turnoverRate,
@@ -1160,8 +1128,6 @@ export default function ModelBuilder({
       case "edDenials":
         return renderEdDenialsInputs();
       // Inpatient drivers
-      case "inpatientRounding":
-        return renderInpatientRoundingInputs();
       case "inpatientRetention":
         return renderInpatientRetentionInputs();
       case "inpatientCCMCC":
@@ -4027,89 +3993,6 @@ export default function ModelBuilder({
   };
   
   // Inpatient render functions
-  const renderInpatientRoundingInputs = () => {
-    const { minutesSavedPerAdmission, hourlyWage, fteValuedHours } = driverInputs.inpatientRounding;
-    const totalMinutes = eligibleEncounters * minutesSavedPerAdmission;
-    const hoursSaved = totalMinutes / 60;
-    
-    return (
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Minutes saved per admission</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{minutesSavedPerAdmission} min</span>
-          </div>
-          <Slider
-            value={[minutesSavedPerAdmission]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientRounding: { ...prev.inpatientRounding, minutesSavedPerAdmission: val } }))}
-            min={2}
-            max={8}
-            step={1}
-            className="w-full"
-            data-testid="inpatient-rounding-minutes-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Hospitalists typically save 3-5 minutes per admission with ambient documentation</p>
-        </div>
-        
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-neutral-400 font-mono">
-            {eligibleEncounters.toLocaleString()} admissions × {minutesSavedPerAdmission} min = {Math.round(totalMinutes).toLocaleString()} min = {Math.round(hoursSaved).toLocaleString()} hours
-          </p>
-        </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">How do you want to value time savings?</label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setDriverInputs(prev => ({ ...prev, inpatientRounding: { ...prev.inpatientRounding, fteValuedHours: false } }))}
-              className={`flex-1 p-3 rounded-lg border text-sm transition-all ${!fteValuedHours ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]" : "border-neutral-200 text-[#6B7280]"}`}
-              data-testid="inpatient-hourly-value"
-            >
-              Hourly Rate
-            </button>
-            <button
-              onClick={() => setDriverInputs(prev => ({ ...prev, inpatientRounding: { ...prev.inpatientRounding, fteValuedHours: true } }))}
-              className={`flex-1 p-3 rounded-lg border text-sm transition-all ${fteValuedHours ? "border-[#E85D3F] bg-[#E85D3F]/5 text-[#E85D3F]" : "border-neutral-200 text-[#6B7280]"}`}
-              data-testid="inpatient-fte-value"
-            >
-              FTE Value
-            </button>
-          </div>
-        </div>
-        
-        {!fteValuedHours && (
-          <div className="space-y-3">
-            <label className="text-sm text-[#111827] font-medium">Hospitalist hourly wage</label>
-            <div className="flex items-center gap-2">
-              <span className="text-[#6B7280]">$</span>
-              <Input
-                type="number"
-                value={hourlyWage}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRounding: { ...prev.inpatientRounding, hourlyWage: Number(e.target.value) || 0 } }))}
-                className="w-32 font-mono"
-                data-testid="inpatient-hourly-wage-input"
-              />
-              <span className="text-[#6B7280]">/ hour</span>
-            </div>
-            <p className="text-xs text-[#6B7280]">$130-180/hr is typical for hospitalists</p>
-          </div>
-        )}
-        
-        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-          <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(calculateDriverValue("inpatientRounding"))}
-            </span>
-          </div>
-          <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(hoursSaved).toLocaleString()} hours × {fteValuedHours ? "FTE cost" : `$${hourlyWage}/hr`}
-          </p>
-        </div>
-      </div>
-    );
-  };
-  
   const renderInpatientRetentionInputs = () => {
     const { turnoverRate, replacementCost } = driverInputs.inpatientRetention;
     const departures = providers * (turnoverRate / 100);

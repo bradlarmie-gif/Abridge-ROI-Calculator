@@ -166,51 +166,42 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
 
   inpatient: [
     {
-      id: "inpatientRounding",
-      label: "Rounding Efficiency & Time Savings",
-      category: "time",
-      description:
-        "Return time to bedside care, teaching, discharge planning.",
-      driverSummary: "Immediate impact—measurable within weeks",
-      keyMetric: "$150K-350K for 20 hospitalists",
-    },
-    {
       id: "inpatientRetention",
       label: "Hospitalist Retention",
-      category: "time",
+      category: "capacityLabor",
       description:
         "Address the #1 driver of hospitalist turnover.",
       driverSummary: "Hospitalist turnover is a crisis (15-20% typical)",
-      keyMetric: "$100K-250K for 20 hospitalists",
+      keyMetric: "$100K-250K for 20 providers",
       hasWarning: true,
       warningText: "Long-term—12+ months to see full impact",
     },
     {
       id: "inpatientCCMCC",
       label: "CC/MCC Capture (DRG Optimization)",
-      category: "documentation",
+      category: "qualityRevenue",
       description:
         "Document the complexity you're managing.",
       driverSummary: "Directly impacts DRG weight and reimbursement",
-      keyMetric: "$250K-500K for 20 hospitalists",
+      keyMetric: "$250K-500K for 20 providers",
     },
     {
       id: "inpatientCDI",
       label: "CDI Query Reduction",
-      category: "documentation",
+      category: "qualityRevenue",
       description:
         "Better initial documentation = less rework.",
       driverSummary: "Operational efficiency—CDI teams love this",
-      keyMetric: "$20K-50K for 20 hospitalists",
+      keyMetric: "$20K-50K for 20 providers",
     },
     {
       id: "inpatientDenials",
       label: "Documentation-Related Denials",
-      category: "documentation",
+      category: "qualityRevenue",
       description:
         "Protect your reimbursement.",
       driverSummary: "Inpatient denials are high-dollar",
-      keyMetric: "$150K-400K for 20 hospitalists",
+      keyMetric: "$150K-400K for 20 providers",
     },
   ],
 };
