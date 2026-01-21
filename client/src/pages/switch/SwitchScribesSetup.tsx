@@ -51,9 +51,15 @@ export default function SwitchScribesSetup({
                       data.hourlyRate && data.hoursPerWeek;
   
   const handleNumberInput = (field: keyof ScribeData, value: string) => {
-    const numValue = value.replace(/,/g, '');
-    const parsed = numValue ? Number(numValue) : null;
-    setData({ ...data, [field]: parsed });
+    // Only allow digits and commas
+    const digitsOnly = value.replace(/[^\d]/g, '');
+    const parsed = digitsOnly ? parseInt(digitsOnly, 10) : null;
+    // Ensure we don't set NaN
+    if (parsed !== null && isNaN(parsed)) {
+      setData({ ...data, [field]: null });
+    } else {
+      setData({ ...data, [field]: parsed });
+    }
   };
   
   return (

@@ -18,8 +18,10 @@ function formatWithCommas(value: number | string): string {
 }
 
 function parseFormattedNumber(value: string): number {
-  const cleaned = value.replace(/,/g, '');
-  const num = parseFloat(cleaned);
+  // Only allow digits
+  const cleaned = value.replace(/[^\d]/g, '');
+  if (!cleaned) return 0;
+  const num = parseInt(cleaned, 10);
   return isNaN(num) ? 0 : num;
 }
 
@@ -43,7 +45,8 @@ export function FormattedNumberInput({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    const digitsOnly = input.replace(/[^\d.]/g, '');
+    // Only allow digits (no decimals, no dashes, no other characters)
+    const digitsOnly = input.replace(/[^\d]/g, '');
     setDisplayValue(digitsOnly);
     
     let numValue = parseFormattedNumber(digitsOnly);
