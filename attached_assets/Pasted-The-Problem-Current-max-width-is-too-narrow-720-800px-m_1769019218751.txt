@@ -1,0 +1,282 @@
+The Problem:
+Current max-width is too narrow (~720-800px), making it feel like a mobile layout stretched to desktop.
+The Fix:
+Increase max-width and use the full width better for cards and sections.
+
+CSS Updates:
+cssCopy/* ============ SWITCH FLOW - DESKTOP LAYOUT FIX ============ */
+
+/* Base page content - increase max-width */
+.switch-page .page-content {
+  max-width: 1000px; /* Increased from 720-800px */
+  margin: 0 auto;
+  padding: 48px 40px; /* More horizontal padding */
+  width: 100%;
+}
+
+/* For conclusion/results pages, can go even wider */
+.switch-page.conclusion-page .page-content,
+.switch-page .page-content.wide {
+  max-width: 1100px;
+}
+
+/* Page title can be wider */
+.switch-page .page-title {
+  max-width: 700px;
+  margin: 0 auto 48px auto;
+  text-align: center;
+}
+
+/* ============ SETUP PAGE ============ */
+
+/* Mode toggle - centered, reasonable width */
+.mode-toggle-container {
+  max-width: 400px;
+  margin: 0 auto 40px auto;
+}
+
+/* Input sections - full width cards */
+.switch-page .input-section {
+  margin-bottom: 32px;
+}
+
+.switch-page .input-card,
+.switch-page .input-section > div {
+  max-width: none; /* Remove any max-width constraints */
+}
+
+/* Metrics grid - 2 columns with more space */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px; /* Increased gap */
+  margin-bottom: 40px;
+}
+
+.metric-input-card {
+  padding: 32px; /* More padding */
+}
+
+/* Live gap section - full width */
+.live-gap-section {
+  padding: 32px;
+}
+
+.gap-comparison {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr; /* Give arrow column fixed width */
+  gap: 24px;
+  align-items: center;
+}
+
+.comparison-column {
+  padding: 24px;
+}
+
+.comparison-metric {
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+/* ============ ANALYSIS PAGE ============ */
+
+/* Hero gap - make it feel substantial */
+.hero-gap-section {
+  padding: 48px 40px;
+  margin-bottom: 40px;
+}
+
+.hero-value {
+  font-size: 64px; /* Bigger on desktop */
+}
+
+/* Gap bars - full width */
+.gap-bar-card {
+  padding: 24px 28px;
+  margin-bottom: 16px;
+}
+
+/* Translation section */
+.translation-section {
+  padding: 32px;
+}
+
+.translation-card {
+  padding: 28px;
+}
+
+.translation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns on desktop */
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .translation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============ CONCLUSION PAGE ============ */
+
+/* Chart section - needs breathing room */
+.chart-section {
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+.chart-container {
+  margin: 24px 0;
+}
+
+/* Understanding section */
+.understanding-section {
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.formula-box {
+  max-width: 600px;
+  margin: 24px auto;
+  padding: 28px;
+}
+
+/* Gaps summary - 2 column layout */
+.gaps-summary-section {
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.gaps-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.gap-card {
+  padding: 28px;
+}
+
+/* Cost of waiting - 2 column layout */
+.waiting-section {
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.waiting-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 24px 0;
+}
+
+.waiting-card {
+  padding: 32px;
+}
+
+/* Monthly callout - full width */
+.monthly-callout {
+  padding: 24px 32px;
+}
+
+/* ============ RESPONSIVE - TABLET ============ */
+
+@media (max-width: 1024px) {
+  .switch-page .page-content {
+    max-width: 900px;
+    padding: 40px 32px;
+  }
+}
+
+/* ============ RESPONSIVE - MOBILE ============ */
+
+@media (max-width: 768px) {
+  .switch-page .page-content {
+    max-width: 100%;
+    padding: 32px 20px;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .gap-comparison {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .comparison-arrow-column {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .translation-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .gaps-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .waiting-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-value {
+    font-size: 48px;
+  }
+}
+
+Additional Layout Improvements:
+1. Make sections feel more connected with consistent card styling:
+cssCopy/* Consistent card styling */
+.switch-page section > .card,
+.switch-page .input-card,
+.switch-page .gap-bar-card,
+.switch-page .translation-card,
+.switch-page .understanding-section,
+.switch-page .gaps-summary-section,
+.switch-page .waiting-section,
+.switch-page .chart-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+}
+
+/* Subtle shadow on hover for interactive elements */
+.switch-page .input-card:hover,
+.switch-page .gap-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+2. Better section labels:
+cssCopy.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.08em;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+3. Better button sizing for desktop:
+cssCopy.continue-button.enabled {
+  padding: 16px 40px;
+  font-size: 16px;
+  min-width: 200px;
+}
+
+/* Page footer - centered button with more breathing room */
+.page-footer {
+  padding: 24px 40px;
+  display: flex;
+  justify-content: center;
+}
+
+Quick Summary of Width Changes:
+ElementBeforeAfterpage-content720-800px1000pxconclusion page800px1100pxpadding24px40px horizontalcard padding20-24px28-32pxgaps between sections24px32-40px
+
+The Result:
+
+Content fills more of the screen on desktop
+Cards have more breathing room
+Grid layouts (metrics, gaps, waiting) use full width effectively
+Still responsive — collapses nicely on mobile
