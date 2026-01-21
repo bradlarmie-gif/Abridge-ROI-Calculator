@@ -1,6 +1,6 @@
 export type CareSettingType = "outpatient" | "ed" | "nursing" | "inpatient";
 export type AllSettingType = CareSettingType;
-export type LeverCategory = "time" | "documentation" | "capacityLabor" | "documentationQuality" | "qualityRevenue";
+export type LeverCategory = "time" | "documentation" | "capacityLabor" | "documentationQuality" | "qualityRevenue" | "laborCost" | "qualitySafety" | "additional";
 
 export interface LeverConfig {
   id: string;
@@ -11,6 +11,8 @@ export interface LeverConfig {
   keyMetric?: string;
   hasWarning?: boolean;
   warningText?: string;
+  isPotentialValue?: boolean;   // Shown separately, not in main total (e.g., HAPI)
+  isNotQuantified?: boolean;    // Qualitative only, not quantified in ROI (e.g., Survey, Care Coordination)
 }
 
 export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
@@ -116,51 +118,63 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
   ],
   nursing: [
-    // ⏱️ TIME SAVED BENEFITS
+    // 💰 LABOR COST BENEFITS (Direct budget impact)
     {
       id: "nursingOvertime",
       label: "Overtime Reduction",
-      category: "time",
+      category: "laborCost",
       description: "Eliminate end-of-shift documentation catch-up",
       driverSummary: "Most directly measurable—shows up in payroll data",
-      keyMetric: "$400K-900K for 200 staffed beds",
-    },
-    {
-      id: "nursingDocTime",
-      label: "Documentation Time Savings",
-      category: "time",
-      description: "Return hours to bedside care",
-      driverSummary: "Immediate impact on nurse workflow",
-      keyMetric: "$300K-700K for 200 staffed beds",
+      keyMetric: "$300K-$600K for 200 beds",
     },
     {
       id: "nursingAgency",
       label: "Agency & Travel Nurse Reduction",
-      category: "time",
+      category: "laborCost",
       description: "Convert expensive agency spend to staff positions",
       driverSummary: "Agency nurses cost 2-3x staff nurses",
-      keyMetric: "$200K-500K for 200 staffed beds",
+      keyMetric: "$150K-$350K for 200 beds",
     },
     {
       id: "nursingRetention",
       label: "Nurse Retention",
-      category: "time",
+      category: "laborCost",
       description: "Address the top driver of nursing burnout",
       driverSummary: "Long-term impact—12+ months to measure fully",
-      keyMetric: "$100K-250K for 200 staffed beds",
+      keyMetric: "$150K-$350K for 200 beds",
       hasWarning: true,
       warningText: "Long-term—12+ months to see full impact",
     },
-    // 📋 DOCUMENTATION QUALITY BENEFITS
+    // 🛡️ QUALITY & SAFETY BENEFITS
     {
-      id: "nursingCompleteness",
-      label: "Documentation Timeliness & Completeness",
-      category: "documentation",
-      description: "Real-time documentation, regulatory compliance",
-      driverSummary: "Harder to monetize but important for compliance",
-      keyMetric: "$30K-75K for 200 staffed beds",
+      id: "nursingHAPI",
+      label: "HAPI Prevention",
+      category: "qualitySafety",
+      description: "Reduce hospital-acquired pressure injuries",
+      driverSummary: "Potential value—indirect causal link",
+      keyMetric: "$300K-$600K for 200 beds (potential)",
       hasWarning: true,
-      warningText: "Harder to monetize—but important for compliance",
+      warningText: "Shown as potential value—not included in main ROI total",
+      isPotentialValue: true,
+    },
+    // ✨ ADDITIONAL BENEFITS (Not quantified)
+    {
+      id: "nursingSurvey",
+      label: "Survey & Compliance Readiness",
+      category: "additional",
+      description: "Real-time documentation supports audit confidence",
+      driverSummary: "Not quantified—qualitative value",
+      keyMetric: "Qualitative",
+      isNotQuantified: true,
+    },
+    {
+      id: "nursingCareCoordination",
+      label: "Care Coordination",
+      category: "additional",
+      description: "Better handoffs through complete documentation",
+      driverSummary: "Not quantified—qualitative value",
+      keyMetric: "Qualitative",
+      isNotQuantified: true,
     },
   ],
 
@@ -219,16 +233,23 @@ export const CATEGORY_LABELS: Record<LeverCategory, string> = {
   capacityLabor: "Capacity & Labor",
   documentationQuality: "Documentation Quality",
   qualityRevenue: "Quality & Revenue",
+  laborCost: "Labor Cost Benefits",
+  qualitySafety: "Quality & Safety Benefits",
+  additional: "Additional Benefits",
 };
 
 export const NURSING_CATEGORY_LABELS: Record<string, { label: string; description: string }> = {
-  time: {
-    label: "Time Saved Benefits",
-    description: "Workforce efficiency and cost management",
+  laborCost: {
+    label: "Labor Cost Benefits",
+    description: "Direct budget impact",
   },
-  documentation: {
-    label: "Documentation Quality Benefits",
-    description: "Clinical documentation and compliance",
+  qualitySafety: {
+    label: "Quality & Safety Benefits",
+    description: "Risk reduction and patient outcomes",
+  },
+  additional: {
+    label: "Additional Benefits",
+    description: "Not quantified — qualitative value",
   },
 };
 
@@ -242,15 +263,18 @@ export function getLeversByCategory(
     capacityLabor: levers.filter((l) => l.category === "capacityLabor"),
     documentationQuality: levers.filter((l) => l.category === "documentationQuality"),
     qualityRevenue: levers.filter((l) => l.category === "qualityRevenue"),
+    laborCost: levers.filter((l) => l.category === "laborCost"),
+    qualitySafety: levers.filter((l) => l.category === "qualitySafety"),
+    additional: levers.filter((l) => l.category === "additional"),
   };
 }
 
 export function getNursingDriversByCategory(): Record<string, LeverConfig[]> {
   const levers = SETTING_CONFIG.nursing;
   return {
-    capacityLabor: levers.filter((l) => l.category === "capacityLabor"),
-    documentationQuality: levers.filter((l) => l.category === "documentationQuality"),
-    qualityRevenue: levers.filter((l) => l.category === "qualityRevenue"),
+    laborCost: levers.filter((l) => l.category === "laborCost"),
+    qualitySafety: levers.filter((l) => l.category === "qualitySafety"),
+    additional: levers.filter((l) => l.category === "additional"),
   };
 }
 

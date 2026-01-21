@@ -38,6 +38,8 @@ import {
   Sliders,
   Zap,
   FileX,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -88,6 +90,9 @@ const CATEGORY_ICONS: Record<LeverCategory, typeof Clock> = {
   capacityLabor: Clock,
   documentationQuality: FileText,
   qualityRevenue: AlertTriangle,
+  laborCost: DollarSign,
+  qualitySafety: Shield,
+  additional: Sparkles,
 };
 
 const CATEGORY_SUBTITLES: Record<LeverCategory, string> = {
@@ -96,6 +101,9 @@ const CATEGORY_SUBTITLES: Record<LeverCategory, string> = {
   capacityLabor: "Workforce efficiency and cost management",
   documentationQuality: "Clinical documentation and compliance",
   qualityRevenue: "Requires additional assumptions—see methodology",
+  laborCost: "Direct budget impact",
+  qualitySafety: "Risk reduction and patient outcomes",
+  additional: "Not quantified — qualitative value",
 };
 
 const LEVER_ICONS: Record<string, typeof Users> = {
@@ -2010,9 +2018,25 @@ export default function ObjectiveSelectionScreen({
         return Math.round(baseRisk * (nursingTimelinessRiskReduction / 100));
       };
       
-      const calcNursingCompleteness = () => {
-        const baseRisk = 70000;
-        return Math.round(baseRisk * (nursingCompletenessRiskReduction / 100));
+      // HAPI Prevention (hospital-acquired pressure injuries)
+      const calcNursingHAPI = () => {
+        // Based on: CMS penalty avoidance + incident costs
+        // ~5 HAPIs per 200 beds per year preventable via better documentation
+        const bedsScaling = actualBeds / 200;
+        const hapIsPreventable = 5 * bedsScaling;
+        const costPerHAPI = 70000; // CMS figures
+        const documentationImpact = 0.20; // 20% attributable to documentation improvements
+        return Math.round(hapIsPreventable * costPerHAPI * documentationImpact);
+      };
+      
+      // Survey & Compliance Readiness (not quantified)
+      const calcNursingSurvey = () => {
+        return 0; // Not quantified - qualitative value
+      };
+      
+      // Care Coordination (not quantified)
+      const calcNursingCareCoordination = () => {
+        return 0; // Not quantified - qualitative value
       };
       
       const calcNursingSafety = () => {
@@ -2041,21 +2065,27 @@ export default function ObjectiveSelectionScreen({
         hcc: calcHcc(),
         denials: calcDenials(),
         overtime: calcOvertime(),
-        // Nursing-specific drivers
-        documentation_time_savings: calcNursingDocTimeSavings(),
+        // Nursing-specific drivers (Labor Cost Benefits)
         overtime_reduction: calcNursingOvertimeReduction(),
         agency_reduction: calcNursingAgencyReduction(),
         nurse_retention: calcNursingRetention(),
-        documentation_timeliness: calcNursingTimeliness(),
-        documentation_completeness: calcNursingCompleteness(),
+        // Nursing Quality & Safety Benefits
+        hapi_prevention: calcNursingHAPI(),
+        // Nursing Additional Benefits (not quantified)
+        survey_compliance: calcNursingSurvey(),
+        care_coordination: calcNursingCareCoordination(),
+        // Legacy keys for other flows
         safety_event_reduction: calcNursingSafety(),
         ccmcc_support: calcNursingCcmcc(),
-        // Also add nursingOvertime for the ModelBuilder-style IDs
+        // ModelBuilder-style IDs (Labor Cost)
         nursingOvertime: calcNursingOvertimeReduction(),
-        nursingDocTime: calcNursingDocTimeSavings(),
         nursingAgency: calcNursingAgencyReduction(),
         nursingRetention: calcNursingRetention(),
-        nursingCompleteness: calcNursingCompleteness(),
+        // ModelBuilder-style IDs (Quality & Safety)
+        nursingHAPI: calcNursingHAPI(),
+        // ModelBuilder-style IDs (Additional)
+        nursingSurvey: calcNursingSurvey(),
+        nursingCareCoordination: calcNursingCareCoordination(),
       };
     };
   }, [
@@ -2361,6 +2391,9 @@ export default function ObjectiveSelectionScreen({
       capacityLabor: "Capacity & Labor",
       qualityRevenue: "Revenue & Risk",
       documentationQuality: "Documentation Quality",
+      laborCost: "Labor Cost Benefits",
+      qualitySafety: "Quality & Safety Benefits",
+      additional: "Additional Benefits",
     };
     const categoryLabel = categoryLabels[category] || "Drivers";
     const categorySubtitle = CATEGORY_SUBTITLES[category];

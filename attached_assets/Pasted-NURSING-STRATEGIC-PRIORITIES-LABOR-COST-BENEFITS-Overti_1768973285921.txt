@@ -1,0 +1,263 @@
+NURSING STRATEGIC PRIORITIES
+│
+├── LABOR COST BENEFITS
+│   ├── Overtime Reduction (quantified)
+│   │   Eliminate end-of-shift documentation catch-up.
+│   │   Typical range: $300K-$600K for 200 beds
+│   │
+│   ├── Agency & Travel Nurse Reduction (quantified)
+│   │   Convert expensive agency spend to staff positions.
+│   │   Typical range: $150K-$350K for 200 beds
+│   │
+│   └── Nurse Retention (quantified)
+│       Address the top driver of nursing burnout.
+│       Typical range: $150K-$350K for 200 beds
+│
+├── QUALITY & SAFETY BENEFITS
+│   └── HAPI Prevention (potential value — shown separately)
+│       Reduce hospital-acquired pressure injuries.
+│       Potential range: $300K-$600K for 200 beds
+│
+└── ADDITIONAL BENEFITS (not quantified — optional add)
+    ├── Survey & Compliance Readiness
+    │   Real-time documentation supports audit confidence.
+    │
+    └── Care Coordination
+        Better handoffs through complete documentation.
+
+Drivers to REMOVE:
+RemoveReasonDocumentation Time SavingsDouble-counts with Overtime ReductionDocumentation Timeliness & CompletenessToo vague, folded into HAPI/Compliance
+
+Code for Replit — Nursing Strategic Priorities:
+jsxCopy// ============ NURSING STRATEGIC PRIORITIES ============
+
+const nursingDrivers = {
+  laborCostBenefits: {
+    category: "LABOR COST BENEFITS",
+    description: "Direct budget impact",
+    icon: "💰",
+    drivers: [
+      {
+        id: "overtime-reduction",
+        name: "Overtime Reduction",
+        subtitle: "Eliminate end-of-shift documentation catch-up.",
+        typicalRange: "$300K-$600K for 200 beds",
+        icon: "⏱️",
+        quantified: true,
+        recommended: true
+      },
+      {
+        id: "agency-reduction",
+        name: "Agency & Travel Nurse Reduction",
+        subtitle: "Convert expensive agency spend to staff positions.",
+        typicalRange: "$150K-$350K for 200 beds",
+        icon: "💵",
+        quantified: true,
+        recommended: true
+      },
+      {
+        id: "nurse-retention",
+        name: "Nurse Retention",
+        subtitle: "Address the top driver of nursing burnout.",
+        typicalRange: "$150K-$350K for 200 beds",
+        icon: "❤️",
+        quantified: true,
+        recommended: true
+      }
+    ]
+  },
+  qualitySafetyBenefits: {
+    category: "QUALITY & SAFETY BENEFITS",
+    description: "Risk reduction and patient outcomes",
+    icon: "🛡️",
+    drivers: [
+      {
+        id: "hapi-prevention",
+        name: "HAPI Prevention",
+        subtitle: "Reduce hospital-acquired pressure injuries.",
+        typicalRange: "$300K-$600K for 200 beds (potential)",
+        icon: "🏥",
+        quantified: true,
+        isPotentialValue: true, // Shown separately, not in main total
+        recommended: false
+      }
+    ]
+  },
+  additionalBenefits: {
+    category: "ADDITIONAL BENEFITS",
+    description: "Not quantified — qualitative value",
+    icon: "✨",
+    isOptional: true,
+    drivers: [
+      {
+        id: "survey-compliance",
+        name: "Survey & Compliance Readiness",
+        subtitle: "Real-time documentation supports audit confidence.",
+        icon: "✅",
+        quantified: false,
+        recommended: false
+      },
+      {
+        id: "care-coordination",
+        name: "Care Coordination",
+        subtitle: "Better handoffs through complete documentation.",
+        icon: "🔄",
+        quantified: false,
+        recommended: false
+      }
+    ]
+  }
+};
+
+Full Page Layout:
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ ← Back                                                          │
+│                                                                 │
+│ Strategic Priorities                                            │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ What outcomes matter most right now?                        │ │
+│ │                                                             │ │
+│ │ Select 2-5 strategic priorities. These will shape your ROI │ │
+│ │ model and determine which value drivers we analyze.         │ │
+│ │                                                             │ │
+│ │ 📊 Based on proven methodologies from 200+ health system    │ │
+│ │    partners                                                 │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────── │
+│                                                                 │
+│ 💰 LABOR COST BENEFITS                                          │
+│    Direct budget impact                                         │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ⏱️  Overtime Reduction                               ☑️     │ │
+│ │     Eliminate end-of-shift documentation catch-up.          │ │
+│ │     📊 Typical range: $300K-$600K for 200 beds              │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💵  Agency & Travel Nurse Reduction                  ☑️     │ │
+│ │     Convert expensive agency spend to staff positions.      │ │
+│ │     📊 Typical range: $150K-$350K for 200 beds              │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ❤️  Nurse Retention                                  ☑️     │ │
+│ │     Address the top driver of nursing burnout.              │ │
+│ │     📊 Typical range: $150K-$350K for 200 beds              │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────── │
+│                                                                 │
+│ 🛡️ QUALITY & SAFETY BENEFITS                                    │
+│    Risk reduction and patient outcomes                          │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 🏥  HAPI Prevention                                  ☐      │ │
+│ │     Reduce hospital-acquired pressure injuries.             │ │
+│ │     📊 Potential range: $300K-$600K for 200 beds            │ │
+│ │                                                             │ │
+│ │     ⚠️ Shown as potential value — not included in main      │ │
+│ │        ROI total due to indirect causal link.               │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────── │
+│                                                                 │
+│ ✨ ADDITIONAL BENEFITS                                          │
+│    Not quantified — qualitative value                           │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ✅  Survey & Compliance Readiness                    ☐      │ │
+│ │     Real-time documentation supports audit confidence.      │ │
+│ │                                                             │ │
+│ │     💡 Not quantified — adds to narrative, not total.       │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 🔄  Care Coordination                                ☐      │ │
+│ │     Better handoffs through complete documentation.         │ │
+│ │                                                             │ │
+│ │     💡 Not quantified — adds to narrative, not total.       │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─────────────────────────────────────────────────────────────── │
+│                                                                 │
+│                                         YOUR SELECTIONS         │
+│                                                                 │
+│                                         CARE SETTING            │
+│                                         Nursing            ✓    │
+│                                                                 │
+│                                         STRATEGIC PRIORITIES    │
+│                                         Select 2-5 drivers      │
+│                                         Most organizations      │
+│                                         select 2-3              │
+│                                                                 │
+│                                         ✓ Overtime Reduction    │
+│                                         ✓ Agency Reduction      │
+│                                         ✓ Nurse Retention       │
+│                                                                 │
+│                                         3 of 6 selected         │
+│                                                                 │
+│                                         ┌─────────────────────┐ │
+│                                         │ Build Your Model →  │ │
+│                                         └─────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+How Selected Drivers Appear on Model Page:
+When user clicks "Build Your Model" with their selections:
+If they selected the 3 Labor Cost drivers:
+CopyYOUR VALUE DRIVERS
+Expand each driver to customize the calculation
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ⏱️  Overtime Reduction                              $486,000  ∨ │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💵  Agency & Travel Nurse Reduction                 $225,000  ∨ │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ❤️  Nurse Retention                                 $270,000  ∨ │
+└─────────────────────────────────────────────────────────────────┘
+
+TOTAL QUANTIFIED VALUE                                 $981,000
+If they ALSO selected HAPI Prevention:
+Copy... (same as above) ...
+
+TOTAL QUANTIFIED VALUE                                 $981,000
+
+─────────────────────────────────────────────────────────────────
+
+POTENTIAL VALUE (Shown Separately)
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🏥  HAPI Prevention                                 $500,000  ∨ │
+│     Potential value — indirect causal link                      │
+└─────────────────────────────────────────────────────────────────┘
+
+TOTAL WITH POTENTIAL                                 $1,481,000
+If they ALSO selected non-quantified benefits:
+Copy... (same as above) ...
+
+─────────────────────────────────────────────────────────────────
+
+ADDITIONAL BENEFITS (Not Quantified)
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅  Survey & Compliance Readiness                               │
+│                                                                 │
+│ Real-time documentation ensures charting is complete and        │
+│ timely — reducing deficiencies during CMS, Joint Commission,    │
+│ and state surveys.                                              │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🔄  Care Coordination                                           │
+│                                                                 │
+│ When documentation happens in real-time, handoffs are more      │
+│ complete. Oncoming nurses see what actually happened, not       │
+│ what was reconstructed hours later.                             │
+└─────────────────────────────────────────────────────────────────┘

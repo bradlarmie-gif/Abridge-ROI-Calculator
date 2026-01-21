@@ -33,6 +33,7 @@ import {
   Link2,
   CheckCircle,
   Shield,
+  Info,
 } from "lucide-react";
 
 export interface ValueResults {
@@ -211,10 +212,11 @@ interface DriverInputs {
     reductionLevel: "conservative" | "typical" | "aggressive";
     baseHourlyRate: number;
   };
-  nursingDocTime: {
-    docBurden: "light" | "moderate" | "heavy";
-    reductionLevel: "conservative" | "typical" | "aggressive";
-    realizationFactor: number;
+  nursingHAPI: {
+    bedsAtRisk: number;
+    hapIsPerYear: number;
+    costPerHAPI: number;
+    documentationImpact: number;
   };
   nursingAgency: {
     agencyUtilization: number;
@@ -229,10 +231,11 @@ interface DriverInputs {
     preventionLevel: "conservative" | "typical" | "aggressive";
     replacementCost: number;
   };
-  nursingCompleteness: {
-    lateDocPct: number;
-    incompleteFieldsPct: number;
-    operationalValue: number;
+  nursingSurvey: {
+    enabled: boolean;  // Not quantified - qualitative value
+  };
+  nursingCareCoordination: {
+    enabled: boolean;  // Not quantified - qualitative value
   };
 }
 
@@ -256,10 +259,11 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
   inpatientDenials: FileX,
   // Nursing drivers
   nursingOvertime: Clock,
-  nursingDocTime: Clock,
   nursingAgency: Users,
   nursingRetention: Heart,
-  nursingCompleteness: FileText,
+  nursingHAPI: Shield,
+  nursingSurvey: CheckCircle,
+  nursingCareCoordination: Link2,
 };
 
 const DRIVER_NAMES: Record<string, string> = {
@@ -282,10 +286,11 @@ const DRIVER_NAMES: Record<string, string> = {
   inpatientDenials: "Documentation-Related Denials",
   // Nursing drivers
   nursingOvertime: "Overtime Reduction",
-  nursingDocTime: "Documentation Time Savings",
   nursingAgency: "Agency & Travel Nurse Reduction",
   nursingRetention: "Nurse Retention",
-  nursingCompleteness: "Documentation Timeliness & Completeness",
+  nursingHAPI: "HAPI Prevention",
+  nursingSurvey: "Survey & Compliance Readiness",
+  nursingCareCoordination: "Care Coordination",
 };
 
 const DRIVER_THEORIES: Record<string, string> = {
@@ -308,10 +313,11 @@ const DRIVER_THEORIES: Record<string, string> = {
   inpatientDenials: "Inpatient denials are high-dollar events. Medical necessity and clinical rationale documentation gaps are primary drivers of preventable denials.",
   // Nursing drivers
   nursingOvertime: "Real-time charting eliminates end-of-shift documentation catch-up. This is DIRECT, MEASURABLE savings—track month-over-month in payroll data.",
-  nursingDocTime: "Flowsheet auto-population and voice-to-text assessments return hours to bedside care. Time doesn't disappear from payroll but gets redirected to patient care.",
   nursingAgency: "Improved retention and satisfaction reduces reliance on expensive agency nurses who cost 2-3x staff nurses. Agency → staff conversion is real budget savings.",
   nursingRetention: "Documentation burden is the top driver of nursing burnout. By reducing this burden, we help prevent burnout-related departures—each costing $40-60K to replace.",
-  nursingCompleteness: "Real-time documentation ensures timely, complete charting for regulatory compliance. While harder to monetize, this reduces audit risk and remediation costs.",
+  nursingHAPI: "Better documentation supports timely skin assessments and turning protocols. While the causal link is indirect, improved documentation correlates with reduced pressure injury rates.",
+  nursingSurvey: "Real-time documentation supports audit confidence and survey readiness. This is qualitative value that strengthens the overall ROI narrative.",
+  nursingCareCoordination: "Complete, timely documentation improves handoffs between shifts and departments. This is qualitative value that improves patient outcomes.",
 };
 
 export default function ModelBuilder({
@@ -482,10 +488,11 @@ export default function ModelBuilder({
       reductionLevel: "typical",
       baseHourlyRate: 45,
     },
-    nursingDocTime: {
-      docBurden: "moderate",
-      reductionLevel: "typical",
-      realizationFactor: 50,
+    nursingHAPI: {
+      bedsAtRisk: 200,           // beds in scope
+      hapIsPerYear: 5,           // preventable HAPIs per year
+      costPerHAPI: 70000,        // CMS penalty + incident cost
+      documentationImpact: 20,   // % attributable to documentation
     },
     nursingAgency: {
       agencyUtilization: 15,
@@ -500,10 +507,11 @@ export default function ModelBuilder({
       preventionLevel: "typical",
       replacementCost: 50000,
     },
-    nursingCompleteness: {
-      lateDocPct: 20,
-      incompleteFieldsPct: 15,
-      operationalValue: 50000,
+    nursingSurvey: {
+      enabled: false,  // Not quantified - qualitative value
+    },
+    nursingCareCoordination: {
+      enabled: false,  // Not quantified - qualitative value
     },
   });
   
@@ -588,7 +596,7 @@ export default function ModelBuilder({
     
     if (active.size === 0) {
       if (isNursingSetting) {
-        return ["nursingOvertime", "nursingDocTime", "nursingRetention"];
+        return ["nursingOvertime", "nursingAgency", "nursingRetention"];
       }
       if (isEDSetting) {
         return ["edThroughput", "edLevelOfService", "edDenials"];
@@ -847,14 +855,12 @@ export default function ModelBuilder({
         const hoursEliminated = docRelatedOT * (reductionPct / 100) * (utilizationRate / 100);
         return Math.round(hoursEliminated * overtimeRate);
       }
-      case "nursingDocTime": {
-        const { docBurden, reductionLevel, realizationFactor } = driverInputs.nursingDocTime;
-        const hoursPerShift = docBurden === "light" ? 2.0 : docBurden === "moderate" ? 2.5 : 3.5;
-        const totalDocHours = nurseFTEs * hoursPerShift * 3 * 50; // 3 shifts/week, 50 weeks
-        const reductionPct = reductionLevel === "conservative" ? 25 : reductionLevel === "typical" ? 35 : 45;
-        const hoursReturned = totalDocHours * (reductionPct / 100) * (utilizationRate / 100);
-        // Use 50% realization factor (time gets redirected, not eliminated from payroll)
-        return Math.round(hoursReturned * 45 * (realizationFactor / 100));
+      case "nursingHAPI": {
+        const { bedsAtRisk, hapIsPerYear, costPerHAPI, documentationImpact } = driverInputs.nursingHAPI;
+        const bedsScaling = staffedBeds / bedsAtRisk;
+        const hapIsPreventable = hapIsPerYear * bedsScaling;
+        const value = hapIsPreventable * costPerHAPI * (documentationImpact / 100);
+        return Math.round(value);
       }
       case "nursingAgency": {
         const { agencyUtilization, staffNurseCost, agencyNurseCost, reductionLevel } = driverInputs.nursingAgency;
@@ -873,11 +879,10 @@ export default function ModelBuilder({
         const prevented = docRelated * (preventionPct / 100) * (utilizationRate / 100);
         return Math.round(prevented * replacementCost);
       }
-      case "nursingCompleteness": {
-        const { operationalValue } = driverInputs.nursingCompleteness;
-        // Documentation completeness is hard to monetize directly
-        // Apply utilization rate to the operational value estimate
-        return Math.round(operationalValue * (utilizationRate / 100));
+      case "nursingSurvey":
+      case "nursingCareCoordination": {
+        // Not quantified - qualitative value only
+        return 0;
       }
       default:
         return 0;
@@ -886,7 +891,7 @@ export default function ModelBuilder({
   
   const driverResults = useMemo(() => {
     const results: Record<string, { name: string; value: number; category: "time" | "quality" }> = {};
-    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRetention", "nursingOvertime", "nursingDocTime", "nursingAgency", "nursingRetention"];
+    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRetention", "nursingOvertime", "nursingAgency", "nursingRetention"];
     activeDrivers.forEach(id => {
       results[id] = {
         name: DRIVER_NAMES[id],
@@ -1183,14 +1188,16 @@ export default function ModelBuilder({
       // Nursing drivers
       case "nursingOvertime":
         return renderNursingOvertimeInputs();
-      case "nursingDocTime":
-        return renderNursingDocTimeInputs();
+      case "nursingHAPI":
+        return renderNursingHAPIInputs();
       case "nursingAgency":
         return renderNursingAgencyInputs();
       case "nursingRetention":
         return renderNursingRetentionInputs();
-      case "nursingCompleteness":
-        return renderNursingCompletenessInputs();
+      case "nursingSurvey":
+        return renderNursingSurveyInputs();
+      case "nursingCareCoordination":
+        return renderNursingCareCoordinationInputs();
       default:
         return null;
     }
@@ -5042,96 +5049,181 @@ export default function ModelBuilder({
     );
   };
   
-  const renderNursingDocTimeInputs = () => {
-    const { docBurden, reductionLevel, realizationFactor } = driverInputs.nursingDocTime;
-    const hoursPerShift = docBurden === "light" ? 2.0 : docBurden === "moderate" ? 2.5 : 3.5;
-    const totalDocHours = nurseFTEs * hoursPerShift * 3 * 50;
-    const reductionPct = reductionLevel === "conservative" ? 25 : reductionLevel === "typical" ? 35 : 45;
-    const hoursReturned = totalDocHours * (reductionPct / 100) * (utilizationRate / 100);
-    const dollarValue = Math.round(hoursReturned * 45 * (realizationFactor / 100));
+  const renderNursingHAPIInputs = () => {
+    const { bedsAtRisk, hapIsPerYear, costPerHAPI, documentationImpact } = driverInputs.nursingHAPI;
+    const bedsScaling = staffedBeds / bedsAtRisk;
+    const hapIsPreventable = hapIsPerYear * bedsScaling;
+    const dollarValue = Math.round(hapIsPreventable * costPerHAPI * (documentationImpact / 100));
     
     return (
       <div className="space-y-6">
-        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-          <p className="text-xs text-amber-800 flex items-start gap-2">
-            <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5" />
-            <span>This driver is harder to monetize. Time returned goes to patient care, not payroll reduction.</span>
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Better documentation supports timely skin assessments and turning protocols. While the causal link is indirect, improved documentation correlates with reduced hospital-acquired pressure injury (HAPI) rates.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Warning about potential value */}
+        <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <AlertTriangle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-blue-800">
+            Shown as <strong>potential value</strong> — not included in main ROI total due to indirect causal link.
           </p>
         </div>
-        
+
+        {/* Step 1: Baseline */}
         <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Documentation burden level?</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(["light", "moderate", "heavy"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setDriverInputs(prev => ({ ...prev, nursingDocTime: { ...prev.nursingDocTime, docBurden: opt } }))}
-                className={`p-3 rounded-lg border text-sm transition-all ${
-                  docBurden === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
-                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
-                data-testid={`nursing-doc-time-burden-${opt}`}
-              >
-                {opt === "light" && "Light (~2 hrs/shift)"}
-                {opt === "moderate" && "Moderate (~2.5 hrs)"}
-                {opt === "heavy" && "Heavy (~3.5 hrs)"}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Beds in Scope</span>
           </div>
-          <p className="text-xs text-neutral-400 font-mono">
-            {nurseFTEs} nurses × {hoursPerShift} hrs × 3 shifts/wk × 50 wks = {totalDocHours.toLocaleString()} doc hours
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Staffed Beds</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{staffedBeds}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">÷</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Reference</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{bedsAtRisk}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{bedsScaling.toFixed(2)}x scaling</span>
+          </div>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 2: HAPIs Preventable */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: HAPIs Preventable</span>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Base Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={hapIsPerYear}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, hapIsPerYear: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="nursing-hapi-rate-input"
+                />
+                <span className="text-xs text-[#6B7280]">/yr</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Scaling</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{bedsScaling.toFixed(2)}x</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{hapIsPreventable.toFixed(1)} HAPIs</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            ~5 preventable HAPIs per 200 beds is typical based on industry data.
           </p>
         </div>
-        
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 3: Cost per HAPI */}
         <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Expected time reduction?</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(["conservative", "typical", "aggressive"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setDriverInputs(prev => ({ ...prev, nursingDocTime: { ...prev.nursingDocTime, reductionLevel: opt } }))}
-                className={`p-3 rounded-lg border text-sm transition-all ${
-                  reductionLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
-                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
-                data-testid={`nursing-doc-time-reduction-${opt}`}
-              >
-                {opt === "conservative" && "25%"}
-                {opt === "typical" && "35%"}
-                {opt === "aggressive" && "45%"}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Cost per HAPI</span>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+              <span className="text-sm text-[#6B7280]">$</span>
+              <Input
+                type="number"
+                value={costPerHAPI}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, costPerHAPI: Number(e.target.value) || 0 } }))}
+                className="w-24 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                data-testid="nursing-hapi-cost-input"
+              />
+            </div>
+          </div>
+          
+          {/* Benchmark */}
+          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+              <span className="text-xs font-semibold text-[#6B7280]">Benchmark: HAPI Costs</span>
+            </div>
+            <div className="space-y-1 text-xs text-[#6B7280]">
+              <div className="flex justify-between"><span>Stage 2 HAPI</span><span className="font-mono">$20K - $40K</span></div>
+              <div className="flex justify-between"><span>Stage 3-4 HAPI</span><span className="font-mono">$50K - $150K</span></div>
+              <div className="flex justify-between"><span>CMS penalty consideration</span><span className="font-mono">$20K - $50K</span></div>
+            </div>
           </div>
         </div>
-        
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 4: Documentation Impact */}
         <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Realization factor</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{realizationFactor}%</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Documentation Impact</span>
           </div>
-          <Slider
-            value={[realizationFactor]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingDocTime: { ...prev.nursingDocTime, realizationFactor: val } }))}
-            min={25}
-            max={75}
-            step={5}
-            className="w-full"
-            data-testid="nursing-doc-time-realization-slider"
-          />
-          <p className="text-xs text-[#6B7280]">What portion of time savings can be valued? (~50% is typical)</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Gross Value</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{formatCurrency(Math.round(hapIsPreventable * costPerHAPI))}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Doc Impact</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={documentationImpact}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, documentationImpact: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="nursing-hapi-impact-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-emerald-600">{formatCurrency(dollarValue)}</span>
+          </div>
+          
+          <p className="text-xs text-[#6B7280]">
+            Conservative estimate: 20% of HAPI prevention attributable to documentation improvements.
+          </p>
         </div>
-        
+
+        {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result (Soft Value)</span>
-            <span className="font-mono font-bold text-emerald-600 text-xl">
+            <span className="font-medium text-[#111827]">Potential Annual Value</span>
+            <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="nursing-hapi-result">
               {formatCurrency(dollarValue)}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(hoursReturned).toLocaleString()} hrs × $45 × {realizationFactor}%
+            {hapIsPreventable.toFixed(1)} HAPIs × ${costPerHAPI.toLocaleString()} × {documentationImpact}%
           </p>
         </div>
       </div>
@@ -5358,76 +5450,134 @@ export default function ModelBuilder({
     );
   };
   
-  const renderNursingCompletenessInputs = () => {
-    const { lateDocPct, incompleteFieldsPct, operationalValue } = driverInputs.nursingCompleteness;
-    
+  const renderNursingSurveyInputs = () => {
     return (
       <div className="space-y-6">
-        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-          <p className="text-xs text-amber-800 flex items-start gap-2">
-            <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5" />
-            <span>Documentation completeness reduces audit risk and improves regulatory compliance. The value is real but harder to quantify.</span>
-          </p>
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Late documentation rate?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{lateDocPct}%</span>
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Real-time documentation supports audit confidence and survey readiness. Complete, timely charting reduces the risk of regulatory findings and supports accreditation.
+              </p>
+            </div>
           </div>
-          <Slider
-            value={[lateDocPct]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingCompleteness: { ...prev.nursingCompleteness, lateDocPct: val } }))}
-            min={10}
-            max={40}
-            step={5}
-            className="w-full"
-            data-testid="nursing-completeness-late-slider"
-          />
-          <p className="text-xs text-[#6B7280]">What % of documentation is completed after shift end?</p>
         </div>
         
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Incomplete/missing fields?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{incompleteFieldsPct}%</span>
+        {/* Not Quantified Notice */}
+        <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <Info className="h-4 w-4 text-slate-600 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-slate-800">
+            <p className="font-medium mb-1">Not Quantified</p>
+            <p>This driver adds to the narrative value of Abridge but is not included in the ROI total. The value is qualitative—reducing audit risk, improving survey readiness, and supporting regulatory compliance.</p>
           </div>
-          <Slider
-            value={[incompleteFieldsPct]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingCompleteness: { ...prev.nursingCompleteness, incompleteFieldsPct: val } }))}
-            min={5}
-            max={30}
-            step={5}
-            className="w-full"
-            data-testid="nursing-completeness-incomplete-slider"
-          />
-          <p className="text-xs text-[#6B7280]">What % of required fields are often incomplete?</p>
         </div>
         
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Estimated annual operational value</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={operationalValue}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingCompleteness: { ...prev.nursingCompleteness, operationalValue: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="nursing-completeness-value-input"
-            />
+        {/* Value Examples */}
+        <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+            <span className="text-xs font-semibold text-[#6B7280]">Qualitative Value Examples</span>
           </div>
-          <p className="text-xs text-[#6B7280]">Includes avoided audit findings, reduced remediation, compliance benefits</p>
+          <ul className="space-y-2 text-xs text-[#6B7280]">
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Reduced survey deficiency risk</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Faster remediation during audits</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Improved documentation quality scores</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Reduced staff time preparing for surveys</span>
+            </li>
+          </ul>
         </div>
         
-        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+        {/* Final Result */}
+        <div className="p-4 bg-slate-100 rounded-lg border border-slate-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result (Compliance Value)</span>
-            <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(operationalValue * (utilizationRate / 100)))}
+            <span className="font-medium text-[#111827]">Qualitative Value</span>
+            <span className="font-mono font-medium text-slate-600 text-sm">
+              Not Quantified
             </span>
           </div>
-          <p className="text-xs text-neutral-400 font-mono mt-1">
-            ${operationalValue.toLocaleString()} × {utilizationRate}% adoption
+          <p className="text-xs text-slate-500 mt-1">
+            Adds to narrative, not included in ROI total
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderNursingCareCoordinationInputs = () => {
+    return (
+      <div className="space-y-6">
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Complete, timely documentation improves handoffs between shifts and departments. Better handoffs reduce miscommunication, improve patient safety, and support care continuity.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Not Quantified Notice */}
+        <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <Info className="h-4 w-4 text-slate-600 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-slate-800">
+            <p className="font-medium mb-1">Not Quantified</p>
+            <p>This driver adds to the narrative value of Abridge but is not included in the ROI total. The value is qualitative—improving care coordination and patient outcomes through better documentation.</p>
+          </div>
+        </div>
+        
+        {/* Value Examples */}
+        <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+            <span className="text-xs font-semibold text-[#6B7280]">Qualitative Value Examples</span>
+          </div>
+          <ul className="space-y-2 text-xs text-[#6B7280]">
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Improved shift-to-shift handoff quality</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Better interdepartmental communication</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Reduced documentation-related miscommunication events</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Faster access to complete patient information</span>
+            </li>
+          </ul>
+        </div>
+        
+        {/* Final Result */}
+        <div className="p-4 bg-slate-100 rounded-lg border border-slate-200">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Qualitative Value</span>
+            <span className="font-mono font-medium text-slate-600 text-sm">
+              Not Quantified
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Adds to narrative, not included in ROI total
           </p>
         </div>
       </div>

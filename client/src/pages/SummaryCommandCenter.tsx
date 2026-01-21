@@ -21,6 +21,9 @@ import {
   Lightbulb,
   Info,
   Heart,
+  Shield,
+  CheckCircle,
+  Link2,
 } from "lucide-react";
 import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
@@ -417,25 +420,25 @@ const DRIVER_METADATA: Record<string, {
       validation: ["Review overtime reports by unit", "Survey nurses on documentation time", "Compare shift-end departure times"],
     },
   },
-  nursingDocTime: {
-    name: "Documentation Time Savings",
-    category: "time",
-    categoryLabel: "Workflow Efficiency",
-    icon: FileText,
-    description: "Time returned to direct patient care",
+  nursingHAPI: {
+    name: "HAPI Prevention",
+    category: "quality",
+    categoryLabel: "Quality & Safety",
+    icon: Shield,
+    description: "Reduced hospital-acquired pressure injuries through better documentation",
     methodology: {
-      logic: "Nurses spend 2.5+ hours per shift on documentation. Reducing this returns time to bedside care, improving patient outcomes and job satisfaction.",
-      formula: "Hours Returned = Nurse FTEs × Doc Hours/Shift × Shifts/Week × Reduction %\nValue = Hours × Hourly Rate × Realization Factor",
+      logic: "Better documentation supports timely skin assessments and turning protocols. While the causal link is indirect, improved documentation correlates with reduced HAPI rates.",
+      formula: "Value = (Staffed Beds / 200) × HAPIs/Year × Cost/HAPI × Documentation Impact %",
       assumptions: [
-        { label: "Documentation per shift", value: "2.0-3.5 hrs", source: "Time-motion studies" },
-        { label: "Time reduction", value: "25-45%", source: "Abridge nursing pilots" },
-        { label: "Realization factor", value: "50%", source: "Conservative estimate" },
+        { label: "Preventable HAPIs", value: "~5 per 200 beds", source: "Industry benchmarks" },
+        { label: "Cost per HAPI", value: "$50K-$150K", source: "CMS data" },
+        { label: "Documentation impact", value: "20%", source: "Conservative estimate" },
       ],
       factors: {
-        increase: ["High documentation burden", "Complex patient populations", "Multiple EHR systems"],
-        decrease: ["Already efficient workflows", "Strong tech adoption", "Low documentation burden"],
+        increase: ["Higher acuity patients", "ICU/long-stay units", "Current HAPI rates above benchmark"],
+        decrease: ["Already low HAPI rates", "Strong prevention protocols", "Short lengths of stay"],
       },
-      validation: ["Conduct time-motion study", "Survey nurses on documentation time", "Measure shift end times"],
+      validation: ["Review HAPI incidence by unit", "Audit skin assessment documentation", "Compare turning protocol compliance"],
     },
   },
   nursingAgency: {
@@ -481,25 +484,42 @@ const DRIVER_METADATA: Record<string, {
       validation: ["Review exit interview data", "Survey current staff on burnout", "Calculate true replacement cost"],
     },
   },
-  nursingCompleteness: {
-    name: "Documentation Timeliness & Completeness",
+  nursingSurvey: {
+    name: "Survey & Compliance Readiness",
     category: "quality",
-    categoryLabel: "Quality & Compliance",
-    icon: FileCheck,
-    description: "Improved documentation quality and regulatory compliance",
+    categoryLabel: "Additional Benefits",
+    icon: CheckCircle,
+    description: "Real-time documentation supports audit confidence",
     methodology: {
-      logic: "Complete, timely documentation reduces compliance risk, supports care coordination, and improves handoffs. Value is often operational rather than direct revenue.",
-      formula: "Value = Operational Improvement Estimate × Utilization Rate",
+      logic: "Complete, timely documentation reduces compliance risk and supports survey readiness. This is qualitative value that strengthens the overall ROI narrative.",
+      formula: "Not quantified — qualitative value only",
       assumptions: [
-        { label: "Documentation deficiency rate", value: "15-25%", source: "Chart audits" },
-        { label: "Improvement rate", value: "40-60%", source: "Quality studies" },
-        { label: "Operational value", value: "Variable", source: "Organization-specific" },
+        { label: "Quantified value", value: "N/A", source: "Qualitative driver" },
       ],
       factors: {
-        increase: ["High deficiency rates", "Regulatory scrutiny", "Care coordination issues"],
-        decrease: ["Already strong compliance", "Low deficiency rates", "Minimal regulatory risk"],
+        increase: ["Regulatory scrutiny", "Upcoming surveys", "Prior deficiencies"],
+        decrease: ["Strong compliance history", "Low regulatory risk"],
       },
-      validation: ["Review chart audit results", "Analyze documentation lag times", "Assess handoff quality"],
+      validation: ["Review prior survey findings", "Audit documentation timeliness"],
+    },
+  },
+  nursingCareCoordination: {
+    name: "Care Coordination",
+    category: "quality",
+    categoryLabel: "Additional Benefits",
+    icon: Link2,
+    description: "Better handoffs through complete documentation",
+    methodology: {
+      logic: "Complete, timely documentation improves handoffs between shifts and departments. This is qualitative value that improves patient outcomes.",
+      formula: "Not quantified — qualitative value only",
+      assumptions: [
+        { label: "Quantified value", value: "N/A", source: "Qualitative driver" },
+      ],
+      factors: {
+        increase: ["Handoff issues", "Care continuity concerns", "Interdepartmental gaps"],
+        decrease: ["Strong handoff processes", "Good care continuity"],
+      },
+      validation: ["Review handoff quality metrics", "Survey staff on care coordination"],
     },
   },
 };
