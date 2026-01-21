@@ -14,7 +14,7 @@ import ModelBuilder, { type ModelResults, type ValueResults } from "@/pages/Mode
 import InvestmentPage from "@/pages/InvestmentPage";
 import SummaryCommandCenter from "@/pages/SummaryCommandCenter";
 import { ExpandFlow } from "@/pages/expand";
-import SwitchPath from "@/pages/SwitchPath";
+import { SwitchFlow } from "@/pages/switch";
 import LearnPath from "@/pages/LearnPath";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
@@ -136,7 +136,7 @@ export default function App() {
         )}
 
         {currentView === "switch" && (
-          <SwitchPath onBack={handleBackToJourney} />
+          <SwitchFlow onBackToJourney={handleBackToJourney} />
         )}
 
         {currentView === "learn" && (
