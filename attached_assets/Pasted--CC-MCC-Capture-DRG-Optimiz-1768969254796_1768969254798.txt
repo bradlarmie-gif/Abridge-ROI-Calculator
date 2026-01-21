@@ -1,0 +1,108 @@
+┌─────────────────────────────────────────────────────────────────┐
+│ 💰 CC/MCC Capture (DRG Optimization)                 $374,400 ∧ │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💡 The Theory                                               │ │
+│ │                                                             │ │
+│ │ DRG reimbursement depends on documented comorbidities.      │ │
+│ │ Conditions discussed at bedside but not captured in notes   │ │
+│ │ mean missed CC/MCC assignments and lower DRG weights.       │ │
+│ │ Abridge ensures what's discussed gets documented.           │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ 📋 Your Calculation                                             │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 💡 The Theory                                               │ │
+│ │                                                             │ │
+│ │ Many CC/MCC opportunities go uncaptured due to rushed       │ │
+│ │ documentation. Physicians discuss conditions like sepsis,   │ │
+│ │ malnutrition, and acute kidney injury — but don't always    │ │
+│ │ document them completely. Each missed CC/MCC means lower    │ │
+│ │ DRG weight and lower reimbursement.                         │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ STEP 1: ADMISSIONS WITH OPPORTUNITY                         │ │
+│ │ How many admissions have documentation gaps?                │ │
+│ │                                                             │ │
+│ │ Documented Admissions        Gap Rate                       │ │
+│ │ ┌─────────────┐              ┌─────────────┐                │ │
+│ │ │    5,200    │      ×       │     40      │ %    =         │ │
+│ │ └─────────────┘              └─────────────┘                │ │
+│ │                                                             │ │
+│ │                              ┌───────────────────────────┐  │ │
+│ │                              │ 2,080 opportunities       │  │ │
+│ │                              └───────────────────────────┘  │ │
+│ │                                                             │ │
+│ │ Studies show 30-50% of admissions have undocumented CC/MCC  │ │
+│ │ opportunities. 40% is a moderate estimate.                  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ STEP 2: CAPTURE IMPROVEMENT                                 │ │
+│ │ How much can Abridge help?                                  │ │
+│ │                                                             │ │
+│ │ Opportunities               Improvement Rate                │ │
+│ │ ┌─────────────┐              ┌─────────────┐                │ │
+│ │ │ 2,080       │      ×       │     15      │ %    =         │ │
+│ │ └─────────────┘              └─────────────┘                │ │
+│ │                                                             │ │
+│ │                              ┌───────────────────────────┐  │ │
+│ │                              │ 312 admissions improved   │  │ │
+│ │                              └───────────────────────────┘  │ │
+│ │                                                             │ │
+│ │ Not every gap is capturable. 15% accounts for cases where   │ │
+│ │ Abridge documentation directly enables CC/MCC capture.      │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ STEP 3: DRG WEIGHT IMPACT                                   │ │
+│ │ What's the revenue impact?                                  │ │
+│ │                                                             │ │
+│ │ Admissions       DRG Weight        Base DRG                 │ │
+│ │ Improved         Increase          Payment                  │ │
+│ │ ┌─────────┐      ┌─────────┐       ┌─────────┐              │ │
+│ │ │   312   │  ×   │   0.4   │   ×   │ $ 6,000 │   =          │ │
+│ │ └─────────┘      └─────────┘       └─────────┘              │ │
+│ │                                                             │ │
+│ │                              ┌───────────────────────────┐  │ │
+│ │                              │ $748,800 gross impact     │  │ │
+│ │                              └───────────────────────────┘  │ │
+│ │                                                             │ │
+│ │ ┌─────────────────────────────────────────────────────────┐ │ │
+│ │ │ What drives 0.4 DRG weight?                             │ │ │
+│ │ │                                                         │ │ │
+│ │ │ • Acute respiratory failure      +0.3 to +0.5           │ │ │
+│ │ │ • Sepsis / Severe sepsis         +0.4 to +0.6           │ │ │
+│ │ │ • Malnutrition                   +0.2 to +0.4           │ │ │
+│ │ │ • Acute encephalopathy           +0.3 to +0.5           │ │ │
+│ │ │ • Acute kidney injury            +0.1 to +0.3           │ │ │
+│ │ │                                                         │ │ │
+│ │ │ 0.4 is a blended average for MCC captures.              │ │ │
+│ │ └─────────────────────────────────────────────────────────┘ │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ STEP 4: REALITY CHECK                                       │ │
+│ │ What passes audit?                                          │ │
+│ │                                                             │ │
+│ │ Gross Impact                 Realization Rate               │ │
+│ │ ┌─────────────┐              ┌─────────────┐                │ │
+│ │ │ $748,800    │      ×       │     50      │ %    =         │ │
+│ │ └─────────────┘              └─────────────┘                │ │
+│ │                                                             │ │
+│ │                              ┌───────────────────────────┐  │ │
+│ │                              │      Annual Value         │  │ │
+│ │                              │       $374,400            │  │ │
+│ │                              └───────────────────────────┘  │ │
+│ │                                                             │ │
+│ │ 50% haircut accounts for RAC/PEPPER audits, coder           │ │
+│ │ discretion, and cases where documentation doesn't change    │ │
+│ │ final code.                                                 │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ⚠️ Work with your CDI team to validate capture rates for your   │
+│    specific case mix.                                           │
+│                         
