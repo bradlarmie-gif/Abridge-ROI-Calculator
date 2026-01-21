@@ -58,7 +58,7 @@ export function GlobalHeader({ pageName, showContext = true, currentStep, totalS
         </a>
 
         {showContext && (
-          <div className="hidden sm:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-2">
+          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-2">
             <span className="text-sm text-slate-500 font-medium">ROI Calculator</span>
             {pageName && (
               <>
