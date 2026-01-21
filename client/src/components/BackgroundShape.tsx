@@ -12,9 +12,10 @@ export function BackgroundShape() {
           className="h-full w-auto opacity-[0.06]"
           style={{ position: 'absolute', right: 0, transform: 'translateX(50%)' }}
         >
-          {/* Abridge "A" - pointed top, wide legs, arched hole */}
+          {/* Abridge "A" - pointed top, straight diagonal edges, arched inner hole */}
           <path 
-            d="M400 0 L800 1000 L600 1000 L600 650 Q400 500 200 650 L200 1000 L0 1000 L400 0 Z" 
+            d="M400 0 L800 1000 L0 1000 L400 0 Z 
+               M400 500 L280 1000 Q400 700 520 1000 L400 500 Z" 
             fill="#EA2C00"
             fillRule="evenodd"
           />
