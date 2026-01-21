@@ -7,7 +7,6 @@ import {
   TrendingUp,
   Copy,
   Check,
-  Users,
   DollarSign,
   BarChart3,
   Plus,
@@ -17,20 +16,20 @@ import {
   Target,
   Rocket,
   MapPin,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
+  ReferenceDot,
 } from "recharts";
 
 // ============================================================================
@@ -109,109 +108,22 @@ const settingConfig: Record<string, { unitName: string; unitNamePlural: string; 
 };
 
 // ============================================================================
-// STAGE CARD COMPONENT
+// CUSTOM TOOLTIP COMPONENT
 // ============================================================================
 
-interface StageData {
-  stage: "pilot" | "expand" | "fullScale";
-  label: string;
-  sublabel: string;
-  units: number;
-  utilization: number;
-  encounters: number;
-  value: number;
-  investment: number;
-  net: number;
-  roi: string;
-}
-
-function StageCard({ 
-  data, 
-  unitNamePlural, 
-  encounterName,
-  variant 
-}: { 
-  data: StageData; 
-  unitNamePlural: string; 
-  encounterName: string;
-  variant: "pilot" | "expand" | "fullScale";
-}) {
-  const variantStyles = {
-    pilot: { 
-      border: "border-[#E85D3F]", 
-      bg: "bg-orange-50",
-      icon: <MapPin className="w-5 h-5 text-[#E85D3F]" />,
-      barColor: "bg-[#E85D3F]"
-    },
-    expand: { 
-      border: "border-neutral-300", 
-      bg: "bg-neutral-50",
-      icon: <TrendingUp className="w-5 h-5 text-neutral-500" />,
-      barColor: "bg-neutral-400"
-    },
-    fullScale: { 
-      border: "border-emerald-500", 
-      bg: "bg-emerald-50",
-      icon: <Rocket className="w-5 h-5 text-emerald-600" />,
-      barColor: "bg-emerald-500"
-    },
-  };
-
-  const style = variantStyles[variant];
-
-  return (
-    <div className={`p-5 rounded-xl border-2 ${style.border} ${style.bg}`}>
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-white rounded-lg shadow-sm">
-          {style.icon}
-        </div>
-        <div>
-          <h3 className="text-sm font-bold text-[#111827] uppercase tracking-wide">{data.label}</h3>
-          <p className="text-xs text-[#6B7280]">{data.sublabel}</p>
-        </div>
+function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; roi: string } }> }) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-[#1e293b] rounded-lg p-3 shadow-xl">
+        <p className="text-white font-semibold text-sm mb-1">{data.providers} providers</p>
+        <p className="text-neutral-300 text-xs mb-1">{data.utilization}% utilization</p>
+        <p className="text-emerald-400 font-semibold text-sm">{formatCurrency(data.value)} value</p>
+        <p className="text-neutral-300 text-xs">{data.roi}x ROI</p>
       </div>
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="text-center">
-          <div className="font-mono font-bold text-lg text-[#111827]">{data.units}</div>
-          <div className="text-xs text-[#6B7280]">{unitNamePlural}</div>
-        </div>
-        <div className="text-center">
-          <div className="font-mono font-bold text-lg text-[#111827]">{data.utilization}%</div>
-          <div className="text-xs text-[#6B7280]">utilization</div>
-        </div>
-        <div className="text-center">
-          <div className="font-mono font-bold text-lg text-[#111827]">{data.encounters.toLocaleString()}</div>
-          <div className="text-xs text-[#6B7280]">{encounterName}</div>
-        </div>
-      </div>
-
-      {/* Financials */}
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-[#6B7280]">Value</span>
-          <span className="font-mono text-[#111827]">{formatCurrency(data.value)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-[#6B7280]">Investment</span>
-          <span className="font-mono text-[#6B7280]">{formatCurrency(data.investment)}</span>
-        </div>
-        <div className="flex justify-between pt-2 border-t border-neutral-200">
-          <span className="font-medium text-[#111827]">Net</span>
-          <span className="font-mono font-bold text-emerald-600">{formatCurrency(data.net)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-[#6B7280]">ROI</span>
-          <span className="font-mono font-semibold text-[#111827]">{data.roi}x</span>
-        </div>
-      </div>
-
-      {/* Bottom Bar */}
-      <div className={`h-1 mt-4 rounded-full ${style.barColor}`} />
-    </div>
-  );
+    );
+  }
+  return null;
 }
 
 // ============================================================================
@@ -231,13 +143,22 @@ export default function SummaryCommandCenter({
   const config = settingConfig[activeSetting] || settingConfig.outpatient;
   const isNursingSetting = selectedSettings.includes("nursing");
   
-  // Get current units (providers or beds)
-  const currentUnits = isNursingSetting 
+  // Get initial values from model
+  const initialUnits = isNursingSetting 
     ? (modelResults.nursingStaffedBeds || 200)
     : modelResults.providers;
+  const initialEncountersPerUnit = modelResults.encounters / Math.max(initialUnits, 1);
+  const initialUtilization = modelResults.utilizationRate;
   
-  // Initialize full scale state
-  const [fullScaleUnits, setFullScaleUnits] = useState(Math.round(currentUnits * 7.5));
+  // ============ EDITABLE STATE ============
+  
+  // Pilot (current)
+  const [pilotUnits, setPilotUnits] = useState(initialUnits);
+  const [encountersPerUnit, setEncountersPerUnit] = useState(Math.round(initialEncountersPerUnit));
+  const [pilotUtilization, setPilotUtilization] = useState(initialUtilization);
+  
+  // Full Scale (opportunity)
+  const [fullScaleUnits, setFullScaleUnits] = useState(initialUnits * 4);
   const [fullScaleUtilization, setFullScaleUtilization] = useState(75);
   
   // Core pilot calculations
@@ -247,81 +168,58 @@ export default function SummaryCommandCenter({
   const roiMultiple = annualInvestment > 0 ? (totalAnnualValue / annualInvestment) : 0;
   const paybackMonths = totalAnnualValue > 0 ? Math.round((annualInvestment / totalAnnualValue) * 12) : 0;
   
-  // Encounters and value per encounter
-  const totalEncounters = modelResults.encounters;
-  const utilizationRate = modelResults.utilizationRate / 100;
-  const pilotEncounters = totalEncounters * utilizationRate;
+  // Value per encounter calculation
+  const pilotEncounters = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
   const valuePerEncounter = pilotEncounters > 0 ? totalAnnualValue / pilotEncounters : 0;
-  const encountersPerUnit = currentUnits > 0 ? totalEncounters / currentUnits : 0;
   
   // Price per unit
   const pricePerUnit = modelResults.costPerMonth || (isNursingSetting ? 75 : 150);
   
-  // ============ PILOT STAGE ============
-  const pilot = useMemo((): StageData => ({
-    stage: "pilot",
-    label: "PILOT",
-    sublabel: "You are here",
-    units: currentUnits,
-    utilization: Math.round(utilizationRate * 100),
-    encounters: Math.round(pilotEncounters),
-    value: totalAnnualValue,
-    investment: annualInvestment,
-    net: netValue,
-    roi: roiMultiple.toFixed(1)
-  }), [currentUnits, utilizationRate, pilotEncounters, totalAnnualValue, annualInvestment, netValue, roiMultiple]);
+  // ============ CHART DATA GENERATION ============
   
-  // ============ EXPAND STAGE (~3x pilot, 65% utilization) ============
-  const expand = useMemo((): StageData => {
-    const units = Math.round(currentUnits * 3);
-    const utilization = 0.65;
-    const encounters = units * encountersPerUnit * utilization;
-    const value = encounters * valuePerEncounter;
-    const investment = units * pricePerUnit * 12;
-    return {
-      stage: "expand",
-      label: "EXPAND",
-      sublabel: "Next phase",
-      units,
-      utilization: 65,
-      encounters: Math.round(encounters),
-      value: Math.round(value),
-      investment: Math.round(investment),
-      net: Math.round(value - investment),
-      roi: investment > 0 ? (value / investment).toFixed(1) : "0"
-    };
-  }, [currentUnits, encountersPerUnit, valuePerEncounter, pricePerUnit]);
+  const chartData = useMemo(() => {
+    const points = [];
+    const steps = 20; // Smooth curve with 20 points
+    
+    for (let i = 0; i <= steps; i++) {
+      const progress = i / steps;
+      
+      // Units scale linearly
+      const units = Math.round(
+        pilotUnits + (fullScaleUnits - pilotUnits) * progress
+      );
+      
+      // Utilization increases with adoption
+      const utilization = (
+        pilotUtilization + (fullScaleUtilization - pilotUtilization) * progress
+      ) / 100;
+      
+      // Calculate value
+      const encounters = units * encountersPerUnit * utilization;
+      const value = encounters * valuePerEncounter;
+      const investment = units * pricePerUnit * 12;
+      const net = value - investment;
+      const roi = investment > 0 ? (value / investment) : 0;
+      
+      points.push({
+        providers: units,
+        value: Math.round(value),
+        net: Math.round(net),
+        roi: roi.toFixed(1),
+        utilization: Math.round(utilization * 100),
+        isPilot: i === 0,
+        isFullScale: i === steps
+      });
+    }
+    
+    return points;
+  }, [pilotUnits, fullScaleUnits, pilotUtilization, fullScaleUtilization, encountersPerUnit, valuePerEncounter, pricePerUnit]);
   
-  // ============ FULL SCALE STAGE (user customizable) ============
-  const fullScale = useMemo((): StageData => {
-    const units = fullScaleUnits;
-    const utilization = fullScaleUtilization / 100;
-    const encounters = units * encountersPerUnit * utilization;
-    const value = encounters * valuePerEncounter;
-    const investment = units * pricePerUnit * 12;
-    return {
-      stage: "fullScale",
-      label: "FULL SCALE",
-      sublabel: "Your opportunity",
-      units,
-      utilization: fullScaleUtilization,
-      encounters: Math.round(encounters),
-      value: Math.round(value),
-      investment: Math.round(investment),
-      net: Math.round(value - investment),
-      roi: investment > 0 ? (value / investment).toFixed(1) : "0"
-    };
-  }, [fullScaleUnits, fullScaleUtilization, encountersPerUnit, valuePerEncounter, pricePerUnit]);
-  
-  // Chart data
-  const chartData = [
-    { name: "Pilot", value: pilot.value, stage: "pilot" },
-    { name: "Expand", value: expand.value, stage: "expand" },
-    { name: "Full Scale", value: fullScale.value, stage: "fullScale" }
-  ];
-  
-  // Expansion potential
+  // Summary calculations
+  const pilot = chartData[0];
+  const fullScale = chartData[chartData.length - 1];
   const expansionPotential = fullScale.net - pilot.net;
+  const valueMultiple = pilot.value > 0 ? (fullScale.value / pilot.value).toFixed(1) : "0";
   
   // Parse driver results for breakdown
   const valueBreakdown = useMemo(() => {
@@ -387,7 +285,7 @@ export default function SummaryCommandCenter({
                   {CARE_SETTING_LABELS[activeSetting]}
                 </span>
                 <span className="text-neutral-300">|</span>
-                <span className="text-[#6B7280]">{currentUnits} {config.unitNamePlural}</span>
+                <span className="text-[#6B7280]">{pilotUnits} {config.unitNamePlural}</span>
                 <span className="text-neutral-300">|</span>
                 <span className="text-emerald-600 font-semibold">{formatCurrency(netValue)} net value</span>
                 <span className="text-neutral-300">|</span>
@@ -478,7 +376,7 @@ export default function SummaryCommandCenter({
         {/* ============ YOUR JOURNEY WITH ABRIDGE ============ */}
         <section className="bg-white rounded-2xl border border-neutral-200 p-8">
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-[#111827] mb-1">
+            <h2 className="text-xl font-semibold text-[#111827] mb-1">
               Your Journey with Abridge
             </h2>
             <p className="text-sm text-[#6B7280]">
@@ -486,162 +384,255 @@ export default function SummaryCommandCenter({
             </p>
           </div>
           
-          {/* Journey Chart */}
-          <div className="h-80 mb-6">
+          {/* Area Chart */}
+          <div className="h-96 mb-6 relative">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} barCategoryGap="25%" margin={{ top: 20, right: 20, left: 20, bottom: 40 }}>
+              <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+                <defs>
+                  <linearGradient id="valueGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#E85D3F" stopOpacity={1} />
+                    <stop offset="50%" stopColor="#94a3b8" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#059669" stopOpacity={1} />
+                  </linearGradient>
+                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#059669" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                
                 <XAxis 
-                  dataKey="name" 
+                  dataKey="providers" 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#6B7280", fontSize: 14, fontWeight: 500 }}
+                  tick={{ fill: "#6B7280", fontSize: 12 }}
+                  label={{ 
+                    value: config.unitNamePlural.toUpperCase(), 
+                    position: "bottom", 
+                    fill: "#94a3b8",
+                    fontSize: 11,
+                    fontWeight: 500,
+                    offset: -10
+                  }}
                 />
+                
                 <YAxis 
                   axisLine={false}
                   tickLine={false}
+                  tick={{ fill: "#6B7280", fontSize: 12 }}
                   tickFormatter={(v) => formatCompactCurrency(v)}
-                  tick={{ fill: "#94a3b8", fontSize: 12 }}
+                  width={70}
                 />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), "Annual Value"]}
-                  contentStyle={{ 
-                    background: "#1e293b", 
-                    border: "none", 
-                    borderRadius: "8px",
-                    color: "white",
-                    padding: "8px 12px"
-                  }}
-                  labelStyle={{ color: "white" }}
+                
+                <Tooltip content={<CustomTooltip />} />
+                
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="url(#valueGradient)"
+                  strokeWidth={3}
+                  fill="url(#areaFill)"
                 />
-                <Bar dataKey="value" radius={[8, 8, 0, 0]} maxBarSize={100}>
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={index}
-                      fill={
-                        entry.stage === "pilot" ? "#E85D3F" :
-                        entry.stage === "expand" ? "#94a3b8" :
-                        "#059669"
-                      }
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
+                
+                {/* Pilot marker */}
+                <ReferenceDot 
+                  x={pilot.providers} 
+                  y={pilot.value} 
+                  r={10} 
+                  fill="#E85D3F" 
+                  stroke="white"
+                  strokeWidth={3}
+                />
+                
+                {/* Full Scale marker */}
+                <ReferenceDot 
+                  x={fullScale.providers} 
+                  y={fullScale.value} 
+                  r={10} 
+                  fill="#059669" 
+                  stroke="white"
+                  strokeWidth={3}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
           
-          {/* Stage Labels */}
-          <div className="grid grid-cols-3 gap-4 mb-8 text-center">
-            <div className="flex flex-col items-center gap-1">
-              <MapPin className="w-4 h-4 text-[#E85D3F]" />
-              <span className="text-xs text-[#6B7280]">You are here</span>
+          {/* Chart Annotations */}
+          <div className="flex justify-between px-20 mb-8">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-[#E85D3F]" />
+              <span className="text-sm font-medium text-[#6B7280]">You are here</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <TrendingUp className="w-4 h-4 text-neutral-400" />
-              <span className="text-xs text-[#6B7280]">Next phase</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <Rocket className="w-4 h-4 text-emerald-500" />
-              <span className="text-xs text-[#6B7280]">Your opportunity</span>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              <span className="text-sm font-medium text-[#6B7280]">Your opportunity</span>
             </div>
           </div>
           
-          {/* Stage Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <StageCard data={pilot} unitNamePlural={config.unitNamePlural} encounterName={config.encounterName} variant="pilot" />
-            <StageCard data={expand} unitNamePlural={config.unitNamePlural} encounterName={config.encounterName} variant="expand" />
-            <StageCard data={fullScale} unitNamePlural={config.unitNamePlural} encounterName={config.encounterName} variant="fullScale" />
+          {/* Model Your Scenario Panel */}
+          <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-6 mb-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Target className="w-5 h-5 text-[#E85D3F]" />
+              <h3 className="text-sm font-semibold text-[#111827] uppercase tracking-wide">
+                Model Your Scenario
+              </h3>
+            </div>
+            
+            <div className="flex flex-col md:flex-row items-stretch gap-6 mb-8">
+              {/* Pilot (Current) Column */}
+              <div className="flex-1 bg-white rounded-xl border-2 border-orange-200 p-5">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <MapPin className="w-5 h-5 text-[#E85D3F]" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#111827] uppercase tracking-wide">Your Pilot</h4>
+                    <p className="text-xs text-[#6B7280]">Current state</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs text-[#6B7280] mb-1 capitalize">{config.unitNamePlural}</label>
+                    <input 
+                      type="number" 
+                      value={pilotUnits}
+                      onChange={(e) => setPilotUnits(Math.max(1, Number(e.target.value)))}
+                      min={1}
+                      max={500}
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F]"
+                      data-testid="input-pilot-units"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs text-[#6B7280] mb-1">{config.encounterName} per {config.unitName}</label>
+                    <input 
+                      type="number" 
+                      value={encountersPerUnit}
+                      onChange={(e) => setEncountersPerUnit(Math.max(100, Number(e.target.value)))}
+                      min={100}
+                      max={5000}
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F]"
+                      data-testid="input-encounters-per-unit"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs text-[#6B7280] mb-1">Current utilization</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="number" 
+                        value={pilotUtilization}
+                        onChange={(e) => setPilotUtilization(Math.min(90, Math.max(10, Number(e.target.value))))}
+                        min={10}
+                        max={90}
+                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E85D3F]/20 focus:border-[#E85D3F]"
+                        data-testid="input-pilot-utilization"
+                      />
+                      <span className="text-[#6B7280] font-medium">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Divider with Arrow */}
+              <div className="hidden md:flex flex-col items-center justify-center py-4">
+                <div className="w-px h-full bg-neutral-200" />
+                <div className="p-2 bg-white border border-neutral-200 rounded-full my-2">
+                  <ArrowRight className="w-5 h-5 text-neutral-400" />
+                </div>
+                <div className="w-px h-full bg-neutral-200" />
+              </div>
+              
+              {/* Full Scale (Opportunity) Column */}
+              <div className="flex-1 bg-white rounded-xl border-2 border-emerald-200 p-5">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <Rocket className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#111827] uppercase tracking-wide">Your Opportunity</h4>
+                    <p className="text-xs text-[#6B7280]">Full scale potential</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs text-[#6B7280] mb-1">Total {config.unitNamePlural} in organization</label>
+                    <input 
+                      type="number" 
+                      value={fullScaleUnits}
+                      onChange={(e) => setFullScaleUnits(Math.max(pilotUnits, Number(e.target.value)))}
+                      min={pilotUnits}
+                      max={1000}
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      data-testid="input-fullscale-units"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs text-[#6B7280] mb-1">Target utilization at full adoption</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="number" 
+                        value={fullScaleUtilization}
+                        onChange={(e) => setFullScaleUtilization(Math.min(95, Math.max(50, Number(e.target.value))))}
+                        min={50}
+                        max={95}
+                        className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                        data-testid="input-fullscale-utilization"
+                      />
+                      <span className="text-[#6B7280] font-medium">%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-2 p-3 bg-emerald-50 rounded-lg text-xs text-emerald-700">
+                    <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <p>Utilization typically increases as adoption matures. Most organizations reach 70-80% at full scale.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Results Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Pilot (Today) */}
+              <div className="bg-white rounded-xl border border-orange-200 p-5 text-center">
+                <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Pilot (Today)</div>
+                <div className="font-mono font-bold text-2xl text-[#111827] mb-1">{formatCurrency(pilot.value)}</div>
+                <div className="text-xs text-[#6B7280] mb-2">annual value</div>
+                <div className="text-sm font-semibold text-[#111827]">{pilot.roi}x ROI</div>
+              </div>
+              
+              {/* Full Scale */}
+              <div className="bg-white rounded-xl border border-emerald-200 p-5 text-center">
+                <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Full Scale</div>
+                <div className="font-mono font-bold text-2xl text-emerald-600 mb-1">{formatCurrency(fullScale.value)}</div>
+                <div className="text-xs text-[#6B7280] mb-2">annual value</div>
+                <div className="text-sm font-semibold text-[#111827]">{fullScale.roi}x ROI</div>
+              </div>
+              
+              {/* Expansion Potential */}
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-300 p-5 text-center">
+                <div className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">Expansion Potential</div>
+                <div className="font-mono font-bold text-2xl text-emerald-600 mb-1">+{formatCurrency(expansionPotential)}</div>
+                <div className="text-xs text-emerald-700 mb-2">additional per year</div>
+                <div className="text-sm font-semibold text-emerald-800">{valueMultiple}x more value</div>
+              </div>
+            </div>
           </div>
           
           {/* Key Insight */}
-          <div className="flex gap-4 p-5 bg-amber-50 border border-amber-200 rounded-xl mb-8">
+          <div className="flex gap-4 p-5 bg-amber-50 border border-amber-200 rounded-xl">
             <div className="p-2 bg-amber-100 rounded-lg h-fit">
               <Lightbulb className="w-5 h-5 text-amber-600" />
             </div>
             <div>
               <h4 className="text-sm font-semibold text-[#111827] mb-1">KEY INSIGHT</h4>
-              <p className="text-sm text-[#6B7280] mb-2">
+              <p className="text-sm text-[#6B7280]">
                 ROI improves as you scale. Higher utilization + more {config.unitNamePlural} = more value 
                 per dollar invested. The pilot proves it works. Expansion captures the full opportunity.
               </p>
-              <p className="text-sm font-medium text-[#111827]">
-                From pilot to full scale: <span className="text-emerald-600 font-bold">+{formatCurrency(expansionPotential)}</span> additional annual value
-              </p>
-            </div>
-          </div>
-          
-          {/* Customize Full Scale */}
-          <div className="p-6 bg-neutral-50 border border-neutral-200 rounded-xl">
-            <div className="flex items-center gap-2 mb-6">
-              <Target className="w-5 h-5 text-[#E85D3F]" />
-              <h3 className="text-sm font-semibold text-[#111827] uppercase tracking-wide">
-                Customize Your Full Scale Opportunity
-              </h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-              {/* Total units slider */}
-              <div>
-                <label className="block text-sm text-[#6B7280] mb-3">
-                  Total {config.unitNamePlural} in your organization
-                </label>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-[#6B7280] w-8">{currentUnits}</span>
-                  <Slider
-                    value={[fullScaleUnits]}
-                    onValueChange={([val]) => setFullScaleUnits(val)}
-                    min={currentUnits}
-                    max={currentUnits * 15}
-                    step={Math.max(1, Math.round(currentUnits / 10))}
-                    className="flex-1"
-                    data-testid="fullscale-units-slider"
-                  />
-                  <span className="text-xs text-[#6B7280] w-12">{currentUnits * 15}</span>
-                </div>
-                <div className="mt-2 text-center">
-                  <span className="font-mono font-bold text-lg text-[#111827]">{fullScaleUnits}</span>
-                  <span className="text-sm text-[#6B7280] ml-2">{config.unitNamePlural}</span>
-                </div>
-              </div>
-              
-              {/* Utilization slider */}
-              <div>
-                <label className="block text-sm text-[#6B7280] mb-3">
-                  Expected utilization at full adoption
-                </label>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-[#6B7280] w-8">50%</span>
-                  <Slider
-                    value={[fullScaleUtilization]}
-                    onValueChange={([val]) => setFullScaleUtilization(val)}
-                    min={50}
-                    max={90}
-                    step={5}
-                    className="flex-1"
-                    data-testid="fullscale-utilization-slider"
-                  />
-                  <span className="text-xs text-[#6B7280] w-8">90%</span>
-                </div>
-                <div className="mt-2 text-center">
-                  <span className="font-mono font-bold text-lg text-[#111827]">{fullScaleUtilization}%</span>
-                  <span className="text-sm text-[#6B7280] ml-2">utilization</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Full Scale Summary */}
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-neutral-200">
-              <div className="text-center">
-                <div className="font-mono font-bold text-xl text-[#111827]">{fullScale.encounters.toLocaleString()}</div>
-                <div className="text-xs text-[#6B7280]">{config.encounterName}</div>
-              </div>
-              <div className="text-center">
-                <div className="font-mono font-bold text-xl text-emerald-600">{formatCurrency(fullScale.value)}</div>
-                <div className="text-xs text-[#6B7280]">value</div>
-              </div>
-              <div className="text-center">
-                <div className="font-mono font-bold text-xl text-[#111827]">{fullScale.roi}x</div>
-                <div className="text-xs text-[#6B7280]">ROI</div>
-              </div>
             </div>
           </div>
         </section>
@@ -746,7 +737,7 @@ export default function SummaryCommandCenter({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#6B7280] capitalize">{config.unitNamePlural}</span>
-                  <span className="font-medium text-[#111827]">{currentUnits}</span>
+                  <span className="font-medium text-[#111827]">{pilotUnits}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#6B7280]">Price</span>
@@ -813,11 +804,11 @@ export default function SummaryCommandCenter({
           <ul className="space-y-2 text-sm text-[#6B7280]">
             <li className="flex items-start gap-2">
               <span className="text-[#111827]">•</span>
-              <span>{currentUnits} {config.unitNamePlural} in pilot with {totalEncounters.toLocaleString()} total {config.encounterName}</span>
+              <span>{pilotUnits} {config.unitNamePlural} in pilot with {(pilotUnits * encountersPerUnit).toLocaleString()} total {config.encounterName}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#111827]">•</span>
-              <span>{Math.round(utilizationRate * 100)}% utilization rate = {Math.round(pilotEncounters).toLocaleString()} Abridge-documented {config.encounterName}</span>
+              <span>{pilotUtilization}% utilization rate = {Math.round(pilotEncounters).toLocaleString()} Abridge-documented {config.encounterName}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#111827]">•</span>

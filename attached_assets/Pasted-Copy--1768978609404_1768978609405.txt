@@ -1,0 +1,789 @@
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Your Journey with Abridge                                                      │
+│  Start with a pilot. Prove the value. Scale across your organization.          │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │                         AREA CHART WITH CURVE                           │    │
+│  │                                                                         │    │
+│  │   $2.5M │                                              ╭────────────    │    │
+│  │         │                                         ╭────╯                │    │
+│  │   $2.0M │                                    ╭────╯                     │    │
+│  │         │                               ╭────╯                          │    │
+│  │   $1.5M │                          ╭────╯                               │    │
+│  │         │                     ╭────╯                                    │    │
+│  │   $1.0M │                ╭────╯                                         │    │
+│  │         │           ╭────╯                                              │    │
+│  │   $0.5M │      ╭────╯                                                   │    │
+│  │         │ ●────╯  YOU ARE HERE                                          │    │
+│  │      $0 └───────────────────────────────────────────────────────────    │    │
+│  │              │              │              │              │              │    │
+│  │            PILOT         EXPAND      ADOPTION        FULL SCALE         │    │
+│  │         50 providers   100 providers  150 providers  200 providers      │    │
+│  │                                                                         │    │
+│  │   ████████ Value realized        ░░░░░░░░ Opportunity remaining         │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  🎯 MODEL YOUR SCENARIO                                                 │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────┐  ┌─────────────────────────────────┐   │    │
+│  │  │                             │  │                                 │   │    │
+│  │  │  YOUR PILOT (Current)       │  │  YOUR OPPORTUNITY (Full Scale)  │   │    │
+│  │  │                             │  │                                 │   │    │
+│  │  │  Providers  ┌──────────┐    │  │  Total Providers ┌──────────┐   │   │    │
+│  │  │             │    50    │    │  │  in Organization │   200    │   │   │    │
+│  │  │             └──────────┘    │  │                  └──────────┘   │   │    │
+│  │  │                             │  │                                 │   │    │
+│  │  │  Encounters ┌──────────┐    │  │  Target          ┌──────────┐   │   │    │
+│  │  │  per Provider│  1,300  │    │  │  Utilization     │   75%    │   │   │    │
+│  │  │             └──────────┘    │  │                  └──────────┘   │   │    │
+│  │  │                             │  │                                 │   │    │
+│  │  │  Current    ┌──────────┐    │  │                                 │   │    │
+│  │  │  Utilization│   65%    │    │  │                                 │   │    │
+│  │  │             └──────────┘    │  │                                 │   │    │
+│  │  │                             │  │                                 │   │    │
+│  │  └─────────────────────────────┘  └─────────────────────────────────┘   │    │
+│  │                                                                         │    │
+│  │  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─    │    │
+│  │                                                                         │    │
+│  │  📊 WHAT THIS MEANS                                                     │    │
+│  │                                                                         │    │
+│  │  ┌───────────────┐   ┌───────────────┐   ┌───────────────┐              │    │
+│  │  │               │   │               │   │               │              │    │
+│  │  │   PILOT       │   │   FULL SCALE  │   │   EXPANSION   │              │    │
+│  │  │   (Today)     │   │  (Opportunity)│   │   POTENTIAL   │              │    │
+│  │  │               │   │               │   │               │              │    │
+│  │  │  $285,375     │   │   $808,500    │   │  +$523,125    │              │    │
+│  │  │   value       │   │    value      │   │   /year       │              │    │
+│  │  │               │   │               │   │               │              │    │
+│  │  │   4.2x ROI    │   │   4.5x ROI    │   │   2.8x more   │              │    │
+│  │  │               │   │               │   │   value       │              │    │
+│  │  │               │   │               │   │               │              │    │
+│  │  └───────────────┘   └───────────────┘   └───────────────┘              │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+The Chart — Curved Area with Milestones
+CopyVALUE
+  │
+  │                                                    ╭──●── FULL SCALE
+  │                                              ╭─────╯      $2.1M
+  │                                         ╭────╯            200 providers
+  │                                    ╭────╯                 75% utilization
+  │                               ╭────╯
+  │                          ╭────╯
+  │                     ╭────╯
+  │                ╭────╯───────────────────── ADOPTION GROWS
+  │           ╭────╯                           Utilization increases
+  │      ╭────╯                                ROI improves
+  │ ●────╯ PILOT
+  │        $285K
+  │        50 providers
+  │        65% utilization
+  │
+  └────────────────────────────────────────────────────────────────→ SCALE
+          50         100        150        200        250
+                          PROVIDERS
+Key features:
+
+Smooth curve — shows continuous growth, not jumps
+"You are here" marker — dot on the left
+"Your opportunity" marker — dot on the right
+Shaded area under curve — shows accumulated value
+Milestones labeled — Pilot, Adoption, Full Scale
+
+
+The Input Panel — "Model Your Scenario"
+Two columns side by side:
+YOUR PILOT (Current State)YOUR OPPORTUNITY (Full Scale)Providers: [50]Total Providers: [200]Encounters/Provider: [1,300]Target Utilization: [75%]Current Utilization: [65%]
+All inputs are editable. As they change, the chart and summary cards update in real-time.
+
+Code for Replit — Updated Journey Section:
+jsxCopy// ============ JOURNEY SECTION WITH AREA CHART ============
+
+import { useState, useMemo } from 'react';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer,
+  ReferenceDot,
+  ReferenceLine
+} from 'recharts';
+
+export default function JourneySection({
+  initialProviders,
+  initialEncountersPerProvider,
+  initialUtilization,
+  valuePerEncounter,
+  pricePerProvider
+}) {
+  
+  // ============ EDITABLE STATE ============
+  
+  // Pilot (current)
+  const [pilotProviders, setPilotProviders] = useState(initialProviders);
+  const [encountersPerProvider, setEncountersPerProvider] = useState(initialEncountersPerProvider);
+  const [pilotUtilization, setPilotUtilization] = useState(initialUtilization);
+  
+  // Full Scale (opportunity)
+  const [fullScaleProviders, setFullScaleProviders] = useState(initialProviders * 4);
+  const [fullScaleUtilization, setFullScaleUtilization] = useState(75);
+  
+  // ============ CALCULATIONS ============
+  
+  // Generate curve data points
+  const chartData = useMemo(() => {
+    const points = [];
+    const steps = 20; // Smooth curve with 20 points
+    
+    for (let i = 0; i <= steps; i++) {
+      const progress = i / steps;
+      
+      // Providers scale linearly
+      const providers = Math.round(
+        pilotProviders + (fullScaleProviders - pilotProviders) * progress
+      );
+      
+      // Utilization increases with adoption (starts at pilot, ends at full scale)
+      const utilization = (
+        pilotUtilization + (fullScaleUtilization - pilotUtilization) * progress
+      ) / 100;
+      
+      // Calculate value
+      const encounters = providers * encountersPerProvider * utilization;
+      const value = encounters * valuePerEncounter;
+      const investment = providers * pricePerProvider * 12;
+      const net = value - investment;
+      const roi = value / investment;
+      
+      points.push({
+        providers,
+        value: Math.round(value),
+        net: Math.round(net),
+        roi: roi.toFixed(1),
+        utilization: Math.round(utilization * 100),
+        isPilot: i === 0,
+        isFullScale: i === steps
+      });
+    }
+    
+    return points;
+  }, [
+    pilotProviders, 
+    fullScaleProviders, 
+    pilotUtilization, 
+    fullScaleUtilization,
+    encountersPerProvider,
+    valuePerEncounter,
+    pricePerProvider
+  ]);
+  
+  // Summary calculations
+  const pilot = chartData[0];
+  const fullScale = chartData[chartData.length - 1];
+  const expansionPotential = fullScale.net - pilot.net;
+  const valueMultiple = (fullScale.value / pilot.value).toFixed(1);
+  
+  // ============ RENDER ============
+  
+  return (
+    <section className="journey-section">
+      
+      {/* Header */}
+      <div className="section-header">
+        <h2>Your Journey with Abridge</h2>
+        <p>Start with a pilot. Prove the value. Scale across your organization.</p>
+      </div>
+      
+      {/* Area Chart */}
+      <div className="journey-chart">
+        <ResponsiveContainer width="100%" height={400}>
+          <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <defs>
+              <linearGradient id="valueGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#f97316" stopOpacity={0.8} />
+                <stop offset="50%" stopColor="#94a3b8" stopOpacity={0.6} />
+                <stop offset="100%" stopColor="#059669" stopOpacity={0.8} />
+              </linearGradient>
+              <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#059669" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
+            
+            <XAxis 
+              dataKey="providers" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748b', fontSize: 12 }}
+              tickFormatter={(v) => `${v}`}
+              label={{ 
+                value: 'PROVIDERS', 
+                position: 'bottom', 
+                fill: '#94a3b8',
+                fontSize: 11,
+                fontWeight: 500
+              }}
+            />
+            
+            <YAxis 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748b', fontSize: 12 }}
+              tickFormatter={(v) => `$${(v/1000000).toFixed(1)}M`}
+              width={60}
+            />
+            
+            <Tooltip 
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="custom-tooltip">
+                      <p className="tooltip-providers">{data.providers} providers</p>
+                      <p className="tooltip-utilization">{data.utilization}% utilization</p>
+                      <p className="tooltip-value">${data.value.toLocaleString()} value</p>
+                      <p className="tooltip-roi">{data.roi}x ROI</p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            
+            <Area 
+              type="monotone" 
+              dataKey="value" 
+              stroke="url(#valueGradient)"
+              strokeWidth={3}
+              fill="url(#areaFill)"
+            />
+            
+            {/* Pilot marker */}
+            <ReferenceDot 
+              x={pilot.providers} 
+              y={pilot.value} 
+              r={8} 
+              fill="#f97316" 
+              stroke="white"
+              strokeWidth={3}
+            />
+            
+            {/* Full Scale marker */}
+            <ReferenceDot 
+              x={fullScale.providers} 
+              y={fullScale.value} 
+              r={8} 
+              fill="#059669" 
+              stroke="white"
+              strokeWidth={3}
+            />
+            
+          </AreaChart>
+        </ResponsiveContainer>
+        
+        {/* Chart Labels */}
+        <div className="chart-annotations">
+          <div className="annotation pilot">
+            <span className="annotation-dot pilot-dot"></span>
+            <span className="annotation-label">You are here</span>
+          </div>
+          <div className="annotation fullscale">
+            <span className="annotation-dot fullscale-dot"></span>
+            <span className="annotation-label">Your opportunity</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Model Your Scenario Panel */}
+      <div className="scenario-panel">
+        <h3>🎯 MODEL YOUR SCENARIO</h3>
+        
+        <div className="scenario-columns">
+          
+          {/* Pilot (Current) Column */}
+          <div className="scenario-column pilot">
+            <div className="column-header">
+              <span className="column-icon">📍</span>
+              <div className="column-titles">
+                <h4>YOUR PILOT</h4>
+                <p>Current state</p>
+              </div>
+            </div>
+            
+            <div className="input-group">
+              <label>Providers</label>
+              <input 
+                type="number" 
+                value={pilotProviders}
+                onChange={(e) => setPilotProviders(Number(e.target.value))}
+                min={1}
+                max={500}
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Encounters per provider</label>
+              <input 
+                type="number" 
+                value={encountersPerProvider}
+                onChange={(e) => setEncountersPerProvider(Number(e.target.value))}
+                min={100}
+                max={5000}
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Current utilization</label>
+              <div className="input-with-suffix">
+                <input 
+                  type="number" 
+                  value={pilotUtilization}
+                  onChange={(e) => setPilotUtilization(Number(e.target.value))}
+                  min={10}
+                  max={90}
+                />
+                <span className="suffix">%</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Divider with Arrow */}
+          <div className="scenario-divider">
+            <div className="divider-line"></div>
+            <div className="divider-arrow">→</div>
+            <div className="divider-line"></div>
+          </div>
+          
+          {/* Full Scale (Opportunity) Column */}
+          <div className="scenario-column fullscale">
+            <div className="column-header">
+              <span className="column-icon">🚀</span>
+              <div className="column-titles">
+                <h4>YOUR OPPORTUNITY</h4>
+                <p>Full scale potential</p>
+              </div>
+            </div>
+            
+            <div className="input-group">
+              <label>Total providers in organization</label>
+              <input 
+                type="number" 
+                value={fullScaleProviders}
+                onChange={(e) => setFullScaleProviders(Number(e.target.value))}
+                min={pilotProviders}
+                max={1000}
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Target utilization at full adoption</label>
+              <div className="input-with-suffix">
+                <input 
+                  type="number" 
+                  value={fullScaleUtilization}
+                  onChange={(e) => setFullScaleUtilization(Number(e.target.value))}
+                  min={50}
+                  max={95}
+                />
+                <span className="suffix">%</span>
+              </div>
+            </div>
+            
+            <div className="input-note">
+              <span>💡</span>
+              <p>Utilization typically increases as adoption matures. Most organizations reach 70-80% at full scale.</p>
+            </div>
+          </div>
+          
+        </div>
+        
+        {/* Results Summary */}
+        <div className="scenario-results">
+          
+          <div className="result-card pilot">
+            <div className="result-label">PILOT (Today)</div>
+            <div className="result-value">${pilot.value.toLocaleString()}</div>
+            <div className="result-sublabel">annual value</div>
+            <div className="result-roi">{pilot.roi}x ROI</div>
+          </div>
+          
+          <div className="result-card fullscale">
+            <div className="result-label">FULL SCALE</div>
+            <div className="result-value">${fullScale.value.toLocaleString()}</div>
+            <div className="result-sublabel">annual value</div>
+            <div className="result-roi">{fullScale.roi}x ROI</div>
+          </div>
+          
+          <div className="result-card expansion">
+            <div className="result-label">EXPANSION POTENTIAL</div>
+            <div className="result-value highlight">+${expansionPotential.toLocaleString()}</div>
+            <div className="result-sublabel">additional per year</div>
+            <div className="result-roi">{valueMultiple}x more value</div>
+          </div>
+          
+        </div>
+        
+      </div>
+      
+      {/* Key Insight */}
+      <div className="key-insight">
+        <div className="insight-icon">💡</div>
+        <div className="insight-content">
+          <h4>KEY INSIGHT</h4>
+          <p>
+            ROI improves as you scale. Higher utilization + more providers = more value 
+            per dollar invested. The pilot proves it works. Expansion captures the full opportunity.
+          </p>
+        </div>
+      </div>
+      
+    </section>
+  );
+}
+
+CSS for Updated Journey Section:
+cssCopy/* ============ JOURNEY SECTION ============ */
+
+.journey-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+.section-header {
+  margin-bottom: 32px;
+}
+
+.section-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.section-header p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ============ CHART ============ */
+
+.journey-chart {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.custom-tooltip {
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.custom-tooltip p {
+  margin: 0;
+  font-size: 13px;
+  color: white;
+}
+
+.tooltip-providers {
+  font-weight: 600;
+  margin-bottom: 4px !important;
+}
+
+.tooltip-value {
+  color: #4ade80 !important;
+  font-weight: 600;
+}
+
+.chart-annotations {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 80px;
+  margin-top: -10px;
+}
+
+.annotation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.annotation-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.pilot-dot {
+  background: #f97316;
+}
+
+.fullscale-dot {
+  background: #059669;
+}
+
+.annotation-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* ============ SCENARIO PANEL ============ */
+
+.scenario-panel {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.scenario-panel h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 24px 0;
+}
+
+.scenario-columns {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.scenario-column {
+  flex: 1;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.scenario-column.pilot {
+  border-color: #fed7aa;
+}
+
+.scenario-column.fullscale {
+  border-color: #a7f3d0;
+}
+
+.column-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.column-icon {
+  font-size: 24px;
+}
+
+.column-titles h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.column-titles p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group:last-child {
+  margin-bottom: 0;
+}
+
+.input-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  border-color: #f97316;
+}
+
+.input-with-suffix {
+  display: flex;
+  align-items: center;
+}
+
+.input-with-suffix input {
+  border-radius: 8px 0 0 8px;
+  border-right: none;
+}
+
+.input-with-suffix .suffix {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.input-note {
+  display: flex;
+  gap: 8px;
+  background: #fffbeb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.input-note span {
+  font-size: 16px;
+}
+
+.input-note p {
+  font-size: 12px;
+  color: #854d0e;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Divider */
+.scenario-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 60px;
+}
+
+.divider-line {
+  width: 1px;
+  height: 40px;
+  background: #e2e8f0;
+}
+
+.divider-arrow {
+  font-size: 24px;
+  color: #94a3b8;
+}
+
+/* ============ RESULTS ============ */
+
+.scenario-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.result-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.result-card.pilot {
+  border-left: 4px solid #f97316;
+}
+
+.result-card.fullscale {
+  border-left: 4px solid #059669;
+}
+
+.result-card.expansion {
+  border-left: 4px solid #6366f1;
+  background: #f5f3ff;
+}
+
+.result-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.result-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.result-value.highlight {
+  color: #6366f1;
+}
+
+.result-sublabel {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.result-roi {
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+  margin-top: 12px;
+}
+
+/* ============ KEY INSIGHT ============ */
+
+.key-insight {
+  display: flex;
+  gap: 16px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.insight-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.insight-content h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #065f46;
+  margin: 0 0 8px 0;
+}
+
+.insight-content p {
+  font-size: 14px;
+  color: #047857;
+  margin: 0;
+  line-height: 1.5;
+}
