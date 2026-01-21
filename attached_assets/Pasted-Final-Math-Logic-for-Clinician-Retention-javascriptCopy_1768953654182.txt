@@ -1,0 +1,260 @@
+Final Math & Logic for Clinician Retention:
+javascriptCopy// ============ CLINICIAN RETENTION (DYNAMIC) ============
+
+// Inputs (user-editable)
+const providers = 40;                      // From earlier in flow
+const annualTurnoverRate = 0.06;           // Default 6%, editable
+const burnoutAttribution = 0.45;           // Default 45%, editable
+const abridgeImpact = 0.30;                // Default 30%, show logic
+const replacementCost = 400000;            // Default $400K, editable
+
+// Calculations
+
+// Step 1: Baseline Turnover
+const annualDepartures = providers * annualTurnoverRate;
+// 40 × 0.06 = 2.4 departures/year
+
+// Step 2: Burnout-Related Departures
+const preventableDepartures = annualDepartures * burnoutAttribution;
+// 2.4 × 0.45 = 1.08 preventable
+
+// Step 3: Abridge Attribution
+const departuresAvoided = preventableDepartures * abridgeImpact;
+// 1.08 × 0.30 = 0.324 departures avoided/year
+
+// Step 4: Cost Savings
+const annualRetentionSavings = departuresAvoided * replacementCost;
+// 0.324 × $400,000 = $129,600/year
+
+// Dynamic Framing Logic
+const yearsToRetainOne = 1 / departuresAvoided;
+const monthsToRetainOne = yearsToRetainOne * 12;
+
+// Threshold for warning
+const isSmallProviderCount = providers < 50;
+
+// Dynamic "What This Means" message
+function getRetentionFraming(departuresAvoided, monthsToRetainOne, replacementCost, annualSavings) {
+  
+  if (departuresAvoided >= 2.0) {
+    // Large scale: multiple per year
+    return {
+      headline: `Retain ~${departuresAvoided.toFixed(1)} additional physicians per year`,
+      detail: `At this scale, retention impact is highly predictable. You're avoiding ${formatCurrency(annualSavings)} in annual replacement costs.`,
+      timeframe: "Measurable within 12 months"
+    };
+  } 
+  else if (departuresAvoided >= 1.0) {
+    // Good scale: ~1 per year
+    return {
+      headline: `Retain ~1 additional physician per year`,
+      detail: `Every ${Math.round(12 / departuresAvoided)} months, expect to retain a physician you would have otherwise lost to burnout.`,
+      timeframe: "Measurable within 12-18 months"
+    };
+  } 
+  else if (departuresAvoided >= 0.5) {
+    // Medium scale: 1 every 1-2 years
+    return {
+      headline: `Retain 1 additional physician every ~${Math.round(monthsToRetainOne)} months`,
+      detail: `Over ${yearsToRetainOne.toFixed(1)} years, expect to retain 1 physician, saving ${formatCurrency(replacementCost)}.`,
+      timeframe: "Measurable within 18-24 months"
+    };
+  } 
+  else if (departuresAvoided >= 0.2) {
+    // Smaller scale: 1 every 2-5 years
+    const years = Math.round(yearsToRetainOne);
+    return {
+      headline: `Over ~${years} years, retain 1 additional physician`,
+      detail: `Total savings of ${formatCurrency(replacementCost)} realized over ${years}-year period. Annualized: ${formatCurrency(annualSavings)}/year.`,
+      timeframe: "Long-term investment metric"
+    };
+  } 
+  else {
+    // Very small scale: probabilistic
+    const years = Math.round(yearsToRetainOne);
+    return {
+      headline: `Long-term retention probability`,
+      detail: `Over ~${years} years, expect to retain 1 additional physician, saving ${formatCurrency(replacementCost)}. At this scale, think of retention as a long-term investment.`,
+      timeframe: "5+ year investment horizon"
+    };
+  }
+}
+
+// Small provider count warning
+function getSmallProviderWarning(providers) {
+  if (providers < 50) {
+    return {
+      show: true,
+      message: "With fewer than 50 providers, retention savings are probabilistic over multi-year periods. Consider this a long-term investment metric rather than a near-term ROI driver."
+    };
+  }
+  return { show: false };
+}
+
+Final UI Structure:
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 👤 Clinician Retention                               $129,600   │
+│    The long game—12+ months to see full impact                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ Documentation burden is the #1 driver of physician burnout.     │
+│ Reducing this burden improves satisfaction and retention.       │
+│ Replacing a physician costs $400K-$800K+ when you factor in     │
+│ recruiting, lost revenue during vacancy, and onboarding.        │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ ⚠️ SMALL PROVIDER COUNT                                     │ │
+│ │                                                             │ │
+│ │ With fewer than 50 providers, retention savings are         │ │
+│ │ probabilistic over multi-year periods. Consider this a      │ │
+│ │ long-term investment metric rather than a near-term         │ │
+│ │ ROI driver.                                                 │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ STEP 1: BASELINE TURNOVER                                       │
+│ What's the current turnover situation?                          │
+│                                                                 │
+│ ┌──────────────┐   ┌──────────────────┐                        │
+│ │  Providers   │ × │ Turnover Rate    │                        │
+│ │      40      │   │       6%         │                        │
+│ └──────────────┘   └──────────────────┘                        │
+│                                                                 │
+│                          Departures/Year: 2.4                   │
+│                                                                 │
+│ 💡 National average: 6-8%. Some specialties see 10%+.           │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: BURNOUT-RELATED DEPARTURES                              │
+│ How much is burnout-driven?                                     │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────────┐                  │
+│ │ Annual Departures│ × │ Burnout Attribution│                  │
+│ │       2.4        │   │        45%         │                  │
+│ └──────────────────┘   └────────────────────┘                  │
+│                                                                 │
+│                     Preventable Departures: 1.08                │
+│                                                                 │
+│ 💡 Research indicates 40-50% of physician departures cite       │
+│    burnout as a primary factor.                                 │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: ABRIDGE ATTRIBUTION                                     │
+│ What can Abridge prevent?                                       │
+│                                                                 │
+│ ┌──────────────────────┐   ┌────────────────┐                  │
+│ │Preventable Departures│ × │ Abridge Impact │                  │
+│ │        1.08          │   │      30%       │                  │
+│ └──────────────────────┘   └────────────────┘                  │
+│                                                                 │
+│                       Departures Avoided: 0.32/year             │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 🔢 WHY 30%? THE RULE OF THIRDS                              │ │
+│ │                                                             │ │
+│ │ Documentation burden = ~50% of burnout drivers              │ │
+│ │ Abridge reduces documentation burden by 70%                 │ │
+│ │                                                             │ │
+│ │ 50% × 70% = 35% theoretical impact                          │ │
+│ │ Rounded to 30% for conservatism                             │ │
+│ │                                                             │ │
+│ │ We only claim credit for what we can directly impact.       │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 4: COST SAVINGS                                            │
+│ What's the dollar value?                                        │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │Departures Avoided│ × │ Replacement Cost │                    │
+│ │      0.32        │   │    $400,000      │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                        Annual Savings: $129,600                 │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 WHAT THIS MEANS                        [DYNAMIC CONTENT] │ │
+│ │                                                             │ │
+│ │ Over ~3 years, retain 1 additional physician                │ │
+│ │                                                             │ │
+│ │ Total savings of $400,000 realized over 3-year period.      │ │
+│ │ Annualized: $129,600/year.                                  │ │
+│ │                                                             │ │
+│ │ ⏱️ Long-term investment metric                               │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK: Replacement Cost                              │ │
+│ │                                                             │ │
+│ │ Primary Care               $400,000                         │ │
+│ │ Specialty                  $600,000                         │ │
+│ │ Surgical/Procedural        $800,000+                        │ │
+│ │                                                             │ │
+│ │ Your input: $400,000    [Adjust if needed]                  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ⚠️ Retention impact typically measurable after 12-18 months    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Dynamic "What This Means" Examples by Scale:
+10 Providers (Very Small)
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 📊 WHAT THIS MEANS                                              │
+│                                                                 │
+│ Long-term retention probability                                 │
+│                                                                 │
+│ Over ~12 years, expect to retain 1 additional physician,        │
+│ saving $400,000. At this scale, think of retention as a         │
+│ long-term investment.                                           │
+│                                                                 │
+│ ⏱️ 5+ year investment horizon                                    │
+└─────────────────────────────────────────────────────────────────┘
+40 Providers (Your Example)
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 📊 WHAT THIS MEANS                                              │
+│                                                                 │
+│ Over ~3 years, retain 1 additional physician                    │
+│                                                                 │
+│ Total savings of $400,000 realized over 3-year period.          │
+│ Annualized: $129,600/year.                                      │
+│                                                                 │
+│ ⏱️ Long-term investment metric                                   │
+└─────────────────────────────────────────────────────────────────┘
+100 Providers (Medium)
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 📊 WHAT THIS MEANS                                              │
+│                                                                 │
+│ Retain 1 additional physician every ~15 months                  │
+│                                                                 │
+│ Over 1.2 years, expect to retain 1 physician, saving $400,000.  │
+│                                                                 │
+│ ⏱️ Measurable within 18-24 months                                │
+└─────────────────────────────────────────────────────────────────┘
+250 Providers (Large)
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 📊 WHAT THIS MEANS                                              │
+│                                                                 │
+│ Retain ~2 additional physicians per year                        │
+│                                                                 │
+│ Every 6 months, expect to retain a physician you would have     │
+│ otherwise lost to burnout.                                      │
+│                                                                 │
+│ ⏱️ Measurable within 12-18 months                                │
+└─────────────────────────────────────────────────────────────────┘
+500 Providers (Enterprise)
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 📊 WHAT THIS MEANS                                              │
+│                                                                 │
+│ Retain ~4.1 additional physicians per year                      │
+│                                                                 │
+│ At this scale, retention impact is highly predictable. You're   │
+│ avoiding $1,620,000 in annual replacement costs.                │
+│                                                                 │
+│ ⏱️ Measurable within 12 months                                   │
+└─────────────────────────────────────────────────────────────────┘
