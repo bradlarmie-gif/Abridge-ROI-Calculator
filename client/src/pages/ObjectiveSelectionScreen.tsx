@@ -2690,7 +2690,7 @@ export default function ObjectiveSelectionScreen({
                       leversByCategory.documentation,
                       false,
                     )}
-                    {/* Capacity & Labor category (Inpatient, Nursing) */}
+                    {/* Capacity & Labor category (Inpatient) */}
                     {leversByCategory.capacityLabor.length > 0 && renderCategorySection(
                       "capacityLabor",
                       leversByCategory.capacityLabor,
@@ -2702,10 +2702,28 @@ export default function ObjectiveSelectionScreen({
                       leversByCategory.qualityRevenue,
                       false,
                     )}
-                    {/* Documentation Quality category (Nursing) */}
+                    {/* Documentation Quality category */}
                     {leversByCategory.documentationQuality.length > 0 && renderCategorySection(
                       "documentationQuality",
                       leversByCategory.documentationQuality,
+                      false,
+                    )}
+                    {/* Labor Cost Benefits category (Nursing) */}
+                    {leversByCategory.laborCost.length > 0 && renderCategorySection(
+                      "laborCost",
+                      leversByCategory.laborCost,
+                      true,
+                    )}
+                    {/* Quality & Safety Benefits category (Nursing) */}
+                    {leversByCategory.qualitySafety.length > 0 && renderCategorySection(
+                      "qualitySafety",
+                      leversByCategory.qualitySafety,
+                      false,
+                    )}
+                    {/* Additional Benefits category (Nursing) */}
+                    {leversByCategory.additional.length > 0 && renderCategorySection(
+                      "additional",
+                      leversByCategory.additional,
                       false,
                     )}
                   </div>
