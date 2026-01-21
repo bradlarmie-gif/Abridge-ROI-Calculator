@@ -214,10 +214,10 @@ interface DriverInputs {
     baseHourlyRate: number;
   };
   nursingHAPI: {
-    bedsAtRisk: number;
-    hapIsPerYear: number;
-    costPerHAPI: number;
-    documentationImpact: number;
+    annualAdmissions: number;  // Total annual admissions (10,000)
+    hapiRate: number;          // % of admissions with HAPI (2.5%)
+    preventionRate: number;    // % of HAPIs documentation can prevent (10%)
+    costPerHAPI: number;       // Cost per HAPI ($20,000)
   };
   nursingAgency: {
     agencyFTEsPerBed: number;  // e.g., 0.15 = 15% agency utilization
@@ -490,10 +490,10 @@ export default function ModelBuilder({
       baseHourlyRate: 45,
     },
     nursingHAPI: {
-      bedsAtRisk: 200,           // beds in scope
-      hapIsPerYear: 5,           // preventable HAPIs per year
-      costPerHAPI: 70000,        // CMS penalty + incident cost
-      documentationImpact: 20,   // % attributable to documentation
+      annualAdmissions: 10000,   // 10,000 annual admissions
+      hapiRate: 2.5,             // 2.5% HAPI rate
+      preventionRate: 10,        // 10% documentation-preventable
+      costPerHAPI: 20000,        // $20,000 cost per HAPI
     },
     nursingAgency: {
       agencyFTEsPerBed: 0.15,    // 15% agency utilization
@@ -859,11 +859,13 @@ export default function ModelBuilder({
         return Math.round(hoursEliminated * overtimeRate);
       }
       case "nursingHAPI": {
-        const { bedsAtRisk, hapIsPerYear, costPerHAPI, documentationImpact } = driverInputs.nursingHAPI;
-        const bedsScaling = staffedBeds / bedsAtRisk;
-        const hapIsPreventable = hapIsPerYear * bedsScaling;
-        const value = hapIsPreventable * costPerHAPI * (documentationImpact / 100);
-        return Math.round(value);
+        const { annualAdmissions, hapiRate, preventionRate, costPerHAPI } = driverInputs.nursingHAPI;
+        // Step 1: Current HAPI volume = Annual Admissions × HAPI Rate
+        const currentHAPIs = annualAdmissions * (hapiRate / 100);
+        // Step 2: Documentation-preventable = Current HAPIs × Prevention Rate
+        const hapisPrevented = currentHAPIs * (preventionRate / 100);
+        // Step 3: Cost avoidance = HAPIs Prevented × Cost per HAPI
+        return Math.round(hapisPrevented * costPerHAPI);
       }
       case "nursingAgency": {
         const { agencyFTEsPerBed, staffSalary, agencyCost, retentionImpact } = driverInputs.nursingAgency;
@@ -5174,13 +5176,21 @@ export default function ModelBuilder({
   };
   
   const renderNursingHAPIInputs = () => {
-    const { bedsAtRisk, hapIsPerYear, costPerHAPI, documentationImpact } = driverInputs.nursingHAPI;
-    const bedsScaling = staffedBeds / bedsAtRisk;
-    const hapIsPreventable = hapIsPerYear * bedsScaling;
-    const dollarValue = Math.round(hapIsPreventable * costPerHAPI * (documentationImpact / 100));
+    const { annualAdmissions, hapiRate, preventionRate, costPerHAPI } = driverInputs.nursingHAPI;
+    
+    // Step 1: Current HAPI volume = Annual Admissions × HAPI Rate
+    const currentHAPIs = annualAdmissions * (hapiRate / 100);
+    // Step 2: Documentation-preventable = Current HAPIs × Prevention Rate
+    const hapisPrevented = currentHAPIs * (preventionRate / 100);
+    // Step 3: Cost avoidance = HAPIs Prevented × Cost per HAPI
+    const potentialValue = Math.round(hapisPrevented * costPerHAPI);
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
     
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* The Theory */}
         <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
           <div className="flex items-start gap-3">
@@ -5188,167 +5198,196 @@ export default function ModelBuilder({
             <div>
               <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
               <p className="text-sm text-amber-800 leading-relaxed">
-                Better documentation supports timely skin assessments and turning protocols. While the causal link is indirect, improved documentation correlates with reduced hospital-acquired pressure injury (HAPI) rates.
+                Hospital-acquired pressure injuries (HAPIs) cost $10K-$40K each — and CMS doesn't reimburse. Prevention depends on timely skin assessments and interventions. When assessments are documented in real-time, nothing falls through the cracks.
               </p>
             </div>
           </div>
         </div>
         
-        {/* Warning about potential value */}
-        <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <AlertTriangle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-blue-800">
-            Shown as <strong>potential value</strong> — not included in main ROI total due to indirect causal link.
-          </p>
-        </div>
-
-        {/* Step 1: Baseline */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Beds in Scope</span>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Staffed Beds</span>
-              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
-                <span className="font-mono text-sm font-medium text-[#111827]">{staffedBeds}</span>
-              </div>
+        {/* Why this is shown separately */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                HAPIs happen when assessments are missed or interventions are delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured as they're observed — enabling earlier intervention. We show this as POTENTIAL value because the causal link is indirect.
+              </p>
             </div>
-            <span className="text-lg text-[#6B7280]">÷</span>
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Reference</span>
-              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
-                <span className="font-mono text-sm font-medium text-[#111827]">{bedsAtRisk}</span>
-              </div>
-            </div>
-            <span className="text-lg text-[#6B7280]">=</span>
-            <span className="font-mono font-semibold text-[#111827]">{bedsScaling.toFixed(2)}x scaling</span>
           </div>
         </div>
 
-        <div className="border-t border-dashed border-neutral-300" />
-
-        {/* Step 2: HAPIs Preventable */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: HAPIs Preventable</span>
-          </div>
+        {/* Step 1: Current HAPI Volume */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current HAPI Volume</p>
+          <p className="text-xs text-[#6B7280]">How many HAPIs occur today?</p>
           
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Base Rate</span>
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
-                  value={hapIsPerYear}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, hapIsPerYear: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
-                  data-testid="nursing-hapi-rate-input"
-                />
-                <span className="text-xs text-[#6B7280]">/yr</span>
-              </div>
-            </div>
-            <span className="text-lg text-[#6B7280]">×</span>
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Scaling</span>
-              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
-                <span className="font-mono text-sm font-medium text-[#111827]">{bedsScaling.toFixed(2)}x</span>
-              </div>
-            </div>
-            <span className="text-lg text-[#6B7280]">=</span>
-            <span className="font-mono font-semibold text-[#111827]">{hapIsPreventable.toFixed(1)} HAPIs</span>
-          </div>
-          
-          <p className="text-xs text-[#6B7280]">
-            ~5 preventable HAPIs per 200 beds is typical based on industry data.
-          </p>
-        </div>
-
-        <div className="border-t border-dashed border-neutral-300" />
-
-        {/* Step 3: Cost per HAPI */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Cost per HAPI</span>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-              <span className="text-sm text-[#6B7280]">$</span>
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Annual Admissions</label>
               <Input
                 type="number"
-                value={costPerHAPI}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, costPerHAPI: Number(e.target.value) || 0 } }))}
-                className="w-24 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
-                data-testid="nursing-hapi-cost-input"
+                value={annualAdmissions}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, annualAdmissions: Number(e.target.value) || 0 } }))}
+                className="w-full text-center font-mono text-sm h-8"
+                data-testid="nursing-hapi-admissions-input"
               />
             </div>
-          </div>
-          
-          {/* Benchmark */}
-          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="h-4 w-4 text-[#6B7280]" />
-              <span className="text-xs font-semibold text-[#6B7280]">Benchmark: HAPI Costs</span>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">HAPI Rate</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={hapiRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, hapiRate: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  step="0.1"
+                  data-testid="nursing-hapi-rate-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
             </div>
-            <div className="space-y-1 text-xs text-[#6B7280]">
-              <div className="flex justify-between"><span>Stage 2 HAPI</span><span className="font-mono">$20K - $40K</span></div>
-              <div className="flex justify-between"><span>Stage 3-4 HAPI</span><span className="font-mono">$50K - $150K</span></div>
-              <div className="flex justify-between"><span>CMS penalty consideration</span><span className="font-mono">$20K - $50K</span></div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">HAPIs/Year</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(currentHAPIs)}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">National HAPI rates range 2-5% of admissions. Higher in ICU and long-stay populations.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 2: Documentation-Preventable */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Preventable</p>
+          <p className="text-xs text-[#6B7280]">How many could better documentation help prevent?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Current HAPIs</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(currentHAPIs)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Prevention Rate</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={preventionRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, preventionRate: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-hapi-prevention-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Prevented</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(hapisPrevented)}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">Not all HAPIs are documentation-preventable. 10% is conservative — represents cases where real-time assessment documentation would have triggered earlier intervention.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 3: Cost Avoidance */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Cost Avoidance</p>
+          <p className="text-xs text-[#6B7280]">What's the value?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Prevented</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(hapisPrevented)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Cost per HAPI</label>
+              <div className="flex items-center justify-center">
+                <span className="mr-1 text-[#6B7280] text-xs">$</span>
+                <Input
+                  type="number"
+                  value={costPerHAPI}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, costPerHAPI: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-hapi-cost-input"
+                />
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Potential Value</label>
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {formatCurrency(potentialValue)}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-dashed border-neutral-300" />
-
-        {/* Step 4: Documentation Impact */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Documentation Impact</span>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Gross Value</span>
-              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
-                <span className="font-mono text-sm font-medium text-[#111827]">{formatCurrency(Math.round(hapIsPreventable * costPerHAPI))}</span>
-              </div>
+        {/* Benchmark callout */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: HAPI Cost</p>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">Stage 2 pressure injury</span>
+              <span className="font-mono text-[#111827]">$10K - $15K</span>
             </div>
-            <span className="text-lg text-[#6B7280]">×</span>
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Doc Impact</span>
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
-                  value={documentationImpact}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, documentationImpact: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
-                  data-testid="nursing-hapi-impact-input"
-                />
-                <span className="text-sm text-[#6B7280]">%</span>
-              </div>
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">Stage 3 pressure injury</span>
+              <span className="font-mono text-[#111827]">$20K - $30K</span>
             </div>
-            <span className="text-lg text-[#6B7280]">=</span>
-            <span className="font-mono font-semibold text-emerald-600">{formatCurrency(dollarValue)}</span>
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">Stage 4 pressure injury</span>
+              <span className="font-mono text-[#111827]">$30K - $50K+</span>
+            </div>
           </div>
-          
-          <p className="text-xs text-[#6B7280]">
-            Conservative estimate: 20% of HAPI prevention attributable to documentation improvements.
-          </p>
+          <p className="text-xs text-[#6B7280] mt-3">CMS does NOT reimburse for hospital-acquired pressure injuries. This is pure cost to the hospital.</p>
+          <p className="text-xs text-[#6B7280] mt-1">We use ${costPerHAPI.toLocaleString()} as blended average.</p>
         </div>
 
         {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Potential Annual Value</span>
+            <div>
+              <span className="font-medium text-[#111827]">Potential Value</span>
+              <p className="text-xs text-neutral-500 mt-0.5">{Math.round(hapisPrevented)} HAPIs prevented × ${costPerHAPI.toLocaleString()} cost per HAPI</p>
+            </div>
             <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="nursing-hapi-result">
-              {formatCurrency(dollarValue)}
+              {formatCurrency(potentialValue)}
             </span>
           </div>
-          <p className="text-xs text-neutral-400 font-mono mt-1">
-            {hapIsPreventable.toFixed(1)} HAPIs × ${costPerHAPI.toLocaleString()} × {documentationImpact}%
-          </p>
+        </div>
+
+        {/* Why This Is "Potential" Value */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-semibold text-amber-900 uppercase tracking-wide mb-2">Why This Is "Potential" Value</p>
+              <p className="text-sm text-amber-800 leading-relaxed mb-2">
+                HAPIs are prevented through clinical care — turning, positioning, nutrition, skin care. Documentation SUPPORTS this but doesn't REPLACE it.
+              </p>
+              <p className="text-sm text-amber-800 leading-relaxed mb-2">
+                We show this separately because:
+              </p>
+              <ul className="text-sm text-amber-800 list-disc list-inside space-y-1 mb-2">
+                <li>The causal link is indirect</li>
+                <li>Clinical practice matters more than documentation</li>
+                <li>We want to be intellectually honest</li>
+              </ul>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                That said — when assessments are documented in real-time, interventions happen faster. This value is REAL, just harder to attribute directly to Abridge.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
