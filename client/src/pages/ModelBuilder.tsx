@@ -4108,7 +4108,7 @@ export default function ModelBuilder({
         </div>
 
         {/* Step 1: Admissions with Opportunity */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Admissions with Opportunity</span>
           </div>
@@ -4135,25 +4135,19 @@ export default function ModelBuilder({
                 <span className="text-sm text-[#6B7280]">%</span>
               </div>
             </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(opportunities).toLocaleString()} opportunities</span>
           </div>
           
-          <div className="text-center py-2">
-            <span className="text-sm text-[#6B7280]">Opportunities: </span>
-            <span className="font-mono font-semibold text-[#111827]">{Math.round(opportunities).toLocaleString()}</span>
-          </div>
-          
-          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
-            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-800">
-              Studies show 30-50% of admissions have undocumented CC/MCC opportunities. We use 40% as a moderate estimate.
-            </p>
-          </div>
+          <p className="text-xs text-[#6B7280]">
+            Studies show 30-50% of admissions have undocumented CC/MCC opportunities. We use 40% as a moderate estimate.
+          </p>
         </div>
 
         <div className="border-t border-dashed border-neutral-300" />
 
         {/* Step 2: Capture Improvement */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Capture Improvement</span>
           </div>
@@ -4180,25 +4174,19 @@ export default function ModelBuilder({
                 <span className="text-sm text-[#6B7280]">%</span>
               </div>
             </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(admissionsImproved).toLocaleString()} admissions improved</span>
           </div>
           
-          <div className="text-center py-2">
-            <span className="text-sm text-[#6B7280]">Admissions Improved: </span>
-            <span className="font-mono font-semibold text-[#111827]">{Math.round(admissionsImproved).toLocaleString()}</span>
-          </div>
-          
-          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
-            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-800">
-              Not every gap is capturable. 15% accounts for cases where Abridge documentation directly enables CC/MCC capture that wouldn't have happened otherwise.
-            </p>
-          </div>
+          <p className="text-xs text-[#6B7280]">
+            Not every gap is capturable. 15% accounts for cases where Abridge documentation directly enables CC/MCC capture that wouldn't have happened otherwise.
+          </p>
         </div>
 
         <div className="border-t border-dashed border-neutral-300" />
 
         {/* Step 3: DRG Weight Impact */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: DRG Weight Impact</span>
           </div>
@@ -4239,30 +4227,25 @@ export default function ModelBuilder({
                 />
               </div>
             </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{formatCurrency(Math.round(grossImpact))} gross</span>
           </div>
           
-          <div className="text-center py-2">
-            <span className="text-sm text-[#6B7280]">Gross Impact: </span>
-            <span className="font-mono font-semibold text-[#111827]">{formatCurrency(Math.round(grossImpact))}</span>
-          </div>
-          
-          {/* DRG Weight Explanation Callout */}
+          {/* Benchmark: What Drives 0.4 DRG Weight? */}
           <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-semibold text-[#6B7280]">WHAT DRIVES 0.4 DRG WEIGHT?</span>
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+              <span className="text-xs font-semibold text-[#6B7280]">Benchmark: What Drives 0.4 DRG Weight?</span>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3">
-              Abridge captures conditions physicians discuss but don't always document — especially MCCs that significantly impact DRG weight:
-            </p>
-            <div className="space-y-1 text-xs text-[#6B7280]">
-              <div className="flex justify-between"><span>• Acute respiratory failure</span><span className="font-mono">+0.3 to +0.5</span></div>
-              <div className="flex justify-between"><span>• Sepsis / Severe sepsis</span><span className="font-mono">+0.4 to +0.6</span></div>
-              <div className="flex justify-between"><span>• Malnutrition</span><span className="font-mono">+0.2 to +0.4</span></div>
-              <div className="flex justify-between"><span>• Acute encephalopathy</span><span className="font-mono">+0.3 to +0.5</span></div>
-              <div className="flex justify-between"><span>• Acute kidney injury</span><span className="font-mono">+0.1 to +0.3</span></div>
+            <div className="space-y-1.5 text-xs text-[#6B7280]">
+              <div className="flex justify-between"><span>Acute respiratory failure</span><span className="font-mono">+0.3 to +0.5</span></div>
+              <div className="flex justify-between"><span>Sepsis / Severe sepsis</span><span className="font-mono">+0.4 to +0.6</span></div>
+              <div className="flex justify-between"><span>Malnutrition</span><span className="font-mono">+0.2 to +0.4</span></div>
+              <div className="flex justify-between"><span>Acute encephalopathy</span><span className="font-mono">+0.3 to +0.5</span></div>
+              <div className="flex justify-between"><span>Acute kidney injury</span><span className="font-mono">+0.1 to +0.3</span></div>
             </div>
-            <p className="text-xs text-neutral-400 mt-3 italic">
-              0.4 is a blended average. Your results depend on case mix.
+            <p className="text-xs text-neutral-400 mt-3">
+              0.4 is a blended average for MCC captures.
             </p>
           </div>
         </div>
@@ -4270,7 +4253,7 @@ export default function ModelBuilder({
         <div className="border-t border-dashed border-neutral-300" />
 
         {/* Step 4: Reality Check */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Reality Check</span>
           </div>
@@ -4297,29 +4280,13 @@ export default function ModelBuilder({
                 <span className="text-sm text-[#6B7280]">%</span>
               </div>
             </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-emerald-600">{formatCurrency(Math.round(annualValue))}</span>
           </div>
           
-          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
-            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-800">
-              We apply a 50% haircut to account for RAC/PEPPER audits and DRG validation, cases where documentation doesn't change final code, and coder discretion. This is revenue you can actually count on.
-            </p>
-          </div>
-          
-          {/* Base DRG Payment Benchmark */}
-          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-semibold text-[#6B7280]">BENCHMARK: Base DRG Payment</span>
-            </div>
-            <div className="space-y-1 text-xs text-[#6B7280]">
-              <div className="flex justify-between"><span>National Average</span><span className="font-mono">$6,000 - $7,000</span></div>
-              <div className="flex justify-between"><span>Academic Medical Centers</span><span className="font-mono">$8,000 - $12,000</span></div>
-              <div className="flex justify-between"><span>Community Hospitals</span><span className="font-mono">$5,000 - $6,500</span></div>
-            </div>
-            <p className="text-xs text-neutral-400 mt-3">
-              Your input: <span className="font-mono font-medium">${baseDrgPayment.toLocaleString()}</span>
-            </p>
-          </div>
+          <p className="text-xs text-[#6B7280]">
+            50% haircut accounts for RAC/PEPPER audits, coder discretion, and cases where documentation doesn't change final code.
+          </p>
         </div>
 
         {/* Final Result */}
@@ -4331,7 +4298,7 @@ export default function ModelBuilder({
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {formatCurrency(Math.round(grossImpact))} × {realizationRate}% realization
+            {Math.round(admissionsImproved).toLocaleString()} admissions × {drgWeightIncrease} weight × ${baseDrgPayment.toLocaleString()} × {realizationRate}% realization
           </p>
         </div>
         
