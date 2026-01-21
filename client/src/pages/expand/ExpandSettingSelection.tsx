@@ -40,12 +40,12 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Outpatient - Active */}
           <div 
-            className="relative bg-white rounded-2xl border-2 border-[#f97316] p-8 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="relative bg-white rounded-2xl border-2 border-[#EA2C00] p-8 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
             onClick={onNext}
             data-testid="setting-outpatient"
           >
-            <div className="w-14 h-14 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
-              <Stethoscope className="w-7 h-7 text-[#f97316]" />
+            <div className="w-14 h-14 rounded-xl bg-[#FEF0EC] flex items-center justify-center mb-4">
+              <Stethoscope className="w-7 h-7 text-[#EA2C00]" />
             </div>
             <h3 className="text-xl font-semibold text-[#111827] mb-2">Outpatient</h3>
             <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full mb-3 tracking-wide">
