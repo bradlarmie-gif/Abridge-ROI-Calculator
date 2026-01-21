@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight, Mic, Users, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import type { SwitchState } from "./SwitchFlow";
 
 type SolutionType = "ambient-ai" | "human-scribes";
@@ -10,6 +11,7 @@ interface Props {
   onUpdate: (updates: Partial<SwitchState>) => void;
   onNext: () => void;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 const solutions: Array<{
@@ -42,34 +44,26 @@ export default function SwitchSolutionSelection({
   onUpdate,
   onNext,
   onBack,
+  onBackToJourney,
 }: Props) {
   const { solution } = switchState;
   const canContinue = !!solution;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <span className="font-semibold text-slate-900 tracking-wide">SWITCH</span>
-            </div>
-          </div>
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-            data-testid="button-back-home"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </button>
-        </div>
-      </header>
+      <GlobalHeader pageName="Switch" onLogoClick={onBackToJourney} />
 
-      <main className="max-w-2xl mx-auto px-6 py-12">
+      <main className="max-w-2xl mx-auto px-6 pt-[96px] pb-12">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         <div className="text-center mb-10">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
             What solution are you using today?

@@ -63,6 +63,7 @@ export function SwitchFlow({ onBackToJourney }: SwitchFlowProps) {
         onUpdate={updateSwitchState}
         onNext={handleNext}
         onBack={goBackToJourney}
+        onBackToJourney={goBackToJourney}
       />
     </div>
   );
