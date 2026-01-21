@@ -1,0 +1,936 @@
+The Problem:
+In my code, I set current: 0 for all data points — that's why you only see one line. The "current" trajectory should show what they're capturing NOW vs. what they COULD capture.
+
+The Right Way to Think About This:
+ScenarioWhat It ShowsStay with currentThey continue at 50% utilization, 1.5 min savings — some value, but cappedSwitch to AbridgeThey move to 65% utilization, 4 min savings — full value realized
+The GAP between these two lines is the opportunity cost.
+
+Fixed Chart Data:
+jsxCopy// ============ FIXED CHART DATA ============
+
+// Current solution value (what they're getting now)
+const currentAnnualValue = calculateCurrentValue(inputs);
+// Example: 50% utilization × lower efficiency = some value, but not full
+
+// Abridge value (what they could get)
+const abridgeAnnualValue = primaryTotal; // The gap we calculated
+
+// The chart should show CUMULATIVE value over time for BOTH scenarios
+
+const chartData = [
+  { 
+    period: 'Today', 
+    current: 0, 
+    abridge: 0 
+  },
+  { 
+    period: '3 mo', 
+    current: Math.round(currentAnnualValue * 0.25), 
+    abridge: Math.round((currentAnnualValue + abridgeAnnualValue * 0.5) * 0.25) // Abridge ramps up
+  },
+  { 
+    period: '6 mo', 
+    current: Math.round(currentAnnualValue * 0.5), 
+    abridge: Math.round((currentAnnualValue + abridgeAnnualValue * 0.75) * 0.5)
+  },
+  { 
+    period: 'Year 1', 
+    current: currentAnnualValue, 
+    abridge: currentAnnualValue + abridgeAnnualValue // Full gap realized
+  },
+  { 
+    period: 'Year 2', 
+    current: currentAnnualValue * 2, 
+    abridge: (currentAnnualValue + abridgeAnnualValue) + (currentAnnualValue + Math.round(abridgeAnnualValue * 1.10))
+  },
+  { 
+    period: 'Year 3', 
+    current: currentAnnualValue * 3, 
+    abridge: (currentAnnualValue + abridgeAnnualValue) + (currentAnnualValue + Math.round(abridgeAnnualValue * 1.10)) + (currentAnnualValue + Math.round(abridgeAnnualValue * 1.19))
+  }
+];
+Wait — this is getting confusing. Let me rethink the framing.
+
+Simpler, Clearer Framing:
+The chart should show cumulative VALUE CAPTURED over 3 years:
+
+Current trajectory: They're capturing SOME value (let's say 60% of potential)
+Abridge trajectory: They capture FULL value (100% of potential)
+
+OR even simpler:
+
+Current trajectory: The value gap they're LOSING stays flat (or grows slowly)
+Abridge trajectory: The value gap they CAPTURE grows
+
+
+Actually, Here's the Clearest Framing:
+Show the CUMULATIVE OPPORTUNITY COST (the gap)
+The chart shows: "If you stay with your current solution, here's what you're leaving on the table over 3 years"
+CopyYear 0: $0 (no gap yet)
+Year 1: $90,000 (one year of gap)
+Year 2: $189,000 (two years of gap, compounding)
+Year 3: $296,000 (three years of gap, compounding)
+The "current" line stays at $0 because that's the baseline — they're not capturing this value.
+The "Abridge" line shows the cumulative value they WOULD capture by switching.
+
+Let Me Rewrite the Chart Properly:
+jsxCopy// ============ CONCLUSION PAGE WITH PROPER DUAL-LINE CHART ============
+
+import { useState } from 'react';
+import { 
+  ArrowLeft, 
+  Phone, 
+  Copy, 
+  Edit3, 
+  ChevronDown, 
+  ChevronUp, 
+  Check,
+  AlertTriangle
+} from 'lucide-react';
+import { 
+  LineChart,
+  Line,
+  XAxis, 
+  YAxis, 
+  ResponsiveContainer,
+  Area,
+  ComposedChart,
+  Tooltip
+} from 'recharts';
+import { formatNumber } from '../utils/formatting';
+
+export default function SwitchAmbientConclusion({
+  inputs,
+  primaryTotal,
+  benchmarks,
+  currentStep,
+  totalSteps,
+  onBack
+}) {
+  
+  const [showDetails, setShowDetails] = useState(false);
+  const [copied, setCopied] = useState(false);
+  
+  // ========== CALCULATE TRAJECTORIES ==========
+  
+  // What they're currently capturing (their current solution's value)
+  // This is an estimate based on their utilization and efficiency
+  const currentUtilization = inputs.utilization || 50;
+  const abridgeUtilization = benchmarks.utilization || 65;
+  const utilizationRatio = currentUtilization / abridgeUtilization; // e.g., 50/65 = 0.77
+  
+  const currentEfficiency = inputs.metricValues?.timeSavings || inputs.efficiency || 1.5;
+  const abridgeEfficiency = 4;
+  const efficiencyRatio = currentEfficiency / abridgeEfficiency; // e.g., 1.5/4 = 0.375
+  
+  // Their current solution is capturing roughly this % of potential value
+  const currentCaptureRate = (utilizationRatio + efficiencyRatio) / 2; // ~0.57 or 57%
+  
+  // Full potential annual value (if they were at Abridge benchmarks)
+  const fullPotentialAnnual = primaryTotal / (1 - currentCaptureRate); // Reverse engineer
+  // Actually, let's simplify: primaryTotal IS the gap, so full potential = current + gap
+  
+  // Current annual value they're capturing
+  const currentAnnualValue = Math.round(primaryTotal * (currentCaptureRate / (1 - currentCaptureRate)));
+  
+  // With Abridge, they capture current + gap
+  const abridgeAnnualValue = currentAnnualValue + primaryTotal;
+  
+  // Year-over-year growth assumptions
+  const year2Growth = 1.10; // 10% improvement
+  const year3Growth = 1.19; // ~10% more
+  
+  // Build chart data - CUMULATIVE values
+  const chartData = [
+    { 
+      period: 'Today', 
+      current: 0, 
+      abridge: 0,
+      label: 'Start'
+    },
+    { 
+      period: '3 mo', 
+      current: Math.round(currentAnnualValue * 0.25), 
+      abridge: Math.round(abridgeAnnualValue * 0.25 * 0.7), // Ramp-up period
+      label: 'Quick wins'
+    },
+    { 
+      period: '6 mo', 
+      current: Math.round(currentAnnualValue * 0.5), 
+      abridge: Math.round(abridgeAnnualValue * 0.5 * 0.85),
+      label: 'Adoption grows'
+    },
+    { 
+      period: 'Year 1', 
+      current: currentAnnualValue, 
+      abridge: abridgeAnnualValue,
+      label: 'Full value'
+    },
+    { 
+      period: 'Year 2', 
+      current: currentAnnualValue * 2, 
+      abridge: abridgeAnnualValue + Math.round(abridgeAnnualValue * year2Growth),
+      label: ''
+    },
+    { 
+      period: 'Year 3', 
+      current: currentAnnualValue * 3, 
+      abridge: abridgeAnnualValue + Math.round(abridgeAnnualValue * year2Growth) + Math.round(abridgeAnnualValue * year3Growth),
+      label: ''
+    }
+  ];
+  
+  // Calculate totals for display
+  const currentThreeYear = currentAnnualValue * 3;
+  const abridgeThreeYear = chartData[chartData.length - 1].abridge;
+  const threeYearGap = abridgeThreeYear - currentThreeYear;
+  
+  // Cost of waiting
+  const monthlyGapValue = Math.round(primaryTotal / 12);
+  const sixMonthLoss = monthlyGapValue * 6;
+  
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="chart-tooltip">
+          <p className="tooltip-label">{label}</p>
+          <p className="tooltip-abridge">
+            <span className="tooltip-dot abridge"></span>
+            Abridge: ${formatNumber(payload[1]?.value || 0)}
+          </p>
+          <p className="tooltip-current">
+            <span className="tooltip-dot current"></span>
+            Current: ${formatNumber(payload[0]?.value || 0)}
+          </p>
+          {payload[1]?.value && payload[0]?.value && (
+            <p className="tooltip-gap">
+              Gap: ${formatNumber(payload[1].value - payload[0].value)}
+            </p>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>The cost of staying put</h1>
+          <p className="page-subtitle">
+            Cumulative value over 3 years: your current trajectory vs. switching to Abridge
+          </p>
+        </div>
+        
+        {/* 3-Year Trajectory Chart */}
+        <section className="trajectory-section">
+          <div className="section-header-row">
+            <h2 className="section-label">3-YEAR VALUE TRAJECTORY</h2>
+          </div>
+          
+          <div className="chart-legend">
+            <div className="legend-item abridge">
+              <span className="legend-line solid"></span>
+              <span>Switch to Abridge</span>
+            </div>
+            <div className="legend-item current">
+              <span className="legend-line dashed"></span>
+              <span>Stay with current</span>
+            </div>
+          </div>
+          
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={320}>
+              <ComposedChart 
+                data={chartData} 
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <defs>
+                  <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#059669" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#059669" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id="currentGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#94a3b8" stopOpacity={0.1} />
+                    <stop offset="100%" stopColor="#94a3b8" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                
+                <XAxis 
+                  dataKey="period" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748b', fontSize: 12 }}
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748b', fontSize: 12 }}
+                  tickFormatter={(v) => `$${(v / 1000).toFixed(0)}K`}
+                  width={65}
+                />
+                
+                <Tooltip content={<CustomTooltip />} />
+                
+                {/* Current trajectory - dashed line */}
+                <Area 
+                  type="monotone" 
+                  dataKey="current" 
+                  stroke="#94a3b8" 
+                  strokeWidth={2}
+                  strokeDasharray="6 4"
+                  fill="url(#currentGradient)"
+                  dot={{ fill: '#94a3b8', strokeWidth: 0, r: 4 }}
+                />
+                
+                {/* Abridge trajectory - solid line */}
+                <Area 
+                  type="monotone" 
+                  dataKey="abridge" 
+                  stroke="#059669" 
+                  strokeWidth={3}
+                  fill="url(#abridgeGradient)"
+                  dot={{ fill: '#059669', strokeWidth: 0, r: 5 }}
+                />
+                
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Gap annotation */}
+          <div className="chart-annotation">
+            <div className="annotation-arrow">↕</div>
+            <div className="annotation-text">
+              <span className="annotation-value">${formatNumber(threeYearGap)}</span>
+              <span className="annotation-label">3-year gap</span>
+            </div>
+          </div>
+          
+        </section>
+        
+        {/* Year by Year Breakdown */}
+        <section className="breakdown-section">
+          <h2 className="section-label">THE GAP OVER TIME</h2>
+          
+          <div className="year-comparison-table">
+            <div className="table-header">
+              <div className="table-col"></div>
+              <div className="table-col">Current</div>
+              <div className="table-col">Abridge</div>
+              <div className="table-col highlight">Gap</div>
+            </div>
+            
+            <div className="table-row">
+              <div className="table-col label">Year 1</div>
+              <div className="table-col current">${formatNumber(currentAnnualValue)}</div>
+              <div className="table-col abridge">${formatNumber(abridgeAnnualValue)}</div>
+              <div className="table-col gap">+${formatNumber(primaryTotal)}</div>
+            </div>
+            
+            <div className="table-row">
+              <div className="table-col label">Year 2</div>
+              <div className="table-col current">${formatNumber(currentAnnualValue)}</div>
+              <div className="table-col abridge">${formatNumber(Math.round(abridgeAnnualValue * year2Growth))}</div>
+              <div className="table-col gap">+${formatNumber(Math.round(abridgeAnnualValue * year2Growth) - currentAnnualValue)}</div>
+            </div>
+            
+            <div className="table-row">
+              <div className="table-col label">Year 3</div>
+              <div className="table-col current">${formatNumber(currentAnnualValue)}</div>
+              <div className="table-col abridge">${formatNumber(Math.round(abridgeAnnualValue * year3Growth))}</div>
+              <div className="table-col gap">+${formatNumber(Math.round(abridgeAnnualValue * year3Growth) - currentAnnualValue)}</div>
+            </div>
+            
+            <div className="table-row total">
+              <div className="table-col label">3-Year Total</div>
+              <div className="table-col current">${formatNumber(currentThreeYear)}</div>
+              <div className="table-col abridge">${formatNumber(abridgeThreeYear)}</div>
+              <div className="table-col gap highlight">+${formatNumber(threeYearGap)}</div>
+            </div>
+          </div>
+        </section>
+        
+        {/* Cost of Waiting */}
+        <section className="cost-of-waiting-section">
+          <h2 className="section-label">THE COST OF WAITING</h2>
+          
+          <div className="waiting-comparison">
+            <div className="waiting-card best">
+              <span className="waiting-badge">RECOMMENDED</span>
+              <span className="waiting-label">SWITCH NOW</span>
+              <span className="waiting-sublabel">3-year additional value:</span>
+              <span className="waiting-value">${formatNumber(threeYearGap)}</span>
+            </div>
+            
+            <div className="waiting-card delayed">
+              <span className="waiting-label">WAIT 6 MONTHS</span>
+              <span className="waiting-sublabel">3-year additional value:</span>
+              <span className="waiting-value">${formatNumber(threeYearGap - sixMonthLoss)}</span>
+              <div className="waiting-loss">
+                <span className="loss-value">-${formatNumber(sixMonthLoss)}</span>
+                <span className="loss-note">lost forever</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="monthly-loss-callout">
+            <AlertTriangle size={18} />
+            <span>
+              Every month you wait = <strong>~${formatNumber(monthlyGapValue)}</strong> in value you can never recapture
+            </span>
+          </div>
+        </section>
+        
+        {/* Summary */}
+        <section className="summary-section">
+          <div className="summary-card">
+            <div className="summary-header">
+              <span>Your situation</span>
+              <button 
+                className="details-toggle-inline"
+                onClick={() => setShowDetails(!showDetails)}
+              >
+                {showDetails ? 'Hide details' : 'View details'}
+                {showDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
+            </div>
+            
+            <div className="summary-content">
+              <div className="summary-stat">
+                <span className="stat-label">Providers</span>
+                <span className="stat-value">{inputs.providers || 75}</span>
+              </div>
+              <div className="summary-stat">
+                <span className="stat-label">Utilization gap</span>
+                <span className="stat-value">{inputs.utilization}% → {benchmarks.utilization}%</span>
+              </div>
+              <div className="summary-stat">
+                <span className="stat-label">Efficiency gap</span>
+                <span className="stat-value">{currentEfficiency} min → {abridgeEfficiency} min</span>
+              </div>
+              <div className="summary-stat highlight">
+                <span className="stat-label">Annual gap</span>
+                <span className="stat-value">${formatNumber(primaryTotal)}</span>
+              </div>
+            </div>
+            
+            {showDetails && (
+              <div className="summary-details">
+                <p>This analysis compares your estimated current state against Abridge benchmarks. Actual results depend on:</p>
+                <ul>
+                  <li>Your specific specialty mix and care settings</li>
+                  <li>Current documentation workflows and EHR integration</li>
+                  <li>Provider adoption patterns and change management</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+        
+        {/* CTA */}
+        <section className="cta-section">
+          <button className="primary-cta">
+            <Phone size={18} />
+            <span>Let's Talk</span>
+          </button>
+          
+          <div className="secondary-actions">
+            <button className="secondary-action" onClick={copyLink}>
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              <span>{copied ? 'Copied!' : 'Copy link'}</span>
+            </button>
+            <button className="secondary-action" onClick={onBack}>
+              <Edit3 size={16} />
+              <span>Edit inputs</span>
+            </button>
+          </div>
+        </section>
+        
+      </main>
+      
+    </div>
+  );
+}
+
+CSS for the Dual-Line Chart:
+cssCopy/* ============ TRAJECTORY CHART STYLES ============ */
+
+.trajectory-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.legend-item.abridge {
+  color: #059669;
+}
+
+.legend-item.current {
+  color: #64748b;
+}
+
+.legend-line {
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-line.solid {
+  background: #059669;
+}
+
+.legend-line.dashed {
+  background: repeating-linear-gradient(
+    90deg,
+    #94a3b8,
+    #94a3b8 6px,
+    transparent 6px,
+    transparent 10px
+  );
+}
+
+.chart-container {
+  margin: 0 -12px;
+}
+
+/* Chart Tooltip */
+.chart-tooltip {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.tooltip-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tooltip-abridge,
+.tooltip-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.tooltip-abridge {
+  color: #059669;
+  font-weight: 600;
+}
+
+.tooltip-current {
+  color: #64748b;
+}
+
+.tooltip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.tooltip-dot.abridge {
+  background: #059669;
+}
+
+.tooltip-dot.current {
+  background: #94a3b8;
+}
+
+.tooltip-gap {
+  font-size: 13px;
+  font-weight: 600;
+  color: #059669;
+  margin: 10px 0 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Chart Annotation */
+.chart-annotation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  background: #f0fdf4;
+  border-radius: 12px;
+}
+
+.annotation-arrow {
+  font-size: 24px;
+  color: #059669;
+}
+
+.annotation-text {
+  text-align: left;
+}
+
+.annotation-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.annotation-label {
+  display: block;
+  font-size: 13px;
+  color: #065f46;
+}
+
+/* Year Comparison Table */
+.breakdown-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.year-comparison-table {
+  margin-top: 16px;
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.table-header {
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.table-header .table-col {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.03em;
+}
+
+.table-header .table-col.highlight {
+  color: #059669;
+}
+
+.table-row {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row.total {
+  background: #f8fafc;
+  margin: 12px -24px -24px;
+  padding: 16px 24px;
+  border-radius: 0 0 16px 16px;
+  border-bottom: none;
+}
+
+.table-col.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.table-col.current {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.table-col.abridge {
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.table-col.gap {
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.table-col.gap.highlight {
+  font-size: 16px;
+}
+
+/* Cost of Waiting */
+.cost-of-waiting-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.waiting-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+
+.waiting-card {
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  position: relative;
+}
+
+.waiting-card.best {
+  background: #f0fdf4;
+  border: 2px solid #059669;
+}
+
+.waiting-card.delayed {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.waiting-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #059669;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+  letter-spacing: 0.03em;
+}
+
+.waiting-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.waiting-sublabel {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.waiting-value {
+  display: block;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.waiting-card.best .waiting-value {
+  color: #059669;
+}
+
+.waiting-card.delayed .waiting-value {
+  color: #334155;
+}
+
+.waiting-loss {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.waiting-loss .loss-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.waiting-loss .loss-note {
+  display: block;
+  font-size: 12px;
+  color: #991b1b;
+  margin-top: 2px;
+}
+
+.monthly-loss-callout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 24px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #991b1b;
+}
+
+.monthly-loss-callout svg {
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.monthly-loss-callout strong {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* Summary */
+.summary-section {
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-header span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.details-toggle-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.details-toggle-inline:hover {
+  color: #334155;
+}
+
+.summary-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 20px 24px;
+}
+
+@media (max-width: 640px) {
+  .summary-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.summary-stat {
+  text-align: center;
+}
+
+.summary-stat .stat-label {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.summary-stat .stat-value {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.summary-stat.highlight .stat-value {
+  color: #059669;
+  font-size: 18px;
+}
+
+.summary-details {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: white;
+}
+
+.summary-details p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 12px 0;
+}
+
+.summary-details ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.summary-details li {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
