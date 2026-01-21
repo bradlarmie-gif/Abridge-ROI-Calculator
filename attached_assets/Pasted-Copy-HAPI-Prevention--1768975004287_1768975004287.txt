@@ -1,0 +1,97 @@
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 🏥  HAPI Prevention                      POTENTIAL   $500,000 ∧ │
+│     Shown separately — indirect causal link                     │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Hospital-acquired pressure injuries (HAPIs) cost $10K-$40K      │
+│ each — and CMS doesn't reimburse. Prevention depends on         │
+│ timely skin assessments and interventions. When assessments     │
+│ are documented in real-time, nothing falls through the cracks.  │
+└─────────────────────────────────────────────────────────────────┘
+
+📋 Your Calculation
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ HAPIs happen when assessments are missed or interventions are   │
+│ delayed. Real-time documentation ensures skin assessments,      │
+│ turning schedules, and risk factors are captured as they're     │
+│ observed — enabling earlier intervention. We show this as       │
+│ POTENTIAL value because the causal link is indirect.            │
+└─────────────────────────────────────────────────────────────────┘
+
+STEP 1: CURRENT HAPI VOLUME
+How many HAPIs occur today?
+
+Annual Admissions            HAPI Rate
+┌─────────────┐              ┌─────────────┐
+│   10,000    │      ×       │    2.5      │ %     =    250 HAPIs/year
+└─────────────┘              └─────────────┘
+
+National HAPI rates range 2-5% of admissions. Higher in ICU 
+and long-stay populations.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 2: DOCUMENTATION-PREVENTABLE
+How many could better documentation help prevent?
+
+Current HAPIs                Prevention Rate
+┌─────────────┐              ┌─────────────┐
+│     250     │      ×       │     10      │ %     =    25 HAPIs prevented
+└─────────────┘              └─────────────┘
+
+Not all HAPIs are documentation-preventable. 10% is conservative — 
+represents cases where real-time assessment documentation would 
+have triggered earlier intervention.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 3: COST AVOIDANCE
+What's the value?
+
+HAPIs Prevented              Cost per HAPI
+┌─────────────┐              ┌─────────────┐
+│      25     │      ×       │ $  20,000   │        =    $500,000
+└─────────────┘              └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 Benchmark: HAPI Cost                                         │
+│                                                                 │
+│ Stage 2 pressure injury             $10K - $15K                 │
+│ Stage 3 pressure injury             $20K - $30K                 │
+│ Stage 4 pressure injury             $30K - $50K+                │
+│                                                                 │
+│ CMS does NOT reimburse for hospital-acquired pressure injuries. │
+│ This is pure cost to the hospital.                              │
+│                                                                 │
+│ We use $20,000 as blended average.                              │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   Potential Value                                  $500,000     │
+│   25 HAPIs prevented × $20,000 cost per HAPI                    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ⚠️ WHY THIS IS "POTENTIAL" VALUE                                │
+│                                                                 │
+│ HAPIs are prevented through clinical care — turning, positioning│
+│ nutrition, skin care. Documentation SUPPORTS this but doesn't   │
+│ REPLACE it.                                                     │
+│                                                                 │
+│ We show this separately because:                                │
+│ • The causal link is indirect                                   │
+│ • Clinical practice matters more than documentation             │
+│ • We want to be intellectually honest                           │
+│                                                                 │
+│ That said — when assessments are documented in real-time,       │
+│ interventions happen faster. This value is REAL, just harder    │
+│ to attribute directly to Abridge.                               │
+└─────────────────────────────────

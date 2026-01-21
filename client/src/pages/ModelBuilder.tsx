@@ -226,11 +226,10 @@ interface DriverInputs {
     retentionImpact: number;   // % reduction in agency need (10%)
   };
   nursingRetention: {
-    turnoverRate: number;
-    burnoutPortion: number;
-    docAttribution: number;
-    preventionLevel: "conservative" | "typical" | "aggressive";
-    replacementCost: number;
+    turnoverRate: number;        // Annual nursing turnover rate (18%)
+    burnoutAttribution: number;  // % of turnover that's burnout-related (50%)
+    abridgeImpact: number;       // % of burnout turnover Abridge can prevent (20%)
+    replacementCost: number;     // Cost to replace a nurse ($50,000)
   };
   nursingSurvey: {
     enabled: boolean;  // Not quantified - qualitative value
@@ -503,11 +502,10 @@ export default function ModelBuilder({
       retentionImpact: 10,       // 10% reduction in agency need
     },
     nursingRetention: {
-      turnoverRate: 18,
-      burnoutPortion: 55,
-      docAttribution: 25,
-      preventionLevel: "typical",
-      replacementCost: 50000,
+      turnoverRate: 18,          // 18% annual turnover
+      burnoutAttribution: 50,    // 50% of turnover is burnout-related
+      abridgeImpact: 20,         // 20% of burnout turnover prevented
+      replacementCost: 50000,    // $50K replacement cost
     },
     nursingSurvey: {
       enabled: false,  // Not quantified - qualitative value
@@ -879,13 +877,15 @@ export default function ModelBuilder({
         return Math.round(ftesConverted * premium);
       }
       case "nursingRetention": {
-        const { turnoverRate, burnoutPortion, docAttribution, preventionLevel, replacementCost } = driverInputs.nursingRetention;
+        const { turnoverRate, burnoutAttribution, abridgeImpact, replacementCost } = driverInputs.nursingRetention;
+        // Step 1: Baseline turnover = Nurse FTEs × Turnover Rate
         const departures = nurseFTEs * (turnoverRate / 100);
-        const burnoutDepartures = departures * (burnoutPortion / 100);
-        const docRelated = burnoutDepartures * (docAttribution / 100);
-        const preventionPct = preventionLevel === "conservative" ? 30 : preventionLevel === "typical" ? 40 : 55;
-        const prevented = docRelated * (preventionPct / 100) * (utilizationRate / 100);
-        return Math.round(prevented * replacementCost);
+        // Step 2: Burnout-related = Departures × Burnout Attribution
+        const burnoutDepartures = departures * (burnoutAttribution / 100);
+        // Step 3: Abridge attribution = Burnout departures × Abridge Impact
+        const departuresAvoided = burnoutDepartures * (abridgeImpact / 100);
+        // Step 4: Cost savings = Departures Avoided × Replacement Cost
+        return Math.round(departuresAvoided * replacementCost);
       }
       case "nursingSurvey":
       case "nursingCareCoordination": {
@@ -5556,118 +5556,214 @@ export default function ModelBuilder({
   };
   
   const renderNursingRetentionInputs = () => {
-    const { turnoverRate, burnoutPortion, docAttribution, preventionLevel, replacementCost } = driverInputs.nursingRetention;
+    const { turnoverRate, burnoutAttribution, abridgeImpact, replacementCost } = driverInputs.nursingRetention;
+    
+    // Step 1: Baseline turnover = Nurse FTEs × Turnover Rate
     const departures = nurseFTEs * (turnoverRate / 100);
-    const burnoutDepartures = departures * (burnoutPortion / 100);
-    const docRelated = burnoutDepartures * (docAttribution / 100);
-    const preventionPct = preventionLevel === "conservative" ? 30 : preventionLevel === "typical" ? 40 : 55;
-    const prevented = docRelated * (preventionPct / 100) * (utilizationRate / 100);
+    // Step 2: Burnout-related = Departures × Burnout Attribution
+    const burnoutDepartures = departures * (burnoutAttribution / 100);
+    // Step 3: Abridge attribution = Burnout departures × Abridge Impact
+    const departuresAvoided = burnoutDepartures * (abridgeImpact / 100);
+    // Step 4: Cost savings = Departures Avoided × Replacement Cost
+    const annualValue = Math.round(departuresAvoided * replacementCost);
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
     
     return (
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Annual nursing turnover rate?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{turnoverRate}%</span>
+      <div className="space-y-4">
+        {/* Step 1: Baseline Turnover */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Baseline Turnover</p>
+          <p className="text-xs text-[#6B7280]">What's the current turnover situation?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Nurse FTEs</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{nurseFTEs}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Turnover Rate</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={turnoverRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, turnoverRate: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-retention-turnover-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Departures/Yr</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(departures)}
+              </div>
+            </div>
           </div>
-          <Slider
-            value={[turnoverRate]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, turnoverRate: val } }))}
-            min={10}
-            max={30}
-            step={2}
-            className="w-full"
-            data-testid="nursing-retention-turnover-slider"
-          />
-          <p className="text-xs text-[#6B7280]">National average is 18-22%</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {nurseFTEs} × {turnoverRate}% = {Math.round(departures).toLocaleString()} annual departures
+          <p className="text-xs text-[#6B7280] mt-2">Nursing turnover averages 18-25%. Higher than most roles due to burnout, schedules, and workload.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 2: Burnout-Related */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Burnout-Related</p>
+          <p className="text-xs text-[#6B7280]">How much is burnout-driven?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Departures</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(departures)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Burnout %</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={burnoutAttribution}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, burnoutAttribution: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-retention-burnout-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Preventable</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(burnoutDepartures)}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">~50% of nursing turnover is burnout-related. Documentation burden is consistently a top complaint in exit interviews.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 3: Abridge Attribution */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Attribution</p>
+          <p className="text-xs text-[#6B7280]">What can Abridge prevent?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Preventable</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(burnoutDepartures)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Abridge Impact</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={abridgeImpact}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, abridgeImpact: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-retention-impact-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Avoided</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {departuresAvoided.toFixed(1)}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">Documentation is ONE burnout driver for nurses (others: ratios, acuity, schedules). We use 20% — lower than physicians because nursing burnout is more multifactorial.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 4: Cost Savings */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
+          <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Avoided</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{departuresAvoided.toFixed(1)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Replacement Cost</label>
+              <div className="flex items-center justify-center">
+                <span className="mr-1 text-[#6B7280] text-xs">$</span>
+                <Input
+                  type="number"
+                  value={replacementCost}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, replacementCost: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-retention-cost-input"
+                />
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Annual Value</label>
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {formatCurrency(annualValue)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benchmark callout */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: Nurse Replacement Cost</p>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">Recruiting & hiring</span>
+              <span className="font-mono text-[#111827]">$5K - $15K</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">Onboarding & training</span>
+              <span className="font-mono text-[#111827]">$15K - $25K</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">Lost productivity</span>
+              <span className="font-mono text-[#111827]">$15K - $25K</span>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">Total: $40K - $60K. We use ${replacementCost.toLocaleString()} (mid-range)</p>
+        </div>
+
+        {/* What This Means callout */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">What This Means</p>
+          <p className="text-sm text-blue-800">
+            Annually, expect to retain ~{Math.round(departuresAvoided)} additional nurses you would have otherwise lost to burnout.
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Burnout-driven departures?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{burnoutPortion}%</span>
-          </div>
-          <Slider
-            value={[burnoutPortion]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, burnoutPortion: val } }))}
-            min={40}
-            max={70}
-            step={5}
-            className="w-full"
-            data-testid="nursing-retention-burnout-slider"
-          />
-          <p className="text-xs text-[#6B7280]">~55% of departures are burnout-related</p>
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Documentation attribution?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{docAttribution}%</span>
-          </div>
-          <Slider
-            value={[docAttribution]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, docAttribution: val } }))}
-            min={15}
-            max={40}
-            step={5}
-            className="w-full"
-            data-testid="nursing-retention-doc-attribution-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Documentation burden is the #1 driver of nursing burnout</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(departures).toLocaleString()} × {burnoutPortion}% × {docAttribution}% = {Math.round(docRelated).toLocaleString()} doc-driven departures
-          </p>
-        </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Prevention level?</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(["conservative", "typical", "aggressive"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, preventionLevel: opt } }))}
-                className={`p-3 rounded-lg border text-sm transition-all ${
-                  preventionLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
-                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
-                data-testid={`nursing-retention-prevention-${opt}`}
-              >
-                {opt === "conservative" && "30%"}
-                {opt === "typical" && "40%"}
-                {opt === "aggressive" && "55%"}
-              </button>
-            ))}
-          </div>
-        </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Replacement cost per nurse?</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={replacementCost}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, replacementCost: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="nursing-retention-cost-input"
-            />
-          </div>
-          <p className="text-xs text-[#6B7280]">$40K-$60K is typical (recruiting, training, onboarding)</p>
-        </div>
-        
+
+        {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <div>
+              <span className="font-medium text-[#111827]">Annual Value</span>
+              <p className="text-xs text-neutral-500 mt-0.5">{departuresAvoided.toFixed(1)} departures avoided × ${replacementCost.toLocaleString()} replacement cost</p>
+            </div>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(prevented * replacementCost))}
+              {formatCurrency(annualValue)}
             </span>
           </div>
-          <p className="text-xs text-neutral-400 font-mono mt-1">
-            {prevented.toFixed(1)} prevented × ${replacementCost.toLocaleString()}
+        </div>
+
+        {/* Timeline note */}
+        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            Retention impact typically measurable after 12+ months.
           </p>
         </div>
       </div>
