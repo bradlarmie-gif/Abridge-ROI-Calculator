@@ -1,4 +1,3 @@
-import { useLocation } from 'wouter';
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface ProgressDotsProps {
@@ -31,14 +30,15 @@ interface GlobalHeaderProps {
   showContext?: boolean;
   currentStep?: number;
   totalSteps?: number;
+  onLogoClick?: () => void;
 }
 
-export function GlobalHeader({ pageName, showContext = true, currentStep, totalSteps }: GlobalHeaderProps) {
-  const [, setLocation] = useLocation();
-
+export function GlobalHeader({ pageName, showContext = true, currentStep, totalSteps, onLogoClick }: GlobalHeaderProps) {
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setLocation('/');
+    if (onLogoClick) {
+      onLogoClick();
+    }
   };
 
   return (

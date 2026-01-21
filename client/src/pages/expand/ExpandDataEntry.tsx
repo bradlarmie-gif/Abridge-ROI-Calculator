@@ -28,6 +28,7 @@ interface ExpandDataEntryProps {
   setMetricsData: (data: MetricsData) => void;
   onNext: () => void;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 // Level of Service - using Level 1-5 instead of CPT codes
@@ -67,6 +68,7 @@ export default function ExpandDataEntry({
   setMetricsData,
   onNext,
   onBack,
+  onBackToJourney,
 }: ExpandDataEntryProps) {
   
   const updateMetric = <T extends keyof MetricsData>(
@@ -138,7 +140,7 @@ export default function ExpandDataEntry({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand Data Entry" currentStep={2} totalSteps={5} />
+      <GlobalHeader pageName="Expand Data Entry" currentStep={2} totalSteps={5} onLogoClick={onBackToJourney} />
 
       <div className="max-w-5xl mx-auto px-6 pt-[96px]">
         <Button

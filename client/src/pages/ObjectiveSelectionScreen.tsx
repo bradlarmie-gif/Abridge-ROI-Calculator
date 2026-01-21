@@ -2437,7 +2437,8 @@ export default function ObjectiveSelectionScreen({
       <GlobalHeader 
         pageName="Explore" 
         currentStep={currentPage !== "orientation" ? currentStep : undefined} 
-        totalSteps={currentPage !== "orientation" ? 4 : undefined} 
+        totalSteps={currentPage !== "orientation" ? 4 : undefined}
+        onLogoClick={onBackToJourney}
       />
 
       {/* Content */}

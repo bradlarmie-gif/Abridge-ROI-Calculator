@@ -10,6 +10,7 @@ interface ExpandJourneyExpansionProps {
   metricsData: MetricsData;
   selectedMetrics: MetricType[];
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 export default function ExpandJourneyExpansion({
@@ -17,6 +18,7 @@ export default function ExpandJourneyExpansion({
   metricsData,
   selectedMetrics,
   onBack,
+  onBackToJourney,
 }: ExpandJourneyExpansionProps) {
   
   const providers = deploymentData.providers || 100;
@@ -104,7 +106,7 @@ export default function ExpandJourneyExpansion({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand Journey" currentStep={5} totalSteps={5} />
+      <GlobalHeader pageName="Expand Journey" currentStep={5} totalSteps={5} onLogoClick={onBackToJourney} />
 
       <main className="max-w-5xl mx-auto px-6 pt-[96px] pb-10">
         <div className="flex items-center justify-between mb-8">

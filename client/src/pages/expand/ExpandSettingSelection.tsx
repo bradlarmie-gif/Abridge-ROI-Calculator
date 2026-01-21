@@ -11,7 +11,7 @@ interface ExpandSettingSelectionProps {
 export default function ExpandSettingSelection({ onNext, onExplore, onBack }: ExpandSettingSelectionProps) {
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand" />
+      <GlobalHeader pageName="Expand" onLogoClick={onBack} />
 
       <main className="max-w-4xl mx-auto px-6 pt-[96px] pb-16">
         {onBack && (

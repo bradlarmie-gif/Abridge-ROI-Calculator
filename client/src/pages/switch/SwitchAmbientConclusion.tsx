@@ -67,7 +67,7 @@ export default function SwitchAmbientConclusion({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <GlobalHeader pageName="Switch Summary" currentStep={currentStep} totalSteps={totalSteps} />
+      <GlobalHeader pageName="Switch Summary" currentStep={currentStep} totalSteps={totalSteps} onLogoClick={onBackToJourney} />
       
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 md:px-10 pt-[96px] pb-12">
         <Button

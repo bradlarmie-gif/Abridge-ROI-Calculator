@@ -11,6 +11,7 @@ interface ExpandDeploymentSetupProps {
   setSelectedMetrics: (metrics: MetricType[]) => void;
   onNext: () => void;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 const METRICS_CONFIG = [
@@ -71,6 +72,7 @@ export default function ExpandDeploymentSetup({
   setSelectedMetrics,
   onNext,
   onBack,
+  onBackToJourney,
 }: ExpandDeploymentSetupProps) {
   
   const abridgeEncounters = useMemo(() => {
@@ -97,7 +99,7 @@ export default function ExpandDeploymentSetup({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand Setup" currentStep={1} totalSteps={5} />
+      <GlobalHeader pageName="Expand Setup" currentStep={1} totalSteps={5} onLogoClick={onBackToJourney} />
 
       <main className="max-w-4xl mx-auto px-6 pt-[96px] pb-10">
         <Button

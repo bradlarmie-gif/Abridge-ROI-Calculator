@@ -10,6 +10,7 @@ interface ExpandPerformanceDashboardProps {
   metricsData: MetricsData;
   onNext: () => void;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 export default function ExpandPerformanceDashboard({
@@ -18,6 +19,7 @@ export default function ExpandPerformanceDashboard({
   metricsData,
   onNext,
   onBack,
+  onBackToJourney,
 }: ExpandPerformanceDashboardProps) {
   
   const abridgeEncounters = useMemo(() => {
@@ -69,7 +71,7 @@ export default function ExpandPerformanceDashboard({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand Dashboard" currentStep={3} totalSteps={5} />
+      <GlobalHeader pageName="Expand Dashboard" currentStep={3} totalSteps={5} onLogoClick={onBackToJourney} />
 
       <div className="max-w-5xl mx-auto px-6 pt-[96px]">
         <Button

@@ -10,6 +10,7 @@ interface ExpandROIStoryProps {
   selectedMetrics: MetricType[];
   onNext: () => void;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 export default function ExpandROIStory({
@@ -18,6 +19,7 @@ export default function ExpandROIStory({
   selectedMetrics,
   onNext,
   onBack,
+  onBackToJourney,
 }: ExpandROIStoryProps) {
   
   const abridgeEncounters = useMemo(() => {
@@ -84,7 +86,7 @@ export default function ExpandROIStory({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand ROI" currentStep={4} totalSteps={5} />
+      <GlobalHeader pageName="Expand ROI" currentStep={4} totalSteps={5} onLogoClick={onBackToJourney} />
 
       <main className="max-w-4xl mx-auto px-6 pt-[96px] pb-10">
         <Button

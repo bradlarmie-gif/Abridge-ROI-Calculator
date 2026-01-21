@@ -342,6 +342,7 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           totalSteps={totalSteps}
           onNext={goNext}
           onBack={goBack}
+          onBackToJourney={onBackToJourney}
         />
       );
     }
@@ -355,6 +356,7 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           totalSteps={totalSteps}
           onNext={goNext}
           onBack={goBack}
+          onBackToJourney={onBackToJourney}
         />
       );
     }
@@ -386,6 +388,7 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           totalSteps={totalSteps}
           onNext={goNext}
           onBack={goBack}
+          onBackToJourney={onBackToJourney}
         />
       );
     }
@@ -398,6 +401,7 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           totalSteps={totalSteps}
           onNext={goNext}
           onBack={goBack}
+          onBackToJourney={onBackToJourney}
         />
       );
     }
@@ -411,6 +415,7 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
           totalSteps={totalSteps}
           onNext={goNext}
           onBack={goBack}
+          onBackToJourney={onBackToJourney}
         />
       );
     }

@@ -106,6 +106,7 @@ export default function App() {
             onBack={handleBackToExplore}
             onComplete={handleValueComplete}
             initialResults={valueResults}
+            onBackToJourney={handleBackToJourney}
           />
         )}
 
@@ -125,6 +126,7 @@ export default function App() {
             modelResults={modelResults}
             onBack={handleBackToModelBuilder}
             onEditModel={handleBackToModelBuilder}
+            onBackToJourney={handleBackToJourney}
           />
         )}
 

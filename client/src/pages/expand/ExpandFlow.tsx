@@ -132,6 +132,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             setSelectedMetrics={setSelectedMetrics}
             onNext={goNext}
             onBack={goBack}
+            onBackToJourney={goBackToJourney}
           />
         );
       case 3:
@@ -143,6 +144,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             setMetricsData={setMetricsData}
             onNext={goNext}
             onBack={goBack}
+            onBackToJourney={goBackToJourney}
           />
         );
       case 4:
@@ -153,6 +155,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             metricsData={metricsData}
             onNext={goNext}
             onBack={goBack}
+            onBackToJourney={goBackToJourney}
           />
         );
       case 5:
@@ -163,6 +166,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             selectedMetrics={selectedMetrics}
             onNext={goNext}
             onBack={goBack}
+            onBackToJourney={goBackToJourney}
           />
         );
       case 6:
@@ -172,6 +176,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             metricsData={metricsData}
             selectedMetrics={selectedMetrics}
             onBack={goBack}
+            onBackToJourney={goBackToJourney}
           />
         );
       default:

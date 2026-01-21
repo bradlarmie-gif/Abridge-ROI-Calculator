@@ -14,6 +14,7 @@ interface SwitchAmbientSetupProps {
   totalSteps: number;
   onNext: () => void;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 function formatNumber(value: number): string {
@@ -110,7 +111,8 @@ export default function SwitchAmbientSetup({
   currentStep,
   totalSteps,
   onNext,
-  onBack
+  onBack,
+  onBackToJourney
 }: SwitchAmbientSetupProps) {
   
   const handleProviderRangeChange = (rangeId: string) => {
@@ -175,7 +177,7 @@ export default function SwitchAmbientSetup({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <GlobalHeader pageName="Switch" currentStep={currentStep} totalSteps={totalSteps} />
+      <GlobalHeader pageName="Switch" currentStep={currentStep} totalSteps={totalSteps} onLogoClick={onBackToJourney} />
       
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 pt-[96px] pb-12">
         <Button

@@ -55,6 +55,7 @@ interface ModelBuilderProps {
   onBack: () => void;
   onComplete: (results: ValueResults) => void;
   initialResults?: ValueResults | null;
+  onBackToJourney?: () => void;
 }
 
 export interface ModelResults {
@@ -326,6 +327,7 @@ export default function ModelBuilder({
   onBack,
   onComplete,
   initialResults,
+  onBackToJourney,
 }: ModelBuilderProps) {
   const isEDSettingInit = selectedSettings.includes("ed");
   const isInpatientSettingInit = selectedSettings.includes("inpatient");
@@ -5990,7 +5992,7 @@ export default function ModelBuilder({
         }}
       />
       
-      <GlobalHeader pageName="Explore Model" currentStep={3} totalSteps={4} />
+      <GlobalHeader pageName="Explore Model" currentStep={3} totalSteps={4} onLogoClick={onBackToJourney} />
       
       <div className="max-w-7xl mx-auto px-6 pt-[96px] pb-8">
         <Button

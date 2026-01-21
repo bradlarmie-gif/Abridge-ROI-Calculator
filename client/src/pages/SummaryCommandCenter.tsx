@@ -43,6 +43,7 @@ interface SummaryCommandCenterProps {
   modelResults: ModelResults;
   onBack: () => void;
   onEditModel: () => void;
+  onBackToJourney?: () => void;
 }
 
 // ============================================================================
@@ -137,6 +138,7 @@ export default function SummaryCommandCenter({
   modelResults,
   onBack,
   onEditModel,
+  onBackToJourney,
 }: SummaryCommandCenterProps) {
   const [copied, setCopied] = useState(false);
   
@@ -266,7 +268,7 @@ export default function SummaryCommandCenter({
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
-      <GlobalHeader pageName="Explore Summary" currentStep={4} totalSteps={4} />
+      <GlobalHeader pageName="Explore Summary" currentStep={4} totalSteps={4} onLogoClick={onBackToJourney} />
 
       <div className="max-w-6xl mx-auto px-6 pt-[96px] pb-8 space-y-8">
         {/* Action bar */}

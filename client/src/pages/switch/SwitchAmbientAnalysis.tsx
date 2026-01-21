@@ -43,6 +43,7 @@ interface SwitchAmbientAnalysisProps {
   totalSteps: number;
   onNext: () => void;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 function formatNumber(value: number): string {
@@ -56,7 +57,8 @@ export default function SwitchAmbientAnalysis({
   currentStep,
   totalSteps,
   onNext,
-  onBack
+  onBack,
+  onBackToJourney
 }: SwitchAmbientAnalysisProps) {
   
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
@@ -130,7 +132,7 @@ export default function SwitchAmbientAnalysis({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <GlobalHeader pageName="Switch Analysis" currentStep={currentStep} totalSteps={totalSteps} />
+      <GlobalHeader pageName="Switch Analysis" currentStep={currentStep} totalSteps={totalSteps} onLogoClick={onBackToJourney} />
       
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 pt-[96px] pb-12">
         <Button
