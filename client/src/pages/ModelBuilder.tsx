@@ -4332,14 +4332,14 @@ export default function ModelBuilder({
             <div>
               <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
               <p className="text-sm text-amber-800 leading-relaxed">
-                CDI teams spend enormous effort querying physicians for clarification. Better initial documentation reduces query volume — saving CDI time and reducing physician interruptions.
+                Many CDI queries are simply asking physicians to document what they already discussed with the patient. When Abridge captures these conversations automatically, the query becomes unnecessary — freeing CDI to focus on complex cases.
               </p>
             </div>
           </div>
         </div>
 
         {/* Step 1: Current Query Volume */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Query Volume</span>
           </div>
@@ -4366,25 +4366,19 @@ export default function ModelBuilder({
                 <span className="text-sm text-[#6B7280]">%</span>
               </div>
             </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(annualQueries).toLocaleString()} queries/year</span>
           </div>
           
-          <div className="text-center py-2">
-            <span className="text-sm text-[#6B7280]">Queries/Year: </span>
-            <span className="font-mono font-semibold text-[#111827]">{Math.round(annualQueries).toLocaleString()}</span>
-          </div>
-          
-          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
-            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-800">
-              CDI query rates typically range 20-40% of admissions. 30% is average for most health systems.
-            </p>
-          </div>
+          <p className="text-xs text-[#6B7280]">
+            CDI query rates typically range 20-40% of admissions. 30% is average for most health systems.
+          </p>
         </div>
 
         <div className="border-t border-dashed border-neutral-300" />
 
         {/* Step 2: Queries Avoided */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Queries Avoided</span>
           </div>
@@ -4411,25 +4405,19 @@ export default function ModelBuilder({
                 <span className="text-sm text-[#6B7280]">%</span>
               </div>
             </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(queriesAvoided).toLocaleString()} queries avoided</span>
           </div>
           
-          <div className="text-center py-2">
-            <span className="text-sm text-[#6B7280]">Queries Avoided: </span>
-            <span className="font-mono font-semibold text-[#111827]">{Math.round(queriesAvoided).toLocaleString()}</span>
-          </div>
-          
-          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
-            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-800">
-              When initial documentation is complete, CDI doesn't need to query for clarification. 25% is conservative — many queries are simply asking physicians to document what they already discussed with the patient.
-            </p>
-          </div>
+          <p className="text-xs text-[#6B7280]">
+            When initial documentation is complete, CDI doesn't need to query. 25% is conservative — many queries ask for info that was discussed but not documented.
+          </p>
         </div>
 
         <div className="border-t border-dashed border-neutral-300" />
 
         {/* Step 3: Operational Savings */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Operational Savings</span>
           </div>
@@ -4456,60 +4444,22 @@ export default function ModelBuilder({
                 />
               </div>
             </div>
+            <span className="text-lg text-[#6B7280]">=</span>
+            <span className="font-mono font-semibold text-emerald-600">{formatCurrency(Math.round(annualSavings))}</span>
           </div>
           
-          {/* What's in the $50 per query callout */}
+          {/* Benchmark: Cost per Query */}
           <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-semibold text-[#6B7280]">WHAT'S IN THE $50 PER QUERY?</span>
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+              <span className="text-xs font-semibold text-[#6B7280]">Benchmark: Cost per Query</span>
             </div>
-            <div className="space-y-2 text-xs text-[#6B7280]">
-              <p className="font-medium">CDI Specialist time</p>
-              <ul className="ml-3 space-y-0.5">
-                <li>• Research & review: 10-15 min</li>
-                <li>• Writing query: 5-10 min</li>
-                <li>• Follow-up & tracking: 5-10 min</li>
-              </ul>
-              <p className="font-medium mt-2">Physician time</p>
-              <ul className="ml-3 space-y-0.5">
-                <li>• Reading & responding: 5-10 min</li>
-                <li>• Context switching cost</li>
-              </ul>
-              <p className="mt-2 text-neutral-400 italic">
-                Fully loaded cost: $50-$100 per query. We use $50 as a conservative estimate.
-              </p>
-            </div>
-          </div>
-          
-          {/* Additional Benefits callout */}
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-start gap-2 mb-2">
-              <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-              <span className="text-xs font-semibold text-blue-800">ADDITIONAL BENEFIT (Not Quantified)</span>
-            </div>
-            <div className="space-y-1 text-xs text-blue-800 ml-6">
-              <p>Fewer queries also means:</p>
-              <ul className="space-y-0.5">
-                <li>• Faster DRG finalization → faster billing cycles</li>
-                <li>• Reduced physician administrative burden</li>
-                <li>• CDI team can focus on complex cases</li>
-                <li>• Better physician-CDI relationships</li>
-              </ul>
-            </div>
-          </div>
-          
-          {/* Benchmark callout */}
-          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-semibold text-[#6B7280]">BENCHMARK: Query Rates</span>
-            </div>
-            <div className="space-y-1 text-xs text-[#6B7280]">
-              <div className="flex justify-between"><span>Low query rate (mature CDI)</span><span className="font-mono">15-25%</span></div>
-              <div className="flex justify-between"><span>Average</span><span className="font-mono">25-35%</span></div>
-              <div className="flex justify-between"><span>High query rate</span><span className="font-mono">35-45%</span></div>
+            <div className="space-y-1.5 text-xs text-[#6B7280]">
+              <div className="flex justify-between"><span>CDI Specialist time (research, write, follow-up)</span><span className="font-mono">20-30 min</span></div>
+              <div className="flex justify-between"><span>Physician time (read, respond)</span><span className="font-mono">5-10 min</span></div>
             </div>
             <p className="text-xs text-neutral-400 mt-3">
-              Your input: <span className="font-mono font-medium">{queryRate}%</span>
+              Fully loaded cost: $50-$100 per query. We use $50 conservatively.
             </p>
           </div>
         </div>
@@ -4523,7 +4473,15 @@ export default function ModelBuilder({
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(queriesAvoided).toLocaleString()} queries avoided × ${costPerQuery}
+            {Math.round(queriesAvoided).toLocaleString()} queries avoided × ${costPerQuery} per query
+          </p>
+        </div>
+        
+        {/* Additional Benefit Note */}
+        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            Additional benefit: Faster DRG finalization → faster billing cycles.
           </p>
         </div>
       </div>

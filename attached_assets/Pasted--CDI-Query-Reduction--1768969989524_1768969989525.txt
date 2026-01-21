@@ -1,0 +1,76 @@
+┌─────────────────────────────────────────────────────────────────┐
+│ 📝  CDI Query Reduction                              $30,000  ∧ │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ CDI teams spend enormous effort querying physicians for         │
+│ clarification. Better initial documentation reduces query       │
+│ volume — saving CDI time and reducing physician interruptions.  │
+└─────────────────────────────────────────────────────────────────┘
+
+📋 Your Calculation
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Many CDI queries are simply asking physicians to document       │
+│ what they already discussed with the patient. When Abridge      │
+│ captures these conversations automatically, the query becomes   │
+│ unnecessary — freeing CDI to focus on complex cases.            │
+└─────────────────────────────────────────────────────────────────┘
+
+STEP 1: CURRENT QUERY VOLUME
+How many queries happen today?
+
+Admissions                   Query Rate
+┌─────────────┐              ┌─────────────┐
+│    8,000    │      ×       │     30      │ %     =    2,400 queries/year
+└─────────────┘              └─────────────┘
+
+CDI query rates typically range 20-40% of admissions. 30% is 
+average for most health systems.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 2: QUERIES AVOIDED
+How many can better documentation prevent?
+
+Queries                      Reduction Rate
+┌─────────────┐              ┌─────────────┐
+│    2,400    │      ×       │     25      │ %     =    600 queries avoided
+└─────────────┘              └─────────────┘
+
+When initial documentation is complete, CDI doesn't need to query. 
+25% is conservative — many queries ask for info that was discussed 
+but not documented.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 3: OPERATIONAL SAVINGS
+What's the efficiency value?
+
+Queries Avoided              Cost per Query
+┌─────────────┐              ┌─────────────┐
+│     600     │      ×       │ $    50     │        =    $30,000
+└─────────────┘              └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 Benchmark: Cost per Query                                    │
+│                                                                 │
+│ CDI Specialist time (research, write, follow-up)    20-30 min   │
+│ Physician time (read, respond)                      5-10 min    │
+│                                                                 │
+│ Fully loaded cost: $50-$100 per query                           │
+│ We use $50 conservatively.                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   Annual Savings                                     $30,000    │
+│   600 queries avoided × $50 per query                           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+⚠️ Additional benefit: Faster DRG finalization → faster billing cycles.
