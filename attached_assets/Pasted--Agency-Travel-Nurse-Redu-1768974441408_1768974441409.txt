@@ -1,0 +1,90 @@
+┌─────────────────────────────────────────────────────────────────┐
+│ 💵  Agency & Travel Nurse Reduction                 $225,000  ∧ │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ When staff nurses burn out and leave, hospitals fill gaps with  │
+│ agency nurses at 2-3× the cost. Improving retention through     │
+│ reduced documentation burden directly impacts agency spend.     │
+└─────────────────────────────────────────────────────────────────┘
+
+📋 Your Calculation
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Agency and travel nurses cost $150K-$200K/year fully loaded,    │
+│ compared to $75K-$90K for staff nurses. Every staff nurse you   │
+│ retain is an agency nurse you don't need. Better documentation  │
+│ experience → better retention → less agency dependency.         │
+└─────────────────────────────────────────────────────────────────┘
+
+STEP 1: CURRENT AGENCY UTILIZATION
+How much agency are you using?
+
+Staffed Beds                 Agency FTEs per Bed
+┌─────────────┐              ┌─────────────┐
+│     200     │      ×       │    0.15     │        =    30 agency FTEs
+└─────────────┘              └─────────────┘
+
+Many hospitals run 10-20% of nursing as agency/travelers. 
+0.15 FTEs per bed = 15% agency utilization.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 2: AGENCY PREMIUM
+What's the cost difference?
+
+Staff Salary                 Agency Cost                  Premium
+┌─────────────┐              ┌─────────────┐              ┌─────────────┐
+│ $  75,000   │      vs      │ $ 150,000   │      =       │ $  75,000   │ per FTE
+└─────────────┘              └─────────────┘              └─────────────┘
+
+Agency nurses cost ~2× staff nurses when fully loaded 
+(agency fees, housing, travel, benefits).
+
+────────────────────────────────────────────────────────────────────
+
+STEP 3: RETENTION-DRIVEN REDUCTION
+How much can better retention reduce agency need?
+
+Agency FTEs                  Retention Impact
+┌─────────────┐              ┌─────────────┐
+│      30     │      ×       │     10      │ %     =    3.0 FTEs converted
+└─────────────┘              └─────────────┘
+
+When staff nurses stay instead of burning out, agency need 
+decreases. 10% is conservative — driven by documentation 
+burden reduction improving retention.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 4: COST SAVINGS
+What's the budget impact?
+
+FTEs Converted               Premium per FTE
+┌─────────────┐              ┌─────────────┐
+│     3.0     │      ×       │ $  75,000   │        =    $225,000
+└─────────────┘              └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 Benchmark: Agency vs Staff Cost                              │
+│                                                                 │
+│ Staff RN (fully loaded)              $70K - $90K                │
+│ Agency RN (fully loaded)             $140K - $200K              │
+│ Premium                              $65K - $100K               │
+│                                                                 │
+│ We use $75,000 premium (conservative)                           │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   Annual Savings                                    $225,000    │
+│   3.0 agency FTEs converted × $75,000 premium                   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+⚠️ This is an indirect benefit — the logic chain is: 
+   better retention → less agency need → budget savings.

@@ -1,0 +1,89 @@
+┌─────────────────────────────────────────────────────────────────┐
+│ ⏱️  Overtime Reduction                              $486,000  ∧ │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Nursing overtime is often driven by end-of-shift documentation  │
+│ catch-up. When charting happens in real-time throughout the     │
+│ shift, nurses leave on time. This is real budget savings you    │
+│ can measure in 30 days.                                         │
+└─────────────────────────────────────────────────────────────────┘
+
+📋 Your Calculation
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Nurses spend 25-35% of their shift on documentation. Much of    │
+│ it gets pushed to end-of-shift, triggering overtime. Real-time  │
+│ ambient documentation into flowsheets captures assessments,     │
+│ vitals, and observations as they happen — eliminating the       │
+│ charting backlog.                                               │
+└─────────────────────────────────────────────────────────────────┘
+
+STEP 1: CURRENT OVERTIME
+How much OT exists today?
+
+Nurse FTEs            OT Hrs/Week           Weeks/Year
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│     300     │   ×   │      4      │   ×   │     50      │   =   60,000 annual OT hrs
+└─────────────┘       └─────────────┘       └─────────────┘
+
+Nursing OT averages 3-5 hours per nurse per week. Higher on 
+understaffed units.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 2: DOCUMENTATION-DRIVEN OT
+How much is charting catch-up?
+
+Total OT Hours               Doc-Related %
+┌─────────────┐              ┌─────────────┐
+│   60,000    │      ×       │     40      │ %     =    24,000 doc-driven OT hrs
+└─────────────┘              └─────────────┘
+
+Not all OT is documentation. ~40% is end-of-shift charting 
+catch-up that real-time ambient documentation can address.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 3: HOURS ELIMINATED
+How much can real-time documentation prevent?
+
+Doc-Driven OT        Reduction Rate        Adoption
+┌─────────────┐      ┌─────────────┐       ┌─────────────┐
+│   24,000    │  ×   │     50      │ % ×   │     60      │ %   =   7,200 hrs eliminated
+└─────────────┘      └─────────────┘       └─────────────┘
+
+50% reduction × 60% adoption = 30% of doc-driven OT eliminated.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 4: COST SAVINGS
+What's the budget impact?
+
+Hours Eliminated             OT Rate
+┌─────────────┐              ┌─────────────┐
+│    7,200    │      ×       │ $   67.50   │        =    $486,000
+└─────────────┘              └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 Benchmark: Nursing OT Rate                                   │
+│                                                                 │
+│ Base RN hourly rate                  $40 - $50                  │
+│ OT rate (1.5×)                       $60 - $75                  │
+│                                                                 │
+│ We use $67.50 (1.5× of $45 base)                                │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   Annual Savings                                    $486,000    │
+│   7,200 OT hours eliminated × $67.50/hr                         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+⚠️ This is DIRECT, MEASURABLE savings. Track it month-over-month 
+   in payroll data.

@@ -207,9 +207,10 @@ interface DriverInputs {
   };
   // Nursing-specific drivers
   nursingOvertime: {
-    hoursPerWeek: number;
-    docPortionPct: number;
-    reductionLevel: "conservative" | "typical" | "aggressive";
+    otHoursPerWeek: number;
+    weeksPerYear: number;
+    docRelatedPct: number;
+    reductionRate: number;
     baseHourlyRate: number;
   };
   nursingHAPI: {
@@ -483,9 +484,10 @@ export default function ModelBuilder({
     },
     // Nursing defaults
     nursingOvertime: {
-      hoursPerWeek: 4,
-      docPortionPct: 45,
-      reductionLevel: "typical",
+      otHoursPerWeek: 4,
+      weeksPerYear: 50,
+      docRelatedPct: 40,
+      reductionRate: 50,
       baseHourlyRate: 45,
     },
     nursingHAPI: {
@@ -847,12 +849,15 @@ export default function ModelBuilder({
       }
       // Nursing Drivers
       case "nursingOvertime": {
-        const { hoursPerWeek, docPortionPct, reductionLevel, baseHourlyRate } = driverInputs.nursingOvertime;
+        const { otHoursPerWeek, weeksPerYear, docRelatedPct, reductionRate, baseHourlyRate } = driverInputs.nursingOvertime;
+        // Step 1: Current overtime = Nurses × Hours/Week × Weeks/Year
+        const totalOTHours = nurseFTEs * otHoursPerWeek * weeksPerYear;
+        // Step 2: Documentation-driven OT = Total OT × Doc-Related %
+        const docDrivenOT = totalOTHours * (docRelatedPct / 100);
+        // Step 3: Hours eliminated = Doc-Driven OT × Reduction Rate × Adoption
+        const hoursEliminated = docDrivenOT * (reductionRate / 100) * (utilizationRate / 100);
+        // Step 4: Cost savings = Hours × OT Rate (1.5×)
         const overtimeRate = baseHourlyRate * 1.5;
-        const totalOTHours = nurseFTEs * hoursPerWeek * 50; // 50 weeks
-        const docRelatedOT = totalOTHours * (docPortionPct / 100);
-        const reductionPct = reductionLevel === "conservative" ? 45 : reductionLevel === "typical" ? 60 : 75;
-        const hoursEliminated = docRelatedOT * (reductionPct / 100) * (utilizationRate / 100);
         return Math.round(hoursEliminated * overtimeRate);
       }
       case "nursingHAPI": {
@@ -4948,101 +4953,217 @@ export default function ModelBuilder({
   
   // Nursing Driver Render Functions
   const renderNursingOvertimeInputs = () => {
-    const { hoursPerWeek, docPortionPct, reductionLevel, baseHourlyRate } = driverInputs.nursingOvertime;
+    const { otHoursPerWeek, weeksPerYear, docRelatedPct, reductionRate, baseHourlyRate } = driverInputs.nursingOvertime;
+    
+    // Step 1: Current overtime = Nurses × Hours/Week × Weeks/Year
+    const totalOTHours = nurseFTEs * otHoursPerWeek * weeksPerYear;
+    // Step 2: Documentation-driven OT = Total OT × Doc-Related %
+    const docDrivenOT = totalOTHours * (docRelatedPct / 100);
+    // Step 3: Hours eliminated = Doc-Driven OT × Reduction Rate × Adoption
+    const hoursEliminated = docDrivenOT * (reductionRate / 100) * (utilizationRate / 100);
+    // Step 4: Cost savings = Hours × OT Rate (1.5×)
     const overtimeRate = baseHourlyRate * 1.5;
-    const totalOTHours = nurseFTEs * hoursPerWeek * 50;
-    const docRelatedOT = totalOTHours * (docPortionPct / 100);
-    const reductionPct = reductionLevel === "conservative" ? 45 : reductionLevel === "typical" ? 60 : 75;
-    const hoursEliminated = docRelatedOT * (reductionPct / 100) * (utilizationRate / 100);
+    const annualSavings = Math.round(hoursEliminated * overtimeRate);
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
     
     return (
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Average OT hours per nurse per week?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{hoursPerWeek} hrs</span>
+      <div className="space-y-4">
+        {/* Step 1: Current Overtime */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Overtime</p>
+          <p className="text-xs text-[#6B7280]">How much OT exists today?</p>
+          
+          <div className="grid grid-cols-7 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Nurse FTEs</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{nurseFTEs}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">OT Hrs/Week</label>
+              <Input
+                type="number"
+                value={otHoursPerWeek}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, otHoursPerWeek: Number(e.target.value) || 0 } }))}
+                className="w-full text-center font-mono text-sm h-8"
+                data-testid="nursing-ot-hours-week-input"
+              />
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Weeks/Year</label>
+              <Input
+                type="number"
+                value={weeksPerYear}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, weeksPerYear: Number(e.target.value) || 0 } }))}
+                className="w-full text-center font-mono text-sm h-8"
+                data-testid="nursing-ot-weeks-year-input"
+              />
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Annual OT</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {totalOTHours.toLocaleString()}
+              </div>
+            </div>
           </div>
-          <Slider
-            value={[hoursPerWeek]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, hoursPerWeek: val } }))}
-            min={1}
-            max={8}
-            step={0.5}
-            className="w-full"
-            data-testid="nursing-overtime-hours-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Nursing OT is typically 3-6 hours/week</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {nurseFTEs} nurses × {hoursPerWeek} hrs × 50 wks = {totalOTHours.toLocaleString()} OT hrs
-          </p>
+          <p className="text-xs text-[#6B7280] mt-2">Nursing OT averages 3-5 hours per nurse per week. Higher on understaffed units.</p>
         </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What portion is documentation catch-up?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{docPortionPct}%</span>
+
+        <StepDivider />
+
+        {/* Step 2: Documentation-Driven OT */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Driven OT</p>
+          <p className="text-xs text-[#6B7280]">How much is charting catch-up?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Total OT Hrs</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{totalOTHours.toLocaleString()}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Doc-Related %</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={docRelatedPct}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, docRelatedPct: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-ot-doc-pct-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Doc-Driven OT</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(docDrivenOT).toLocaleString()}
+              </div>
+            </div>
           </div>
-          <Slider
-            value={[docPortionPct]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, docPortionPct: val } }))}
-            min={20}
-            max={60}
-            step={5}
-            className="w-full"
-            data-testid="nursing-overtime-doc-portion-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Nurses report 40-50% of OT is charting</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {totalOTHours.toLocaleString()} × {docPortionPct}% = {Math.round(docRelatedOT).toLocaleString()} doc-related OT
-          </p>
+          <p className="text-xs text-[#6B7280] mt-2">Not all OT is documentation. ~40% is end-of-shift charting catch-up that real-time ambient documentation can address.</p>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Expected reduction?</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(["conservative", "typical", "aggressive"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, reductionLevel: opt } }))}
-                className={`p-3 rounded-lg border text-sm transition-all ${
-                  reductionLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
-                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
-                data-testid={`nursing-overtime-reduction-${opt}`}
-              >
-                {opt === "conservative" && "Conservative 45%"}
-                {opt === "typical" && "Typical 60%"}
-                {opt === "aggressive" && "Aggressive 75%"}
-              </button>
-            ))}
+
+        <StepDivider />
+
+        {/* Step 3: Hours Eliminated */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Hours Eliminated</p>
+          <p className="text-xs text-[#6B7280]">How much can real-time documentation prevent?</p>
+          
+          <div className="grid grid-cols-7 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Doc-Driven OT</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(docDrivenOT).toLocaleString()}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Reduction %</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={reductionRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, reductionRate: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-ot-reduction-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Adoption</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{utilizationRate}%</div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Hrs Eliminated</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(hoursEliminated).toLocaleString()}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">{reductionRate}% reduction × {utilizationRate}% adoption = {Math.round((reductionRate / 100) * utilizationRate)}% of doc-driven OT eliminated.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 4: Cost Savings */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
+          <p className="text-xs text-[#6B7280]">What's the budget impact?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Hrs Eliminated</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(hoursEliminated).toLocaleString()}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">OT Rate</label>
+              <div className="flex items-center">
+                <span className="mr-1 text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={baseHourlyRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, baseHourlyRate: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-ot-hourly-input"
+                />
+              </div>
+              <p className="text-xs text-[#6B7280] mt-0.5">×1.5 = ${overtimeRate.toFixed(2)}</p>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Annual Savings</label>
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {formatCurrency(annualSavings)}
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Base hourly wage</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={baseHourlyRate}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, baseHourlyRate: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="nursing-overtime-hourly-input"
-            />
-            <span className="text-sm text-[#6B7280]">/hour → ${Math.round(overtimeRate)}/OT hour</span>
+
+        {/* Benchmark callout */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: Nursing OT Rate</p>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Base RN hourly rate</span>
+              <span className="font-mono text-[#111827]">$40 - $50</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">OT rate (1.5×)</span>
+              <span className="font-mono text-[#111827]">$60 - $75</span>
+            </div>
           </div>
+          <p className="text-xs text-[#6B7280] mt-2">We use ${overtimeRate.toFixed(2)} (1.5× of ${baseHourlyRate} base)</p>
         </div>
-        
+
+        {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <div>
+              <span className="font-medium text-[#111827]">Annual Savings</span>
+              <p className="text-xs text-neutral-500 mt-0.5">{Math.round(hoursEliminated).toLocaleString()} OT hours eliminated × ${overtimeRate.toFixed(2)}/hr</p>
+            </div>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(hoursEliminated * overtimeRate))}
+              {formatCurrency(annualSavings)}
             </span>
           </div>
-          <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(hoursEliminated).toLocaleString()} hrs × ${Math.round(overtimeRate)}/hr
+        </div>
+
+        {/* Direct measurable note */}
+        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            This is DIRECT, MEASURABLE savings. Track it month-over-month in payroll data.
           </p>
         </div>
       </div>
