@@ -49,7 +49,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
 
 export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn }: JourneySelectorProps) {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
+    <div className="min-h-screen bg-white relative overflow-hidden">
       <GlobalHeader pageName="Home" />
       {/* Giant A background on right */}
       <div 
