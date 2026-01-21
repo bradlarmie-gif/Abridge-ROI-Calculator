@@ -119,11 +119,6 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           <p className="text-sm text-[#9CA3AF]">
             Used by 200+ health system partners
           </p>
-          <div className="flex items-center justify-center gap-8 mt-4 opacity-50">
-            <span className="text-xs text-[#9CA3AF] font-medium">Epic</span>
-            <span className="text-xs text-[#9CA3AF] font-medium">Oracle Health</span>
-            <span className="text-xs text-[#9CA3AF] font-medium">MEDITECH</span>
-          </div>
         </footer>
       </div>
     </div>
