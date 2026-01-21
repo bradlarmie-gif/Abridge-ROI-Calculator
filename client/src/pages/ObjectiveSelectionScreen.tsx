@@ -5628,14 +5628,14 @@ export default function ObjectiveSelectionScreen({
           <div className="px-6 py-4">
             <button
               type="button"
-              disabled={!canContinuePage2}
-              onClick={handleContinueToPage3}
+              disabled={selectedLeverIds.size < 2}
+              onClick={handleBuildYourModel}
               className={`w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
-                canContinuePage2
-                  ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-md"
+                selectedLeverIds.size >= 2
+                  ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-md"
                   : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
               }`}
-              data-testid="button-continue-to-model-setup-mobile"
+              data-testid="button-continue-to-baseline-mobile"
             >
               Continue
               <ChevronRight className="h-5 w-5" />
