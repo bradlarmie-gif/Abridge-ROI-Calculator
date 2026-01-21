@@ -15,7 +15,7 @@ Preferred communication style: Simple, everyday language.
 ### Core Application Flow
 The application guides users through multi-step processes:
 -   **Explore Path**: A 4-step sales-led flow (Care Setting → Strategic Priorities → Model Builder → Summary) for new prospects across Outpatient, Emergency Department, Inpatient, and Nursing care settings.
--   **Switch Path**: Streamlined consultant-style flows for prospects switching from other ambient AI solutions (5 steps) or human scribes (7 steps), focusing on conceptual understanding before dollar amounts.
+-   **Switch Path**: A 6-step educational/consultative flow for prospects switching from other ambient AI solutions. Pages: Solution Selection → Metric Awareness → Framework Education → Your Situation → Comparison → What This Means. Uses range-based inputs (not precise numbers) and neutral framing with Abridge benchmarks.
 -   **Expand Path**: A 5-step performance analysis flow for current Abridge customers (Setting Selection → Deployment Setup → Performance Dashboard → ROI Story → Journey Expansion).
 -   **Care Setting Selection**: Users choose a healthcare environment.
 -   **Strategic Priorities Selection**: Users identify relevant ROI levers.
