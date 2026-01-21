@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from "recharts";
 import { Button } from "@/components/ui/button";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import { Badge } from "@/components/ui/badge";
@@ -1511,33 +1512,10 @@ export default function RoiCalculator({
         className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.01] rotate-180"
         style={{ zIndex: 0 }}
       />
-      {/* Header */}
-      <header className="relative z-20 bg-white border-b border-neutral-200">
-        <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onBack}
-              className="shrink-0"
-              data-testid="button-back"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex flex-col gap-1 cursor-pointer" onClick={onBack} data-testid="logo-home">
-              <span className="text-[18px] md:text-[20px] font-bold text-[#F03319] tracking-tight leading-none uppercase">
-                ABRIDGE
-              </span>
-              <span className="text-[14px] md:text-[15px] font-semibold text-[#111827] tracking-tight leading-none">
-                ROI Calculator
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <GlobalHeader pageName="Explore Calculator" />
 
       {/* Tab Navigation */}
-      <nav className="bg-white border-b border-neutral-200">
+      <nav className="fixed top-[72px] left-0 right-0 z-40 bg-white border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-8">
             {tabs.map((tab) => (
@@ -1562,7 +1540,7 @@ export default function RoiCalculator({
       </nav>
 
       {/* Tab Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 pt-[140px] pb-8">
         {activeTab === "summary" && (
           <div className="space-y-8">
             {/* YOUR ROI MODEL - Headline Results */}

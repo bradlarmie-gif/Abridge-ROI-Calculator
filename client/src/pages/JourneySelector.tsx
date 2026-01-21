@@ -1,7 +1,7 @@
 import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BackgroundShape } from "@/components/BackgroundShape";
-import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import { GlobalHeader } from "@/components/GlobalHeader";
 
 interface JourneySelectorProps {
   onSelectExplore: () => void;
@@ -50,17 +50,9 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
 export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn }: JourneySelectorProps) {
   return (
     <div className="min-h-screen bg-white relative">
+      <GlobalHeader pageName="Home" />
       <BackgroundShape />
-      <div className="max-w-6xl mx-auto px-6 py-8 relative z-10">
-        <header className="mb-16">
-          <div className="flex items-start">
-            <div>
-              <img src={abridgeLogo} alt="Abridge" className="h-7 mb-1" data-testid="img-logo" />
-              <p className="text-sm text-[#6B7280] font-medium tracking-wide">ROI Calculator</p>
-            </div>
-          </div>
-        </header>
-
+      <div className="max-w-6xl mx-auto px-6 pt-[96px] pb-8 relative z-10">
         <section className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-bold text-[#111827] mb-4 tracking-tight">
             Model the impact of ambient documentation

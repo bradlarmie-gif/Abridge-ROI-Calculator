@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { LiveReceipt } from "@/components/LiveReceipt";
-import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import { GlobalHeader } from "@/components/GlobalHeader";
+import { Button } from "@/components/ui/button";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import {
   CARE_SETTING_LABELS,
@@ -2424,51 +2425,40 @@ export default function ObjectiveSelectionScreen({
     );
   };
 
+  const stepMap: Record<string, number> = {
+    "orientation": 0,
+    "settings": 1,
+    "priorities": 2,
+  };
+  const currentStep = stepMap[currentPage] || 1;
+  
   return (
     <div className="min-h-screen flex flex-col relative font-sans bg-neutral-50">
-
-      {/* Header */}
-      <header className="relative z-20 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
-        <div className="w-full px-6 md:px-10 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {onBackToJourney && (
-              <button
-                onClick={onBackToJourney}
-                className="flex items-center gap-1 text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
-                data-testid="button-back-to-journey"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">Back</span>
-              </button>
-            )}
-            <div className="flex flex-col gap-1 cursor-pointer hover:opacity-70 transition-opacity" onClick={onBackToJourney} data-testid="logo-home">
-              <span className="text-[18px] md:text-[20px] font-bold text-[#F03319] tracking-tight leading-none uppercase">
-                ABRIDGE
-              </span>
-              <span className="text-[14px] md:text-[15px] font-semibold text-[#111827] tracking-tight leading-none">
-                ROI Calculator
-              </span>
-            </div>
-          </div>
-
-          {currentPage !== "orientation" && (
-            <div className="hidden md:block">
-              <Stepper currentPage={currentPage} />
-            </div>
-          )}
-        </div>
-
-        {currentPage !== "orientation" && (
-          <div className="md:hidden border-t border-neutral-100 py-3.5 px-6">
-            <Stepper currentPage={currentPage} />
-          </div>
-        )}
-      </header>
+      <GlobalHeader 
+        pageName="Explore" 
+        currentStep={currentPage !== "orientation" ? currentStep : undefined} 
+        totalSteps={currentPage !== "orientation" ? 4 : undefined} 
+      />
 
       {/* Content */}
       <div
-        className={`relative z-10 flex-1 overflow-y-auto ${currentPage === "orientation" ? "" : "pb-28"}`}
+        className={`relative z-10 flex-1 overflow-y-auto pt-[96px] ${currentPage === "orientation" ? "" : "pb-28"}`}
       >
+        {/* Back button in content */}
+        {onBackToJourney && (
+          <div className="max-w-[1200px] mx-auto px-6 md:px-10 mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBackToJourney}
+              className="text-slate-500 flex items-center gap-1 -ml-2"
+              data-testid="button-back-to-journey"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+          </div>
+        )}
         {/* PAGE 0 — ORIENTATION */}
         {currentPage === "orientation" && (
           <div className="relative min-h-full">

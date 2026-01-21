@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Slider } from "@/components/ui/slider";
-import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import {
@@ -5955,30 +5955,19 @@ export default function ModelBuilder({
         }}
       />
       
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-neutral-100">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="text-[#6B7280]"
-              data-testid="button-back"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <div className="h-6 w-px bg-neutral-200" />
-            <img src={abridgeLogo} alt="Abridge" className="h-6" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[#6B7280]">Step 3 of 5</span>
-            <span className="text-sm font-medium text-[#111827]">Your Value</span>
-          </div>
-        </div>
-      </header>
+      <GlobalHeader pageName="Explore Model" currentStep={3} totalSteps={4} />
       
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 pt-[96px] pb-8">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="text-slate-500 flex items-center gap-1 mb-6 -ml-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         <div className="flex gap-8">
           <div className="flex-1 max-w-[65%] space-y-8">
             <section className="bg-white rounded-2xl border border-neutral-200 p-8">

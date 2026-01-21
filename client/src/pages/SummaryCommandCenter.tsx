@@ -19,6 +19,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
@@ -265,60 +266,57 @@ export default function SummaryCommandCenter({
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
-      {/* Header */}
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left side - breadcrumb */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors"
-                data-testid="button-back"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm">Back to Model Builder</span>
-              </button>
-              
-              <div className="hidden md:flex items-center gap-2 text-sm">
-                <span className="px-2 py-1 bg-neutral-100 rounded text-[#111827] font-medium">
-                  {CARE_SETTING_LABELS[activeSetting]}
-                </span>
-                <span className="text-neutral-300">|</span>
-                <span className="text-[#6B7280]">{pilotUnits} {config.unitNamePlural}</span>
-                <span className="text-neutral-300">|</span>
-                <span className="text-emerald-600 font-semibold">{formatCurrency(netValue)} net value</span>
-                <span className="text-neutral-300">|</span>
-                <span className="text-emerald-600 font-semibold">{roiMultiple.toFixed(1)}x ROI</span>
-              </div>
-            </div>
+      <GlobalHeader pageName="Explore Summary" currentStep={4} totalSteps={4} />
+
+      <div className="max-w-6xl mx-auto px-6 pt-[96px] pb-8 space-y-8">
+        {/* Action bar */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="text-slate-500 flex items-center gap-1 -ml-2"
+              data-testid="button-back"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
             
-            {/* Right side - actions */}
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onEditModel}
-                className="gap-2"
-                data-testid="button-edit-model"
-              >
-                <Pencil className="w-4 h-4" />
-                Edit Model
-              </Button>
-              <Button
-                size="sm"
-                className="gap-2 bg-[#EA2C00] hover:bg-[#d12700]"
-                data-testid="button-export"
-              >
-                <Share2 className="w-4 h-4" />
-                Export & Share
-              </Button>
+            <div className="hidden md:flex items-center gap-2 text-sm">
+              <span className="px-2 py-1 bg-neutral-100 rounded text-[#111827] font-medium">
+                {CARE_SETTING_LABELS[activeSetting]}
+              </span>
+              <span className="text-neutral-300">|</span>
+              <span className="text-[#6B7280]">{pilotUnits} {config.unitNamePlural}</span>
+              <span className="text-neutral-300">|</span>
+              <span className="text-emerald-600 font-semibold">{formatCurrency(netValue)} net value</span>
+              <span className="text-neutral-300">|</span>
+              <span className="text-emerald-600 font-semibold">{roiMultiple.toFixed(1)}x ROI</span>
             </div>
           </div>
+          
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEditModel}
+              className="gap-2"
+              data-testid="button-edit-model"
+            >
+              <Pencil className="w-4 h-4" />
+              Edit Model
+            </Button>
+            <Button
+              size="sm"
+              className="gap-2 bg-[#EA2C00] hover:bg-[#d12700]"
+              data-testid="button-export"
+            >
+              <Share2 className="w-4 h-4" />
+              Export & Share
+            </Button>
+          </div>
         </div>
-      </header>
-
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         
         {/* ============ YOUR ROI AT A GLANCE ============ */}
         <section className="bg-white rounded-2xl border border-neutral-200 p-8">
