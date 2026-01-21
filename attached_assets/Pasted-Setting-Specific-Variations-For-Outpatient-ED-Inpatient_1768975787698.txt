@@ -1,0 +1,640 @@
+Setting-Specific Variations:
+For Outpatient/ED/Inpatient (Per Provider):
+CopyPricing Model
+┌─────────────────┐  ┌─────────────────┐
+│ Per provider    │  │ Enterprise      │
+│   /month        │  │  annual         │
+└─────────────────┘  └─────────────────┘
+     ✓ selected
+
+Cost per provider
+┌─────────────────────────┐
+│ $       150      /month │
+└─────────────────────────┘
+
+💡 Typical: $100-$200/provider/month
+
+─────────────────────────────
+
+📊 YOUR CONFIGURATION
+
+40 providers
+× $150/provider/month
+× 12 months
+─────────────────────
+= $72,000/year
+For Nursing (Per Staffed Bed):
+CopyPricing Model
+┌─────────────────┐  ┌─────────────────┐
+│ Per staffed bed │  │ Enterprise      │
+│   /month        │  │  annual         │
+└─────────────────┘  └─────────────────┘
+     ✓ selected
+
+Cost per staffed bed
+┌─────────────────────────┐
+│ $        75      /month │
+└─────────────────────────┘
+
+💡 Typical: $50-$125/bed/month
+
+─────────────────────────────
+
+📊 YOUR CONFIGURATION
+
+200 staffed beds
+× $75/bed/month
+× 12 months
+─────────────────────
+= $180,000/year
+
+The ROI Side — Dynamic Calculations:
+javascriptCopy// ============ INVESTMENT PAGE CALCULATIONS ============
+
+// Inputs from previous pages
+const setting = "nursing"; // or "outpatient", "ed", "inpatient"
+const units = 200; // beds for nursing, providers for others
+const totalAnnualValue = 981000; // sum of selected drivers
+
+// User inputs on this page
+const pricingModel = "per_unit_monthly"; // or "enterprise_annual"
+const costPerUnit = 75; // $/unit/month
+const contractTerm = 1; // years
+const includeImplementation = false;
+const implementationFee = 25000;
+
+// Calculations
+const annualInvestment = units * costPerUnit * 12;
+// 200 × $75 × 12 = $180,000
+
+const totalInvestment = (annualInvestment * contractTerm) + 
+                        (includeImplementation ? implementationFee : 0);
+// $180,000 × 1 + $0 = $180,000
+
+const netGainAnnual = totalAnnualValue - annualInvestment;
+// $981,000 - $180,000 = $801,000
+
+const roiMultiple = totalAnnualValue / annualInvestment;
+// $981,000 / $180,000 = 5.45x
+
+const monthsToPayback = (annualInvestment / totalAnnualValue) * 12;
+// ($180,000 / $981,000) × 12 = 2.2 months
+
+Component Code for Replit:
+jsxCopy// ============ INVESTMENT PAGE COMPONENT ============
+
+export default function InvestmentPage({ 
+  setting,
+  units, // providers or beds depending on setting
+  totalAnnualValue,
+  valueBreakdown // array of { name, value }
+}) {
+  
+  // Setting-specific configuration
+  const settingConfig = {
+    outpatient: {
+      unitName: "provider",
+      unitNamePlural: "providers",
+      defaultPrice: 150,
+      priceRange: "$100-$200",
+      pricingLabel: "Cost per provider"
+    },
+    ed: {
+      unitName: "provider",
+      unitNamePlural: "providers", 
+      defaultPrice: 175,
+      priceRange: "$125-$225",
+      pricingLabel: "Cost per provider"
+    },
+    inpatient: {
+      unitName: "provider",
+      unitNamePlural: "providers",
+      defaultPrice: 175,
+      priceRange: "$125-$225",
+      pricingLabel: "Cost per provider"
+    },
+    nursing: {
+      unitName: "staffed bed",
+      unitNamePlural: "staffed beds",
+      defaultPrice: 75,
+      priceRange: "$50-$125",
+      pricingLabel: "Cost per staffed bed"
+    }
+  };
+  
+  const config = settingConfig[setting];
+  
+  // State
+  const [pricingModel, setPricingModel] = useState("per_unit_monthly");
+  const [costPerUnit, setCostPerUnit] = useState(config.defaultPrice);
+  const [contractTerm, setContractTerm] = useState(1);
+  const [includeImplementation, setIncludeImplementation] = useState(false);
+  const implementationFee = 25000;
+  
+  // Calculations
+  const annualInvestment = units * costPerUnit * 12;
+  const totalInvestment = (annualInvestment * contractTerm) + 
+                          (includeImplementation ? implementationFee : 0);
+  const netGainAnnual = totalAnnualValue - annualInvestment;
+  const roiMultiple = (totalAnnualValue / annualInvestment).toFixed(1);
+  const monthsToPayback = Math.round((annualInvestment / totalAnnualValue) * 12);
+  
+  return (
+    <div className="investment-page">
+      
+      {/* Header */}
+      <div className="page-header">
+        <button className="back-button">← Back</button>
+        <div className="brand">ABRIDGE</div>
+        <div className="step-indicator">Step 4 of 5 · Your Investment</div>
+      </div>
+      
+      {/* Title */}
+      <div className="page-title">
+        <h1>Your Investment</h1>
+        <p>Align cost with value realization</p>
+      </div>
+      
+      {/* Main Content - Two Columns */}
+      <div className="investment-content">
+        
+        {/* Left Column - Inputs */}
+        <div className="investment-inputs">
+          
+          <h2>CONFIGURE YOUR INVESTMENT</h2>
+          
+          {/* Pricing Model Toggle */}
+          <div className="input-section">
+            <label>Pricing Model</label>
+            <div className="toggle-group">
+              <button 
+                className={pricingModel === "per_unit_monthly" ? "active" : ""}
+                onClick={() => setPricingModel("per_unit_monthly")}
+              >
+                Per {config.unitName}/month
+              </button>
+              <button 
+                className={pricingModel === "enterprise_annual" ? "active" : ""}
+                onClick={() => setPricingModel("enterprise_annual")}
+              >
+                Enterprise annual
+              </button>
+            </div>
+          </div>
+          
+          {/* Cost Input */}
+          <div className="input-section">
+            <label>{config.pricingLabel}</label>
+            <div className="price-input">
+              <span className="currency">$</span>
+              <input 
+                type="number" 
+                value={costPerUnit}
+                onChange={(e) => setCostPerUnit(Number(e.target.value))}
+              />
+              <span className="period">/month</span>
+            </div>
+            <p className="hint">💡 Typical: {config.priceRange}/{config.unitName}/month</p>
+          </div>
+          
+          {/* Contract Term */}
+          <div className="input-section">
+            <label>Contract Term</label>
+            <div className="toggle-group">
+              <button 
+                className={contractTerm === 1 ? "active" : ""}
+                onClick={() => setContractTerm(1)}
+              >
+                1 yr
+              </button>
+              <button 
+                className={contractTerm === 2 ? "active" : ""}
+                onClick={() => setContractTerm(2)}
+              >
+                2 yrs
+              </button>
+              <button 
+                className={contractTerm === 3 ? "active" : ""}
+                onClick={() => setContractTerm(3)}
+              >
+                3 yrs
+              </button>
+            </div>
+          </div>
+          
+          {/* Implementation Fee */}
+          <div className="input-section">
+            <label className="checkbox-label">
+              <input 
+                type="checkbox"
+                checked={includeImplementation}
+                onChange={(e) => setIncludeImplementation(e.target.checked)}
+              />
+              Add implementation fee
+            </label>
+            {includeImplementation && (
+              <p className="implementation-note">One-time: ${implementationFee.toLocaleString()}</p>
+            )}
+          </div>
+          
+          {/* Configuration Summary */}
+          <div className="config-summary">
+            <h3>📊 YOUR CONFIGURATION</h3>
+            <div className="config-math">
+              <p>{units} {config.unitNamePlural}</p>
+              <p>× ${costPerUnit}/{config.unitName}/month</p>
+              <p>× 12 months</p>
+              <div className="config-line"></div>
+              <p className="config-total">= ${annualInvestment.toLocaleString()}/year</p>
+              {contractTerm > 1 && (
+                <>
+                  <p className="config-term">{contractTerm}-year term</p>
+                  <p className="config-total">Total: ${totalInvestment.toLocaleString()}</p>
+                </>
+              )}
+            </div>
+          </div>
+          
+        </div>
+        
+        {/* Right Column - ROI */}
+        <div className="roi-display">
+          
+          <h2>YOUR ROI</h2>
+          
+          {/* Total Value */}
+          <div className="roi-card">
+            <label>Total Annual Value</label>
+            <div className="roi-value">${totalAnnualValue.toLocaleString()}</div>
+            <p className="roi-subtext">From {valueBreakdown.length} value drivers</p>
+          </div>
+          
+          {/* Annual Investment */}
+          <div className="roi-card">
+            <label>Annual Investment</label>
+            <div className="roi-value">${annualInvestment.toLocaleString()}</div>
+            <p className="roi-subtext">
+              {units} {config.unitNamePlural} × ${costPerUnit} × 12 months
+            </p>
+          </div>
+          
+          {/* Net Gain */}
+          <div className="roi-card highlight">
+            <label>NET GAIN</label>
+            <div className="roi-value large green">${netGainAnnual.toLocaleString()}/yr</div>
+          </div>
+          
+          {/* ROI Multiple */}
+          <div className="roi-card highlight-large">
+            <div className="roi-multiple">{roiMultiple}x</div>
+            <label>RETURN ON INVESTMENT</label>
+            <p className="payback">~{monthsToPayback} months to payback</p>
+          </div>
+          
+          {/* Value Breakdown */}
+          <div className="value-breakdown">
+            <h3>Value Breakdown</h3>
+            {valueBreakdown.map((item, index) => (
+              <div className="breakdown-row" key={index}>
+                <span className="breakdown-name">{item.name}</span>
+                <span className="breakdown-value">${item.value.toLocaleString()}</span>
+              </div>
+            ))}
+            <div className="breakdown-row total">
+              <span className="breakdown-name">Total</span>
+              <span className="breakdown-value">${totalAnnualValue.toLocaleString()}</span>
+            </div>
+          </div>
+          
+        </div>
+        
+      </div>
+      
+      {/* Footer Actions */}
+      <div className="page-actions">
+        <button className="primary-button">
+          View Full Summary →
+        </button>
+        <button className="text-button">
+          ← Edit value drivers
+        </button>
+      </div>
+      
+    </div>
+  );
+}
+
+CSS Styling:
+cssCopy/* ============ INVESTMENT PAGE STYLES ============ */
+
+.investment-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.page-title h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.page-title p {
+  font-size: 16px;
+  color: #64748b;
+  margin: 8px 0 0 0;
+}
+
+.investment-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+
+/* Left Column - Inputs */
+.investment-inputs {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.investment-inputs h2 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin: 0 0 24px 0;
+}
+
+.input-section {
+  margin-bottom: 24px;
+}
+
+.input-section label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 8px;
+}
+
+.toggle-group button {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-group button.active {
+  background: #f97316;
+  border-color: #f97316;
+  color: white;
+}
+
+.price-input {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.price-input .currency {
+  color: #64748b;
+  margin-right: 4px;
+}
+
+.price-input input {
+  border: none;
+  outline: none;
+  font-size: 18px;
+  font-weight: 600;
+  width: 80px;
+  text-align: center;
+}
+
+.price-input .period {
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.hint {
+  font-size: 13px;
+  color: #64748b;
+  margin: 8px 0 0 0;
+}
+
+.config-summary {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 32px;
+}
+
+.config-summary h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 12px 0;
+}
+
+.config-math p {
+  font-size: 14px;
+  color: #475569;
+  margin: 4px 0;
+}
+
+.config-line {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 8px 0;
+}
+
+.config-total {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Right Column - ROI */
+.roi-display {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.roi-display h2 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.roi-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.roi-card label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.roi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.roi-value.large {
+  font-size: 36px;
+}
+
+.roi-value.green {
+  color: #059669;
+}
+
+.roi-subtext {
+  font-size: 13px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.roi-card.highlight {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.roi-card.highlight-large {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  text-align: center;
+  padding: 32px;
+}
+
+.roi-multiple {
+  font-size: 56px;
+  font-weight: 700;
+  color: white;
+}
+
+.roi-card.highlight-large label {
+  color: rgba(255,255,255,0.8);
+  margin-top: 8px;
+}
+
+.payback {
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+  margin: 8px 0 0 0;
+}
+
+.value-breakdown {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.value-breakdown h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 16px 0;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.breakdown-row.total {
+  border-top: 2px solid #e2e8f0;
+  margin-top: 8px;
+  padding-top: 12px;
+  font-weight: 600;
+}
+
+.breakdown-name {
+  font-size: 14px;
+  color: #475569;
+}
+
+.breakdown-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Footer Actions */
+.page-actions {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.primary-button {
+  background: #f97316;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primary-button:hover {
+  background: #ea580c;
+}
+
+.text-button {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.text-button:hover {
+  color: #f97316;
+}
