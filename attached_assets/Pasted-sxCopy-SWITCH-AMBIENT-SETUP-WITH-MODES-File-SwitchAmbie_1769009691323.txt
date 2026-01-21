@@ -1,0 +1,971 @@
+sxCopy// ============ SWITCH AMBIENT: SETUP (WITH MODES) ============
+// File: SwitchAmbientSetup.tsx
+
+import { useState } from 'react';
+import { ArrowLeft, ArrowRight, Sparkles, Settings, Zap } from 'lucide-react';
+import { formatNumber, NumberInput } from '../utils/formatting';
+
+export default function SwitchAmbientSetup({
+  inputs,
+  setInputs,
+  calculations,
+  benchmarks,
+  currentStep,
+  totalSteps,
+  onNext,
+  onBack
+}) {
+  
+  const [mode, setMode] = useState('quick'); // 'quick' | 'advanced'
+  
+  const providerRanges = [
+    { id: '<25', label: '<25', midpoint: 15 },
+    { id: '25-50', label: '25-50', midpoint: 37 },
+    { id: '50-100', label: '50-100', midpoint: 75 },
+    { id: '100-200', label: '100-200', midpoint: 150 },
+    { id: '200+', label: '200+', midpoint: 250 }
+  ];
+  
+  // Advanced mode metrics
+  const advancedMetrics = [
+    {
+      id: 'timeSavings',
+      name: 'Time Savings',
+      description: 'Minutes saved per encounter',
+      unit: 'min/encounter',
+      benchmark: '3-5 min',
+      benchmarkValue: 4,
+      recommended: true
+    },
+    {
+      id: 'workOutsideWork',
+      name: 'Work Outside of Work',
+      description: 'Hours worked after scheduled time',
+      unit: 'hrs/week',
+      benchmark: '2 hrs/week',
+      benchmarkValue: 2,
+      recommended: true
+    },
+    {
+      id: 'levelOfService',
+      name: 'Average Level of Service',
+      description: 'Weighted E/M level (1-5 scale)',
+      unit: 'avg level',
+      benchmark: '4.1',
+      benchmarkValue: 4.1,
+      recommended: true
+    },
+    {
+      id: 'wrvuLift',
+      name: 'wRVU Lift',
+      description: '% improvement in wRVU capture',
+      unit: '%',
+      benchmark: '5%',
+      benchmarkValue: 5,
+      recommended: true
+    },
+    {
+      id: 'chartClosure24h',
+      name: 'Chart Closure (24h)',
+      description: '% of charts closed within 24 hours',
+      unit: '%',
+      benchmark: '78%',
+      benchmarkValue: 78,
+      recommended: false
+    },
+    {
+      id: 'satisfaction',
+      name: 'Clinician Satisfaction',
+      description: 'Provider satisfaction score (1-10)',
+      unit: '/10',
+      benchmark: '8.5/10',
+      benchmarkValue: 8.5,
+      recommended: false
+    }
+  ];
+  
+  const handleProviderRangeChange = (rangeId) => {
+    const range = providerRanges.find(r => r.id === rangeId);
+    setInputs({
+      ...inputs,
+      providerRange: rangeId,
+      providers: range.midpoint
+    });
+  };
+  
+  const toggleMetric = (metricId) => {
+    const current = inputs.selectedMetrics || [];
+    if (current.includes(metricId)) {
+      setInputs({
+        ...inputs,
+        selectedMetrics: current.filter(m => m !== metricId)
+      });
+    } else {
+      setInputs({
+        ...inputs,
+        selectedMetrics: [...current, metricId]
+      });
+    }
+  };
+  
+  const updateMetricValue = (metricId, value) => {
+    setInputs({
+      ...inputs,
+      metricValues: {
+        ...inputs.metricValues,
+        [metricId]: value
+      }
+    });
+  };
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>Let's see where you stand</h1>
+        </div>
+        
+        {/* Mode Toggle */}
+        <div className="mode-toggle-container">
+          <div className="mode-toggle">
+            <button 
+              className={`mode-button ${mode === 'quick' ? 'active' : ''}`}
+              onClick={() => setMode('quick')}
+            >
+              <Zap size={16} />
+              <span>Quick Estimate</span>
+            </button>
+            <button 
+              className={`mode-button ${mode === 'advanced' ? 'active' : ''}`}
+              onClick={() => setMode('advanced')}
+            >
+              <Settings size={16} />
+              <span>Advanced</span>
+            </button>
+          </div>
+          <p className="mode-description">
+            {mode === 'quick' 
+              ? "High-level comparison based on utilization and efficiency"
+              : "Detailed metric-by-metric comparison for more accurate analysis"
+            }
+          </p>
+        </div>
+        
+        {/* ========== QUICK MODE ========== */}
+        {mode === 'quick' && (
+          <>
+            {/* Provider Range */}
+            <section className="input-section">
+              <div className="section-header">
+                <h2 className="section-label">YOUR SETUP</h2>
+              </div>
+              
+              <div className="input-card">
+                <label className="input-label">
+                  Providers using your current solution
+                </label>
+                <div className="range-chips">
+                  {providerRanges.map(range => (
+                    <button
+                      key={range.id}
+                      className={`range-chip ${inputs.providerRange === range.id ? 'selected' : ''}`}
+                      onClick={() => handleProviderRangeChange(range.id)}
+                    >
+                      {range.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
+            
+            {/* Utilization + Efficiency Sliders */}
+            <div className="metrics-grid">
+              
+              {/* Utilization */}
+              <section className="metric-input-card">
+                <div className="metric-header">
+                  <h3>UTILIZATION</h3>
+                  <p>What % of encounters use the tool?</p>
+                </div>
+                
+                <div className="slider-section">
+                  <div className="slider-value-display">
+                    <span className="value-label">YOUR ESTIMATE</span>
+                    <span className="value-number">{inputs.utilization}%</span>
+                  </div>
+                  
+                  <div className="slider-container">
+                    <input
+                      type="range"
+                      min={20}
+                      max={90}
+                      value={inputs.utilization}
+                      onChange={(e) => setInputs({ ...inputs, utilization: Number(e.target.value) })}
+                      className="metric-slider"
+                    />
+                    <div className="slider-labels">
+                      <span>20%</span>
+                      <span>90%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="benchmark-reference">
+                    <Sparkles size={14} className="benchmark-icon" />
+                    <span>Abridge avg: <strong>{benchmarks.utilization}%</strong></span>
+                  </div>
+                </div>
+              </section>
+              
+              {/* Efficiency */}
+              <section className="metric-input-card">
+                <div className="metric-header">
+                  <h3>EFFICIENCY</h3>
+                  <p>Time saved per encounter?</p>
+                </div>
+                
+                <div className="slider-section">
+                  <div className="slider-value-display">
+                    <span className="value-label">YOUR ESTIMATE</span>
+                    <span className="value-number">{inputs.efficiency} min</span>
+                  </div>
+                  
+                  <div className="slider-container">
+                    <input
+                      type="range"
+                      min={0.5}
+                      max={5}
+                      step={0.5}
+                      value={inputs.efficiency}
+                      onChange={(e) => setInputs({ ...inputs, efficiency: Number(e.target.value) })}
+                      className="metric-slider"
+                    />
+                    <div className="slider-labels">
+                      <span>0.5 min</span>
+                      <span>5 min</span>
+                    </div>
+                  </div>
+                  
+                  <div className="benchmark-reference">
+                    <Sparkles size={14} className="benchmark-icon" />
+                    <span>Abridge avg: <strong>3-5 min</strong></span>
+                  </div>
+                </div>
+              </section>
+              
+            </div>
+            
+            {/* Live Gap (Quick Mode) */}
+            <section className="live-gap-section">
+              <div className="gap-header">
+                <h2 className="section-label">THE GAP</h2>
+                <span className="live-badge">LIVE</span>
+              </div>
+              
+              <div className="gap-comparison">
+                <div className="comparison-column you">
+                  <span className="column-label">YOU</span>
+                  <div className="comparison-metric">
+                    <span className="metric-value">{formatNumber(calculations.currentDocumentedEncounters)}</span>
+                    <span className="metric-label">encounters documented</span>
+                  </div>
+                  <div className="comparison-metric">
+                    <span className="metric-value">{formatNumber(calculations.currentHoursReturned)}</span>
+                    <span className="metric-label">hours returned</span>
+                  </div>
+                </div>
+                
+                <div className="comparison-arrow-column">
+                  <div className="gap-arrow">
+                    <span className="arrow-value">+{formatNumber(calculations.additionalEncounters)}</span>
+                    <span className="arrow-head">→</span>
+                  </div>
+                  <div className="gap-arrow">
+                    <span className="arrow-value">+{formatNumber(calculations.additionalHours)}</span>
+                    <span className="arrow-head">→</span>
+                  </div>
+                </div>
+                
+                <div className="comparison-column abridge">
+                  <span className="column-label">
+                    <span className="abridge-mark">A</span>
+                    ABRIDGE
+                  </span>
+                  <div className="comparison-metric">
+                    <span className="metric-value">{formatNumber(calculations.abridgeDocumentedEncounters)}</span>
+                    <span className="metric-label">encounters documented</span>
+                  </div>
+                  <div className="comparison-metric">
+                    <span className="metric-value">{formatNumber(calculations.abridgeHoursReturned)}</span>
+                    <span className="metric-label">hours returned</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="gap-context">
+                Based on {inputs.providers} providers at ~{formatNumber(inputs.encountersPerProvider)} encounters/provider/year
+              </div>
+            </section>
+          </>
+        )}
+        
+        {/* ========== ADVANCED MODE ========== */}
+        {mode === 'advanced' && (
+          <>
+            {/* Deployment Basics */}
+            <section className="input-section">
+              <h2 className="section-label">DEPLOYMENT BASICS</h2>
+              
+              <div className="basics-grid">
+                <div className="basic-input">
+                  <label>Providers using current solution</label>
+                  <NumberInput
+                    value={inputs.providers}
+                    onChange={(val) => setInputs({ ...inputs, providers: val })}
+                    placeholder="e.g., 75"
+                  />
+                </div>
+                <div className="basic-input">
+                  <label>Total annual encounters</label>
+                  <NumberInput
+                    value={inputs.totalEncounters}
+                    onChange={(val) => setInputs({ ...inputs, totalEncounters: val })}
+                    placeholder="e.g., 150,000"
+                  />
+                </div>
+                <div className="basic-input">
+                  <label>Current utilization</label>
+                  <div className="input-with-suffix">
+                    <NumberInput
+                      value={inputs.utilization}
+                      onChange={(val) => setInputs({ ...inputs, utilization: val })}
+                      placeholder="e.g., 50"
+                    />
+                    <span className="input-suffix">%</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            
+            {/* Metric Selection + Input */}
+            <section className="input-section">
+              <h2 className="section-label">COMPARE YOUR METRICS</h2>
+              <p className="section-description">
+                Select the metrics you can compare. Enter your current performance 
+                and we'll show the gap to Abridge benchmarks.
+              </p>
+              
+              <div className="advanced-metrics-list">
+                {advancedMetrics.map(metric => {
+                  const isSelected = (inputs.selectedMetrics || []).includes(metric.id);
+                  const currentValue = inputs.metricValues?.[metric.id];
+                  
+                  return (
+                    <div 
+                      key={metric.id}
+                      className={`advanced-metric-card ${isSelected ? 'selected' : ''}`}
+                    >
+                      <div 
+                        className="metric-card-header"
+                        onClick={() => toggleMetric(metric.id)}
+                      >
+                        <div className="metric-checkbox">
+                          <div className={`checkbox ${isSelected ? 'checked' : ''}`}>
+                            {isSelected && <span className="check">✓</span>}
+                          </div>
+                        </div>
+                        <div className="metric-info">
+                          <div className="metric-name-row">
+                            <span className="metric-name">{metric.name}</span>
+                            {metric.recommended && (
+                              <span className="recommended-badge">RECOMMENDED</span>
+                            )}
+                          </div>
+                          <span className="metric-description">{metric.description}</span>
+                        </div>
+                      </div>
+                      
+                      {isSelected && (
+                        <div className="metric-card-body">
+                          <div className="metric-comparison-inputs">
+                            
+                            <div className="metric-input-column">
+                              <span className="column-label">YOUR CURRENT</span>
+                              <div className="metric-input-box">
+                                <NumberInput
+                                  value={currentValue}
+                                  onChange={(val) => updateMetricValue(metric.id, val)}
+                                  placeholder="—"
+                                  className="metric-value-input"
+                                />
+                                <span className="metric-unit">{metric.unit}</span>
+                              </div>
+                            </div>
+                            
+                            <div className="metric-arrow">→</div>
+                            
+                            <div className="metric-input-column abridge">
+                              <span className="column-label">ABRIDGE BENCHMARK</span>
+                              <div className="metric-benchmark-box">
+                                <span className="benchmark-value">{metric.benchmark}</span>
+                              </div>
+                            </div>
+                            
+                            {currentValue && (
+                              <div className="metric-gap-column">
+                                <span className="column-label">GAP</span>
+                                <div className="metric-gap-box">
+                                  <span className={`gap-value ${metric.benchmarkValue > currentValue ? 'positive' : 'negative'}`}>
+                                    {metric.id === 'workOutsideWork' 
+                                      ? `-${currentValue - metric.benchmarkValue} hrs`
+                                      : `+${(metric.benchmarkValue - currentValue).toFixed(1)}${metric.unit.includes('%') ? 'pp' : ''}`
+                                    }
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                            
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              
+            </section>
+          </>
+        )}
+        
+      </main>
+      
+      {/* Footer */}
+      <footer className="page-footer">
+        <button className="continue-button enabled" onClick={onNext}>
+          <span>See full analysis</span>
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      
+    </div>
+  );
+}
+
+Updated Analysis Page — Metric-Based Value
+The value breakdown should come from the actual metrics, not arbitrary percentages:
+jsxCopy// ============ SWITCH AMBIENT: ANALYSIS (METRIC-BASED) ============
+
+// Instead of:
+// Patient Access: +$73,710/yr
+// Level of Service Accuracy: +$127,575/yr
+// Documentation-Related Denials: +$82,215/yr
+
+// We show:
+// Based on THEIR selected metrics:
+
+const calculateValueFromMetrics = (inputs, benchmarks) => {
+  const values = [];
+  const providers = inputs.providers;
+  const encounters = inputs.totalEncounters || providers * 2000;
+  
+  // 1. Utilization Gap
+  if (inputs.utilization < benchmarks.utilization) {
+    const additionalEncounters = Math.round(encounters * ((benchmarks.utilization - inputs.utilization) / 100));
+    const valuePerEncounter = 2.60; // wRVU lift + quality
+    values.push({
+      metric: 'Utilization',
+      gap: `${inputs.utilization}% → ${benchmarks.utilization}%`,
+      impact: `+${formatNumber(additionalEncounters)} encounters`,
+      value: Math.round(additionalEncounters * valuePerEncounter),
+      calculation: `${formatNumber(additionalEncounters)} encounters × $${valuePerEncounter}/encounter`,
+      explanation: 'More encounters documented = more complete clinical picture for every patient'
+    });
+  }
+  
+  // 2. Time Savings (if selected)
+  const timeSavingsValue = inputs.metricValues?.timeSavings;
+  if (timeSavingsValue && timeSavingsValue < 4) {
+    const abridgeEncounters = Math.round(encounters * (benchmarks.utilization / 100));
+    const additionalMinutes = (4 - timeSavingsValue) * abridgeEncounters;
+    const additionalHours = Math.round(additionalMinutes / 60);
+    const hourlyValue = 75;
+    values.push({
+      metric: 'Time Savings',
+      gap: `${timeSavingsValue} min → 4 min/encounter`,
+      impact: `+${formatNumber(additionalHours)} hours/year`,
+      value: Math.round(additionalHours * hourlyValue * 0.5), // 50% conversion
+      calculation: `${formatNumber(additionalHours)} hours × $${hourlyValue}/hr × 50% conversion`,
+      explanation: 'Time returned to providers for patient care, quality of life, or capacity'
+    });
+  }
+  
+  // 3. Work Outside of Work (if selected)
+  const wowValue = inputs.metricValues?.workOutsideWork;
+  if (wowValue && wowValue > 2) {
+    const hoursSavedPerWeek = wowValue - 2;
+    const annualHoursSaved = hoursSavedPerWeek * providers * 48;
+    const hourlyValue = 50; // Quality of life / retention value
+    values.push({
+      metric: 'Work Outside of Work',
+      gap: `${wowValue} hrs/week → 2 hrs/week`,
+      impact: `-${hoursSavedPerWeek} hrs/week per provider`,
+      value: Math.round(annualHoursSaved * hourlyValue * 0.33), // Retention proxy
+      calculation: `${formatNumber(annualHoursSaved)} hours × $${hourlyValue}/hr × 33% retention factor`,
+      explanation: 'Reduced after-hours work correlates with lower burnout and better retention'
+    });
+  }
+  
+  // 4. wRVU Lift (if selected)
+  const wrvuValue = inputs.metricValues?.wrvuLift;
+  if (wrvuValue !== undefined && wrvuValue < 5) {
+    const liftDelta = 5 - wrvuValue;
+    const abridgeEncounters = Math.round(encounters * (benchmarks.utilization / 100));
+    const baseWrvuPerEncounter = 1.5;
+    const additionalWrvus = Math.round(abridgeEncounters * baseWrvuPerEncounter * (liftDelta / 100));
+    const conversionFactor = 33;
+    values.push({
+      metric: 'wRVU Capture',
+      gap: `${wrvuValue}% lift → 5% lift`,
+      impact: `+${formatNumber(additionalWrvus)} wRVUs/year`,
+      value: Math.round(additionalWrvus * conversionFactor),
+      calculation: `${formatNumber(additionalWrvus)} wRVUs × $${conversionFactor}/wRVU`,
+      explanation: 'Better documentation captures clinical complexity that supports accurate coding'
+    });
+  }
+  
+  // 5. Level of Service (if selected)
+  const losValue = inputs.metricValues?.levelOfService;
+  if (losValue && losValue < 4.1) {
+    const levelDelta = 4.1 - losValue;
+    const abridgeEncounters = Math.round(encounters * (benchmarks.utilization / 100));
+    // Each 0.1 increase in avg level ≈ 0.07 wRVU increase
+    const additionalWrvus = Math.round(abridgeEncounters * (levelDelta * 0.7));
+    const conversionFactor = 33;
+    values.push({
+      metric: 'Level of Service',
+      gap: `${losValue} avg → 4.1 avg`,
+      impact: `+${levelDelta.toFixed(1)} average level`,
+      value: Math.round(additionalWrvus * conversionFactor),
+      calculation: `${formatNumber(additionalWrvus)} additional wRVUs × $${conversionFactor}/wRVU`,
+      explanation: 'Higher average E/M level from more complete documentation of complexity'
+    });
+  }
+  
+  // 6. Clinician Retention (derived from satisfaction + WOW)
+  if ((wowValue && wowValue > 3) || (inputs.metricValues?.satisfaction && inputs.metricValues.satisfaction < 7)) {
+    const turnoverReduction = 0.15; // 15% of turnover attributable to doc burden
+    const avgTurnover = providers * 0.18; // 18% turnover rate
+    const preventedDepartures = Math.round(avgTurnover * turnoverReduction * 10) / 10;
+    const replacementCost = 400000;
+    values.push({
+      metric: 'Clinician Retention',
+      gap: 'Improved satisfaction → lower turnover',
+      impact: `~${preventedDepartures} departures prevented`,
+      value: Math.round(preventedDepartures * replacementCost * 0.5), // Conservative
+      calculation: `${preventedDepartures} × $${formatNumber(replacementCost)} × 50% attribution`,
+      explanation: 'Better documentation experience reduces burnout-driven turnover',
+      isRetention: true // Flag for different treatment
+    });
+  }
+  
+  return values;
+};
+
+Updated "Where That Value Shows Up" Section
+jsxCopy// In the Analysis page, replace the static drivers with dynamic ones:
+
+{/* WHERE THAT VALUE SHOWS UP */}
+<section className="drivers-section">
+  <h2 className="section-label">WHERE THAT VALUE SHOWS UP</h2>
+  
+  <div className="drivers-list">
+    {valueBreakdown.map((item, index) => (
+      <div 
+        key={item.metric}
+        className={`driver-card ${expandedDriver === index ? 'expanded' : ''} ${item.isRetention ? 'retention-driver' : ''}`}
+      >
+        <div 
+          className="driver-card-header"
+          onClick={() => toggleDriver(index)}
+        >
+          <div className="driver-icon">
+            {getMetricIcon(item.metric)}
+          </div>
+          <div className="driver-info">
+            <span className="driver-name">{item.metric}</span>
+            <span className="driver-gap">{item.gap}</span>
+          </div>
+          <span className="driver-value">+${formatNumber(item.value)}/yr</span>
+          <div className="driver-expand-icon">
+            {expandedDriver === index ? (
+              <ChevronUp size={18} />
+            ) : (
+              <ChevronDown size={18} />
+            )}
+          </div>
+        </div>
+        
+        {expandedDriver === index && (
+          <div className="driver-card-body">
+            <div className="driver-impact">
+              <span className="impact-label">Impact:</span>
+              <span className="impact-value">{item.impact}</span>
+            </div>
+            <div className="driver-calculation">
+              <span className="calc-label">Calculation:</span>
+              <span className="calc-formula">{item.calculation}</span>
+            </div>
+            <div className="driver-explanation">
+              <span className="explanation-label">Why it matters:</span>
+              <p className="explanation-text">{item.explanation}</p>
+            </div>
+            {item.isRetention && (
+              <div className="retention-note">
+                <AlertTriangle size={14} />
+                <span>Retention value typically measurable after 12-18 months</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+  
+  <div className="drivers-total">
+    <span className="total-label">TOTAL ANNUAL GAP</span>
+    <span className="total-value">
+      ${formatNumber(valueBreakdown.reduce((sum, item) => sum + item.value, 0))}/year
+    </span>
+  </div>
+  
+  {mode === 'quick' && (
+    <div className="advanced-mode-prompt">
+      <Settings size={16} />
+      <span>Want more accurate analysis?</span>
+      <button onClick={() => setMode('advanced')}>Switch to Advanced Mode</button>
+    </div>
+  )}
+  
+</section>
+
+CSS for Mode Toggle + Advanced Metrics
+cssCopy/* Mode Toggle */
+.mode-toggle-container {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.mode-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: #f1f5f9;
+  border-radius: 12px;
+}
+
+.mode-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mode-button:hover {
+  color: #334155;
+}
+
+.mode-button.active {
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.mode-description {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 12px 0 0 0;
+}
+
+/* Basics Grid */
+.basics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+@media (max-width: 640px) {
+  .basics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.basic-input label {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.basic-input input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Advanced Metrics */
+.advanced-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.advanced-metric-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+
+.advanced-metric-card.selected {
+  border-color: #059669;
+}
+
+.metric-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+}
+
+.metric-checkbox {
+  padding-top: 2px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.checkbox.checked {
+  background: #059669;
+  border-color: #059669;
+}
+
+.checkbox .check {
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.metric-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.recommended-badge {
+  font-size: 9px;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+
+.metric-description {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Metric Comparison Inputs */
+.metric-card-body {
+  padding: 0 20px 20px;
+  border-top: 1px solid #f1f5f9;
+  background: #fafafa;
+}
+
+.metric-comparison-inputs {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.metric-input-column {
+  flex: 1;
+}
+
+.metric-input-column .column-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.metric-input-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-value-input {
+  width: 80px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  background: white;
+}
+
+.metric-unit {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.metric-arrow {
+  font-size: 20px;
+  color: #94a3b8;
+  padding-bottom: 8px;
+}
+
+.metric-input-column.abridge .column-label {
+  color: #059669;
+}
+
+.metric-benchmark-box {
+  padding: 10px 16px;
+  background: #ecfdf5;
+  border-radius: 8px;
+}
+
+.benchmark-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.metric-gap-column {
+  min-width: 80px;
+}
+
+.metric-gap-box {
+  padding: 10px 12px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.gap-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.gap-value.positive {
+  color: #059669;
+}
+
+.gap-value.negative {
+  color: #059669; /* Still positive for "less hours worked" */
+}
+
+/* Retention Driver Special Style */
+.driver-card.retention-driver {
+  border-left: 3px solid #f59e0b;
+}
+
+.retention-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fffbeb;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #92400e;
+}
+
+/* Advanced Mode Prompt */
+.advanced-mode-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.advanced-mode-prompt button {
+  background: none;
+  border: none;
+  color: #f97316;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+Summary of Changes:
+IssueFixNo advanced modeAdded toggle: Quick Estimate vs AdvancedAdvanced modeSame metrics as Expand: Time Savings, WOW, LoS, wRVU, Chart Closure, SatisfactionArbitrary driversValue now calculated from actual metric gapsMissing RetentionAdded as derived driver (from satisfaction + WOW)"Patient Access" feels offReplaced with metric-specific value: Utilization → encounters → value per encounterEach driver needs defensible mathEvery value now has calculation + explanationGraph looks greatKeep it! Numbers are now tied to real metric inputs

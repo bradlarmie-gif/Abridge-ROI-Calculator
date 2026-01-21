@@ -1,8 +1,21 @@
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, Users, ClipboardList, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks } from './SwitchAmbientFlow';
+
+interface DriverItem {
+  id: string;
+  name: string;
+  description: string;
+  value: number;
+  icon: ReactNode;
+  details: {
+    formula: string;
+    explanation: string;
+  };
+  impact?: string;
+}
 
 interface SwitchAmbientAnalysisProps {
   inputs: AmbientInputs;
@@ -50,7 +63,7 @@ export default function SwitchAmbientAnalysis({
     { period: 'Year 3', value: calculations.threeYearTotal }
   ];
   
-  const drivers = [
+  const quickDrivers: DriverItem[] = [
     {
       id: 'patient-access',
       name: 'Patient Access',
@@ -85,6 +98,21 @@ export default function SwitchAmbientAnalysis({
       }
     }
   ];
+  
+  const advancedDrivers: DriverItem[] = calculations.metricBreakdown.map((item, index) => ({
+    id: `metric-${index}`,
+    name: item.metric,
+    description: item.gap,
+    value: item.value,
+    icon: <ClipboardList className="w-5 h-5" />,
+    details: {
+      formula: item.calculation,
+      explanation: item.explanation
+    },
+    impact: item.impact
+  }));
+  
+  const drivers: DriverItem[] = inputs.mode === 'advanced' && advancedDrivers.length > 0 ? advancedDrivers : quickDrivers;
   
   const toggleDriver = (driverId: string) => {
     setExpandedDriver(expandedDriver === driverId ? null : driverId);
@@ -259,6 +287,9 @@ export default function SwitchAmbientAnalysis({
                       <div className="flex-1 text-left">
                         <span className="block text-sm font-semibold text-slate-900">{driver.name}</span>
                         <span className="block text-xs text-slate-500">{driver.description}</span>
+                        {driver.impact && (
+                          <span className="block text-xs font-medium text-emerald-600 mt-1">{driver.impact}</span>
+                        )}
                       </div>
                       <span className="text-base font-bold text-emerald-600" data-testid={`text-driver-value-${driver.id}`}>
                         +${formatNumber(driver.value)}/yr
