@@ -125,7 +125,26 @@ export default function SwitchAmbientSetup({
   };
   
   const handleModeChange = (mode: AmbientMode) => {
-    setInputs({ ...inputs, mode });
+    if (mode === 'advanced') {
+      // Clear deployment basics when switching to Advanced mode for fresh start
+      setInputs({ 
+        ...inputs, 
+        mode,
+        providers: 0,
+        totalEncounters: 0,
+        utilization: 0
+      });
+    } else {
+      // Restore Quick mode defaults
+      const range = providerRanges.find(r => r.id === inputs.providerRange);
+      setInputs({ 
+        ...inputs, 
+        mode,
+        providers: range?.midpoint ?? 75,
+        totalEncounters: (range?.midpoint ?? 75) * inputs.encountersPerProvider,
+        utilization: 50
+      });
+    }
   };
   
   const toggleMetric = (metricId: keyof MetricValues) => {
