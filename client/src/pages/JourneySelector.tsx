@@ -51,7 +51,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
   return (
     <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
       <GlobalHeader pageName="Home" />
-      {/* Giant A background on right - Cadmium Red tinted */}
+      {/* Giant A background on right */}
       <div 
         className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none z-0"
         style={{
@@ -60,7 +60,6 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           backgroundPosition: 'left center',
           backgroundSize: 'cover',
           opacity: 0.4,
-          filter: 'brightness(0) saturate(100%) invert(24%) sepia(98%) saturate(2898%) hue-rotate(14deg) brightness(97%) contrast(107%)',
         }}
       />
       <div className="max-w-6xl mx-auto px-6 pt-[96px] pb-8 relative z-10">
