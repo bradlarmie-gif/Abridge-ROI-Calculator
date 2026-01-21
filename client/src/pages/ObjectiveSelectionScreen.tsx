@@ -2513,15 +2513,15 @@ export default function ObjectiveSelectionScreen({
               </p>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[#6B7280]">
                 <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-[#EA2C00]" />
+                  <Check className="w-3.5 h-3.5 text-[#10B981]" />
                   Setting-specific ROI drivers
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-[#EA2C00]" />
+                  <Check className="w-3.5 h-3.5 text-[#10B981]" />
                   Tailored assumptions
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-[#EA2C00]" />
+                  <Check className="w-3.5 h-3.5 text-[#10B981]" />
                   Shareable output
                 </span>
                 <span className="flex items-center gap-1.5">
