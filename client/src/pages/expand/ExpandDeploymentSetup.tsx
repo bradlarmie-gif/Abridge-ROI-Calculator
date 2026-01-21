@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
+import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { DeploymentData, MetricType } from "./ExpandFlow";
 
 interface ExpandDeploymentSetupProps {
@@ -131,34 +132,32 @@ export default function ExpandDeploymentSetup({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B7280]">Providers using Abridge</label>
-              <input
-                type="number"
+              <FormattedNumberInput
                 placeholder="e.g., 150"
-                value={deploymentData.providers ?? ""}
-                onChange={(e) =>
+                value={deploymentData.providers ?? 0}
+                onChange={(value) =>
                   setDeploymentData({
                     ...deploymentData,
-                    providers: e.target.value ? Number(e.target.value) : null,
+                    providers: value || null,
                   })
                 }
-                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-providers"
               />
             </div>
             
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B7280]">Total annual encounters</label>
-              <input
-                type="number"
-                placeholder="e.g., 195000"
-                value={deploymentData.annualEncounters ?? ""}
-                onChange={(e) =>
+              <FormattedNumberInput
+                placeholder="e.g., 195,000"
+                value={deploymentData.annualEncounters ?? 0}
+                onChange={(value) =>
                   setDeploymentData({
                     ...deploymentData,
-                    annualEncounters: e.target.value ? Number(e.target.value) : null,
+                    annualEncounters: value || null,
                   })
                 }
-                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-encounters"
               />
             </div>
@@ -176,7 +175,7 @@ export default function ExpandDeploymentSetup({
                       utilizationRate: e.target.value ? Number(e.target.value) : null,
                     })
                   }
-                  className="w-full px-4 py-3 pr-8 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+                  className="w-full px-4 py-3 pr-8 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                   data-testid="input-utilization"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]">%</span>
@@ -196,7 +195,7 @@ export default function ExpandDeploymentSetup({
                     monthsOnAbridge: e.target.value ? Number(e.target.value) : null,
                   })
                 }
-                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent"
+                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-months"
               />
             </div>
@@ -232,7 +231,7 @@ export default function ExpandDeploymentSetup({
                   key={metric.id}
                   className={`flex items-start gap-4 p-5 bg-white border rounded-xl cursor-pointer transition-all ${
                     isSelected
-                      ? "border-[#f97316] bg-orange-50"
+                      ? "border-[#EA2C00] bg-[#FEF0EC]"
                       : "border-neutral-200 hover:border-neutral-300"
                   }`}
                   onClick={() => toggleMetric(metric.id)}
@@ -242,7 +241,7 @@ export default function ExpandDeploymentSetup({
                   <div
                     className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
                       isSelected
-                        ? "bg-[#f97316] border-[#f97316]"
+                        ? "bg-[#EA2C00] border-[#EA2C00]"
                         : "border-neutral-300 bg-white"
                     }`}
                   >
