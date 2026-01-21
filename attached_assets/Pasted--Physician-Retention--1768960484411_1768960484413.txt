@@ -1,0 +1,101 @@
+┌─────────────────────────────────────────────────────────────────┐
+│ 👤 Physician Retention                               $240,000   │
+│    The long game—ED burnout is severe                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ ED physicians face extreme burnout—over 65% report symptoms.    │
+│ Documentation burden extends shifts and destroys work-life      │
+│ balance. Reducing this burden improves retention.               │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ STEP 1: BASELINE TURNOVER                                       │
+│ What's the current turnover situation?                          │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │  ED Physicians   │ × │  Turnover Rate   │                    │
+│ │       25         │   │       8%         │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                       Departures/Year: 2.0                      │
+│                                                                 │
+│ 💡 ED turnover averages 8-12%. High-stress EDs see higher.      │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: BURNOUT-RELATED DEPARTURES                              │
+│ How much is burnout-driven?                                     │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────────┐                  │
+│ │ Annual Departures│ × │ Burnout Attribution│                  │
+│ │       2.0        │   │        50%         │                  │
+│ └──────────────────┘   └────────────────────┘                  │
+│                                                                 │
+│                     Preventable Departures: 1.0                 │
+│                                                                 │
+│ 💡 50% of ED departures cite burnout as primary factor.         │
+│    ED has the highest burnout rate of any specialty.            │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: ABRIDGE ATTRIBUTION                                     │
+│ What can Abridge prevent?                                       │
+│                                                                 │
+│ ┌──────────────────────┐   ┌────────────────┐                  │
+│ │Preventable Departures│ × │ Abridge Impact │                  │
+│ │        1.0           │   │      30%       │                  │
+│ └──────────────────────┘   └────────────────┘                  │
+│                                                                 │
+│                       Departures Avoided: 0.30/year             │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 🔢 WHY 30%?                                                 │ │
+│ │                                                             │ │
+│ │ ED burnout has multiple drivers—pace, acuity, shifts,       │ │
+│ │ high-stakes decisions. Documentation is ONE major factor.   │ │
+│ │                                                             │ │
+│ │ We conservatively estimate Abridge impacts 30% of           │ │
+│ │ burnout-related turnover by eliminating after-shift         │ │
+│ │ charting and reducing documentation burden during surges.   │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 4: COST SAVINGS                                            │
+│ What's the dollar value?                                        │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │Departures Avoided│ × │ Replacement Cost │                    │
+│ │      0.30        │   │    $800,000      │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                        Annual Savings: $240,000                 │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 WHAT THIS MEANS                                          │ │
+│ │                                                             │ │
+│ │ Over ~3 years, expect to retain 1 additional ED physician   │ │
+│ │ you would have otherwise lost to burnout.                   │ │
+│ │                                                             │ │
+│ │ Total savings: $800,000                                     │ │
+│ │ Annualized: $240,000/year                                   │ │
+│ │                                                             │ │
+│ │ ⏱️ Long-term investment metric                               │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK: ED Physician Replacement Cost                 │ │
+│ │                                                             │ │
+│ │ Recruiting + signing bonus      $100K - $175K               │ │
+│ │ Lost revenue (vacancy)          $500K - $1M+                │ │
+│ │ Onboarding                      $50K - $100K                │ │
+│ │                                                             │ │
+│ │ Total                           $750K - $1.2M               │ │
+│ │                                                             │ │
+│ │ Your input: $800,000                                        │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ⚠️ Retention impact typically measurable after 12-18 months    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘

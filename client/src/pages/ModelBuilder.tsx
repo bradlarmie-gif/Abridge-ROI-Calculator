@@ -155,7 +155,10 @@ interface DriverInputs {
     reductionLevel: "partial" | "significant" | "full";
   };
   edRetention: {
+    edPhysicians: number;
     turnoverRate: number;
+    burnoutAttribution: number;
+    abridgeImpact: number;
     replacementCost: number;
   };
   edLevelOfService: {
@@ -418,7 +421,10 @@ export default function ModelBuilder({
       reductionLevel: "significant",
     },
     edRetention: {
+      edPhysicians: 25,
       turnoverRate: 8,
+      burnoutAttribution: 50,
+      abridgeImpact: 30,
       replacementCost: 800000,
     },
     edLevelOfService: {
@@ -735,12 +741,15 @@ export default function ModelBuilder({
         return Math.round(ftesEliminated * costPerFTE);
       }
       case "edRetention": {
-        const { turnoverRate, replacementCost } = driverInputs.edRetention;
-        const departures = providers * (turnoverRate / 100);
-        const burnoutRelated = departures * 0.50; // ED is 50% vs 45% for outpatient
-        const docDriven = burnoutRelated * 0.30;
-        const prevented = docDriven * 0.40 * (utilizationRate / 100);
-        return Math.round(prevented * replacementCost);
+        const { edPhysicians, turnoverRate, burnoutAttribution, abridgeImpact, replacementCost } = driverInputs.edRetention;
+        // Step 1: Baseline Turnover
+        const annualDepartures = edPhysicians * (turnoverRate / 100);
+        // Step 2: Burnout-Related Departures
+        const preventableDepartures = annualDepartures * (burnoutAttribution / 100);
+        // Step 3: Abridge Attribution
+        const departuresAvoided = preventableDepartures * (abridgeImpact / 100);
+        // Step 4: Cost Savings
+        return Math.round(departuresAvoided * replacementCost);
       }
       case "edLevelOfService": {
         const { underCodingRate, wrvuDelta, wrvuConversion } = driverInputs.edLevelOfService;
@@ -972,7 +981,10 @@ export default function ModelBuilder({
           };
         case "edRetention":
           return {
+            edPhysicians: driverInputs.edRetention.edPhysicians,
             turnoverRate: driverInputs.edRetention.turnoverRate,
+            burnoutAttribution: driverInputs.edRetention.burnoutAttribution,
+            abridgeImpact: driverInputs.edRetention.abridgeImpact,
             replacementCost: driverInputs.edRetention.replacementCost,
           };
         case "edLevelOfService":
@@ -3194,75 +3206,316 @@ export default function ModelBuilder({
   };
   
   const renderEdRetentionInputs = () => {
-    const { turnoverRate, replacementCost } = driverInputs.edRetention;
-    const departures = providers * (turnoverRate / 100);
-    const burnoutRelated = departures * 0.50;
-    const docDriven = burnoutRelated * 0.30;
-    const prevented = docDriven * 0.40 * (utilizationRate / 100);
+    const { edPhysicians, turnoverRate, burnoutAttribution, abridgeImpact, replacementCost } = driverInputs.edRetention;
+
+    // ED PHYSICIAN RETENTION CALCULATIONS (4-step)
+    // Step 1: Baseline Turnover
+    const annualDepartures = edPhysicians * (turnoverRate / 100);
     
+    // Step 2: Burnout-Related Departures
+    const preventableDepartures = annualDepartures * (burnoutAttribution / 100);
+    
+    // Step 3: Abridge Attribution
+    const departuresAvoided = preventableDepartures * (abridgeImpact / 100);
+    
+    // Step 4: Cost Savings
+    const annualRetentionSavings = departuresAvoided * replacementCost;
+
+    // Dynamic framing calculations
+    const yearsToRetainOne = departuresAvoided > 0 ? 1 / departuresAvoided : 999;
+    const monthsToRetainOne = yearsToRetainOne * 12;
+
+    // Dynamic "What This Means" framing
+    const getRetentionFraming = () => {
+      if (departuresAvoided >= 2.0) {
+        return {
+          headline: `Retain ~${departuresAvoided.toFixed(1)} additional ED physicians per year`,
+          detail: `At this scale, retention impact is highly predictable. You're avoiding ${formatCurrency(Math.round(annualRetentionSavings))} in annual replacement costs.`,
+          timeframe: "Measurable within 12 months"
+        };
+      } else if (departuresAvoided >= 1.0) {
+        return {
+          headline: `Retain ~1 additional ED physician per year`,
+          detail: `Every ${Math.round(12 / departuresAvoided)} months, expect to retain an ED physician you would have otherwise lost to burnout.`,
+          timeframe: "Measurable within 12-18 months"
+        };
+      } else if (departuresAvoided >= 0.5) {
+        return {
+          headline: `Retain 1 additional ED physician every ~${Math.round(monthsToRetainOne)} months`,
+          detail: `Over ${yearsToRetainOne.toFixed(1)} years, expect to retain 1 ED physician, saving ${formatCurrency(replacementCost)}.`,
+          timeframe: "Measurable within 18-24 months"
+        };
+      } else if (departuresAvoided >= 0.2) {
+        const years = Math.round(yearsToRetainOne);
+        return {
+          headline: `Over ~${years} years, retain 1 additional ED physician`,
+          detail: `Total savings of ${formatCurrency(replacementCost)} realized over ${years}-year period. Annualized: ${formatCurrency(Math.round(annualRetentionSavings))}/year.`,
+          timeframe: "Long-term investment metric"
+        };
+      } else {
+        const years = Math.round(yearsToRetainOne);
+        return {
+          headline: `Long-term retention probability`,
+          detail: `Over ~${years} years, expect to retain 1 additional ED physician, saving ${formatCurrency(replacementCost)}. At this scale, think of retention as a long-term investment.`,
+          timeframe: "5+ year investment horizon"
+        };
+      }
+    };
+
+    const framing = getRetentionFraming();
+    const isSmallGroup = edPhysicians < 20;
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
+
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What's your ED physician turnover rate?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{turnoverRate}%</span>
+        {/* Theory Box */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+          <p className="text-sm font-semibold text-blue-800">The Theory</p>
+          <p className="text-xs text-blue-700">
+            ED physicians face extreme burnout—over 65% report symptoms. Documentation burden extends shifts 
+            and destroys work-life balance. Reducing this burden improves retention. Replacing an ED physician 
+            costs $750K-$1.2M when you factor in recruiting, signing bonuses, and coverage gaps.
+          </p>
+        </div>
+
+        {/* Small Group Warning */}
+        {isSmallGroup && (
+          <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 space-y-2">
+            <p className="text-sm font-semibold text-amber-800 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Small ED Group
+            </p>
+            <p className="text-xs text-amber-700">
+              With fewer than 20 ED physicians, retention savings are probabilistic over multi-year periods. 
+              Consider this a long-term investment metric rather than a near-term ROI driver.
+            </p>
           </div>
-          <Slider
-            value={[turnoverRate]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, turnoverRate: val } }))}
-            min={4}
-            max={15}
-            step={1}
-            className="w-full"
-            data-testid="ed-turnover-slider"
-          />
-          <p className="text-xs text-[#6B7280]">ED turnover is typically higher than other specialties (6-12%)</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {providers} physicians × {turnoverRate}% = {Math.round(departures * 10) / 10} departures/year
-          </p>
-        </div>
-        
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Burnout portion (auto-calculated):</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(departures * 10) / 10} departures × 50% burnout-related = {Math.round(burnoutRelated * 10) / 10} preventable
-          </p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(burnoutRelated * 10) / 10} preventable × 30% doc-driven × 40% attribution × {utilizationRate}% adoption = {Math.round(prevented * 100) / 100} avoided
-          </p>
-        </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">ED physician replacement cost</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={replacementCost}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, replacementCost: Number(e.target.value) || 0 } }))}
-              className="w-40 font-mono"
-              data-testid="ed-replacement-cost-input"
-            />
+        )}
+
+        {/* Step 1: Baseline Turnover */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Baseline Turnover</p>
+          <p className="text-xs text-[#6B7280]">What's the current turnover situation?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">ED Physicians</label>
+                <Input
+                  type="number"
+                  value={edPhysicians}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, edPhysicians: Number(e.target.value) || 0 } }))}
+                  className="w-20 text-center font-mono text-sm h-8"
+                  data-testid="ed-ret-physicians-input"
+                />
+              </div>
+              <span className="text-neutral-400 pt-5">×</span>
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Turnover Rate</label>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={turnoverRate}
+                    onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, turnoverRate: Number(e.target.value) || 0 } }))}
+                    className="w-16 text-center font-mono text-sm h-8"
+                    data-testid="ed-ret-turnover-input"
+                  />
+                  <span className="text-xs text-[#6B7280]">%</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {annualDepartures.toFixed(1)} departures/year
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">ED physicians cost more to replace: $750K-1.2M. Includes recruiting, signing bonus, coverage gaps</p>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            ED turnover averages 8-12%. High-stress EDs see higher.
+          </p>
         </div>
-        
+
+        <StepDivider />
+
+        {/* Step 2: Burnout-Related Departures */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Burnout-Related Departures</p>
+          <p className="text-xs text-[#6B7280]">How much is burnout-driven?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {annualDepartures.toFixed(1)} departures
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={burnoutAttribution}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, burnoutAttribution: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="ed-ret-burnout-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {preventableDepartures.toFixed(2)} preventable
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            50% of ED departures cite burnout as primary factor. ED has the highest burnout rate of any specialty.
+          </p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 3: Abridge Attribution */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Attribution</p>
+          <p className="text-xs text-[#6B7280]">What can Abridge prevent?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {preventableDepartures.toFixed(2)} preventable
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={abridgeImpact}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, abridgeImpact: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="ed-ret-abridge-impact-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {departuresAvoided.toFixed(2)}/year avoided
+              </div>
+            </div>
+          </div>
+
+          {/* Why 30%? Explanation Box */}
+          <div className="p-3 bg-slate-100 rounded-lg border border-slate-200 mt-3 space-y-2">
+            <p className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+              <Calculator className="w-3 h-3" />
+              Why 30%?
+            </p>
+            <p className="text-xs text-slate-600">
+              ED burnout has multiple drivers—pace, acuity, shifts, high-stakes decisions. Documentation is ONE major factor. 
+              We conservatively estimate Abridge impacts 30% of burnout-related turnover by eliminating after-shift charting 
+              and reducing documentation burden during surges.
+            </p>
+          </div>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 4: Cost Savings */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
+          <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {departuresAvoided.toFixed(2)} avoided
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={replacementCost}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, replacementCost: Number(e.target.value) || 0 } }))}
+                  className="w-28 text-center font-mono text-sm h-8"
+                  data-testid="ed-ret-replacement-cost-input"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-semibold text-emerald-600">
+                {formatCurrency(Math.round(annualRetentionSavings))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* What This Means Box */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            What This Means
+          </p>
+          <p className="text-sm font-medium text-slate-700">{framing.headline}</p>
+          <p className="text-xs text-slate-600">{framing.detail}</p>
+          <p className="text-xs text-slate-500 flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {framing.timeframe}
+          </p>
+        </div>
+
+        {/* Benchmark Box */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Benchmark: ED Physician Replacement Cost
+          </p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Recruiting + signing bonus</span>
+              <span className="font-mono text-slate-700">$100K - $175K</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Lost revenue (vacancy)</span>
+              <span className="font-mono text-slate-700">$500K - $1M+</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Onboarding</span>
+              <span className="font-mono text-slate-700">$50K - $100K</span>
+            </div>
+            <div className="flex justify-between text-xs pt-1 border-t border-slate-200">
+              <span className="text-slate-600 font-medium">Total</span>
+              <span className="font-mono text-slate-700 font-medium">$750K - $1.2M</span>
+            </div>
+            <div className="flex justify-between text-xs pt-1 border-t border-slate-200">
+              <span className="text-slate-600">Your input</span>
+              <span className="font-mono text-slate-700">${replacementCost.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Timeline Warning */}
         <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-amber-700">Retention impact typically measurable after 12-18 months</p>
-          </div>
+          <p className="text-xs text-amber-700 flex items-center gap-2">
+            <Clock className="w-4 h-4 flex-shrink-0" />
+            Retention impact typically measurable after 12-18 months
+          </p>
         </div>
-        
+
+        {/* Result Summary */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-medium text-[#111827]">Annual Value</span>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(prevented * replacementCost))}
+              {formatCurrency(Math.round(annualRetentionSavings))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(prevented * 100) / 100} departures avoided × ${replacementCost.toLocaleString()}
+            {departuresAvoided.toFixed(2)} departures avoided × ${replacementCost.toLocaleString()}
           </p>
         </div>
       </div>
