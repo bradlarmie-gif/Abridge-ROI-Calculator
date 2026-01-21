@@ -1,5 +1,6 @@
-import { ArrowRight, Stethoscope, Building2, Users, Heart, Lightbulb } from "lucide-react";
+import { ArrowRight, ArrowLeft, Stethoscope, Building2, Users, Heart, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlobalHeader } from "@/components/GlobalHeader";
 
 interface ExpandSettingSelectionProps {
   onNext: () => void;
@@ -10,29 +11,21 @@ interface ExpandSettingSelectionProps {
 export default function ExpandSettingSelection({ onNext, onExplore, onBack }: ExpandSettingSelectionProps) {
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      {/* Header */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors mr-4"
-                data-testid="button-back-to-journey"
-              >
-                <ArrowRight className="w-4 h-4 rotate-180" />
-                <span className="text-sm">Back</span>
-              </button>
-            )}
-            <span className="text-lg font-bold text-[#EA2C00] tracking-tight">ABRIDGE</span>
-            <span className="text-neutral-300">|</span>
-            <span className="text-sm text-[#6B7280]">ROI Calculator</span>
-          </div>
-        </div>
-      </header>
+      <GlobalHeader pageName="Expand" />
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
+      <main className="max-w-4xl mx-auto px-6 pt-[96px] pb-16">
+        {onBack && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
+            data-testid="button-back-to-journey"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        )}
         {/* Title */}
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">

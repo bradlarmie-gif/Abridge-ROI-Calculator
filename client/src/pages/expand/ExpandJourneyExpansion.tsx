@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { ArrowLeft, Share2, FileText, Mail, Link, Target, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, ReferenceDot } from "recharts";
 import type { DeploymentData, MetricType, MetricsData } from "./ExpandFlow";
 
@@ -103,23 +104,20 @@ export default function ExpandJourneyExpansion({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      {/* Header */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button
+      <GlobalHeader pageName="Expand Journey" currentStep={5} totalSteps={5} />
+
+      <main className="max-w-5xl mx-auto px-6 pt-[96px] pb-10">
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onBack}
-            className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors"
+            className="text-slate-500 flex items-center gap-1 -ml-2"
             data-testid="button-back"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back</span>
-          </button>
-          <div className="flex items-center gap-2 text-xs text-[#6B7280]">
-            <span className="font-semibold text-[#111827]">Step 5</span>
-            <span>of 5</span>
-            <span className="text-neutral-300">·</span>
-            <span>Your Journey</span>
-          </div>
+            Back
+          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -130,9 +128,6 @@ export default function ExpandJourneyExpansion({
             Export & Share
           </Button>
         </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-6 py-10">
         {/* Title */}
         <div className="text-center mb-10">
           <h1 className="text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">

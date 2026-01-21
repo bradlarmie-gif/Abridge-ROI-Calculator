@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import type { DeploymentData, MetricType, MetricsData } from "./ExpandFlow";
 
 interface ExpandPerformanceDashboardProps {
@@ -68,28 +69,22 @@ export default function ExpandPerformanceDashboard({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      {/* Header */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back</span>
-          </button>
-          <span className="text-sm font-medium text-[#EA2C00]">ABRIDGE</span>
-          <div className="flex items-center gap-2 text-xs text-[#6B7280]">
-            <span className="font-semibold text-[#111827]">Step 3</span>
-            <span>of 5</span>
-            <span className="text-neutral-300">·</span>
-            <span>Your Performance</span>
-          </div>
-        </div>
-      </header>
+      <GlobalHeader pageName="Expand Dashboard" currentStep={3} totalSteps={5} />
 
-      <main className="max-w-5xl mx-auto px-6 py-10">
+      <div className="max-w-5xl mx-auto px-6 pt-[96px]">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-6 pb-10">
         {/* Title */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
