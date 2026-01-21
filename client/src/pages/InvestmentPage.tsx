@@ -358,9 +358,6 @@ export default function InvestmentPage({
               <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
                 Return on Investment
               </label>
-              <p className="text-sm text-neutral-300 mt-3">
-                ~{monthsToPayback} month{monthsToPayback !== 1 ? "s" : ""} to payback
-              </p>
             </div>
 
             {/* Value Breakdown */}

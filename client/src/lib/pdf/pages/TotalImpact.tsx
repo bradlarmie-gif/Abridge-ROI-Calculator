@@ -55,13 +55,6 @@ export function TotalImpact({ model, config, pageNumber }: TotalImpactPageProps)
       <Text style={styles.subsectionHeader}>Investment Efficiency Metrics</Text>
 
       <View style={styles.row}>
-        <Text style={{ ...styles.bodyText, flex: 2 }}>Payback Period:</Text>
-        <Text style={{ ...styles.bodyText, flex: 1, textAlign: 'right', fontWeight: 'bold' }}>
-          {paybackMonths.toFixed(1)} months
-        </Text>
-      </View>
-
-      <View style={styles.row}>
         <Text style={{ ...styles.bodyText, flex: 2 }}>Value per Provider:</Text>
         <Text style={{ ...styles.bodyText, flex: 1, textAlign: 'right', fontWeight: 'bold' }}>
           {formatCurrency(netValue / inputs.numberOfProviders)}/year
