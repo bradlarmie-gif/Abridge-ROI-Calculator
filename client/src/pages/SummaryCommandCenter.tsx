@@ -434,11 +434,11 @@ export default function SummaryCommandCenter({
                   fill="url(#networkEffectGradient)"
                 />
                 
-                {/* Linear projection line (dashed gray) */}
+                {/* Linear projection line (dashed blue) */}
                 <Line 
                   type="linear" 
                   dataKey="linearValue" 
-                  stroke="#94a3b8" 
+                  stroke="#3b82f6" 
                   strokeWidth={2}
                   strokeDasharray="6 4"
                   dot={false}
@@ -487,7 +487,7 @@ export default function SummaryCommandCenter({
               <span className="text-sm font-medium text-[#6B7280]">Actual value (with compounding)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-0.5 border-t-2 border-dashed border-neutral-400" />
+              <div className="w-6 h-0.5 border-t-2 border-dashed border-blue-500" />
               <span className="text-sm font-medium text-[#6B7280]">Linear projection</span>
             </div>
             <div className="flex items-center gap-2">
