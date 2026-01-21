@@ -1,0 +1,2290 @@
+jsxCopy// ============ SWITCH SCRIBES FLOW ============
+// File: SwitchScribesFlow.tsx
+
+import { useState } from 'react';
+import SwitchScribesSetup from './SwitchScribesSetup';
+import SwitchScribesCoverage from './SwitchScribesCoverage';
+import SwitchScribesHiddenCosts from './SwitchScribesHiddenCosts';
+import SwitchScribesFullPicture from './SwitchScribesFullPicture';
+import SwitchScribesComparison from './SwitchScribesComparison';
+
+export default function SwitchScribesFlow({ onBack }) {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [scribeData, setScribeData] = useState({
+    // Organization
+    totalProviders: null,
+    annualEncounters: null,
+    
+    // Scribe program
+    providersWithScribes: null,
+    hourlyRate: 22,
+    hoursPerWeek: 32,
+    
+    // Hidden costs
+    turnoverRate: 35,
+    managementHoursPerWeek: 6,
+    managementHourlyRate: 60,
+    recruitmentCostPerScribe: 4000
+  });
+  
+  const totalSteps = 5;
+  
+  const goNext = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const goBack = () => {
+    if (currentStep === 1) {
+      onBack();
+    } else {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+  
+  // Calculations
+  const calculations = {
+    // Coverage
+    coveragePercent: scribeData.totalProviders && scribeData.providersWithScribes
+      ? Math.round((scribeData.providersWithScribes / scribeData.totalProviders) * 100)
+      : 0,
+    providersWithoutScribes: scribeData.totalProviders && scribeData.providersWithScribes
+      ? scribeData.totalProviders - scribeData.providersWithScribes
+      : 0,
+    
+    // Annual scribe payroll
+    annualScribePayroll: scribeData.providersWithScribes && scribeData.hourlyRate && scribeData.hoursPerWeek
+      ? scribeData.providersWithScribes * scribeData.hourlyRate * scribeData.hoursPerWeek * 50
+      : 0,
+    
+    // Hidden costs
+    turnoverCost: scribeData.providersWithScribes && scribeData.turnoverRate && scribeData.recruitmentCostPerScribe
+      ? Math.round(scribeData.providersWithScribes * (scribeData.turnoverRate / 100)) * scribeData.recruitmentCostPerScribe
+      : 0,
+    managementCost: scribeData.managementHoursPerWeek && scribeData.managementHourlyRate
+      ? scribeData.managementHoursPerWeek * scribeData.managementHourlyRate * 50
+      : 0,
+    
+    // Totals
+    get totalHiddenCosts() {
+      return this.turnoverCost + this.managementCost;
+    },
+    get totalInvestment() {
+      return this.annualScribePayroll + this.totalHiddenCosts;
+    },
+    get costPerCoveredProvider() {
+      return scribeData.providersWithScribes
+        ? Math.round(this.totalInvestment / scribeData.providersWithScribes)
+        : 0;
+    },
+    get monthlySpend() {
+      return Math.round(this.totalInvestment / 12);
+    },
+    get fullCoverageCost() {
+      return scribeData.totalProviders && scribeData.providersWithScribes
+        ? Math.round((this.annualScribePayroll / scribeData.providersWithScribes) * scribeData.totalProviders)
+        : 0;
+    },
+    get threeYearInvestment() {
+      return this.totalInvestment * 3;
+    }
+  };
+  
+  return (
+    <div className="switch-scribes-flow">
+      {currentStep === 1 && (
+        <SwitchScribesSetup
+          data={scribeData}
+          setData={setScribeData}
+          calculations={calculations}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      )}
+      {currentStep === 2 && (
+        <SwitchScribesCoverage
+          data={scribeData}
+          calculations={calculations}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      )}
+      {currentStep === 3 && (
+        <SwitchScribesHiddenCosts
+          data={scribeData}
+          setData={setScribeData}
+          calculations={calculations}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      )}
+      {currentStep === 4 && (
+        <SwitchScribesFullPicture
+          data={scribeData}
+          calculations={calculations}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      )}
+      {currentStep === 5 && (
+        <SwitchScribesComparison
+          data={scribeData}
+          calculations={calculations}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onBack={goBack}
+        />
+      )}
+    </div>
+  );
+}
+
+Page 1: Scribe Program Setup
+jsxCopy// ============ SWITCH SCRIBES: SETUP ============
+// File: SwitchScribesSetup.tsx
+
+import { ArrowLeft, ArrowRight, Lightbulb } from 'lucide-react';
+import { formatNumber, NumberInput } from '../utils/formatting';
+
+export default function SwitchScribesSetup({
+  data,
+  setData,
+  calculations,
+  currentStep,
+  totalSteps,
+  onNext,
+  onBack
+}) {
+  
+  const encountersPerProvider = data.totalProviders && data.annualEncounters
+    ? Math.round(data.annualEncounters / data.totalProviders)
+    : null;
+  
+  const canContinue = data.totalProviders && data.annualEncounters && 
+                      data.providersWithScribes !== null && 
+                      data.hourlyRate && data.hoursPerWeek;
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>Your scribe program</h1>
+        </div>
+        
+        {/* Organization Section */}
+        <section className="input-section">
+          <h2 className="section-label">YOUR ORGANIZATION</h2>
+          
+          <div className="inline-input-card">
+            <div className="inline-row">
+              <span className="inline-text">You have</span>
+              <NumberInput
+                value={data.totalProviders}
+                onChange={(val) => setData({ ...data, totalProviders: val })}
+                placeholder="50"
+                className="inline-number-input"
+              />
+              <span className="inline-text">providers</span>
+            </div>
+            
+            <div className="inline-row">
+              <span className="inline-text">handling roughly</span>
+              <NumberInput
+                value={data.annualEncounters}
+                onChange={(val) => setData({ ...data, annualEncounters: val })}
+                placeholder="100,000"
+                className="inline-number-input wide"
+              />
+              <span className="inline-text">encounters/year</span>
+            </div>
+            
+            {encountersPerProvider && (
+              <div className="inline-hint">
+                <Lightbulb size={14} />
+                <span>That's ~{formatNumber(encountersPerProvider)} per provider (typical for outpatient)</span>
+              </div>
+            )}
+          </div>
+        </section>
+        
+        {/* Coverage Section */}
+        <section className="input-section">
+          <h2 className="section-label">YOUR SCRIBE COVERAGE</h2>
+          
+          <div className="coverage-input-card">
+            <label className="input-label">
+              How many providers currently have scribe support?
+            </label>
+            
+            <div className="coverage-input-row">
+              <NumberInput
+                value={data.providersWithScribes}
+                onChange={(val) => setData({ ...data, providersWithScribes: val })}
+                placeholder="15"
+                className="coverage-number-input"
+              />
+              <span className="coverage-context">of {data.totalProviders || '—'} providers</span>
+            </div>
+            
+            {data.totalProviders && data.providersWithScribes !== null && (
+              <div className="coverage-slider-container">
+                <input
+                  type="range"
+                  min={0}
+                  max={data.totalProviders}
+                  value={data.providersWithScribes || 0}
+                  onChange={(e) => setData({ ...data, providersWithScribes: Number(e.target.value) })}
+                  className="coverage-slider"
+                />
+                <div className="slider-endpoints">
+                  <span>0</span>
+                  <span>{data.totalProviders}</span>
+                </div>
+              </div>
+            )}
+            
+            {calculations.coveragePercent > 0 && (
+              <div className="coverage-summary">
+                <div className="coverage-stat">
+                  <span className="stat-value">{calculations.coveragePercent}%</span>
+                  <span className="stat-label">with scribes</span>
+                </div>
+                <div className="coverage-stat muted">
+                  <span className="stat-value">{100 - calculations.coveragePercent}%</span>
+                  <span className="stat-label">self-documenting</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+        
+        {/* Costs Section */}
+        <section className="input-section">
+          <h2 className="section-label">SCRIBE COSTS</h2>
+          
+          <div className="costs-grid">
+            <div className="cost-input-card">
+              <label className="input-label">Average hourly cost per scribe</label>
+              <div className="currency-input">
+                <span className="currency-symbol">$</span>
+                <NumberInput
+                  value={data.hourlyRate}
+                  onChange={(val) => setData({ ...data, hourlyRate: val })}
+                  placeholder="22"
+                  className="currency-number-input"
+                />
+                <span className="currency-suffix">/hour</span>
+              </div>
+              <span className="input-reference">Reference: $18-25/hr in-person, $15-20/hr virtual</span>
+            </div>
+            
+            <div className="cost-input-card">
+              <label className="input-label">Hours each scribe works per week</label>
+              <div className="hours-input">
+                <NumberInput
+                  value={data.hoursPerWeek}
+                  onChange={(val) => setData({ ...data, hoursPerWeek: val })}
+                  placeholder="32"
+                  className="hours-number-input"
+                />
+                <span className="hours-suffix">hours/week</span>
+              </div>
+              <span className="input-reference">Reference: 32-40 hrs full-time, 20-24 part-time</span>
+            </div>
+          </div>
+        </section>
+        
+        {/* Calculated Spend */}
+        {calculations.annualScribePayroll > 0 && (
+          <div className="calculated-spend-card">
+            <div className="spend-header">
+              <span className="spend-label">CALCULATED SPEND</span>
+            </div>
+            <div className="spend-content">
+              <span className="spend-title">Your annual scribe spend:</span>
+              <span className="spend-value">${formatNumber(calculations.annualScribePayroll)}/year</span>
+              <span className="spend-formula">
+                {data.providersWithScribes} scribes × ${data.hourlyRate}/hr × {data.hoursPerWeek} hrs/week × 50 weeks
+              </span>
+            </div>
+          </div>
+        )}
+        
+      </main>
+      
+      {/* Footer */}
+      <footer className="page-footer">
+        <button 
+          className={`continue-button ${canContinue ? 'enabled' : 'disabled'}`}
+          onClick={onNext}
+          disabled={!canContinue}
+        >
+          <span>Continue</span>
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      
+    </div>
+  );
+}
+
+Page 2: Coverage Reality
+jsxCopy// ============ SWITCH SCRIBES: COVERAGE ============
+// File: SwitchScribesCoverage.tsx
+
+import { ArrowLeft, ArrowRight, Users, Clock, MapPin, AlertCircle } from 'lucide-react';
+import { formatNumber } from '../utils/formatting';
+
+export default function SwitchScribesCoverage({
+  data,
+  calculations,
+  currentStep,
+  totalSteps,
+  onNext,
+  onBack
+}) {
+  
+  const additionalCostForFullCoverage = calculations.fullCoverageCost - calculations.annualScribePayroll;
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>The coverage reality</h1>
+          <p className="page-subtitle">Scribes scale linearly. Adding coverage means adding cost.</p>
+        </div>
+        
+        {/* Current Coverage */}
+        <section className="coverage-section">
+          <h2 className="section-label">YOUR CURRENT COVERAGE</h2>
+          
+          <div className="coverage-bar-card">
+            <div className="coverage-bar">
+              <div 
+                className="coverage-bar-filled"
+                style={{ width: `${calculations.coveragePercent}%` }}
+              >
+                <span className="bar-label">{data.providersWithScribes} with scribes</span>
+              </div>
+              <div 
+                className="coverage-bar-empty"
+                style={{ width: `${100 - calculations.coveragePercent}%` }}
+              >
+                <span className="bar-label">{calculations.providersWithoutScribes} self-documenting</span>
+              </div>
+            </div>
+            
+            <div className="coverage-stats">
+              <div className="coverage-stat-item">
+                <span className="stat-percent">{calculations.coveragePercent}%</span>
+                <span className="stat-desc">covered</span>
+              </div>
+              <div className="coverage-stat-item muted">
+                <span className="stat-percent">{100 - calculations.coveragePercent}%</span>
+                <span className="stat-desc">self-documenting</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        {/* Full Coverage Cost */}
+        <section className="coverage-section">
+          <h2 className="section-label">WHAT FULL COVERAGE WOULD COST</h2>
+          
+          <div className="full-coverage-card">
+            <div className="full-coverage-bar">
+              <div className="coverage-bar-full">
+                <span className="bar-label">{data.totalProviders} providers with scribes</span>
+              </div>
+            </div>
+            
+            <div className="full-coverage-costs">
+              <div className="cost-row">
+                <span className="cost-label">Current:</span>
+                <span className="cost-value">${formatNumber(calculations.annualScribePayroll)}/year</span>
+              </div>
+              <div className="cost-row highlight">
+                <span className="cost-label">Full coverage:</span>
+                <span className="cost-value">${formatNumber(calculations.fullCoverageCost)}/year</span>
+              </div>
+              <div className="cost-row additional">
+                <span className="cost-label">+${formatNumber(additionalCostForFullCoverage)} to cover remaining {calculations.providersWithoutScribes} providers</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        {/* Providers Without Scribes */}
+        <section className="coverage-section">
+          <h2 className="section-label">THE {calculations.providersWithoutScribes} PROVIDERS WITHOUT SCRIBES</h2>
+          
+          <div className="without-scribes-card">
+            <p className="card-intro">These providers are currently:</p>
+            <ul className="impact-list">
+              <li>
+                <Clock size={16} className="impact-icon" />
+                <span>Self-documenting after hours</span>
+              </li>
+              <li>
+                <Users size={16} className="impact-icon" />
+                <span>Spending less time with patients</span>
+              </li>
+              <li>
+                <AlertCircle size={16} className="impact-icon" />
+                <span>Carrying higher administrative burden</span>
+              </li>
+              <li>
+                <AlertCircle size={16} className="impact-icon" />
+                <span>At higher risk of burnout</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+        
+        {/* With Abridge */}
+        <section className="coverage-section">
+          <h2 className="section-label">WITH ABRIDGE</h2>
+          
+          <div className="abridge-coverage-card">
+            <div className="abridge-coverage-bar">
+              <span className="abridge-bar-label">All {data.totalProviders} providers have access</span>
+            </div>
+            
+            <ul className="abridge-benefits">
+              <li>No per-provider cost barrier to scale</li>
+              <li>Average utilization: 65% based on Abridge benchmarks</li>
+              <li>Available 24/7 — nights, weekends, every location</li>
+            </ul>
+          </div>
+        </section>
+        
+      </main>
+      
+      {/* Footer */}
+      <footer className="page-footer">
+        <button className="continue-button enabled" onClick={onNext}>
+          <span>Continue</span>
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      
+    </div>
+  );
+}
+
+Page 3: Hidden Costs
+jsxCopy// ============ SWITCH SCRIBES: HIDDEN COSTS ============
+// File: SwitchScribesHiddenCosts.tsx
+
+import { ArrowLeft, ArrowRight, Users, Settings, Clock, MapPin, AlertTriangle } from 'lucide-react';
+import { formatNumber, NumberInput } from '../utils/formatting';
+
+export default function SwitchScribesHiddenCosts({
+  data,
+  setData,
+  calculations,
+  currentStep,
+  totalSteps,
+  onNext,
+  onBack
+}) {
+  
+  const replacementsPerYear = Math.round(data.providersWithScribes * (data.turnoverRate / 100));
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>The costs beyond payroll</h1>
+          <p className="page-subtitle">Scribe programs come with operational overhead.</p>
+        </div>
+        
+        {/* Hidden Costs Grid */}
+        <div className="hidden-costs-grid">
+          
+          {/* Turnover Card */}
+          <div className="hidden-cost-card">
+            <div className="cost-card-header">
+              <Users size={20} className="cost-card-icon" />
+              <h3>Turnover & Training</h3>
+            </div>
+            
+            <div className="cost-card-input">
+              <label>Annual turnover rate:</label>
+              <div className="percent-input">
+                <NumberInput
+                  value={data.turnoverRate}
+                  onChange={(val) => setData({ ...data, turnoverRate: val })}
+                  placeholder="35"
+                  className="percent-number-input"
+                />
+                <span className="percent-symbol">%</span>
+              </div>
+              <span className="input-reference">(typical: 30-50%)</span>
+            </div>
+            
+            <div className="cost-card-calculation">
+              <p className="calc-text">
+                Your {data.providersWithScribes} scribes × {data.turnoverRate}%
+              </p>
+              <p className="calc-text">
+                = ~{replacementsPerYear} replacements/year
+              </p>
+              <p className="calc-text">
+                × ${formatNumber(data.recruitmentCostPerScribe)} to recruit + train
+              </p>
+            </div>
+            
+            <div className="cost-card-result">
+              <span className="result-label">Annual cost:</span>
+              <span className="result-value">${formatNumber(calculations.turnoverCost)}</span>
+            </div>
+          </div>
+          
+          {/* Management Card */}
+          <div className="hidden-cost-card">
+            <div className="cost-card-header">
+              <Settings size={20} className="cost-card-icon" />
+              <h3>Management Overhead</h3>
+            </div>
+            
+            <div className="cost-card-input">
+              <label>Hours/week managing scribes:</label>
+              <div className="hours-input-small">
+                <NumberInput
+                  value={data.managementHoursPerWeek}
+                  onChange={(val) => setData({ ...data, managementHoursPerWeek: val })}
+                  placeholder="6"
+                  className="hours-number-input-small"
+                />
+                <span className="hours-symbol">hrs</span>
+              </div>
+              <span className="input-reference">(typical: 4-8 hrs)</span>
+            </div>
+            
+            <div className="cost-card-calculation">
+              <p className="calc-text">
+                {data.managementHoursPerWeek} hrs × ${data.managementHourlyRate}/hr
+              </p>
+              <p className="calc-text">
+                × 50 weeks
+              </p>
+            </div>
+            
+            <div className="cost-card-result">
+              <span className="result-label">Annual cost:</span>
+              <span className="result-value">${formatNumber(calculations.managementCost)}</span>
+            </div>
+          </div>
+          
+        </div>
+        
+        {/* Total Hidden Costs */}
+        <div className="total-hidden-costs-card">
+          <div className="total-row">
+            <span className="total-label">Total quantified hidden costs:</span>
+            <span className="total-value">${formatNumber(calculations.totalHiddenCosts)}/year</span>
+          </div>
+        </div>
+        
+        {/* Also Consider */}
+        <section className="also-consider-section">
+          <h2 className="section-label">ALSO CONSIDER (Not Quantified)</h2>
+          
+          <div className="consider-cards">
+            <div className="consider-card">
+              <div className="consider-header">
+                <MapPin size={16} className="consider-icon" />
+                <strong>Coverage gaps</strong>
+              </div>
+              <p>
+                Scribes don't cover nights, weekends, sick days, or 
+                satellite locations without additional cost.
+              </p>
+              <p className="abridge-contrast">
+                Abridge works 24/7, every location, no exceptions.
+              </p>
+            </div>
+            
+            <div className="consider-card">
+              <div className="consider-header">
+                <AlertTriangle size={16} className="consider-icon" />
+                <strong>Quality variability</strong>
+              </div>
+              <p>
+                Scribe quality varies by individual. Training and turnover 
+                create inconsistency in documentation standards.
+              </p>
+            </div>
+          </div>
+        </section>
+        
+      </main>
+      
+      {/* Footer */}
+      <footer className="page-footer">
+        <button className="continue-button enabled" onClick={onNext}>
+          <span>Continue</span>
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      
+    </div>
+  );
+}
+
+Page 4: Full Picture
+jsxCopy// ============ SWITCH SCRIBES: FULL PICTURE ============
+// File: SwitchScribesFullPicture.tsx
+
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { formatNumber } from '../utils/formatting';
+
+export default function SwitchScribesFullPicture({
+  data,
+  calculations,
+  currentStep,
+  totalSteps,
+  onNext,
+  onBack
+}) {
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>The full picture</h1>
+        </div>
+        
+        {/* Total Investment Hero */}
+        <section className="total-investment-section">
+          <div className="total-investment-card">
+            <span className="investment-label">YOUR TOTAL SCRIBE INVESTMENT</span>
+            <div className="investment-hero">
+              <span className="investment-value">${formatNumber(calculations.totalInvestment)}</span>
+              <span className="investment-period">per year</span>
+            </div>
+          </div>
+          
+          <div className="investment-breakdown-card">
+            <div className="breakdown-row">
+              <span className="breakdown-label">Scribe payroll</span>
+              <span className="breakdown-value">${formatNumber(calculations.annualScribePayroll)}</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Hidden costs (turnover, mgmt)</span>
+              <span className="breakdown-value">${formatNumber(calculations.totalHiddenCosts)}</span>
+            </div>
+            <div className="breakdown-divider"></div>
+            <div className="breakdown-row total">
+              <span className="breakdown-label">Total</span>
+              <span className="breakdown-value">${formatNumber(calculations.totalInvestment)}</span>
+            </div>
+            <div className="breakdown-coverage">
+              <span>Coverage: {data.providersWithScribes} of {data.totalProviders} providers ({calculations.coveragePercent}%)</span>
+            </div>
+          </div>
+        </section>
+        
+        {/* Breaking It Down */}
+        <section className="breakdown-section">
+          <h2 className="section-label">BREAKING IT DOWN</h2>
+          
+          <div className="breakdown-cards-grid">
+            <div className="breakdown-stat-card">
+              <span className="stat-value">${formatNumber(calculations.monthlySpend)}</span>
+              <span className="stat-label">per month</span>
+            </div>
+            <div className="breakdown-stat-card">
+              <span className="stat-value">${formatNumber(calculations.costPerCoveredProvider)}</span>
+              <span className="stat-label">per covered provider/year</span>
+            </div>
+            <div className="breakdown-stat-card muted">
+              <span className="stat-value">$0</span>
+              <span className="stat-label">for the other {calculations.providersWithoutScribes} providers</span>
+            </div>
+          </div>
+        </section>
+        
+        {/* The Tradeoff */}
+        <section className="tradeoff-section">
+          <h2 className="section-label">THE TRADEOFF</h2>
+          
+          <div className="tradeoff-card">
+            <p>
+              You're spending <strong>${formatNumber(calculations.totalInvestment)}/year</strong> on a program that covers <strong>{calculations.coveragePercent}%</strong> of your providers.
+            </p>
+            <p>
+              The other <strong>{100 - calculations.coveragePercent}%</strong> are self-documenting — often after hours, with less time for patients, and at higher burnout risk.
+            </p>
+            <p>
+              To cover everyone with scribes would cost <strong>${formatNumber(calculations.fullCoverageCost)}/year</strong>.
+            </p>
+          </div>
+        </section>
+        
+      </main>
+      
+      {/* Footer */}
+      <footer className="page-footer">
+        <button className="continue-button enabled" onClick={onNext}>
+          <span>See the comparison</span>
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      
+    </div>
+  );
+}
+
+Page 5: Comparison
+jsxCopy// ============ SWITCH SCRIBES: COMPARISON ============
+// File: SwitchScribesComparison.tsx
+
+import { ArrowLeft, Check, Copy, Edit3, MessageCircle } from 'lucide-react';
+import { formatNumber } from '../utils/formatting';
+
+export default function SwitchScribesComparison({
+  data,
+  calculations,
+  currentStep,
+  totalSteps,
+  onBack
+}) {
+  
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    // Show toast notification
+  };
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>The comparison</h1>
+        </div>
+        
+        {/* Side by Side */}
+        <section className="comparison-section">
+          <div className="comparison-grid">
+            
+            {/* Scribe Program */}
+            <div className="comparison-card scribe">
+              <h3 className="comparison-card-title">YOUR SCRIBE PROGRAM</h3>
+              
+              <div className="comparison-details">
+                <div className="detail-row highlight">
+                  <span className="detail-value">${formatNumber(calculations.totalInvestment)}/year</span>
+                </div>
+                
+                <div className="detail-row">
+                  <span>{data.providersWithScribes} of {data.totalProviders} providers</span>
+                </div>
+                <div className="detail-row">
+                  <span>({calculations.coveragePercent}% coverage)</span>
+                </div>
+                
+                <div className="detail-divider"></div>
+                
+                <div className="detail-row muted">
+                  <span>Limited to clinic hours</span>
+                </div>
+                <div className="detail-row muted">
+                  <span>{data.turnoverRate}% annual turnover</span>
+                </div>
+                <div className="detail-row muted">
+                  <span>Management overhead required</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Abridge */}
+            <div className="comparison-card abridge">
+              <div className="abridge-badge">
+                <span className="brand-mark small">A</span>
+              </div>
+              <h3 className="comparison-card-title">WITH ABRIDGE</h3>
+              
+              <div className="comparison-details">
+                <div className="detail-row benefit">
+                  <Check size={16} className="benefit-icon" />
+                  <span>All {data.totalProviders} providers have access</span>
+                </div>
+                
+                <div className="detail-row benefit">
+                  <Check size={16} className="benefit-icon" />
+                  <span>24/7 availability</span>
+                </div>
+                
+                <div className="detail-row benefit">
+                  <Check size={16} className="benefit-icon" />
+                  <span>No turnover, no training, no management</span>
+                </div>
+                
+                <div className="detail-divider"></div>
+                
+                <p className="pricing-note">
+                  Pricing varies by deployment. Your Sales Director can provide specifics.
+                </p>
+              </div>
+            </div>
+            
+          </div>
+        </section>
+        
+        {/* The Question */}
+        <section className="question-section">
+          <h2 className="section-label">THE QUESTION</h2>
+          
+          <div className="question-card">
+            <p>
+              You're investing <strong>${formatNumber(calculations.totalInvestment)}/year</strong> in documentation support for <strong>{calculations.coveragePercent}%</strong> of your providers.
+            </p>
+            <p>
+              What would it mean to extend that support to everyone — without proportionally scaling cost?
+            </p>
+          </div>
+        </section>
+        
+        {/* Three Year View */}
+        <section className="three-year-section">
+          <h2 className="section-label">OVER THREE YEARS</h2>
+          
+          <div className="three-year-card">
+            <div className="three-year-row">
+              <span className="row-label">Current scribe investment:</span>
+              <span className="row-value">${formatNumber(calculations.threeYearInvestment)}</span>
+            </div>
+            <div className="three-year-subtext">
+              (3 years at ${formatNumber(calculations.totalInvestment)}/year)
+            </div>
+            
+            <div className="three-year-context">
+              <p>Coverage: Still {calculations.coveragePercent}% of providers</p>
+              <p>
+                The {calculations.providersWithoutScribes} providers without support will continue 
+                self-documenting — with all the associated costs.
+              </p>
+            </div>
+          </div>
+        </section>
+        
+        {/* CTA Section */}
+        <section className="cta-section">
+          <button className="primary-cta">
+            <MessageCircle size={18} />
+            <span>Start a conversation</span>
+          </button>
+          
+          <div className="secondary-actions">
+            <button className="secondary-action" onClick={copyLink}>
+              <Copy size={16} />
+              <span>Copy link</span>
+            </button>
+            <button className="secondary-action" onClick={onBack}>
+              <Edit3 size={16} />
+              <span>Edit inputs</span>
+            </button>
+          </div>
+        </section>
+        
+      </main>
+      
+    </div>
+  );
+}
+
+Utility: Number Formatting
+jsxCopy// ============ FORMATTING UTILITIES ============
+// File: utils/formatting.tsx
+
+import { useState } from 'react';
+
+export const formatNumber = (value) => {
+  if (value === null || value === undefined || value === '') return '—';
+  return Number(value).toLocaleString();
+};
+
+export const NumberInput = ({ 
+  value, 
+  onChange, 
+  placeholder, 
+  className = '' 
+}) => {
+  const [displayValue, setDisplayValue] = useState(
+    value ? formatNumber(value) : ''
+  );
+  
+  const handleChange = (e) => {
+    const rawValue = e.target.value.replace(/,/g, '');
+    setDisplayValue(e.target.value);
+    onChange(rawValue ? Number(rawValue) : null);
+  };
+  
+  const handleBlur = () => {
+    if (value) {
+      setDisplayValue(formatNumber(value));
+    }
+  };
+  
+  const handleFocus = () => {
+    if (value) {
+      setDisplayValue(value.toString());
+    }
+  };
+  
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      value={displayValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onFocus={handleFocus}
+      placeholder={placeholder}
+      className={className}
+    />
+  );
+};
+
+Complete CSS
+cssCopy/* ============ SWITCH SCRIBES STYLES ============ */
+/* File: SwitchScribes.css */
+
+/* Base Page */
+.switch-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+}
+
+/* Header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #f1f1f1;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.back-button:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.brand-mark.small {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
+
+.brand-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.progress-indicator {
+  display: flex;
+  gap: 6px;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  transition: all 0.2s;
+}
+
+.progress-dot.active {
+  background: #f97316;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.progress-dot.complete {
+  background: #f97316;
+}
+
+/* Content */
+.page-content {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  width: 100%;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.page-title h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #64748b;
+  margin: 12px 0 0 0;
+}
+
+/* Sections */
+.input-section,
+.coverage-section,
+.also-consider-section,
+.total-investment-section,
+.breakdown-section,
+.tradeoff-section,
+.comparison-section,
+.question-section,
+.three-year-section {
+  margin-bottom: 32px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  margin: 0 0 16px 0;
+}
+
+/* Inline Input Card */
+.inline-input-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.inline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.inline-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.inline-text {
+  font-size: 18px;
+  color: #334155;
+}
+
+.inline-number-input {
+  width: 80px;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: all 0.15s;
+}
+
+.inline-number-input:focus {
+  outline: none;
+  border-color: #f97316;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.inline-number-input.wide {
+  width: 120px;
+}
+
+.inline-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fffbeb;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.inline-hint svg {
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.inline-hint span {
+  font-size: 14px;
+  color: #92400e;
+}
+
+/* Coverage Input Card */
+.coverage-input-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.input-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 12px;
+}
+
+.coverage-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.coverage-number-input {
+  width: 80px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  color: #1e293b;
+  background: #f8fafc;
+}
+
+.coverage-number-input:focus {
+  outline: none;
+  border-color: #f97316;
+  background: white;
+}
+
+.coverage-context {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.coverage-slider-container {
+  margin-bottom: 20px;
+}
+
+.coverage-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  appearance: none;
+  cursor: pointer;
+}
+
+.coverage-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f97316;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+}
+
+.slider-endpoints {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.coverage-summary {
+  display: flex;
+  gap: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.coverage-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.coverage-stat .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #f97316;
+}
+
+.coverage-stat.muted .stat-value {
+  color: #94a3b8;
+}
+
+.coverage-stat .stat-label {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Costs Grid */
+.costs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .costs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cost-input-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.currency-input,
+.hours-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.currency-symbol {
+  font-size: 18px;
+  color: #64748b;
+}
+
+.currency-number-input,
+.hours-number-input {
+  width: 80px;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  color: #1e293b;
+  background: #f8fafc;
+}
+
+.currency-number-input:focus,
+.hours-number-input:focus {
+  outline: none;
+  border-color: #f97316;
+  background: white;
+}
+
+.currency-suffix,
+.hours-suffix {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.input-reference {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Calculated Spend */
+.calculated-spend-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.spend-header {
+  padding: 12px 24px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.spend-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.spend-content {
+  padding: 20px 24px;
+}
+
+.spend-title {
+  display: block;
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.spend-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.spend-formula {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* Coverage Bar */
+.coverage-bar-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.coverage-bar {
+  display: flex;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.coverage-bar-filled {
+  background: #f97316;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: fit-content;
+  padding: 0 16px;
+}
+
+.coverage-bar-filled .bar-label {
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.coverage-bar-empty {
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: fit-content;
+  padding: 0 16px;
+}
+
+.coverage-bar-empty .bar-label {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.coverage-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.coverage-stat-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.coverage-stat-item .stat-percent {
+  font-size: 32px;
+  font-weight: 700;
+  color: #f97316;
+}
+
+.coverage-stat-item.muted .stat-percent {
+  color: #94a3b8;
+}
+
+.coverage-stat-item .stat-desc {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* Full Coverage */
+.full-coverage-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.full-coverage-bar,
+.coverage-bar-full {
+  height: 48px;
+  background: linear-gradient(90deg, #f97316 0%, #fb923c 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.coverage-bar-full .bar-label {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.full-coverage-costs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+}
+
+.cost-row .cost-label {
+  color: #64748b;
+}
+
+.cost-row .cost-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.cost-row.highlight .cost-value {
+  color: #dc2626;
+  font-size: 18px;
+}
+
+.cost-row.additional {
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 8px;
+}
+
+.cost-row.additional .cost-label {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* Without Scribes Card */
+.without-scribes-card {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.without-scribes-card .card-intro {
+  font-size: 15px;
+  color: #991b1b;
+  margin: 0 0 16px 0;
+}
+
+.impact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.impact-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #7f1d1d;
+}
+
+.impact-icon {
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+/* Abridge Coverage Card */
+.abridge-coverage-card {
+  background: #f0fdf4;
+  border: 1px solid #a7f3d0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.abridge-coverage-bar {
+  height: 48px;
+  background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.abridge-bar-label {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.abridge-benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.abridge-benefits li {
+  font-size: 14px;
+  color: #065f46;
+  padding-left: 20px;
+  position: relative;
+}
+
+.abridge-benefits li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Hidden Costs Grid */
+.hidden-costs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+  .hidden-costs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hidden-cost-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.cost-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.cost-card-icon {
+  color: #f97316;
+}
+
+.cost-card-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.cost-card-input {
+  margin-bottom: 16px;
+}
+
+.cost-card-input label {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.percent-input,
+.hours-input-small {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.percent-number-input,
+.hours-number-input-small {
+  width: 64px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: #1e293b;
+  background: #f8fafc;
+}
+
+.percent-number-input:focus,
+.hours-number-input-small:focus {
+  outline: none;
+  border-color: #f97316;
+  background: white;
+}
+
+.percent-symbol,
+.hours-symbol {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.cost-card-calculation {
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.calc-text {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 4px 0;
+}
+
+.calc-text:last-child {
+  margin-bottom: 0;
+}
+
+.cost-card-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.result-label {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.result-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f97316;
+}
+
+/* Total Hidden Costs */
+.total-hidden-costs-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-label {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.total-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Also Consider */
+.consider-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.consider-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.consider-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.consider-icon {
+  color: #64748b;
+}
+
+.consider-card p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.consider-card p:last-child {
+  margin-bottom: 0;
+}
+
+.abridge-contrast {
+  color: #059669 !important;
+  font-weight: 500;
+}
+
+/* Total Investment */
+.total-investment-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.investment-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+}
+
+.investment-hero {
+  margin-top: 12px;
+}
+
+.investment-value {
+  display: block;
+  font-size: 48px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -1px;
+}
+
+.investment-period {
+  display: block;
+  font-size: 16px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.investment-breakdown-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.breakdown-label {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.breakdown-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.breakdown-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 8px 0;
+}
+
+.breakdown-row.total .breakdown-label,
+.breakdown-row.total .breakdown-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.breakdown-coverage {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* Breakdown Cards Grid */
+.breakdown-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .breakdown-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.breakdown-stat-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.breakdown-stat-card .stat-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.breakdown-stat-card.muted .stat-value {
+  color: #94a3b8;
+}
+
+.breakdown-stat-card .stat-label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Tradeoff */
+.tradeoff-card {
+  background: #fffbeb;
+  border: 1px solid #fef08a;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.tradeoff-card p {
+  font-size: 15px;
+  color: #78350f;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.tradeoff-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* Comparison */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparison-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+}
+
+.comparison-card.abridge {
+  border-color: #a7f3d0;
+  background: #f0fdf4;
+}
+
+.abridge-badge {
+  position: absolute;
+  top: -12px;
+  right: 24px;
+}
+
+.comparison-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin: 0 0 16px 0;
+}
+
+.comparison-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.detail-row.highlight .detail-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.detail-row.benefit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #065f46;
+}
+
+.benefit-icon {
+  color: #059669;
+}
+
+.detail-row.muted {
+  color: #94a3b8;
+}
+
+.detail-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 8px 0;
+}
+
+.pricing-note {
+  font-size: 13px;
+  color: #64748b;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Question */
+.question-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.question-card p {
+  font-size: 16px;
+  color: #334155;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.question-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* Three Year */
+.three-year-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.three-year-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.three-year-row .row-label {
+  font-size: 15px;
+  color: #64748b;
+}
+
+.three-year-row .row-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.three-year-subtext {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 4px 0 16px 0;
+}
+
+.three-year-context {
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.three-year-context p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.three-year-context p:last-child {
+  margin-bottom: 0;
+}
+
+/* CTA Section */
+.cta-section {
+  text-align: center;
+  padding-top: 24px;
+}
+
+.primary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #f97316;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primary-cta:hover {
+  background: #ea580c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.25);
+}
+
+.secondary-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.secondary-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.secondary-action:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* Footer */
+.page-footer {
+  padding: 16px 24px;
+  background: white;
+  border-top: 1px solid #f1f1f1;
+  display: flex;
+  justify-content: center;
+}
+
+.continue-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.continue-button.enabled {
+  background: #f97316;
+  color: white;
+}
+
+.continue-button.enabled:hover {
+  background: #ea580c;
+  transform: translateY(-1px);
+}
+
+.continue-button.disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}

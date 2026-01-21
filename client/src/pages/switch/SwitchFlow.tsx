@@ -5,6 +5,7 @@ import SwitchFramework from "./SwitchFramework";
 import SwitchYourSituation from "./SwitchYourSituation";
 import SwitchComparison from "./SwitchComparison";
 import SwitchWhatThisMeans from "./SwitchWhatThisMeans";
+import SwitchScribesFlow from "./SwitchScribesFlow";
 
 type SolutionType = "ambient-ai" | "human-scribes";
 type CareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
@@ -34,6 +35,7 @@ export interface SwitchState {
 
 export function SwitchFlow({ onBackToJourney }: SwitchFlowProps) {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  const [showScribesFlow, setShowScribesFlow] = useState(false);
   
   const [switchState, setSwitchState] = useState<SwitchState>({
     solution: null,
@@ -50,13 +52,34 @@ export function SwitchFlow({ onBackToJourney }: SwitchFlowProps) {
     },
   });
 
-  const goNext = () => setCurrentStep((prev) => Math.min(prev + 1, 6) as 1 | 2 | 3 | 4 | 5 | 6);
+  const goNext = () => {
+    if (currentStep === 1 && switchState.solution === "human-scribes") {
+      setShowScribesFlow(true);
+    } else {
+      setCurrentStep((prev) => Math.min(prev + 1, 6) as 1 | 2 | 3 | 4 | 5 | 6);
+    }
+  };
+  
   const goBack = () => setCurrentStep((prev) => Math.max(prev - 1, 1) as 1 | 2 | 3 | 4 | 5 | 6);
   const goBackToJourney = () => onBackToJourney?.();
+  
+  const handleScribesBack = () => {
+    setShowScribesFlow(false);
+    setSwitchState((prev) => ({ ...prev, solution: null }));
+  };
 
   const updateSwitchState = (updates: Partial<SwitchState>) => {
     setSwitchState((prev) => ({ ...prev, ...updates }));
   };
+
+  if (showScribesFlow) {
+    return (
+      <SwitchScribesFlow 
+        onBack={handleScribesBack}
+        onBackToJourney={goBackToJourney}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">

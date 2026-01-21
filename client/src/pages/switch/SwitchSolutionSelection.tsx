@@ -33,8 +33,7 @@ const solutions: Array<{
     name: "Human Scribes",
     description: "In-person or virtual scribes",
     icon: <Users className="w-6 h-6" />,
-    available: false,
-    comingSoon: true,
+    available: true,
   },
 ];
 
@@ -58,7 +57,7 @@ export default function SwitchSolutionSelection({
   onBack,
 }: Props) {
   const { solution, careSetting } = switchState;
-  const canContinue = solution && careSetting;
+  const canContinue = solution === "human-scribes" || (solution && careSetting);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
@@ -151,7 +150,7 @@ export default function SwitchSolutionSelection({
           ))}
         </div>
 
-        {solution && (
+        {solution && solution !== "human-scribes" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
             <p className="text-sm font-medium text-slate-600 mb-3">Select a care setting:</p>
             <div className="flex flex-wrap gap-2">

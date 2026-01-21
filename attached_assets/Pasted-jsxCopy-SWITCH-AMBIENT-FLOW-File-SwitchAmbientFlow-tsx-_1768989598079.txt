@@ -1,0 +1,2176 @@
+jsxCopy// ============ SWITCH AMBIENT FLOW ============
+// File: SwitchAmbientFlow.tsx
+
+import { useState, useMemo } from 'react';
+import SwitchAmbientSetup from './SwitchAmbientSetup';
+import SwitchAmbientAnalysis from './SwitchAmbientAnalysis';
+import SwitchAmbientConclusion from './SwitchAmbientConclusion';
+
+export default function SwitchAmbientFlow({ onBack }) {
+  const [currentStep, setCurrentStep] = useState(1);
+  
+  const [inputs, setInputs] = useState({
+    providerRange: '50-100', // '<25', '25-50', '50-100', '100-200', '200+'
+    utilization: 50,
+    efficiency: 1.5,
+    // Derived
+    providers: 75, // midpoint of range
+    encountersPerProvider: 2000
+  });
+  
+  const totalSteps = 3;
+  
+  const goNext = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const goBack = () => {
+    if (currentStep === 1) {
+      onBack();
+    } else {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+  
+  // Abridge benchmarks
+  const benchmarks = {
+    utilization: 65,
+    efficiency: 3 // conservative end of 3-5 range
+  };
+  
+  // All calculations
+  const calculations = useMemo(() => {
+    const providers = inputs.providers;
+    const totalEncounters = providers * inputs.encountersPerProvider;
+    
+    // Current state
+    const currentDocumentedEncounters = Math.round(totalEncounters * (inputs.utilization / 100));
+    const currentHoursReturned = Math.round((inputs.efficiency * currentDocumentedEncounters) / 60);
+    
+    // With Abridge
+    const abridgeDocumentedEncounters = Math.round(totalEncounters * (benchmarks.utilization / 100));
+    const abridgeHoursReturned = Math.round((benchmarks.efficiency * abridgeDocumentedEncounters) / 60);
+    
+    // Gaps
+    const utilizationGap = benchmarks.utilization - inputs.utilization;
+    const efficiencyGap = benchmarks.efficiency - inputs.efficiency;
+    const additionalEncounters = abridgeDocumentedEncounters - currentDocumentedEncounters;
+    const additionalHours = abridgeHoursReturned - currentHoursReturned;
+    
+    // Dollar values (using conservative rates)
+    const valuePerEncounter = 2.60; // Conservative: wRVU lift + denial reduction
+    const valuePerHour = 75; // Productivity value
+    
+    const utilizationValue = Math.round(additionalEncounters * valuePerEncounter);
+    const efficiencyValue = Math.round(additionalHours * valuePerHour);
+    const totalAnnualGap = utilizationValue + efficiencyValue;
+    
+    // Driver breakdown (approximate allocation)
+    const patientAccessValue = Math.round(totalAnnualGap * 0.26);
+    const levelOfServiceValue = Math.round(totalAnnualGap * 0.45);
+    const denialsValue = Math.round(totalAnnualGap * 0.29);
+    
+    // Time-based
+    const monthlyGap = Math.round(totalAnnualGap / 12);
+    const dailyGap = Math.round(totalAnnualGap / 365);
+    const hourlyGap = Math.round(totalAnnualGap / (365 * 24));
+    
+    // 3-year projection
+    const year1Value = totalAnnualGap;
+    const year2Value = Math.round(totalAnnualGap * 1.10); // 10% improvement
+    const year3Value = Math.round(totalAnnualGap * 1.18); // 18% improvement
+    const threeYearTotal = year1Value + year2Value + year3Value;
+    
+    // Cost of waiting 6 months
+    const wait6MonthsLoss = Math.round(year1Value * 0.5);
+    const threeYearIfWait = threeYearTotal - wait6MonthsLoss;
+    
+    return {
+      // Current
+      currentDocumentedEncounters,
+      currentHoursReturned,
+      
+      // Abridge
+      abridgeDocumentedEncounters,
+      abridgeHoursReturned,
+      
+      // Gaps
+      utilizationGap,
+      efficiencyGap,
+      additionalEncounters,
+      additionalHours,
+      
+      // Values
+      utilizationValue,
+      efficiencyValue,
+      totalAnnualGap,
+      
+      // Drivers
+      patientAccessValue,
+      levelOfServiceValue,
+      denialsValue,
+      
+      // Time-based
+      monthlyGap,
+      dailyGap,
+      hourlyGap,
+      
+      // 3-year
+      year1Value,
+      year2Value,
+      year3Value,
+      threeYearTotal,
+      wait6MonthsLoss,
+      threeYearIfWait,
+      
+      // Meta
+      providers,
+      totalEncounters
+    };
+  }, [inputs, benchmarks]);
+  
+  return (
+    <div className="switch-ambient-flow">
+      {currentStep === 1 && (
+        <SwitchAmbientSetup
+          inputs={inputs}
+          setInputs={setInputs}
+          calculations={calculations}
+          benchmarks={benchmarks}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      )}
+      {currentStep === 2 && (
+        <SwitchAmbientAnalysis
+          inputs={inputs}
+          calculations={calculations}
+          benchmarks={benchmarks}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={goNext}
+          onBack={goBack}
+        />
+      )}
+      {currentStep === 3 && (
+        <SwitchAmbientConclusion
+          inputs={inputs}
+          calculations={calculations}
+          benchmarks={benchmarks}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onBack={goBack}
+        />
+      )}
+    </div>
+  );
+}
+
+Page 1: Setup + Live Gap
+jsxCopy// ============ SWITCH AMBIENT: SETUP ============
+// File: SwitchAmbientSetup.tsx
+
+import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { formatNumber } from '../utils/formatting';
+
+export default function SwitchAmbientSetup({
+  inputs,
+  setInputs,
+  calculations,
+  benchmarks,
+  currentStep,
+  totalSteps,
+  onNext,
+  onBack
+}) {
+  
+  const providerRanges = [
+    { id: '<25', label: '<25', midpoint: 15 },
+    { id: '25-50', label: '25-50', midpoint: 37 },
+    { id: '50-100', label: '50-100', midpoint: 75 },
+    { id: '100-200', label: '100-200', midpoint: 150 },
+    { id: '200+', label: '200+', midpoint: 250 }
+  ];
+  
+  const handleProviderRangeChange = (rangeId) => {
+    const range = providerRanges.find(r => r.id === rangeId);
+    setInputs({
+      ...inputs,
+      providerRange: rangeId,
+      providers: range.midpoint
+    });
+  };
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>Let's see where you stand</h1>
+        </div>
+        
+        {/* Provider Range */}
+        <section className="input-section">
+          <div className="section-header">
+            <h2 className="section-label">YOUR SETUP</h2>
+          </div>
+          
+          <div className="input-card">
+            <label className="input-label">
+              Providers using your current solution
+            </label>
+            <div className="range-chips">
+              {providerRanges.map(range => (
+                <button
+                  key={range.id}
+                  className={`range-chip ${inputs.providerRange === range.id ? 'selected' : ''}`}
+                  onClick={() => handleProviderRangeChange(range.id)}
+                >
+                  {range.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+        
+        {/* Two Column: Utilization + Efficiency */}
+        <div className="metrics-grid">
+          
+          {/* Utilization */}
+          <section className="metric-input-card">
+            <div className="metric-header">
+              <h3>UTILIZATION</h3>
+              <p>What % of encounters use the tool?</p>
+            </div>
+            
+            <div className="slider-section">
+              <div className="slider-value-display">
+                <span className="value-label">YOUR ESTIMATE</span>
+                <span className="value-number">{inputs.utilization}%</span>
+              </div>
+              
+              <div className="slider-container">
+                <input
+                  type="range"
+                  min={20}
+                  max={90}
+                  value={inputs.utilization}
+                  onChange={(e) => setInputs({ ...inputs, utilization: Number(e.target.value) })}
+                  className="metric-slider"
+                />
+                <div className="slider-track">
+                  <div 
+                    className="slider-fill"
+                    style={{ width: `${((inputs.utilization - 20) / 70) * 100}%` }}
+                  />
+                  <div 
+                    className="benchmark-marker"
+                    style={{ left: `${((benchmarks.utilization - 20) / 70) * 100}%` }}
+                  />
+                </div>
+                <div className="slider-labels">
+                  <span>20%</span>
+                  <span>90%</span>
+                </div>
+              </div>
+              
+              <div className="benchmark-reference">
+                <Sparkles size={14} className="benchmark-icon" />
+                <span>Abridge avg: <strong>{benchmarks.utilization}%</strong></span>
+              </div>
+            </div>
+          </section>
+          
+          {/* Efficiency */}
+          <section className="metric-input-card">
+            <div className="metric-header">
+              <h3>EFFICIENCY</h3>
+              <p>Time saved per encounter?</p>
+            </div>
+            
+            <div className="slider-section">
+              <div className="slider-value-display">
+                <span className="value-label">YOUR ESTIMATE</span>
+                <span className="value-number">{inputs.efficiency} min</span>
+              </div>
+              
+              <div className="slider-container">
+                <input
+                  type="range"
+                  min={0.5}
+                  max={5}
+                  step={0.5}
+                  value={inputs.efficiency}
+                  onChange={(e) => setInputs({ ...inputs, efficiency: Number(e.target.value) })}
+                  className="metric-slider"
+                />
+                <div className="slider-track">
+                  <div 
+                    className="slider-fill"
+                    style={{ width: `${((inputs.efficiency - 0.5) / 4.5) * 100}%` }}
+                  />
+                  <div 
+                    className="benchmark-marker"
+                    style={{ left: `${((benchmarks.efficiency - 0.5) / 4.5) * 100}%` }}
+                  />
+                </div>
+                <div className="slider-labels">
+                  <span>0.5 min</span>
+                  <span>5 min</span>
+                </div>
+              </div>
+              
+              <div className="benchmark-reference">
+                <Sparkles size={14} className="benchmark-icon" />
+                <span>Abridge avg: <strong>3-5 min</strong></span>
+              </div>
+            </div>
+          </section>
+          
+        </div>
+        
+        {/* Live Gap Visualization */}
+        <section className="live-gap-section">
+          <div className="gap-header">
+            <h2 className="section-label">THE GAP</h2>
+            <span className="live-badge">LIVE</span>
+          </div>
+          
+          <div className="gap-comparison">
+            
+            <div className="comparison-column you">
+              <span className="column-label">YOU</span>
+              
+              <div className="comparison-metric">
+                <span className="metric-value">{formatNumber(calculations.currentDocumentedEncounters)}</span>
+                <span className="metric-label">encounters documented</span>
+              </div>
+              
+              <div className="comparison-metric">
+                <span className="metric-value">{formatNumber(calculations.currentHoursReturned)}</span>
+                <span className="metric-label">hours returned</span>
+              </div>
+            </div>
+            
+            <div className="comparison-arrow-column">
+              <div className="gap-arrow">
+                <span className="arrow-line"></span>
+                <span className="arrow-value">+{formatNumber(calculations.additionalEncounters)}</span>
+                <span className="arrow-head">→</span>
+              </div>
+              <div className="gap-arrow">
+                <span className="arrow-line"></span>
+                <span className="arrow-value">+{formatNumber(calculations.additionalHours)}</span>
+                <span className="arrow-head">→</span>
+              </div>
+            </div>
+            
+            <div className="comparison-column abridge">
+              <span className="column-label">
+                <span className="abridge-mark">A</span>
+                ABRIDGE
+              </span>
+              
+              <div className="comparison-metric">
+                <span className="metric-value">{formatNumber(calculations.abridgeDocumentedEncounters)}</span>
+                <span className="metric-label">encounters documented</span>
+              </div>
+              
+              <div className="comparison-metric">
+                <span className="metric-value">{formatNumber(calculations.abridgeHoursReturned)}</span>
+                <span className="metric-label">hours returned</span>
+              </div>
+            </div>
+            
+          </div>
+          
+          <div className="gap-context">
+            Based on {inputs.providers} providers at ~{formatNumber(inputs.encountersPerProvider)} encounters/provider/year
+          </div>
+        </section>
+        
+      </main>
+      
+      {/* Footer */}
+      <footer className="page-footer">
+        <button className="continue-button enabled" onClick={onNext}>
+          <span>See full analysis</span>
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      
+    </div>
+  );
+}
+
+Page 2: Full Analysis with Tabs
+jsxCopy// ============ SWITCH AMBIENT: ANALYSIS ============
+// File: SwitchAmbientAnalysis.tsx
+
+import { useState } from 'react';
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Users, 
+  ClipboardList, 
+  Shield,
+  ChevronDown,
+  ChevronUp 
+} from 'lucide-react';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  ResponsiveContainer,
+  ReferenceLine 
+} from 'recharts';
+import { formatNumber } from '../utils/formatting';
+
+export default function SwitchAmbientAnalysis({
+  inputs,
+  calculations,
+  benchmarks,
+  currentStep,
+  totalSteps,
+  onNext,
+  onBack
+}) {
+  
+  const [activeTab, setActiveTab] = useState('breakdown'); // 'breakdown' | 'overtime'
+  const [expandedDriver, setExpandedDriver] = useState(null);
+  
+  // Chart data for 3-year projection
+  const chartData = [
+    { period: 'Today', value: 0 },
+    { period: '3 mo', value: Math.round(calculations.year1Value * 0.25) },
+    { period: '6 mo', value: Math.round(calculations.year1Value * 0.5) },
+    { period: 'Year 1', value: calculations.year1Value },
+    { period: 'Year 2', value: calculations.year1Value + calculations.year2Value },
+    { period: 'Year 3', value: calculations.threeYearTotal }
+  ];
+  
+  const drivers = [
+    {
+      id: 'patient-access',
+      name: 'Patient Access',
+      description: 'More documented encounters = better access tracking',
+      value: calculations.patientAccessValue,
+      icon: <Users size={18} />,
+      details: {
+        formula: `${formatNumber(calculations.additionalEncounters)} additional encounters × access value`,
+        explanation: 'When more encounters are documented, organizations have better visibility into access patterns, wait times, and capacity utilization.'
+      }
+    },
+    {
+      id: 'level-of-service',
+      name: 'Level of Service Accuracy',
+      description: 'Better documentation captures clinical complexity',
+      value: calculations.levelOfServiceValue,
+      icon: <ClipboardList size={18} />,
+      details: {
+        formula: `Higher utilization + efficiency → more complete notes → better wRVU capture`,
+        explanation: 'When providers use the tool consistently and it saves significant time, documentation is more complete and captures the true complexity of visits.'
+      }
+    },
+    {
+      id: 'denials',
+      name: 'Documentation-Related Denials',
+      description: 'Complete notes reduce claim rejections',
+      value: calculations.denialsValue,
+      icon: <Shield size={18} />,
+      details: {
+        formula: `Better documentation → fewer denials → retained revenue`,
+        explanation: 'Documentation gaps are a leading cause of claim denials. More complete, consistent documentation reduces rejection rates.'
+      }
+    }
+  ];
+  
+  const toggleDriver = (driverId) => {
+    setExpandedDriver(expandedDriver === driverId ? null : driverId);
+  };
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>The gap analysis</h1>
+          <p className="page-subtitle">
+            Based on your inputs, here's the estimated difference between 
+            your current state and Abridge benchmarks.
+          </p>
+        </div>
+        
+        {/* Hero Gap */}
+        <section className="hero-gap-section">
+          <span className="hero-label">ESTIMATED ANNUAL GAP</span>
+          <span className="hero-value">${formatNumber(calculations.totalAnnualGap)}</span>
+          <div className="hero-breakdown">
+            <span>${formatNumber(calculations.monthlyGap)}/month</span>
+            <span className="separator">·</span>
+            <span>${formatNumber(calculations.dailyGap)}/day</span>
+            <span className="separator">·</span>
+            <span>${formatNumber(calculations.hourlyGap)}/hour</span>
+          </div>
+        </section>
+        
+        {/* Tabs */}
+        <div className="tab-container">
+          <button 
+            className={`tab-button ${activeTab === 'breakdown' ? 'active' : ''}`}
+            onClick={() => setActiveTab('breakdown')}
+          >
+            Value Breakdown
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'overtime' ? 'active' : ''}`}
+            onClick={() => setActiveTab('overtime')}
+          >
+            Over Time
+          </button>
+        </div>
+        
+        {/* Tab Content: Breakdown */}
+        {activeTab === 'breakdown' && (
+          <div className="tab-content">
+            
+            {/* Gaps Identified */}
+            <section className="gaps-identified-section">
+              <h2 className="section-label">THE GAPS WE IDENTIFIED</h2>
+              
+              <div className="gap-bar-card">
+                <div className="gap-bar-header">
+                  <span className="gap-bar-title">Utilization</span>
+                  <span className="gap-bar-values">
+                    {inputs.utilization}% → {benchmarks.utilization}% = +{formatNumber(calculations.additionalEncounters)} enc
+                  </span>
+                </div>
+                <div className="gap-bar-track">
+                  <div 
+                    className="gap-bar-you"
+                    style={{ width: `${(inputs.utilization / 100) * 100}%` }}
+                  />
+                  <div 
+                    className="gap-bar-abridge"
+                    style={{ 
+                      left: `${(inputs.utilization / 100) * 100}%`,
+                      width: `${((benchmarks.utilization - inputs.utilization) / 100) * 100}%` 
+                    }}
+                  />
+                  <div 
+                    className="gap-marker you"
+                    style={{ left: `${(inputs.utilization / 100) * 100}%` }}
+                  >
+                    <span>YOU</span>
+                  </div>
+                  <div 
+                    className="gap-marker abridge"
+                    style={{ left: `${(benchmarks.utilization / 100) * 100}%` }}
+                  >
+                    <span>ABRIDGE</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="gap-bar-card">
+                <div className="gap-bar-header">
+                  <span className="gap-bar-title">Efficiency</span>
+                  <span className="gap-bar-values">
+                    {inputs.efficiency}m → {benchmarks.efficiency}m = +{formatNumber(calculations.additionalHours)} hours
+                  </span>
+                </div>
+                <div className="gap-bar-track">
+                  <div 
+                    className="gap-bar-you"
+                    style={{ width: `${(inputs.efficiency / 5) * 100}%` }}
+                  />
+                  <div 
+                    className="gap-bar-abridge"
+                    style={{ 
+                      left: `${(inputs.efficiency / 5) * 100}%`,
+                      width: `${((benchmarks.efficiency - inputs.efficiency) / 5) * 100}%` 
+                    }}
+                  />
+                  <div 
+                    className="gap-marker you"
+                    style={{ left: `${(inputs.efficiency / 5) * 100}%` }}
+                  >
+                    <span>YOU</span>
+                  </div>
+                  <div 
+                    className="gap-marker abridge"
+                    style={{ left: `${(benchmarks.efficiency / 5) * 100}%` }}
+                  >
+                    <span>ABRIDGE</span>
+                  </div>
+                </div>
+              </div>
+              
+            </section>
+            
+            {/* Drivers */}
+            <section className="drivers-section">
+              <h2 className="section-label">WHERE THAT VALUE SHOWS UP</h2>
+              
+              <div className="drivers-list">
+                {drivers.map(driver => (
+                  <div 
+                    key={driver.id}
+                    className={`driver-card ${expandedDriver === driver.id ? 'expanded' : ''}`}
+                  >
+                    <div 
+                      className="driver-card-header"
+                      onClick={() => toggleDriver(driver.id)}
+                    >
+                      <div className="driver-icon">{driver.icon}</div>
+                      <div className="driver-info">
+                        <span className="driver-name">{driver.name}</span>
+                        <span className="driver-description">{driver.description}</span>
+                      </div>
+                      <span className="driver-value">+${formatNumber(driver.value)}/yr</span>
+                      <div className="driver-expand-icon">
+                        {expandedDriver === driver.id ? (
+                          <ChevronUp size={18} />
+                        ) : (
+                          <ChevronDown size={18} />
+                        )}
+                      </div>
+                    </div>
+                    
+                    {expandedDriver === driver.id && (
+                      <div className="driver-card-body">
+                        <div className="driver-detail">
+                          <span className="detail-label">How we calculate:</span>
+                          <span className="detail-formula">{driver.details.formula}</span>
+                        </div>
+                        <div className="driver-detail">
+                          <span className="detail-label">Why it matters:</span>
+                          <p className="detail-explanation">{driver.details.explanation}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="drivers-total">
+                <span className="total-label">TOTAL ANNUAL GAP</span>
+                <span className="total-value">${formatNumber(calculations.totalAnnualGap)}/year</span>
+              </div>
+              
+            </section>
+            
+          </div>
+        )}
+        
+        {/* Tab Content: Over Time */}
+        {activeTab === 'overtime' && (
+          <div className="tab-content">
+            
+            {/* 3-Year Chart */}
+            <section className="chart-section">
+              <h2 className="section-label">3-YEAR CUMULATIVE VALUE GAP</h2>
+              
+              <div className="chart-container">
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart data={chartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+                    <defs>
+                      <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#059669" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    
+                    <XAxis 
+                      dataKey="period" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748b', fontSize: 12 }}
+                    />
+                    <YAxis 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748b', fontSize: 12 }}
+                      tickFormatter={(v) => `$${(v / 1000)}K`}
+                      width={60}
+                    />
+                    
+                    <ReferenceLine y={0} stroke="#e2e8f0" />
+                    
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="#059669" 
+                      strokeWidth={2}
+                      fill="url(#valueGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+                
+                <div className="chart-annotations">
+                  <div className="annotation quick-wins">
+                    <span className="annotation-line"></span>
+                    <span className="annotation-label">"Quick wins"</span>
+                  </div>
+                  <div className="annotation full-ramp">
+                    <span className="annotation-line"></span>
+                    <span className="annotation-label">"Full ramp"</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="chart-legend">
+                <div className="legend-item">
+                  <span className="legend-line abridge"></span>
+                  <span>Switch to Abridge</span>
+                </div>
+                <div className="legend-item muted">
+                  <span className="legend-line current"></span>
+                  <span>Stay with current</span>
+                </div>
+              </div>
+              
+            </section>
+            
+            {/* Ramp Explanation */}
+            <section className="ramp-section">
+              <div className="ramp-card">
+                <p><strong>Value builds as utilization increases:</strong></p>
+                <ul>
+                  <li>Months 1-3: Efficiency gains start immediately</li>
+                  <li>Months 3-6: Utilization climbs toward 65%</li>
+                  <li>Year 1+: Full value from all drivers</li>
+                </ul>
+              </div>
+            </section>
+            
+            {/* Cost of Waiting */}
+            <section className="cost-of-waiting-section">
+              <h2 className="section-label">THE COST OF WAITING</h2>
+              
+              <div className="waiting-comparison">
+                <div className="waiting-card best">
+                  <span className="waiting-label">SWITCH TODAY</span>
+                  <span className="waiting-period">3-year value:</span>
+                  <span className="waiting-value">${formatNumber(calculations.threeYearTotal)}</span>
+                </div>
+                
+                <div className="waiting-card delayed">
+                  <span className="waiting-label">WAIT 6 MONTHS</span>
+                  <span className="waiting-period">3-year value:</span>
+                  <span className="waiting-value">${formatNumber(calculations.threeYearIfWait)}</span>
+                </div>
+              </div>
+              
+              <div className="waiting-cost-card">
+                <span className="cost-label">Value lost by waiting 6 months:</span>
+                <span className="cost-value">${formatNumber(calculations.wait6MonthsLoss)}</span>
+                <p className="cost-note">
+                  That's ${formatNumber(Math.round(calculations.wait6MonthsLoss / 6))}/month you can never recapture.
+                </p>
+              </div>
+              
+            </section>
+            
+          </div>
+        )}
+        
+      </main>
+      
+      {/* Footer */}
+      <footer className="page-footer">
+        <button className="continue-button enabled" onClick={onNext}>
+          <span>What this means</span>
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      
+    </div>
+  );
+}
+
+Page 3: Conclusion + CTA
+jsxCopy// ============ SWITCH AMBIENT: CONCLUSION ============
+// File: SwitchAmbientConclusion.tsx
+
+import { useState } from 'react';
+import { ArrowLeft, Phone, Copy, Edit3, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { formatNumber } from '../utils/formatting';
+
+export default function SwitchAmbientConclusion({
+  inputs,
+  calculations,
+  benchmarks,
+  currentStep,
+  totalSteps,
+  onBack
+}) {
+  
+  const [showAssumptions, setShowAssumptions] = useState(false);
+  const [copied, setCopied] = useState(false);
+  
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <span 
+              key={i} 
+              className={`progress-dot ${i < currentStep ? 'complete' : ''} ${i === currentStep - 1 ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </header>
+      
+      {/* Content */}
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>What this means</h1>
+        </div>
+        
+        {/* Your Situation Summary */}
+        <section className="situation-section">
+          <h2 className="section-label">YOUR SITUATION</h2>
+          
+          <div className="situation-card">
+            <div className="situation-header">
+              <span>~{inputs.providers} providers using ambient AI</span>
+            </div>
+            
+            <div className="situation-metrics">
+              <div className="situation-row">
+                <span className="metric-name">Utilization:</span>
+                <span className="metric-value">~{inputs.utilization}%</span>
+                <span className="metric-benchmark">(Abridge avg: {benchmarks.utilization}%)</span>
+              </div>
+              <div className="situation-row">
+                <span className="metric-name">Time savings:</span>
+                <span className="metric-value">~{inputs.efficiency}m</span>
+                <span className="metric-benchmark">(Abridge avg: 3-5m)</span>
+              </div>
+            </div>
+            
+            <div className="situation-gap">
+              <span className="gap-label">Estimated annual gap:</span>
+              <span className="gap-value">${formatNumber(calculations.totalAnnualGap)}</span>
+            </div>
+          </div>
+        </section>
+        
+        {/* The Question */}
+        <section className="question-section">
+          <h2 className="section-label">THE QUESTION</h2>
+          
+          <div className="question-card">
+            <p>
+              You've already invested in ambient AI. 
+              The question is whether you're getting full value.
+            </p>
+            <p className="highlight-text">
+              Every month at current state costs ~${formatNumber(calculations.monthlyGap)} in potential 
+              value that could be captured.
+            </p>
+          </div>
+        </section>
+        
+        {/* Important Context */}
+        <section className="context-section">
+          <h2 className="section-label">IMPORTANT CONTEXT</h2>
+          
+          <div className="context-card">
+            <p>These are estimates based on:</p>
+            <ul>
+              <li>Your self-reported ranges</li>
+              <li>Abridge customer benchmarks</li>
+              <li>Standard industry assumptions</li>
+            </ul>
+            <p>
+              Actual results depend on implementation, specialty mix, 
+              and provider engagement.
+            </p>
+            
+            <button 
+              className="assumptions-toggle"
+              onClick={() => setShowAssumptions(!showAssumptions)}
+            >
+              {showAssumptions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              <span>{showAssumptions ? 'Hide' : 'View'} assumptions</span>
+            </button>
+            
+            {showAssumptions && (
+              <div className="assumptions-content">
+                <div className="assumption-row">
+                  <span className="assumption-label">Encounters per provider:</span>
+                  <span className="assumption-value">~{formatNumber(inputs.encountersPerProvider)}/year</span>
+                </div>
+                <div className="assumption-row">
+                  <span className="assumption-label">Abridge utilization benchmark:</span>
+                  <span className="assumption-value">{benchmarks.utilization}%</span>
+                </div>
+                <div className="assumption-row">
+                  <span className="assumption-label">Abridge efficiency benchmark:</span>
+                  <span className="assumption-value">{benchmarks.efficiency} min/encounter</span>
+                </div>
+                <div className="assumption-row">
+                  <span className="assumption-label">Value per additional encounter:</span>
+                  <span className="assumption-value">$2.60 (wRVU + denial reduction)</span>
+                </div>
+                <div className="assumption-row">
+                  <span className="assumption-label">Value per hour returned:</span>
+                  <span className="assumption-value">$75 (productivity value)</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+        
+        {/* CTA */}
+        <section className="cta-section">
+          <button className="primary-cta">
+            <Phone size={18} />
+            <span>Start a conversation</span>
+          </button>
+          
+          <div className="secondary-actions">
+            <button className="secondary-action" onClick={copyLink}>
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              <span>{copied ? 'Copied!' : 'Copy link'}</span>
+            </button>
+            <button className="secondary-action" onClick={onBack}>
+              <Edit3 size={16} />
+              <span>Edit inputs</span>
+            </button>
+          </div>
+        </section>
+        
+      </main>
+      
+    </div>
+  );
+}
+
+Complete CSS
+cssCopy/* ============ SWITCH AMBIENT STYLES ============ */
+/* File: SwitchAmbient.css */
+
+/* Base */
+.switch-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+}
+
+/* Header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #f1f1f1;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.back-button:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.brand-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.progress-indicator {
+  display: flex;
+  gap: 6px;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  transition: all 0.2s;
+}
+
+.progress-dot.active {
+  background: #f97316;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.progress-dot.complete {
+  background: #f97316;
+}
+
+/* Content */
+.page-content {
+  flex: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  width: 100%;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.page-title h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #64748b;
+  margin: 12px 0 0 0;
+  line-height: 1.5;
+}
+
+/* Sections */
+.input-section,
+.live-gap-section,
+.hero-gap-section,
+.gaps-identified-section,
+.drivers-section,
+.chart-section,
+.ramp-section,
+.cost-of-waiting-section,
+.situation-section,
+.question-section,
+.context-section {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  margin: 0 0 16px 0;
+}
+
+/* Input Card */
+.input-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.input-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 16px;
+}
+
+/* Range Chips */
+.range-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.range-chip {
+  padding: 12px 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.range-chip:hover {
+  border-color: #cbd5e1;
+}
+
+.range-chip.selected {
+  background: #f97316;
+  border-color: #f97316;
+  color: white;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Metric Input Card */
+.metric-input-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.metric-header h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.metric-header p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.slider-section {
+  margin-top: 20px;
+}
+
+.slider-value-display {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.value-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.value-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.slider-container {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.metric-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.metric-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f97316;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+  border: 3px solid white;
+}
+
+.slider-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.slider-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #f97316;
+  border-radius: 4px;
+}
+
+.benchmark-marker {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 16px;
+  background: #059669;
+  transform: translateX(-50%);
+}
+
+.benchmark-marker::after {
+  content: 'A';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.benchmark-reference {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #059669;
+}
+
+.benchmark-icon {
+  color: #059669;
+}
+
+/* Live Gap Section */
+.live-gap-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.gap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.gap-header .section-label {
+  margin: 0;
+}
+
+.live-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.05em;
+}
+
+.gap-comparison {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.comparison-column {
+  text-align: center;
+}
+
+.column-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.abridge-mark {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.comparison-metric {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.comparison-column.abridge .comparison-metric {
+  background: #f0fdf4;
+}
+
+.comparison-metric .metric-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.comparison-column.abridge .comparison-metric .metric-value {
+  color: #059669;
+}
+
+.comparison-metric .metric-label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.comparison-arrow-column {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 16px 0;
+}
+
+.gap-arrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arrow-line {
+  width: 24px;
+  height: 2px;
+  background: #e2e8f0;
+}
+
+.arrow-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.arrow-head {
+  font-size: 16px;
+  color: #059669;
+}
+
+.gap-context {
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Hero Gap */
+.hero-gap-section {
+  text-align: center;
+  padding: 32px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+}
+
+.hero-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+}
+
+.hero-value {
+  display: block;
+  font-size: 56px;
+  font-weight: 700;
+  color: #dc2626;
+  margin: 12px 0;
+  letter-spacing: -2px;
+}
+
+.hero-breakdown {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.separator {
+  color: #e2e8f0;
+}
+
+/* Tabs */
+.tab-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 14px 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab-button:hover {
+  border-color: #cbd5e1;
+}
+
+.tab-button.active {
+  background: #1e293b;
+  border-color: #1e293b;
+  color: white;
+}
+
+/* Gap Bars */
+.gap-bar-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+
+.gap-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.gap-bar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.gap-bar-values {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.gap-bar-track {
+  position: relative;
+  height: 12px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  overflow: visible;
+}
+
+.gap-bar-you {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #94a3b8;
+  border-radius: 6px 0 0 6px;
+}
+
+.gap-bar-abridge {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: #059669;
+  border-radius: 0 6px 6px 0;
+}
+
+.gap-marker {
+  position: absolute;
+  top: -24px;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.gap-marker.you {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.gap-marker.abridge {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+/* Drivers */
+.drivers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.driver-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+
+.driver-card:hover {
+  border-color: #cbd5e1;
+}
+
+.driver-card.expanded {
+  border-color: #f97316;
+}
+
+.driver-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  cursor: pointer;
+}
+
+.driver-icon {
+  width: 40px;
+  height: 40px;
+  background: #f8fafc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.driver-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.driver-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.driver-description {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.driver-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #059669;
+  white-space: nowrap;
+}
+
+.driver-expand-icon {
+  color: #94a3b8;
+}
+
+.driver-card-body {
+  padding: 0 20px 20px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: -1px;
+  padding-top: 16px;
+  background: #fafafa;
+}
+
+.driver-detail {
+  margin-bottom: 12px;
+}
+
+.driver-detail:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+.detail-formula {
+  font-size: 13px;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.detail-explanation {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.drivers-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-top: 16px;
+}
+
+.total-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.03em;
+}
+
+.total-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Chart */
+.chart-container {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+}
+
+.chart-annotations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.legend-item.muted {
+  opacity: 0.5;
+}
+
+.legend-line {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-line.abridge {
+  background: #059669;
+}
+
+.legend-line.current {
+  background: #94a3b8;
+  background: repeating-linear-gradient(
+    90deg,
+    #94a3b8,
+    #94a3b8 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* Ramp */
+.ramp-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.ramp-card p {
+  font-size: 14px;
+  color: #334155;
+  margin: 0 0 12px 0;
+}
+
+.ramp-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.ramp-card li {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+/* Cost of Waiting */
+.waiting-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.waiting-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.waiting-card.best {
+  border-color: #a7f3d0;
+  background: #f0fdf4;
+}
+
+.waiting-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.waiting-period {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.waiting-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.waiting-card.best .waiting-value {
+  color: #059669;
+}
+
+.waiting-cost-card {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.cost-label {
+  display: block;
+  font-size: 14px;
+  color: #991b1b;
+  margin-bottom: 4px;
+}
+
+.cost-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: #dc2626;
+  margin-bottom: 8px;
+}
+
+.cost-note {
+  font-size: 13px;
+  color: #991b1b;
+  margin: 0;
+}
+
+/* Situation */
+.situation-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.situation-header {
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 15px;
+  color: #334155;
+}
+
+.situation-metrics {
+  padding: 20px;
+}
+
+.situation-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.situation-row .metric-name {
+  font-size: 14px;
+  color: #64748b;
+  width: 120px;
+}
+
+.situation-row .metric-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.situation-row .metric-benchmark {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.situation-gap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fef2f2;
+  border-top: 1px solid #fecaca;
+}
+
+.gap-label {
+  font-size: 14px;
+  color: #991b1b;
+}
+
+.gap-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+/* Question */
+.question-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.question-card p {
+  font-size: 16px;
+  color: #334155;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.question-card .highlight-text {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* Context */
+.context-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.context-card p {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.context-card ul {
+  margin: 0 0 12px 0;
+  padding-left: 20px;
+}
+
+.context-card li {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.assumptions-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 8px;
+}
+
+.assumptions-toggle:hover {
+  color: #334155;
+}
+
+.assumptions-content {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.assumption-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.assumption-label {
+  color: #64748b;
+}
+
+.assumption-value {
+  color: #334155;
+  font-weight: 500;
+}
+
+/* CTA */
+.cta-section {
+  text-align: center;
+  padding-top: 16px;
+}
+
+.primary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #f97316;
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primary-cta:hover {
+  background: #ea580c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.25);
+}
+
+.secondary-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.secondary-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.secondary-action:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* Footer */
+.page-footer {
+  padding: 16px 24px;
+  background: white;
+  border-top: 1px solid #f1f1f1;
+  display: flex;
+  justify-content: center;
+}
+
+.continue-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.continue-button.enabled {
+  background: #f97316;
+  color: white;
+}
+
+.continue-button.enabled:hover {
+  background: #ea580c;
+  transform: translateY(-1px);
+}
+
+Summary
+This redesigned Ambient AI Switch flow now has:
+FeatureImplementation3 pages instead of 6Faster to payoffLive updating gapAs sliders move, comparison updatesVisual benchmark markersAbridge avg shown on each sliderExpandable driver cardsSame pattern as Explore3-year chartFull projection with ramp phasesCost of waitingShows value lost by delayingHonest assumptionsExpandable section with all calculation inputsSame UX qualityMatches Explore and Expand
