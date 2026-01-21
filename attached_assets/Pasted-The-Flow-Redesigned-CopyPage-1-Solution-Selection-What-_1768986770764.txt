@@ -1,0 +1,1462 @@
+The Flow — Redesigned:
+CopyPage 1: Solution Selection
+        "What are you using today?"
+        
+Page 2: Your Current Setup
+        Providers, encounters, utilization
+        (First comparison: Your util vs. Abridge avg)
+        
+Page 3: Performance Benchmarking
+        Quartile comparison across key metrics
+        - Time savings
+        - Utilization
+        - Documentation quality
+        Show WHERE THEY FALL in each distribution
+        
+Page 4: The Gap Analysis
+        Each metric as an expandable card showing:
+        - Their performance
+        - Abridge benchmark
+        - The gap
+        - What that gap costs them
+        
+Page 5: The Cost of Staying
+        - Total annual gap
+        - 3-year cumulative cost
+        - "Cost of waiting" calculation
+        - The decision framework
+
+Page 1: Solution Selection (Cleaner)
+jsxCopy// ============ SWITCH: SOLUTION SELECTION ============
+
+export default function SwitchSolutionSelect({ onSelect, onBack }) {
+  const [selectedSolution, setSelectedSolution] = useState(null);
+  const [selectedSetting, setSelectedSetting] = useState('outpatient');
+  
+  const solutions = [
+    {
+      id: 'ambient-ai',
+      name: 'Ambient AI',
+      description: 'DAX, Nuance, Ambience Healthcare, Suki, or similar',
+      icon: <Mic size={24} />,
+      available: true
+    },
+    {
+      id: 'human-scribes',
+      name: 'Human Scribes',
+      description: 'In-person or virtual scribes',
+      icon: <Users size={24} />,
+      available: true
+    }
+  ];
+  
+  const settings = [
+    { id: 'outpatient', name: 'Outpatient', available: true },
+    { id: 'ed', name: 'ED', available: false },
+    { id: 'inpatient', name: 'Inpatient', available: false },
+    { id: 'nursing', name: 'Nursing', available: false }
+  ];
+  
+  return (
+    <div className="switch-page">
+      
+      <header className="page-header-minimal">
+        <div className="brand-container">
+          <span className="brand-logo">ABRIDGE</span>
+          <span className="brand-divider">|</span>
+          <span className="brand-flow">SWITCH</span>
+        </div>
+        <button className="back-link" onClick={onBack}>
+          <ArrowLeft size={16} />
+          Back to Home
+        </button>
+      </header>
+      
+      <div className="switch-content">
+        
+        <div className="page-hero centered">
+          <h1>What solution are you using today?</h1>
+          <p className="hero-subtitle">We'll show you what you might be leaving on the table.</p>
+        </div>
+        
+        {/* Solution Selection */}
+        <div className="solution-cards">
+          {solutions.map(solution => (
+            <div 
+              key={solution.id}
+              className={`solution-card ${selectedSolution === solution.id ? 'selected' : ''} ${!solution.available ? 'disabled' : ''}`}
+              onClick={() => solution.available && setSelectedSolution(solution.id)}
+            >
+              <div className="solution-icon">{solution.icon}</div>
+              <div className="solution-info">
+                <h3>{solution.name}</h3>
+                <p>{solution.description}</p>
+              </div>
+              <div className="solution-check">
+                {selectedSolution === solution.id && (
+                  <div className="check-circle">
+                    <Check size={14} />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Setting Selection */}
+        {selectedSolution && (
+          <div className="setting-selection fade-in">
+            <label>Select a care setting:</label>
+            <div className="setting-chips">
+              {settings.map(setting => (
+                <button
+                  key={setting.id}
+                  className={`setting-chip ${selectedSetting === setting.id ? 'active' : ''} ${!setting.available ? 'disabled' : ''}`}
+                  onClick={() => setting.available && setSelectedSetting(setting.id)}
+                  disabled={!setting.available}
+                >
+                  {setting.name}
+                  {!setting.available && <span className="coming-soon">Coming Soon</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Continue Button */}
+        <div className="page-footer">
+          <button 
+            className={`primary-button large ${!selectedSolution ? 'disabled' : ''}`}
+            onClick={() => onSelect({ solution: selectedSolution, setting: selectedSetting })}
+            disabled={!selectedSolution}
+          >
+            Continue
+            <ArrowRight size={18} />
+          </button>
+        </div>
+        
+      </div>
+      
+    </div>
+  );
+}
+
+Page 2: Your Current Setup (With Immediate Benchmark)
+jsxCopy// ============ SWITCH: CURRENT SETUP ============
+
+export default function SwitchCurrentSetup({
+  solutionType,
+  setupData,
+  setSetupData,
+  onNext,
+  onBack
+}) {
+  
+  // Abridge benchmarks
+  const ABRIDGE_AVG_UTILIZATION = 65;
+  const INDUSTRY_AVG_UTILIZATION = 45;
+  
+  // Calculate encounters documented
+  const encountersDocumented = setupData.providers && setupData.encounters && setupData.utilization
+    ? Math.round(setupData.encounters * (setupData.utilization / 100))
+    : null;
+  
+  // Calculate what they'd get with Abridge utilization
+  const abridgeProjectedEncounters = setupData.encounters
+    ? Math.round(setupData.encounters * (ABRIDGE_AVG_UTILIZATION / 100))
+    : null;
+  
+  const utilizationGap = ABRIDGE_AVG_UTILIZATION - (setupData.utilization || 0);
+  const encounterGap = abridgeProjectedEncounters && encountersDocumented 
+    ? abridgeProjectedEncounters - encountersDocumented 
+    : null;
+  
+  return (
+    <div className="switch-page">
+      
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+          <span className="flow-badge">SWITCH</span>
+        </div>
+        <div className="step-dots">
+          <span className="dot active"></span>
+          <span className="dot"></span>
+          <span className="dot"></span>
+          <span className="dot"></span>
+        </div>
+      </header>
+      
+      <div className="switch-content">
+        
+        <div className="page-hero">
+          <h1>Let's start with the basics.</h1>
+          <p>We'll build your baseline together.</p>
+        </div>
+        
+        {/* Input Section */}
+        <div className="setup-card">
+          
+          <div className="inline-input-row">
+            <span className="input-prefix">You have</span>
+            <NumberInput
+              value={setupData.providers}
+              onChange={(val) => setSetupData({ ...setupData, providers: val })}
+              placeholder="50"
+              className="inline-input"
+            />
+            <span className="input-suffix">providers</span>
+          </div>
+          
+          <div className="inline-input-row">
+            <span className="input-prefix">handling roughly</span>
+            <NumberInput
+              value={setupData.encounters}
+              onChange={(val) => setSetupData({ ...setupData, encounters: val })}
+              placeholder="100,000"
+              className="inline-input wide"
+            />
+            <span className="input-suffix">encounters/year</span>
+          </div>
+          
+          {setupData.providers && setupData.encounters && (
+            <div className="calculated-hint fade-in">
+              <Lightbulb size={14} />
+              <span>That's ~{formatNumber(Math.round(setupData.encounters / setupData.providers))} per provider (typical)</span>
+            </div>
+          )}
+          
+        </div>
+        
+        {/* Utilization Section */}
+        <div className="utilization-section">
+          
+          <label className="section-label">And your current utilization is:</label>
+          
+          <div className="utilization-input-card">
+            <div className="utilization-display">
+              <span className="utilization-value">{setupData.utilization || 0}</span>
+              <span className="utilization-percent">%</span>
+            </div>
+            
+            <div className="utilization-slider-container">
+              <input
+                type="range"
+                min="10"
+                max="90"
+                value={setupData.utilization || 50}
+                onChange={(e) => setSetupData({ ...setupData, utilization: Number(e.target.value) })}
+                className="utilization-slider"
+              />
+              <div className="slider-labels">
+                <span>10%</span>
+                <span>90%</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Benchmark Comparison */}
+          <div className="benchmark-comparison-cards">
+            <div className="benchmark-card industry">
+              <span className="benchmark-label">Industry Avg</span>
+              <span className="benchmark-value">{INDUSTRY_AVG_UTILIZATION}%</span>
+            </div>
+            <div className="benchmark-card abridge">
+              <span className="benchmark-label">Abridge Avg</span>
+              <span className="benchmark-value">{ABRIDGE_AVG_UTILIZATION}%</span>
+            </div>
+          </div>
+          
+        </div>
+        
+        {/* First Insight — The Hook */}
+        {setupData.utilization && setupData.utilization < ABRIDGE_AVG_UTILIZATION && (
+          <div className="first-insight fade-in">
+            <div className="insight-icon-container warning">
+              <BarChart3 size={20} />
+            </div>
+            <div className="insight-content">
+              <p>
+                At these numbers, you're documenting 
+                <strong> {formatNumber(encountersDocumented)} encounters/year</strong>
+              </p>
+              {utilizationGap > 0 && (
+                <p className="insight-gap">
+                  With Abridge-level utilization ({ABRIDGE_AVG_UTILIZATION}%), that would be 
+                  <strong className="highlight"> {formatNumber(abridgeProjectedEncounters)}</strong> — 
+                  <span className="gap-callout"> +{formatNumber(encounterGap)} more</span>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Continue */}
+        <div className="page-footer">
+          <button 
+            className={`primary-button ${!setupData.providers || !setupData.encounters || !setupData.utilization ? 'disabled' : ''}`}
+            onClick={onNext}
+            disabled={!setupData.providers || !setupData.encounters || !setupData.utilization}
+          >
+            Continue
+            <ArrowRight size={16} />
+          </button>
+        </div>
+        
+      </div>
+      
+    </div>
+  );
+}
+
+Page 3: Performance Benchmarking (Quartile View)
+This is the key page — showing WHERE they fall in the distribution.
+jsxCopy// ============ SWITCH: PERFORMANCE BENCHMARKING ============
+
+export default function SwitchPerformanceBenchmark({
+  setupData,
+  performanceData,
+  setPerformanceData,
+  onNext,
+  onBack
+}) {
+  
+  // Abridge benchmarks with quartiles
+  const benchmarks = {
+    utilization: {
+      name: 'Utilization',
+      unit: '%',
+      quartiles: { q1: 45, median: 55, q3: 65, abridge: 65 },
+      abridgeLabel: 'Abridge Avg'
+    },
+    timeSavings: {
+      name: 'Time Savings',
+      unit: 'min/enc',
+      quartiles: { q1: 1.5, median: 2.5, q3: 3.5, abridge: 3.5 },
+      abridgeLabel: 'Abridge Avg'
+    },
+    chartClosure: {
+      name: 'Same-Day Chart Closure',
+      unit: '%',
+      quartiles: { q1: 25, median: 45, q3: 70, abridge: 78 },
+      abridgeLabel: 'Abridge Avg'
+    }
+  };
+  
+  // Determine quartile position
+  const getQuartilePosition = (value, metric) => {
+    const q = benchmarks[metric].quartiles;
+    if (value <= q.q1) return { label: 'Bottom 25%', position: 'q1', color: '#ef4444' };
+    if (value <= q.median) return { label: 'Below Average', position: 'q2', color: '#f97316' };
+    if (value <= q.q3) return { label: 'Above Average', position: 'q3', color: '#eab308' };
+    return { label: 'Top 25%', position: 'q4', color: '#22c55e' };
+  };
+  
+  return (
+    <div className="switch-page">
+      
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+          <span className="flow-badge">SWITCH</span>
+        </div>
+        <div className="step-dots">
+          <span className="dot completed"></span>
+          <span className="dot active"></span>
+          <span className="dot"></span>
+          <span className="dot"></span>
+        </div>
+      </header>
+      
+      <div className="switch-content">
+        
+        <div className="page-hero">
+          <h1>How do you compare?</h1>
+          <p>Let's see where you stand against industry benchmarks and Abridge performance.</p>
+        </div>
+        
+        {/* Utilization Quartile */}
+        <div className="quartile-card">
+          <div className="quartile-header">
+            <h3>Utilization</h3>
+            <span className="your-value">{setupData.utilization}%</span>
+          </div>
+          
+          <div className="quartile-visualization">
+            <div className="quartile-bar">
+              <div className="quartile-segment q1" style={{ width: '25%' }}>
+                <span className="segment-label">Bottom 25%</span>
+              </div>
+              <div className="quartile-segment q2" style={{ width: '25%' }}>
+                <span className="segment-label">Below Avg</span>
+              </div>
+              <div className="quartile-segment q3" style={{ width: '25%' }}>
+                <span className="segment-label">Above Avg</span>
+              </div>
+              <div className="quartile-segment q4" style={{ width: '25%' }}>
+                <span className="segment-label">Top 25%</span>
+              </div>
+            </div>
+            
+            {/* Your position marker */}
+            <div 
+              className="position-marker you"
+              style={{ left: `${((setupData.utilization - 10) / 80) * 100}%` }}
+            >
+              <div className="marker-dot"></div>
+              <div className="marker-label">YOU ({setupData.utilization}%)</div>
+            </div>
+            
+            {/* Abridge marker */}
+            <div 
+              className="position-marker abridge"
+              style={{ left: `${((benchmarks.utilization.quartiles.abridge - 10) / 80) * 100}%` }}
+            >
+              <div className="marker-dot abridge"></div>
+              <div className="marker-label abridge">ABRIDGE ({benchmarks.utilization.quartiles.abridge}%)</div>
+            </div>
+            
+            {/* Gap line */}
+            {setupData.utilization < benchmarks.utilization.quartiles.abridge && (
+              <div 
+                className="gap-indicator"
+                style={{
+                  left: `${((setupData.utilization - 10) / 80) * 100}%`,
+                  width: `${((benchmarks.utilization.quartiles.abridge - setupData.utilization) / 80) * 100}%`
+                }}
+              >
+                <span className="gap-value">+{benchmarks.utilization.quartiles.abridge - setupData.utilization}% gap</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="quartile-insight">
+            {setupData.utilization < benchmarks.utilization.quartiles.abridge ? (
+              <p>
+                You're at <strong>{setupData.utilization}%</strong> utilization. 
+                Abridge customers average <strong>{benchmarks.utilization.quartiles.abridge}%</strong>.
+                <span className="gap-highlight"> That's a {benchmarks.utilization.quartiles.abridge - setupData.utilization}pp gap.</span>
+              </p>
+            ) : (
+              <p className="success">
+                Great! Your utilization is at or above Abridge benchmarks.
+              </p>
+            )}
+          </div>
+        </div>
+        
+        {/* Time Savings Input & Quartile */}
+        <div className="quartile-card with-input">
+          <div className="quartile-header">
+            <h3>Time Savings per Encounter</h3>
+            <p className="header-hint">How much time does your current solution save?</p>
+          </div>
+          
+          <div className="metric-input-section compact">
+            <div className="input-with-slider">
+              <span className="slider-value">{performanceData.timeSavings || 1.5} min</span>
+              <input
+                type="range"
+                min="0.5"
+                max="5"
+                step="0.5"
+                value={performanceData.timeSavings || 1.5}
+                onChange={(e) => setPerformanceData({ 
+                  ...performanceData, 
+                  timeSavings: Number(e.target.value) 
+                })}
+                className="metric-slider"
+              />
+              <div className="slider-range">
+                <span>0.5 min</span>
+                <span>5 min</span>
+              </div>
+            </div>
+            
+            <div className="checkbox-row">
+              <input 
+                type="checkbox" 
+                id="notSure"
+                checked={performanceData.timeSavingsNotSure}
+                onChange={(e) => setPerformanceData({
+                  ...performanceData,
+                  timeSavingsNotSure: e.target.checked,
+                  timeSavings: e.target.checked ? 1.5 : performanceData.timeSavings
+                })}
+              />
+              <label htmlFor="notSure">Not sure / Haven't measured</label>
+            </div>
+          </div>
+          
+          <div className="comparison-row">
+            <div className="comparison-item yours">
+              <span className="comparison-label">You're getting:</span>
+              <span className="comparison-value">{performanceData.timeSavings || 1.5} min/encounter</span>
+            </div>
+            <div className="comparison-arrow">→</div>
+            <div className="comparison-item abridge">
+              <span className="comparison-label">Abridge avg:</span>
+              <span className="comparison-value highlight">{benchmarks.timeSavings.quartiles.abridge} min</span>
+            </div>
+          </div>
+          
+          {performanceData.timeSavings < benchmarks.timeSavings.quartiles.abridge && (
+            <div className="quartile-insight warning">
+              <AlertTriangle size={16} />
+              <p>
+                Most ambient solutions deliver <strong>1-2 minutes</strong> per encounter. 
+                Abridge averages <strong>3-5 minutes</strong> due to deeper workflow integration.
+              </p>
+            </div>
+          )}
+        </div>
+        
+        {/* Same-Day Chart Closure Input & Quartile */}
+        <div className="quartile-card with-input">
+          <div className="quartile-header">
+            <h3>Same-Day Chart Closure</h3>
+            <p className="header-hint">What % of charts are closed within 24 hours?</p>
+          </div>
+          
+          <div className="metric-input-section compact">
+            <div className="input-with-slider">
+              <span className="slider-value">{performanceData.chartClosure || 40}%</span>
+              <input
+                type="range"
+                min="10"
+                max="95"
+                step="5"
+                value={performanceData.chartClosure || 40}
+                onChange={(e) => setPerformanceData({ 
+                  ...performanceData, 
+                  chartClosure: Number(e.target.value) 
+                })}
+                className="metric-slider"
+              />
+              <div className="slider-range">
+                <span>10%</span>
+                <span>95%</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Quartile Visualization */}
+          <div className="quartile-visualization compact">
+            {/* Same structure as utilization */}
+          </div>
+          
+          {performanceData.chartClosure < benchmarks.chartClosure.quartiles.abridge && (
+            <div className="quartile-insight">
+              <p>
+                At <strong>{performanceData.chartClosure}%</strong> same-day closure, 
+                you're leaving revenue cycle value on the table. 
+                Abridge customers average <strong>{benchmarks.chartClosure.quartiles.abridge}%</strong>.
+              </p>
+            </div>
+          )}
+        </div>
+        
+        {/* Summary: Where You Stand */}
+        <div className="benchmark-summary-card">
+          <h3>Summary: Where You Stand</h3>
+          <div className="summary-metrics">
+            {['utilization', 'timeSavings', 'chartClosure'].map(metric => {
+              const value = metric === 'utilization' 
+                ? setupData.utilization 
+                : performanceData[metric];
+              const position = getQuartilePosition(value, metric);
+              const gap = benchmarks[metric].quartiles.abridge - value;
+              
+              return (
+                <div key={metric} className="summary-metric-row">
+                  <span className="metric-name">{benchmarks[metric].name}</span>
+                  <span className="metric-your-value">{value}{benchmarks[metric].unit === '%' ? '%' : ''}</span>
+                  <div className="metric-position">
+                    <span 
+                      className="position-badge"
+                      style={{ backgroundColor: position.color }}
+                    >
+                      {position.label}
+                    </span>
+                  </div>
+                  {gap > 0 && (
+                    <span className="metric-gap">
+                      -{gap.toFixed(1)} vs Abridge
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Continue */}
+        <div className="page-footer">
+          <button className="primary-button" onClick={onNext}>
+            See What This Costs You
+            <ArrowRight size={16} />
+          </button>
+        </div>
+        
+      </div>
+      
+    </div>
+  );
+}
+
+Page 4: The Gap Analysis (Expandable Cards)
+jsxCopy// ============ SWITCH: GAP ANALYSIS ============
+
+export default function SwitchGapAnalysis({
+  setupData,
+  performanceData,
+  onNext,
+  onBack
+}) {
+  
+  const [expandedGap, setExpandedGap] = useState(null);
+  
+  // Calculate gaps
+  const utilizationGap = 65 - setupData.utilization;
+  const timeSavingsGap = 3.5 - performanceData.timeSavings;
+  const chartClosureGap = 78 - performanceData.chartClosure;
+  
+  // Calculate $ value of gaps
+  const encountersDocumented = setupData.encounters * (setupData.utilization / 100);
+  const abridgeEncounters = setupData.encounters * 0.65;
+  const encounterGap = abridgeEncounters - encountersDocumented;
+  
+  // Gap calculations (simplified for example)
+  const gapValues = {
+    utilization: {
+      gap: utilizationGap,
+      encounters: encounterGap,
+      dollarValue: Math.round(encounterGap * 5.50) // $5.50 value per encounter (example)
+    },
+    timeSavings: {
+      gap: timeSavingsGap,
+      hoursGap: Math.round((timeSavingsGap * abridgeEncounters) / 60),
+      dollarValue: Math.round((timeSavingsGap * abridgeEncounters / 60) * 150 * 0.5)
+    },
+    chartClosure: {
+      gap: chartClosureGap,
+      description: 'Revenue cycle efficiency',
+      dollarValue: Math.round(chartClosureGap * 1000) // Simplified
+    }
+  };
+  
+  const totalGap = gapValues.utilization.dollarValue + gapValues.timeSavings.dollarValue + gapValues.chartClosure.dollarValue;
+  
+  return (
+    <div className="switch-page">
+      
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+          <span className="flow-badge">SWITCH</span>
+        </div>
+        <div className="step-dots">
+          <span className="dot completed"></span>
+          <span className="dot completed"></span>
+          <span className="dot active"></span>
+          <span className="dot"></span>
+        </div>
+      </header>
+      
+      <div className="switch-content">
+        
+        {/* Hero — The Big Number */}
+        <div className="gap-hero">
+          <p className="hero-pretext">Based on what you've told us, you're leaving</p>
+          <div className="gap-value-display">
+            <span className="gap-dollar">$</span>
+            <span className="gap-amount">{formatNumber(totalGap)}</span>
+          </div>
+          <p className="hero-posttext">on the table. <strong>Every. Single. Year.</strong></p>
+          
+          <div className="gap-breakdown-mini">
+            <span>${formatNumber(Math.round(totalGap / 12))}/month</span>
+            <span className="divider">·</span>
+            <span>${formatNumber(Math.round(totalGap / 365))}/day</span>
+            <span className="divider">·</span>
+            <span>${formatNumber(Math.round(totalGap / 8760))}/hour</span>
+          </div>
+        </div>
+        
+        {/* Gaps Identified */}
+        <div className="gaps-section">
+          <h2>THE GAPS WE IDENTIFIED</h2>
+          
+          <div className="gaps-summary">
+            <div className="gap-summary-row">
+              <span className="gap-label">Utilization:</span>
+              <span className="gap-change">
+                {setupData.utilization}% → 65%
+              </span>
+              <span className="gap-impact success">= +{formatNumber(encounterGap)} encounters</span>
+            </div>
+            <div className="gap-summary-row">
+              <span className="gap-label">Efficiency:</span>
+              <span className="gap-change">
+                {performanceData.timeSavings} min → 3.5 min
+              </span>
+              <span className="gap-impact success">= +{formatNumber(gapValues.timeSavings.hoursGap)} hours</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Tab Toggle */}
+        <div className="view-toggle">
+          <button className="toggle-option active">Value Breakdown</button>
+          <button className="toggle-option">Over Time</button>
+        </div>
+        
+        {/* Expandable Gap Cards */}
+        <div className="gap-cards">
+          
+          {/* Utilization Gap */}
+          <div 
+            className={`gap-card ${expandedGap === 'utilization' ? 'expanded' : ''}`}
+            onClick={() => setExpandedGap(expandedGap === 'utilization' ? null : 'utilization')}
+          >
+            <div className="gap-card-header">
+              <div className="gap-card-icon">
+                <Users size={20} />
+              </div>
+              <div className="gap-card-title">
+                <h3>Patient Access</h3>
+                <p>More encounters documented = more value captured</p>
+              </div>
+              <div className="gap-card-value">
+                +${formatNumber(gapValues.utilization.dollarValue)}/yr
+              </div>
+              <ChevronDown size={20} className={`expand-icon ${expandedGap === 'utilization' ? 'rotated' : ''}`} />
+            </div>
+            
+            {expandedGap === 'utilization' && (
+              <div className="gap-card-body">
+                <div className="gap-calculation">
+                  <div className="calc-row">
+                    <span>Utilization gap</span>
+                    <span>{utilizationGap}pp</span>
+                  </div>
+                  <div className="calc-row">
+                    <span>Additional encounters</span>
+                    <span>+{formatNumber(encounterGap)}</span>
+                  </div>
+                  <div className="calc-row">
+                    <span>Value per encounter</span>
+                    <span>$5.50</span>
+                  </div>
+                  <div className="calc-divider"></div>
+                  <div className="calc-row total">
+                    <span>Annual value gap</span>
+                    <span>${formatNumber(gapValues.utilization.dollarValue)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Time Savings Gap */}
+          <div 
+            className={`gap-card ${expandedGap === 'timeSavings' ? 'expanded' : ''}`}
+            onClick={() => setExpandedGap(expandedGap === 'timeSavings' ? null : 'timeSavings')}
+          >
+            <div className="gap-card-header">
+              <div className="gap-card-icon">
+                <BarChart3 size={20} />
+              </div>
+              <div className="gap-card-title">
+                <h3>Efficiency Gains</h3>
+                <p>Time returned to providers</p>
+              </div>
+              <div className="gap-card-value">
+                +${formatNumber(gapValues.timeSavings.dollarValue)}/yr
+              </div>
+              <ChevronDown size={20} className={`expand-icon ${expandedGap === 'timeSavings' ? 'rotated' : ''}`} />
+            </div>
+            
+            {expandedGap === 'timeSavings' && (
+              <div className="gap-card-body">
+                {/* Similar calculation breakdown */}
+              </div>
+            )}
+          </div>
+          
+          {/* Documentation Quality Gap */}
+          <div 
+            className={`gap-card ${expandedGap === 'docQuality' ? 'expanded' : ''}`}
+            onClick={() => setExpandedGap(expandedGap === 'docQuality' ? null : 'docQuality')}
+          >
+            <div className="gap-card-header">
+              <div className="gap-card-icon">
+                <Shield size={20} />
+              </div>
+              <div className="gap-card-title">
+                <h3>Documentation-Related Denials</h3>
+                <p>Better notes = fewer denials</p>
+              </div>
+              <div className="gap-card-value">
+                +${formatNumber(gapValues.chartClosure.dollarValue)}/yr
+              </div>
+              <ChevronDown size={20} className={`expand-icon ${expandedGap === 'docQuality' ? 'rotated' : ''}`} />
+            </div>
+            
+            {expandedGap === 'docQuality' && (
+              <div className="gap-card-body">
+                {/* Similar calculation breakdown */}
+              </div>
+            )}
+          </div>
+          
+        </div>
+        
+        {/* Total */}
+        <div className="total-gap-row">
+          <span className="total-label">TOTAL ANNUAL GAP</span>
+          <span className="total-value">${formatNumber(totalGap)}/year</span>
+        </div>
+        
+        {/* Add More Drivers */}
+        <button className="add-drivers-button">
+          <Plus size={16} />
+          Add more drivers
+          <span className="drivers-available">(3 available)</span>
+        </button>
+        
+        {/* Continue */}
+        <div className="page-footer">
+          <button className="primary-button" onClick={onNext}>
+            See the Cost of Waiting
+            <ArrowRight size={16} />
+          </button>
+        </div>
+        
+      </div>
+      
+    </div>
+  );
+}
+
+Page 5: The Cost of Staying (Decision Page)
+jsxCopy// ============ SWITCH: COST OF STAYING ============
+
+export default function SwitchCostOfStaying({
+  setupData,
+  performanceData,
+  totalGap,
+  onBack
+}) {
+  
+  const [viewMode, setViewMode] = useState('value'); // 'value' or 'time'
+  
+  // Time-based calculations
+  const year1Value = totalGap;
+  const year2Value = Math.round(totalGap * 1.1); // 10% growth assumption
+  const year3Value = Math.round(totalGap * 1.21);
+  const threeYearTotal = year1Value + year2Value + year3Value;
+  
+  // Cost of waiting
+  const monthlyGap = Math.round(totalGap / 12);
+  const sixMonthLoss = monthlyGap * 6;
+  
+  // Ramp assumptions for chart
+  const generateTimelineData = () => {
+    const data = [];
+    // Current state - flat
+    for (let m = 0; m <= 6; m++) {
+      data.push({
+        month: m,
+        label: m === 0 ? 'Today' : `${m} mo`,
+        stayWithCurrent: 0,
+        switchToAbridge: 0
+      });
+    }
+    // After switch - ramps up
+    for (let m = 7; m <= 36; m++) {
+      const monthsSinceSwitch = m - 6;
+      const rampFactor = Math.min(1, monthsSinceSwitch / 6); // 6-month ramp
+      data.push({
+        month: m,
+        label: m === 12 ? 'Year 1' : m === 24 ? 'Year 2' : m === 36 ? 'Year 3' : '',
+        stayWithCurrent: 0,
+        switchToAbridge: Math.round(totalGap * rampFactor * (m / 12))
+      });
+    }
+    return data;
+  };
+  
+  const timelineData = generateTimelineData();
+  
+  return (
+    <div className="switch-page">
+      
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+          <span className="flow-badge">SWITCH</span>
+        </div>
+        <div className="step-dots">
+          <span className="dot completed"></span>
+          <span className="dot completed"></span>
+          <span className="dot completed"></span>
+          <span className="dot active"></span>
+        </div>
+      </header>
+      
+      <div className="switch-content">
+        
+        {/* Hero — The Big Number (Repeated for Impact) */}
+        <div className="cost-hero">
+          <p className="hero-pretext">Based on what you've told us, you're leaving</p>
+          <div className="cost-value-display">
+            <span className="cost-dollar">$</span>
+            <span className="cost-amount">{formatNumber(totalGap)}</span>
+          </div>
+          <p className="hero-posttext">on the table. <strong>Every. Single. Year.</strong></p>
+          
+          <div className="cost-breakdown-mini">
+            <span>${formatNumber(monthlyGap)}/month</span>
+            <span className="divider">·</span>
+            <span>${formatNumber(Math.round(totalGap / 365))}/day</span>
+            <span className="divider">·</span>
+            <span>${formatNumber(Math.round(totalGap / 8760))}/hour</span>
+          </div>
+        </div>
+        
+        {/* Gaps Summary */}
+        <div className="gaps-recap">
+          <h3>THE GAPS WE IDENTIFIED</h3>
+          <div className="gaps-recap-rows">
+            <div className="recap-row">
+              <span className="recap-label">Utilization:</span>
+              <span className="recap-change">{setupData.utilization}% → 65%</span>
+              <span className="recap-impact">= +{formatNumber(encounterGap)} encounters</span>
+            </div>
+            <div className="recap-row">
+              <span className="recap-label">Efficiency:</span>
+              <span className="recap-change">{performanceData.timeSavings} min → 3.5 min</span>
+              <span className="recap-impact">= +{formatNumber(hoursGap)} hours</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* View Toggle */}
+        <div className="view-toggle">
+          <button 
+            className={`toggle-option ${viewMode === 'value' ? 'active' : ''}`}
+            onClick={() => setViewMode('value')}
+          >
+            Value Breakdown
+          </button>
+          <button 
+            className={`toggle-option ${viewMode === 'time' ? 'active' : ''}`}
+            onClick={() => setViewMode('time')}
+          >
+            Over Time
+          </button>
+        </div>
+        
+        {/* Over Time View */}
+        {viewMode === 'time' && (
+          <div className="timeline-section">
+            <div className="timeline-header">
+              <h3>3-YEAR CUMULATIVE VALUE</h3>
+              <div className="timeline-legend">
+                <span className="legend-item abridge">
+                  <span className="legend-dot"></span>
+                  Switch to Abridge
+                </span>
+                <span className="legend-item current">
+                  <span className="legend-dot"></span>
+                  Stay with current
+                </span>
+              </div>
+            </div>
+            
+            {/* Chart */}
+            <div className="timeline-chart">
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={timelineData}>
+                  <defs>
+                    <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#059669" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  
+                  <XAxis 
+                    dataKey="label" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748b', fontSize: 11 }}
+                  />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `$${(v / 1000)}K`}
+                    tick={{ fill: '#64748b', fontSize: 11 }}
+                  />
+                  
+                  {/* Current state line - flat at 0 */}
+                  <Area
+                    type="monotone"
+                    dataKey="stayWithCurrent"
+                    stroke="#94a3b8"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    fill="none"
+                  />
+                  
+                  {/* Abridge line - curves up */}
+                  <Area
+                    type="monotone"
+                    dataKey="switchToAbridge"
+                    stroke="#059669"
+                    strokeWidth={3}
+                    fill="url(#abridgeGradient)"
+                  />
+                  
+                  {/* Annotations */}
+                  <ReferenceLine x="6 mo" stroke="#94a3b8" strokeDasharray="3 3" />
+                  
+                </AreaChart>
+              </ResponsiveContainer>
+              
+              {/* Chart Annotations */}
+              <div className="chart-annotations">
+                <div className="annotation" style={{ left: '10%' }}>
+                  <span className="annotation-label">Quick wins</span>
+                </div>
+                <div className="annotation" style={{ left: '50%' }}>
+                  <span className="annotation-label">Full ramp</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="timeline-insight">
+              <p>
+                <strong>Value builds as utilization increases:</strong> Months 1-3: efficiency gains start immediately. 
+                Months 3-6: utilization climbs toward 65%. Year 1+: full value from all drivers.
+              </p>
+            </div>
+            
+            {/* Cost Comparison Cards */}
+            <div className="cost-comparison-cards">
+              <div className="cost-card switch-now">
+                <span className="cost-card-label">SWITCH TODAY</span>
+                <span className="cost-card-sublabel">3-year value</span>
+                <span className="cost-card-value">${formatNumber(threeYearTotal)}</span>
+              </div>
+              
+              <div className="cost-card wait">
+                <span className="cost-card-label">WAIT 6 MONTHS</span>
+                <span className="cost-card-sublabel">First 6 months of value is lost forever</span>
+                <span className="cost-card-value">${formatNumber(threeYearTotal - sixMonthLoss)}</span>
+              </div>
+              
+              <div className="cost-card lost">
+                <span className="cost-card-label">COST OF WAITING</span>
+                <span className="cost-card-sublabel">That's ${formatNumber(monthlyGap)}/month you can never recapture</span>
+                <span className="cost-card-value warning">${formatNumber(sixMonthLoss)}</span>
+              </div>
+            </div>
+            
+          </div>
+        )}
+        
+        {/* The Decision Box */}
+        <div className="decision-box">
+          <h3>THE DECISION</h3>
+          <p className="decision-statement">
+            You already invested in ambient AI. The question is whether you're getting full value.
+          </p>
+          <ul className="decision-facts">
+            <li>
+              Your utilization: <strong>{setupData.utilization}%</strong> 
+              <span className="fact-benchmark">(Abridge avg: 65%)</span>
+            </li>
+            <li>
+              Your time savings: <strong>{performanceData.timeSavings} min</strong>
+              <span className="fact-benchmark">(Abridge avg: 3.5 min)</span>
+            </li>
+            <li>
+              Annual gap: <strong className="highlight">${formatNumber(totalGap)}</strong>
+            </li>
+          </ul>
+          <p className="decision-urgency">
+            Every month you stay at current state costs <strong>~${formatNumber(monthlyGap)}</strong> in value you could be capturing.
+          </p>
+          
+          <button className="view-assumptions">
+            <ChevronDown size={14} />
+            View assumptions
+          </button>
+        </div>
+        
+        {/* CTA */}
+        <div className="cta-section">
+          <button className="primary-button large cta">
+            <Calendar size={18} />
+            Let's Talk
+          </button>
+          
+          <div className="secondary-actions">
+            <button className="text-button">
+              <Link size={14} />
+              Copy Link
+            </button>
+            <button className="text-button">
+              <Edit size={14} />
+              Edit Model
+            </button>
+          </div>
+        </div>
+        
+      </div>
+      
+    </div>
+  );
+}
+
+Key CSS for Switch Flow:
+cssCopy/* ============ SWITCH FLOW STYLES ============ */
+
+/* Quartile Visualization */
+.quartile-visualization {
+  position: relative;
+  margin: 24px 0;
+  padding-bottom: 60px;
+}
+
+.quartile-bar {
+  display: flex;
+  height: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.quartile-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quartile-segment.q1 { background: #fecaca; }
+.quartile-segment.q2 { background: #fed7aa; }
+.quartile-segment.q3 { background: #fef08a; }
+.quartile-segment.q4 { background: #bbf7d0; }
+
+.segment-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(0,0,0,0.5);
+}
+
+.position-marker {
+  position: absolute;
+  top: -15px;
+  transform: translateX(-50%);
+}
+
+.position-marker .marker-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f97316;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.position-marker.abridge .marker-dot {
+  background: #059669;
+}
+
+.position-marker .marker-label {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #1e293b;
+  color: white;
+}
+
+.position-marker.abridge .marker-label {
+  background: #059669;
+}
+
+.gap-indicator {
+  position: absolute;
+  top: 8px;
+  height: 16px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 4px,
+    rgba(239, 68, 68, 0.3) 4px,
+    rgba(239, 68, 68, 0.3) 8px
+  );
+  border-radius: 8px;
+}
+
+.gap-indicator .gap-value {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ef4444;
+  white-space: nowrap;
+  background: #fef2f2;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+/* Gap Hero */
+.gap-hero, .cost-hero {
+  text-align: center;
+  padding: 40px;
+  background: #fff7ed;
+  border-radius: 16px;
+  margin-bottom: 32px;
+}
+
+.gap-value-display, .cost-value-display {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.gap-dollar, .cost-dollar {
+  font-size: 36px;
+  font-weight: 700;
+  color: #f97316;
+  margin-top: 8px;
+}
+
+.gap-amount, .cost-amount {
+  font-size: 72px;
+  font-weight: 700;
+  color: #ea580c;
+  line-height: 1;
+}
+
+.gap-breakdown-mini, .cost-breakdown-mini {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #9a3412;
+  margin-top: 16px;
+}
+
+/* Gap Cards */
+.gap-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gap-card:hover {
+  border-color: #f97316;
+}
+
+.gap-card.expanded {
+  border-color: #f97316;
+}
+
+.gap-card-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  gap: 16px;
+}
+
+.gap-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #fff7ed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f97316;
+  flex-shrink: 0;
+}
+
+.gap-card-title {
+  flex: 1;
+}
+
+.gap-card-title h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.gap-card-title p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.gap-card-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.expand-icon {
+  color: #94a3b8;
+  transition: transform 0.2s;
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.gap-card-body {
+  padding: 0 20px 20px;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+/* Decision Box */
+.decision-box {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 32px;
+  color: white;
+  margin-top: 32px;
+}
+
+.decision-box h3 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #94a3b8;
+  margin: 0 0 16px 0;
+}
+
+.decision-statement {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.decision-facts {
+  margin: 0 0 20px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.decision-facts li {
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #334155;
+}
+
+.decision-facts li:last-child {
+  border-bottom: none;
+}
+
+.fact-benchmark {
+  color: #94a3b8;
+  margin-left: 8px;
+}
+
+.decision-urgency {
+  font-size: 14px;
+  color: #f97316;
+  margin: 0;
+}
+
+.decision-urgency strong {
+  color: #fb923c;
+}
+
+/* Cost Comparison Cards */
+.cost-comparison-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.cost-card {
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.cost-card.switch-now {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.cost-card.wait {
+  background: #fefce8;
+  border: 1px solid #fef08a;
+}
+
+.cost-card.lost {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.cost-card-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  display: block;
+}
+
+.cost-card-sublabel {
+  font-size: 11px;
+  color: #94a3b8;
+  display: block;
+  margin-top: 4px;
+}
+
+.cost-card-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  display: block;
+  margin-top: 8px;
+}
+
+.cost-card-value.warning {
+  color: #dc2626;
+}

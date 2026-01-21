@@ -6226,13 +6226,13 @@ export default function ModelBuilder({
             <section className="bg-white rounded-2xl border border-neutral-200 p-8">
               {/* Inpatient ED Connection Callout - appears at TOP before drivers */}
               {isInpatientSetting && (
-                <div className="mb-8 relative overflow-hidden bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-6" data-testid="inpatient-ed-connection-callout">
+                <div className="mb-8 relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-6" data-testid="inpatient-ed-connection-callout">
                   {/* Left accent bar (inset, not a border) */}
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500 rounded-l-xl" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-l-xl" />
                   
                   {/* Header */}
                   <div className="flex items-start gap-3 mb-4">
-                    <Link2 className="w-6 h-6 text-teal-500 flex-shrink-0 mt-0.5" />
+                    <Link2 className="w-6 h-6 text-indigo-500 flex-shrink-0 mt-0.5" />
                     <div>
                       <h3 className="text-lg font-semibold text-slate-900">Connected Value</h3>
                       <p className="text-sm text-slate-500">ED + Inpatient compounds your results</p>
@@ -6247,15 +6247,15 @@ export default function ModelBuilder({
                   
                   {/* Impact List */}
                   <div className="space-y-3 mb-5">
-                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-teal-100">
-                      <BarChart3 className="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
+                      <BarChart3 className="w-5 h-5 text-indigo-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-slate-800">DRG Capture</p>
                         <p className="text-xs text-slate-500">CCs/MCCs documented in ED carry forward — your case mix starts stronger from admission.</p>
                       </div>
                     </div>
                     
-                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-teal-100">
+                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
                       <FileText className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-slate-800">CDI Efficiency</p>
@@ -6263,7 +6263,7 @@ export default function ModelBuilder({
                       </div>
                     </div>
                     
-                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-teal-100">
+                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
                       <Shield className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-slate-800">Denial Prevention</p>
@@ -6273,9 +6273,9 @@ export default function ModelBuilder({
                   </div>
                   
                   {/* Amplification Note */}
-                  <div className="flex items-start gap-3 bg-teal-500/10 rounded-lg p-4">
-                    <Lightbulb className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-teal-800">
+                  <div className="flex items-start gap-3 bg-indigo-500/10 rounded-lg p-4">
+                    <Lightbulb className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-indigo-800">
                       <span className="font-semibold">If you're also using Abridge in ED</span>, the documentation 
                       quality benefits below are amplified — you're building on a stronger foundation.
                     </p>
