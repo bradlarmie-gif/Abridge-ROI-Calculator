@@ -31,6 +31,21 @@ export default function SwitchScribesSetup({
     ? Math.round(data.annualEncounters / data.totalProviders)
     : null;
   
+  // Classify encounters per provider as low/typical/high
+  const getEncounterClassification = (epp: number): { label: string; color: string; bgColor: string } => {
+    if (epp < 1500) {
+      return { label: 'low for outpatient', color: 'text-amber-700', bgColor: 'bg-amber-50' };
+    } else if (epp <= 2500) {
+      return { label: 'typical for outpatient', color: 'text-emerald-700', bgColor: 'bg-emerald-50' };
+    } else {
+      return { label: 'high for outpatient', color: 'text-blue-700', bgColor: 'bg-blue-50' };
+    }
+  };
+  
+  const encounterClassification = encountersPerProvider 
+    ? getEncounterClassification(encountersPerProvider)
+    : null;
+  
   const canContinue = data.totalProviders && data.annualEncounters && 
                       data.providersWithScribes !== null && 
                       data.hourlyRate && data.hoursPerWeek;
@@ -120,11 +135,11 @@ export default function SwitchScribesSetup({
               <span className="text-lg text-slate-700">encounters/year</span>
             </div>
             
-            {encountersPerProvider && (
-              <div className="mt-4 flex items-center gap-2 p-3 bg-amber-50 rounded-lg">
-                <Lightbulb className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                <span className="text-sm text-amber-800">
-                  That's ~{formatNumber(encountersPerProvider)} per provider (typical for outpatient)
+            {encountersPerProvider && encounterClassification && (
+              <div className={`mt-4 flex items-center gap-2 p-3 ${encounterClassification.bgColor} rounded-lg`}>
+                <Lightbulb className={`w-4 h-4 ${encounterClassification.color} flex-shrink-0`} />
+                <span className={`text-sm ${encounterClassification.color}`}>
+                  That's ~{formatNumber(encountersPerProvider)} per provider ({encounterClassification.label})
                 </span>
               </div>
             )}
