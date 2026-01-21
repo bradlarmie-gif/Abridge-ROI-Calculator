@@ -123,8 +123,13 @@ interface DriverInputs {
     conversionFactor: number;
   };
   hcc: {
-    riskBasedPct: number;
-    captureRate: number;
+    riskContractPercent: number;
+    conditionsPerVisit: number;
+    documentationGap: number;
+    hccEligiblePercent: number;
+    abridgeCaptureRate: number;
+    avgHccValue: number;
+    auditFactor: number;
   };
   denials: {
     denialRate: number;
@@ -378,8 +383,13 @@ export default function ModelBuilder({
       conversionFactor: 33,
     },
     hcc: {
-      riskBasedPct: 35,
-      captureRate: 70,
+      riskContractPercent: 25,
+      conditionsPerVisit: 2.0,
+      documentationGap: 20,
+      hccEligiblePercent: 35,
+      abridgeCaptureRate: 40,
+      avgHccValue: 800,
+      auditFactor: 60,
     },
     denials: {
       denialRate: 7,
@@ -663,12 +673,17 @@ export default function ModelBuilder({
         return Math.round(wrvuGain * conversionFactor);
       }
       case "hcc": {
-        const { riskBasedPct, captureRate } = driverInputs.hcc;
-        if (riskBasedPct < 10) return 0;
-        const riskPatients = (encounters / 4) * (riskBasedPct / 100);
-        const missedConditions = riskPatients * 2.5 * ((100 - captureRate) / 100);
-        const recaptured = missedConditions * 0.15;
-        return Math.round(recaptured * 1500);
+        const { riskContractPercent, conditionsPerVisit, documentationGap, hccEligiblePercent, abridgeCaptureRate, avgHccValue, auditFactor } = driverInputs.hcc;
+        // Step 1: Risk-Based Encounters
+        const riskEncounters = eligibleEncounters * (riskContractPercent / 100);
+        // Step 2: Missed HCC Opportunities
+        const missedHccsPerEncounter = conditionsPerVisit * (documentationGap / 100) * (hccEligiblePercent / 100);
+        const missedHccOpportunities = riskEncounters * missedHccsPerEncounter;
+        // Step 3: Abridge Capture
+        const hccsCaptured = missedHccOpportunities * (abridgeCaptureRate / 100);
+        // Step 4: Revenue Impact
+        const annualHccRevenue = hccsCaptured * avgHccValue * (auditFactor / 100);
+        return Math.round(annualHccRevenue);
       }
       case "denials": {
         const { denialRate, docRelatedPercent, writtenOffPercent, abridgeCaptureRate, avgClaimValue } = driverInputs.denials;
@@ -905,8 +920,13 @@ export default function ModelBuilder({
           };
         case "hcc":
           return {
-            riskBasedPct: driverInputs.hcc.riskBasedPct,
-            captureRate: driverInputs.hcc.captureRate,
+            riskContractPercent: driverInputs.hcc.riskContractPercent,
+            conditionsPerVisit: driverInputs.hcc.conditionsPerVisit,
+            documentationGap: driverInputs.hcc.documentationGap,
+            hccEligiblePercent: driverInputs.hcc.hccEligiblePercent,
+            abridgeCaptureRate: driverInputs.hcc.abridgeCaptureRate,
+            avgHccValue: driverInputs.hcc.avgHccValue,
+            auditFactor: driverInputs.hcc.auditFactor,
           };
         case "denials":
           return {
@@ -2178,64 +2198,307 @@ export default function ModelBuilder({
   };
   
   const renderHccInputs = () => {
-    const { riskBasedPct, captureRate } = driverInputs.hcc;
-    const riskPatients = (encounters / 4) * (riskBasedPct / 100);
-    const missedConditions = riskPatients * 2.5 * ((100 - captureRate) / 100);
-    const recaptured = missedConditions * 0.15;
+    const { riskContractPercent, conditionsPerVisit, documentationGap, hccEligiblePercent, abridgeCaptureRate, avgHccValue, auditFactor } = driverInputs.hcc;
+
+    // HCC & CHRONIC CONDITION CAPTURE CALCULATIONS (4-step)
+    // Step 1: Risk-Based Encounters
+    const riskEncounters = eligibleEncounters * (riskContractPercent / 100);
     
+    // Step 2: Missed HCC Opportunities
+    const missedHccsPerEncounter = conditionsPerVisit * (documentationGap / 100) * (hccEligiblePercent / 100);
+    const missedHccOpportunities = riskEncounters * missedHccsPerEncounter;
+    
+    // Step 3: Abridge Capture
+    const hccsCaptured = missedHccOpportunities * (abridgeCaptureRate / 100);
+    
+    // Step 4: Revenue Impact
+    const annualHccRevenue = hccsCaptured * avgHccValue * (auditFactor / 100);
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
+
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What % of your patients are in risk-based contracts?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{riskBasedPct}%</span>
-          </div>
-          <Slider
-            value={[riskBasedPct]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, riskBasedPct: val } }))}
-            min={0}
-            max={80}
-            step={5}
-            className="w-full"
-            data-testid="hcc-risk-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Medicare Advantage, ACO, capitated arrangements</p>
-          {riskBasedPct < 10 && (
-            <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">HCC capture may not be a primary driver for you</p>
-          )}
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What's your current HCC capture rate?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{captureRate}%</span>
-          </div>
-          <Slider
-            value={[captureRate]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, captureRate: val } }))}
-            min={50}
-            max={90}
-            step={5}
-            className="w-full"
-            data-testid="hcc-capture-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Your quality team or risk adjustment vendor may know this</p>
-        </div>
-        
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Improvement & value (auto):</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(riskPatients).toLocaleString()} risk patients × {(100 - captureRate)}% gap × 15% recaptured × $1,500
+        {/* Theory Box */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+          <p className="text-sm font-semibold text-blue-800">The Theory</p>
+          <p className="text-xs text-blue-700">
+            Risk adjustment relies on complete documentation of chronic conditions. Physicians 
+            discuss multiple conditions per visit, but time pressure means not all make it to 
+            the note. Abridge captures what's said, recovering HCC opportunities that would 
+            otherwise be missed.
           </p>
         </div>
-        
+
+        {/* Step 1: Risk-Based Encounters */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Risk-Based Encounters</p>
+          <p className="text-xs text-[#6B7280]">How many encounters are in risk contracts?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Eligible Encounters</label>
+                <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-3 py-1.5">
+                  {eligibleEncounters.toLocaleString()}
+                </div>
+              </div>
+              <span className="text-neutral-400 pt-5">×</span>
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Risk Contract %</label>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={riskContractPercent}
+                    onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, riskContractPercent: Number(e.target.value) || 0 } }))}
+                    className="w-16 text-center font-mono text-sm h-8"
+                    data-testid="hcc-risk-contract-input"
+                  />
+                  <span className="text-xs text-[#6B7280]">%</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(riskEncounters).toLocaleString()} risk encounters
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Varies by organization: 10-25% (traditional), 25-50% (progressive), 50%+ (MA-focused)
+          </p>
+          {riskContractPercent < 10 && (
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 mt-2">
+              <p className="text-xs text-amber-700 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                HCC capture may not be a primary driver with low risk contract volume
+              </p>
+            </div>
+          )}
+        </div>
+
+        <StepDivider />
+
+        {/* Step 2: Missed HCC Opportunities */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Missed HCC Opportunities</p>
+          <p className="text-xs text-[#6B7280]">How many HCC-eligible conditions are discussed but not documented?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(riskEncounters).toLocaleString()} risk enc.
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {missedHccsPerEncounter.toFixed(2)} missed/visit
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(missedHccOpportunities).toLocaleString()} HCC opportunities
+              </div>
+            </div>
+          </div>
+
+          {/* How We Calculate Missed HCCs/Visit */}
+          <div className="p-3 bg-slate-100 rounded-lg border border-slate-200 mt-3 space-y-2">
+            <p className="text-xs font-semibold text-slate-700">How We Calculate {missedHccsPerEncounter.toFixed(2)} Missed HCCs/Visit</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-slate-600">Conditions discussed per visit:</span>
+                <Input
+                  type="number"
+                  value={conditionsPerVisit}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, conditionsPerVisit: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-7"
+                  step="0.5"
+                  data-testid="hcc-conditions-input"
+                />
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-slate-600">× Documentation gap:</span>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={documentationGap}
+                    onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, documentationGap: Number(e.target.value) || 0 } }))}
+                    className="w-14 text-center font-mono text-sm h-7"
+                    data-testid="hcc-doc-gap-input"
+                  />
+                  <span className="text-xs text-slate-500">%</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-slate-600">× HCC-eligible portion:</span>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={hccEligiblePercent}
+                    onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, hccEligiblePercent: Number(e.target.value) || 0 } }))}
+                    className="w-14 text-center font-mono text-sm h-7"
+                    data-testid="hcc-eligible-input"
+                  />
+                  <span className="text-xs text-slate-500">%</span>
+                </div>
+              </div>
+              <div className="border-t border-slate-300 pt-2 flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-700">= Missed HCCs per encounter:</span>
+                <span className="font-mono text-sm font-medium text-slate-800">{missedHccsPerEncounter.toFixed(2)}</span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 pt-2">
+              Not every condition discussed is documented, and not every undocumented condition is HCC-eligible.
+            </p>
+          </div>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 3: Abridge Capture */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Capture</p>
+          <p className="text-xs text-[#6B7280]">How many can Abridge recover?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(missedHccOpportunities).toLocaleString()} opportunities
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={abridgeCaptureRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, abridgeCaptureRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="hcc-capture-rate-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(hccsCaptured).toLocaleString()} HCCs captured
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Abridge captures conditions mentioned in conversation. We use 40% because the condition 
+            must be assessed or addressed in the visit—not just mentioned in passing.
+          </p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 4: Revenue Impact */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Revenue Impact</p>
+          <p className="text-xs text-[#6B7280]">What's the risk-adjusted value?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(hccsCaptured).toLocaleString()} HCCs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={avgHccValue}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, avgHccValue: Number(e.target.value) || 0 } }))}
+                  className="w-20 text-center font-mono text-sm h-8"
+                  data-testid="hcc-value-input"
+                />
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={auditFactor}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, auditFactor: Number(e.target.value) || 0 } }))}
+                  className="w-14 text-center font-mono text-sm h-8"
+                  data-testid="hcc-audit-factor-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-1.5 font-mono text-sm font-bold text-emerald-600">
+                {formatCurrency(Math.round(annualHccRevenue))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Why 60% Audit Factor */}
+        <div className="p-3 bg-slate-100 rounded-lg border border-slate-200 space-y-2">
+          <p className="text-xs font-semibold text-slate-700">Why {auditFactor}% Audit Factor?</p>
+          <p className="text-xs text-slate-600">
+            We apply a {100 - auditFactor}% haircut to account for:
+          </p>
+          <ul className="text-xs text-slate-600 list-disc list-inside space-y-1">
+            <li>Risk Adjustment Data Validation (RADV) audits</li>
+            <li>Conditions that don't survive payer review</li>
+            <li>Retrospective adjustments</li>
+          </ul>
+          <p className="text-xs text-slate-500 pt-1">This is revenue you can actually count on.</p>
+        </div>
+
+        {/* Benchmark Box */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Benchmark: Average HCC Value
+          </p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Low-complexity HCC</span>
+              <span className="font-mono text-slate-700">$400 - $600</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Medium-complexity HCC</span>
+              <span className="font-mono text-slate-700">$700 - $1,000</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">High-complexity HCC</span>
+              <span className="font-mono text-slate-700">$1,200 - $2,500+</span>
+            </div>
+            <div className="flex justify-between text-xs pt-1 border-t border-slate-200">
+              <span className="text-slate-600">Blended Average</span>
+              <span className="font-mono text-slate-700">~$800</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Variability Warning */}
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <p className="text-xs text-amber-700 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>
+              Varies significantly based on payer mix and current capture rates. Organizations with 
+              mature risk programs may see lower opportunity; those just starting may see more.
+            </span>
+          </p>
+        </div>
+
+        {/* Result Summary */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-medium text-[#111827]">Annual Value</span>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(recaptured * 1500))}
+              {formatCurrency(Math.round(annualHccRevenue))}
             </span>
           </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {Math.round(hccsCaptured).toLocaleString()} HCCs × ${avgHccValue} × {auditFactor}% audit factor
+          </p>
         </div>
       </div>
     );
