@@ -123,7 +123,7 @@ export default function BaselineSetup({
           Back
         </Button>
 
-        <section className="bg-white rounded-2xl border border-neutral-200 p-10">
+        <section className="bg-white rounded-2xl border border-neutral-200 p-6 sm:p-10">
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Organization</h2>
             <p className="text-sm text-[#6B7280]">Let's start with the basics</p>
@@ -171,12 +171,12 @@ export default function BaselineSetup({
                 <p className="text-sm text-[#6B7280] mb-2">
                   Unit type affects documentation burden and staffing ratios
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {(["med-surg", "icu", "mixed"] as const).map(type => (
                     <button
                       key={type}
                       onClick={() => setUnitType(type)}
-                      className={`px-5 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                      className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border-2 text-sm font-medium transition-all ${
                         unitType === type
                           ? "border-[#EA2C00] bg-[#FEF0EC] text-[#EA2C00]"
                           : "border-neutral-200 text-[#6B7280] hover:border-neutral-300 bg-white"
@@ -196,12 +196,12 @@ export default function BaselineSetup({
                 <p className="text-sm text-[#6B7280] mb-3">
                   What percentage of documentation events will use Abridge?
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {([45, 60, 75] as const).map(rate => (
                     <button
                       key={rate}
                       onClick={() => setUtilizationRate(rate)}
-                      className={`flex flex-col items-center px-7 py-3.5 rounded-xl border transition-all min-w-[120px] ${
+                      className={`flex flex-col items-center px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl border transition-all flex-1 min-w-[90px] sm:min-w-[100px] ${
                         utilizationRate === rate
                           ? "border-[#EA2C00] bg-[#FEF0EC]"
                           : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
@@ -213,7 +213,7 @@ export default function BaselineSetup({
                         {rate === 60 && "Typical"}
                         {rate === 75 && "Aggressive"}
                       </span>
-                      <span className={`text-xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
+                      <span className={`text-lg sm:text-xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
                         {rate}%
                       </span>
                     </button>
@@ -226,20 +226,20 @@ export default function BaselineSetup({
               </div>
 
               {/* YOUR BASELINE Section - Nursing */}
-              <div className="mt-10 p-8 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
-                <div className="flex items-center gap-2.5 mb-4">
+              <div className="mt-8 sm:mt-10 p-5 sm:p-8 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
+                <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
                   <TrendingUp className="w-5 h-5 text-emerald-600" />
                   <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Your Baseline</span>
                 </div>
-                <div className="font-mono text-5xl font-bold text-emerald-700 mb-2">
+                <div className="font-mono text-3xl sm:text-5xl font-bold text-emerald-700 mb-2">
                   {Math.round(documentationEvents * (utilizationRate / 100)).toLocaleString()}
                 </div>
-                <p className="text-base font-medium text-emerald-700 mb-5">
+                <p className="text-sm sm:text-base font-medium text-emerald-700 mb-4 sm:mb-5">
                   Abridge-documented events per year
                 </p>
-                <div className="pt-5 border-t border-emerald-200">
-                  <p className="font-mono text-sm text-slate-500 tracking-tight">
-                    {nurseFTEs.toLocaleString()} nurse FTEs × ~500 events/FTE × {utilizationRate}% utilization
+                <div className="pt-4 sm:pt-5 border-t border-emerald-200">
+                  <p className="font-mono text-xs sm:text-sm text-slate-500 tracking-tight leading-relaxed">
+                    {nurseFTEs.toLocaleString()} nurse FTEs × ~500 events/FTE × {utilizationRate}%
                   </p>
                 </div>
                 <p className="text-sm text-emerald-600 mt-4 flex items-center gap-2">
@@ -323,12 +323,12 @@ export default function BaselineSetup({
                       ? "What percentage of admissions will use Abridge?"
                       : "What percentage of encounters will use Abridge?"}
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {(isEDSetting ? [55, 70, 85] as const : isInpatientSetting ? [50, 65, 80] as const : [50, 65, 80] as const).map(rate => (
                     <button
                       key={rate}
                       onClick={() => setUtilizationRate(rate)}
-                      className={`flex flex-col items-center px-7 py-3.5 rounded-xl border transition-all min-w-[120px] ${
+                      className={`flex flex-col items-center px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl border transition-all flex-1 min-w-[90px] sm:min-w-[100px] ${
                         utilizationRate === rate
                           ? "border-[#EA2C00] bg-[#FEF0EC]"
                           : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
@@ -356,7 +356,7 @@ export default function BaselineSetup({
                           </>
                         )}
                       </span>
-                      <span className={`text-xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
+                      <span className={`text-lg sm:text-xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
                         {rate}%
                       </span>
                     </button>
@@ -369,20 +369,20 @@ export default function BaselineSetup({
               </div>
 
               {/* YOUR BASELINE Section */}
-              <div className="mt-10 p-8 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
-                <div className="flex items-center gap-2.5 mb-4">
+              <div className="mt-8 sm:mt-10 p-5 sm:p-8 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
+                <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
                   <TrendingUp className="w-5 h-5 text-emerald-600" />
                   <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Your Baseline</span>
                 </div>
-                <div className="font-mono text-5xl font-bold text-emerald-700 mb-2">
+                <div className="font-mono text-3xl sm:text-5xl font-bold text-emerald-700 mb-2">
                   {eligibleEncounters.toLocaleString()}
                 </div>
-                <p className="text-base font-medium text-emerald-700 mb-5">
+                <p className="text-sm sm:text-base font-medium text-emerald-700 mb-4 sm:mb-5">
                   eligible {isInpatientSetting ? "admissions" : "encounters"} per year
                 </p>
-                <div className="pt-5 border-t border-emerald-200">
-                  <p className="font-mono text-sm text-slate-500 tracking-tight">
-                    {providers.toLocaleString()} {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} × {encounters.toLocaleString()} {isInpatientSetting ? "admissions" : "encounters"} × {utilizationRate}% utilization
+                <div className="pt-4 sm:pt-5 border-t border-emerald-200">
+                  <p className="font-mono text-xs sm:text-sm text-slate-500 tracking-tight leading-relaxed">
+                    {providers.toLocaleString()} {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} × {encounters.toLocaleString()} {isInpatientSetting ? "admissions" : "encounters"} × {utilizationRate}%
                   </p>
                 </div>
                 <p className="text-sm text-emerald-600 mt-4 flex items-center gap-2">

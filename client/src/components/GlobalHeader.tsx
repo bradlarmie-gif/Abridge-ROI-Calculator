@@ -7,16 +7,16 @@ interface ProgressDotsProps {
 
 function ProgressDots({ currentStep, totalSteps }: ProgressDotsProps) {
   return (
-    <div className="flex gap-2 items-center">
+    <div className="flex gap-1.5 sm:gap-2 items-center">
       {Array.from({ length: totalSteps }, (_, i) => (
         <span
           key={i}
-          className={`h-2 rounded-full transition-all ${
+          className={`h-1.5 sm:h-2 rounded-full transition-all ${
             i === currentStep - 1 
-              ? 'w-6 bg-[#EA2C00]' 
+              ? 'w-4 sm:w-6 bg-[#EA2C00]' 
               : i < currentStep 
-                ? 'w-2 bg-slate-800' 
-                : 'w-2 bg-slate-200'
+                ? 'w-1.5 sm:w-2 bg-slate-800' 
+                : 'w-1.5 sm:w-2 bg-slate-200'
           }`}
           data-testid={`progress-dot-${i + 1}`}
         />
@@ -58,12 +58,12 @@ export function GlobalHeader({ pageName, showContext = true, currentStep, totalS
         </a>
 
         {showContext && (
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
+          <div className="hidden sm:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-2">
             <span className="text-sm text-slate-500 font-medium">ROI Calculator</span>
             {pageName && (
               <>
                 <span className="text-slate-300">·</span>
-                <span className="text-sm text-slate-900 font-semibold">{pageName}</span>
+                <span className="text-sm text-slate-900 font-semibold truncate max-w-[200px]">{pageName}</span>
               </>
             )}
           </div>

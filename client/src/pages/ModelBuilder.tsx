@@ -5986,9 +5986,48 @@ export default function ModelBuilder({
           <ArrowLeft className="w-4 h-4" />
           Back
         </Button>
-        <div className="flex gap-8">
-          <div className="flex-1 max-w-[65%] space-y-8">
-            <section className="bg-white rounded-2xl border border-neutral-200 p-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Live Model Sidebar - appears first in DOM for mobile accessibility */}
+          <div className="w-full lg:w-[35%] lg:order-2">
+            <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-[#111827] mb-4">Live Model</h3>
+              
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-[#6B7280] mb-2">Your Value</div>
+                
+                <div className="space-y-2">
+                  {activeDrivers.map(driverId => (
+                    <div key={driverId} className="flex justify-between items-center py-1">
+                      <span className="text-sm text-[#111827]">{DRIVER_NAMES[driverId]}</span>
+                      <span className="font-mono text-sm text-emerald-600">{formatCurrency(driverResults[driverId]?.value || 0)}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="border-t border-neutral-200 pt-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-[#111827]">Total Value</span>
+                    <span className="font-mono font-bold text-lg text-emerald-600">{formatCurrency(totalBenefit)}/yr</span>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-[#6B7280] text-center py-2">Investment calculated in next step</p>
+                
+                <Button
+                  onClick={handleComplete}
+                  className="w-full h-12 bg-[#EA2C00] hover:bg-[#d12700] border-[#EA2C00] text-white text-base font-semibold"
+                  data-testid="button-continue-investment"
+                >
+                  Continue to Investment
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Main Content - appears second in DOM but first visually on desktop */}
+          <div className="flex-1 lg:max-w-[65%] space-y-6 lg:space-y-8 lg:order-1">
+            <section className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-8">
               {/* Baseline Summary Card */}
               <div className="mb-6 p-6 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl border border-emerald-200">
                 <div className="flex items-center gap-2.5 mb-3">
@@ -6164,43 +6203,6 @@ export default function ModelBuilder({
               )}
             </section>
             
-          </div>
-          
-          <div className="w-[35%]">
-            <div className="sticky top-24 bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-[#111827] mb-4">Live Model</h3>
-              
-              <div className="space-y-4">
-                <div className="text-xs uppercase tracking-wider text-[#6B7280] mb-2">Your Value</div>
-                
-                <div className="space-y-2">
-                  {activeDrivers.map(driverId => (
-                    <div key={driverId} className="flex justify-between items-center py-1">
-                      <span className="text-sm text-[#111827]">{DRIVER_NAMES[driverId]}</span>
-                      <span className="font-mono text-sm text-emerald-600">{formatCurrency(driverResults[driverId]?.value || 0)}</span>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="border-t border-neutral-200 pt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-[#111827]">Total Value</span>
-                    <span className="font-mono font-bold text-lg text-emerald-600">{formatCurrency(totalBenefit)}/yr</span>
-                  </div>
-                </div>
-                
-                <p className="text-xs text-[#6B7280] text-center py-2">Investment calculated in next step</p>
-                
-                <Button
-                  onClick={handleComplete}
-                  className="w-full h-12 bg-[#EA2C00] hover:bg-[#d12700] border-[#EA2C00] text-white text-base font-semibold"
-                  data-testid="button-continue-investment"
-                >
-                  Continue to Investment
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
