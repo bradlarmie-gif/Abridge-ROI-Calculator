@@ -212,7 +212,7 @@ export default function SwitchAmbientSetup({
         </div>
       </header>
       
-      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight">
             Let's see where you stand

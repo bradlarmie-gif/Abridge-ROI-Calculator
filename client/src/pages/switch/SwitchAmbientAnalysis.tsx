@@ -188,7 +188,7 @@ export default function SwitchAmbientAnalysis({
         </div>
       </header>
       
-      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
             The gap analysis
@@ -212,32 +212,8 @@ export default function SwitchAmbientAnalysis({
           </div>
         </section>
         
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab('breakdown')}
-            className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all ${
-              activeTab === 'breakdown'
-                ? 'bg-slate-900 text-white'
-                : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
-            }`}
-            data-testid="tab-breakdown"
-          >
-            Value Breakdown
-          </button>
-          <button
-            onClick={() => setActiveTab('overtime')}
-            className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all ${
-              activeTab === 'overtime'
-                ? 'bg-slate-900 text-white'
-                : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
-            }`}
-            data-testid="tab-overtime"
-          >
-            Over Time
-          </button>
-        </div>
-        
-        {activeTab === 'breakdown' && (
+        {/* Quick Mode: Simplified gap-only view */}
+        {inputs.mode === 'quick' && (
           <div className="space-y-6">
             <section>
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE GAPS WE IDENTIFIED</h2>
@@ -246,7 +222,7 @@ export default function SwitchAmbientAnalysis({
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700">Utilization</span>
                   <span className="text-sm text-slate-500">
-                    {inputs.utilization}% → {benchmarks.utilization}% = +{formatNumber(calculations.additionalEncounters)} enc
+                    {inputs.utilization}% → {benchmarks.utilization}% = +{formatNumber(calculations.additionalEncounters)} encounters
                   </span>
                 </div>
                 <div className="relative h-3 bg-slate-100 rounded-full">
@@ -263,8 +239,8 @@ export default function SwitchAmbientAnalysis({
                   />
                 </div>
                 <div className="flex justify-between mt-2 text-xs">
-                  <span className="text-slate-400" style={{ marginLeft: `${inputs.utilization - 3}%` }}>YOU</span>
-                  <span className="text-emerald-600" style={{ marginRight: `${100 - benchmarks.utilization - 5}%` }}>ABRIDGE</span>
+                  <span className="text-slate-400" style={{ marginLeft: `${Math.max(0, inputs.utilization - 3)}%` }}>YOU</span>
+                  <span className="text-emerald-600" style={{ marginRight: `${Math.max(0, 100 - benchmarks.utilization - 5)}%` }}>ABRIDGE</span>
                 </div>
               </div>
               
@@ -272,7 +248,7 @@ export default function SwitchAmbientAnalysis({
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-slate-700">Efficiency</span>
                   <span className="text-sm text-slate-500">
-                    {inputs.efficiency}m → {benchmarks.efficiency}m = +{formatNumber(calculations.additionalHours)} hours
+                    {inputs.efficiency} min → {benchmarks.efficiency} min = +{formatNumber(calculations.additionalHours)} hours
                   </span>
                 </div>
                 <div className="relative h-3 bg-slate-100 rounded-full">
@@ -289,70 +265,152 @@ export default function SwitchAmbientAnalysis({
                   />
                 </div>
                 <div className="flex justify-between mt-2 text-xs">
-                  <span className="text-slate-400" style={{ marginLeft: `${(inputs.efficiency / 5) * 100 - 3}%` }}>YOU</span>
-                  <span className="text-emerald-600" style={{ marginRight: `${100 - (benchmarks.efficiency / 5) * 100 - 5}%` }}>ABRIDGE</span>
+                  <span className="text-slate-400" style={{ marginLeft: `${Math.max(0, (inputs.efficiency / 5) * 100 - 3)}%` }}>YOU</span>
+                  <span className="text-emerald-600" style={{ marginRight: `${Math.max(0, 100 - (benchmarks.efficiency / 5) * 100 - 5)}%` }}>ABRIDGE</span>
                 </div>
               </div>
             </section>
             
-            {/* Quick Mode: Original driver layout */}
-            {inputs.mode === 'quick' && (
-              <section>
-                <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">WHERE THAT VALUE SHOWS UP</h2>
+            <section>
+              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">HOW THIS TRANSLATES TO VALUE</h2>
+              
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <p className="text-sm text-slate-600 mb-5">
+                  When utilization and efficiency improve together, the impact is <strong>multiplicative</strong>:
+                </p>
                 
-                <div className="space-y-3">
-                  {quickDrivers.map(driver => (
-                    <div
-                      key={driver.id}
-                      className={`bg-white rounded-xl border transition-all ${
-                        expandedDriver === driver.id ? 'border-slate-800' : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <button
-                        onClick={() => toggleDriver(driver.id)}
-                        className="w-full flex items-center gap-4 p-5"
-                        data-testid={`button-driver-${driver.id}`}
-                      >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 text-slate-500">
-                          {driver.icon}
-                        </div>
-                        <div className="flex-1 text-left">
-                          <span className="block text-sm font-semibold text-slate-900">{driver.name}</span>
-                          <span className="block text-xs text-slate-500">{driver.description}</span>
-                        </div>
-                        <span className="text-base font-bold text-emerald-600" data-testid={`text-driver-value-${driver.id}`}>
-                          +${formatNumber(driver.value)}/yr
-                        </span>
-                        {expandedDriver === driver.id ? (
-                          <ChevronUp className="w-5 h-5 text-slate-400" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-slate-400" />
-                        )}
-                      </button>
-                      
-                      {expandedDriver === driver.id && (
-                        <div className="px-5 pb-5 pt-0 border-t border-slate-100 bg-slate-50">
-                          <div className="pt-4">
-                            <span className="block text-xs font-semibold text-slate-400 mb-1">CALCULATION</span>
-                            <span className="block text-sm text-slate-600 font-mono">{driver.details.formula}</span>
-                          </div>
-                          <div className="mt-4">
-                            <span className="block text-xs font-semibold text-slate-400 mb-1">WHY THIS MATTERS</span>
-                            <p className="text-sm text-slate-600 leading-relaxed">{driver.details.explanation}</p>
-                          </div>
-                        </div>
-                      )}
+                <div className="space-y-4 mb-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 flex-shrink-0">
+                      <BarChart3 className="w-5 h-5" />
                     </div>
-                  ))}
+                    <div>
+                      <span className="block text-sm font-semibold text-slate-900">More encounters documented</span>
+                      <span className="block text-sm text-slate-500">+{formatNumber(calculations.additionalEncounters)} encounters/year with complete documentation</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 flex-shrink-0">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="block text-sm font-semibold text-slate-900">More time returned</span>
+                      <span className="block text-sm text-slate-500">+{formatNumber(calculations.additionalHours)} hours/year back to providers</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 flex-shrink-0">
+                      <DollarSign className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="block text-sm font-semibold text-slate-900">Better documentation quality</span>
+                      <span className="block text-sm text-slate-500">More complete notes support accurate coding and reduce denials</span>
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-200 rounded-xl mt-4">
-                  <span className="text-sm font-semibold text-slate-600">TOTAL ANNUAL GAP</span>
-                  <span className="text-xl font-bold text-slate-900" data-testid="text-total-annual-gap">
-                    ${formatNumber(calculations.totalAnnualGap)}/year
-                  </span>
+                <div className="bg-slate-50 rounded-xl p-4 text-center">
+                  <p className="text-sm text-slate-600">
+                    We estimate these improvements translate to approximately <strong className="text-emerald-600">${formatNumber(calculations.totalAnnualGap)}/year</strong> in combined value from wRVU capture, time savings, and operational efficiency.
+                  </p>
                 </div>
-              </section>
+              </div>
+            </section>
+            
+            <div className="bg-slate-100 rounded-xl p-4 text-center">
+              <p className="text-sm text-slate-500">See what this looks like over 3 years →</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Advanced Mode: Detailed driver breakdown with tabs */}
+        {inputs.mode === 'advanced' && (
+          <>
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setActiveTab('breakdown')}
+                className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all ${
+                  activeTab === 'breakdown'
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+                data-testid="tab-breakdown"
+              >
+                Value Breakdown
+              </button>
+              <button
+                onClick={() => setActiveTab('overtime')}
+                className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all ${
+                  activeTab === 'overtime'
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+                data-testid="tab-overtime"
+              >
+                Over Time
+              </button>
+            </div>
+            
+            {activeTab === 'breakdown' && (
+              <div className="space-y-6">
+                <section>
+                  <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE GAPS WE IDENTIFIED</h2>
+                  
+                  <div className="bg-white rounded-xl border border-slate-200 p-5 mb-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-semibold text-slate-700">Utilization</span>
+                      <span className="text-sm text-slate-500">
+                        {inputs.utilization}% → {benchmarks.utilization}% = +{formatNumber(calculations.additionalEncounters)} enc
+                      </span>
+                    </div>
+                    <div className="relative h-3 bg-slate-100 rounded-full">
+                      <div 
+                        className="absolute top-0 left-0 h-full bg-slate-400 rounded-l-full"
+                        style={{ width: `${inputs.utilization}%` }}
+                      />
+                      <div 
+                        className="absolute top-0 h-full bg-emerald-500 rounded-r-full"
+                        style={{ 
+                          left: `${inputs.utilization}%`,
+                          width: `${benchmarks.utilization - inputs.utilization}%` 
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-2 text-xs">
+                      <span className="text-slate-400" style={{ marginLeft: `${inputs.utilization - 3}%` }}>YOU</span>
+                      <span className="text-emerald-600" style={{ marginRight: `${100 - benchmarks.utilization - 5}%` }}>ABRIDGE</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-xl border border-slate-200 p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-semibold text-slate-700">Efficiency</span>
+                      <span className="text-sm text-slate-500">
+                        {inputs.efficiency}m → {benchmarks.efficiency}m = +{formatNumber(calculations.additionalHours)} hours
+                      </span>
+                    </div>
+                    <div className="relative h-3 bg-slate-100 rounded-full">
+                      <div 
+                        className="absolute top-0 left-0 h-full bg-slate-400 rounded-l-full"
+                        style={{ width: `${(inputs.efficiency / 5) * 100}%` }}
+                      />
+                      <div 
+                        className="absolute top-0 h-full bg-emerald-500 rounded-r-full"
+                        style={{ 
+                          left: `${(inputs.efficiency / 5) * 100}%`,
+                          width: `${((benchmarks.efficiency - inputs.efficiency) / 5) * 100}%` 
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-2 text-xs">
+                      <span className="text-slate-400" style={{ marginLeft: `${(inputs.efficiency / 5) * 100 - 3}%` }}>YOU</span>
+                      <span className="text-emerald-600" style={{ marginRight: `${100 - (benchmarks.efficiency / 5) * 100 - 5}%` }}>ABRIDGE</span>
+                    </div>
+                  </div>
+                </section>
+              </div>
             )}
             
             {/* Advanced Mode: Tiered layout */}
@@ -523,11 +581,9 @@ export default function SwitchAmbientAnalysis({
                 </div>
               </div>
             )}
-          </div>
-        )}
-        
-        {activeTab === 'overtime' && (
-          <div className="space-y-6">
+              
+            {activeTab === 'overtime' && (
+              <div className="space-y-6">
             <section>
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">3-YEAR CUMULATIVE VALUE GAP</h2>
               
@@ -633,6 +689,8 @@ export default function SwitchAmbientAnalysis({
               </div>
             </section>
           </div>
+        )}
+          </>
         )}
         
         <div className="flex justify-center mt-10">

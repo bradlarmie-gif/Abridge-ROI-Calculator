@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ArrowLeft, Phone, Link2, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ComposedChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
@@ -37,8 +36,6 @@ export default function SwitchAmbientConclusion({
   onBack,
   onBackToJourney
 }: SwitchAmbientConclusionProps) {
-  
-  const [activeTab, setActiveTab] = useState<'summary' | 'trajectory'>('trajectory');
   
   // Calculate trajectories for dual-line chart
   const currentUtilization = inputs.utilization || 50;
@@ -107,7 +104,7 @@ export default function SwitchAmbientConclusion({
         </div>
       </header>
       
-      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
             The cost of staying put
@@ -117,33 +114,7 @@ export default function SwitchAmbientConclusion({
           </p>
         </div>
         
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab('trajectory')}
-            className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all ${
-              activeTab === 'trajectory'
-                ? 'bg-slate-900 text-white'
-                : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
-            }`}
-            data-testid="tab-trajectory"
-          >
-            3-Year Trajectory
-          </button>
-          <button
-            onClick={() => setActiveTab('summary')}
-            className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all ${
-              activeTab === 'summary'
-                ? 'bg-slate-900 text-white'
-                : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
-            }`}
-            data-testid="tab-summary"
-          >
-            Summary
-          </button>
-        </div>
-        
-        {activeTab === 'trajectory' && (
-          <div className="space-y-6">
+        <div className="space-y-6">
             {/* Chart Section */}
             <section className="bg-white rounded-2xl border border-slate-200 p-6">
               <div className="flex justify-center gap-8 mb-4">
@@ -343,99 +314,6 @@ export default function SwitchAmbientConclusion({
               </p>
             </section>
           </div>
-        )}
-        
-        {activeTab === 'summary' && (
-          <div className="space-y-6">
-            <section>
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">YOUR SITUATION</h2>
-              
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <div className="p-5 bg-slate-50 border-b border-slate-200">
-                  <span className="text-sm text-slate-700">
-                    With {inputs.providers} providers using your current solution...
-                  </span>
-                </div>
-                
-                <div className="p-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">Utilization</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-slate-900">{inputs.utilization}%</span>
-                      <span className="text-xs text-slate-400">(Abridge: {benchmarks.utilization}%)</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">Time saved/encounter</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-slate-900">{inputs.efficiency} min</span>
-                      <span className="text-xs text-slate-400">(Abridge: {benchmarks.efficiency}-5 min)</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-5 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
-                  <span className="text-sm text-slate-700">Estimated annual gap</span>
-                  <span className="text-xl font-bold text-slate-900" data-testid="text-annual-gap">
-                    ${formatNumber(calculations.totalAnnualGap)}
-                  </span>
-                </div>
-              </div>
-            </section>
-            
-            <section>
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE QUESTION</h2>
-              
-              <div className="bg-slate-100 rounded-2xl p-8">
-                <p className="text-xl text-slate-800 leading-relaxed text-center font-medium">
-                  Is your current solution delivering <span className="text-slate-900">${formatNumber(calculations.totalAnnualGap)}</span> less value than it could be?
-                </p>
-              </div>
-            </section>
-            
-            <section>
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">CONTEXT</h2>
-              
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                  This analysis compares your estimated current state against Abridge benchmarks derived from our customer base. The actual gap depends on factors like:
-                </p>
-                <ul className="space-y-2 text-sm text-slate-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-slate-400">•</span>
-                    Your specific specialty mix and care settings
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-slate-400">•</span>
-                    Current documentation workflows and EHR integration
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-slate-400">•</span>
-                    Provider adoption patterns and change management
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-slate-400">•</span>
-                    Organization-specific revenue cycle processes
-                  </li>
-                </ul>
-                <p className="text-sm text-slate-600 leading-relaxed mt-4">
-                  A conversation with our team can help refine these estimates for your specific situation.
-                </p>
-              </div>
-            </section>
-            
-            <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-8 text-center">
-              <span className="text-xs font-semibold text-emerald-700 tracking-wide">POTENTIAL 3-YEAR VALUE</span>
-              <span className="block text-4xl font-bold text-emerald-600 mt-3">
-                {formatCurrency(calculations.threeYearTotal)}
-              </span>
-              <p className="text-sm text-emerald-700 mt-3">
-                Based on switching to Abridge now vs. maintaining current state
-              </p>
-            </div>
-          </div>
-        )}
         
         <div className="flex flex-col items-center gap-4">
           <Button

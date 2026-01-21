@@ -1,0 +1,649 @@
+Current Problems:
+1. Page Width Too Narrow
+
+Desktop view feels cramped
+Need wider max-width
+
+2. Quick Mode Analysis Page Still Has "Over Time" Toggle
+
+You want to remove this toggle for Quick mode
+The chart should only appear on the Conclusion page ("The cost of staying put")
+
+3. Summary Tab on Conclusion Page is Weak
+
+"The Question" is passive and weak
+"Context" section with bullet points feels like disclaimers
+"Let's Talk" is too sales-y
+Should be one cohesive scrollable page instead of tabs
+
+4. Value Breakdown Drivers Still Showing
+
+Patient Access, Level of Service, Documentation-Related Denials
+These are the old arbitrary drivers we said to remove
+Should only show for Advanced mode
+
+
+The Fix:
+For Quick Mode Flow:
+Page 1: Setup → Sliders for utilization + efficiency, live gap preview
+Page 2: Analysis → Show the gaps identified (Utilization, Efficiency bars), estimated annual gap, NO "Over Time" tab, NO driver breakdown
+Page 3: Conclusion → The beautiful 3-year chart, Understanding the gap, Cost of waiting, Next steps (no toggle, one scrollable page)
+For Advanced Mode Flow:
+Page 1: Setup → Detailed metric inputs
+Page 2: Analysis → Primary drivers with real math, Operational metrics, Long-term value
+Page 3: Conclusion → Same as Quick mode (3-year chart, etc.)
+
+Let Me Write the Exact Changes:
+1. Increase Page Width
+cssCopy/* Current */
+.page-content {
+  max-width: 720px;
+}
+
+/* Change to */
+.page-content {
+  max-width: 900px;
+}
+
+/* Or for the conclusion page specifically */
+.conclusion-page .page-content {
+  max-width: 960px;
+}
+
+2. Quick Mode Analysis Page — Remove "Over Time" Toggle and Drivers
+jsxCopy// ============ QUICK MODE ANALYSIS PAGE (SIMPLIFIED) ============
+
+export default function SwitchAmbientAnalysisQuick({
+  inputs,
+  calculations,
+  benchmarks,
+  onNext,
+  onBack
+}) {
+  
+  // No tabs, no driver breakdown — just the gap summary
+  
+  return (
+    <div className="switch-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        {/* ... */}
+      </header>
+      
+      <main className="page-content">
+        
+        <div className="page-title">
+          <h1>The gap analysis</h1>
+          <p className="page-subtitle">
+            Based on your inputs, here's the estimated difference between your 
+            current state and Abridge benchmarks.
+          </p>
+        </div>
+        
+        {/* Hero Gap */}
+        <section className="hero-gap-section">
+          <span className="hero-label">ESTIMATED ANNUAL GAP</span>
+          <span className="hero-value">${formatNumber(calculations.totalAnnualGap)}</span>
+          <div className="hero-breakdown">
+            <span>${formatNumber(calculations.monthlyGap)}/month</span>
+            <span className="separator">·</span>
+            <span>${formatNumber(calculations.dailyGap)}/day</span>
+          </div>
+        </section>
+        
+        {/* Gaps Identified — Just the bars, no drivers */}
+        <section className="gaps-section">
+          <h2 className="section-label">THE GAPS WE IDENTIFIED</h2>
+          
+          {/* Utilization Bar */}
+          <div className="gap-bar-card">
+            <div className="gap-bar-header">
+              <span className="gap-bar-title">Utilization</span>
+              <span className="gap-bar-values">
+                {inputs.utilization}% → {benchmarks.utilization}% = +{formatNumber(calculations.additionalEncounters)} encounters
+              </span>
+            </div>
+            <div className="gap-bar-track">
+              <div 
+                className="gap-bar-you"
+                style={{ width: `${inputs.utilization}%` }}
+              />
+              <div 
+                className="gap-bar-abridge"
+                style={{ 
+                  left: `${inputs.utilization}%`,
+                  width: `${benchmarks.utilization - inputs.utilization}%` 
+                }}
+              />
+              <div className="gap-marker you" style={{ left: `${inputs.utilization}%` }}>
+                <span>YOU</span>
+              </div>
+              <div className="gap-marker abridge" style={{ left: `${benchmarks.utilization}%` }}>
+                <span>ABRIDGE</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Efficiency Bar */}
+          <div className="gap-bar-card">
+            <div className="gap-bar-header">
+              <span className="gap-bar-title">Efficiency</span>
+              <span className="gap-bar-values">
+                {inputs.efficiency} min → {benchmarks.efficiency} min = +{formatNumber(calculations.additionalHours)} hours
+              </span>
+            </div>
+            <div className="gap-bar-track">
+              <div 
+                className="gap-bar-you"
+                style={{ width: `${(inputs.efficiency / 5) * 100}%` }}
+              />
+              <div 
+                className="gap-bar-abridge"
+                style={{ 
+                  left: `${(inputs.efficiency / 5) * 100}%`,
+                  width: `${((benchmarks.efficiency - inputs.efficiency) / 5) * 100}%` 
+                }}
+              />
+              <div className="gap-marker you" style={{ left: `${(inputs.efficiency / 5) * 100}%` }}>
+                <span>YOU</span>
+              </div>
+              <div className="gap-marker abridge" style={{ left: `${(benchmarks.efficiency / 5) * 100}%` }}>
+                <span>ABRIDGE</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        {/* How This Translates — Simple explanation, no fake drivers */}
+        <section className="translation-section">
+          <h2 className="section-label">HOW THIS TRANSLATES TO VALUE</h2>
+          
+          <div className="translation-card">
+            <p>
+              When utilization and efficiency improve together, the impact is <strong>multiplicative</strong>:
+            </p>
+            
+            <div className="translation-grid">
+              <div className="translation-item">
+                <span className="item-icon">📊</span>
+                <div className="item-content">
+                  <strong>More encounters documented</strong>
+                  <span>+{formatNumber(calculations.additionalEncounters)} encounters/year with complete documentation</span>
+                </div>
+              </div>
+              
+              <div className="translation-item">
+                <span className="item-icon">⏱️</span>
+                <div className="item-content">
+                  <strong>More time returned</strong>
+                  <span>+{formatNumber(calculations.additionalHours)} hours/year back to providers</span>
+                </div>
+              </div>
+              
+              <div className="translation-item">
+                <span className="item-icon">💰</span>
+                <div className="item-content">
+                  <strong>Better documentation quality</strong>
+                  <span>More complete notes support accurate coding and reduce denials</span>
+                </div>
+              </div>
+            </div>
+            
+            <p className="translation-note">
+              We estimate these improvements translate to approximately <strong>${formatNumber(calculations.totalAnnualGap)}/year</strong> in 
+              combined value from wRVU capture, time savings, and operational efficiency.
+            </p>
+          </div>
+        </section>
+        
+        {/* What's Next Teaser */}
+        <section className="next-teaser">
+          <p>See what this looks like over 3 years →</p>
+        </section>
+        
+      </main>
+      
+      {/* Footer */}
+      <footer className="page-footer">
+        <button className="continue-button enabled" onClick={onNext}>
+          <span>See 3-year trajectory</span>
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      
+    </div>
+  );
+}
+
+3. Conclusion Page — One Scrollable Page, No Tabs
+jsxCopy// ============ CONCLUSION PAGE (NO TABS) ============
+
+export default function SwitchAmbientConclusion({
+  inputs,
+  calculations,
+  benchmarks,
+  mode, // 'quick' | 'advanced'
+  onBack
+}) {
+  
+  const [copied, setCopied] = useState(false);
+  
+  // Calculate ratios
+  const utilizationRatio = Math.round((inputs.utilization / benchmarks.utilization) * 100);
+  const efficiencyRatio = Math.round((inputs.efficiency / benchmarks.efficiency) * 100);
+  const combinedCapture = Math.round((utilizationRatio / 100) * (efficiencyRatio / 100) * 100);
+  
+  // 3-year calculations
+  const year1Gap = calculations.totalAnnualGap;
+  const year2Gap = Math.round(year1Gap * 1.10);
+  const year3Gap = Math.round(year1Gap * 1.19);
+  const threeYearGap = year1Gap + year2Gap + year3Gap;
+  
+  const monthlyGap = Math.round(year1Gap / 12);
+  const sixMonthLoss = monthlyGap * 6;
+  const threeYearIfWait = threeYearGap - sixMonthLoss;
+  
+  // Chart data
+  const chartData = [
+    { period: 'Today', current: 0, abridge: 0 },
+    { period: '3 mo', current: Math.round(year1Gap * 0.12), abridge: Math.round(year1Gap * 0.20) },
+    { period: '6 mo', current: Math.round(year1Gap * 0.25), abridge: Math.round(year1Gap * 0.45) },
+    { period: 'Year 1', current: Math.round(year1Gap * 0.50), abridge: year1Gap },
+    { period: 'Year 2', current: Math.round(year1Gap * 0.50) * 2, abridge: year1Gap + year2Gap },
+    { period: 'Year 3', current: Math.round(year1Gap * 0.50) * 3, abridge: threeYearGap }
+  ];
+  
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
+  return (
+    <div className="switch-page conclusion-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+        <div className="header-brand">
+          <span className="brand-mark">A</span>
+          <span className="brand-label">SWITCH</span>
+        </div>
+        <div className="progress-indicator">
+          <span className="progress-dot complete"></span>
+          <span className="progress-dot complete"></span>
+          <span className="progress-dot active"></span>
+        </div>
+      </header>
+      
+      <main className="page-content wide">
+        
+        {/* Title */}
+        <div className="page-title">
+          <h1>The cost of staying put</h1>
+          <p className="page-subtitle">
+            Cumulative value over 3 years: your current trajectory vs. switching to Abridge
+          </p>
+        </div>
+        
+        {/* ===== CHART SECTION ===== */}
+        <section className="chart-section">
+          <h2 className="section-label">3-YEAR VALUE TRAJECTORY</h2>
+          
+          <div className="chart-legend">
+            <div className="legend-item abridge">
+              <span className="legend-line solid"></span>
+              <span>Switch to Abridge</span>
+            </div>
+            <div className="legend-item current">
+              <span className="legend-line dashed"></span>
+              <span>Stay with current</span>
+            </div>
+          </div>
+          
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={320}>
+              <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <defs>
+                  <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#059669" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#059669" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                
+                <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}K`} width={60} />
+                
+                <Tooltip content={<CustomTooltip />} />
+                
+                <Area type="monotone" dataKey="current" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 4" fill="transparent" dot={{ fill: '#94a3b8', r: 4 }} />
+                <Area type="monotone" dataKey="abridge" stroke="#059669" strokeWidth={3} fill="url(#abridgeGradient)" dot={{ fill: '#059669', r: 5 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div className="gap-annotation">
+            <span className="gap-arrow">↕</span>
+            <span className="gap-value">${formatNumber(threeYearGap)}</span>
+            <span className="gap-label">3-year gap</span>
+          </div>
+          
+          {/* How it adds up */}
+          <div className="ramp-explanation">
+            <p><strong>Abridge customers typically see value ramp over time:</strong></p>
+            <ul>
+              <li><span className="phase">Quick wins (0-3 mo):</span> Utilization jumps as providers adopt</li>
+              <li><span className="phase">Optimization (3-12 mo):</span> Efficiency gains compound</li>
+              <li><span className="phase">Full ramp (Year 2+):</span> Organization-wide benefits realized</li>
+            </ul>
+          </div>
+        </section>
+        
+        {/* ===== UNDERSTANDING THE GAP ===== */}
+        <section className="understanding-section">
+          <div className="section-header">
+            <Lightbulb size={20} className="section-icon" />
+            <h2>Understanding the gap</h2>
+          </div>
+          
+          <p className="section-intro">
+            The gap between these two lines represents unrealized value — not because your current 
+            solution is bad, but because ambient AI ROI is <strong>multiplicative</strong>:
+          </p>
+          
+          <div className="formula-box">
+            <span className="formula">Utilization × Efficiency × Quality = Total Value</span>
+            <p className="formula-note">Small gaps in each dimension compound into large gaps overall.</p>
+          </div>
+          
+          <p className="section-insight">
+            If your utilization is <strong>{utilizationRatio}%</strong> of potential, and your efficiency 
+            is <strong>{efficiencyRatio}%</strong> of potential, you're capturing roughly 
+            <strong> {combinedCapture}%</strong> of the value you could be.
+          </p>
+        </section>
+        
+        {/* ===== YOUR KEY GAPS ===== */}
+        <section className="gaps-summary-section">
+          <h2 className="section-label">YOUR KEY GAPS</h2>
+          
+          <div className="gaps-grid">
+            <div className="gap-card">
+              <span className="gap-card-label">UTILIZATION</span>
+              <div className="gap-card-values">
+                <span className="value-current">{inputs.utilization}%</span>
+                <span className="value-arrow">→</span>
+                <span className="value-benchmark">{benchmarks.utilization}%</span>
+              </div>
+              <p className="gap-card-insight">
+                You're at <strong>{utilizationRatio}%</strong> of Abridge benchmark
+              </p>
+            </div>
+            
+            <div className="gap-card">
+              <span className="gap-card-label">EFFICIENCY</span>
+              <div className="gap-card-values">
+                <span className="value-current">{inputs.efficiency} min</span>
+                <span className="value-arrow">→</span>
+                <span className="value-benchmark">{benchmarks.efficiency} min</span>
+              </div>
+              <p className="gap-card-insight">
+                You're at <strong>{efficiencyRatio}%</strong> of Abridge benchmark
+              </p>
+            </div>
+          </div>
+          
+          <p className="gaps-combined">
+            Combined: You're capturing roughly <strong>{combinedCapture}%</strong> of potential ambient AI value.
+          </p>
+        </section>
+        
+        {/* ===== COST OF WAITING ===== */}
+        <section className="waiting-section">
+          <h2 className="section-label">THE COST OF WAITING</h2>
+          
+          <div className="waiting-grid">
+            <div className="waiting-card best">
+              <span className="waiting-label">SWITCH NOW</span>
+              <span className="waiting-sublabel">3-year additional value:</span>
+              <span className="waiting-value">${formatNumber(threeYearGap)}</span>
+            </div>
+            
+            <div className="waiting-card delayed">
+              <span className="waiting-label">WAIT 6 MONTHS</span>
+              <span className="waiting-sublabel">3-year additional value:</span>
+              <span className="waiting-value">${formatNumber(threeYearIfWait)}</span>
+              <div className="waiting-loss">
+                <span>Lost: </span>
+                <strong>${formatNumber(sixMonthLoss)}</strong>
+              </div>
+            </div>
+          </div>
+          
+          <div className="monthly-callout">
+            <AlertTriangle size={18} />
+            <span>Every month at current state = <strong>~${formatNumber(monthlyGap)}</strong> in unrealized value</span>
+          </div>
+        </section>
+        
+        {/* ===== IMPORTANT TO KNOW ===== */}
+        <section className="context-section">
+          <div className="section-header">
+            <Info size={20} className="section-icon" />
+            <h2>Important to know</h2>
+          </div>
+          
+          <div className="context-content">
+            <p><strong>These estimates are based on:</strong></p>
+            <ul>
+              <li>Your self-reported metrics (utilization, efficiency)</li>
+              <li>Abridge customer benchmarks across similar deployments</li>
+              <li>Conservative value assumptions ($33/wRVU Medicare rate, 50% time conversion)</li>
+            </ul>
+            
+            <p>
+              The actual gap for your organization depends on factors we can't assess here: 
+              specialty mix, payer contracts, workflow complexity, change management approach.
+            </p>
+            
+            <p className="context-disclaimer">
+              This analysis is a starting point for conversation, not a guarantee.
+            </p>
+          </div>
+        </section>
+        
+        {/* ===== NEXT STEPS ===== */}
+        <section className="next-steps-section">
+          <h2 className="section-label">NEXT STEPS</h2>
+          
+          <div className="next-steps-grid">
+            
+            <div className="next-step-card">
+              <div className="step-icon">
+                <Share2 size={24} />
+              </div>
+              <div className="step-content">
+                <h3>Share this analysis</h3>
+                <p>Send this to your team or leadership to start the conversation</p>
+                <div className="step-actions">
+                  <button className="step-button" onClick={copyLink}>
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="next-step-card">
+              <div className="step-icon">
+                <Search size={24} />
+              </div>
+              <div className="step-content">
+                <h3>Refine these estimates</h3>
+                <p>If you have more precise data, we can run a more detailed analysis together.</p>
+                <div className="step-actions">
+                  <button className="step-button primary">
+                    <Calendar size={14} />
+                    <span>Schedule a Working Session</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="next-step-card">
+              <div className="step-icon">
+                <Edit3 size={24} />
+              </div>
+              <div className="step-content">
+                <h3>Edit your inputs</h3>
+                <p>Want to model different scenarios? Go back and adjust.</p>
+                <div className="step-actions">
+                  <button className="step-button secondary" onClick={onBack}>
+                    <ArrowLeft size={14} />
+                    <span>Edit Inputs</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </section>
+        
+      </main>
+      
+    </div>
+  );
+}
+
+4. CSS Fixes
+cssCopy/* Wider page content */
+.page-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  width: 100%;
+}
+
+.page-content.wide,
+.conclusion-page .page-content {
+  max-width: 960px;
+}
+
+/* Translation section for Quick mode */
+.translation-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.translation-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.translation-card > p {
+  font-size: 15px;
+  color: #334155;
+  margin: 0 0 20px 0;
+}
+
+.translation-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.translation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.translation-item .item-icon {
+  font-size: 24px;
+}
+
+.translation-item .item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.translation-item .item-content strong {
+  font-size: 15px;
+  color: #1e293b;
+}
+
+.translation-item .item-content span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.translation-note {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Next teaser */
+.next-teaser {
+  text-align: center;
+  padding: 20px;
+}
+
+.next-teaser p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Ramp explanation */
+.ramp-explanation {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.ramp-explanation p {
+  font-size: 14px;
+  color: #334155;
+  margin: 0 0 12px 0;
+}
+
+.ramp-explanation ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ramp-explanation li {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+  padding-left: 0;
+}
+
+.ramp-explanation .phase {
+  font-weight: 600;
+  color: #059669;
+}
+
+Summary of Changes:
+PageBeforeAfterQuick AnalysisHad "Value Breakdown" + "Over Time" tabs, showed fake driversJust shows gap bars + translation explanation, no tabsConclusionHad "3-Year Trajectory" + "Summary" tabs, Summary was weakOne scrollable page with chart, understanding, gaps, cost of waiting, next stepsPage Width720px max900-960px maxDriversPatient Access, Level of Service, Denials (arbitrary)Removed for Quick mode, only show real metric-based values for AdvancedCTA"Let's Talk" (sales-y)Three options: Share, Refine, Edit (consultative)
+
+Ready to implement?
