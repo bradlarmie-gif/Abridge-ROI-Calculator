@@ -327,7 +327,7 @@ export default function SummaryCommandCenter({
           </h2>
           
           {/* Hero Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-2xl mx-auto">
             {/* Net Annual Value */}
             <div className="bg-emerald-50 rounded-xl p-6 text-center border border-emerald-100">
               <div className="font-mono font-bold text-4xl text-emerald-600 mb-2" data-testid="summary-net-value">
@@ -345,16 +345,6 @@ export default function SummaryCommandCenter({
               </div>
               <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                 Return on Investment
-              </div>
-            </div>
-            
-            {/* Payback Period */}
-            <div className="bg-neutral-100 rounded-xl p-6 text-center border border-neutral-200">
-              <div className="font-mono font-bold text-4xl text-[#111827] mb-2" data-testid="summary-payback">
-                {paybackMonths < 1 ? "<1" : paybackMonths} mo
-              </div>
-              <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
-                Payback Period
               </div>
             </div>
           </div>
