@@ -24,8 +24,9 @@ import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG"
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
 import {
-  AreaChart,
+  ComposedChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -184,6 +185,11 @@ export default function SummaryCommandCenter({
     const points = [];
     const steps = 20; // Smooth curve with 20 points
     
+    // Calculate pilot value for linear projection baseline
+    const pilotEncountersCalc = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
+    const pilotValueCalc = pilotEncountersCalc * valuePerEncounter;
+    const valuePerUnit = pilotUnits > 0 ? pilotValueCalc / pilotUnits : 0;
+    
     for (let i = 0; i <= steps; i++) {
       const progress = i / steps;
       
@@ -192,21 +198,30 @@ export default function SummaryCommandCenter({
         pilotUnits + (fullScaleUnits - pilotUnits) * progress
       );
       
+      // Linear projection (simple multiplication - same value per unit)
+      const linearValue = Math.round(valuePerUnit * units);
+      
       // Utilization increases with adoption
       const utilization = (
         pilotUtilization + (fullScaleUtilization - pilotUtilization) * progress
       ) / 100;
       
-      // Calculate value
+      // Actual value (with utilization scaling + compounding effects)
       const encounters = units * encountersPerUnit * utilization;
-      const value = encounters * valuePerEncounter;
+      const baseValue = encounters * valuePerEncounter;
+      // Add compounding factor: 15% at full scale due to network effects
+      const compoundingFactor = 1 + (progress * 0.15);
+      const actualValue = Math.round(baseValue * compoundingFactor);
+      
       const investment = units * pricePerUnit * 12;
-      const net = value - investment;
-      const roi = investment > 0 ? (value / investment) : 0;
+      const net = actualValue - investment;
+      const roi = investment > 0 ? (actualValue / investment) : 0;
       
       points.push({
         providers: units,
-        value: Math.round(value),
+        linearValue,
+        actualValue,
+        value: actualValue, // For backward compatibility
         net: Math.round(net),
         roi: roi.toFixed(1),
         utilization: Math.round(utilization * 100),
@@ -221,6 +236,7 @@ export default function SummaryCommandCenter({
   // Summary calculations
   const pilot = chartData[0];
   const fullScale = chartData[chartData.length - 1];
+  const networkEffect = fullScale.actualValue - fullScale.linearValue;
   const expansionPotential = fullScale.net - pilot.net;
   const valueMultiple = pilot.value > 0 ? (fullScale.value / pilot.value).toFixed(1) : "0";
   
@@ -374,19 +390,14 @@ export default function SummaryCommandCenter({
             </p>
           </div>
           
-          {/* Area Chart */}
+          {/* Network Effect Chart - Two Lines */}
           <div className="h-96 mb-6 relative">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+              <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                 <defs>
-                  <linearGradient id="valueGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#EA2C00" stopOpacity={1} />
-                    <stop offset="50%" stopColor="#94a3b8" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#059669" stopOpacity={1} />
-                  </linearGradient>
-                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#059669" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                  <linearGradient id="networkEffectGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#059669" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="#059669" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 
@@ -415,18 +426,37 @@ export default function SummaryCommandCenter({
                 
                 <Tooltip content={<CustomTooltip />} />
                 
+                {/* Area between lines (network effect zone) */}
                 <Area 
                   type="monotone" 
-                  dataKey="value" 
-                  stroke="url(#valueGradient)"
+                  dataKey="actualValue" 
+                  stroke="none"
+                  fill="url(#networkEffectGradient)"
+                />
+                
+                {/* Linear projection line (dashed gray) */}
+                <Line 
+                  type="linear" 
+                  dataKey="linearValue" 
+                  stroke="#94a3b8" 
+                  strokeWidth={2}
+                  strokeDasharray="6 4"
+                  dot={false}
+                />
+                
+                {/* Actual value line (solid green curve) */}
+                <Line 
+                  type="monotone" 
+                  dataKey="actualValue" 
+                  stroke="#059669" 
                   strokeWidth={3}
-                  fill="url(#areaFill)"
+                  dot={false}
                 />
                 
                 {/* Pilot marker */}
                 <ReferenceDot 
                   x={pilot.providers} 
-                  y={pilot.value} 
+                  y={pilot.actualValue} 
                   r={10} 
                   fill="#EA2C00" 
                   stroke="white"
@@ -436,25 +466,33 @@ export default function SummaryCommandCenter({
                 {/* Full Scale marker */}
                 <ReferenceDot 
                   x={fullScale.providers} 
-                  y={fullScale.value} 
+                  y={fullScale.actualValue} 
                   r={10} 
                   fill="#059669" 
                   stroke="white"
                   strokeWidth={3}
                 />
-              </AreaChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           
-          {/* Chart Annotations */}
-          <div className="flex justify-between px-20 mb-8">
+          {/* Chart Legend */}
+          <div className="flex flex-wrap justify-center gap-6 mb-8">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />
-              <span className="text-sm font-medium text-[#6B7280]">You are here</span>
+              <span className="text-sm font-medium text-[#6B7280]">Pilot (Today)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-0.5 bg-emerald-500" />
+              <span className="text-sm font-medium text-[#6B7280]">Actual value (with compounding)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-0.5 border-t-2 border-dashed border-neutral-400" />
+              <span className="text-sm font-medium text-[#6B7280]">Linear projection</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span className="text-sm font-medium text-[#6B7280]">Your opportunity</span>
+              <span className="text-sm font-medium text-[#6B7280]">Full Scale</span>
             </div>
           </div>
           
@@ -602,27 +640,44 @@ export default function SummaryCommandCenter({
                 <div className="text-sm font-semibold text-[#111827]">{fullScale.roi}x ROI</div>
               </div>
               
-              {/* Expansion Potential */}
-              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-300 p-5 text-center">
-                <div className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">Expansion Potential</div>
-                <div className="font-mono font-bold text-2xl text-emerald-600 mb-1">+{formatCurrency(expansionPotential)}</div>
-                <div className="text-xs text-emerald-700 mb-2">additional per year</div>
-                <div className="text-sm font-semibold text-emerald-800">{valueMultiple}x more value</div>
+              {/* Network Effect */}
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border-2 border-emerald-500 p-5 text-center">
+                <div className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">Network Effect</div>
+                <div className="font-mono font-bold text-2xl text-emerald-600 mb-1">+{formatCurrency(networkEffect)}</div>
+                <div className="text-xs text-emerald-700 mb-2">compounding value</div>
+                <div className="text-sm font-semibold text-emerald-800">Beyond linear projection</div>
               </div>
             </div>
           </div>
           
-          {/* Key Insight */}
-          <div className="flex gap-4 p-5 bg-amber-50 border border-amber-200 rounded-xl">
-            <div className="p-2 bg-amber-100 rounded-lg h-fit">
-              <Lightbulb className="w-5 h-5 text-amber-600" />
+          {/* The Compounding Effect */}
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-xl p-6">
+            <div className="flex items-center gap-2.5 mb-3">
+              <Lightbulb className="w-5 h-5 text-emerald-600" />
+              <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">The Compounding Effect</span>
             </div>
-            <div>
-              <h4 className="text-sm font-semibold text-[#111827] mb-1">KEY INSIGHT</h4>
-              <p className="text-sm text-[#6B7280]">
-                ROI improves as you scale. Higher utilization + more {config.unitNamePlural} = more value 
-                per dollar invested. The pilot proves it works. Expansion captures the full opportunity.
-              </p>
+            <p className="text-sm text-emerald-800 mb-4 leading-relaxed">
+              The gap between the lines represents value that compounds as you scale — not just more of the same:
+            </p>
+            <div className="space-y-0">
+              <div className="flex items-center gap-3 py-3 border-b border-emerald-200">
+                <TrendingUp className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <p className="text-sm text-emerald-800">
+                  <span className="font-semibold">Utilization:</span> {pilotUtilization}% → {fullScaleUtilization}% as adoption matures
+                </p>
+              </div>
+              <div className="flex items-center gap-3 py-3 border-b border-emerald-200">
+                <Target className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <p className="text-sm text-emerald-800">
+                  <span className="font-semibold">Retention:</span> Benefits materialize after 6-12 months
+                </p>
+              </div>
+              <div className="flex items-center gap-3 py-3">
+                <Rocket className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <p className="text-sm text-emerald-800">
+                  <span className="font-semibold">Efficiency:</span> Shared learnings, optimized workflows
+                </p>
+              </div>
             </div>
           </div>
         </section>
