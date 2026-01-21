@@ -1,0 +1,100 @@
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 📋 Documentation-Related Denials                    $184,275    │
+│    ED claims face heavy scrutiny—better notes win               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ ED claims face intense payer scrutiny. Medical necessity,       │
+│ level of service, and procedure documentation are common        │
+│ denial triggers. Most denials are recoverable with rework—      │
+│ but some are written off entirely. Abridge captures the         │
+│ clinical detail that saves these claims.                        │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ STEP 1: TOTAL DENIALS                                           │
+│ How many claims are denied?                                     │
+│                                                                 │
+│ ┌────────────────────┐   ┌──────────────┐                      │
+│ │Documented Encounters│ × │ Denial Rate  │                      │
+│ │      31,500        │   │     10%      │                      │
+│ └────────────────────┘   └──────────────┘                      │
+│                                                                 │
+│                          Annual Denials: 3,150                  │
+│                                                                 │
+│ 💡 ED denial rates average 8-12%. Higher scrutiny than          │
+│    outpatient due to medical necessity reviews.                 │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: DOCUMENTATION-RELATED                                   │
+│ How many are caused by documentation gaps?                      │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────┐                      │
+│ │  Total Denials   │ × │ Doc-Related %  │                      │
+│ │     3,150        │   │      40%       │                      │
+│ └──────────────────┘   └────────────────┘                      │
+│                                                                 │
+│                     Doc-Related Denials: 1,260                  │
+│                                                                 │
+│ 💡 40% of ED denials stem from documentation gaps:              │
+│    • Medical necessity not supported                            │
+│    • Level of service documentation insufficient                │
+│    • Procedure documentation incomplete                         │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: WRITTEN OFF                                             │
+│ How many are lost without appeal?                               │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────┐                      │
+│ │Doc-Related Denials│ × │ Write-Off %   │                      │
+│ │     1,260        │   │      30%       │                      │
+│ └──────────────────┘   └────────────────┘                      │
+│                                                                 │
+│                       Written Off: 378 claims                   │
+│                                                                 │
+│ 💡 These claims are abandoned—either the documentation          │
+│    can't support an appeal, or the rework cost exceeds          │
+│    the claim value. This is revenue lost forever.               │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 4: ABRIDGE RECOVERY                                        │
+│ How many can Abridge save?                                      │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────┐                      │
+│ │   Written Off    │ × │ Capture Rate   │                      │
+│ │      378         │   │      75%       │                      │
+│ └──────────────────┘   └────────────────┘                      │
+│                                                                 │
+│                        Claims Recovered: 284                    │
+│                                                                 │
+│ 💡 Abridge captures the MDM, medical necessity, and clinical    │
+│    reasoning that ED physicians think but don't document—       │
+│    especially during high-volume surges.                        │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 5: VALUE RECOVERED                                         │
+│ What's the revenue impact?                                      │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │ Claims Recovered │ × │ Avg Claim Value  │                    │
+│ │       284        │   │      $650        │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                        Annual Value: $184,275                   │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK: ED Claim Value                                │ │
+│ │                                                             │ │
+│ │ Low acuity ED visit            $300 - $500                  │ │
+│ │ Medium acuity ED visit         $500 - $800                  │ │
+│ │ High acuity ED visit           $800 - $1,500+               │ │
+│ │ Blended average                ~$650                        │ │
+│ │                                                             │ │
+│ │ Your input: $650                                            │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
