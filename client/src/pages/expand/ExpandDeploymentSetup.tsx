@@ -141,7 +141,7 @@ export default function ExpandDeploymentSetup({
                     providers: value || null,
                   })
                 }
-                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-providers"
               />
             </div>
@@ -157,7 +157,7 @@ export default function ExpandDeploymentSetup({
                     annualEncounters: value || null,
                   })
                 }
-                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-encounters"
               />
             </div>
@@ -175,7 +175,7 @@ export default function ExpandDeploymentSetup({
                       utilizationRate: e.target.value ? Number(e.target.value) : null,
                     })
                   }
-                  className="w-full px-4 py-3 pr-8 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                  className="w-full px-4 py-3 pr-8 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                   data-testid="input-utilization"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]">%</span>
@@ -195,7 +195,7 @@ export default function ExpandDeploymentSetup({
                     monthsOnAbridge: e.target.value ? Number(e.target.value) : null,
                   })
                 }
-                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-months"
               />
             </div>
