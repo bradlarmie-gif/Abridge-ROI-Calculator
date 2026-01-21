@@ -6007,25 +6007,6 @@ export default function ModelBuilder({
         </Button>
         <div className="flex gap-8">
           <div className="flex-1 max-w-[65%] space-y-8">
-            {/* Progress Indicator */}
-            <div className="max-w-[400px] mx-auto mb-10">
-              <div className="flex items-center justify-center gap-0">
-                <span className="w-8 h-8 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-sm font-semibold">1</span>
-                <span className="w-16 h-0.5 bg-slate-200"></span>
-                <span className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-sm font-semibold">2</span>
-                <span className="w-16 h-0.5 bg-slate-200"></span>
-                <span className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-sm font-semibold">3</span>
-                <span className="w-16 h-0.5 bg-slate-200"></span>
-                <span className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-sm font-semibold">4</span>
-              </div>
-              <div className="flex justify-between mt-3 px-0">
-                <span className="text-xs text-[#EA2C00] font-medium w-14 text-center">Setup</span>
-                <span className="text-xs text-slate-400 w-14 text-center">Metrics</span>
-                <span className="text-xs text-slate-400 w-14 text-center">Results</span>
-                <span className="text-xs text-slate-400 w-14 text-center">Summary</span>
-              </div>
-            </div>
-            
             <section className="bg-white rounded-2xl border border-neutral-200 p-10">
               <div className="mb-8">
                 <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Organization</h2>
