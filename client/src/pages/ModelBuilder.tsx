@@ -128,6 +128,9 @@ interface DriverInputs {
   };
   denials: {
     denialRate: number;
+    docRelatedPercent: number;
+    writtenOffPercent: number;
+    abridgeCaptureRate: number;
     avgClaimValue: number;
   };
   // ED-specific drivers
@@ -380,6 +383,9 @@ export default function ModelBuilder({
     },
     denials: {
       denialRate: 7,
+      docRelatedPercent: 35,
+      writtenOffPercent: 30,
+      abridgeCaptureRate: 75,
       avgClaimValue: 250,
     },
     // ED defaults
@@ -665,11 +671,17 @@ export default function ModelBuilder({
         return Math.round(recaptured * 1500);
       }
       case "denials": {
-        const { denialRate, avgClaimValue } = driverInputs.denials;
-        const totalDenials = encounters * (denialRate / 100);
-        const docRelated = totalDenials * 0.35;
-        const prevented = docRelated * 0.50 * (utilizationRate / 100);
-        return Math.round(prevented * avgClaimValue);
+        const { denialRate, docRelatedPercent, writtenOffPercent, abridgeCaptureRate, avgClaimValue } = driverInputs.denials;
+        // Step 1: Total Denials
+        const totalDenials = eligibleEncounters * (denialRate / 100);
+        // Step 2: Documentation-Related
+        const docRelatedDenials = totalDenials * (docRelatedPercent / 100);
+        // Step 3: Written Off
+        const writtenOffDenials = docRelatedDenials * (writtenOffPercent / 100);
+        // Step 4: Abridge Recovery
+        const claimsRecovered = writtenOffDenials * (abridgeCaptureRate / 100);
+        // Step 5: Value
+        return Math.round(claimsRecovered * avgClaimValue);
       }
       // ED Drivers
       case "edThroughput": {
@@ -899,6 +911,9 @@ export default function ModelBuilder({
         case "denials":
           return {
             denialRate: driverInputs.denials.denialRate,
+            docRelatedPercent: driverInputs.denials.docRelatedPercent,
+            writtenOffPercent: driverInputs.denials.writtenOffPercent,
+            abridgeCaptureRate: driverInputs.denials.abridgeCaptureRate,
             avgClaimValue: driverInputs.denials.avgClaimValue,
           };
         // ED drivers
@@ -2227,61 +2242,253 @@ export default function ModelBuilder({
   };
   
   const renderDenialsInputs = () => {
-    const { denialRate, avgClaimValue } = driverInputs.denials;
-    const totalDenials = encounters * (denialRate / 100);
-    const docRelated = totalDenials * 0.35;
-    const prevented = docRelated * 0.50 * (utilizationRate / 100);
+    const { denialRate, docRelatedPercent, writtenOffPercent, abridgeCaptureRate, avgClaimValue } = driverInputs.denials;
+
+    // DOCUMENTATION-RELATED DENIALS CALCULATIONS (5-step)
+    // Step 1: Total Denials
+    const totalDenials = eligibleEncounters * (denialRate / 100);
     
+    // Step 2: Documentation-Related
+    const docRelatedDenials = totalDenials * (docRelatedPercent / 100);
+    
+    // Step 3: Written Off
+    const writtenOffDenials = docRelatedDenials * (writtenOffPercent / 100);
+    
+    // Step 4: Abridge Recovery
+    const claimsRecovered = writtenOffDenials * (abridgeCaptureRate / 100);
+    
+    // Step 5: Value
+    const annualDenialSavings = claimsRecovered * avgClaimValue;
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
+
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What's your current claim denial rate?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{denialRate}%</span>
-          </div>
-          <Slider
-            value={[denialRate]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, denialRate: val } }))}
-            min={3}
-            max={15}
-            step={1}
-            className="w-full"
-            data-testid="denials-rate-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Check with revenue cycle—typically 5-10%</p>
-        </div>
-        
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Doc-related portion (auto):</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(totalDenials).toLocaleString()} denials × 35% doc-related = {Math.round(docRelated).toLocaleString()} doc denials
+        {/* Theory Box */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+          <p className="text-sm font-semibold text-blue-800">The Theory</p>
+          <p className="text-xs text-blue-700">
+            Most denials are recoverable—you appeal, you win, it just costs time. But a portion 
+            of documentation-related denials are written off without appeal, either because the 
+            MDM can't support it or the rework cost exceeds the claim value. Abridge captures 
+            the clinical reasoning that saves these.
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">What's your average claim value?</label>
-          <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={avgClaimValue}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, avgClaimValue: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="denials-claim-input"
-            />
+
+        {/* Step 1: Total Denials */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Total Denials</p>
+          <p className="text-xs text-[#6B7280]">How many claims are denied today?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Eligible Encounters</label>
+                <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-3 py-1.5">
+                  {eligibleEncounters.toLocaleString()}
+                </div>
+              </div>
+              <span className="text-neutral-400 pt-5">×</span>
+              <div>
+                <label className="text-xs text-[#6B7280] block mb-1">Denial Rate</label>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={denialRate}
+                    onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, denialRate: Number(e.target.value) || 0 } }))}
+                    className="w-16 text-center font-mono text-sm h-8"
+                    data-testid="denials-rate-input"
+                  />
+                  <span className="text-xs text-[#6B7280]">%</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(totalDenials).toLocaleString()} denials
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">For outpatient E/M visits</p>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Industry average: 5-10%. Some organizations see 12%+.
+          </p>
         </div>
-        
+
+        <StepDivider />
+
+        {/* Step 2: Documentation-Related */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Related</p>
+          <p className="text-xs text-[#6B7280]">How many are caused by documentation gaps?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(totalDenials).toLocaleString()} denials
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={docRelatedPercent}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, docRelatedPercent: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="denials-doc-related-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(docRelatedDenials).toLocaleString()} doc denials
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            30-40% of denials stem from documentation gaps: missing clinical info, insufficient MDM, incomplete notes.
+          </p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 3: Written Off */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Written Off</p>
+          <p className="text-xs text-[#6B7280]">How many are lost without appeal?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(docRelatedDenials).toLocaleString()} doc denials
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={writtenOffPercent}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, writtenOffPercent: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="denials-written-off-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(writtenOffDenials).toLocaleString()} written off
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            These claims are abandoned—either the documentation can't support an appeal, or the rework cost exceeds the claim value. This is revenue lost forever.
+          </p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 4: Abridge Recovery */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Abridge Recovery</p>
+          <p className="text-xs text-[#6B7280]">How many can Abridge save?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(writtenOffDenials).toLocaleString()} written off
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={abridgeCaptureRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, abridgeCaptureRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8"
+                  data-testid="denials-capture-rate-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(claimsRecovered).toLocaleString()} recovered
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Abridge captures the MDM and clinical reasoning that physicians think but don't document. 
+            This either prevents the denial upfront or makes it winnable on appeal.
+          </p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 5: Value */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 5: Value</p>
+          <p className="text-xs text-[#6B7280]">What's the dollar impact?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(claimsRecovered).toLocaleString()} claims
+              </div>
+              <span className="text-neutral-400">×</span>
+              <span className="text-sm text-[#6B7280]">$</span>
+              <Input
+                type="number"
+                value={avgClaimValue}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, avgClaimValue: Number(e.target.value) || 0 } }))}
+                className="w-20 text-center font-mono text-sm h-8"
+                data-testid="denials-claim-value-input"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-1.5 font-mono text-sm font-bold text-emerald-600">
+                {formatCurrency(Math.round(annualDenialSavings))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benchmark Box */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Benchmark: Average Claim Value
+          </p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Primary Care E/M</span>
+              <span className="font-mono text-slate-700">$125 - $175</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Specialty E/M</span>
+              <span className="font-mono text-slate-700">$200 - $350</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Blended Outpatient</span>
+              <span className="font-mono text-slate-700">~$250</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Result Summary */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <span className="font-medium text-[#111827]">Annual Value</span>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(prevented * avgClaimValue))}
+              {formatCurrency(Math.round(annualDenialSavings))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(prevented).toLocaleString()} prevented × ${avgClaimValue} = {formatCurrency(Math.round(prevented * avgClaimValue))}
+            {Math.round(claimsRecovered).toLocaleString()} claims recovered × ${avgClaimValue} avg claim value
           </p>
         </div>
       </div>

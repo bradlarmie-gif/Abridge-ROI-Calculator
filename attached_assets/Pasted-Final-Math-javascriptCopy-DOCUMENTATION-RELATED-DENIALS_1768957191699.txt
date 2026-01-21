@@ -1,0 +1,131 @@
+Final Math:
+javascriptCopy// ============ DOCUMENTATION-RELATED DENIALS ============
+
+// Inputs
+const eligibleEncounters = 52000;          // From earlier in flow
+const denialRate = 0.07;                   // 7% industry average
+const docRelatedPercent = 0.35;            // 35% are doc-related
+const writtenOffPercent = 0.30;            // 30% written off without appeal
+const abridgeCaptureRate = 0.75;           // 75% Abridge can save
+const avgClaimValue = 250;                 // Blended outpatient
+
+// Calculations
+
+// Step 1: Total Denials
+const totalDenials = eligibleEncounters * denialRate;
+// 52,000 × 0.07 = 3,640 denials
+
+// Step 2: Documentation-Related
+const docRelatedDenials = totalDenials * docRelatedPercent;
+// 3,640 × 0.35 = 1,274 doc denials
+
+// Step 3: Written Off
+const writtenOffDenials = docRelatedDenials * writtenOffPercent;
+// 1,274 × 0.30 = 382 claims written off
+
+// Step 4: Abridge Recovery
+const claimsRecovered = writtenOffDenials * abridgeCaptureRate;
+// 382 × 0.75 = 287 claims saved
+
+// Step 5: Value
+const annualDenialSavings = claimsRecovered * avgClaimValue;
+// 287 × $250 = $71,750
+Annual Value: $71,750
+
+Final UI Structure (5 Steps):
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 📋 Documentation-Related Denials                     $71,750    │
+│    Better notes, fewer rejections, faster payment               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ Most denials are recoverable — you appeal, you win, it just     │
+│ costs time. But a portion of documentation-related denials      │
+│ are written off without appeal, either because the MDM can't    │
+│ support it or the rework cost exceeds the claim value.          │
+│ Abridge captures the clinical reasoning that saves these.       │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ STEP 1: TOTAL DENIALS                                           │
+│ How many claims are denied today?                               │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────┐                        │
+│ │Eligible Encounters│ × │ Denial Rate  │                        │
+│ │     52,000       │   │      7%      │                        │
+│ └──────────────────┘   └──────────────┘                        │
+│                                                                 │
+│                          Annual Denials: 3,640                  │
+│                                                                 │
+│ 💡 Industry average: 5-10%. Some organizations see 12%+.        │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: DOCUMENTATION-RELATED                                   │
+│ How many are caused by documentation gaps?                      │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────┐                      │
+│ │  Total Denials   │ × │ Doc-Related %  │                      │
+│ │     3,640        │   │      35%       │                      │
+│ └──────────────────┘   └────────────────┘                      │
+│                                                                 │
+│                     Doc-Related Denials: 1,274                  │
+│                                                                 │
+│ 💡 30-40% of denials stem from documentation gaps:              │
+│    missing clinical info, insufficient MDM, incomplete notes.   │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: WRITTEN OFF                                             │
+│ How many are lost without appeal?                               │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────┐                      │
+│ │Doc-Related Denials│ × │ Write-Off %   │                      │
+│ │     1,274        │   │      30%       │                      │
+│ └──────────────────┘   └────────────────┘                      │
+│                                                                 │
+│                       Written Off: 382 claims                   │
+│                                                                 │
+│ 💡 These claims are abandoned — either the documentation        │
+│    can't support an appeal, or the rework cost exceeds          │
+│    the claim value. This is revenue lost forever.               │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 4: ABRIDGE RECOVERY                                        │
+│ How many can Abridge save?                                      │
+│                                                                 │
+│ ┌──────────────────┐   ┌────────────────┐                      │
+│ │ Written Off      │ × │ Capture Rate   │                      │
+│ │     382          │   │      75%       │                      │
+│ └──────────────────┘   └────────────────┘                      │
+│                                                                 │
+│                        Claims Recovered: 287                    │
+│                                                                 │
+│ 💡 Abridge captures the MDM and clinical reasoning that         │
+│    physicians think but don't document. This either prevents    │
+│    the denial upfront or makes it winnable on appeal.           │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 5: VALUE                                                   │
+│ What's the dollar impact?                                       │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │ Claims Recovered │ × │ Avg Claim Value  │                    │
+│ │       287        │   │      $250        │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                        Annual Value: $71,750                    │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK: Average Claim Value                           │ │
+│ │                                                             │ │
+│ │ Primary Care E/M              $125 - $175                   │ │
+│ │ Specialty E/M                 $200 - $350                   │ │
+│ │ Blended Outpatient            ~$250                         │ │
+│ │                                                             │ │
+│ │ Your input: $250                                            │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└──────────────────────────────────────────────────────────────
