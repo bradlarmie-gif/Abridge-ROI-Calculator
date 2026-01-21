@@ -6083,30 +6083,25 @@ export default function ModelBuilder({
                     <p className="text-sm text-[#6B7280] mb-3">
                       What percentage of documentation events will use Abridge?
                     </p>
-                    <div className="flex gap-4 flex-wrap">
+                    <div className="flex gap-3">
                       {([45, 60, 75] as const).map(rate => (
                         <button
                           key={rate}
                           onClick={() => setUtilizationRate(rate)}
-                          className={`flex-1 min-w-[140px] max-w-[180px] p-5 rounded-xl border-2 text-left transition-all flex flex-col gap-1 ${
+                          className={`flex flex-col items-center px-7 py-3.5 rounded-xl border transition-all min-w-[120px] ${
                             utilizationRate === rate
                               ? "border-[#EA2C00] bg-[#FEF0EC]"
-                              : "border-neutral-200 bg-white hover:border-neutral-300"
+                              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                           }`}
                           data-testid={`utilization-${rate}`}
                         >
-                          <span className={`text-xs font-medium ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-500"}`}>
+                          <span className={`text-xs font-medium mb-0.5 ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-500"}`}>
                             {rate === 45 && "Conservative"}
                             {rate === 60 && "Typical"}
                             {rate === 75 && "Aggressive"}
                           </span>
-                          <span className={`text-2xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
+                          <span className={`text-xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
                             {rate}%
-                          </span>
-                          <span className={`text-xs leading-relaxed ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-400"}`}>
-                            {rate === 45 && "Early rollout or cautious adoption"}
-                            {rate === 60 && "Standard deployment with good change management"}
-                            {rate === 75 && "High-adoption org with strong leadership"}
                           </span>
                         </button>
                       ))}
@@ -6215,19 +6210,19 @@ export default function ModelBuilder({
                           ? "What percentage of admissions will use Abridge?"
                           : "What percentage of encounters will use Abridge?"}
                     </p>
-                    <div className="flex gap-4 flex-wrap">
+                    <div className="flex gap-3">
                       {(isEDSetting ? [55, 70, 85] as const : isInpatientSetting ? [50, 65, 80] as const : [50, 65, 80] as const).map(rate => (
                         <button
                           key={rate}
                           onClick={() => setUtilizationRate(rate)}
-                          className={`flex-1 min-w-[140px] max-w-[180px] p-5 rounded-xl border-2 text-left transition-all flex flex-col gap-1 ${
+                          className={`flex flex-col items-center px-7 py-3.5 rounded-xl border transition-all min-w-[120px] ${
                             utilizationRate === rate
                               ? "border-[#EA2C00] bg-[#FEF0EC]"
-                              : "border-neutral-200 bg-white hover:border-neutral-300"
+                              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                           }`}
                           data-testid={`utilization-${rate}`}
                         >
-                          <span className={`text-xs font-medium ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-500"}`}>
+                          <span className={`text-xs font-medium mb-0.5 ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-500"}`}>
                             {isInpatientSetting ? (
                               <>
                                 {rate === 50 && "Conservative"}
@@ -6248,29 +6243,8 @@ export default function ModelBuilder({
                               </>
                             )}
                           </span>
-                          <span className={`text-2xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
+                          <span className={`text-xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
                             {rate}%
-                          </span>
-                          <span className={`text-xs leading-relaxed ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-400"}`}>
-                            {isInpatientSetting ? (
-                              <>
-                                {rate === 50 && "Early rollout or cautious adoption"}
-                                {rate === 65 && "Standard deployment with good change management"}
-                                {rate === 80 && "High-adoption org with strong leadership"}
-                              </>
-                            ) : isEDSetting ? (
-                              <>
-                                {rate === 55 && "Early rollout or cautious adoption"}
-                                {rate === 70 && "Standard deployment with good change management"}
-                                {rate === 85 && "High-adoption org with strong leadership"}
-                              </>
-                            ) : (
-                              <>
-                                {rate === 50 && "Early rollout or cautious adoption"}
-                                {rate === 65 && "Standard deployment with good change management"}
-                                {rate === 80 && "High-adoption org with strong leadership"}
-                              </>
-                            )}
                           </span>
                         </button>
                       ))}
