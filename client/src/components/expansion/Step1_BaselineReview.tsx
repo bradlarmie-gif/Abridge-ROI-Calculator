@@ -95,7 +95,7 @@ export function Step1_BaselineReview({
         <CardContent className="p-6 space-y-8">
           <div className="space-y-4">
             <h3 className="text-lg font-medium flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-[#F03319]" />
+              <TrendingUp className="h-5 w-5 text-[#EA2C00]" />
               Deployment
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -134,7 +134,7 @@ export function Step1_BaselineReview({
 
           <div className="space-y-4">
             <h3 className="text-lg font-medium flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-[#F03319]" />
+              <DollarSign className="h-5 w-5 text-[#EA2C00]" />
               Financial Performance
             </h3>
             <div className="space-y-3">
@@ -159,7 +159,7 @@ export function Step1_BaselineReview({
 
           <div className="space-y-4">
             <h3 className="text-lg font-medium flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-[#F03319]" />
+              <CheckCircle2 className="h-5 w-5 text-[#EA2C00]" />
               Active Value Drivers
             </h3>
             <div className="space-y-2">
@@ -171,8 +171,8 @@ export function Step1_BaselineReview({
                     data-testid={`driver-item-${key}`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-[#F03319]/10 rounded-full flex items-center justify-center">
-                        <TrendingUp className="h-4 w-4 text-[#F03319]" />
+                      <div className="w-8 h-8 bg-[#EA2C00]/10 rounded-full flex items-center justify-center">
+                        <TrendingUp className="h-4 w-4 text-[#EA2C00]" />
                       </div>
                       <div>
                         <div className="font-medium">{getDriverLabel(key)}</div>

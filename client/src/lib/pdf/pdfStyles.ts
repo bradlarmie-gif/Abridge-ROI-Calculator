@@ -2,7 +2,7 @@ import { StyleSheet } from '@react-pdf/renderer';
 
 export const COLORS = {
   abridgeOrange: '#E8532F',
-  abridgeRed: '#F03319',
+  abridgeRed: '#EA2C00',
   black: '#111827',
   darkGray: '#374151',
   gray: '#6B7280',

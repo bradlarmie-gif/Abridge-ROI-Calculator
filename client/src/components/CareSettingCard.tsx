@@ -32,7 +32,7 @@ export function CareSettingCard({
           ? "border-2 shadow-sm"
           : "border border-neutral-200 hover:border-neutral-300 hover:shadow-sm"
       )}
-      style={selected && !disabled ? { borderColor: '#F03319' } : undefined}
+      style={selected && !disabled ? { borderColor: '#EA2C00' } : undefined}
       data-testid={`card-setting-${title.toLowerCase().replace(/\s+/g, "-")}`}
     >
       <div

@@ -21,10 +21,10 @@ const WF = {
 
   // Stripe-ish palette with Abridge anchor
   colors: {
-    cost: "#F03319", // Abridge red
+    cost: "#EA2C00", // Abridge red
     benefit: "#111827", // near-black for “contribution”
     netPositive: "#0EA5E9", // clean blue for net
-    netNegative: "#F03319",
+    netNegative: "#EA2C00",
     axis: "#E5E7EB",
     tick: "#6B7280",
     label: "#374151",

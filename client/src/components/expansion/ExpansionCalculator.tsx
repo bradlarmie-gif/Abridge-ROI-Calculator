@@ -119,7 +119,7 @@ export function ExpansionCalculator({
                       isComplete
                         ? "bg-[#0E9F6E] text-white"
                         : isActive
-                        ? "bg-[#F03319] text-white"
+                        ? "bg-[#EA2C00] text-white"
                         : "bg-muted text-muted-foreground"
                     }`}
                     data-testid={`step-indicator-${stepNum}`}

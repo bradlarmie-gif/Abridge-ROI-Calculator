@@ -396,7 +396,7 @@
 }
 
 .year-card-2 {
-  border-left: 6px solid #F03319;
+  border-left: 6px solid #EA2C00;
   background: linear-gradient(135deg, rgba(240, 51, 25, 0.05) 0%, transparent 100%);
 }
 
@@ -437,7 +437,7 @@
 }
 
 .maturity-stage-mature {
-  background: linear-gradient(90deg, #F03319 0%, #f97316 100%);
+  background: linear-gradient(90deg, #EA2C00 0%, #f97316 100%);
 }
 
 .maturity-stage-full {

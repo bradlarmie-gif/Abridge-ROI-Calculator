@@ -10,7 +10,7 @@ import { calculateRoi } from "./roi-calculator";
 // Abridge Brand Colors
 const COLORS = {
   abridgeOrange: { r: 232, g: 83, b: 47 },      // #E8532F
-  abridgeRed: { r: 240, g: 51, b: 25 },          // #F03319
+  abridgeRed: { r: 240, g: 51, b: 25 },          // #EA2C00
   black: { r: 17, g: 24, b: 39 },                 // #111827
   gray: { r: 107, g: 114, b: 128 },               // #6B7280
   lightGray: { r: 156, g: 163, b: 175 },          // #9CA3AF

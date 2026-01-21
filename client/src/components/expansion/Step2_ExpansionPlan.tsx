@@ -81,7 +81,7 @@ export function Step2_ExpansionPlan({
         </p>
       </div>
 
-      <Card className="border-[#F03319]/20 bg-[#F03319]/5">
+      <Card className="border-[#EA2C00]/20 bg-[#EA2C00]/5">
         <CardContent className="p-6 space-y-6">
           <div className="space-y-4">
             <Label className="text-base font-medium">
@@ -144,7 +144,7 @@ export function Step2_ExpansionPlan({
                 <div
                   className={`p-4 border rounded-lg cursor-pointer transition-all ${
                     rolloutType === "all-at-once"
-                      ? "border-[#F03319] bg-[#F03319]/5"
+                      ? "border-[#EA2C00] bg-[#EA2C00]/5"
                       : "border-border hover:border-muted-foreground"
                   }`}
                   onClick={() => setRolloutType("all-at-once")}
@@ -152,10 +152,10 @@ export function Step2_ExpansionPlan({
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-4 h-4 mt-1 rounded-full border-2 flex items-center justify-center ${
-                      rolloutType === "all-at-once" ? "border-[#F03319]" : "border-muted-foreground"
+                      rolloutType === "all-at-once" ? "border-[#EA2C00]" : "border-muted-foreground"
                     }`}>
                       {rolloutType === "all-at-once" && (
-                        <div className="w-2 h-2 bg-[#F03319] rounded-full" />
+                        <div className="w-2 h-2 bg-[#EA2C00] rounded-full" />
                       )}
                     </div>
                     <div className="flex-1">
@@ -178,7 +178,7 @@ export function Step2_ExpansionPlan({
                 <div
                   className={`p-4 border rounded-lg cursor-pointer transition-all ${
                     rolloutType === "phased"
-                      ? "border-[#F03319] bg-[#F03319]/5"
+                      ? "border-[#EA2C00] bg-[#EA2C00]/5"
                       : "border-border hover:border-muted-foreground"
                   }`}
                   onClick={() => setRolloutType("phased")}
@@ -186,10 +186,10 @@ export function Step2_ExpansionPlan({
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-4 h-4 mt-1 rounded-full border-2 flex items-center justify-center ${
-                      rolloutType === "phased" ? "border-[#F03319]" : "border-muted-foreground"
+                      rolloutType === "phased" ? "border-[#EA2C00]" : "border-muted-foreground"
                     }`}>
                       {rolloutType === "phased" && (
-                        <div className="w-2 h-2 bg-[#F03319] rounded-full" />
+                        <div className="w-2 h-2 bg-[#EA2C00] rounded-full" />
                       )}
                     </div>
                     <div className="flex-1">
@@ -294,7 +294,7 @@ export function Step2_ExpansionPlan({
                 <div
                   className={`p-4 border rounded-lg cursor-pointer transition-all ${
                     pricingModel === "per-provider"
-                      ? "border-[#F03319] bg-[#F03319]/5"
+                      ? "border-[#EA2C00] bg-[#EA2C00]/5"
                       : "border-border hover:border-muted-foreground"
                   }`}
                   onClick={() => setPricingModel("per-provider")}
@@ -302,10 +302,10 @@ export function Step2_ExpansionPlan({
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-4 h-4 mt-1 rounded-full border-2 flex items-center justify-center ${
-                      pricingModel === "per-provider" ? "border-[#F03319]" : "border-muted-foreground"
+                      pricingModel === "per-provider" ? "border-[#EA2C00]" : "border-muted-foreground"
                     }`}>
                       {pricingModel === "per-provider" && (
-                        <div className="w-2 h-2 bg-[#F03319] rounded-full" />
+                        <div className="w-2 h-2 bg-[#EA2C00] rounded-full" />
                       )}
                     </div>
                     <div>
@@ -323,7 +323,7 @@ export function Step2_ExpansionPlan({
                 <div
                   className={`p-4 border rounded-lg cursor-pointer transition-all ${
                     pricingModel === "enterprise"
-                      ? "border-[#F03319] bg-[#F03319]/5"
+                      ? "border-[#EA2C00] bg-[#EA2C00]/5"
                       : "border-border hover:border-muted-foreground"
                   }`}
                   onClick={() => setPricingModel("enterprise")}
@@ -331,10 +331,10 @@ export function Step2_ExpansionPlan({
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-4 h-4 mt-1 rounded-full border-2 flex items-center justify-center ${
-                      pricingModel === "enterprise" ? "border-[#F03319]" : "border-muted-foreground"
+                      pricingModel === "enterprise" ? "border-[#EA2C00]" : "border-muted-foreground"
                     }`}>
                       {pricingModel === "enterprise" && (
-                        <div className="w-2 h-2 bg-[#F03319] rounded-full" />
+                        <div className="w-2 h-2 bg-[#EA2C00] rounded-full" />
                       )}
                     </div>
                     <div>

@@ -1531,7 +1531,7 @@ export default function RoiCalculator({
               >
                 {tab.label}
                 {activeTab === tab.id && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F03319]" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EA2C00]" />
                 )}
               </button>
             ))}
@@ -1549,7 +1549,7 @@ export default function RoiCalculator({
               data-testid="section-roi-headline"
             >
               <div className="mb-6">
-                <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-2">
+                <h2 className="text-xs font-bold text-[#EA2C00] uppercase tracking-wide mb-2">
                   Your ROI Model
                 </h2>
                 <p className="text-sm text-neutral-600">
@@ -1616,7 +1616,7 @@ export default function RoiCalculator({
               className="bg-white rounded-2xl border border-neutral-200/60 p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]"
               data-testid="section-value-breakdown"
             >
-              <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-6">
+              <h2 className="text-xs font-bold text-[#EA2C00] uppercase tracking-wide mb-6">
                 Where Your Value Comes From
               </h2>
 
@@ -1857,11 +1857,11 @@ export default function RoiCalculator({
                 {/* Card 3: Export PDF - Abridge Red for action */}
                 <button
                   onClick={() => setActiveTab("export")}
-                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#F03319] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
+                  className="group bg-white rounded-lg border border-neutral-200/60 p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#EA2C00] transform hover:scale-[1.01] transition-all duration-200 ease-out cursor-pointer"
                   data-testid="card-export"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#FEE2E2] flex items-center justify-center mb-3 group-hover:bg-[#FECACA] transition-colors">
-                    <Download className="h-5 w-5 text-[#F03319]" />
+                    <Download className="h-5 w-5 text-[#EA2C00]" />
                   </div>
                   <h3 className="text-base font-semibold text-neutral-900 mb-1">
                     Export PDF
@@ -1881,7 +1881,7 @@ export default function RoiCalculator({
             <div className="bg-white rounded-2xl border border-neutral-200/60 p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xs font-bold text-[#F03319] uppercase tracking-wide mb-2">
+                  <h2 className="text-xs font-bold text-[#EA2C00] uppercase tracking-wide mb-2">
                     Driver Deep Dive
                   </h2>
                   <p className="text-sm text-neutral-600">
@@ -8110,7 +8110,7 @@ export default function RoiCalculator({
                   <Button
                     onClick={handleCalculateScenario}
                     disabled={scenarioForm.providers <= 0 || scenarioForm.encounters <= 0}
-                    className="bg-[#F03319] hover:bg-[#D92D16] text-white"
+                    className="bg-[#EA2C00] hover:bg-[#D92D16] text-white"
                     data-testid="button-calculate-scenario"
                   >
                     Calculate Scenario
@@ -8150,7 +8150,7 @@ export default function RoiCalculator({
           <div className="space-y-8">
             {/* Header */}
             <div className="bg-white rounded-2xl border border-neutral-200/60 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-              <h2 className="text-sm font-bold text-[#F03319] uppercase tracking-wide mb-1">
+              <h2 className="text-sm font-bold text-[#EA2C00] uppercase tracking-wide mb-1">
                 EXECUTIVE SUMMARY EXPORT
               </h2>
               <p className="text-neutral-500">
@@ -8603,7 +8603,7 @@ export default function RoiCalculator({
                 <Button
                   size="lg"
                   onClick={() => openBaselineExport()}
-                  className="w-full bg-[#F03319] hover:bg-[#D92D16] text-white gap-2"
+                  className="w-full bg-[#EA2C00] hover:bg-[#D92D16] text-white gap-2"
                   data-testid="button-download-pdf"
                 >
                   <Download className="h-5 w-5" />
@@ -8728,7 +8728,7 @@ export default function RoiCalculator({
             <Button
               onClick={handleAddDrivers}
               disabled={selectedNewDrivers.size === 0}
-              className="bg-[#F03319] hover:bg-[#D92D16] text-white"
+              className="bg-[#EA2C00] hover:bg-[#D92D16] text-white"
               data-testid="button-modal-add"
             >
               Add Selected Drivers

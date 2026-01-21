@@ -279,7 +279,7 @@ export function Step3_RealityCheck({
                 <Badge
                   key={key}
                   variant={index === currentDriverIndex ? "default" : index < currentDriverIndex ? "secondary" : "outline"}
-                  className={`gap-1 cursor-pointer ${index === currentDriverIndex ? "bg-[#F03319]" : ""}`}
+                  className={`gap-1 cursor-pointer ${index === currentDriverIndex ? "bg-[#EA2C00]" : ""}`}
                   onClick={() => setCurrentDriverIndex(index)}
                   data-testid={`badge-driver-${key}`}
                 >
@@ -327,11 +327,11 @@ function AccessValidationCard({ baseline, validation, onUpdate, valuePerProvider
 
   return (
     <div className="space-y-6">
-      <Card className="border-[#F03319]/20 bg-[#F03319]/5">
+      <Card className="border-[#EA2C00]/20 bg-[#EA2C00]/5">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-[#F03319]/10 rounded-full flex items-center justify-center">
-              <Users className="h-6 w-6 text-[#F03319]" />
+            <div className="w-12 h-12 bg-[#EA2C00]/10 rounded-full flex items-center justify-center">
+              <Users className="h-6 w-6 text-[#EA2C00]" />
             </div>
             <div>
               <h2 className="text-xl font-semibold">Patient Access</h2>
@@ -341,7 +341,7 @@ function AccessValidationCard({ baseline, validation, onUpdate, valuePerProvider
           
           <div className="bg-background rounded-lg p-4 mb-6">
             <div className="text-sm text-muted-foreground mb-1">Your current performance:</div>
-            <div className="text-2xl font-bold text-[#F03319]">{formatCurrency(valuePerProvider)}/provider/year</div>
+            <div className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(valuePerProvider)}/provider/year</div>
             <div className="text-sm text-muted-foreground">
               ~{additionalVisitsPerWeek.toFixed(1)} additional visits per week × ${revenuePerVisit}/visit
             </div>
@@ -425,28 +425,28 @@ function AccessValidationCard({ baseline, validation, onUpdate, valuePerProvider
               <div className="grid gap-3">
                 <div
                   className={`p-3 border rounded-lg cursor-pointer ${
-                    validation.sameDemand ? "border-[#F03319] bg-[#F03319]/5" : "border-border"
+                    validation.sameDemand ? "border-[#EA2C00] bg-[#EA2C00]/5" : "border-border"
                   }`}
                   onClick={() => onUpdate({ sameDemand: true })}
                   data-testid="option-same-demand-yes"
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-3 h-3 rounded-full border-2 ${
-                      validation.sameDemand ? "border-[#F03319] bg-[#F03319]" : "border-muted-foreground"
+                      validation.sameDemand ? "border-[#EA2C00] bg-[#EA2C00]" : "border-muted-foreground"
                     }`} />
                     <span>Same patient population (same demand level)</span>
                   </div>
                 </div>
                 <div
                   className={`p-3 border rounded-lg cursor-pointer ${
-                    !validation.sameDemand ? "border-[#F03319] bg-[#F03319]/5" : "border-border"
+                    !validation.sameDemand ? "border-[#EA2C00] bg-[#EA2C00]/5" : "border-border"
                   }`}
                   onClick={() => onUpdate({ sameDemand: false })}
                   data-testid="option-same-demand-no"
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-3 h-3 rounded-full border-2 ${
-                      !validation.sameDemand ? "border-[#F03319] bg-[#F03319]" : "border-muted-foreground"
+                      !validation.sameDemand ? "border-[#EA2C00] bg-[#EA2C00]" : "border-muted-foreground"
                     }`} />
                     <span>Different population or lower demand environment</span>
                   </div>
@@ -539,11 +539,11 @@ function RetentionValidationCard({ baseline, validation, onUpdate, valuePerProvi
 
   return (
     <div className="space-y-6">
-      <Card className="border-[#F03319]/20 bg-[#F03319]/5">
+      <Card className="border-[#EA2C00]/20 bg-[#EA2C00]/5">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-[#F03319]/10 rounded-full flex items-center justify-center">
-              <Heart className="h-6 w-6 text-[#F03319]" />
+            <div className="w-12 h-12 bg-[#EA2C00]/10 rounded-full flex items-center justify-center">
+              <Heart className="h-6 w-6 text-[#EA2C00]" />
             </div>
             <div>
               <h2 className="text-xl font-semibold">Clinician Retention</h2>
@@ -553,7 +553,7 @@ function RetentionValidationCard({ baseline, validation, onUpdate, valuePerProvi
           
           <div className="bg-background rounded-lg p-4">
             <div className="text-sm text-muted-foreground mb-1">Your current performance:</div>
-            <div className="text-2xl font-bold text-[#F03319]">{formatCurrency(valuePerProvider)}/provider/year</div>
+            <div className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(valuePerProvider)}/provider/year</div>
             <div className="text-sm text-muted-foreground">
               Preventing ~{preventedDepartures.toFixed(2)} departures/year
             </div>
@@ -574,14 +574,14 @@ function RetentionValidationCard({ baseline, validation, onUpdate, valuePerProvi
             </p>
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-background rounded-lg p-3 text-center">
-                <div className="text-xs font-medium text-[#F03319] mb-1">Month 3</div>
+                <div className="text-xs font-medium text-[#EA2C00] mb-1">Month 3</div>
                 <div className="text-sm font-medium">Early Experience</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Providers start feeling time savings
                 </p>
               </div>
               <div className="bg-background rounded-lg p-3 text-center">
-                <div className="text-xs font-medium text-[#F03319] mb-1">Month 6</div>
+                <div className="text-xs font-medium text-[#EA2C00] mb-1">Month 6</div>
                 <div className="text-sm font-medium">Burnout Reduction</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Improved work-life balance
@@ -609,16 +609,16 @@ function RetentionValidationCard({ baseline, validation, onUpdate, valuePerProvi
             <div className="grid gap-3">
               <div
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                  validation.sameTurnoverRisk ? "border-[#F03319] bg-[#F03319]/5" : "border-border hover:border-muted-foreground"
+                  validation.sameTurnoverRisk ? "border-[#EA2C00] bg-[#EA2C00]/5" : "border-border hover:border-muted-foreground"
                 }`}
                 onClick={() => onUpdate({ sameTurnoverRisk: true })}
                 data-testid="option-same-turnover-yes"
               >
                 <div className="flex items-start gap-3">
                   <div className={`w-4 h-4 mt-1 rounded-full border-2 flex items-center justify-center ${
-                    validation.sameTurnoverRisk ? "border-[#F03319]" : "border-muted-foreground"
+                    validation.sameTurnoverRisk ? "border-[#EA2C00]" : "border-muted-foreground"
                   }`}>
-                    {validation.sameTurnoverRisk && <div className="w-2 h-2 bg-[#F03319] rounded-full" />}
+                    {validation.sameTurnoverRisk && <div className="w-2 h-2 bg-[#EA2C00] rounded-full" />}
                   </div>
                   <div>
                     <strong>Yes - Same specialties, same burnout factors</strong>
@@ -629,16 +629,16 @@ function RetentionValidationCard({ baseline, validation, onUpdate, valuePerProvi
 
               <div
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                  !validation.sameTurnoverRisk ? "border-[#F03319] bg-[#F03319]/5" : "border-border hover:border-muted-foreground"
+                  !validation.sameTurnoverRisk ? "border-[#EA2C00] bg-[#EA2C00]/5" : "border-border hover:border-muted-foreground"
                 }`}
                 onClick={() => onUpdate({ sameTurnoverRisk: false })}
                 data-testid="option-same-turnover-no"
               >
                 <div className="flex items-start gap-3">
                   <div className={`w-4 h-4 mt-1 rounded-full border-2 flex items-center justify-center ${
-                    !validation.sameTurnoverRisk ? "border-[#F03319]" : "border-muted-foreground"
+                    !validation.sameTurnoverRisk ? "border-[#EA2C00]" : "border-muted-foreground"
                   }`}>
-                    {!validation.sameTurnoverRisk && <div className="w-2 h-2 bg-[#F03319] rounded-full" />}
+                    {!validation.sameTurnoverRisk && <div className="w-2 h-2 bg-[#EA2C00] rounded-full" />}
                   </div>
                   <div>
                     <strong>No - Different situation</strong>
@@ -722,11 +722,11 @@ function LosValidationCard({ baseline, validation, onUpdate, valuePerProvider, n
 
   return (
     <div className="space-y-6">
-      <Card className="border-[#F03319]/20 bg-[#F03319]/5">
+      <Card className="border-[#EA2C00]/20 bg-[#EA2C00]/5">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-[#F03319]/10 rounded-full flex items-center justify-center">
-              <TrendingUp className="h-6 w-6 text-[#F03319]" />
+            <div className="w-12 h-12 bg-[#EA2C00]/10 rounded-full flex items-center justify-center">
+              <TrendingUp className="h-6 w-6 text-[#EA2C00]" />
             </div>
             <div>
               <h2 className="text-xl font-semibold">Accurate Level of Service</h2>
@@ -736,7 +736,7 @@ function LosValidationCard({ baseline, validation, onUpdate, valuePerProvider, n
           
           <div className="bg-background rounded-lg p-4">
             <div className="text-sm text-muted-foreground mb-1">Your current performance:</div>
-            <div className="text-2xl font-bold text-[#F03319]">{formatCurrency(valuePerProvider)}/provider/year</div>
+            <div className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(valuePerProvider)}/provider/year</div>
             <div className="text-sm text-muted-foreground">
               {wrvuUplift} incremental wRVUs × ${wrvuRate}/wRVU
             </div>
@@ -780,16 +780,16 @@ function LosValidationCard({ baseline, validation, onUpdate, valuePerProvider, n
 
               <div
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                  !validation.sameCaseMix ? "border-[#F03319] bg-[#F03319]/5" : "border-border hover:border-muted-foreground"
+                  !validation.sameCaseMix ? "border-[#EA2C00] bg-[#EA2C00]/5" : "border-border hover:border-muted-foreground"
                 }`}
                 onClick={() => onUpdate({ sameCaseMix: false })}
                 data-testid="option-same-case-mix-no"
               >
                 <div className="flex items-start gap-3">
                   <div className={`w-4 h-4 mt-1 rounded-full border-2 flex items-center justify-center ${
-                    !validation.sameCaseMix ? "border-[#F03319]" : "border-muted-foreground"
+                    !validation.sameCaseMix ? "border-[#EA2C00]" : "border-muted-foreground"
                   }`}>
-                    {!validation.sameCaseMix && <div className="w-2 h-2 bg-[#F03319] rounded-full" />}
+                    {!validation.sameCaseMix && <div className="w-2 h-2 bg-[#EA2C00] rounded-full" />}
                   </div>
                   <div>
                     <strong>No - Different specialties or case mix</strong>
@@ -867,11 +867,11 @@ function DefaultValidationCard({ driverId, baseline, validation, valuePerProvide
 
   return (
     <div className="space-y-6">
-      <Card className="border-[#F03319]/20 bg-[#F03319]/5">
+      <Card className="border-[#EA2C00]/20 bg-[#EA2C00]/5">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-[#F03319]/10 rounded-full flex items-center justify-center">
-              <DriverIcon className="h-6 w-6 text-[#F03319]" />
+            <div className="w-12 h-12 bg-[#EA2C00]/10 rounded-full flex items-center justify-center">
+              <DriverIcon className="h-6 w-6 text-[#EA2C00]" />
             </div>
             <div>
               <h2 className="text-xl font-semibold">{driverName}</h2>
@@ -880,7 +880,7 @@ function DefaultValidationCard({ driverId, baseline, validation, valuePerProvide
           
           <div className="bg-background rounded-lg p-4">
             <div className="text-sm text-muted-foreground mb-1">Your current performance:</div>
-            <div className="text-2xl font-bold text-[#F03319]">{formatCurrency(valuePerProvider)}/provider/year</div>
+            <div className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(valuePerProvider)}/provider/year</div>
           </div>
         </CardContent>
       </Card>

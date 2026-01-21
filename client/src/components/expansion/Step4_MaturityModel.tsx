@@ -113,7 +113,7 @@ export function Step4_MaturityModel({
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
-          <Target className="h-8 w-8 text-[#F03319]" />
+          <Target className="h-8 w-8 text-[#EA2C00]" />
         </div>
         <h1 className="text-2xl font-semibold text-foreground">Your 3-Year Expansion Model</h1>
         <p className="text-muted-foreground">
@@ -125,7 +125,7 @@ export function Step4_MaturityModel({
       <Card className="bg-muted/30">
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-5 w-5 text-[#F03319]" />
+            <TrendingUp className="h-5 w-5 text-[#EA2C00]" />
             <h2 className="text-lg font-medium">The Maturity Journey</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
@@ -274,7 +274,7 @@ export function Step4_MaturityModel({
       <Card>
         <CardContent className="p-6">
           <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-[#F03319]" />
+            <DollarSign className="h-5 w-5 text-[#EA2C00]" />
             3-Year Comparison
           </h3>
           <div className="h-72">
@@ -324,7 +324,7 @@ export function Step4_MaturityModel({
               
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <h5 className="font-medium text-[#F03319]">Maturity Curve Application</h5>
+                  <h5 className="font-medium text-[#EA2C00]">Maturity Curve Application</h5>
                   <p className="text-sm text-muted-foreground">
                     We applied a research-backed maturity curve based on 200+ health system deployments:
                   </p>
@@ -338,7 +338,7 @@ export function Step4_MaturityModel({
                 </div>
 
                 <div className="space-y-2">
-                  <h5 className="font-medium text-[#F03319]">Rollout Strategy</h5>
+                  <h5 className="font-medium text-[#EA2C00]">Rollout Strategy</h5>
                   <div className="p-3 bg-muted rounded-lg text-sm">
                     {inputs.rolloutType === "phased" ? (
                       <div className="space-y-2">
@@ -365,7 +365,7 @@ export function Step4_MaturityModel({
 
                 {hasRetention && (
                   <div className="space-y-2">
-                    <h5 className="font-medium text-[#F03319]">Retention Timing Lag</h5>
+                    <h5 className="font-medium text-[#EA2C00]">Retention Timing Lag</h5>
                     <div className="p-3 bg-muted rounded-lg text-sm text-muted-foreground">
                       Clinician Retention benefits follow a special curve accounting for the 12-18 month decision cycle:
                       <ul className="list-disc ml-4 mt-2 space-y-1">
@@ -378,7 +378,7 @@ export function Step4_MaturityModel({
                 )}
 
                 <div className="space-y-2">
-                  <h5 className="font-medium text-[#F03319]">Investment Calculation</h5>
+                  <h5 className="font-medium text-[#EA2C00]">Investment Calculation</h5>
                   <div className="p-3 bg-muted rounded-lg text-sm">
                     <div className="grid grid-cols-2 gap-2">
                       <span className="text-muted-foreground">New providers:</span>
@@ -406,21 +406,21 @@ export function Step4_MaturityModel({
         <Card>
           <CardContent className="p-6">
             <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <Zap className="h-5 w-5 text-[#F03319]" />
+              <Zap className="h-5 w-5 text-[#EA2C00]" />
               Phased Rollout Timeline
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 bg-[#F03319]/5 rounded-lg border border-[#F03319]/20">
+              <div className="p-4 bg-[#EA2C00]/5 rounded-lg border border-[#EA2C00]/20">
                 <div className="text-sm text-muted-foreground">Wave 1 (Months 1-3)</div>
                 <div className="text-xl font-bold">{inputs.phasedPlan.wave1.providers} providers</div>
                 <div className="text-sm text-[#0E9F6E]">Ramping to 45% utilization</div>
               </div>
-              <div className="p-4 bg-[#F03319]/5 rounded-lg border border-[#F03319]/20">
+              <div className="p-4 bg-[#EA2C00]/5 rounded-lg border border-[#EA2C00]/20">
                 <div className="text-sm text-muted-foreground">Wave 2 (Months 4-6)</div>
                 <div className="text-xl font-bold">{inputs.phasedPlan.wave2.providers} providers</div>
                 <div className="text-sm text-[#0E9F6E]">W1 @ 55%, W2 ramping</div>
               </div>
-              <div className="p-4 bg-[#F03319]/5 rounded-lg border border-[#F03319]/20">
+              <div className="p-4 bg-[#EA2C00]/5 rounded-lg border border-[#EA2C00]/20">
                 <div className="text-sm text-muted-foreground">Wave 3 (Months 7-12)</div>
                 <div className="text-xl font-bold">{inputs.phasedPlan.wave3.providers} providers</div>
                 <div className="text-sm text-[#0E9F6E]">All waves maturing</div>
@@ -435,7 +435,7 @@ export function Step4_MaturityModel({
           <ArrowLeft className="h-4 w-4" />
           Back to Edit
         </Button>
-        <Button onClick={handleSave} className="gap-2 bg-[#F03319] hover:bg-[#F03319]/90" data-testid="button-save-scenario">
+        <Button onClick={handleSave} className="gap-2 bg-[#EA2C00] hover:bg-[#EA2C00]/90" data-testid="button-save-scenario">
           <Download className="h-4 w-4" />
           Save Expansion Scenario
         </Button>
@@ -485,7 +485,7 @@ function YearCard({
 
   const yearBadgeColors = {
     1: "bg-yellow-500",
-    2: "bg-[#F03319]",
+    2: "bg-[#EA2C00]",
     3: "bg-[#0E9F6E]",
   };
 

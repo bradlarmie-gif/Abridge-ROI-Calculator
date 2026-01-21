@@ -762,7 +762,7 @@ export default function RoiCalculator({
           <div className="flex items-center gap-3">
             <span
               className="text-xl font-semibold tracking-wide"
-              style={{ color: "#F03319" }}
+              style={{ color: "#EA2C00" }}
             >
               ABRIDGE
             </span>
@@ -778,7 +778,7 @@ export default function RoiCalculator({
                 type="button"
                 onClick={onBack}
                 className="flex items-center gap-1 mb-3 text-sm font-semibold transition-opacity hover:opacity-80"
-                style={{ color: "#F03319" }}
+                style={{ color: "#EA2C00" }}
                 data-testid="button-back-to-settings"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -805,7 +805,7 @@ export default function RoiCalculator({
                     </div>
 
                     <div className="bg-neutral-50 rounded-lg p-4 mb-6">
-                      <h3 className="text-xs font-semibold text-[#F03319] uppercase tracking-wide mb-3">
+                      <h3 className="text-xs font-semibold text-[#EA2C00] uppercase tracking-wide mb-3">
                         Scenario Summary
                       </h3>
                       <div className="space-y-2 text-sm">
@@ -838,7 +838,7 @@ export default function RoiCalculator({
 
                     <div className="space-y-6">
                       <div className="space-y-3">
-                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#EA2C00] uppercase tracking-wide">
                           Current Scope
                         </h3>
                         <InputField
@@ -914,7 +914,7 @@ export default function RoiCalculator({
                       </div>
 
                       <div className="space-y-3">
-                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#EA2C00] uppercase tracking-wide">
                           Enterprise Footprint
                         </h3>
                         <InputField
@@ -952,7 +952,7 @@ export default function RoiCalculator({
                       </div>
 
                       <div className="space-y-3">
-                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#F03319] uppercase tracking-wide">
+                        <h3 className="pt-4 pb-1 text-xs font-semibold text-[#EA2C00] uppercase tracking-wide">
                           Economics
                         </h3>
                         <InputField

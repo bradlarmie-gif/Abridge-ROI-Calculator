@@ -764,7 +764,7 @@ function StepIndicator({
           isCompleted
             ? "bg-white border-2 border-neutral-300 text-neutral-500"
             : isActive
-              ? "bg-[#F03319] text-white"
+              ? "bg-[#EA2C00] text-white"
               : "bg-neutral-200 text-neutral-400"
         }`}
       >
@@ -1104,7 +1104,7 @@ function ModelSummaryPanel({
                         key={lever.id}
                         className="flex items-start gap-2.5 text-sm text-neutral-800"
                       >
-                        <Check className="w-4 h-4 text-[#F03319] flex-shrink-0 mt-0.5" />
+                        <Check className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
                         <span className="leading-snug">{lever.label}</span>
                       </li>
                     ))}
@@ -2648,7 +2648,7 @@ export default function ObjectiveSelectionScreen({
           <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-8 md:py-12">
             <button
               onClick={handleBackToPage1}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70 mb-6"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#EA2C00] transition-opacity hover:opacity-70 mb-6"
               data-testid="button-back-to-setting"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -2829,7 +2829,7 @@ export default function ObjectiveSelectionScreen({
             <div className="max-w-4xl">
               <button
                 onClick={handleBackToPage2}
-                className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
+                className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#EA2C00] transition-opacity hover:opacity-70"
                 data-testid="button-back-to-priorities"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -2930,7 +2930,7 @@ export default function ObjectiveSelectionScreen({
                         >
                           <div className="flex items-center gap-4">
                             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#FFF5F3]">
-                              <DriverIcon className="w-5 h-5 text-[#F03319]" />
+                              <DriverIcon className="w-5 h-5 text-[#EA2C00]" />
                             </div>
                             <div>
                               <div className="font-semibold text-neutral-900">{driver.label}</div>
@@ -2999,7 +2999,7 @@ export default function ObjectiveSelectionScreen({
                                             <span className="text-neutral-600">{s.label}</span>
                                             <span className="font-mono text-neutral-900">
                                               {s.value}
-                                              {s.note && <span className="text-[#F03319]/70 text-xs ml-1">{s.note}</span>}
+                                              {s.note && <span className="text-[#EA2C00]/70 text-xs ml-1">{s.note}</span>}
                                             </span>
                                           </div>
                                         );
@@ -3128,7 +3128,7 @@ export default function ObjectiveSelectionScreen({
               <div>
                 <button
                   onClick={handleBackToPage3}
-                  className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#F03319] transition-opacity hover:opacity-70"
+                  className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#EA2C00] transition-opacity hover:opacity-70"
                   data-testid="button-back-to-blueprint"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -3163,14 +3163,14 @@ export default function ObjectiveSelectionScreen({
                         data-testid={`step-pill-${step}`}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                           isActive
-                            ? "bg-[#FFF5F3] text-[#F03319] ring-1 ring-[#F03319]/20"
+                            ? "bg-[#FFF5F3] text-[#EA2C00] ring-1 ring-[#EA2C00]/20"
                             : canNavigateToStep 
                               ? "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
                               : "bg-neutral-100 text-neutral-400 cursor-not-allowed opacity-60"
                         }`}
                       >
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                          isActive ? "bg-[#F03319]/10 text-[#F03319]" : isComplete ? "bg-neutral-300" : "bg-neutral-200"
+                          isActive ? "bg-[#EA2C00]/10 text-[#EA2C00]" : isComplete ? "bg-neutral-300" : "bg-neutral-200"
                         }`}>
                           {isComplete && !isActive ? (
                             <Check className="w-3 h-3 text-neutral-600" />
@@ -3207,7 +3207,7 @@ export default function ObjectiveSelectionScreen({
                           <div>
                             <label className="block text-sm font-medium text-neutral-700 mb-2">
                               Staffed beds (in scope){" "}
-                              <span className="text-[#F03319]">*</span>
+                              <span className="text-[#EA2C00]">*</span>
                             </label>
                             <input
                               type="text"
@@ -3225,7 +3225,7 @@ export default function ObjectiveSelectionScreen({
                                   setNursingFTEsInScope(Math.round(parsed * ratio));
                                 }
                               }}
-                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all font-mono"
                               data-testid="input-staffed-beds"
                               placeholder="e.g., 200"
                             />
@@ -3238,7 +3238,7 @@ export default function ObjectiveSelectionScreen({
                           <div>
                             <label className="block text-sm font-medium text-neutral-700 mb-2">
                               Nurse FTEs (supporting these beds){" "}
-                              <span className="text-[#F03319]">*</span>
+                              <span className="text-[#EA2C00]">*</span>
                             </label>
                             <input
                               type="text"
@@ -3252,7 +3252,7 @@ export default function ObjectiveSelectionScreen({
                                   setNursingFTEsInScope(Math.max(0, parseFormattedNumber(val)));
                                 }
                               }}
-                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all font-mono"
                               data-testid="input-nurse-ftes"
                               placeholder="e.g., 300"
                             />
@@ -3280,7 +3280,7 @@ export default function ObjectiveSelectionScreen({
                                   }}
                                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                     nursingUnitType === type
-                                      ? "bg-[#F03319]/10 text-[#F03319] border border-[#F03319]/30"
+                                      ? "bg-[#EA2C00]/10 text-[#EA2C00] border border-[#EA2C00]/30"
                                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 border border-neutral-200"
                                   }`}
                                   data-testid={`unit-type-${type}`}
@@ -3303,7 +3303,7 @@ export default function ObjectiveSelectionScreen({
                           <div>
                             <label className="block text-sm font-medium text-neutral-700 mb-2">
                               Providers (in scope){" "}
-                              <span className="text-[#F03319]">*</span>
+                              <span className="text-[#EA2C00]">*</span>
                             </label>
                             <input
                               type="text"
@@ -3317,7 +3317,7 @@ export default function ObjectiveSelectionScreen({
                                   setCliniciansInScope(Math.max(0, parseFormattedNumber(val)));
                                 }
                               }}
-                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all font-mono"
                               data-testid="input-clinicians"
                               placeholder="e.g., 50"
                             />
@@ -3330,7 +3330,7 @@ export default function ObjectiveSelectionScreen({
                           <div>
                             <label className="block text-sm font-medium text-neutral-700 mb-2">
                               Annual outpatient encounters (in scope){" "}
-                              <span className="text-[#F03319]">*</span>
+                              <span className="text-[#EA2C00]">*</span>
                             </label>
                             <input
                               type="text"
@@ -3344,7 +3344,7 @@ export default function ObjectiveSelectionScreen({
                                   setAnnualEncountersInScope(Math.max(0, parseFormattedNumber(val)));
                                 }
                               }}
-                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all font-mono"
                               data-testid="input-encounters"
                               placeholder="e.g., 100,000"
                             />
@@ -3359,7 +3359,7 @@ export default function ObjectiveSelectionScreen({
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-3">
                           Utilization rate:{" "}
-                          <span className="text-base text-[#F03319] font-semibold">
+                          <span className="text-base text-[#EA2C00] font-semibold">
                             {utilizationPercent !== null
                               ? `${utilizationPercent}%`
                               : "—"}
@@ -3373,7 +3373,7 @@ export default function ObjectiveSelectionScreen({
                           onChange={(e) =>
                             setUtilizationPercent(parseInt(e.target.value))
                           }
-                          className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-[#F03319]"
+                          className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
                           data-testid="slider-utilization"
                         />
                         <div className="flex flex-wrap gap-2 mt-3">
@@ -3772,7 +3772,7 @@ export default function ObjectiveSelectionScreen({
                     </div>
 
                     {/* Fine-Tune Assumptions Section */}
-                    <div className="border-2 border-[#F03319]/20 bg-gradient-to-r from-[#FFF7F5] to-white rounded-xl mb-6 shadow-sm">
+                    <div className="border-2 border-[#EA2C00]/20 bg-gradient-to-r from-[#FFF7F5] to-white rounded-xl mb-6 shadow-sm">
                       <button
                         type="button"
                         onClick={() => setNursingFineTuneExpanded(!nursingFineTuneExpanded)}
@@ -3780,20 +3780,20 @@ export default function ObjectiveSelectionScreen({
                         data-testid="button-fine-tune-toggle"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#F03319]/10">
-                            <Sliders className="w-4 h-4 text-[#F03319]" />
+                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#EA2C00]/10">
+                            <Sliders className="w-4 h-4 text-[#EA2C00]" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-[#F03319]">FINE-TUNE ASSUMPTIONS</span>
-                              <span className="text-xs px-2 py-0.5 bg-[#F03319]/10 text-[#F03319] rounded-full font-medium">Optional</span>
+                              <span className="text-sm font-semibold text-[#EA2C00]">FINE-TUNE ASSUMPTIONS</span>
+                              <span className="text-xs px-2 py-0.5 bg-[#EA2C00]/10 text-[#EA2C00] rounded-full font-medium">Optional</span>
                             </div>
                             <p className="text-xs text-neutral-600 mt-0.5">
                               Want more control? Adjust the key assumptions that drive your selected value drivers.
                             </p>
                           </div>
                         </div>
-                        <ChevronDown className={`w-5 h-5 text-[#F03319] transition-transform ${nursingFineTuneExpanded ? "" : "-rotate-90"}`} />
+                        <ChevronDown className={`w-5 h-5 text-[#EA2C00] transition-transform ${nursingFineTuneExpanded ? "" : "-rotate-90"}`} />
                       </button>
                       
                       {nursingFineTuneExpanded && (
@@ -3854,7 +3854,7 @@ export default function ObjectiveSelectionScreen({
                                       setNursingMinutesSavedPerEvent(NURSING_POSTURE_PRESETS.typical.minutesSavedPerEvent);
                                       setNursingHourlyRate(NURSING_POSTURE_PRESETS.typical.nurseHourlyRate);
                                     }}
-                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                    className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   >
                                     [Reset to Typical Defaults]
                                   </button>
@@ -3900,7 +3900,7 @@ export default function ObjectiveSelectionScreen({
                                       setNursingPctOvertimeFromDocs(NURSING_POSTURE_PRESETS.typical.pctOvertimeFromDocs);
                                       setNursingOvertimeReductionPct(NURSING_POSTURE_PRESETS.typical.overtimeReductionPct);
                                     }}
-                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                    className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   >
                                     [Reset to Typical Defaults]
                                   </button>
@@ -3927,7 +3927,7 @@ export default function ObjectiveSelectionScreen({
                                   <button
                                     type="button"
                                     onClick={() => setNursingAgencyReductionPct(NURSING_POSTURE_PRESETS.typical.agencyReductionPct)}
-                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                    className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   >
                                     [Reset to Typical Defaults]
                                   </button>
@@ -3958,7 +3958,7 @@ export default function ObjectiveSelectionScreen({
                                   <button
                                     type="button"
                                     onClick={() => setNursingRetentionPreventionPct(NURSING_POSTURE_PRESETS.typical.retentionPreventionPct)}
-                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                    className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   >
                                     [Reset to Typical Defaults]
                                   </button>
@@ -3995,7 +3995,7 @@ export default function ObjectiveSelectionScreen({
                                   <button
                                     type="button"
                                     onClick={() => setNursingTimelinessRiskReduction(NURSING_POSTURE_PRESETS.typical.timelinessRiskReduction)}
-                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                    className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   >
                                     [Reset to Typical Defaults]
                                   </button>
@@ -4022,7 +4022,7 @@ export default function ObjectiveSelectionScreen({
                                   <button
                                     type="button"
                                     onClick={() => setNursingCompletenessRiskReduction(NURSING_POSTURE_PRESETS.typical.completenessRiskReduction)}
-                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                    className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   >
                                     [Reset to Typical Defaults]
                                   </button>
@@ -4068,7 +4068,7 @@ export default function ObjectiveSelectionScreen({
                                   <button
                                     type="button"
                                     onClick={() => setNursingSafetyPreventionPct(NURSING_POSTURE_PRESETS.typical.safetyPreventionPct)}
-                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                    className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   >
                                     [Reset to Typical Defaults]
                                   </button>
@@ -4095,7 +4095,7 @@ export default function ObjectiveSelectionScreen({
                                   <button
                                     type="button"
                                     onClick={() => setNursingCcmccCaptureImprovement(NURSING_POSTURE_PRESETS.typical.ccmccCaptureImprovement)}
-                                    className="mt-3 text-xs text-[#F03319] hover:underline"
+                                    className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   >
                                     [Reset to Typical Defaults]
                                   </button>
@@ -4386,7 +4386,7 @@ export default function ObjectiveSelectionScreen({
                     )}
 
                     {/* Fine-Tune Assumptions Section */}
-                    <div className="border-2 border-[#F03319]/20 bg-gradient-to-r from-[#FFF7F5] to-white rounded-xl mb-6 shadow-sm">
+                    <div className="border-2 border-[#EA2C00]/20 bg-gradient-to-r from-[#FFF7F5] to-white rounded-xl mb-6 shadow-sm">
                       <button
                         type="button"
                         onClick={() => setFineTuneExpanded(!fineTuneExpanded)}
@@ -4394,20 +4394,20 @@ export default function ObjectiveSelectionScreen({
                         data-testid="button-fine-tune-toggle"
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`flex items-center justify-center w-8 h-8 rounded-lg bg-[#F03319]/10 transition-transform ${fineTuneExpanded ? "rotate-0" : ""}`}>
-                            <Sliders className="w-4 h-4 text-[#F03319]" />
+                          <div className={`flex items-center justify-center w-8 h-8 rounded-lg bg-[#EA2C00]/10 transition-transform ${fineTuneExpanded ? "rotate-0" : ""}`}>
+                            <Sliders className="w-4 h-4 text-[#EA2C00]" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-[#F03319]">FINE-TUNE ASSUMPTIONS</span>
-                              <span className="text-xs px-2 py-0.5 bg-[#F03319]/10 text-[#F03319] rounded-full font-medium">Optional</span>
+                              <span className="text-sm font-semibold text-[#EA2C00]">FINE-TUNE ASSUMPTIONS</span>
+                              <span className="text-xs px-2 py-0.5 bg-[#EA2C00]/10 text-[#EA2C00] rounded-full font-medium">Optional</span>
                             </div>
                             <p className="text-xs text-neutral-600 mt-0.5">
                               Want more control? Adjust the key assumptions that drive your selected value drivers.
                             </p>
                           </div>
                         </div>
-                        <ChevronDown className={`w-5 h-5 text-[#F03319] transition-transform ${fineTuneExpanded ? "" : "-rotate-90"}`} />
+                        <ChevronDown className={`w-5 h-5 text-[#EA2C00] transition-transform ${fineTuneExpanded ? "" : "-rotate-90"}`} />
                       </button>
                       
                       {fineTuneExpanded && (
@@ -4596,7 +4596,7 @@ export default function ObjectiveSelectionScreen({
                                     setFtPatientAccessVisitDuration(30);
                                     setFtPatientAccessRevenuePerVisit(200);
                                   }}
-                                  className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   data-testid="button-reset-patientAccess"
                                 >
                                   [Reset to Typical Defaults]
@@ -4692,7 +4692,7 @@ export default function ObjectiveSelectionScreen({
                                           setFtRetentionTurnoverRate(5);
                                           setFtRetentionReplacementCost(250000);
                                         }}
-                                        className="mt-3 text-xs text-[#F03319] hover:underline"
+                                        className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                         data-testid="button-reset-workforce"
                                       >
                                         [Reset to Typical Defaults]
@@ -4776,7 +4776,7 @@ export default function ObjectiveSelectionScreen({
                                           setFtOvertimeAfterHoursReduction(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.overtimeReduction);
                                           setFtOvertimePremiumRate(145);
                                         }}
-                                        className="mt-3 text-xs text-[#F03319] hover:underline"
+                                        className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                         data-testid="button-reset-overtime"
                                       >
                                         [Reset to Typical Defaults]
@@ -4909,7 +4909,7 @@ export default function ObjectiveSelectionScreen({
                                     setFtWrvuRevenuePerUnit(40);
                                     setFtWrvuRevenuePerUnitStr("40");
                                   }}
-                                  className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   data-testid="button-reset-wrvu"
                                 >
                                   [Reset to Typical Defaults]
@@ -5023,7 +5023,7 @@ export default function ObjectiveSelectionScreen({
                                     setFtHccRecaptureRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.hccRecaptureRate);
                                     setFtHccBenchmarkPmpm(1000);
                                   }}
-                                  className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   data-testid="button-reset-hccCapture"
                                 >
                                   [Reset to Typical Defaults]
@@ -5112,7 +5112,7 @@ export default function ObjectiveSelectionScreen({
                                     setFtDenialBaselineRate(5);
                                     setFtDenialPreventionRate(FINE_TUNE_EXTRA_POSTURE_VALUES.typical.denialPreventionRate);
                                   }}
-                                  className="mt-3 text-xs text-[#F03319] hover:underline"
+                                  className="mt-3 text-xs text-[#EA2C00] hover:underline"
                                   data-testid="button-reset-denialReduction"
                                 >
                                   [Reset to Typical Defaults]
@@ -5177,7 +5177,7 @@ export default function ObjectiveSelectionScreen({
                               name="pricing"
                               checked={pricingModel === "per-clinician"}
                               onChange={() => setPricingModel("per-clinician")}
-                              className="w-4 h-4 mt-1 text-[#F03319] focus:ring-[#F03319]"
+                              className="w-4 h-4 mt-1 text-[#EA2C00] focus:ring-[#EA2C00]"
                               data-testid="radio-per-clinician"
                             />
                             <div>
@@ -5198,7 +5198,7 @@ export default function ObjectiveSelectionScreen({
                               name="pricing"
                               checked={pricingModel === "enterprise"}
                               onChange={() => setPricingModel("enterprise")}
-                              className="w-4 h-4 mt-1 text-[#F03319] focus:ring-[#F03319]"
+                              className="w-4 h-4 mt-1 text-[#EA2C00] focus:ring-[#EA2C00]"
                               data-testid="radio-enterprise"
                             />
                             <div>
@@ -5285,7 +5285,7 @@ export default function ObjectiveSelectionScreen({
                                       setShowCustomYears(false);
                                     }
                                   }}
-                                  className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] font-mono"
+                                  className="w-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] font-mono"
                                   data-testid="input-custom-years"
                                 />
                                 <span className="text-sm text-neutral-500">
@@ -5320,7 +5320,7 @@ export default function ObjectiveSelectionScreen({
                                 );
                               }}
                               placeholder="Enter amount"
-                              className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all font-mono"
                               data-testid="input-per-clinician-cost"
                             />
                           </div>
@@ -5369,7 +5369,7 @@ export default function ObjectiveSelectionScreen({
                                 );
                               }}
                               placeholder="Enter annual amount"
-                              className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                              className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all font-mono"
                               data-testid="input-enterprise-cost"
                             />
                           </div>
@@ -5389,7 +5389,7 @@ export default function ObjectiveSelectionScreen({
                               onChange={(e) =>
                                 setImplementationEnabled(e.target.checked)
                               }
-                              className="w-4 h-4 text-[#F03319] focus:ring-[#F03319] rounded"
+                              className="w-4 h-4 text-[#EA2C00] focus:ring-[#EA2C00] rounded"
                               data-testid="checkbox-implementation"
                             />
                             <div>
@@ -5421,7 +5421,7 @@ export default function ObjectiveSelectionScreen({
                                     );
                                   }}
                                   placeholder="Enter one-time fee"
-                                  className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#F03319]/20 focus:border-[#F03319] transition-all font-mono"
+                                  className="w-full pl-8 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all font-mono"
                                   data-testid="input-implementation-fee"
                                 />
                               </div>

@@ -113,7 +113,7 @@ export function CareSettingExplorer({ baseline, onSelect, onBack }: CareSettingE
 
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
-          <Building2 className="h-8 w-8 text-[#F03319]" />
+          <Building2 className="h-8 w-8 text-[#EA2C00]" />
         </div>
         <h1 className="text-2xl font-semibold text-foreground">Add a New Care Setting</h1>
         <p className="text-muted-foreground">
@@ -121,7 +121,7 @@ export function CareSettingExplorer({ baseline, onSelect, onBack }: CareSettingE
         </p>
       </div>
 
-      <Card className="border-[#F03319]/20 bg-[#F03319]/5">
+      <Card className="border-[#EA2C00]/20 bg-[#EA2C00]/5">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -162,7 +162,7 @@ export function CareSettingExplorer({ baseline, onSelect, onBack }: CareSettingE
               key={setting.id}
               className={`relative overflow-hidden transition-all ${
                 setting.available 
-                  ? "cursor-pointer hover-elevate border-border hover:border-[#F03319]/30" 
+                  ? "cursor-pointer hover-elevate border-border hover:border-[#EA2C00]/30" 
                   : "opacity-60 cursor-not-allowed"
               }`}
               onClick={() => setting.available && onSelect(setting.id)}

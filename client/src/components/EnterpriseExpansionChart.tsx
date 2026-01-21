@@ -238,7 +238,7 @@ export function EnterpriseExpansionChart({
               <p className="text-xs text-neutral-500 mb-1">Current scope</p>
               <p
                 className="text-lg font-mono font-semibold"
-                style={{ color: "#F03319" }}
+                style={{ color: "#EA2C00" }}
               >
                 {formatCurrency(totalAnnualBenefit)}
               </p>

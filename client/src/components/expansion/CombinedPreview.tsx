@@ -101,7 +101,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
 
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
-          <Icon className="h-8 w-8 text-[#F03319]" />
+          <Icon className="h-8 w-8 text-[#EA2C00]" />
         </div>
         <h1 className="text-2xl font-semibold text-foreground">
           {baseline.careSetting || "Outpatient"} + {settingName}
@@ -116,7 +116,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Icon className="h-5 w-5 text-[#F03319]" />
+                <Icon className="h-5 w-5 text-[#EA2C00]" />
                 {settingName} Configuration
               </CardTitle>
             </CardHeader>
@@ -170,7 +170,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
                   className="space-y-3"
                 >
                   <div className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                    !config.customEncounters ? "border-[#F03319]/30 bg-[#F03319]/5" : "border-border"
+                    !config.customEncounters ? "border-[#EA2C00]/30 bg-[#EA2C00]/5" : "border-border"
                   }`}>
                     <RadioGroupItem value="typical" id="typical" className="mt-1" />
                     <div>
@@ -184,7 +184,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
                   </div>
 
                   <div className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                    config.customEncounters ? "border-[#F03319]/30 bg-[#F03319]/5" : "border-border"
+                    config.customEncounters ? "border-[#EA2C00]/30 bg-[#EA2C00]/5" : "border-border"
                   }`}>
                     <RadioGroupItem value="custom" id="custom" className="mt-1" />
                     <div className="flex-1">
@@ -212,7 +212,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
               {settingDefaults.avgWRVU && (
                 <div className="p-4 bg-muted/30 rounded-lg space-y-3">
                   <div className="flex items-center gap-2 text-sm font-medium">
-                    <TrendingUp className="h-4 w-4 text-[#F03319]" />
+                    <TrendingUp className="h-4 w-4 text-[#EA2C00]" />
                     {settingName}-Specific Metrics
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -237,7 +237,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Target className="h-5 w-5 text-[#F03319]" />
+                <Target className="h-5 w-5 text-[#EA2C00]" />
                 Value Drivers for {settingName}
               </CardTitle>
             </CardHeader>
@@ -267,7 +267,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <DollarSign className="h-5 w-5 text-[#F03319]" />
+                <DollarSign className="h-5 w-5 text-[#EA2C00]" />
                 Investment
               </CardTitle>
             </CardHeader>
@@ -451,7 +451,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
                               </Badge>
                             )}
                             {!isFromBaseline && isFromNew && (
-                              <Badge className="bg-[#F03319]/10 text-[#F03319] text-xs">
+                              <Badge className="bg-[#EA2C00]/10 text-[#EA2C00] text-xs">
                                 New from {settingName}
                               </Badge>
                             )}
@@ -503,7 +503,7 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
                   Export Model
                 </Button>
                 <Button 
-                  className="flex-1 bg-[#F03319] hover:bg-[#F03319]/90"
+                  className="flex-1 bg-[#EA2C00] hover:bg-[#EA2C00]/90"
                   onClick={handleSaveScenario}
                   data-testid="button-save-scenario"
                 >

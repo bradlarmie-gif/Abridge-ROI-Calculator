@@ -52,7 +52,7 @@ export function MaturityCurveViz({ hasRetention = false }: MaturityCurveVizProps
             </p>
           )}
           {point.stage && (
-            <p className="text-sm font-medium text-[#F03319] mt-1">{point.stage}</p>
+            <p className="text-sm font-medium text-[#EA2C00] mt-1">{point.stage}</p>
           )}
         </div>
       );
@@ -66,8 +66,8 @@ export function MaturityCurveViz({ hasRetention = false }: MaturityCurveVizProps
         <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="utilizationGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#F03319" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#F03319" stopOpacity={0} />
+              <stop offset="5%" stopColor="#EA2C00" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#EA2C00" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="retentionGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#0E9F6E" stopOpacity={0.3} />
@@ -98,7 +98,7 @@ export function MaturityCurveViz({ hasRetention = false }: MaturityCurveVizProps
             type="monotone"
             dataKey="utilization"
             name="Standard Drivers"
-            stroke="#F03319"
+            stroke="#EA2C00"
             strokeWidth={3}
             fillOpacity={1}
             fill="url(#utilizationGradient)"
@@ -124,7 +124,7 @@ export function MaturityCurveViz({ hasRetention = false }: MaturityCurveVizProps
           <span className="text-sm text-muted-foreground">Ramp-Up (Y1)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-10 h-1 rounded bg-gradient-to-r from-[#F03319] to-[#F03319]/70" />
+          <div className="w-10 h-1 rounded bg-gradient-to-r from-[#EA2C00] to-[#EA2C00]/70" />
           <span className="text-sm text-muted-foreground">Maturing (Y2)</span>
         </div>
         <div className="flex items-center gap-2">
