@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ExpandSettingSelection from "./ExpandSettingSelection";
 import ExpandDeploymentSetup from "./ExpandDeploymentSetup";
+import ExpandDataEntry from "./ExpandDataEntry";
 import ExpandPerformanceDashboard from "./ExpandPerformanceDashboard";
 import ExpandROIStory from "./ExpandROIStory";
 import ExpandJourneyExpansion from "./ExpandJourneyExpansion";
@@ -11,24 +12,59 @@ import ExpandJourneyExpansion from "./ExpandJourneyExpansion";
 
 export interface DeploymentData {
   setting: "outpatient" | "ed" | "inpatient" | "nursing";
-  providers: number;
-  annualEncounters: number;
-  utilizationRate: number;
-  monthsOnAbridge: number;
+  providers: number | null;
+  annualEncounters: number | null;
+  utilizationRate: number | null;
+  monthsOnAbridge: number | null;
+}
+
+export interface TimeSavingsData {
+  before: number | null;
+  after: number | null;
+}
+
+export interface WorkOutsideWorkData {
+  before: number | null;
+  after: number | null;
+}
+
+export interface LevelOfServiceData {
+  before: { [code: string]: number };
+  after: { [code: string]: number };
+}
+
+export interface WrvuCaptureData {
+  before: number | null;
+  after: number | null;
+}
+
+export interface ChartClosureData {
+  before: { within24: number; "24to48": number; "48to72": number; over72: number };
+  after: { within24: number; "24to48": number; "48to72": number; over72: number };
+}
+
+export interface ClinicianSatisfactionData {
+  before: number | null;
+  after: number | null;
+  recommendRate: number | null;
 }
 
 export interface MetricsData {
-  timeSavings: { before: number; after: number };
-  levelOfService: {
-    before: { [key: string]: number };
-    after: { [key: string]: number };
-  };
-  chartClosure: { before: number; after: number };
-  wrvuCapture: { before: number; after: number };
-  workAfterHours: { before: number; after: number };
+  timeSavings: TimeSavingsData;
+  workOutsideWork: WorkOutsideWorkData;
+  levelOfService: LevelOfServiceData;
+  wrvuCapture: WrvuCaptureData;
+  chartClosure: ChartClosureData;
+  clinicianSatisfaction: ClinicianSatisfactionData;
 }
 
-export type MetricType = "timeSavings" | "levelOfService" | "chartClosure" | "wrvuCapture" | "workAfterHours";
+export type MetricType = 
+  | "timeSavings" 
+  | "workOutsideWork" 
+  | "levelOfService" 
+  | "wrvuCapture" 
+  | "chartClosure" 
+  | "clinicianSatisfaction";
 
 export interface ExpandFlowProps {
   onBackToJourney?: () => void;
@@ -36,42 +72,41 @@ export interface ExpandFlowProps {
 }
 
 // ============================================================================
-// EXPAND FLOW MAIN COMPONENT
+// EXPAND FLOW MAIN COMPONENT (6 Steps)
 // ============================================================================
 
 export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlowProps = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   
-  // Deployment configuration
+  // Deployment configuration - starts BLANK
   const [deploymentData, setDeploymentData] = useState<DeploymentData>({
     setting: "outpatient",
-    providers: 150,
-    annualEncounters: 195000,
-    utilizationRate: 72,
-    monthsOnAbridge: 6,
+    providers: null,
+    annualEncounters: null,
+    utilizationRate: null,
+    monthsOnAbridge: null,
   });
   
-  // Selected metrics to analyze
-  const [selectedMetrics, setSelectedMetrics] = useState<MetricType[]>([
-    "timeSavings",
-    "levelOfService",
-    "chartClosure",
-    "wrvuCapture",
-  ]);
+  // Selected metrics to analyze - NOTHING pre-selected
+  const [selectedMetrics, setSelectedMetrics] = useState<MetricType[]>([]);
   
-  // Actual metrics data (before/after)
+  // Actual metrics data (before/after) - all blank
   const [metricsData, setMetricsData] = useState<MetricsData>({
-    timeSavings: { before: 12, after: 4.5 },
+    timeSavings: { before: null, after: null },
+    workOutsideWork: { before: null, after: null },
     levelOfService: {
-      before: { "99215": 35, "99214": 45, "99213": 15, "99212": 4, "99211": 1 },
-      after: { "99215": 42, "99214": 44, "99213": 11, "99212": 2, "99211": 1 },
+      before: { "99215": 0, "99214": 0, "99213": 0, "99212": 0, "99211": 0 },
+      after: { "99215": 0, "99214": 0, "99213": 0, "99212": 0, "99211": 0 },
     },
-    chartClosure: { before: 36, after: 4.2 },
-    wrvuCapture: { before: 1.42, after: 1.49 },
-    workAfterHours: { before: 8, after: 4 },
+    wrvuCapture: { before: null, after: null },
+    chartClosure: { 
+      before: { within24: 0, "24to48": 0, "48to72": 0, over72: 0 },
+      after: { within24: 0, "24to48": 0, "48to72": 0, over72: 0 },
+    },
+    clinicianSatisfaction: { before: null, after: null, recommendRate: null },
   });
 
-  const goNext = () => setCurrentStep((prev) => Math.min(prev + 1, 5));
+  const goNext = () => setCurrentStep((prev) => Math.min(prev + 1, 6));
   const goBack = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
   const goBackToJourney = () => onBackToJourney?.();
   const goToExplore = () => onGoToExplore?.();
@@ -100,7 +135,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
         );
       case 3:
         return (
-          <ExpandPerformanceDashboard
+          <ExpandDataEntry
             deploymentData={deploymentData}
             selectedMetrics={selectedMetrics}
             metricsData={metricsData}
@@ -111,6 +146,16 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
         );
       case 4:
         return (
+          <ExpandPerformanceDashboard
+            deploymentData={deploymentData}
+            selectedMetrics={selectedMetrics}
+            metricsData={metricsData}
+            onNext={goNext}
+            onBack={goBack}
+          />
+        );
+      case 5:
+        return (
           <ExpandROIStory
             deploymentData={deploymentData}
             metricsData={metricsData}
@@ -119,7 +164,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             onBack={goBack}
           />
         );
-      case 5:
+      case 6:
         return (
           <ExpandJourneyExpansion
             deploymentData={deploymentData}
@@ -134,7 +179,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
   };
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
+    <div className="min-h-screen bg-[#f8fafc]">
       {renderStep()}
     </div>
   );

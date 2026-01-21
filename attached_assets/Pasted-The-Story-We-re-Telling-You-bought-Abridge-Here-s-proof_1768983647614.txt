@@ -1,0 +1,2008 @@
+The Story We're Telling:
+
+"You bought Abridge. Here's proof it's working. Here's what happens when you scale."
+
+Every screen should build toward that conclusion.
+
+Design System (Same as Explore):
+ElementStyleCurrent StateCoral/Orange (#f97316)Improvement/SuccessGreen (#059669)Expansion/OpportunityIndigo (#6366f1)Neutral/BeforeGray (#94a3b8)BackgroundsWhite cards on #f8fafcShadowsSubtle, 0 4px 12px rgbaBorder Radius12px cards, 8px inputsTypographyClear hierarchy, 12px labels, 14px body, 24-48px hero numbers
+
+Full Flow:
+CopyPage 1: Setting Selection
+        ↓
+Page 2: Deployment Setup + Metrics Selection
+        ↓
+Page 3: Enter Your Data (for each selected metric)
+        ↓
+Page 4: Your Performance Dashboard (visual summary)
+        ↓
+Page 5: Your ROI Story
+        ↓
+Page 6: Your Journey (Expansion)
+
+Page 1: Setting Selection
+jsxCopy// ============ SETTING SELECTION ============
+
+export default function ExpandSettingSelection({ onSelectSetting }) {
+  return (
+    <div className="expand-page">
+      
+      {/* Header */}
+      <header className="page-header-minimal">
+        <div className="brand">
+          <span className="brand-logo">ABRIDGE</span>
+          <span className="brand-divider">|</span>
+          <span className="brand-product">ROI Calculator</span>
+        </div>
+      </header>
+      
+      {/* Hero */}
+      <div className="page-hero">
+        <h1>Analyze Your Results</h1>
+        <p className="hero-subtitle">See how your Abridge deployment is performing and model expansion</p>
+      </div>
+      
+      {/* Settings Grid */}
+      <div className="settings-grid">
+        
+        {/* Outpatient - Active */}
+        <div 
+          className="setting-card active"
+          onClick={() => onSelectSetting('outpatient')}
+        >
+          <div className="setting-icon-container">
+            <span className="setting-icon">📊</span>
+          </div>
+          <div className="setting-content">
+            <h3>Outpatient</h3>
+            <span className="setting-status available">Available</span>
+            <p className="setting-description">
+              Analyze your outpatient clinic results and model expansion across your organization.
+            </p>
+          </div>
+          <button className="setting-cta">
+            Load Your Results
+            <span className="cta-arrow">→</span>
+          </button>
+        </div>
+        
+        {/* ED - Coming Soon */}
+        <div className="setting-card disabled">
+          <div className="setting-icon-container muted">
+            <span className="setting-icon">🏥</span>
+          </div>
+          <div className="setting-content">
+            <h3>Emergency Department</h3>
+            <span className="setting-status coming-soon">Coming Soon</span>
+            <p className="setting-description blurred">
+              Analyze your ED deployment results.
+            </p>
+          </div>
+          <div className="setting-overlay">
+            <span>Coming Q2 2025</span>
+          </div>
+        </div>
+        
+        {/* Inpatient - Coming Soon */}
+        <div className="setting-card disabled">
+          <div className="setting-icon-container muted">
+            <span className="setting-icon">🏨</span>
+          </div>
+          <div className="setting-content">
+            <h3>Inpatient</h3>
+            <span className="setting-status coming-soon">Coming Soon</span>
+            <p className="setting-description blurred">
+              Analyze your inpatient deployment results.
+            </p>
+          </div>
+          <div className="setting-overlay">
+            <span>Coming Q2 2025</span>
+          </div>
+        </div>
+        
+        {/* Nursing - Coming Soon */}
+        <div className="setting-card disabled">
+          <div className="setting-icon-container muted">
+            <span className="setting-icon">💉</span>
+          </div>
+          <div className="setting-content">
+            <h3>Nursing</h3>
+            <span className="setting-status coming-soon">Coming Soon</span>
+            <p className="setting-description blurred">
+              Analyze your nursing deployment results.
+            </p>
+          </div>
+          <div className="setting-overlay">
+            <span>Coming Q3 2025</span>
+          </div>
+        </div>
+        
+      </div>
+      
+      {/* Explore Link */}
+      <div className="explore-callout">
+        <span className="callout-icon">💡</span>
+        <p>
+          Don't have results yet? 
+          <a href="/explore" className="callout-link">Use Explore</a> 
+          to project potential ROI before you deploy.
+        </p>
+      </div>
+      
+    </div>
+  );
+}
+
+Page 2: Deployment Setup + Metrics Selection
+jsxCopy// ============ DEPLOYMENT SETUP ============
+
+import { useState, useMemo } from 'react';
+
+export default function ExpandDeploymentSetup({
+  deploymentData,
+  setDeploymentData,
+  selectedMetrics,
+  setSelectedMetrics,
+  onNext,
+  onBack
+}) {
+  
+  // Calculate Abridge encounters
+  const abridgeEncounters = useMemo(() => {
+    if (deploymentData.providers && deploymentData.annualEncounters && deploymentData.utilizationRate) {
+      return Math.round(deploymentData.annualEncounters * (deploymentData.utilizationRate / 100));
+    }
+    return null;
+  }, [deploymentData]);
+  
+  // Metrics configuration
+  const metricsConfig = [
+    {
+      id: 'timeSavings',
+      name: 'Time Savings',
+      description: 'Time in notes per appointment',
+      source: 'Clarity data',
+      icon: '⏱️',
+      recommended: true
+    },
+    {
+      id: 'workOutsideWork',
+      name: 'Work Outside of Work',
+      description: 'Hours worked outside scheduled time',
+      source: 'Clarity data',
+      icon: '🌙',
+      recommended: true
+    },
+    {
+      id: 'levelOfService',
+      name: 'Level of Service',
+      description: 'E/M code distribution (99211-99215)',
+      source: 'Clarity data',
+      icon: '📋',
+      recommended: true
+    },
+    {
+      id: 'wrvuCapture',
+      name: 'wRVU Capture',
+      description: 'wRVUs per encounter',
+      source: 'Clarity data',
+      icon: '💰',
+      recommended: true
+    },
+    {
+      id: 'chartClosure',
+      name: 'Chart Closure Time',
+      description: '% of charts closed within 24h, 48h, 72h+',
+      source: 'Clarity data',
+      icon: '📄',
+      recommended: false
+    },
+    {
+      id: 'clinicianSatisfaction',
+      name: 'Clinician Satisfaction',
+      description: 'Satisfaction scores, burnout indicators',
+      source: 'Survey data',
+      icon: '😊',
+      recommended: false
+    }
+  ];
+  
+  const toggleMetric = (metricId) => {
+    if (selectedMetrics.includes(metricId)) {
+      setSelectedMetrics(selectedMetrics.filter(m => m !== metricId));
+    } else {
+      setSelectedMetrics([...selectedMetrics, metricId]);
+    }
+  };
+  
+  const canProceed = 
+    deploymentData.providers && 
+    deploymentData.annualEncounters && 
+    deploymentData.utilizationRate &&
+    deploymentData.monthsOnAbridge &&
+    selectedMetrics.length > 0;
+  
+  return (
+    <div className="expand-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <span className="back-arrow">←</span>
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+        </div>
+        <div className="step-indicator">
+          <span className="step-current">Step 1</span>
+          <span className="step-total">of 5</span>
+          <span className="step-name">Your Setup</span>
+        </div>
+      </header>
+      
+      {/* Page Title */}
+      <div className="page-title-section">
+        <h1>Your Outpatient Deployment</h1>
+        <p>Tell us about your Abridge setup so we can analyze your results</p>
+      </div>
+      
+      {/* Main Content */}
+      <div className="setup-content">
+        
+        {/* Deployment Basics */}
+        <section className="setup-section">
+          <div className="section-header">
+            <h2>DEPLOYMENT BASICS</h2>
+          </div>
+          
+          <div className="input-grid-four">
+            
+            <div className="input-group">
+              <label>Providers using Abridge</label>
+              <input
+                type="number"
+                placeholder="e.g., 150"
+                value={deploymentData.providers || ''}
+                onChange={(e) => setDeploymentData({
+                  ...deploymentData,
+                  providers: e.target.value ? Number(e.target.value) : null
+                })}
+                className="input-large"
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Total annual encounters</label>
+              <input
+                type="number"
+                placeholder="e.g., 195000"
+                value={deploymentData.annualEncounters || ''}
+                onChange={(e) => setDeploymentData({
+                  ...deploymentData,
+                  annualEncounters: e.target.value ? Number(e.target.value) : null
+                })}
+                className="input-large"
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Utilization rate</label>
+              <div className="input-with-suffix">
+                <input
+                  type="number"
+                  placeholder="e.g., 72"
+                  value={deploymentData.utilizationRate || ''}
+                  onChange={(e) => setDeploymentData({
+                    ...deploymentData,
+                    utilizationRate: e.target.value ? Number(e.target.value) : null
+                  })}
+                  className="input-large"
+                />
+                <span className="input-suffix">%</span>
+              </div>
+              <span className="input-hint">% of encounters using Abridge</span>
+            </div>
+            
+            <div className="input-group">
+              <label>Months on Abridge</label>
+              <input
+                type="number"
+                placeholder="e.g., 6"
+                value={deploymentData.monthsOnAbridge || ''}
+                onChange={(e) => setDeploymentData({
+                  ...deploymentData,
+                  monthsOnAbridge: e.target.value ? Number(e.target.value) : null
+                })}
+                className="input-large"
+              />
+            </div>
+            
+          </div>
+          
+          {/* Calculated Encounters */}
+          {abridgeEncounters && (
+            <div className="calculated-callout">
+              <span className="callout-dot"></span>
+              <span className="callout-text">
+                <strong>{abridgeEncounters.toLocaleString()}</strong> encounters documented with Abridge
+              </span>
+            </div>
+          )}
+          
+        </section>
+        
+        {/* Metrics Selection */}
+        <section className="setup-section">
+          <div className="section-header">
+            <h2>WHAT DO YOU WANT TO MEASURE?</h2>
+            <p>Select the metrics you have data for</p>
+          </div>
+          
+          <div className="metrics-grid">
+            {metricsConfig.map(metric => (
+              <div
+                key={metric.id}
+                className={`metric-card ${selectedMetrics.includes(metric.id) ? 'selected' : ''}`}
+                onClick={() => toggleMetric(metric.id)}
+              >
+                <div className="metric-checkbox">
+                  <div className={`checkbox ${selectedMetrics.includes(metric.id) ? 'checked' : ''}`}>
+                    {selectedMetrics.includes(metric.id) && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="metric-icon">{metric.icon}</div>
+                
+                <div className="metric-content">
+                  <div className="metric-name-row">
+                    <h3>{metric.name}</h3>
+                    {metric.recommended && (
+                      <span className="recommended-badge">RECOMMENDED</span>
+                    )}
+                  </div>
+                  <p className="metric-description">{metric.description}</p>
+                  <p className="metric-source">Source: {metric.source}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="metrics-hint">
+            <span className="hint-icon">💡</span>
+            <p>Select at least one metric to continue. More metrics = more complete picture.</p>
+          </div>
+          
+        </section>
+        
+      </div>
+      
+      {/* Footer */}
+      <div className="page-footer">
+        <button
+          className={`primary-button ${!canProceed ? 'disabled' : ''}`}
+          onClick={onNext}
+          disabled={!canProceed}
+        >
+          Enter Your Data
+          <span className="button-arrow">→</span>
+        </button>
+      </div>
+      
+    </div>
+  );
+}
+
+Page 3: Enter Your Data (Dynamic Based on Selected Metrics)
+This page renders input sections for each selected metric.
+jsxCopy// ============ DATA ENTRY PAGE ============
+
+import { useState } from 'react';
+import TimeSavingsInput from './metrics/TimeSavingsInput';
+import WorkOutsideWorkInput from './metrics/WorkOutsideWorkInput';
+import LevelOfServiceInput from './metrics/LevelOfServiceInput';
+import WrvuCaptureInput from './metrics/WrvuCaptureInput';
+import ChartClosureInput from './metrics/ChartClosureInput';
+import ClinicianSatisfactionInput from './metrics/ClinicianSatisfactionInput';
+
+export default function ExpandDataEntry({
+  deploymentData,
+  selectedMetrics,
+  metricsData,
+  setMetricsData,
+  onNext,
+  onBack
+}) {
+  
+  const metricComponents = {
+    timeSavings: TimeSavingsInput,
+    workOutsideWork: WorkOutsideWorkInput,
+    levelOfService: LevelOfServiceInput,
+    wrvuCapture: WrvuCaptureInput,
+    chartClosure: ChartClosureInput,
+    clinicianSatisfaction: ClinicianSatisfactionInput
+  };
+  
+  return (
+    <div className="expand-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <span className="back-arrow">←</span>
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+        </div>
+        <div className="step-indicator">
+          <span className="step-current">Step 2</span>
+          <span className="step-total">of 5</span>
+          <span className="step-name">Your Data</span>
+        </div>
+      </header>
+      
+      {/* Page Title */}
+      <div className="page-title-section">
+        <h1>Enter Your Results</h1>
+        <p>
+          {deploymentData.providers} providers · {deploymentData.monthsOnAbridge} months on Abridge · {selectedMetrics.length} metrics selected
+        </p>
+      </div>
+      
+      {/* Metric Input Sections */}
+      <div className="data-entry-content">
+        {selectedMetrics.map(metricId => {
+          const MetricComponent = metricComponents[metricId];
+          return (
+            <MetricComponent
+              key={metricId}
+              data={metricsData[metricId]}
+              setData={(newData) => setMetricsData({
+                ...metricsData,
+                [metricId]: newData
+              })}
+              deploymentData={deploymentData}
+            />
+          );
+        })}
+      </div>
+      
+      {/* Footer */}
+      <div className="page-footer">
+        <button className="primary-button" onClick={onNext}>
+          See Your Performance
+          <span className="button-arrow">→</span>
+        </button>
+      </div>
+      
+    </div>
+  );
+}
+
+Metric Components:
+Time Savings Input
+jsxCopy// ============ TIME SAVINGS INPUT ============
+
+export default function TimeSavingsInput({ data, setData, deploymentData }) {
+  
+  const savings = data.before && data.after ? data.before - data.after : null;
+  const percentReduction = savings && data.before ? Math.round((savings / data.before) * 100) : null;
+  
+  return (
+    <section className="metric-input-section">
+      
+      <div className="metric-input-header">
+        <div className="metric-icon-large">⏱️</div>
+        <div className="metric-title-group">
+          <h2>Time Savings</h2>
+          <p>Average time in notes per appointment</p>
+        </div>
+      </div>
+      
+      <div className="before-after-input-card">
+        
+        <div className="ba-column">
+          <span className="ba-label">BEFORE ABRIDGE</span>
+          <div className="ba-input-group">
+            <input
+              type="number"
+              placeholder="—"
+              value={data.before || ''}
+              onChange={(e) => setData({ ...data, before: e.target.value ? Number(e.target.value) : null })}
+              className="ba-input"
+            />
+            <span className="ba-unit">minutes</span>
+          </div>
+        </div>
+        
+        <div className="ba-arrow-container">
+          <div className="ba-arrow">→</div>
+        </div>
+        
+        <div className="ba-column">
+          <span className="ba-label">AFTER ABRIDGE</span>
+          <div className="ba-input-group">
+            <input
+              type="number"
+              step="0.1"
+              placeholder="—"
+              value={data.after || ''}
+              onChange={(e) => setData({ ...data, after: e.target.value ? Number(e.target.value) : null })}
+              className="ba-input"
+            />
+            <span className="ba-unit">minutes</span>
+          </div>
+        </div>
+        
+        <div className="ba-equals">=</div>
+        
+        <div className="ba-column result">
+          <span className="ba-label">CHANGE</span>
+          {savings !== null ? (
+            <div className="ba-result-box success">
+              <span className="ba-result-primary">-{savings} min/enc</span>
+              <span className="ba-result-secondary">{percentReduction}% reduction</span>
+            </div>
+          ) : (
+            <div className="ba-result-box empty">
+              <span className="ba-result-placeholder">Enter data</span>
+            </div>
+          )}
+        </div>
+        
+      </div>
+      
+      <div className="benchmark-callout">
+        <span className="benchmark-icon">📊</span>
+        <div className="benchmark-content">
+          <span className="benchmark-label">BENCHMARK</span>
+          <p>Average time savings across Abridge customers: <strong>5-8 min/encounter</strong></p>
+          {savings !== null && (
+            <p className="benchmark-comparison">
+              You're at: <strong>{savings} min</strong> — 
+              {savings >= 5 ? (
+                <span className="comparison-good"> Above average ✓</span>
+              ) : (
+                <span className="comparison-ok"> Room to grow</span>
+              )}
+            </p>
+          )}
+        </div>
+      </div>
+      
+    </section>
+  );
+}
+
+Level of Service Input (Full E/M Table)
+jsxCopy// ============ LEVEL OF SERVICE INPUT ============
+
+import { useMemo } from 'react';
+
+export default function LevelOfServiceInput({ data, setData }) {
+  
+  const emCodes = ['99215', '99214', '99213', '99212', '99211'];
+  
+  // Calculate totals
+  const beforeTotal = useMemo(() => {
+    return emCodes.reduce((sum, code) => sum + (data.before?.[code] || 0), 0);
+  }, [data.before]);
+  
+  const afterTotal = useMemo(() => {
+    return emCodes.reduce((sum, code) => sum + (data.after?.[code] || 0), 0);
+  }, [data.after]);
+  
+  // Calculate weighted average (99211=1, 99212=2, etc.)
+  const calculateAverage = (distribution) => {
+    if (!distribution) return null;
+    const weights = { '99211': 1, '99212': 2, '99213': 3, '99214': 4, '99215': 5 };
+    let weighted = 0;
+    let total = 0;
+    emCodes.forEach(code => {
+      const pct = distribution[code] || 0;
+      weighted += pct * weights[code];
+      total += pct;
+    });
+    return total > 0 ? (weighted / total).toFixed(2) : null;
+  };
+  
+  const beforeAvg = calculateAverage(data.before);
+  const afterAvg = calculateAverage(data.after);
+  const avgChange = beforeAvg && afterAvg ? (((afterAvg - beforeAvg) / beforeAvg) * 100).toFixed(1) : null;
+  
+  const updateBefore = (code, value) => {
+    setData({
+      ...data,
+      before: { ...data.before, [code]: value ? Number(value) : 0 }
+    });
+  };
+  
+  const updateAfter = (code, value) => {
+    setData({
+      ...data,
+      after: { ...data.after, [code]: value ? Number(value) : 0 }
+    });
+  };
+  
+  return (
+    <section className="metric-input-section">
+      
+      <div className="metric-input-header">
+        <div className="metric-icon-large">📋</div>
+        <div className="metric-title-group">
+          <h2>Level of Service</h2>
+          <p>E/M code distribution — Established patients</p>
+        </div>
+      </div>
+      
+      {/* E/M Input Table */}
+      <div className="em-input-table">
+        
+        <div className="em-table-header">
+          <div className="em-col-code">CODE</div>
+          <div className="em-col-before">BEFORE ABRIDGE</div>
+          <div className="em-col-after">AFTER ABRIDGE</div>
+          <div className="em-col-change">CHANGE</div>
+        </div>
+        
+        {emCodes.map(code => {
+          const beforeVal = data.before?.[code] || 0;
+          const afterVal = data.after?.[code] || 0;
+          const change = afterVal - beforeVal;
+          
+          return (
+            <div key={code} className="em-table-row">
+              <div className="em-col-code">
+                <span className="em-code-label">{code}</span>
+              </div>
+              
+              <div className="em-col-before">
+                <div className="em-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                    value={beforeVal || ''}
+                    onChange={(e) => updateBefore(code, e.target.value)}
+                    className="em-input"
+                  />
+                  <span className="em-input-suffix">%</span>
+                </div>
+                <div 
+                  className="em-bar before-bar"
+                  style={{ width: `${beforeVal}%` }}
+                ></div>
+              </div>
+              
+              <div className="em-col-after">
+                <div className="em-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                    value={afterVal || ''}
+                    onChange={(e) => updateAfter(code, e.target.value)}
+                    className="em-input"
+                  />
+                  <span className="em-input-suffix">%</span>
+                </div>
+                <div 
+                  className="em-bar after-bar"
+                  style={{ width: `${afterVal}%` }}
+                ></div>
+              </div>
+              
+              <div className="em-col-change">
+                {change !== 0 && (
+                  <span className={`em-change ${change > 0 ? 'positive' : 'negative'}`}>
+                    {change > 0 ? '↑' : '↓'} {Math.abs(change)}pp
+                  </span>
+                )}
+                {change === 0 && <span className="em-change neutral">—</span>}
+              </div>
+            </div>
+          );
+        })}
+        
+        {/* Totals Row */}
+        <div className="em-table-row totals-row">
+          <div className="em-col-code">
+            <span className="em-code-label">TOTAL</span>
+          </div>
+          <div className="em-col-before">
+            <span className={`em-total ${beforeTotal === 100 ? 'valid' : 'invalid'}`}>
+              {beforeTotal}%
+              {beforeTotal !== 100 && <span className="total-hint"> (must = 100%)</span>}
+            </span>
+          </div>
+          <div className="em-col-after">
+            <span className={`em-total ${afterTotal === 100 ? 'valid' : 'invalid'}`}>
+              {afterTotal}%
+              {afterTotal !== 100 && <span className="total-hint"> (must = 100%)</span>}
+            </span>
+          </div>
+          <div className="em-col-change"></div>
+        </div>
+        
+      </div>
+      
+      {/* Average Level Calculation */}
+      {beforeAvg && afterAvg && beforeTotal === 100 && afterTotal === 100 && (
+        <div className="average-level-card">
+          <h3>AVERAGE LEVEL OF SERVICE</h3>
+          <div className="average-level-content">
+            <div className="avg-item">
+              <span className="avg-label">Before</span>
+              <span className="avg-value">{beforeAvg}</span>
+            </div>
+            <div className="avg-arrow">→</div>
+            <div className="avg-item">
+              <span className="avg-label">After</span>
+              <span className="avg-value">{afterAvg}</span>
+            </div>
+            <div className="avg-change">
+              <span className="avg-change-value success">+{avgChange}%</span>
+            </div>
+          </div>
+          <p className="average-level-note">
+            Weighted average where 99211=1, 99212=2, 99213=3, 99214=4, 99215=5
+          </p>
+        </div>
+      )}
+      
+      {/* Insight */}
+      {data.before?.['99215'] && data.after?.['99215'] && (
+        <div className="insight-callout">
+          <span className="insight-icon">💡</span>
+          <div className="insight-content">
+            <strong>+{(data.after['99215'] - data.before['99215'])} percentage point shift to Level 5</strong>
+            <p>
+              This suggests more complete documentation of complex visits. 
+              Not upcoding — capturing work already being done.
+            </p>
+          </div>
+        </div>
+      )}
+      
+    </section>
+  );
+}
+
+Chart Closure Input (Bucket Approach)
+jsxCopy// ============ CHART CLOSURE INPUT ============
+
+import { useMemo } from 'react';
+
+export default function ChartClosureInput({ data, setData }) {
+  
+  const buckets = [
+    { id: 'within24', label: 'Within 24 hours', icon: '⚡' },
+    { id: '24to48', label: '24-48 hours', icon: '📅' },
+    { id: '48to72', label: '48-72 hours', icon: '📆' },
+    { id: 'over72', label: '72+ hours', icon: '⏳' }
+  ];
+  
+  // Calculate totals
+  const beforeTotal = useMemo(() => {
+    return buckets.reduce((sum, b) => sum + (data.before?.[b.id] || 0), 0);
+  }, [data.before]);
+  
+  const afterTotal = useMemo(() => {
+    return buckets.reduce((sum, b) => sum + (data.after?.[b.id] || 0), 0);
+  }, [data.after]);
+  
+  const updateBefore = (bucketId, value) => {
+    setData({
+      ...data,
+      before: { ...data.before, [bucketId]: value ? Number(value) : 0 }
+    });
+  };
+  
+  const updateAfter = (bucketId, value) => {
+    setData({
+      ...data,
+      after: { ...data.after, [bucketId]: value ? Number(value) : 0 }
+    });
+  };
+  
+  // Key metric: same-day closure improvement
+  const sameDayBefore = data.before?.within24 || 0;
+  const sameDayAfter = data.after?.within24 || 0;
+  const sameDayImprovement = sameDayAfter - sameDayBefore;
+  
+  return (
+    <section className="metric-input-section">
+      
+      <div className="metric-input-header">
+        <div className="metric-icon-large">📄</div>
+        <div className="metric-title-group">
+          <h2>Chart Closure Time</h2>
+          <p>What % of charts are closed within each time window?</p>
+        </div>
+      </div>
+      
+      {/* Bucket Input Table */}
+      <div className="closure-input-table">
+        
+        <div className="closure-table-header">
+          <div className="closure-col-bucket">TIME BUCKET</div>
+          <div className="closure-col-before">BEFORE ABRIDGE</div>
+          <div className="closure-col-after">AFTER ABRIDGE</div>
+          <div className="closure-col-change">CHANGE</div>
+        </div>
+        
+        {buckets.map(bucket => {
+          const beforeVal = data.before?.[bucket.id] || 0;
+          const afterVal = data.after?.[bucket.id] || 0;
+          const change = afterVal - beforeVal;
+          
+          return (
+            <div key={bucket.id} className="closure-table-row">
+              <div className="closure-col-bucket">
+                <span className="bucket-icon">{bucket.icon}</span>
+                <span className="bucket-label">{bucket.label}</span>
+              </div>
+              
+              <div className="closure-col-before">
+                <div className="closure-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                    value={beforeVal || ''}
+                    onChange={(e) => updateBefore(bucket.id, e.target.value)}
+                    className="closure-input"
+                  />
+                  <span className="closure-input-suffix">%</span>
+                </div>
+                <div 
+                  className="closure-bar before-bar"
+                  style={{ width: `${Math.min(beforeVal, 100)}%` }}
+                ></div>
+              </div>
+              
+              <div className="closure-col-after">
+                <div className="closure-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                    value={afterVal || ''}
+                    onChange={(e) => updateAfter(bucket.id, e.target.value)}
+                    className="closure-input"
+                  />
+                  <span className="closure-input-suffix">%</span>
+                </div>
+                <div 
+                  className="closure-bar after-bar"
+                  style={{ width: `${Math.min(afterVal, 100)}%` }}
+                ></div>
+              </div>
+              
+              <div className="closure-col-change">
+                {change !== 0 && (
+                  <span className={`closure-change ${
+                    (bucket.id === 'within24' && change > 0) || 
+                    (bucket.id !== 'within24' && change < 0) 
+                      ? 'positive' 
+                      : 'negative'
+                  }`}>
+                    {change > 0 ? '↑' : '↓'} {Math.abs(change)}pp
+                  </span>
+                )}
+                {change === 0 && <span className="closure-change neutral">—</span>}
+              </div>
+            </div>
+          );
+        })}
+        
+        {/* Totals Row */}
+        <div className="closure-table-row totals-row">
+          <div className="closure-col-bucket">
+            <span className="bucket-label">TOTAL</span>
+          </div>
+          <div className="closure-col-before">
+            <span className={`closure-total ${beforeTotal === 100 ? 'valid' : 'invalid'}`}>
+              {beforeTotal}%
+            </span>
+          </div>
+          <div className="closure-col-after">
+            <span className={`closure-total ${afterTotal === 100 ? 'valid' : 'invalid'}`}>
+              {afterTotal}%
+            </span>
+          </div>
+          <div className="closure-col-change"></div>
+        </div>
+        
+      </div>
+      
+      {/* Key Metric Highlight */}
+      {beforeTotal === 100 && afterTotal === 100 && sameDayImprovement > 0 && (
+        <div className="key-metric-card success">
+          <div className="key-metric-icon">⚡</div>
+          <div className="key-metric-content">
+            <span className="key-metric-value">+{sameDayImprovement}pp</span>
+            <span className="key-metric-label">improvement in same-day chart closure</span>
+          </div>
+        </div>
+      )}
+      
+      {/* Insight */}
+      {sameDayImprovement > 0 && (
+        <div className="insight-callout">
+          <span className="insight-icon">💡</span>
+          <div className="insight-content">
+            <strong>Faster chart closure = faster billing cycles</strong>
+            <p>
+              Charts closed within 24 hours can be billed immediately, 
+              improving cash flow and reducing A/R days.
+            </p>
+          </div>
+        </div>
+      )}
+      
+    </section>
+  );
+}
+
+Clinician Satisfaction Input
+jsxCopy// ============ CLINICIAN SATISFACTION INPUT ============
+
+export default function ClinicianSatisfactionInput({ data, setData, deploymentData }) {
+  
+  const satisfactionChange = data.before && data.after ? data.after - data.before : null;
+  
+  return (
+    <section className="metric-input-section">
+      
+      <div className="metric-input-header">
+        <div className="metric-icon-large">😊</div>
+        <div className="metric-title-group">
+          <h2>Clinician Satisfaction</h2>
+          <p>How has provider satisfaction changed?</p>
+        </div>
+      </div>
+      
+      {/* Satisfaction Score */}
+      <div className="satisfaction-input-card">
+        <h3>Overall satisfaction score</h3>
+        
+        <div className="before-after-input-card compact">
+          
+          <div className="ba-column">
+            <span className="ba-label">BEFORE ABRIDGE</span>
+            <div className="ba-input-group">
+              <input
+                type="number"
+                min="1"
+                max="10"
+                step="0.1"
+                placeholder="—"
+                value={data.before || ''}
+                onChange={(e) => setData({ ...data, before: e.target.value ? Number(e.target.value) : null })}
+                className="ba-input"
+              />
+              <span className="ba-unit">/ 10</span>
+            </div>
+          </div>
+          
+          <div className="ba-arrow-container">
+            <div className="ba-arrow">→</div>
+          </div>
+          
+          <div className="ba-column">
+            <span className="ba-label">AFTER ABRIDGE</span>
+            <div className="ba-input-group">
+              <input
+                type="number"
+                min="1"
+                max="10"
+                step="0.1"
+                placeholder="—"
+                value={data.after || ''}
+                onChange={(e) => setData({ ...data, after: e.target.value ? Number(e.target.value) : null })}
+                className="ba-input"
+              />
+              <span className="ba-unit">/ 10</span>
+            </div>
+          </div>
+          
+          {satisfactionChange !== null && (
+            <>
+              <div className="ba-equals">=</div>
+              <div className="ba-column result">
+                <span className="ba-label">CHANGE</span>
+                <div className={`ba-result-box ${satisfactionChange > 0 ? 'success' : 'neutral'}`}>
+                  <span className="ba-result-primary">
+                    {satisfactionChange > 0 ? '+' : ''}{satisfactionChange.toFixed(1)} points
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+          
+        </div>
+      </div>
+      
+      {/* Recommendation Rate */}
+      <div className="satisfaction-input-card">
+        <h3>% of providers who would recommend Abridge to a colleague</h3>
+        
+        <div className="single-input-centered">
+          <input
+            type="number"
+            min="0"
+            max="100"
+            placeholder="—"
+            value={data.recommendRate || ''}
+            onChange={(e) => setData({ ...data, recommendRate: e.target.value ? Number(e.target.value) : null })}
+            className="large-input"
+          />
+          <span className="large-input-suffix">%</span>
+        </div>
+      </div>
+      
+      {/* Retention Value Insight */}
+      {satisfactionChange > 0 && (
+        <div className="retention-insight-card">
+          <div className="retention-icon">💡</div>
+          <div className="retention-content">
+            <h4>WHY THIS MATTERS FOR ROI</h4>
+            <p>
+              Higher satisfaction correlates with lower burnout and turnover. 
+              Based on your improvement, we estimate potential retention value:
+            </p>
+            <ul>
+              <li>Satisfaction improvement: <strong>+{satisfactionChange.toFixed(1)} points</strong></li>
+              <li>Estimated turnover reduction: <strong>10-15%</strong></li>
+              <li>At $400K replacement cost per provider, this represents significant potential value over time</li>
+            </ul>
+            <div className="retention-warning">
+              <span className="warning-icon">⚠️</span>
+              <span>Retention impact is typically measurable after 12-18 months.</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
+    </section>
+  );
+}
+
+Page 4: Performance Dashboard (Visual Summary)
+This page shows all their entered data in a beautiful visual summary.
+jsxCopy// ============ PERFORMANCE DASHBOARD ============
+
+export default function ExpandPerformanceDashboard({
+  deploymentData,
+  selectedMetrics,
+  metricsData,
+  onNext,
+  onBack
+}) {
+  
+  const abridgeEncounters = Math.round(
+    deploymentData.annualEncounters * (deploymentData.utilizationRate / 100)
+  );
+  
+  return (
+    <div className="expand-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <span className="back-arrow">←</span>
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+        </div>
+        <div className="step-indicator">
+          <span className="step-current">Step 3</span>
+          <span className="step-total">of 5</span>
+          <span className="step-name">Your Performance</span>
+        </div>
+      </header>
+      
+      {/* Page Title */}
+      <div className="page-title-section">
+        <h1>Your Performance Summary</h1>
+        <p>Here's what your data shows after {deploymentData.monthsOnAbridge} months on Abridge</p>
+      </div>
+      
+      {/* Context Bar */}
+      <div className="context-bar">
+        <div className="context-item">
+          <span className="context-value">{deploymentData.providers}</span>
+          <span className="context-label">providers</span>
+        </div>
+        <div className="context-divider">·</div>
+        <div className="context-item">
+          <span className="context-value">{abridgeEncounters.toLocaleString()}</span>
+          <span className="context-label">Abridge encounters</span>
+        </div>
+        <div className="context-divider">·</div>
+        <div className="context-item">
+          <span className="context-value">{deploymentData.utilizationRate}%</span>
+          <span className="context-label">utilization</span>
+        </div>
+      </div>
+      
+      {/* Performance Cards Grid */}
+      <div className="performance-grid">
+        
+        {/* Time Savings Card */}
+        {selectedMetrics.includes('timeSavings') && metricsData.timeSavings?.before && (
+          <div className="performance-card">
+            <div className="card-header">
+              <span className="card-icon">⏱️</span>
+              <h3>Time Savings</h3>
+            </div>
+            <div className="card-metric">
+              <span className="metric-value success">
+                -{metricsData.timeSavings.before - metricsData.timeSavings.after} min
+              </span>
+              <span className="metric-label">per encounter</span>
+            </div>
+            <div className="card-comparison">
+              <span className="comparison-before">{metricsData.timeSavings.before} min</span>
+              <span className="comparison-arrow">→</span>
+              <span className="comparison-after">{metricsData.timeSavings.after} min</span>
+            </div>
+            <div className="card-footer">
+              <span className="footer-stat">
+                {Math.round(((metricsData.timeSavings.before - metricsData.timeSavings.after) / metricsData.timeSavings.before) * 100)}% reduction
+              </span>
+            </div>
+          </div>
+        )}
+        
+        {/* Level of Service Card */}
+        {selectedMetrics.includes('levelOfService') && metricsData.levelOfService?.before && (
+          <div className="performance-card">
+            <div className="card-header">
+              <span className="card-icon">📋</span>
+              <h3>Level of Service</h3>
+            </div>
+            <div className="card-metric">
+              <span className="metric-value success">
+                +{metricsData.levelOfService.after?.['99215'] - metricsData.levelOfService.before?.['99215']}pp
+              </span>
+              <span className="metric-label">shift to Level 5</span>
+            </div>
+            <div className="card-visual">
+              {/* Mini E/M bars */}
+              <div className="mini-em-bars">
+                {['99215', '99214', '99213'].map(code => (
+                  <div key={code} className="mini-em-row">
+                    <span className="mini-em-code">{code}</span>
+                    <div className="mini-em-bar-container">
+                      <div 
+                        className="mini-em-bar before"
+                        style={{ width: `${metricsData.levelOfService.before?.[code] || 0}%` }}
+                      ></div>
+                      <div 
+                        className="mini-em-bar after"
+                        style={{ width: `${metricsData.levelOfService.after?.[code] || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* wRVU Card */}
+        {selectedMetrics.includes('wrvuCapture') && metricsData.wrvuCapture?.before && (
+          <div className="performance-card">
+            <div className="card-header">
+              <span className="card-icon">💰</span>
+              <h3>wRVU Capture</h3>
+            </div>
+            <div className="card-metric">
+              <span className="metric-value success">
+                +{(((metricsData.wrvuCapture.after - metricsData.wrvuCapture.before) / metricsData.wrvuCapture.before) * 100).toFixed(1)}%
+              </span>
+              <span className="metric-label">lift</span>
+            </div>
+            <div className="card-comparison">
+              <span className="comparison-before">{metricsData.wrvuCapture.before} wRVU/enc</span>
+              <span className="comparison-arrow">→</span>
+              <span className="comparison-after">{metricsData.wrvuCapture.after} wRVU/enc</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Chart Closure Card */}
+        {selectedMetrics.includes('chartClosure') && metricsData.chartClosure?.before && (
+          <div className="performance-card">
+            <div className="card-header">
+              <span className="card-icon">📄</span>
+              <h3>Chart Closure</h3>
+            </div>
+            <div className="card-metric">
+              <span className="metric-value success">
+                +{metricsData.chartClosure.after?.within24 - metricsData.chartClosure.before?.within24}pp
+              </span>
+              <span className="metric-label">same-day closure</span>
+            </div>
+            <div className="card-comparison">
+              <span className="comparison-before">{metricsData.chartClosure.before?.within24}%</span>
+              <span className="comparison-arrow">→</span>
+              <span className="comparison-after">{metricsData.chartClosure.after?.within24}%</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Satisfaction Card */}
+        {selectedMetrics.includes('clinicianSatisfaction') && metricsData.clinicianSatisfaction?.before && (
+          <div className="performance-card">
+            <div className="card-header">
+              <span className="card-icon">😊</span>
+              <h3>Satisfaction</h3>
+            </div>
+            <div className="card-metric">
+              <span className="metric-value success">
+                +{(metricsData.clinicianSatisfaction.after - metricsData.clinicianSatisfaction.before).toFixed(1)}
+              </span>
+              <span className="metric-label">points</span>
+            </div>
+            <div className="card-comparison">
+              <span className="comparison-before">{metricsData.clinicianSatisfaction.before}/10</span>
+              <span className="comparison-arrow">→</span>
+              <span className="comparison-after">{metricsData.clinicianSatisfaction.after}/10</span>
+            </div>
+            {metricsData.clinicianSatisfaction.recommendRate && (
+              <div className="card-footer">
+                <span className="footer-stat">
+                  {metricsData.clinicianSatisfaction.recommendRate}% would recommend
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+        
+      </div>
+      
+      {/* Success Summary */}
+      <div className="success-summary">
+        <span className="success-icon">✅</span>
+        <p>
+          Your deployment is showing <strong>positive results across {selectedMetrics.length} metrics</strong>. 
+          Let's see what this means for your ROI.
+        </p>
+      </div>
+      
+      {/* Footer */}
+      <div className="page-footer">
+        <button className="primary-button" onClick={onNext}>
+          Calculate Your ROI
+          <span className="button-arrow">→</span>
+        </button>
+      </div>
+      
+    </div>
+  );
+}
+
+Page 5: ROI Story (No Payback)
+jsxCopy// ============ ROI STORY ============
+
+export default function ExpandROIStory({
+  deploymentData,
+  metricsData,
+  selectedMetrics,
+  onNext,
+  onBack
+}) {
+  
+  // ... (calculations based on their data)
+  
+  return (
+    <div className="expand-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <span className="back-arrow">←</span>
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+        </div>
+        <div className="step-indicator">
+          <span className="step-current">Step 4</span>
+          <span className="step-total">of 5</span>
+          <span className="step-name">Your ROI</span>
+        </div>
+      </header>
+      
+      {/* Page Title */}
+      <div className="page-title-section">
+        <h1>Your ROI Story</h1>
+        <p>Based on your actual Abridge data</p>
+      </div>
+      
+      {/* Hero ROI - TWO METRICS ONLY (no payback) */}
+      <div className="roi-hero-section">
+        <div className="roi-hero-grid two-col">
+          
+          <div className="roi-hero-card primary">
+            <span className="roi-hero-value">${netValue.toLocaleString()}</span>
+            <span className="roi-hero-label">NET ANNUAL VALUE</span>
+          </div>
+          
+          <div className="roi-hero-card secondary">
+            <span className="roi-hero-value">{roi}x</span>
+            <span className="roi-hero-label">RETURN ON INVESTMENT</span>
+          </div>
+          
+        </div>
+        
+        <div className="roi-summary-line">
+          <span>Total Value: ${totalValue.toLocaleString()}</span>
+          <span className="summary-divider">│</span>
+          <span>Investment: ${investment.toLocaleString()}</span>
+        </div>
+        
+        <div className="conservative-badge">
+          <span className="badge-icon">⚠️</span>
+          <span>Conservative estimate — uses typical conversion rates</span>
+        </div>
+      </div>
+      
+      {/* Value Breakdown */}
+      <section className="value-breakdown-section">
+        {/* ... breakdown cards for each metric ... */}
+      </section>
+      
+      {/* Footer */}
+      <div className="page-footer">
+        <button className="primary-button" onClick={onNext}>
+          See Your Expansion Potential
+          <span className="button-arrow">→</span>
+        </button>
+      </div>
+      
+    </div>
+  );
+}
+
+Page 6: Journey / Expansion
+The chart should be curved (using monotone interpolation) and all numbers come from their data.
+jsxCopy// ============ JOURNEY / EXPANSION ============
+
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, ReferenceDot } from 'recharts';
+
+export default function ExpandJourney({
+  deploymentData,
+  metricsData,
+  calculatedROI,
+  onBack
+}) {
+  
+  const [expansionTarget, setExpansionTarget] = useState({
+    providers: deploymentData.providers * 4,
+    utilization: 80
+  });
+  
+  // Calculate value per provider (from their actual data)
+  const valuePerProvider = calculatedROI.totalValue / deploymentData.providers;
+  
+  // Generate curve data points
+  const chartData = useMemo(() => {
+    const points = [];
+    const currentProviders = deploymentData.providers;
+    const targetProviders = expansionTarget.providers;
+    const steps = 20;
+    
+    for (let i = 0; i <= steps; i++) {
+      const progress = i / steps;
+      const providers = Math.round(currentProviders + (targetProviders - currentProviders) * progress);
+      
+      // Utilization improves as adoption matures
+      const utilization = (
+        deploymentData.utilizationRate + 
+        (expansionTarget.utilization - deploymentData.utilizationRate) * progress
+      ) / 100;
+      
+      // Value scales with providers and utilization improvement
+      const utilizationMultiplier = utilization / (deploymentData.utilizationRate / 100);
+      const value = valuePerProvider * providers * utilizationMultiplier;
+      
+      points.push({
+        providers,
+        value: Math.round(value),
+        isCurrent: i === 0,
+        isTarget: i === steps
+      });
+    }
+    
+    return points;
+  }, [deploymentData, expansionTarget, valuePerProvider]);
+  
+  const currentValue = chartData[0].value;
+  const targetValue = chartData[chartData.length - 1].value;
+  const expansionPotential = targetValue - currentValue;
+  
+  return (
+    <div className="expand-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <span className="back-arrow">←</span>
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+        </div>
+        <div className="step-indicator">
+          <span className="step-current">Step 5</span>
+          <span className="step-total">of 5</span>
+          <span className="step-name">Your Journey</span>
+        </div>
+        <button className="export-button">
+          <span className="export-icon">📤</span>
+          Export & Share
+        </button>
+      </header>
+      
+      {/* Page Title */}
+      <div className="page-title-section">
+        <h1>Your Growth Trajectory</h1>
+        <p>Based on your proven results, here's how value scales with expansion</p>
+      </div>
+      
+      {/* Hero Stats */}
+      <div className="journey-hero-grid">
+        <div className="journey-hero-card current">
+          <span className="hero-label">CURRENT NET VALUE</span>
+          <span className="hero-value">${currentValue.toLocaleString()}</span>
+        </div>
+        <div className="journey-hero-card roi">
+          <span className="hero-label">RETURN ON INVESTMENT</span>
+          <span className="hero-value">{calculatedROI.roi}x</span>
+        </div>
+        <div className="journey-hero-card expansion">
+          <span className="hero-label">EXPANSION POTENTIAL</span>
+          <span className="hero-value">+${expansionPotential.toLocaleString()}</span>
+        </div>
+      </div>
+      
+      {/* Growth Chart */}
+      <div className="journey-chart-section">
+        <div className="chart-container">
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+              <defs>
+                <linearGradient id="journeyGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#059669" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              
+              <XAxis
+                dataKey="providers"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 12 }}
+                label={{
+                  value: 'PROVIDERS',
+                  position: 'bottom',
+                  fill: '#94a3b8',
+                  fontSize: 11
+                }}
+              />
+              
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 12 }}
+                tickFormatter={(v) => `$${(v / 1000000).toFixed(1)}M`}
+                width={70}
+              />
+              
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="#059669"
+                strokeWidth={3}
+                fill="url(#journeyGradient)"
+              />
+              
+              {/* Current marker */}
+              <ReferenceDot
+                x={chartData[0].providers}
+                y={chartData[0].value}
+                r={10}
+                fill="#f97316"
+                stroke="white"
+                strokeWidth={3}
+              />
+              
+              {/* Target marker */}
+              <ReferenceDot
+                x={chartData[chartData.length - 1].providers}
+                y={chartData[chartData.length - 1].value}
+                r={10}
+                fill="#059669"
+                stroke="white"
+                strokeWidth={3}
+              />
+              
+            </AreaChart>
+          </ResponsiveContainer>
+          
+          {/* Chart Legend */}
+          <div className="chart-legend">
+            <div className="legend-item current">
+              <span className="legend-dot current"></span>
+              <span>You are here ({deploymentData.providers} providers)</span>
+            </div>
+            <div className="legend-item target">
+              <span className="legend-dot target"></span>
+              <span>Your opportunity ({expansionTarget.providers} providers)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Model Your Expansion */}
+      <div className="expansion-model-section">
+        <div className="expansion-model-header">
+          <span className="model-icon">🎯</span>
+          <h2>MODEL YOUR EXPANSION</h2>
+        </div>
+        
+        <div className="expansion-model-grid">
+          
+          {/* Current State */}
+          <div className="expansion-state-card current">
+            <div className="state-header">
+              <span className="state-dot current"></span>
+              <div className="state-titles">
+                <h3>CURRENT STATE</h3>
+                <p>Your proven results</p>
+              </div>
+            </div>
+            <div className="state-metrics">
+              <div className="state-metric">
+                <span className="metric-label">Providers</span>
+                <span className="metric-value">{deploymentData.providers}</span>
+              </div>
+              <div className="state-metric">
+                <span className="metric-label">Utilization</span>
+                <span className="metric-value">{deploymentData.utilizationRate}%</span>
+              </div>
+              <div className="state-metric highlight">
+                <span className="metric-label">Annual Value</span>
+                <span className="metric-value">${currentValue.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Arrow */}
+          <div className="expansion-arrow">
+            <span>→</span>
+          </div>
+          
+          {/* Target State */}
+          <div className="expansion-state-card target">
+            <div className="state-header">
+              <span className="state-dot target"></span>
+              <div className="state-titles">
+                <h3>EXPANSION TARGET</h3>
+                <p>Model your opportunity</p>
+              </div>
+            </div>
+            <div className="state-inputs">
+              <div className="state-input">
+                <label>Total providers</label>
+                <input
+                  type="number"
+                  value={expansionTarget.providers}
+                  onChange={(e) => setExpansionTarget({
+                    ...expansionTarget,
+                    providers: Number(e.target.value)
+                  })}
+                />
+              </div>
+              <div className="state-input">
+                <label>Target utilization</label>
+                <div className="input-with-suffix">
+                  <input
+                    type="number"
+                    value={expansionTarget.utilization}
+                    onChange={(e) => setExpansionTarget({
+                      ...expansionTarget,
+                      utilization: Number(e.target.value)
+                    })}
+                  />
+                  <span className="suffix">%</span>
+                </div>
+              </div>
+              <div className="state-metric highlight">
+                <span className="metric-label">Projected Value</span>
+                <span className="metric-value">${targetValue.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      {/* Calculation Transparency */}
+      <div className="calculation-transparency">
+        <span className="transparency-icon">💡</span>
+        <div className="transparency-content">
+          <strong>How we calculated this:</strong>
+          <ul>
+            <li>Your current value per provider: <strong>${valuePerProvider.toLocaleString()}</strong></li>
+            <li>Scales with providers + utilization improvement</li>
+            <li>Assumes utilization increases from {deploymentData.utilizationRate}% → {expansionTarget.utilization}% as adoption matures</li>
+          </ul>
+        </div>
+      </div>
+      
+      {/* Export Actions */}
+      <div className="page-footer-actions">
+        <button className="export-pdf-button">
+          <span className="button-icon">📄</span>
+          Export as PDF
+        </button>
+        <button className="share-button">
+          <span className="button-icon">📧</span>
+          Share via Email
+        </button>
+        <button className="link-button">
+          <span className="button-icon">🔗</span>
+          Copy Link
+        </button>
+      </div>
+      
+    </div>
+  );
+}
+
+CSS Highlights (Key Styles):
+cssCopy/* ============ EXPAND FLOW STYLES ============ */
+
+/* Setting Cards */
+.setting-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.setting-card.active {
+  cursor: pointer;
+}
+
+.setting-card.active:hover {
+  border-color: #f97316;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.12);
+  transform: translateY(-2px);
+}
+
+.setting-card.disabled {
+  opacity: 0.7;
+}
+
+.setting-card.disabled .setting-description {
+  filter: blur(4px);
+}
+
+.setting-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.setting-overlay span {
+  background: #f1f5f9;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Metric Cards */
+.metric-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.metric-card:hover {
+  border-color: #cbd5e1;
+}
+
+.metric-card.selected {
+  border-color: #f97316;
+  background: #fffbeb;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkbox.checked {
+  background: #f97316;
+  border-color: #f97316;
+}
+
+.recommended-badge {
+  background: #059669;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+
+/* Before/After Input Cards */
+.before-after-input-card {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.ba-column {
+  flex: 1;
+}
+
+.ba-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.ba-input {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 28px;
+  font-weight: 600;
+  text-align: center;
+  color: #1e293b;
+  background: white;
+}
+
+.ba-input:focus {
+  outline: none;
+  border-color: #f97316;
+}
+
+.ba-unit {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.ba-arrow-container {
+  display: flex;
+  align-items: center;
+  padding-bottom: 20px;
+}
+
+.ba-arrow {
+  font-size: 28px;
+  color: #94a3b8;
+}
+
+.ba-result-box {
+  padding: 16px 24px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.ba-result-box.success {
+  background: #ecfdf5;
+}
+
+.ba-result-box.empty {
+  background: #f1f5f9;
+}
+
+.ba-result-primary {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.ba-result-secondary {
+  display: block;
+  font-size: 13px;
+  color: #047857;
+  margin-top: 4px;
+}
+
+/* E/M Table */
+.em-input-table {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.em-table-header {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr 100px;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.em-table-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr 100px;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  align-items: center;
+}
+
+.em-bar {
+  height: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  max-width: 100%;
+}
+
+.em-bar.before-bar {
+  background: #94a3b8;
+}
+
+.em-bar.after-bar {
+  background: #059669;
+}
+
+.em-change {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.em-change.positive {
+  color: #059669;
+}
+
+.em-change.negative {
+  color: #f97316;
+}
+
+/* Journey Chart */
+.journey-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.journey-hero-card {
+  padding: 28px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.journey-hero-card.current {
+  background: white;
+  border: 1px solid #e2e8f0;
+}
+
+.journey-hero-card.roi {
+  background: #1e293b;
+}
+
+.journey-hero-card.roi .hero-label,
+.journey-hero-card.roi .hero-value {
+  color: white;
+}
+
+.journey-hero-card.expansion {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.journey-hero-card.expansion .hero-value {
+  color: #059669;
+}
+
+.hero-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.hero-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Expansion Model */
+.expansion-state-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.expansion-state-card.current {
+  border-left: 4px solid #f97316;
+}
+
+.expansion-state-card.target {
+  border-left: 4px solid #059669;
+  background: #f0fdf4;
+}
+
+.state-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.state-dot.current {
+  background: #f97316;
+}
+
+.state-dot.target {
+  background: #059669;
+}
+
+Summary of Changes:
+SectionFix AppliedMetrics SelectionNothing pre-selected, only 4 RECOMMENDED, Work Outside of Work = ClarityDeployment BasicsAll fields start blankTime SavingsSimple before/after, no fake bell curveLevel of ServiceFull E/M input table with validationwRVU CaptureSimple before/after with % changeChart ClosureBucket approach (24h/48h/72h+)Clinician SatisfactionNEW — links to retentionROI HeroTwo metrics only (no payback)Expansion ChartCurved (monotone), numbers from their data
+
+This should be a complete, polished flow that matches the quality of Explore.
