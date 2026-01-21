@@ -191,9 +191,9 @@ interface DriverInputs {
     realizationRate: number;   // % that passes audit (default 50%)
   };
   inpatientCDI: {
-    queriesPerAdmission: number;
-    costPerQuery: number;
-    reductionPct: number;
+    queryRate: number;      // % of admissions that get queried (default 30%)
+    reductionRate: number;  // % of queries that can be avoided (default 25%)
+    costPerQuery: number;   // Fully loaded cost per query (default $50)
   };
   inpatientDenials: {
     denialRate: number;
@@ -457,9 +457,9 @@ export default function ModelBuilder({
       realizationRate: 50,     // 50% passes audit
     },
     inpatientCDI: {
-      queriesPerAdmission: 0.15,
-      costPerQuery: 45,
-      reductionPct: 40,
+      queryRate: 30,        // 30% of admissions get queried
+      reductionRate: 25,    // 25% of queries can be avoided
+      costPerQuery: 50,     // $50 fully loaded cost per query
     },
     inpatientDenials: {
       denialRate: 6,
@@ -800,10 +800,14 @@ export default function ModelBuilder({
         return Math.round(annualValue);
       }
       case "inpatientCDI": {
-        const { queriesPerAdmission, costPerQuery, reductionPct } = driverInputs.inpatientCDI;
-        const totalQueries = eligibleEncounters * queriesPerAdmission;
-        const queriesAvoided = totalQueries * (reductionPct / 100);
-        return Math.round(queriesAvoided * costPerQuery);
+        const { queryRate, reductionRate, costPerQuery } = driverInputs.inpatientCDI;
+        // Step 1: Current Query Volume
+        const annualQueries = eligibleEncounters * (queryRate / 100);
+        // Step 2: Queries Avoided
+        const queriesAvoided = annualQueries * (reductionRate / 100);
+        // Step 3: Operational Savings
+        const annualSavings = queriesAvoided * costPerQuery;
+        return Math.round(annualSavings);
       }
       case "inpatientDenials": {
         const { denialRate, avgClaimValue } = driverInputs.inpatientDenials;
@@ -1025,9 +1029,9 @@ export default function ModelBuilder({
           };
         case "inpatientCDI":
           return {
-            queriesPerAdmission: driverInputs.inpatientCDI.queriesPerAdmission,
+            queryRate: driverInputs.inpatientCDI.queryRate,
+            reductionRate: driverInputs.inpatientCDI.reductionRate,
             costPerQuery: driverInputs.inpatientCDI.costPerQuery,
-            reductionPct: driverInputs.inpatientCDI.reductionPct,
           };
         case "inpatientDenials":
           return {
@@ -4343,79 +4347,216 @@ export default function ModelBuilder({
   };
   
   const renderInpatientCDIInputs = () => {
-    const { queriesPerAdmission, costPerQuery, reductionPct } = driverInputs.inpatientCDI;
-    const totalQueries = eligibleEncounters * queriesPerAdmission;
-    const queriesAvoided = totalQueries * (reductionPct / 100);
+    const { queryRate, reductionRate, costPerQuery } = driverInputs.inpatientCDI;
+    
+    // Step 1: Current Query Volume
+    const annualQueries = eligibleEncounters * (queryRate / 100);
+    // Step 2: Queries Avoided
+    const queriesAvoided = annualQueries * (reductionRate / 100);
+    // Step 3: Operational Savings
+    const annualSavings = queriesAvoided * costPerQuery;
     
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Average CDI queries per admission</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{queriesPerAdmission.toFixed(2)}</span>
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                CDI teams spend enormous effort querying physicians for clarification. Better initial documentation reduces query volume — saving CDI time and reducing physician interruptions.
+              </p>
+            </div>
           </div>
-          <Slider
-            value={[queriesPerAdmission * 100]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, queriesPerAdmission: val / 100 } }))}
-            min={5}
-            max={30}
-            step={5}
-            className="w-full"
-            data-testid="inpatient-cdi-queries-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Typical range is 0.10-0.25 queries per admission</p>
         </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">Expected query reduction</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{reductionPct}%</span>
-          </div>
-          <Slider
-            value={[reductionPct]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, reductionPct: val } }))}
-            min={20}
-            max={60}
-            step={10}
-            className="w-full"
-            data-testid="inpatient-cdi-reduction-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Better initial documentation typically reduces queries by 30-50%</p>
-        </div>
-        
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-neutral-400 font-mono">
-            {eligibleEncounters.toLocaleString()} × {queriesPerAdmission.toFixed(2)} = {Math.round(totalQueries).toLocaleString()} queries
-          </p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(totalQueries).toLocaleString()} × {reductionPct}% = {Math.round(queriesAvoided).toLocaleString()} queries avoided
-          </p>
-        </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Cost per CDI query (time + overhead)</label>
+
+        {/* Step 1: Current Query Volume */}
+        <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={costPerQuery}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, costPerQuery: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="inpatient-cdi-cost-input"
-            />
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Query Volume</span>
           </div>
-          <p className="text-xs text-[#6B7280]">Includes CDI specialist time, physician response time, and overhead ($30-60 typical)</p>
+          <p className="text-sm text-[#6B7280]">How many queries happen today?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Admissions</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{eligibleEncounters.toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Query Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={queryRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, queryRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-cdi-query-rate-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center py-2">
+            <span className="text-sm text-[#6B7280]">Queries/Year: </span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(annualQueries).toLocaleString()}</span>
+          </div>
+          
+          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800">
+              CDI query rates typically range 20-40% of admissions. 30% is average for most health systems.
+            </p>
+          </div>
         </div>
-        
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 2: Queries Avoided */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Queries Avoided</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">How many can better documentation prevent?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Queries</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(annualQueries).toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Reduction Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={reductionRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, reductionRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-cdi-reduction-rate-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center py-2">
+            <span className="text-sm text-[#6B7280]">Queries Avoided: </span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(queriesAvoided).toLocaleString()}</span>
+          </div>
+          
+          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800">
+              When initial documentation is complete, CDI doesn't need to query for clarification. 25% is conservative — many queries are simply asking physicians to document what they already discussed with the patient.
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 3: Operational Savings */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Operational Savings</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">What's the efficiency value?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Queries Avoided</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(queriesAvoided).toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Cost per Query</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <span className="text-sm text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={costPerQuery}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, costPerQuery: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-cdi-cost-input"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* What's in the $50 per query callout */}
+          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-semibold text-[#6B7280]">WHAT'S IN THE $50 PER QUERY?</span>
+            </div>
+            <div className="space-y-2 text-xs text-[#6B7280]">
+              <p className="font-medium">CDI Specialist time</p>
+              <ul className="ml-3 space-y-0.5">
+                <li>• Research & review: 10-15 min</li>
+                <li>• Writing query: 5-10 min</li>
+                <li>• Follow-up & tracking: 5-10 min</li>
+              </ul>
+              <p className="font-medium mt-2">Physician time</p>
+              <ul className="ml-3 space-y-0.5">
+                <li>• Reading & responding: 5-10 min</li>
+                <li>• Context switching cost</li>
+              </ul>
+              <p className="mt-2 text-neutral-400 italic">
+                Fully loaded cost: $50-$100 per query. We use $50 as a conservative estimate.
+              </p>
+            </div>
+          </div>
+          
+          {/* Additional Benefits callout */}
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-start gap-2 mb-2">
+              <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <span className="text-xs font-semibold text-blue-800">ADDITIONAL BENEFIT (Not Quantified)</span>
+            </div>
+            <div className="space-y-1 text-xs text-blue-800 ml-6">
+              <p>Fewer queries also means:</p>
+              <ul className="space-y-0.5">
+                <li>• Faster DRG finalization → faster billing cycles</li>
+                <li>• Reduced physician administrative burden</li>
+                <li>• CDI team can focus on complex cases</li>
+                <li>• Better physician-CDI relationships</li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Benchmark callout */}
+          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-semibold text-[#6B7280]">BENCHMARK: Query Rates</span>
+            </div>
+            <div className="space-y-1 text-xs text-[#6B7280]">
+              <div className="flex justify-between"><span>Low query rate (mature CDI)</span><span className="font-mono">15-25%</span></div>
+              <div className="flex justify-between"><span>Average</span><span className="font-mono">25-35%</span></div>
+              <div className="flex justify-between"><span>High query rate</span><span className="font-mono">35-45%</span></div>
+            </div>
+            <p className="text-xs text-neutral-400 mt-3">
+              Your input: <span className="font-mono font-medium">{queryRate}%</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(queriesAvoided * costPerQuery))}
+            <span className="font-medium text-[#111827]">Annual Savings</span>
+            <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="inpatient-cdi-result">
+              {formatCurrency(Math.round(annualSavings))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(queriesAvoided).toLocaleString()} avoided × ${costPerQuery}
+            {Math.round(queriesAvoided).toLocaleString()} queries avoided × ${costPerQuery}
           </p>
         </div>
       </div>
