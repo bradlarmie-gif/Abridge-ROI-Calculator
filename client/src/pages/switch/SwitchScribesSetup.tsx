@@ -115,7 +115,7 @@ export default function SwitchScribesSetup({
                 value={data.totalProviders?.toLocaleString() ?? ''}
                 onChange={(e) => handleNumberInput('totalProviders', e.target.value)}
                 placeholder="50"
-                className="w-20 px-4 py-3 border border-slate-200 rounded-lg text-xl font-semibold text-center text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                className="w-20 px-4 py-3 border border-slate-200 rounded-lg text-xl font-semibold text-center text-slate-900 bg-slate-50 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-total-providers"
               />
               <span className="text-lg text-slate-700">providers</span>
@@ -129,7 +129,7 @@ export default function SwitchScribesSetup({
                 value={data.annualEncounters?.toLocaleString() ?? ''}
                 onChange={(e) => handleNumberInput('annualEncounters', e.target.value)}
                 placeholder="100,000"
-                className="w-32 px-4 py-3 border border-slate-200 rounded-lg text-xl font-semibold text-center text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                className="w-32 px-4 py-3 border border-slate-200 rounded-lg text-xl font-semibold text-center text-slate-900 bg-slate-50 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-annual-encounters"
               />
               <span className="text-lg text-slate-700">encounters/year</span>
@@ -161,7 +161,7 @@ export default function SwitchScribesSetup({
                 value={data.providersWithScribes?.toString() ?? ''}
                 onChange={(e) => handleNumberInput('providersWithScribes', e.target.value)}
                 placeholder="15"
-                className="w-20 px-4 py-3 border border-slate-200 rounded-lg text-2xl font-semibold text-center text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                className="w-20 px-4 py-3 border border-slate-200 rounded-lg text-2xl font-semibold text-center text-slate-900 bg-slate-50 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-providers-with-scribes"
               />
               <span className="text-base text-slate-500">of {data.totalProviders ?? '—'} providers</span>
@@ -220,7 +220,7 @@ export default function SwitchScribesSetup({
                   value={data.hourlyRate?.toString() ?? ''}
                   onChange={(e) => handleNumberInput('hourlyRate', e.target.value)}
                   placeholder="22"
-                  className="w-20 px-4 py-3 border border-slate-200 rounded-lg text-xl font-semibold text-center text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                  className="w-20 px-4 py-3 border border-slate-200 rounded-lg text-xl font-semibold text-center text-slate-900 bg-slate-50 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                   data-testid="input-hourly-rate"
                 />
                 <span className="text-base text-slate-500">/hour</span>
@@ -239,7 +239,7 @@ export default function SwitchScribesSetup({
                   value={data.hoursPerWeek?.toString() ?? ''}
                   onChange={(e) => handleNumberInput('hoursPerWeek', e.target.value)}
                   placeholder="32"
-                  className="w-20 px-4 py-3 border border-slate-200 rounded-lg text-xl font-semibold text-center text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                  className="w-20 px-4 py-3 border border-slate-200 rounded-lg text-xl font-semibold text-center text-slate-900 bg-slate-50 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                   data-testid="input-hours-per-week"
                 />
                 <span className="text-base text-slate-500">hours/week</span>
