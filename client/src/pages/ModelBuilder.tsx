@@ -220,10 +220,10 @@ interface DriverInputs {
     documentationImpact: number;
   };
   nursingAgency: {
-    agencyUtilization: number;
-    staffNurseCost: number;
-    agencyNurseCost: number;
-    reductionLevel: "conservative" | "typical" | "aggressive";
+    agencyFTEsPerBed: number;  // e.g., 0.15 = 15% agency utilization
+    staffSalary: number;       // Staff RN fully loaded ($75K)
+    agencyCost: number;        // Agency RN fully loaded ($150K)
+    retentionImpact: number;   // % reduction in agency need (10%)
   };
   nursingRetention: {
     turnoverRate: number;
@@ -497,10 +497,10 @@ export default function ModelBuilder({
       documentationImpact: 20,   // % attributable to documentation
     },
     nursingAgency: {
-      agencyUtilization: 15,
-      staffNurseCost: 85000,
-      agencyNurseCost: 150000,
-      reductionLevel: "typical",
+      agencyFTEsPerBed: 0.15,    // 15% agency utilization
+      staffSalary: 75000,        // $75K staff RN fully loaded
+      agencyCost: 150000,        // $150K agency RN fully loaded
+      retentionImpact: 10,       // 10% reduction in agency need
     },
     nursingRetention: {
       turnoverRate: 18,
@@ -868,11 +868,14 @@ export default function ModelBuilder({
         return Math.round(value);
       }
       case "nursingAgency": {
-        const { agencyUtilization, staffNurseCost, agencyNurseCost, reductionLevel } = driverInputs.nursingAgency;
-        const agencyFTEs = nurseFTEs * (agencyUtilization / 100);
-        const premium = agencyNurseCost - staffNurseCost;
-        const reductionPct = reductionLevel === "conservative" ? 5 : reductionLevel === "typical" ? 10 : 20;
-        const ftesConverted = agencyFTEs * (reductionPct / 100) * (utilizationRate / 100);
+        const { agencyFTEsPerBed, staffSalary, agencyCost, retentionImpact } = driverInputs.nursingAgency;
+        // Step 1: Current agency utilization = Staffed Beds × Agency FTEs per Bed
+        const agencyFTEs = staffedBeds * agencyFTEsPerBed;
+        // Step 2: Agency premium = Agency Cost - Staff Salary
+        const premium = agencyCost - staffSalary;
+        // Step 3: Retention-driven reduction = Agency FTEs × Retention Impact %
+        const ftesConverted = agencyFTEs * (retentionImpact / 100);
+        // Step 4: Cost savings = FTEs Converted × Premium
         return Math.round(ftesConverted * premium);
       }
       case "nursingRetention": {
@@ -5352,100 +5355,200 @@ export default function ModelBuilder({
   };
   
   const renderNursingAgencyInputs = () => {
-    const { agencyUtilization, staffNurseCost, agencyNurseCost, reductionLevel } = driverInputs.nursingAgency;
-    const agencyFTEs = nurseFTEs * (agencyUtilization / 100);
-    const premium = agencyNurseCost - staffNurseCost;
-    const reductionPct = reductionLevel === "conservative" ? 5 : reductionLevel === "typical" ? 10 : 20;
-    const ftesConverted = agencyFTEs * (reductionPct / 100) * (utilizationRate / 100);
+    const { agencyFTEsPerBed, staffSalary, agencyCost, retentionImpact } = driverInputs.nursingAgency;
+    
+    // Step 1: Current agency utilization = Staffed Beds × Agency FTEs per Bed
+    const agencyFTEs = staffedBeds * agencyFTEsPerBed;
+    // Step 2: Agency premium = Agency Cost - Staff Salary
+    const premium = agencyCost - staffSalary;
+    // Step 3: Retention-driven reduction = Agency FTEs × Retention Impact %
+    const ftesConverted = agencyFTEs * (retentionImpact / 100);
+    // Step 4: Cost savings = FTEs Converted × Premium
+    const annualSavings = Math.round(ftesConverted * premium);
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
     
     return (
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">What % of your workforce is agency/traveler?</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{agencyUtilization}%</span>
-          </div>
-          <Slider
-            value={[agencyUtilization]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyUtilization: val } }))}
-            min={5}
-            max={35}
-            step={5}
-            className="w-full"
-            data-testid="nursing-agency-util-slider"
-          />
-          <p className="text-xs text-[#6B7280]">National average is ~15%. Some facilities hit 25%+</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {nurseFTEs} × {agencyUtilization}% = {Math.round(agencyFTEs).toLocaleString()} agency FTEs
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm text-[#111827] font-medium">Staff nurse cost</label>
-            <div className="flex items-center gap-2">
-              <span className="text-[#6B7280]">$</span>
+      <div className="space-y-4">
+        {/* Step 1: Current Agency Utilization */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Agency Utilization</p>
+          <p className="text-xs text-[#6B7280]">How much agency are you using?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Staffed Beds</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{staffedBeds}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Agency FTEs/Bed</label>
               <Input
                 type="number"
-                value={staffNurseCost}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, staffNurseCost: Number(e.target.value) || 0 } }))}
-                className="w-28 font-mono"
-                data-testid="nursing-agency-staff-cost-input"
+                value={agencyFTEsPerBed}
+                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyFTEsPerBed: Number(e.target.value) || 0 } }))}
+                className="w-full text-center font-mono text-sm h-8"
+                step="0.01"
+                data-testid="nursing-agency-ftes-per-bed-input"
               />
-              <span className="text-xs text-[#6B7280]">/year</span>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Agency FTEs</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {agencyFTEs.toFixed(1)}
+              </div>
             </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm text-[#111827] font-medium">Agency nurse cost</label>
-            <div className="flex items-center gap-2">
-              <span className="text-[#6B7280]">$</span>
-              <Input
-                type="number"
-                value={agencyNurseCost}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyNurseCost: Number(e.target.value) || 0 } }))}
-                className="w-28 font-mono"
-                data-testid="nursing-agency-agency-cost-input"
-              />
-              <span className="text-xs text-[#6B7280]">/year</span>
+          <p className="text-xs text-[#6B7280] mt-2">Many hospitals run 10-20% of nursing as agency/travelers. 0.15 FTEs per bed = 15% agency utilization.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 2: Agency Premium */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Agency Premium</p>
+          <p className="text-xs text-[#6B7280]">What's the cost difference?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Staff Salary</label>
+              <div className="flex items-center justify-center">
+                <span className="mr-1 text-[#6B7280] text-xs">$</span>
+                <Input
+                  type="number"
+                  value={staffSalary}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, staffSalary: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-agency-staff-salary-input"
+                />
+              </div>
+            </div>
+            <div className="text-neutral-400">vs</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Agency Cost</label>
+              <div className="flex items-center justify-center">
+                <span className="mr-1 text-[#6B7280] text-xs">$</span>
+                <Input
+                  type="number"
+                  value={agencyCost}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyCost: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-agency-cost-input"
+                />
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Premium</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                ${premium.toLocaleString()}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">Agency nurses cost ~2× staff nurses when fully loaded (agency fees, housing, travel, benefits).</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 3: Retention-Driven Reduction */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Retention-Driven Reduction</p>
+          <p className="text-xs text-[#6B7280]">How much can better retention reduce agency need?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Agency FTEs</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{agencyFTEs.toFixed(1)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Retention Impact</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={retentionImpact}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, retentionImpact: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8"
+                  data-testid="nursing-agency-retention-impact-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">FTEs Converted</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {ftesConverted.toFixed(1)}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">When staff nurses stay instead of burning out, agency need decreases. 10% is conservative — driven by documentation burden reduction improving retention.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 4: Cost Savings */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
+          <p className="text-xs text-[#6B7280]">What's the budget impact?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">FTEs Converted</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{ftesConverted.toFixed(1)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Premium/FTE</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">${premium.toLocaleString()}</div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Annual Savings</label>
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {formatCurrency(annualSavings)}
+              </div>
             </div>
           </div>
         </div>
-        <p className="text-xs text-neutral-400 font-mono">
-          Premium: ${premium.toLocaleString()}/FTE
-        </p>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">How much agency reduction is realistic?</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(["conservative", "typical", "aggressive"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, reductionLevel: opt } }))}
-                className={`p-3 rounded-lg border text-sm transition-all ${
-                  reductionLevel === opt
-                    ? "border-[#E85D3F] bg-[#E85D3F] text-white shadow-sm"
-                    : "border-neutral-200 bg-white text-[#6B7280] hover:border-neutral-300 hover:bg-neutral-50"
-                }`}
-                data-testid={`nursing-agency-reduction-${opt}`}
-              >
-                {opt === "conservative" && "5%"}
-                {opt === "typical" && "10%"}
-                {opt === "aggressive" && "20%"}
-              </button>
-            ))}
+
+        {/* Benchmark callout */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: Agency vs Staff Cost</p>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Staff RN (fully loaded)</span>
+              <span className="font-mono text-[#111827]">$70K - $90K</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Agency RN (fully loaded)</span>
+              <span className="font-mono text-[#111827]">$140K - $200K</span>
+            </div>
           </div>
-          <p className="text-xs text-[#6B7280]">Documentation burden is one factor driving agency use. Conservative is realistic.</p>
+          <p className="text-xs text-[#6B7280] mt-2">We use ${premium.toLocaleString()} premium (conservative)</p>
         </div>
-        
+
+        {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
+            <div>
+              <span className="font-medium text-[#111827]">Annual Savings</span>
+              <p className="text-xs text-neutral-500 mt-0.5">{ftesConverted.toFixed(1)} agency FTEs converted × ${premium.toLocaleString()} premium</p>
+            </div>
             <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(ftesConverted * premium))}
+              {formatCurrency(annualSavings)}
             </span>
           </div>
-          <p className="text-xs text-neutral-400 font-mono mt-1">
-            {ftesConverted.toFixed(1)} FTEs converted × ${premium.toLocaleString()} premium
+        </div>
+
+        {/* Indirect benefit note */}
+        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            This is an indirect benefit — the logic chain is: better retention → less agency need → budget savings.
           </p>
         </div>
       </div>

@@ -1,0 +1,99 @@
+❤️  Nurse Retention                                 $270,000  ∧ │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Nursing turnover costs $40-60K per nurse when you factor in     │
+│ recruiting, onboarding, and lost productivity. Documentation    │
+│ burden is consistently cited as a top driver of burnout.        │
+│ Reducing this burden improves retention.                        │
+└─────────────────────────────────────────────────────────────────┘
+
+📋 Your Calculation
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 The Theory                                                   │
+│                                                                 │
+│ Nurses spend 25-35% of their shift charting — time taken away   │
+│ from patients. This drives frustration, burnout, and turnover.  │
+│ When documentation happens automatically in real-time, nurses   │
+│ spend more time at the bedside and less time fighting the EMR.  │
+└─────────────────────────────────────────────────────────────────┘
+
+STEP 1: BASELINE TURNOVER
+What's the current turnover situation?
+
+Nurse FTEs                   Turnover Rate
+┌─────────────┐              ┌─────────────┐
+│     300     │      ×       │     18      │ %     =    54 departures/year
+└─────────────┘              └─────────────┘
+
+Nursing turnover averages 18-25%. Higher than most roles due 
+to burnout, schedules, and workload.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 2: BURNOUT-RELATED
+How much is burnout-driven?
+
+Departures                   Burnout Attribution
+┌─────────────┐              ┌─────────────┐
+│      54     │      ×       │     50      │ %     =    27 preventable
+└─────────────┘              └─────────────┘
+
+~50% of nursing turnover is burnout-related. Documentation 
+burden is consistently a top complaint in exit interviews.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 3: ABRIDGE ATTRIBUTION
+What can Abridge prevent?
+
+Preventable                  Abridge Impact
+┌─────────────┐              ┌─────────────┐
+│      27     │      ×       │     20      │ %     =    5.4 departures avoided
+└─────────────┘              └─────────────┘
+
+Documentation is ONE burnout driver for nurses (others: ratios, 
+acuity, schedules). We use 20% — lower than physicians because 
+nursing burnout is more multifactorial.
+
+────────────────────────────────────────────────────────────────────
+
+STEP 4: COST SAVINGS
+What's the dollar value?
+
+Departures Avoided           Replacement Cost
+┌─────────────┐              ┌─────────────┐
+│     5.4     │      ×       │ $  50,000   │        =    $270,000
+└─────────────┘              └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 Benchmark: Nurse Replacement Cost                            │
+│                                                                 │
+│ Recruiting & hiring                  $5K - $15K                 │
+│ Onboarding & training                $15K - $25K                │
+│ Lost productivity (ramp-up)          $15K - $25K                │
+│                                                                 │
+│ Total: $40K - $60K                                              │
+│ We use $50,000 (mid-range)                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 What This Means                                              │
+│                                                                 │
+│ Annually, expect to retain ~5 additional nurses you would       │
+│ have otherwise lost to burnout.                                 │
+│                                                                 │
+│ Total savings: $270,000/year                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   Annual Value                                     $270,000     │
+│   5.4 departures avoided × $50,000 replacement cost             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+⚠️ Retention impact typically measurable after 12+ months.
