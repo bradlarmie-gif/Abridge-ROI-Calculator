@@ -14,7 +14,13 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Application Flow
 The application guides users through multi-step processes:
--   **Explore Path**: A 4-step sales-led flow (Care Setting → Strategic Priorities → Model Builder → Summary) for new prospects across Outpatient, Emergency Department, Inpatient, and Nursing care settings.
+-   **Explore Path**: A 6-step sales-led flow for new prospects across Outpatient, Emergency Department, Inpatient, and Nursing care settings:
+    1. Care Setting Selection (ObjectiveSelectionScreen)
+    2. Strategic Priorities (ObjectiveSelectionScreen)
+    3. Baseline Setup (BaselineSetup.tsx) - "Your Organization" inputs: providers, encounters, utilization rate
+    4. Value Drivers (ModelBuilder.tsx) - ROI driver cards with Live Model sidebar
+    5. Investment (InvestmentPage.tsx) - pricing configuration
+    6. Summary (SummaryCommandCenter.tsx) - final ROI results with waterfall chart
 -   **Switch Path (Ambient AI)**: A streamlined 3-page flow (after Solution Selection) for prospects switching from other ambient AI solutions. Pages: Setup (provider range chips, utilization/efficiency sliders with Abridge benchmarks, live gap visualization showing YOU vs ABRIDGE) → Analysis (annual gap hero with monthly/daily breakdown, Value Breakdown tab with expandable driver cards, Over Time tab with 3-year chart and cost of waiting) → Conclusion (situation summary, context about benchmarks, 3-year value highlight, CTAs). Uses slider-based inputs with real-time gap calculations.
 -   **Switch Path (Human Scribes)**: A 5-step cost-focused flow for prospects switching from human scribes to Abridge. Pages: Setup (organization info, scribe coverage, hourly costs) → Coverage Reality (current vs full coverage visualization) → Hidden Costs (turnover/training, management overhead) → Full Picture (total investment summary with breakdown) → Comparison (3-year side-by-side scribes vs Abridge with savings). Uses editable inline inputs and real-time calculations with coral (#EA2C00) CTAs and emerald for positive savings values.
 -   **Expand Path**: A 5-step performance analysis flow for current Abridge customers (Setting Selection → Deployment Setup → Performance Dashboard → ROI Story → Journey Expansion).
