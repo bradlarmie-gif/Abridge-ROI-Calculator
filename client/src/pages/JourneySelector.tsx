@@ -27,7 +27,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       onClick={onClick}
       data-testid={testId}
     >
-      <div className="w-12 h-12 rounded-xl bg-[#FEF2F0] flex items-center justify-center mb-6">
+      <div className="w-12 h-12 rounded-xl bg-[#FEF0EC] flex items-center justify-center mb-6">
         <Icon className="w-6 h-6 text-[#EA2C00]" />
       </div>
       

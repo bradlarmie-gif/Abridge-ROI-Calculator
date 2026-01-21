@@ -5514,7 +5514,7 @@ export default function RoiCalculator({
                                   className={`
                                     w-full text-left p-4 rounded-xl border transition-all
                                     ${isConfigured 
-                                      ? 'border-[#EA2C00]/30 bg-[#FEF2F0]/50 shadow-sm' 
+                                      ? 'border-[#EA2C00]/30 bg-[#FEF0EC]/50 shadow-sm' 
                                       : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'}
                                   `}
                                   data-testid={`driver-mini-card-${driver.id}`}
@@ -5522,7 +5522,7 @@ export default function RoiCalculator({
                                   <div className="flex items-start justify-between mb-2">
                                     <div className={`
                                       w-10 h-10 rounded-lg flex items-center justify-center
-                                      ${isConfigured ? 'bg-[#FEF2F0] text-[#EA2C00]' : 'bg-gray-100 text-gray-400'}
+                                      ${isConfigured ? 'bg-[#FEF0EC] text-[#EA2C00]' : 'bg-gray-100 text-gray-400'}
                                     `}>
                                       <DriverIcon className="w-5 h-5" />
                                     </div>
@@ -5886,7 +5886,7 @@ export default function RoiCalculator({
                                   {/* Header - Clean white with subtle accent */}
                                   <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                      <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center">
+                                      <div className="w-10 h-10 rounded-lg bg-[#FEF0EC] flex items-center justify-center">
                                         <DriverIcon className="w-5 h-5 text-[#EA2C00]" />
                                       </div>
                                       <div>
@@ -5941,7 +5941,7 @@ export default function RoiCalculator({
                                         ))}
                                       </div>
                                       <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-[#E5E7EB]">
-                                        <div className="bg-[#FEF2F0] rounded-lg p-3 sm:p-4 flex justify-between items-center gap-2">
+                                        <div className="bg-[#FEF0EC] rounded-lg p-3 sm:p-4 flex justify-between items-center gap-2">
                                           <span className="text-xs sm:text-sm font-semibold text-[#EA2C00]">Annual Value</span>
                                           <span className="text-xl sm:text-2xl font-bold text-[#EA2C00] tabular-nums">
                                             ${driverCalc.abridgeValue.toLocaleString()}
@@ -7306,7 +7306,7 @@ export default function RoiCalculator({
                         setEncounterScalingMode("proportional");
                         setShowExpandProviders(true);
                       }}
-                      className="w-full py-2 px-3 text-[13px] border border-[#E5E7EB] rounded-lg hover:border-[#EA2C00] hover:bg-[#FEF2F0] transition-colors"
+                      className="w-full py-2 px-3 text-[13px] border border-[#E5E7EB] rounded-lg hover:border-[#EA2C00] hover:bg-[#FEF0EC] transition-colors"
                       data-testid="button-quick-expansion"
                     >
                       Quick Calculator

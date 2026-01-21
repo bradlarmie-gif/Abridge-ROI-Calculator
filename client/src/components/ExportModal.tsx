@@ -231,7 +231,7 @@ export function ExportModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-[#E8532F]" />
+            <FileText className="h-5 w-5 text-[#EA2C00]" />
             {getExportTitle()}
           </DialogTitle>
           <DialogDescription>
@@ -391,7 +391,7 @@ export function ExportModal({
                 Cancel
               </Button>
               <Button
-                className="flex-1 bg-[#E8532F] hover:bg-[#d14a2a]"
+                className="flex-1 bg-[#EA2C00] hover:bg-[#d14a2a]"
                 onClick={handleGenerate}
                 disabled={isGenerating}
                 data-testid="button-generate-pdf"

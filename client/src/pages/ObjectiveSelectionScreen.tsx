@@ -875,7 +875,7 @@ function CareSettingRow({
         disabled
           ? "cursor-not-allowed bg-white border border-dashed border-[#D1D5DB]"
           : selected
-            ? "bg-[#FEF2F0] border-2 border-[#EA2C00] shadow-[0_0_0_3px_rgba(232,93,63,0.1)]"
+            ? "bg-[#FEF0EC] border-2 border-[#EA2C00] shadow-[0_0_0_3px_rgba(232,93,63,0.1)]"
             : "bg-white border border-[#E5E7EB] hover:border-[#EA2C00] hover:shadow-md cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
@@ -887,7 +887,7 @@ function CareSettingRow({
               ? "bg-[#EA2C00]"
               : disabled
                 ? "bg-neutral-100"
-                : "bg-neutral-100 group-hover:bg-[#FEF2F0]"
+                : "bg-neutral-100 group-hover:bg-[#FEF0EC]"
           }`}
         >
           <Icon
@@ -997,24 +997,24 @@ function PriorityCard({
           onToggle();
         }
       }}
-      className={`group relative w-full text-left cursor-pointer rounded-lg transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#E8532F]/25 ${
+      className={`group relative w-full text-left cursor-pointer rounded-lg transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#EA2C00]/25 ${
         isSelected
-          ? "bg-white border border-[#E8532F] shadow-[0_2px_4px_rgba(0,0,0,0.08)]"
-          : "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#E8532F]"
+          ? "bg-white border border-[#EA2C00] shadow-[0_2px_4px_rgba(0,0,0,0.08)]"
+          : "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#EA2C00]"
       }`}
       data-testid={`priority-card-${lever.id}`}
     >
       {isSelected && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#E8532F] rounded-l-lg" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#EA2C00] rounded-l-lg" />
       )}
 
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <div className={`flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0 ${
-              isSelected ? "bg-[#E8532F]/10" : "bg-neutral-100"
+              isSelected ? "bg-[#EA2C00]/10" : "bg-neutral-100"
             }`}>
-              <LeverIcon className={`w-5 h-5 ${isSelected ? "text-[#E8532F]" : "text-neutral-600"}`} />
+              <LeverIcon className={`w-5 h-5 ${isSelected ? "text-[#EA2C00]" : "text-neutral-600"}`} />
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
               <h4 className="text-base font-medium text-[#111827] leading-snug mb-1">
@@ -1035,7 +1035,7 @@ function PriorityCard({
             <Checkbox
               checked={isSelected}
               onCheckedChange={onToggle}
-              className={`flex-shrink-0 mt-1 ${isSelected ? "border-[#E8532F] data-[state=checked]:bg-[#E8532F]" : ""}`}
+              className={`flex-shrink-0 mt-1 ${isSelected ? "border-[#EA2C00] data-[state=checked]:bg-[#EA2C00]" : ""}`}
               data-testid={`checkbox-${lever.id}`}
             />
           </div>
@@ -2482,7 +2482,7 @@ export default function ObjectiveSelectionScreen({
                     <button
                       type="button"
                       onClick={handleContinueToPage1}
-                      className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-semibold text-base border-2 border-[#E8532F] text-[#E8532F] bg-transparent hover:bg-[#E8532F] hover:text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,83,47,0.25)] active:translate-y-0 active:shadow-[0_2px_8px_rgba(232,83,47,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8532F] focus-visible:ring-offset-2"
+                      className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-semibold text-base border-2 border-[#EA2C00] text-[#EA2C00] bg-transparent hover:bg-[#EA2C00] hover:text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,83,47,0.25)] active:translate-y-0 active:shadow-[0_2px_8px_rgba(232,83,47,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
                       data-testid="button-start"
                     >
                       Build ROI Model
@@ -2575,7 +2575,7 @@ export default function ObjectiveSelectionScreen({
                         <span className="text-base font-medium text-[#111827]">
                           {CARE_SETTING_LABELS[selectedSetting]}
                         </span>
-                        <Check className="w-5 h-5 text-[#E8532F]" />
+                        <Check className="w-5 h-5 text-[#EA2C00]" />
                       </div>
                     ) : (
                       <p className="text-sm text-[#9CA3AF] italic">No setting selected</p>
@@ -2737,7 +2737,7 @@ export default function ObjectiveSelectionScreen({
                         <span className="text-base font-medium text-[#111827]">
                           {CARE_SETTING_LABELS[selectedSetting]}
                         </span>
-                        <Check className="w-4 h-4 text-[#E8532F]" />
+                        <Check className="w-4 h-4 text-[#EA2C00]" />
                       </div>
                     </div>
                     
@@ -2760,7 +2760,7 @@ export default function ObjectiveSelectionScreen({
                               if (!lever) return null;
                               return (
                                 <li key={leverId} className="flex items-center gap-2 text-sm text-[#111827]">
-                                  <Check className="w-4 h-4 text-[#E8532F] flex-shrink-0" />
+                                  <Check className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
                                   <span>{lever.label}</span>
                                 </li>
                               );
@@ -2781,7 +2781,7 @@ export default function ObjectiveSelectionScreen({
                       onClick={handleBuildYourModel}
                       className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
                         canContinuePage2
-                          ? "bg-[#111827] text-white hover:bg-[#E8532F]"
+                          ? "bg-[#111827] text-white hover:bg-[#EA2C00]"
                           : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
                       }`}
                       data-testid="button-build-your-model"
@@ -2810,7 +2810,7 @@ export default function ObjectiveSelectionScreen({
                   onClick={handleBuildYourModel}
                   className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                     canContinuePage2
-                      ? "bg-[#111827] text-white hover:bg-[#E8532F]"
+                      ? "bg-[#111827] text-white hover:bg-[#EA2C00]"
                       : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
                   }`}
                   data-testid="button-build-your-model-mobile"
@@ -3706,10 +3706,10 @@ export default function ObjectiveSelectionScreen({
                       <button
                         type="button"
                         onClick={() => setNursingCompareExpanded(!nursingCompareExpanded)}
-                        className="mt-4 text-sm font-medium text-[#E8532F] hover:text-[#d14a28] flex items-center gap-1 transition-all"
+                        className="mt-4 text-sm font-medium text-[#EA2C00] hover:text-[#d14a28] flex items-center gap-1 transition-all"
                         data-testid="button-compare-postures"
                       >
-                        <span className={`text-[#E8532F] transition-transform duration-200 ${nursingCompareExpanded ? "rotate-90" : ""}`}>›</span>
+                        <span className={`text-[#EA2C00] transition-transform duration-200 ${nursingCompareExpanded ? "rotate-90" : ""}`}>›</span>
                         Compare All Postures
                       </button>
 
@@ -4270,10 +4270,10 @@ export default function ObjectiveSelectionScreen({
                         <button
                           type="button"
                           onClick={() => setComparePosturesExpanded(!comparePosturesExpanded)}
-                          className="mt-4 text-sm font-medium text-[#E8532F] hover:text-[#d14a28] flex items-center gap-1 transition-all"
+                          className="mt-4 text-sm font-medium text-[#EA2C00] hover:text-[#d14a28] flex items-center gap-1 transition-all"
                           data-testid="button-compare-postures"
                         >
-                          <span className={`text-[#E8532F] transition-transform duration-200 ${comparePosturesExpanded ? "rotate-90" : ""}`}>›</span>
+                          <span className={`text-[#EA2C00] transition-transform duration-200 ${comparePosturesExpanded ? "rotate-90" : ""}`}>›</span>
                           Compare All Postures
                         </button>
 
@@ -4425,7 +4425,7 @@ export default function ObjectiveSelectionScreen({
                           {customizations.length > 0 && (
                             <div className="bg-[#F5F3EF] border border-[#E8E4DB] rounded-lg p-4 mb-6">
                               <p className="text-sm font-bold text-neutral-800">
-                                Your customizations: <span className="text-[#E8532F]">{customizations.length} change{customizations.length > 1 ? "s" : ""}</span> from {lastNonCustomPosture.charAt(0).toUpperCase() + lastNonCustomPosture.slice(1)} posture
+                                Your customizations: <span className="text-[#EA2C00]">{customizations.length} change{customizations.length > 1 ? "s" : ""}</span> from {lastNonCustomPosture.charAt(0).toUpperCase() + lastNonCustomPosture.slice(1)} posture
                               </p>
                               <div className="mt-2 space-y-1">
                                 {customizations.map((change, idx) => (
@@ -4437,7 +4437,7 @@ export default function ObjectiveSelectionScreen({
                               <button
                                 type="button"
                                 onClick={() => setShowResetAllModal(true)}
-                                className="mt-3 text-sm text-[#E8532F] hover:underline cursor-pointer"
+                                className="mt-3 text-sm text-[#EA2C00] hover:underline cursor-pointer"
                                 data-testid="button-reset-all"
                               >
                                 [Reset All to Typical]
@@ -5702,7 +5702,7 @@ export default function ObjectiveSelectionScreen({
             <AlertDialogCancel data-testid="button-reset-cancel">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleResetAllToTypical}
-              className="bg-[#E8532F] hover:bg-[#D14827] text-white"
+              className="bg-[#EA2C00] hover:bg-[#D14827] text-white"
               data-testid="button-reset-confirm"
             >
               Reset to Typical

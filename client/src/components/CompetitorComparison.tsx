@@ -267,7 +267,7 @@ export function CompetitorComparison({
             </div>
             <button 
               onClick={() => setShowBreakdown(!showBreakdown)}
-              className="text-[14px] text-[#E8532F] hover:underline flex items-center gap-1"
+              className="text-[14px] text-[#EA2C00] hover:underline flex items-center gap-1"
               data-testid="button-view-breakdown"
             >
               {showBreakdown ? "Hide" : "View"} detailed breakdown
@@ -545,7 +545,7 @@ export function CompetitorComparison({
                       onSave();
                       setShowMaturityModal(false);
                     }}
-                    className="bg-[#E8532F] hover:bg-[#D14729] text-white"
+                    className="bg-[#EA2C00] hover:bg-[#D14729] text-white"
                     data-testid="button-save-from-maturity"
                   >
                     Save This Comparison

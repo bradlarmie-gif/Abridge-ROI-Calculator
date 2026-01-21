@@ -124,14 +124,14 @@ export function EditableCalcRow({
           value={editValue}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="w-24 h-8 text-[16px] font-semibold tabular-nums border-2 border-[#E8532F] bg-[#FFFBF5] focus:ring-2 focus:ring-[#E8532F]/20"
+          className="w-24 h-8 text-[16px] font-semibold tabular-nums border-2 border-[#EA2C00] bg-[#FFFBF5] focus:ring-2 focus:ring-[#EA2C00]/20"
           data-testid="input-inline-edit"
         />
         <span className="text-[14px] text-[#6B7280]">{unit}</span>
         <Button
           size="sm"
           onClick={handleSave}
-          className="h-8 px-3 bg-[#E8532F] hover:bg-[#D4421E] text-white text-[13px]"
+          className="h-8 px-3 bg-[#EA2C00] hover:bg-[#D4421E] text-white text-[13px]"
           data-testid="button-save-inline"
         >
           <Check className="h-3.5 w-3.5 mr-1" />
@@ -205,7 +205,7 @@ export function EditableCalcRow({
                     inputMode="decimal"
                     value={editValue}
                     onChange={(e) => handleInputChange(e.target.value)}
-                    className="flex-1 h-12 text-[18px] font-semibold tabular-nums border-2 border-[#E8532F] bg-[#FFFBF5]"
+                    className="flex-1 h-12 text-[18px] font-semibold tabular-nums border-2 border-[#EA2C00] bg-[#FFFBF5]"
                     autoFocus
                     data-testid="input-mobile-edit"
                   />
@@ -255,7 +255,7 @@ export function EditableCalcRow({
                 </Button>
                 <Button
                   onClick={handleSave}
-                  className="flex-1 h-12 text-[15px] bg-[#E8532F] hover:bg-[#D4421E] text-white"
+                  className="flex-1 h-12 text-[15px] bg-[#EA2C00] hover:bg-[#D4421E] text-white"
                   data-testid="button-mobile-save"
                 >
                   Save Changes
@@ -287,7 +287,7 @@ export function EditableCalcRow({
             {isEditable && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-[13px] text-[#E8532F] hover:text-[#D4421E] font-medium ml-1"
+                className="text-[13px] text-[#EA2C00] hover:text-[#D4421E] font-medium ml-1"
                 data-testid={`button-edit-${label.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 [Edit]
@@ -315,7 +315,7 @@ export function CalcRow({ label, value, isResult = false, isFinal = false }: Cal
       <span className={`text-[14px] ${isFinal ? "font-semibold" : ""} text-[#6B7280]`}>
         {label}
       </span>
-      <span className={`text-[16px] tabular-nums ${isResult ? "text-[#E8532F] font-semibold" : "text-[#111827] font-semibold"} ${isFinal ? "font-bold" : ""}`}>
+      <span className={`text-[16px] tabular-nums ${isResult ? "text-[#EA2C00] font-semibold" : "text-[#111827] font-semibold"} ${isFinal ? "font-bold" : ""}`}>
         {valueFormatted}
       </span>
     </div>

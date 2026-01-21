@@ -1340,7 +1340,7 @@ function DriverAccordion({
         data-testid={`accordion-${driver.id}`}
       >
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-[#FEF0EC] flex items-center justify-center flex-shrink-0">
             <Icon className="w-5 h-5 text-[#EA2C00]" />
           </div>
           <div className="text-left">
@@ -1503,7 +1503,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                     onClick={() => handleSettingSelect(setting)}
                     className={`relative p-5 rounded-xl border-2 text-left hover-elevate ${
                       isSelected 
-                        ? "border-[#EA2C00] bg-[#FEF2F0]" 
+                        ? "border-[#EA2C00] bg-[#FEF0EC]" 
                         : "border-neutral-200 bg-white"
                     }`}
                     data-testid={`setting-${setting}`}
@@ -1513,7 +1513,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
-                    <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#FEF0EC] flex items-center justify-center mb-3">
                       <Icon className={`w-5 h-5 ${isSelected ? "text-[#EA2C00]" : "text-[#6B7280]"}`} />
                     </div>
                     <h3 className="font-semibold text-[#111827] mb-1">{cfg.name}</h3>
@@ -1526,7 +1526,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                 onClick={() => handleSettingSelect("inpatient")}
                 className={`relative p-5 rounded-xl border-2 text-left hover-elevate ${
                   selectedSetting === "inpatient"
-                    ? "border-[#EA2C00] bg-[#FEF2F0]"
+                    ? "border-[#EA2C00] bg-[#FEF0EC]"
                     : "border-neutral-200 bg-white"
                 }`}
                 data-testid="card-inpatient"
@@ -1536,7 +1536,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 )}
-                <div className="w-10 h-10 rounded-lg bg-[#FEF2F0] flex items-center justify-center mb-3">
+                <div className="w-10 h-10 rounded-lg bg-[#FEF0EC] flex items-center justify-center mb-3">
                   <Building2 className={`w-5 h-5 ${selectedSetting === "inpatient" ? "text-[#EA2C00]" : "text-[#6B7280]"}`} />
                 </div>
                 <h3 className="font-semibold text-[#111827] mb-1">Inpatient</h3>
@@ -1576,7 +1576,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           <div className="flex items-center gap-4">
             <img src={abridgeLogo} alt="Abridge" className="h-6 hidden sm:block" data-testid="img-logo-methodology" />
             {config && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-[#FEF2F0] rounded-full">
+              <div className="flex items-center gap-2 px-3 py-1 bg-[#FEF0EC] rounded-full">
                 <config.icon className="w-4 h-4 text-[#EA2C00]" />
                 <span className="text-sm font-medium text-[#EA2C00]">{config.name}</span>
               </div>
