@@ -1,5 +1,6 @@
 import { ArrowLeft, Phone, Link2, Edit3, Check, X, Users, Clock, TrendingUp, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GlobalHeader } from '@/components/GlobalHeader';
 import { ScribeData, ScribeCalculations } from './SwitchScribesFlow';
 
 interface SwitchScribesComparisonProps {
@@ -41,42 +42,12 @@ export default function SwitchScribesComparison({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="text-slate-500 flex items-center gap-1"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-          
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#EA2C00] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
-              A
-            </div>
-            <span className="text-xs font-semibold text-slate-400 tracking-wide">SWITCH</span>
-          </div>
-          
-          <div className="flex gap-1.5">
-            {Array.from({ length: totalSteps }, (_, i) => (
-              <span
-                key={i}
-                className={`h-2 rounded-full transition-all ${
-                  i === currentStep - 1 
-                    ? 'w-6 bg-orange-500' 
-                    : i < currentStep 
-                      ? 'w-2 bg-orange-500' 
-                      : 'w-2 bg-slate-200'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      </header>
+      <GlobalHeader 
+        pageName="Switch" 
+        currentStep={currentStep} 
+        totalSteps={totalSteps}
+        onLogoClick={onBackToJourney}
+      />
       
       <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">
         <div className="text-center mb-10">

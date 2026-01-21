@@ -140,6 +140,7 @@ export default function SwitchScribesFlow({ onBack, onBackToJourney }: SwitchScr
           totalSteps={totalSteps}
           onNext={goNext}
           onBack={goBack}
+          onBackToJourney={onBackToJourney}
         />
       )}
       {currentStep === 2 && (
