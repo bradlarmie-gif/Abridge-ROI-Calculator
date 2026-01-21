@@ -1137,16 +1137,6 @@ export default function ModelBuilder({
         
         {isExpanded && (
           <div className="border-t border-neutral-100 p-6 space-y-6 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="bg-neutral-50 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-[#111827] mb-1">The Theory</p>
-                  <p className="text-sm text-[#6B7280]">{DRIVER_THEORIES[driverId]}</p>
-                </div>
-              </div>
-            </div>
-            
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Calculator className="w-4 h-4 text-[#EA2C00]" />
