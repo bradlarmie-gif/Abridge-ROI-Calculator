@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, Sparkles, Settings, Zap, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, Settings, Zap, Check, Clock, Moon, DollarSign, FileCheck, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks, AmbientMode, MetricValues } from './SwitchAmbientFlow';
@@ -31,10 +31,12 @@ interface AdvancedMetric {
   id: keyof MetricValues;
   name: string;
   description: string;
+  source: string;
   unit: string;
   benchmark: string;
   benchmarkValue: number;
   recommended: boolean;
+  icon: typeof Clock;
   min?: number;
   max?: number;
   step?: number;
@@ -44,11 +46,13 @@ const advancedMetrics: AdvancedMetric[] = [
   {
     id: 'timeSavings',
     name: 'Time Savings',
-    description: 'Minutes saved per encounter',
+    description: 'Time in notes per appointment',
+    source: 'Clarity data',
     unit: 'min/encounter',
     benchmark: '3-5 min',
     benchmarkValue: 4,
     recommended: true,
+    icon: Clock,
     min: 0,
     max: 10,
     step: 0.5
@@ -56,35 +60,41 @@ const advancedMetrics: AdvancedMetric[] = [
   {
     id: 'workOutsideWork',
     name: 'Work Outside of Work',
-    description: 'Hours worked after scheduled time',
+    description: 'Hours worked outside scheduled time',
+    source: 'Clarity data',
     unit: 'hrs/week',
     benchmark: '2 hrs/week',
     benchmarkValue: 2,
     recommended: true,
+    icon: Moon,
     min: 0,
     max: 10,
     step: 0.5
   },
   {
     id: 'wrvuLift',
-    name: 'wRVU Lift',
-    description: '% improvement in wRVU capture',
+    name: 'wRVU Capture',
+    description: 'wRVUs per encounter',
+    source: 'Clarity data',
     unit: '%',
     benchmark: '5%',
     benchmarkValue: 5,
     recommended: true,
+    icon: DollarSign,
     min: 0,
     max: 15,
     step: 0.5
   },
   {
     id: 'chartClosure24h',
-    name: 'Chart Closure (24h)',
+    name: 'Chart Closure Time',
     description: '% of charts closed within 24 hours',
+    source: 'Clarity data',
     unit: '%',
     benchmark: '78%',
     benchmarkValue: 78,
     recommended: false,
+    icon: FileCheck,
     min: 0,
     max: 100,
     step: 1
@@ -406,161 +416,114 @@ export default function SwitchAmbientSetup({
         
         {inputs.mode === 'advanced' && (
           <>
-            <section className="mb-8">
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">DEPLOYMENT BASICS</h2>
+            <section className="mb-10">
+              <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-4">
+                DEPLOYMENT BASICS
+              </h2>
               
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Providers using current solution
-                    </label>
-                    <Input
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B7280]">Providers using current solution</label>
+                  <input
+                    type="number"
+                    placeholder="e.g., 150"
+                    value={inputs.providers > 0 ? inputs.providers : ''}
+                    onChange={(e) => {
+                      const providers = e.target.value ? Number(e.target.value) : 0;
+                      setInputs({
+                        ...inputs,
+                        providers,
+                        totalEncounters: providers * inputs.encountersPerProvider
+                      });
+                    }}
+                    className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                    data-testid="input-providers"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B7280]">Total annual encounters</label>
+                  <input
+                    type="number"
+                    placeholder="e.g., 195000"
+                    value={inputs.totalEncounters > 0 ? inputs.totalEncounters : ''}
+                    onChange={(e) => setInputs({ ...inputs, totalEncounters: e.target.value ? Number(e.target.value) : 0 })}
+                    className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                    data-testid="input-encounters"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B7280]">Current utilization</label>
+                  <div className="relative">
+                    <input
                       type="number"
-                      value={inputs.providers}
-                      onChange={(e) => {
-                        const providers = Number(e.target.value) || 0;
-                        setInputs({
-                          ...inputs,
-                          providers,
-                          totalEncounters: providers * inputs.encountersPerProvider
-                        });
-                      }}
-                      placeholder="e.g., 75"
-                      className="w-full"
-                      data-testid="input-providers"
+                      placeholder="e.g., 72"
+                      value={inputs.utilization > 0 ? inputs.utilization : ''}
+                      onChange={(e) => setInputs({ ...inputs, utilization: e.target.value ? Number(e.target.value) : 0 })}
+                      className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent pr-10"
+                      data-testid="input-utilization"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Total annual encounters
-                    </label>
-                    <Input
-                      type="number"
-                      value={inputs.totalEncounters}
-                      onChange={(e) => setInputs({ ...inputs, totalEncounters: Number(e.target.value) || 0 })}
-                      placeholder="e.g., 150,000"
-                      className="w-full"
-                      data-testid="input-encounters"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Current utilization
-                    </label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        value={inputs.utilization}
-                        onChange={(e) => setInputs({ ...inputs, utilization: Number(e.target.value) || 0 })}
-                        placeholder="e.g., 50"
-                        className="w-full pr-8"
-                        data-testid="input-utilization"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
-                    </div>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280]">%</span>
                   </div>
                 </div>
               </div>
             </section>
             
             <section className="mb-10">
-              <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-2">COMPARE YOUR METRICS</h2>
-              <p className="text-sm text-slate-500 mb-4">
-                Select the metrics you can compare. Enter your current performance and we'll show the gap to Abridge benchmarks.
+              <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-2">
+                WHAT DO YOU WANT TO MEASURE?
+              </h2>
+              <p className="text-sm text-[#6B7280] mb-4">
+                Select the metrics you have data for
               </p>
               
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {advancedMetrics.map(metric => {
                   const isSelected = inputs.selectedMetrics.includes(metric.id);
-                  const currentValue = inputs.metricValues[metric.id];
-                  const hasGap = currentValue !== undefined && 
-                    (metric.id === 'workOutsideWork' 
-                      ? currentValue > metric.benchmarkValue 
-                      : currentValue < metric.benchmarkValue);
+                  const IconComponent = metric.icon;
                   
                   return (
-                    <div 
+                    <button
                       key={metric.id}
-                      className={`bg-white rounded-xl border transition-all ${
-                        isSelected ? 'border-slate-800' : 'border-slate-200'
+                      onClick={() => toggleMetric(metric.id)}
+                      className={`flex items-start gap-4 p-4 rounded-xl border transition-all text-left ${
+                        isSelected 
+                          ? 'bg-[#f0fdf4] border-emerald-200' 
+                          : 'bg-white border-neutral-200 hover:border-neutral-300'
                       }`}
+                      data-testid={`button-metric-${metric.id}`}
                     >
-                      <button
-                        onClick={() => toggleMetric(metric.id)}
-                        className="w-full flex items-center gap-4 p-4 text-left"
-                        data-testid={`button-metric-${metric.id}`}
-                      >
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                          isSelected 
-                            ? 'bg-slate-800 border-slate-800' 
-                            : 'border-slate-300'
-                        }`}>
-                          {isSelected && <Check className="w-3 h-3 text-white" />}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-slate-900">{metric.name}</span>
-                            {metric.recommended && (
-                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                                RECOMMENDED
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-sm text-slate-500">{metric.description}</span>
-                        </div>
-                      </button>
+                      <div className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center mt-0.5 ${
+                        isSelected 
+                          ? 'bg-slate-800 border-slate-800' 
+                          : 'border-slate-300'
+                      }`}>
+                        {isSelected && <Check className="w-3 h-3 text-white" />}
+                      </div>
                       
-                      {isSelected && (
-                        <div className="px-4 pb-4 pt-0 border-t border-slate-100">
-                          <div className="pt-4 grid grid-cols-3 gap-4 items-center">
-                            <div>
-                              <span className="block text-xs font-semibold text-slate-400 mb-2">YOUR CURRENT</span>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  value={currentValue ?? ''}
-                                  onChange={(e) => updateMetricValue(metric.id, Number(e.target.value))}
-                                  placeholder="—"
-                                  min={metric.min}
-                                  max={metric.max}
-                                  step={metric.step}
-                                  className="w-24"
-                                  data-testid={`input-metric-${metric.id}`}
-                                />
-                                <span className="text-sm text-slate-500">{metric.unit}</span>
-                              </div>
-                            </div>
-                            
-                            <div className="text-center">
-                              <ArrowRight className="w-5 h-5 text-slate-300 mx-auto" />
-                            </div>
-                            
-                            <div>
-                              <span className="block text-xs font-semibold text-slate-400 mb-2">ABRIDGE BENCHMARK</span>
-                              <div className="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg">
-                                <Sparkles className="w-4 h-4 text-emerald-600" />
-                                <span className="text-sm font-semibold text-emerald-700">{metric.benchmark}</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {currentValue !== undefined && hasGap && (
-                            <div className="mt-3 p-3 bg-emerald-50 rounded-lg">
-                              <span className="text-xs font-semibold text-slate-400">GAP</span>
-                              <span className="block text-lg font-bold text-emerald-600">
-                                {metric.id === 'workOutsideWork' 
-                                  ? `-${(currentValue - metric.benchmarkValue).toFixed(1)} ${metric.unit}`
-                                  : `+${(metric.benchmarkValue - currentValue).toFixed(1)}${metric.unit.includes('%') ? ' pp' : ` ${metric.unit}`}`
-                                }
-                              </span>
-                            </div>
+                      <div className="w-10 h-10 rounded-lg bg-[#f1f5f9] flex items-center justify-center flex-shrink-0">
+                        <IconComponent className="w-5 h-5 text-[#6B7280]" />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-[#111827]">{metric.name}</span>
+                          {metric.recommended && (
+                            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">
+                              Recommended
+                            </span>
                           )}
                         </div>
-                      )}
-                    </div>
+                        <p className="text-sm text-[#6B7280]">{metric.description}</p>
+                        <p className="text-xs text-[#9CA3AF] mt-0.5">Source: {metric.source}</p>
+                      </div>
+                    </button>
                   );
                 })}
+              </div>
+              
+              <div className="flex items-center gap-2 mt-6 text-sm text-[#6B7280]">
+                <Lightbulb className="w-4 h-4 text-amber-500" />
+                <span>Select at least one metric to continue. More metrics = more complete picture.</span>
               </div>
             </section>
           </>
