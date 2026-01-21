@@ -30,6 +30,9 @@ import {
   Check,
   Zap,
   FileText,
+  Link2,
+  CheckCircle,
+  Shield,
 } from "lucide-react";
 
 export interface ValueResults {
@@ -5169,6 +5172,80 @@ export default function ModelBuilder({
               <div className="space-y-4">
                 {activeDrivers.map(driverId => renderDriverAccordion(driverId))}
               </div>
+              
+              {/* ED Downstream Value Callout - appears after ED drivers */}
+              {isEDSetting && (
+                <div className="mt-8 relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-6" data-testid="ed-downstream-callout">
+                  {/* Left accent bar (inset, not a border) */}
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-l-xl" />
+                  
+                  {/* Header */}
+                  <div className="flex items-start gap-3 mb-4">
+                    <Link2 className="w-6 h-6 text-indigo-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900">Downstream Value</h3>
+                      <p className="text-sm text-slate-500">The ED admission note is just the beginning</p>
+                    </div>
+                  </div>
+                  
+                  {/* Theory */}
+                  <p className="text-sm text-slate-600 leading-relaxed mb-5">
+                    When an ED physician decides to admit a patient, their documentation becomes the foundation 
+                    for inpatient revenue. The conditions they capture, the medical necessity they establish, 
+                    and the clinical reasoning they document all determine what happens downstream.
+                  </p>
+                  
+                  {/* Impact List */}
+                  <div className="space-y-3 mb-5">
+                    <h4 className="text-sm font-semibold text-slate-700">Better ED documentation directly impacts:</h4>
+                    
+                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
+                      <BarChart3 className="w-5 h-5 text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">DRG & CMI Capture</p>
+                        <p className="text-xs text-slate-500">CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">Medical Necessity</p>
+                        <p className="text-xs text-slate-500">The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
+                      <FileText className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">CDI Efficiency</p>
+                        <p className="text-xs text-slate-500">When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
+                      <Shield className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">Denial Prevention</p>
+                        <p className="text-xs text-slate-500">Payer audits start with the admission note. Complete documentation from day one means stronger appeals.</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Inpatient Info Banner */}
+                  <div className="flex items-center gap-3 bg-indigo-500 rounded-lg p-4">
+                    <Building2 className="w-5 h-5 text-white flex-shrink-0" />
+                    <div>
+                      <p className="text-white text-sm">
+                        These benefits are quantified in the <span className="font-semibold">Inpatient Setting</span>.
+                      </p>
+                      <p className="text-white/80 text-xs mt-1">
+                        If your organization admits patients from the ED, the value compounds when both settings use Abridge.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
             
           </div>

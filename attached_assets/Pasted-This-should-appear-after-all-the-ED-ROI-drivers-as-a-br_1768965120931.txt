@@ -1,0 +1,207 @@
+This should appear after all the ED ROI drivers as a "bridge" to Inpatient — maybe at the bottom of the ED summary or as its own collapsed section.
+
+The Code/Component:
+jsxCopy// ============ ED DOWNSTREAM VALUE CALLOUT ============
+// Place this after the ED ROI drivers, before the total summary
+
+<div className="downstream-value-callout">
+  
+  <div className="callout-header">
+    <span className="icon">🔗</span>
+    <div className="header-text">
+      <h3>Downstream Value</h3>
+      <p className="subtitle">The ED admission note is just the beginning</p>
+    </div>
+  </div>
+
+  <div className="callout-body">
+    <p className="theory">
+      When an ED physician decides to admit a patient, their documentation 
+      becomes the foundation for inpatient revenue. The conditions they 
+      capture, the medical necessity they establish, and the clinical 
+      reasoning they document all determine what happens downstream.
+    </p>
+
+    <div className="impact-list">
+      <h4>Better ED documentation directly impacts:</h4>
+      
+      <div className="impact-item">
+        <span className="impact-icon">📊</span>
+        <div className="impact-content">
+          <strong>DRG & CMI Capture</strong>
+          <p>CCs and MCCs documented in ED carry forward to inpatient coding. 
+             What's captured here determines your case mix.</p>
+        </div>
+      </div>
+
+      <div className="impact-item">
+        <span className="impact-icon">✅</span>
+        <div className="impact-content">
+          <strong>Medical Necessity</strong>
+          <p>The admission decision is documented in ED. This is your first 
+             line of defense against status denials and downgrades.</p>
+        </div>
+      </div>
+
+      <div className="impact-item">
+        <span className="impact-icon">📝</span>
+        <div className="impact-content">
+          <strong>CDI Efficiency</strong>
+          <p>When the ED note is complete, CDI teams spend less time querying 
+             physicians and more time on complex cases.</p>
+        </div>
+      </div>
+
+      <div className="impact-item">
+        <span className="impact-icon">🛡️</span>
+        <div className="impact-content">
+          <strong>Denial Prevention</strong>
+          <p>Payer audits start with the admission note. Complete documentation 
+             from day one means stronger appeals.</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="inpatient-link">
+      <div className="link-content">
+        <p>These benefits are quantified in the <strong>Inpatient Setting</strong>.</p>
+        <p className="subtext">
+          If your organization admits patients from the ED, the value compounds 
+          when both settings use Abridge.
+        </p>
+      </div>
+      
+      {/* Optional: Link to Inpatient if they want to explore */}
+      <button 
+        className="explore-inpatient-btn"
+        onClick={() => navigateToSetting('inpatient')}
+      >
+        Explore Inpatient Value →
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+Styling (CSS):
+cssCopy/* ============ DOWNSTREAM VALUE CALLOUT ============ */
+
+.downstream-value-callout {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #6366f1; /* Indigo accent */
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 32px;
+  margin-bottom: 24px;
+}
+
+.callout-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.callout-header .icon {
+  font-size: 24px;
+}
+
+.callout-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.callout-header .subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.callout-body .theory {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.impact-list h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 12px;
+}
+
+.impact-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.impact-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.impact-content strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.impact-content p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.inpatient-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #6366f1;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 20px;
+}
+
+.link-content p {
+  color: white;
+  font-size: 14px;
+  margin: 0;
+}
+
+.link-content .subtext {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+.explore-inpatient-btn {
+  background: white;
+  color: #6366f1;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.explore-inpatient-btn:hover {
+  background: #f8fafc;
+  transform: translateX(4px);
+}
+
