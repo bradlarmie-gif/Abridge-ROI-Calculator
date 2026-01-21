@@ -244,13 +244,12 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
       
       // ========== TIER 3: LONG-TERM VALUE (speculative) ==========
       
-      // Clinician Retention — derived from WOW and satisfaction data
-      const hasWowData = wowValue !== undefined && wowValue > 3;
-      const satisfactionValue = inputs.metricValues.satisfaction;
-      const hasSatisfactionData = satisfactionValue !== undefined && satisfactionValue < 8.5;
+      // Clinician Retention — derived from WOW data (reduced after-hours work correlates with retention)
+      // Show retention section whenever WOW is selected and has a value > abridgeWow (i.e., there's room for improvement)
+      const hasRetentionPotential = selected.includes('workOutsideWork') && wowValue !== undefined && wowValue > abridgeWow;
       
-      if (hasWowData || hasSatisfactionData) {
-        // Very rough estimate: reduced WOW/improved satisfaction → reduced turnover → saved replacement costs
+      if (hasRetentionPotential) {
+        // Very rough estimate: reduced WOW → reduced turnover → saved replacement costs
         const estimatedTurnoverReduction = 0.10; // 10% of turnover attributable to doc burden
         const avgTurnover = providers * 0.18;
         const preventedDepartures = avgTurnover * estimatedTurnoverReduction;
@@ -260,7 +259,7 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
         
         metricBreakdown.push({
           metric: 'Clinician Retention',
-          gap: 'Based on satisfaction improvement + reduced after-hours work',
+          gap: 'Based on reduced after-hours documentation work',
           impact: `Potential: $${formatNum(lowEstimate)} - $${formatNum(highEstimate)}/year`,
           value: 0, // Not counted in primary total
           calculation: `${providers} providers × 18% turnover × 10% reduction × $${formatNum(replacementCost)} cost × 10-25% attribution`,
