@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Sparkles, Settings, Zap, Check, Clock, Moon, Dol
 import { Button } from '@/components/ui/button';
 import { GlobalHeader } from '@/components/GlobalHeader';
 import { Input } from '@/components/ui/input';
+import { FormattedNumberInput } from '@/components/FormattedNumberInput';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks, AmbientMode, MetricValues } from './SwitchAmbientFlow';
 
 interface SwitchAmbientSetupProps {
@@ -420,12 +421,10 @@ export default function SwitchAmbientSetup({
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-[#6B7280]">Providers using current solution</label>
-                  <input
-                    type="number"
+                  <FormattedNumberInput
                     placeholder="e.g., 150"
-                    value={inputs.providers > 0 ? inputs.providers : ''}
-                    onChange={(e) => {
-                      const providers = e.target.value ? Number(e.target.value) : 0;
+                    value={inputs.providers}
+                    onChange={(providers) => {
                       setInputs({
                         ...inputs,
                         providers,
@@ -438,11 +437,10 @@ export default function SwitchAmbientSetup({
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-[#6B7280]">Total annual encounters</label>
-                  <input
-                    type="number"
-                    placeholder="e.g., 195000"
-                    value={inputs.totalEncounters > 0 ? inputs.totalEncounters : ''}
-                    onChange={(e) => setInputs({ ...inputs, totalEncounters: e.target.value ? Number(e.target.value) : 0 })}
+                  <FormattedNumberInput
+                    placeholder="e.g., 195,000"
+                    value={inputs.totalEncounters}
+                    onChange={(totalEncounters) => setInputs({ ...inputs, totalEncounters })}
                     className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                     data-testid="input-encounters"
                   />
