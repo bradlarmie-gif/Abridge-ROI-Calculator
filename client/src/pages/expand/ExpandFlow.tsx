@@ -91,12 +91,13 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
   const [selectedMetrics, setSelectedMetrics] = useState<MetricType[]>([]);
   
   // Actual metrics data (before/after) - all blank
+  // Using Level 1-5 IDs instead of CPT codes for Level of Service
   const [metricsData, setMetricsData] = useState<MetricsData>({
     timeSavings: { before: null, after: null },
     workOutsideWork: { before: null, after: null },
     levelOfService: {
-      before: { "99215": 0, "99214": 0, "99213": 0, "99212": 0, "99211": 0 },
-      after: { "99215": 0, "99214": 0, "99213": 0, "99212": 0, "99211": 0 },
+      before: { level5: 0, level4: 0, level3: 0, level2: 0, level1: 0 },
+      after: { level5: 0, level4: 0, level3: 0, level2: 0, level1: 0 },
     },
     wrvuCapture: { before: null, after: null },
     chartClosure: { 

@@ -1,0 +1,1234 @@
+. Number Formatting with Commas
+jsxCopy// Utility function for formatting numbers with commas
+const formatNumber = (value) => {
+  if (value === null || value === undefined || value === '') return '';
+  return Number(value).toLocaleString();
+};
+
+// For input fields, we need to handle both display and storage
+const NumberInput = ({ value, onChange, placeholder, ...props }) => {
+  const [displayValue, setDisplayValue] = useState(
+    value ? formatNumber(value) : ''
+  );
+  
+  const handleChange = (e) => {
+    // Remove commas for storage
+    const rawValue = e.target.value.replace(/,/g, '');
+    setDisplayValue(e.target.value);
+    onChange(rawValue ? Number(rawValue) : null);
+  };
+  
+  const handleBlur = () => {
+    // Format on blur
+    if (value) {
+      setDisplayValue(formatNumber(value));
+    }
+  };
+  
+  const handleFocus = () => {
+    // Show raw number on focus for easier editing
+    if (value) {
+      setDisplayValue(value.toString());
+    }
+  };
+  
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      value={displayValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onFocus={handleFocus}
+      placeholder={placeholder}
+      {...props}
+    />
+  );
+};
+
+2. Time Savings — Benchmark Update (3-5 min)
+jsxCopy// ============ TIME SAVINGS INPUT — UPDATED ============
+
+<div className="benchmark-callout">
+  <div className="benchmark-icon">
+    <BarChart3 size={16} />
+  </div>
+  <div className="benchmark-content">
+    <span className="benchmark-label">BENCHMARK</span>
+    <p>
+      Average time savings across Abridge customers: <strong>3-5 min/encounter</strong>
+    </p>
+    {savings !== null && (
+      <p className="benchmark-comparison">
+        You're at: <strong>{savings} min</strong> — 
+        {savings >= 3 ? (
+          <span className="comparison-good"> Within expected range ✓</span>
+        ) : (
+          <span className="comparison-neutral"> Building momentum</span>
+        )}
+      </p>
+    )}
+  </div>
+</div>
+
+3. Work Outside of Work — "Why This Matters" Callout
+jsxCopy// ============ WORK OUTSIDE OF WORK INPUT — UPDATED ============
+
+export default function WorkOutsideWorkInput({ data, setData, deploymentData }) {
+  
+  const hoursSaved = data.before && data.after ? data.before - data.after : null;
+  
+  // Calculate annual impact
+  const annualHoursSaved = hoursSaved && deploymentData.providers 
+    ? hoursSaved * 48 * deploymentData.providers // 48 weeks
+    : null;
+  
+  return (
+    <section className="metric-input-section">
+      
+      <div className="metric-input-header">
+        <div className="metric-icon-container">
+          <Moon size={24} className="metric-icon" />
+        </div>
+        <div className="metric-title-group">
+          <h2>Work Outside of Work</h2>
+          <p>Weekly hours worked outside scheduled time</p>
+        </div>
+      </div>
+      
+      <div className="before-after-input-card">
+        
+        <div className="ba-column">
+          <span className="ba-label">BEFORE ABRIDGE</span>
+          <div className="ba-input-group">
+            <input
+              type="number"
+              step="0.5"
+              placeholder="—"
+              value={data.before || ''}
+              onChange={(e) => setData({ ...data, before: e.target.value ? Number(e.target.value) : null })}
+              className="ba-input"
+            />
+            <span className="ba-unit">hrs/week</span>
+          </div>
+        </div>
+        
+        <div className="ba-arrow-container">
+          <div className="ba-arrow">→</div>
+        </div>
+        
+        <div className="ba-column">
+          <span className="ba-label">AFTER ABRIDGE</span>
+          <div className="ba-input-group">
+            <input
+              type="number"
+              step="0.5"
+              placeholder="—"
+              value={data.after || ''}
+              onChange={(e) => setData({ ...data, after: e.target.value ? Number(e.target.value) : null })}
+              className="ba-input"
+            />
+            <span className="ba-unit">hrs/week</span>
+          </div>
+        </div>
+        
+        <div className="ba-equals">=</div>
+        
+        <div className="ba-column result">
+          <span className="ba-label">CHANGE</span>
+          {hoursSaved !== null ? (
+            <div className="ba-result-box success">
+              <span className="ba-result-primary">-{hoursSaved} hrs/week</span>
+            </div>
+          ) : (
+            <div className="ba-result-box empty">
+              <span className="ba-result-placeholder">Enter data</span>
+            </div>
+          )}
+        </div>
+        
+      </div>
+      
+      {/* WHY THIS MATTERS CALLOUT */}
+      <div className="why-matters-callout">
+        <div className="callout-header">
+          <Lightbulb size={18} className="callout-icon" />
+          <span className="callout-title">WHY THIS MATTERS</span>
+        </div>
+        <div className="callout-content">
+          <p>
+            "Pajama time" — work done at home after hours — is the #1 driver of physician burnout. 
+            Reducing it directly impacts:
+          </p>
+          <ul className="callout-list">
+            <li><strong>Retention:</strong> Less burnout = lower turnover</li>
+            <li><strong>Quality of life:</strong> Time back with family</li>
+            <li><strong>Next-day performance:</strong> Rested providers deliver better care</li>
+          </ul>
+          {annualHoursSaved && (
+            <div className="callout-calculation">
+              <span className="calc-label">Your annual impact:</span>
+              <span className="calc-value">
+                {formatNumber(annualHoursSaved)} hours returned to providers
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+      
+    </section>
+  );
+}
+CSS for the callout:
+cssCopy.why-matters-callout {
+  background: #fffbeb;
+  border: 1px solid #fef08a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.callout-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.callout-icon {
+  color: #d97706;
+}
+
+.callout-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
+  letter-spacing: 0.05em;
+}
+
+.callout-content p {
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.callout-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.callout-list li {
+  font-size: 13px;
+  color: #78350f;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.callout-calculation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid #fef08a;
+}
+
+.calc-label {
+  font-size: 13px;
+  color: #92400e;
+}
+
+.calc-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #78350f;
+}
+
+4. Level of Service — Major Rework
+Changes:
+
+Use "Level 1, 2, 3, 4, 5" instead of CPT codes
+Add note that it's a blend of new + established
+Show calculated averages prominently
+Show overall % change
+
+jsxCopy// ============ LEVEL OF SERVICE INPUT — REWORKED ============
+
+import { useMemo } from 'react';
+
+export default function LevelOfServiceInput({ data, setData }) {
+  
+  const levels = [
+    { id: 'level5', label: 'Level 5', description: 'High complexity' },
+    { id: 'level4', label: 'Level 4', description: 'Moderate-high complexity' },
+    { id: 'level3', label: 'Level 3', description: 'Moderate complexity' },
+    { id: 'level2', label: 'Level 2', description: 'Low complexity' },
+    { id: 'level1', label: 'Level 1', description: 'Minimal complexity' }
+  ];
+  
+  const weights = {
+    level5: 5,
+    level4: 4,
+    level3: 3,
+    level2: 2,
+    level1: 1
+  };
+  
+  // Calculate totals
+  const beforeTotal = useMemo(() => {
+    return levels.reduce((sum, l) => sum + (data.before?.[l.id] || 0), 0);
+  }, [data.before]);
+  
+  const afterTotal = useMemo(() => {
+    return levels.reduce((sum, l) => sum + (data.after?.[l.id] || 0), 0);
+  }, [data.after]);
+  
+  // Calculate weighted averages
+  const calculateAverage = (distribution) => {
+    if (!distribution) return null;
+    let weighted = 0;
+    let total = 0;
+    levels.forEach(level => {
+      const pct = distribution[level.id] || 0;
+      weighted += pct * weights[level.id];
+      total += pct;
+    });
+    return total > 0 ? (weighted / total).toFixed(2) : null;
+  };
+  
+  const beforeAvg = calculateAverage(data.before);
+  const afterAvg = calculateAverage(data.after);
+  const avgChange = beforeAvg && afterAvg 
+    ? (((afterAvg - beforeAvg) / beforeAvg) * 100).toFixed(1) 
+    : null;
+  
+  const updateBefore = (levelId, value) => {
+    setData({
+      ...data,
+      before: { ...data.before, [levelId]: value ? Number(value) : 0 }
+    });
+  };
+  
+  const updateAfter = (levelId, value) => {
+    setData({
+      ...data,
+      after: { ...data.after, [levelId]: value ? Number(value) : 0 }
+    });
+  };
+  
+  return (
+    <section className="metric-input-section">
+      
+      <div className="metric-input-header">
+        <div className="metric-icon-container">
+          <ClipboardList size={24} className="metric-icon" />
+        </div>
+        <div className="metric-title-group">
+          <h2>Level of Service</h2>
+          <p>E/M code distribution</p>
+        </div>
+      </div>
+      
+      {/* Blend Note */}
+      <div className="blend-note">
+        <Info size={14} className="blend-note-icon" />
+        <span>
+          Enter your blended distribution across new and established patient visits. 
+          Level 5 = highest complexity, Level 1 = lowest.
+        </span>
+      </div>
+      
+      {/* Averages Summary — Prominent */}
+      {beforeAvg && afterAvg && beforeTotal === 100 && afterTotal === 100 && (
+        <div className="average-summary-card">
+          <div className="avg-summary-row">
+            <div className="avg-summary-item">
+              <span className="avg-label">AVERAGE BEFORE</span>
+              <span className="avg-value muted">{beforeAvg}</span>
+            </div>
+            <div className="avg-arrow">→</div>
+            <div className="avg-summary-item">
+              <span className="avg-label">AVERAGE AFTER</span>
+              <span className="avg-value">{afterAvg}</span>
+            </div>
+            <div className="avg-summary-item highlight">
+              <span className="avg-label">CHANGE</span>
+              <span className="avg-value success">+{avgChange}%</span>
+            </div>
+          </div>
+          <p className="avg-note">
+            Weighted average where Level 1 = 1, Level 2 = 2, etc.
+          </p>
+        </div>
+      )}
+      
+      {/* Input Table */}
+      <div className="los-input-table">
+        
+        <div className="los-table-header">
+          <div className="los-col-level">LEVEL</div>
+          <div className="los-col-before">BEFORE ABRIDGE</div>
+          <div className="los-col-after">AFTER ABRIDGE</div>
+          <div className="los-col-change">CHANGE</div>
+        </div>
+        
+        {levels.map(level => {
+          const beforeVal = data.before?.[level.id] || 0;
+          const afterVal = data.after?.[level.id] || 0;
+          const change = afterVal - beforeVal;
+          
+          return (
+            <div key={level.id} className="los-table-row">
+              <div className="los-col-level">
+                <span className="level-label">{level.label}</span>
+                <span className="level-description">{level.description}</span>
+              </div>
+              
+              <div className="los-col-before">
+                <div className="los-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                    value={beforeVal || ''}
+                    onChange={(e) => updateBefore(level.id, e.target.value)}
+                    className="los-input"
+                  />
+                  <span className="los-input-suffix">%</span>
+                </div>
+                <div 
+                  className="los-bar before-bar"
+                  style={{ width: `${Math.min(beforeVal, 100)}%` }}
+                ></div>
+              </div>
+              
+              <div className="los-col-after">
+                <div className="los-input-wrapper">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                    value={afterVal || ''}
+                    onChange={(e) => updateAfter(level.id, e.target.value)}
+                    className="los-input"
+                  />
+                  <span className="los-input-suffix">%</span>
+                </div>
+                <div 
+                  className="los-bar after-bar"
+                  style={{ width: `${Math.min(afterVal, 100)}%` }}
+                ></div>
+              </div>
+              
+              <div className="los-col-change">
+                {change !== 0 && (
+                  <span className={`los-change ${change > 0 ? 'positive' : 'negative'}`}>
+                    {change > 0 ? '↑' : '↓'} {Math.abs(change)}pp
+                  </span>
+                )}
+                {change === 0 && <span className="los-change neutral">—</span>}
+              </div>
+            </div>
+          );
+        })}
+        
+        {/* Totals Row */}
+        <div className="los-table-row totals-row">
+          <div className="los-col-level">
+            <span className="level-label">TOTAL</span>
+          </div>
+          <div className="los-col-before">
+            <span className={`los-total ${beforeTotal === 100 ? 'valid' : 'invalid'}`}>
+              {beforeTotal}%
+              {beforeTotal !== 100 && <span className="total-hint"> (must = 100)</span>}
+            </span>
+          </div>
+          <div className="los-col-after">
+            <span className={`los-total ${afterTotal === 100 ? 'valid' : 'invalid'}`}>
+              {afterTotal}%
+              {afterTotal !== 100 && <span className="total-hint"> (must = 100)</span>}
+            </span>
+          </div>
+          <div className="los-col-change"></div>
+        </div>
+        
+      </div>
+      
+      {/* Insight */}
+      {avgChange && parseFloat(avgChange) > 0 && (
+        <div className="insight-callout success">
+          <Lightbulb size={18} className="insight-icon" />
+          <div className="insight-content">
+            <strong>+{avgChange}% shift in average level of service</strong>
+            <p>
+              This suggests more complete documentation of clinical complexity. 
+              Better documentation captures work already being done — not upcoding.
+            </p>
+          </div>
+        </div>
+      )}
+      
+    </section>
+  );
+}
+CSS for averages card:
+cssCopy.average-summary-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.avg-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.avg-summary-item {
+  text-align: center;
+}
+
+.avg-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.avg-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.avg-value.muted {
+  color: #94a3b8;
+}
+
+.avg-value.success {
+  color: #059669;
+}
+
+.avg-arrow {
+  font-size: 24px;
+  color: #94a3b8;
+}
+
+.avg-summary-item.highlight {
+  background: white;
+  padding: 16px 24px;
+  border-radius: 10px;
+  border: 1px solid #a7f3d0;
+}
+
+.avg-note {
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  margin: 16px 0 0 0;
+}
+
+.blend-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.blend-note-icon {
+  color: #64748b;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.blend-note span {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+5. wRVU Capture — Neutral Benchmark
+jsxCopy// ============ wRVU CAPTURE INPUT — UPDATED ============
+
+// Change benchmark to neutral language
+<div className="benchmark-callout neutral">
+  <div className="benchmark-icon">
+    <BarChart3 size={16} />
+  </div>
+  <div className="benchmark-content">
+    <span className="benchmark-label">REFERENCE RANGE</span>
+    <p>
+      wRVU lift across Abridge customers typically ranges from <strong>3-7%</strong>
+    </p>
+    {wrvuLift !== null && (
+      <p className="benchmark-comparison">
+        Your result: <strong>{wrvuLift}%</strong>
+        {/* NO good/bad judgment — just factual */}
+      </p>
+    )}
+  </div>
+</div>
+
+// Note: Remove any "Room to grow" or scoring language
+CSS update:
+cssCopy.benchmark-callout.neutral {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.benchmark-callout.neutral .benchmark-label {
+  color: #64748b;
+}
+
+.benchmark-callout.neutral p {
+  color: #475569;
+}
+
+6. Chart Closure Time — Days Cash on Hand Insight
+jsxCopy// ============ CHART CLOSURE INPUT — UPDATED ============
+
+// Add insight based on improvement
+{sameDayImprovement > 0 && (
+  <div className="cash-flow-insight">
+    <div className="insight-header">
+      <DollarSign size={18} className="insight-icon" />
+      <span className="insight-title">REVENUE CYCLE IMPACT</span>
+    </div>
+    <div className="insight-body">
+      <p>
+        Faster chart closure accelerates billing and improves cash flow.
+      </p>
+      <div className="impact-metrics">
+        <div className="impact-metric">
+          <span className="impact-label">Same-day closure improvement</span>
+          <span className="impact-value">+{sameDayImprovement}pp</span>
+        </div>
+        {sameDayImprovement >= 20 && (
+          <div className="impact-metric highlight">
+            <span className="impact-label">Estimated impact on days in A/R</span>
+            <span className="impact-value">-2 to -5 days</span>
+          </div>
+        )}
+        {sameDayImprovement >= 40 && (
+          <div className="impact-metric highlight">
+            <span className="impact-label">Potential days cash on hand improvement</span>
+            <span className="impact-value">+1 to +3 days</span>
+          </div>
+        )}
+      </div>
+      <p className="impact-note">
+        Organizations with high same-day closure rates typically see reduced A/R aging 
+        and improved cash position. Actual impact depends on payer mix and billing workflows.
+      </p>
+    </div>
+  </div>
+)}
+CSS:
+cssCopy.cash-flow-insight {
+  background: #f0fdf4;
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.insight-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.insight-header .insight-icon {
+  color: #059669;
+}
+
+.insight-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #065f46;
+  letter-spacing: 0.05em;
+}
+
+.insight-body p {
+  font-size: 14px;
+  color: #047857;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.impact-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.impact-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 8px;
+}
+
+.impact-metric.highlight {
+  border: 1px solid #a7f3d0;
+}
+
+.impact-label {
+  font-size: 13px;
+  color: #065f46;
+}
+
+.impact-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.impact-note {
+  font-size: 12px;
+  color: #047857;
+  font-style: italic;
+  margin: 0 !important;
+}
+
+7. ROI Page — Expandable Driver Cards
+Yes! Let's make the ROI page feel like the Explore flow with expandable, adjustable drivers.
+jsxCopy// ============ ROI STORY — WITH EXPANDABLE DRIVERS ============
+
+export default function ExpandROIStory({
+  deploymentData,
+  metricsData,
+  selectedMetrics,
+  calculatedValues,
+  setCalculatedValues,
+  onNext,
+  onBack
+}) {
+  
+  // Each driver can be expanded to show/adjust the math
+  const [expandedDriver, setExpandedDriver] = useState(null);
+  
+  const toggleDriver = (driverId) => {
+    setExpandedDriver(expandedDriver === driverId ? null : driverId);
+  };
+  
+  // Conversion rates (adjustable)
+  const [conversionRates, setConversionRates] = useState({
+    timeSavings: 0.50,
+    wrvuLift: 0.50,
+    qualityOfLife: 0.50
+  });
+  
+  // Calculate values based on their data + conversion rates
+  const values = useMemo(() => {
+    const timeSavings = calculateTimeSavingsValue(
+      metricsData.timeSavings,
+      deploymentData,
+      conversionRates.timeSavings
+    );
+    const wrvuLift = calculateWrvuValue(
+      metricsData.wrvuCapture,
+      metricsData.levelOfService,
+      deploymentData,
+      conversionRates.wrvuLift
+    );
+    const qualityOfLife = calculateQualityOfLifeValue(
+      metricsData.workOutsideWork,
+      deploymentData,
+      conversionRates.qualityOfLife
+    );
+    
+    return { timeSavings, wrvuLift, qualityOfLife };
+  }, [metricsData, deploymentData, conversionRates]);
+  
+  const totalValue = values.timeSavings.value + values.wrvuLift.value + values.qualityOfLife.value;
+  const investment = deploymentData.providers * 250 * 12; // $250/provider/month default
+  const netValue = totalValue - investment;
+  const roi = (totalValue / investment).toFixed(1);
+  
+  return (
+    <div className="expand-page">
+      
+      {/* Header */}
+      <header className="page-header">
+        <button className="back-button" onClick={onBack}>
+          <ArrowLeft size={16} />
+          Back
+        </button>
+        <div className="header-center">
+          <span className="brand-small">ABRIDGE</span>
+        </div>
+        <div className="step-indicator">
+          <span className="step-current">Step 4</span>
+          <span className="step-total">of 5</span>
+          <span className="step-name">Your ROI</span>
+        </div>
+      </header>
+      
+      {/* Page Title */}
+      <div className="page-title-section">
+        <h1>Your ROI Story</h1>
+        <p>Based on your actual Abridge data</p>
+      </div>
+      
+      {/* Hero ROI */}
+      <div className="roi-hero-section">
+        <div className="roi-hero-grid two-col">
+          <div className="roi-hero-card primary">
+            <span className="roi-hero-value">${formatNumber(netValue)}</span>
+            <span className="roi-hero-label">NET ANNUAL VALUE</span>
+          </div>
+          <div className="roi-hero-card secondary">
+            <span className="roi-hero-value">{roi}x</span>
+            <span className="roi-hero-label">RETURN ON INVESTMENT</span>
+          </div>
+        </div>
+        
+        <div className="roi-summary-line">
+          <span>Total Value: ${formatNumber(totalValue)}</span>
+          <span className="summary-divider">│</span>
+          <span>Investment: ${formatNumber(investment)}</span>
+        </div>
+        
+        <div className="conservative-badge">
+          <AlertTriangle size={14} />
+          <span>Conservative estimate — adjust conversion rates below</span>
+        </div>
+      </div>
+      
+      {/* Value Drivers — Expandable */}
+      <section className="value-drivers-section">
+        <h2>VALUE BREAKDOWN</h2>
+        <p className="section-subtitle">Click to expand and adjust assumptions</p>
+        
+        {/* Time Savings Driver */}
+        <div className={`driver-card ${expandedDriver === 'timeSavings' ? 'expanded' : ''}`}>
+          <div 
+            className="driver-card-header"
+            onClick={() => toggleDriver('timeSavings')}
+          >
+            <div className="driver-icon-container">
+              <Clock size={20} />
+            </div>
+            <div className="driver-info">
+              <h3>Time Savings</h3>
+              <p className="driver-formula">
+                {values.timeSavings.formula}
+              </p>
+            </div>
+            <div className="driver-value">
+              ${formatNumber(values.timeSavings.value)}
+            </div>
+            <div className="driver-expand-icon">
+              <ChevronDown size={20} className={expandedDriver === 'timeSavings' ? 'rotated' : ''} />
+            </div>
+          </div>
+          
+          {expandedDriver === 'timeSavings' && (
+            <div className="driver-card-body">
+              <div className="driver-calculation">
+                <div className="calc-step">
+                  <span className="calc-label">Minutes saved per encounter</span>
+                  <span className="calc-value">{metricsData.timeSavings.before - metricsData.timeSavings.after} min</span>
+                </div>
+                <div className="calc-step">
+                  <span className="calc-label">Abridge encounters</span>
+                  <span className="calc-value">{formatNumber(deploymentData.abridgeEncounters)}</span>
+                </div>
+                <div className="calc-step">
+                  <span className="calc-label">Total hours saved</span>
+                  <span className="calc-value">{formatNumber(values.timeSavings.hoursSaved)} hrs</span>
+                </div>
+                <div className="calc-step">
+                  <span className="calc-label">Hourly value rate</span>
+                  <span className="calc-value">$150/hr</span>
+                </div>
+                <div className="calc-step adjustable">
+                  <span className="calc-label">
+                    Conversion rate
+                    <Tooltip content="% of saved time that converts to realized value. Rest goes to quality of life.">
+                      <Info size={14} className="info-icon" />
+                    </Tooltip>
+                  </span>
+                  <div className="calc-input">
+                    <input
+                      type="number"
+                      min="10"
+                      max="100"
+                      value={conversionRates.timeSavings * 100}
+                      onChange={(e) => setConversionRates({
+                        ...conversionRates,
+                        timeSavings: Number(e.target.value) / 100
+                      })}
+                    />
+                    <span>%</span>
+                  </div>
+                </div>
+                <div className="calc-divider"></div>
+                <div className="calc-step total">
+                  <span className="calc-label">Annual value</span>
+                  <span className="calc-value">${formatNumber(values.timeSavings.value)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* wRVU Lift Driver */}
+        <div className={`driver-card ${expandedDriver === 'wrvuLift' ? 'expanded' : ''}`}>
+          {/* Similar structure */}
+        </div>
+        
+        {/* Quality of Life Driver */}
+        <div className={`driver-card ${expandedDriver === 'qualityOfLife' ? 'expanded' : ''}`}>
+          {/* Similar structure */}
+        </div>
+        
+      </section>
+      
+      {/* About These Numbers */}
+      <div className="about-numbers-card">
+        <div className="about-header">
+          <FileText size={18} />
+          <h3>About These Numbers</h3>
+        </div>
+        <ul>
+          <li>All values use adjustable <strong>conversion rates</strong> — click each driver to customize</li>
+          <li>wRVU value uses <strong>$33/wRVU</strong> (Medicare blended rate)</li>
+          <li>Time savings valued at <strong>$150/hour</strong> provider opportunity cost</li>
+          <li>Investment estimated at <strong>$250/provider/month</strong></li>
+        </ul>
+      </div>
+      
+      {/* Footer */}
+      <div className="page-footer">
+        <button className="primary-button" onClick={onNext}>
+          See Expansion Potential
+          <ArrowRight size={16} />
+        </button>
+      </div>
+      
+    </div>
+  );
+}
+
+8. Journey Page — Driver Intensity Over Time
+This shows how different value drivers kick in at different phases of expansion.
+jsxCopy// ============ JOURNEY PAGE — DRIVER INTENSITY ============
+
+// Add this section after the expansion chart
+
+<section className="driver-intensity-section">
+  <div className="section-header">
+    <h2>Value Drivers Over Time</h2>
+    <p>Different drivers realize value at different stages of your journey</p>
+  </div>
+  
+  <div className="intensity-timeline">
+    
+    {/* Timeline Header */}
+    <div className="timeline-header">
+      <div className="timeline-phase">PILOT</div>
+      <div className="timeline-phase">EXPAND</div>
+      <div className="timeline-phase">SCALE</div>
+    </div>
+    
+    {/* Time Savings */}
+    <div className="intensity-row">
+      <div className="intensity-driver">
+        <Clock size={16} />
+        <span>Time Savings</span>
+      </div>
+      <div className="intensity-bar-container">
+        <div className="intensity-bar immediate" style={{ width: '100%' }}>
+          <div className="intensity-fill pilot" style={{ width: '90%' }}></div>
+          <div className="intensity-fill expand" style={{ width: '95%' }}></div>
+          <div className="intensity-fill scale" style={{ width: '100%' }}></div>
+        </div>
+      </div>
+      <div className="intensity-timing">
+        <span className="timing-badge immediate">Immediate</span>
+      </div>
+    </div>
+    
+    {/* wRVU Lift */}
+    <div className="intensity-row">
+      <div className="intensity-driver">
+        <DollarSign size={16} />
+        <span>wRVU Lift</span>
+      </div>
+      <div className="intensity-bar-container">
+        <div className="intensity-bar gradual">
+          <div className="intensity-fill pilot" style={{ width: '60%' }}></div>
+          <div className="intensity-fill expand" style={{ width: '85%' }}></div>
+          <div className="intensity-fill scale" style={{ width: '100%' }}></div>
+        </div>
+      </div>
+      <div className="intensity-timing">
+        <span className="timing-badge gradual">1-3 months</span>
+      </div>
+    </div>
+    
+    {/* Chart Closure */}
+    <div className="intensity-row">
+      <div className="intensity-driver">
+        <FileCheck size={16} />
+        <span>Chart Closure</span>
+      </div>
+      <div className="intensity-bar-container">
+        <div className="intensity-bar immediate">
+          <div className="intensity-fill pilot" style={{ width: '85%' }}></div>
+          <div className="intensity-fill expand" style={{ width: '95%' }}></div>
+          <div className="intensity-fill scale" style={{ width: '100%' }}></div>
+        </div>
+      </div>
+      <div className="intensity-timing">
+        <span className="timing-badge immediate">Immediate</span>
+      </div>
+    </div>
+    
+    {/* Quality of Life / Retention */}
+    <div className="intensity-row">
+      <div className="intensity-driver">
+        <Heart size={16} />
+        <span>Retention Value</span>
+      </div>
+      <div className="intensity-bar-container">
+        <div className="intensity-bar delayed">
+          <div className="intensity-fill pilot" style={{ width: '20%' }}></div>
+          <div className="intensity-fill expand" style={{ width: '50%' }}></div>
+          <div className="intensity-fill scale" style={{ width: '100%' }}></div>
+        </div>
+      </div>
+      <div className="intensity-timing">
+        <span className="timing-badge delayed">12-18 months</span>
+      </div>
+    </div>
+    
+  </div>
+  
+  {/* Legend */}
+  <div className="intensity-legend">
+    <div className="legend-item">
+      <span className="legend-dot pilot"></span>
+      <span>Pilot phase</span>
+    </div>
+    <div className="legend-item">
+      <span className="legend-dot expand"></span>
+      <span>Expansion phase</span>
+    </div>
+    <div className="legend-item">
+      <span className="legend-dot scale"></span>
+      <span>Full scale</span>
+    </div>
+  </div>
+  
+  {/* Insight */}
+  <div className="intensity-insight">
+    <Lightbulb size={18} />
+    <div>
+      <strong>Timing matters for ROI realization</strong>
+      <p>
+        Time savings and chart closure impact revenue immediately. wRVU lift 
+        becomes measurable in 1-3 months as documentation patterns stabilize. 
+        Retention value compounds over 12-18 months as burnout reduction 
+        translates to lower turnover.
+      </p>
+    </div>
+  </div>
+  
+</section>
+CSS for driver intensity:
+cssCopy.driver-intensity-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 40px;
+}
+
+.intensity-timeline {
+  margin: 24px 0;
+}
+
+.timeline-header {
+  display: grid;
+  grid-template-columns: 180px 1fr 100px;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding-left: 180px;
+}
+
+.timeline-header .timeline-phase {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.intensity-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 100px;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.intensity-driver {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.intensity-bar-container {
+  position: relative;
+  height: 32px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.intensity-bar {
+  display: flex;
+  height: 100%;
+}
+
+.intensity-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.intensity-fill.pilot {
+  background: #f97316;
+  border-radius: 6px 0 0 6px;
+}
+
+.intensity-fill.expand {
+  background: #94a3b8;
+}
+
+.intensity-fill.scale {
+  background: #059669;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Stacked bar visualization */
+.intensity-bar {
+  position: relative;
+}
+
+.intensity-bar::before,
+.intensity-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: white;
+}
+
+.intensity-bar::before {
+  left: 33%;
+}
+
+.intensity-bar::after {
+  left: 66%;
+}
+
+.timing-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.timing-badge.immediate {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.timing-badge.gradual {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.timing-badge.delayed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.intensity-legend {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.legend-dot.pilot { background: #f97316; }
+.legend-dot.expand { background: #94a3b8; }
+.legend-dot.scale { background: #059669; }
+
+.intensity-insight {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: #f0fdf4;
+  border-radius: 12px;
+  margin-top: 24px;
+}
+
+.intensity-insight svg {
+  color: #059669;
+  flex-shrink: 0;
+}
+
+.intensity-insight strong {
+  display: block;
+  font-size: 14px;
+  color: #065f46;
+  margin-bottom: 6px;
+}
+
+.intensity-insight p {
+  font-size: 13px;
+  color: #047857;
+  line-height: 1.5;
+  margin: 0;
+}
+
+Summary of All Changes:
+ItemChangeNumber formattingAll inputs now show commas for thousandsTime Savings benchmarkChanged to 3-5 minWork Outside of WorkAdded "Why This Matters" calloutLevel of ServiceChanged to Level 1-5, added blend note, prominent averages with % changewRVU benchmarkChanged to neutral "Reference Range" language, no good/bad judgmentChart ClosureAdded days cash on hand insight based on improvement levelROI pageMade drivers expandable with adjustable conversion ratesJourney pageAdded driver intensity timeline showing when each value kicks in
