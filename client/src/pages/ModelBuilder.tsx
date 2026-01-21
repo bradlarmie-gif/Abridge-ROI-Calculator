@@ -184,8 +184,11 @@ interface DriverInputs {
     replacementCost: number;
   };
   inpatientCCMCC: {
-    pctWithMissedCC: number;
-    avgDRGUplift: number;
+    gapRate: number;           // % of admissions with documentation gaps (default 40%)
+    improvementRate: number;   // % of gaps Abridge can capture (default 15%)
+    drgWeightIncrease: number; // Avg DRG weight increase (default 0.4)
+    baseDrgPayment: number;    // Base DRG payment (default $6,000)
+    realizationRate: number;   // % that passes audit (default 50%)
   };
   inpatientCDI: {
     queriesPerAdmission: number;
@@ -447,8 +450,11 @@ export default function ModelBuilder({
       replacementCost: 750000,
     },
     inpatientCCMCC: {
-      pctWithMissedCC: 18,
-      avgDRGUplift: 2500,
+      gapRate: 40,             // 40% of admissions have documentation gaps
+      improvementRate: 15,     // 15% of gaps Abridge can capture
+      drgWeightIncrease: 0.4,  // Avg DRG weight increase
+      baseDrgPayment: 6000,    // Base DRG payment
+      realizationRate: 50,     // 50% passes audit
     },
     inpatientCDI: {
       queriesPerAdmission: 0.15,
@@ -782,11 +788,16 @@ export default function ModelBuilder({
         return Math.round(prevented * replacementCost);
       }
       case "inpatientCCMCC": {
-        const { pctWithMissedCC, avgDRGUplift } = driverInputs.inpatientCCMCC;
-        const admissionsWithMissed = eligibleEncounters * (pctWithMissedCC / 100);
-        // Abridge captures ~40% of previously missed CC/MCC
-        const captured = admissionsWithMissed * 0.40;
-        return Math.round(captured * avgDRGUplift);
+        const { gapRate, improvementRate, drgWeightIncrease, baseDrgPayment, realizationRate } = driverInputs.inpatientCCMCC;
+        // Step 1: Admissions with Opportunity
+        const opportunities = eligibleEncounters * (gapRate / 100);
+        // Step 2: Capture Improvement
+        const admissionsImproved = opportunities * (improvementRate / 100);
+        // Step 3: DRG Weight Impact (gross)
+        const grossImpact = admissionsImproved * drgWeightIncrease * baseDrgPayment;
+        // Step 4: Reality Check
+        const annualValue = grossImpact * (realizationRate / 100);
+        return Math.round(annualValue);
       }
       case "inpatientCDI": {
         const { queriesPerAdmission, costPerQuery, reductionPct } = driverInputs.inpatientCDI;
@@ -1006,8 +1017,11 @@ export default function ModelBuilder({
           };
         case "inpatientCCMCC":
           return {
-            pctWithMissedCC: driverInputs.inpatientCCMCC.pctWithMissedCC,
-            avgDRGUplift: driverInputs.inpatientCCMCC.avgDRGUplift,
+            gapRate: driverInputs.inpatientCCMCC.gapRate,
+            improvementRate: driverInputs.inpatientCCMCC.improvementRate,
+            drgWeightIncrease: driverInputs.inpatientCCMCC.drgWeightIncrease,
+            baseDrgPayment: driverInputs.inpatientCCMCC.baseDrgPayment,
+            realizationRate: driverInputs.inpatientCCMCC.realizationRate,
           };
         case "inpatientCDI":
           return {
@@ -4063,63 +4077,265 @@ export default function ModelBuilder({
   };
   
   const renderInpatientCCMCCInputs = () => {
-    const { pctWithMissedCC, avgDRGUplift } = driverInputs.inpatientCCMCC;
-    const admissionsWithMissed = eligibleEncounters * (pctWithMissedCC / 100);
-    const captured = admissionsWithMissed * 0.40;
+    const { gapRate, improvementRate, drgWeightIncrease, baseDrgPayment, realizationRate } = driverInputs.inpatientCCMCC;
+    
+    // Step 1: Admissions with Opportunity
+    const opportunities = eligibleEncounters * (gapRate / 100);
+    // Step 2: Capture Improvement
+    const admissionsImproved = opportunities * (improvementRate / 100);
+    // Step 3: DRG Weight Impact (gross)
+    const grossImpact = admissionsImproved * drgWeightIncrease * baseDrgPayment;
+    // Step 4: Reality Check
+    const annualValue = grossImpact * (realizationRate / 100);
     
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm text-[#111827] font-medium">% of admissions with missed CC/MCC opportunities</label>
-            <span className="font-mono text-sm text-[#E85D3F]">{pctWithMissedCC}%</span>
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                DRG reimbursement depends on documented comorbidities. Conditions discussed at bedside but not captured in notes mean missed CC/MCC assignments and lower DRG weights. Abridge ensures what's discussed gets documented.
+              </p>
+            </div>
           </div>
-          <Slider
-            value={[pctWithMissedCC]}
-            onValueChange={([val]) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, pctWithMissedCC: val } }))}
-            min={10}
-            max={30}
-            step={2}
-            className="w-full"
-            data-testid="inpatient-ccmcc-pct-slider"
-          />
-          <p className="text-xs text-[#6B7280]">Studies suggest 15-25% of admissions have undocumented CC/MCC</p>
         </div>
-        
-        <div className="space-y-2 p-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Calculation breakdown:</p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {eligibleEncounters.toLocaleString()} admissions × {pctWithMissedCC}% = {Math.round(admissionsWithMissed).toLocaleString()} with missed CC/MCC
-          </p>
-          <p className="text-xs text-neutral-400 font-mono">
-            {Math.round(admissionsWithMissed).toLocaleString()} × 40% capture rate = {Math.round(captured).toLocaleString()} newly captured
-          </p>
-        </div>
-        
-        <div className="space-y-3">
-          <label className="text-sm text-[#111827] font-medium">Average DRG uplift per CC/MCC capture</label>
+
+        {/* Step 1: Admissions with Opportunity */}
+        <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <span className="text-[#6B7280]">$</span>
-            <Input
-              type="number"
-              value={avgDRGUplift}
-              onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, avgDRGUplift: Number(e.target.value) || 0 } }))}
-              className="w-32 font-mono"
-              data-testid="inpatient-ccmcc-uplift-input"
-            />
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Admissions with Opportunity</span>
           </div>
-          <p className="text-xs text-[#6B7280]">Typical CC adds $1,500-2,500; MCC adds $3,000-5,000 to reimbursement</p>
+          <p className="text-sm text-[#6B7280]">How many admissions have documentation gaps?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Documented Admissions</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{eligibleEncounters.toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Gap Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={gapRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, gapRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-ccmcc-gap-rate-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center py-2">
+            <span className="text-sm text-[#6B7280]">Opportunities: </span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(opportunities).toLocaleString()}</span>
+          </div>
+          
+          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800">
+              Studies show 30-50% of admissions have undocumented CC/MCC opportunities. We use 40% as a moderate estimate.
+            </p>
+          </div>
         </div>
-        
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 2: Capture Improvement */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Capture Improvement</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">How much can Abridge help?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Opportunities</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(opportunities).toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Improvement Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={improvementRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, improvementRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-ccmcc-improvement-rate-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center py-2">
+            <span className="text-sm text-[#6B7280]">Admissions Improved: </span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(admissionsImproved).toLocaleString()}</span>
+          </div>
+          
+          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800">
+              Not every gap is capturable. 15% accounts for cases where Abridge documentation directly enables CC/MCC capture that wouldn't have happened otherwise.
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 3: DRG Weight Impact */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: DRG Weight Impact</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">What's the revenue impact?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Admissions Improved</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(admissionsImproved).toLocaleString()}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">DRG Weight Increase</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={drgWeightIncrease}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, drgWeightIncrease: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  step="0.1"
+                  data-testid="inpatient-ccmcc-drg-weight-input"
+                />
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Base DRG Payment</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <span className="text-sm text-[#6B7280]">$</span>
+                <Input
+                  type="number"
+                  value={baseDrgPayment}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, baseDrgPayment: Number(e.target.value) || 0 } }))}
+                  className="w-20 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-ccmcc-base-drg-input"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center py-2">
+            <span className="text-sm text-[#6B7280]">Gross Impact: </span>
+            <span className="font-mono font-semibold text-[#111827]">{formatCurrency(Math.round(grossImpact))}</span>
+          </div>
+          
+          {/* DRG Weight Explanation Callout */}
+          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-semibold text-[#6B7280]">WHAT DRIVES 0.4 DRG WEIGHT?</span>
+            </div>
+            <p className="text-xs text-[#6B7280] mb-3">
+              Abridge captures conditions physicians discuss but don't always document — especially MCCs that significantly impact DRG weight:
+            </p>
+            <div className="space-y-1 text-xs text-[#6B7280]">
+              <div className="flex justify-between"><span>• Acute respiratory failure</span><span className="font-mono">+0.3 to +0.5</span></div>
+              <div className="flex justify-between"><span>• Sepsis / Severe sepsis</span><span className="font-mono">+0.4 to +0.6</span></div>
+              <div className="flex justify-between"><span>• Malnutrition</span><span className="font-mono">+0.2 to +0.4</span></div>
+              <div className="flex justify-between"><span>• Acute encephalopathy</span><span className="font-mono">+0.3 to +0.5</span></div>
+              <div className="flex justify-between"><span>• Acute kidney injury</span><span className="font-mono">+0.1 to +0.3</span></div>
+            </div>
+            <p className="text-xs text-neutral-400 mt-3 italic">
+              0.4 is a blended average. Your results depend on case mix.
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-dashed border-neutral-300" />
+
+        {/* Step 4: Reality Check */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Reality Check</span>
+          </div>
+          <p className="text-sm text-[#6B7280]">What passes audit?</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Gross Impact</span>
+              <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                <span className="font-mono text-sm font-medium text-[#111827]">{formatCurrency(Math.round(grossImpact))}</span>
+              </div>
+            </div>
+            <span className="text-lg text-[#6B7280]">×</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-[#6B7280] mb-1">Realization Rate</span>
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+                <Input
+                  type="number"
+                  value={realizationRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, realizationRate: Number(e.target.value) || 0 } }))}
+                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  data-testid="inpatient-ccmcc-realization-rate-input"
+                />
+                <span className="text-sm text-[#6B7280]">%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+            <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800">
+              We apply a 50% haircut to account for RAC/PEPPER audits and DRG validation, cases where documentation doesn't change final code, and coder discretion. This is revenue you can actually count on.
+            </p>
+          </div>
+          
+          {/* Base DRG Payment Benchmark */}
+          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-semibold text-[#6B7280]">BENCHMARK: Base DRG Payment</span>
+            </div>
+            <div className="space-y-1 text-xs text-[#6B7280]">
+              <div className="flex justify-between"><span>National Average</span><span className="font-mono">$6,000 - $7,000</span></div>
+              <div className="flex justify-between"><span>Academic Medical Centers</span><span className="font-mono">$8,000 - $12,000</span></div>
+              <div className="flex justify-between"><span>Community Hospitals</span><span className="font-mono">$5,000 - $6,500</span></div>
+            </div>
+            <p className="text-xs text-neutral-400 mt-3">
+              Your input: <span className="font-mono font-medium">${baseDrgPayment.toLocaleString()}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Result</span>
-            <span className="font-mono font-bold text-emerald-600 text-xl">
-              {formatCurrency(Math.round(captured * avgDRGUplift))}
+            <span className="font-medium text-[#111827]">Annual Value</span>
+            <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="inpatient-ccmcc-result">
+              {formatCurrency(Math.round(annualValue))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(captured).toLocaleString()} captured × ${avgDRGUplift.toLocaleString()}
+            {formatCurrency(Math.round(grossImpact))} × {realizationRate}% realization
+          </p>
+        </div>
+        
+        {/* CDI Team Note */}
+        <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            Work with your CDI team to validate capture rates for your specific case mix.
           </p>
         </div>
       </div>

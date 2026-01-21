@@ -1,0 +1,138 @@
+Current State vs. What We Need:
+Current: Slider-based with simplified calculation
+Needed: Step-down math like our other drivers
+
+Final UI Structure for CC/MCC Capture:
+Copy┌─────────────────────────────────────────────────────────────────┐
+│ 💰 CC/MCC Capture (DRG Optimization)                 $374,400   │
+│    Document the complexity you're managing                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ 💡 The Theory                                                   │
+│ DRG reimbursement depends on documented comorbidities.          │
+│ Conditions discussed at bedside but not captured in notes       │
+│ mean missed CC/MCC assignments and lower DRG weights.           │
+│ Abridge ensures what's discussed gets documented.               │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ STEP 1: ADMISSIONS WITH OPPORTUNITY                             │
+│ How many admissions have documentation gaps?                    │
+│                                                                 │
+│ ┌────────────────────┐   ┌──────────────────┐                  │
+│ │Documented Admissions│ × │   Gap Rate       │                  │
+│ │       5,200        │   │      40%         │                  │
+│ └────────────────────┘   └──────────────────┘                  │
+│                                                                 │
+│                          Opportunities: 2,080                   │
+│                                                                 │
+│ 💡 Studies show 30-50% of admissions have undocumented          │
+│    CC/MCC opportunities. We use 40% as a moderate estimate.     │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 2: CAPTURE IMPROVEMENT                                     │
+│ How much can Abridge help?                                      │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │  Opportunities   │ × │ Improvement Rate │                    │
+│ │     2,080        │   │       15%        │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                     Admissions Improved: 312                    │
+│                                                                 │
+│ 💡 Not every gap is capturable. 15% accounts for cases where    │
+│    Abridge documentation directly enables CC/MCC capture        │
+│    that wouldn't have happened otherwise.                       │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 3: DRG WEIGHT IMPACT                                       │
+│ What's the revenue impact?                                      │
+│                                                                 │
+│ ┌────────────────┐   ┌────────────┐   ┌────────────┐           │
+│ │Admissions      │ × │DRG Weight  │ × │Base DRG    │           │
+│ │Improved        │   │Increase    │   │Payment     │           │
+│ │     312        │   │    0.4     │   │  $6,000    │           │
+│ └────────────────┘   └────────────┘   └────────────┘           │
+│                                                                 │
+│                        Gross Impact: $748,800                   │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 🔢 WHAT DRIVES 0.4 DRG WEIGHT?                              │ │
+│ │                                                             │ │
+│ │ Abridge captures conditions physicians discuss but don't    │ │
+│ │ always document — especially MCCs that significantly        │ │
+│ │ impact DRG weight:                                          │ │
+│ │                                                             │ │
+│ │ • Acute respiratory failure        +0.3 to +0.5             │ │
+│ │ • Sepsis / Severe sepsis           +0.4 to +0.6             │ │
+│ │ • Malnutrition                     +0.2 to +0.4             │ │
+│ │ • Acute encephalopathy             +0.3 to +0.5             │ │
+│ │ • Acute kidney injury              +0.1 to +0.3             │ │
+│ │                                                             │ │
+│ │ 0.4 is a blended average. Your results depend on case mix.  │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│                                                                 │
+│ STEP 4: REALITY CHECK                                           │
+│ What passes audit?                                              │
+│                                                                 │
+│ ┌──────────────────┐   ┌──────────────────┐                    │
+│ │   Gross Impact   │ × │ Realization Rate │                    │
+│ │    $748,800      │   │       50%        │                    │
+│ └──────────────────┘   └──────────────────┘                    │
+│                                                                 │
+│                       Annual Value: $374,400                    │
+│                                                                 │
+│ 💡 We apply a 50% haircut to account for:                       │
+│    • RAC/PEPPER audits and DRG validation                       │
+│    • Cases where documentation doesn't change final code        │
+│    • Coder discretion and interpretation                        │
+│                                                                 │
+│    This is revenue you can actually count on.                   │
+│                                                                 │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ 📊 BENCHMARK: Base DRG Payment                              │ │
+│ │                                                             │ │
+│ │ National Average                   $6,000 - $7,000          │ │
+│ │ Academic Medical Centers           $8,000 - $12,000         │ │
+│ │ Community Hospitals                $5,000 - $6,500          │ │
+│ │                                                             │ │
+│ │ Your input: $6,000                                          │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│ ⚠️ Work with your CDI team to validate capture rates for your   │
+│    specific case mix.                                           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Code for Replit:
+javascriptCopy// ============ CC/MCC CAPTURE (DRG OPTIMIZATION) ============
+
+// Inputs (user-editable)
+const documentedAdmissions = 5200;         // From earlier in flow
+const gapRate = 0.40;                      // 40% have documentation gaps
+const improvementRate = 0.15;              // 15% Abridge can capture
+const drgWeightIncrease = 0.4;             // Avg weight increase
+const baseDrgPayment = 6000;               // National avg base DRG
+const realizationRate = 0.50;              // 50% passes audit
+
+// Calculations
+
+// Step 1: Admissions with Opportunity
+const opportunities = documentedAdmissions * gapRate;
+// 5,200 × 0.40 = 2,080 opportunities
+
+// Step 2: Capture Improvement
+const admissionsImproved = opportunities * improvementRate;
+// 2,080 × 0.15 = 312 admissions improved
+
+// Step 3: DRG Weight Impact
+const grossImpact = admissionsImproved * drgWeightIncrease * baseDrgPayment;
+// 312 × 0.4 × $6,000 = $748,800
+
+// Step 4: Reality Check
+const annualValue = grossImpact * realizationRate;
+// $748,800 × 0.50 = $374,400
