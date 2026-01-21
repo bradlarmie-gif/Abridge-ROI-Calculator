@@ -1,0 +1,1395 @@
+I need to completely redesign the Summary page with a "Pilot → Expand → Full Scale" journey visualization. Here's the full specification:
+
+## PAGE STRUCTURE
+
+The summary page should have these sections in order:
+
+1. HEADER
+- Back to Model Builder link
+- Breadcrumb showing: Setting | Units | Net Value | ROI
+- Edit Model button
+- Export & Share button
+
+2. HERO METRICS
+- Three big numbers: Net Annual Value (green), ROI Multiple, Payback Period
+- Subtext showing Total Annual Value and Annual Investment
+
+3. YOUR JOURNEY WITH ABRIDGE (Main Feature)
+- Title: "Your Journey with Abridge"
+- Subtitle: "Start with a pilot. Prove the value. Scale across your organization."
+- Bar chart showing 3 stages: Pilot (coral), Expand (gray), Full Scale (green)
+- Dashed lines connecting the bars
+- Three cards below showing details for each stage
+- Key Insight callout explaining ROI improves at scale
+- Interactive inputs to customize Full Scale opportunity
+
+4. VALUE BREAKDOWN
+- Two category cards: Labor & Efficiency, Revenue & Quality
+- Visual percentage bar
+
+5. INVESTMENT DETAILS
+- Your Configuration card
+- Multi-Year Projection table
+
+6. KEY ASSUMPTIONS
+- Bullet list
+
+7. ACTIONS
+- Add Another Driver button
+- Export options
+
+## JOURNEY CHART DETAILS
+
+The chart should show three bars:
+- PILOT (coral/orange #f97316): Current state, "You are here"
+- EXPAND (gray #94a3b8): Next phase, ~3x pilot
+- FULL SCALE (green #059669): Full opportunity, user-customizable
+
+Each stage card shows:
+- Stage name and icon
+- Number of providers/beds
+- Utilization percentage
+- Number of encounters
+- Value, Investment, Net, ROI
+
+The Full Scale stage should be editable with two inputs:
+- Total providers/beds slider
+- Expected utilization slider
+
+## CALCULATIONS
+
+For each stage:
+- encounters = units × encounters_per_unit × utilization_rate
+- value = encounters × value_per_encounter (derived from pilot data)
+- investment = units × price_per_unit × 12
+- net = value - investment
+- roi = value / investment
+
+Pilot values come from the model builder.
+Expand = pilot × 3 providers, 65% utilization
+Full Scale = user input providers, user input utilization (default 75%)
+
+Full Component Code:
+jsxCopy// ============ SUMMARY PAGE WITH JOURNEY CHART ============
+
+import { useState, useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
+
+export default function SummaryPage({
+  setting,
+  currentUnits,
+  unitName,
+  unitNameSingular,
+  totalAnnualValue,
+  annualInvestment,
+  valueBreakdown,
+  pricePerUnit,
+  contractTerm,
+  totalEncounters,
+  utilizationRate
+}) {
+  
+  // ============ STATE ============
+  
+  const [fullScaleUnits, setFullScaleUnits] = useState(Math.round(currentUnits * 7.5));
+  const [fullScaleUtilization, setFullScaleUtilization] = useState(75);
+  
+  // ============ DERIVED CALCULATIONS ============
+  
+  // Value per encounter (derived from pilot)
+  const pilotEncounters = totalEncounters * utilizationRate;
+  const valuePerEncounter = totalAnnualValue / pilotEncounters;
+  const encountersPerUnit = totalEncounters / currentUnits;
+  
+  // Pilot stage (current state)
+  const pilot = useMemo(() => ({
+    stage: 'pilot',
+    label: 'PILOT',
+    sublabel: 'You are here',
+    icon: '📍',
+    units: currentUnits,
+    utilization: Math.round(utilizationRate * 100),
+    encounters: Math.round(pilotEncounters),
+    value: totalAnnualValue,
+    investment: annualInvestment,
+    net: totalAnnualValue - annualInvestment,
+    roi: (totalAnnualValue / annualInvestment).toFixed(1)
+  }), [currentUnits, utilizationRate, pilotEncounters, totalAnnualValue, annualInvestment]);
+  
+  // Expand stage (~3x pilot, 65% utilization)
+  const expand = useMemo(() => {
+    const units = Math.round(currentUnits * 3);
+    const utilization = 0.65;
+    const encounters = units * encountersPerUnit * utilization;
+    const value = encounters * valuePerEncounter;
+    const investment = units * pricePerUnit * 12;
+    return {
+      stage: 'expand',
+      label: 'EXPAND',
+      sublabel: 'Next phase',
+      icon: '📈',
+      units,
+      utilization: 65,
+      encounters: Math.round(encounters),
+      value: Math.round(value),
+      investment: Math.round(investment),
+      net: Math.round(value - investment),
+      roi: (value / investment).toFixed(1)
+    };
+  }, [currentUnits, encountersPerUnit, valuePerEncounter, pricePerUnit]);
+  
+  // Full Scale stage (user customizable)
+  const fullScale = useMemo(() => {
+    const units = fullScaleUnits;
+    const utilization = fullScaleUtilization / 100;
+    const encounters = units * encountersPerUnit * utilization;
+    const value = encounters * valuePerEncounter;
+    const investment = units * pricePerUnit * 12;
+    return {
+      stage: 'fullScale',
+      label: 'FULL SCALE',
+      sublabel: 'Your opportunity',
+      icon: '🚀',
+      units,
+      utilization: fullScaleUtilization,
+      encounters: Math.round(encounters),
+      value: Math.round(value),
+      investment: Math.round(investment),
+      net: Math.round(value - investment),
+      roi: (value / investment).toFixed(1)
+    };
+  }, [fullScaleUnits, fullScaleUtilization, encountersPerUnit, valuePerEncounter, pricePerUnit]);
+  
+  // Chart data
+  const chartData = [
+    { name: 'Pilot', value: pilot.value, stage: 'pilot' },
+    { name: 'Expand', value: expand.value, stage: 'expand' },
+    { name: 'Full Scale', value: fullScale.value, stage: 'fullScale' }
+  ];
+  
+  // Hero metrics
+  const netValue = pilot.net;
+  const roiMultiple = pilot.roi;
+  const paybackMonths = Math.round((annualInvestment / totalAnnualValue) * 12);
+  
+  // Value breakdown by category
+  const laborDrivers = valueBreakdown.filter(d => d.category === 'labor');
+  const revenueDrivers = valueBreakdown.filter(d => d.category === 'revenue');
+  const laborValue = laborDrivers.reduce((sum, d) => sum + d.value, 0);
+  const revenueValue = revenueDrivers.reduce((sum, d) => sum + d.value, 0);
+  const laborPercent = Math.round((laborValue / totalAnnualValue) * 100);
+  const revenuePercent = 100 - laborPercent;
+  
+  // Multi-year projection (10% growth)
+  const year1 = totalAnnualValue;
+  const year2 = Math.round(totalAnnualValue * 1.10);
+  const year3 = Math.round(totalAnnualValue * 1.21);
+  const threeYearValue = year1 + year2 + year3;
+  const threeYearCost = annualInvestment * 3;
+  const threeYearNet = threeYearValue - threeYearCost;
+  
+  // Expansion potential
+  const expansionPotential = fullScale.net - pilot.net;
+  
+  // ============ RENDER ============
+  
+  return (
+    <div className="summary-page">
+      
+      {/* ============ HEADER ============ */}
+      <header className="summary-header">
+        <div className="header-left">
+          <button className="back-link">← Back to Model Builder</button>
+          <div className="breadcrumb">
+            <span className="setting-badge">{setting}</span>
+            <span className="divider">│</span>
+            <span>{currentUnits} {unitName}</span>
+            <span className="divider">│</span>
+            <span className="highlight">${netValue.toLocaleString()} net value</span>
+            <span className="divider">│</span>
+            <span className="highlight">{roiMultiple}x ROI</span>
+          </div>
+        </div>
+        <div className="header-actions">
+          <button className="btn-secondary">✏️ Edit Model</button>
+          <button className="btn-primary">📤 Export & Share</button>
+        </div>
+      </header>
+      
+      {/* ============ HERO METRICS ============ */}
+      <section className="hero-section">
+        <h2 className="section-label">YOUR ROI AT A GLANCE</h2>
+        <div className="hero-metrics">
+          <div className="hero-metric">
+            <div className="metric-value green">${netValue.toLocaleString()}</div>
+            <div className="metric-label">NET ANNUAL VALUE</div>
+          </div>
+          <div className="hero-metric featured">
+            <div className="metric-value">{roiMultiple}x</div>
+            <div className="metric-label">RETURN ON INVESTMENT</div>
+          </div>
+          <div className="hero-metric">
+            <div className="metric-value">{paybackMonths < 1 ? '<1' : paybackMonths} mo</div>
+            <div className="metric-label">PAYBACK PERIOD</div>
+          </div>
+        </div>
+        <div className="hero-subtext">
+          <span>📈 Total Annual Value: ${totalAnnualValue.toLocaleString()}</span>
+          <span className="divider">│</span>
+          <span>💰 Annual Investment: ${annualInvestment.toLocaleString()}</span>
+        </div>
+      </section>
+      
+      {/* ============ JOURNEY SECTION ============ */}
+      <section className="journey-section">
+        <div className="section-header">
+          <h2>YOUR JOURNEY WITH ABRIDGE</h2>
+          <p>Start with a pilot. Prove the value. Scale across your organization.</p>
+        </div>
+        
+        {/* Journey Chart */}
+        <div className="journey-chart-container">
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={chartData} barCategoryGap="20%">
+              <XAxis 
+                dataKey="name" 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 14, fontWeight: 500 }}
+              />
+              <YAxis 
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `$${(v/1000000).toFixed(1)}M`}
+                tick={{ fill: '#94a3b8', fontSize: 12 }}
+              />
+              <Tooltip 
+                formatter={(value) => [`$${value.toLocaleString()}`, 'Annual Value']}
+                contentStyle={{ 
+                  background: '#1e293b', 
+                  border: 'none', 
+                  borderRadius: '8px',
+                  color: 'white'
+                }}
+              />
+              <Bar dataKey="value" radius={[8, 8, 0, 0]} maxBarSize={120}>
+                {chartData.map((entry, index) => (
+                  <Cell 
+                    key={index}
+                    fill={
+                      entry.stage === 'pilot' ? '#f97316' :
+                      entry.stage === 'expand' ? '#94a3b8' :
+                      '#059669'
+                    }
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          
+          {/* Stage Labels Under Chart */}
+          <div className="chart-labels">
+            <div className="chart-label pilot">
+              <span className="label-icon">📍</span>
+              <span className="label-text">You are here</span>
+            </div>
+            <div className="chart-label expand">
+              <span className="label-icon">📈</span>
+              <span className="label-text">Next phase</span>
+            </div>
+            <div className="chart-label fullscale">
+              <span className="label-icon">🚀</span>
+              <span className="label-text">Your opportunity</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Stage Cards */}
+        <div className="stage-cards">
+          
+          {/* Pilot Card */}
+          <div className="stage-card pilot">
+            <div className="card-header">
+              <span className="card-icon">📍</span>
+              <div className="card-titles">
+                <h3>PILOT</h3>
+                <p>You are here</p>
+              </div>
+            </div>
+            <div className="card-stats">
+              <div className="stat">
+                <span className="stat-value">{pilot.units}</span>
+                <span className="stat-label">{unitName}</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value">{pilot.utilization}%</span>
+                <span className="stat-label">utilization</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value">{pilot.encounters.toLocaleString()}</span>
+                <span className="stat-label">encounters</span>
+              </div>
+            </div>
+            <div className="card-financials">
+              <div className="financial-row">
+                <span>Value</span>
+                <span>${pilot.value.toLocaleString()}</span>
+              </div>
+              <div className="financial-row">
+                <span>Investment</span>
+                <span>${pilot.investment.toLocaleString()}</span>
+              </div>
+              <div className="financial-row net">
+                <span>Net</span>
+                <span>${pilot.net.toLocaleString()}</span>
+              </div>
+              <div className="financial-row roi">
+                <span>ROI</span>
+                <span>{pilot.roi}x</span>
+              </div>
+            </div>
+            <div className="card-bar pilot-bar"></div>
+          </div>
+          
+          {/* Expand Card */}
+          <div className="stage-card expand">
+            <div className="card-header">
+              <span className="card-icon">📈</span>
+              <div className="card-titles">
+                <h3>EXPAND</h3>
+                <p>Next phase</p>
+              </div>
+            </div>
+            <div className="card-stats">
+              <div className="stat">
+                <span className="stat-value">{expand.units}</span>
+                <span className="stat-label">{unitName}</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value">{expand.utilization}%</span>
+                <span className="stat-label">utilization</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value">{expand.encounters.toLocaleString()}</span>
+                <span className="stat-label">encounters</span>
+              </div>
+            </div>
+            <div className="card-financials">
+              <div className="financial-row">
+                <span>Value</span>
+                <span>${expand.value.toLocaleString()}</span>
+              </div>
+              <div className="financial-row">
+                <span>Investment</span>
+                <span>${expand.investment.toLocaleString()}</span>
+              </div>
+              <div className="financial-row net">
+                <span>Net</span>
+                <span>${expand.net.toLocaleString()}</span>
+              </div>
+              <div className="financial-row roi">
+                <span>ROI</span>
+                <span>{expand.roi}x</span>
+              </div>
+            </div>
+            <div className="card-bar expand-bar"></div>
+          </div>
+          
+          {/* Full Scale Card */}
+          <div className="stage-card fullscale">
+            <div className="card-header">
+              <span className="card-icon">🚀</span>
+              <div className="card-titles">
+                <h3>FULL SCALE</h3>
+                <p>Your opportunity</p>
+              </div>
+            </div>
+            <div className="card-stats">
+              <div className="stat">
+                <span className="stat-value">{fullScale.units}</span>
+                <span className="stat-label">{unitName}</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value">{fullScale.utilization}%</span>
+                <span className="stat-label">utilization</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value">{fullScale.encounters.toLocaleString()}</span>
+                <span className="stat-label">encounters</span>
+              </div>
+            </div>
+            <div className="card-financials">
+              <div className="financial-row">
+                <span>Value</span>
+                <span>${fullScale.value.toLocaleString()}</span>
+              </div>
+              <div className="financial-row">
+                <span>Investment</span>
+                <span>${fullScale.investment.toLocaleString()}</span>
+              </div>
+              <div className="financial-row net">
+                <span>Net</span>
+                <span>${fullScale.net.toLocaleString()}</span>
+              </div>
+              <div className="financial-row roi">
+                <span>ROI</span>
+                <span>{fullScale.roi}x</span>
+              </div>
+            </div>
+            <div className="card-bar fullscale-bar"></div>
+          </div>
+          
+        </div>
+        
+        {/* Key Insight */}
+        <div className="key-insight">
+          <div className="insight-icon">💡</div>
+          <div className="insight-content">
+            <h4>KEY INSIGHT</h4>
+            <p>
+              ROI improves as you scale. Higher utilization + more {unitName} = more value 
+              per dollar invested. The pilot proves it works. Expansion captures the full opportunity.
+            </p>
+            <p className="insight-highlight">
+              From pilot to full scale: <strong>+${expansionPotential.toLocaleString()}</strong> additional annual value
+            </p>
+          </div>
+        </div>
+        
+        {/* Customize Full Scale */}
+        <div className="customize-section">
+          <h3>🎯 CUSTOMIZE YOUR FULL SCALE OPPORTUNITY</h3>
+          
+          <div className="customize-inputs">
+            <div className="customize-input">
+              <label>Total {unitName} in your organization</label>
+              <div className="slider-container">
+                <span className="slider-min">{currentUnits}</span>
+                <input
+                  type="range"
+                  min={currentUnits}
+                  max={currentUnits * 15}
+                  value={fullScaleUnits}
+                  onChange={(e) => setFullScaleUnits(Number(e.target.value))}
+                  className="slider"
+                />
+                <span className="slider-max">{currentUnits * 15}</span>
+              </div>
+              <div className="slider-value">{fullScaleUnits} {unitName}</div>
+            </div>
+            
+            <div className="customize-input">
+              <label>Expected utilization at full adoption</label>
+              <div className="slider-container">
+                <span className="slider-min">50%</span>
+                <input
+                  type="range"
+                  min={50}
+                  max={90}
+                  value={fullScaleUtilization}
+                  onChange={(e) => setFullScaleUtilization(Number(e.target.value))}
+                  className="slider"
+                />
+                <span className="slider-max">90%</span>
+              </div>
+              <div className="slider-value">{fullScaleUtilization}%</div>
+            </div>
+          </div>
+          
+          <div className="fullscale-summary">
+            <div className="summary-stat">
+              <span className="summary-value">{fullScale.encounters.toLocaleString()}</span>
+              <span className="summary-label">encounters</span>
+            </div>
+            <div className="summary-stat">
+              <span className="summary-value">${fullScale.value.toLocaleString()}</span>
+              <span className="summary-label">value</span>
+            </div>
+            <div className="summary-stat">
+              <span className="summary-value">{fullScale.roi}x</span>
+              <span className="summary-label">ROI</span>
+            </div>
+          </div>
+        </div>
+        
+      </section>
+      
+      {/* ============ VALUE BREAKDOWN ============ */}
+      <section className="breakdown-section">
+        <div className="section-header">
+          <h2>VALUE BREAKDOWN</h2>
+          <p>Where your ROI comes from</p>
+        </div>
+        
+        <div className="breakdown-cards">
+          <div className="breakdown-card labor">
+            <div className="card-header">
+              <span className="card-icon">⏱️</span>
+              <span className="card-title">LABOR & EFFICIENCY</span>
+              <span className="card-value">${laborValue.toLocaleString()}</span>
+            </div>
+            <p className="card-percent">{laborPercent}% of total value</p>
+            <div className="card-drivers">
+              {laborDrivers.map((driver, i) => (
+                <div className="driver-row" key={i}>
+                  <span className="driver-name">{driver.name}</span>
+                  <span className="driver-value">${driver.value.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="breakdown-card revenue">
+            <div className="card-header">
+              <span className="card-icon">📊</span>
+              <span className="card-title">REVENUE & QUALITY</span>
+              <span className="card-value">${revenueValue.toLocaleString()}</span>
+            </div>
+            <p className="card-percent">{revenuePercent}% of total value</p>
+            <div className="card-drivers">
+              {revenueDrivers.map((driver, i) => (
+                <div className="driver-row" key={i}>
+                  <span className="driver-name">{driver.name}</span>
+                  <span className="driver-value">${driver.value.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        <div className="breakdown-bar">
+          <div className="bar-segment labor" style={{ width: `${laborPercent}%` }}>
+            Labor & Efficiency ({laborPercent}%)
+          </div>
+          <div className="bar-segment revenue" style={{ width: `${revenuePercent}%` }}>
+            Revenue & Quality ({revenuePercent}%)
+          </div>
+        </div>
+      </section>
+      
+      {/* ============ INVESTMENT DETAILS ============ */}
+      <section className="investment-section">
+        <div className="section-header">
+          <h2>INVESTMENT DETAILS</h2>
+        </div>
+        
+        <div className="investment-grid">
+          <div className="config-card">
+            <h3>YOUR CONFIGURATION</h3>
+            <div className="config-row">
+              <span>Setting</span>
+              <span>{setting}</span>
+            </div>
+            <div className="config-row">
+              <span>{unitName}</span>
+              <span>{currentUnits}</span>
+            </div>
+            <div className="config-row">
+              <span>Price</span>
+              <span>${pricePerUnit}/{unitNameSingular}/month</span>
+            </div>
+            <div className="config-row">
+              <span>Term</span>
+              <span>{contractTerm} year{contractTerm > 1 ? 's' : ''}</span>
+            </div>
+            <div className="config-divider"></div>
+            <div className="config-row total">
+              <span>Annual Investment</span>
+              <span>${annualInvestment.toLocaleString()}</span>
+            </div>
+          </div>
+          
+          <div className="projection-card">
+            <h3>MULTI-YEAR PROJECTION</h3>
+            <table className="projection-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Year 1</th>
+                  <th>Year 2</th>
+                  <th>Year 3</th>
+                  <th className="total-col">3-Year Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Value</td>
+                  <td>${year1.toLocaleString()}</td>
+                  <td>${year2.toLocaleString()}</td>
+                  <td>${year3.toLocaleString()}</td>
+                  <td className="total-col">${threeYearValue.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>Cost</td>
+                  <td>${annualInvestment.toLocaleString()}</td>
+                  <td>${annualInvestment.toLocaleString()}</td>
+                  <td>${annualInvestment.toLocaleString()}</td>
+                  <td className="total-col">${threeYearCost.toLocaleString()}</td>
+                </tr>
+                <tr className="net-row">
+                  <td>Net</td>
+                  <td>${(year1 - annualInvestment).toLocaleString()}</td>
+                  <td>${(year2 - annualInvestment).toLocaleString()}</td>
+                  <td>${(year3 - annualInvestment).toLocaleString()}</td>
+                  <td className="total-col highlight">${threeYearNet.toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="projection-note">Assumes 10% annual value growth with increased adoption</p>
+          </div>
+        </div>
+      </section>
+      
+      {/* ============ KEY ASSUMPTIONS ============ */}
+      <section className="assumptions-section">
+        <h2>KEY ASSUMPTIONS</h2>
+        <ul>
+          <li>{currentUnits} {unitName} in pilot with {totalEncounters.toLocaleString()} total encounters</li>
+          <li>{Math.round(utilizationRate * 100)}% utilization rate = {Math.round(pilotEncounters).toLocaleString()} Abridge-documented encounters</li>
+          <li>Investment of ${annualInvestment.toLocaleString()} annually at ${pricePerUnit}/{unitNameSingular}/month</li>
+          <li>Value scales linearly with {unitName} and utilization</li>
+          <li>10% annual value growth assumed for multi-year projection</li>
+        </ul>
+      </section>
+      
+      {/* ============ ACTIONS ============ */}
+      <section className="actions-section">
+        <div className="actions-left">
+          <button className="btn-add-driver">+ Add Another Driver</button>
+        </div>
+        <div className="actions-right">
+          <button className="btn-export">📄 Export as PDF</button>
+          <button className="btn-export">📧 Share via Email</button>
+          <button className="btn-export">🔗 Copy Link</button>
+        </div>
+      </section>
+      
+    </div>
+  );
+}
+
+CSS Styles:
+cssCopy/* ============ SUMMARY PAGE STYLES ============ */
+
+.summary-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ============ HEADER ============ */
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 32px;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.back-link:hover {
+  color: #f97316;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.setting-badge {
+  background: #f1f5f9;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.breadcrumb .highlight {
+  color: #059669;
+  font-weight: 600;
+}
+
+.breadcrumb .divider {
+  color: #cbd5e1;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-secondary {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: #f97316;
+  color: #f97316;
+}
+
+.btn-primary {
+  background: #f97316;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #ea580c;
+}
+
+/* ============ HERO SECTION ============ */
+
+.hero-section {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  margin-bottom: 40px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+}
+
+.hero-metrics {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  margin-bottom: 24px;
+}
+
+.hero-metric {
+  text-align: center;
+}
+
+.hero-metric .metric-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.hero-metric .metric-value.green {
+  color: #059669;
+}
+
+.hero-metric.featured .metric-value {
+  font-size: 56px;
+}
+
+.hero-metric .metric-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-top: 8px;
+}
+
+.hero-subtext {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.hero-subtext .divider {
+  margin: 0 16px;
+  color: #cbd5e1;
+}
+
+/* ============ JOURNEY SECTION ============ */
+
+.journey-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+.section-header {
+  margin-bottom: 32px;
+}
+
+.section-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.section-header p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.journey-chart-container {
+  margin-bottom: 32px;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-around;
+  margin-top: -20px;
+}
+
+.chart-label {
+  text-align: center;
+}
+
+.chart-label .label-icon {
+  font-size: 20px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.chart-label .label-text {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ============ STAGE CARDS ============ */
+
+.stage-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.stage-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stage-card.pilot {
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+
+.stage-card.fullscale {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+}
+
+.stage-card .card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stage-card .card-icon {
+  font-size: 24px;
+}
+
+.stage-card .card-titles h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.stage-card .card-titles p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.card-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.card-stats .stat {
+  text-align: center;
+}
+
+.card-stats .stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  display: block;
+}
+
+.card-stats .stat-label {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.card-financials {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.financial-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #475569;
+}
+
+.financial-row.net {
+  font-weight: 600;
+  color: #1e293b;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.financial-row.roi span:last-child {
+  color: #059669;
+  font-weight: 600;
+}
+
+.card-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.pilot-bar { background: #f97316; }
+.expand-bar { background: #94a3b8; }
+.fullscale-bar { background: #059669; }
+
+/* ============ KEY INSIGHT ============ */
+
+.key-insight {
+  display: flex;
+  gap: 16px;
+  background: #fffbeb;
+  border: 1px solid #fef08a;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.insight-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.insight-content h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #854d0e;
+  margin: 0 0 8px 0;
+}
+
+.insight-content p {
+  font-size: 14px;
+  color: #713f12;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.insight-highlight {
+  font-size: 16px !important;
+  margin-top: 12px !important;
+}
+
+.insight-highlight strong {
+  color: #059669;
+  font-size: 20px;
+}
+
+/* ============ CUSTOMIZE SECTION ============ */
+
+.customize-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.customize-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 24px 0;
+}
+
+.customize-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.customize-input label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 12px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slider-min, .slider-max {
+  font-size: 12px;
+  color: #94a3b8;
+  min-width: 40px;
+}
+
+.slider {
+  flex: 1;
+  height: 8px;
+  -webkit-appearance: none;
+  background: #e2e8f0;
+  border-radius: 4px;
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #059669;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.slider-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #059669;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.fullscale-summary {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.summary-stat {
+  text-align: center;
+}
+
+.summary-stat .summary-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #059669;
+  display: block;
+}
+
+.summary-stat .summary-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ============ BREAKDOWN SECTION ============ */
+
+.breakdown-section {
+  margin-bottom: 40px;
+}
+
+.breakdown-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.breakdown-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.breakdown-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.breakdown-card .card-icon {
+  font-size: 20px;
+}
+
+.breakdown-card .card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  flex: 1;
+}
+
+.breakdown-card .card-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.breakdown-card .card-percent {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 16px 0;
+}
+
+.card-drivers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.driver-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+}
+
+.driver-name {
+  color: #475569;
+}
+
+.driver-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.breakdown-bar {
+  display: flex;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+}
+
+.bar-segment.labor {
+  background: #f97316;
+}
+
+.bar-segment.revenue {
+  background: #059669;
+}
+
+/* ============ INVESTMENT SECTION ============ */
+
+.investment-section {
+  margin-bottom: 40px;
+}
+
+.investment-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+}
+
+.config-card, .projection-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.config-card h3, .projection-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 20px 0;
+}
+
+.config-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #475569;
+  padding: 8px 0;
+}
+
+.config-row span:last-child {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.config-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 12px 0;
+}
+
+.config-row.total {
+  font-weight: 600;
+}
+
+.config-row.total span:last-child {
+  color: #f97316;
+  font-size: 16px;
+}
+
+.projection-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.projection-table th, .projection-table td {
+  padding: 12px;
+  text-align: right;
+  font-size: 14px;
+}
+
+.projection-table th {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.projection-table td:first-child {
+  text-align: left;
+  color: #475569;
+}
+
+.projection-table .total-col {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+.projection-table .net-row td {
+  font-weight: 600;
+  border-top: 2px solid #e2e8f0;
+}
+
+.projection-table .highlight {
+  color: #059669;
+  font-size: 16px;
+}
+
+.projection-note {
+  font-size: 12px;
+  color: #64748b;
+  margin: 16px 0 0 0;
+  font-style: italic;
+}
+
+/* ============ ASSUMPTIONS SECTION ============ */
+
+.assumptions-section {
+  margin-bottom: 40px;
+}
+
+.assumptions-section h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 16px;
+}
+
+.assumptions-section ul {
+  margin: 0;
+  padding: 0 0 0 20px;
+}
+
+.assumptions-section li {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* ============ ACTIONS SECTION ============ */
+
+.actions-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 32px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-add-driver {
+  background: white;
+  border: 2px dashed #e2e8f0;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-add-driver:hover {
+  border-color: #f97316;
+  color: #f97316;
+}
+
+.actions-right {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-export {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-export:hover {
+  border-color: #f97316;
+  color: #f97316;
+}
