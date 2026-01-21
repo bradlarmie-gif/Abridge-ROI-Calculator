@@ -139,14 +139,15 @@ export default function SwitchAmbientSetup({
         utilization: 0
       });
     } else {
-      // Restore Quick mode defaults
-      const range = providerRanges.find(r => r.id === inputs.providerRange);
+      // Switch to Quick mode - keep values empty until user selects
       setInputs({ 
         ...inputs, 
         mode,
-        providers: range?.midpoint ?? 75,
-        totalEncounters: (range?.midpoint ?? 75) * inputs.encountersPerProvider,
-        utilization: 50
+        providerRange: '',
+        providers: 0,
+        totalEncounters: 0,
+        utilization: 0,
+        efficiency: 0
       });
     }
   };
