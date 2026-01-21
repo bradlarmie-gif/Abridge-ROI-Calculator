@@ -476,41 +476,67 @@ export default function SwitchAmbientSetup({
                   const IconComponent = metric.icon;
                   
                   return (
-                    <button
+                    <div
                       key={metric.id}
-                      onClick={() => toggleMetric(metric.id)}
-                      className={`flex items-start gap-4 p-4 rounded-xl border transition-all text-left ${
+                      className={`rounded-xl border transition-all ${
                         isSelected 
                           ? 'bg-[#f0fdf4] border-emerald-200' 
                           : 'bg-white border-neutral-200 hover:border-neutral-300'
                       }`}
-                      data-testid={`button-metric-${metric.id}`}
+                      data-testid={`metric-card-${metric.id}`}
                     >
-                      <div className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center mt-0.5 ${
-                        isSelected 
-                          ? 'bg-slate-800 border-slate-800' 
-                          : 'border-slate-300'
-                      }`}>
-                        {isSelected && <Check className="w-3 h-3 text-white" />}
-                      </div>
-                      
-                      <div className="w-10 h-10 rounded-lg bg-[#f1f5f9] flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="w-5 h-5 text-[#6B7280]" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-[#111827]">{metric.name}</span>
-                          {metric.recommended && (
-                            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">
-                              Recommended
-                            </span>
-                          )}
+                      <button
+                        onClick={() => toggleMetric(metric.id)}
+                        className="flex items-start gap-4 p-4 w-full text-left"
+                        data-testid={`button-metric-${metric.id}`}
+                      >
+                        <div className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center mt-0.5 ${
+                          isSelected 
+                            ? 'bg-slate-800 border-slate-800' 
+                            : 'border-slate-300'
+                        }`}>
+                          {isSelected && <Check className="w-3 h-3 text-white" />}
                         </div>
-                        <p className="text-sm text-[#6B7280]">{metric.description}</p>
-                        <p className="text-xs text-[#9CA3AF] mt-0.5">Source: {metric.source}</p>
-                      </div>
-                    </button>
+                        
+                        <div className="w-10 h-10 rounded-lg bg-[#f1f5f9] flex items-center justify-center flex-shrink-0">
+                          <IconComponent className="w-5 h-5 text-[#6B7280]" />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-[#111827]">{metric.name}</span>
+                            {metric.recommended && (
+                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">
+                                Recommended
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-[#6B7280]">{metric.description}</p>
+                          <p className="text-xs text-[#9CA3AF] mt-0.5">Source: {metric.source}</p>
+                        </div>
+                      </button>
+                      
+                      {isSelected && (
+                        <div className="px-4 pb-4 pt-0 ml-[4.5rem]">
+                          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-emerald-200">
+                            <label className="text-sm text-slate-600 whitespace-nowrap">Your current:</label>
+                            <input
+                              type="number"
+                              min={metric.min}
+                              max={metric.max}
+                              step={metric.step}
+                              value={inputs.metricValues[metric.id] ?? ''}
+                              onChange={(e) => updateMetricValue(metric.id, Number(e.target.value))}
+                              onClick={(e) => e.stopPropagation()}
+                              placeholder={`e.g., ${metric.id === 'timeSavings' ? '2' : metric.id === 'workOutsideWork' ? '4' : metric.id === 'wrvuLift' ? '3' : '60'}`}
+                              className="w-24 px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                              data-testid={`input-metric-${metric.id}`}
+                            />
+                            <span className="text-sm text-slate-500">{metric.unit}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>

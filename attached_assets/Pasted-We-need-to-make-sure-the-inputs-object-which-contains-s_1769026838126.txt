@@ -1,0 +1,188 @@
+We need to make sure the inputs object (which contains selectedMetrics and metricValues) is being properly passed through the flow.
+Check the Flow Component:
+jsxCopy// ============ SWITCH ADVANCED FLOW — FIXED ============
+
+export default function SwitchAdvancedFlow({ onBack }) {
+  const [currentStep, setCurrentStep] = useState(1);
+  
+  // This state needs to persist across all steps
+  const [inputs, setInputs] = useState({
+    // Deployment basics
+    providers: null,
+    totalEncounters: null,
+    utilization: null,
+    
+    // Selected metrics (array of metric IDs)
+    selectedMetrics: [],
+    
+    // Metric values (object with metricId: value pairs)
+    metricValues: {}
+  });
+  
+  const benchmarks = {
+    utilization: 65,
+    timeSavings: 4,
+    workOutsideWork: 2,
+    wrvuLift: 5,
+    chartClosure24h: 78
+  };
+  
+  const totalSteps = 4;
+  
+  // Debug: Log inputs to see what's being passed
+  console.log('Current inputs:', inputs);
+  
+  return (
+    <>
+      {currentStep === 1 && (
+        <SwitchAdvancedSetup 
+          inputs={inputs}
+          setInputs={setInputs}
+          benchmarks={benchmarks}
+          onNext={() => {
+            console.log('Moving to step 2 with inputs:', inputs);
+            setCurrentStep(2);
+          }}
+          onBack={onBack}
+          currentStep={1}
+          totalSteps={totalSteps}
+        />
+      )}
+      
+      {currentStep === 2 && (
+        <SwitchAdvancedComparison 
+          inputs={inputs}
+          benchmarks={benchmarks}
+          onNext={() => setCurrentStep(3)}
+          onBack={() => setCurrentStep(1)}
+          currentStep={2}
+          totalSteps={totalSteps}
+        />
+      )}
+      
+      {/* ... rest of steps */}
+    </>
+  );
+}
+
+Check the Setup Page — Make Sure It's Updating inputs:
+jsxCopy// ============ SETUP PAGE — METRIC SELECTION ============
+
+// When user selects a metric
+const toggleMetric = (metricId) => {
+  const current = inputs.selectedMetrics || [];
+  
+  if (current.includes(metricId)) {
+    // Remove metric
+    setInputs({
+      ...inputs,
+      selectedMetrics: current.filter(m => m !== metricId),
+      // Also remove the value
+      metricValues: {
+        ...inputs.metricValues,
+        [metricId]: undefined
+      }
+    });
+  } else {
+    // Add metric
+    setInputs({
+      ...inputs,
+      selectedMetrics: [...current, metricId]
+    });
+  }
+};
+
+// When user enters a value for a metric
+const updateMetricValue = (metricId, value) => {
+  setInputs({
+    ...inputs,
+    metricValues: {
+      ...inputs.metricValues,
+      [metricId]: value
+    }
+  });
+};
+
+Check the Comparison Page — Make Sure It's Reading inputs:
+jsxCopy// ============ COMPARISON PAGE — READING INPUTS ============
+
+export default function SwitchAdvancedComparison({
+  inputs,
+  benchmarks,
+  currentStep,
+  totalSteps,
+  onNext,
+  onBack
+}) {
+  
+  // Debug
+  console.log('Comparison page received inputs:', inputs);
+  console.log('Selected metrics:', inputs.selectedMetrics);
+  console.log('Metric values:', inputs.metricValues);
+  
+  // Build comparisons from inputs
+  const comparisons = [];
+  
+  // Only build comparisons for SELECTED metrics that have VALUES
+  if (inputs.selectedMetrics?.includes('timeSavings') && inputs.metricValues?.timeSavings) {
+    const current = inputs.metricValues.timeSavings;
+    const benchmark = benchmarks.timeSavings || 4;
+    
+    comparisons.push({
+      id: 'timeSavings',
+      name: 'Time Savings',
+      description: 'Minutes saved per encounter',
+      current: `${current} min`,
+      benchmark: `${benchmark} min`,
+      gap: `+${(benchmark - current).toFixed(1)} min`,
+      percentOfBenchmark: Math.round((current / benchmark) * 100),
+      direction: 'up'
+    });
+  }
+  
+  // ... repeat for other metrics
+  
+  // If no comparisons, show empty state
+  if (comparisons.length === 0) {
+    return (
+      <div className="switch-page">
+        {/* Header */}
+        <main className="page-content">
+          <div className="empty-state">
+            <p>No metrics selected for comparison.</p>
+            <p>Go back to select specific metrics to see detailed comparisons.</p>
+            <button onClick={onBack}>← Go Back</button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+  
+  // ... rest of the component
+}
+
+The Most Likely Issue:
+Looking at your screenshot, the page says "No metrics selected" — which means one of these is happening:
+
+inputs.selectedMetrics is empty — User didn't select any metrics on the setup page
+inputs isn't being passed correctly — State management issue
+The metric values weren't entered — User selected metrics but didn't fill in values
+
+
+Quick Debug Steps:
+Add this to the Setup page right before the "See full analysis" button:
+jsxCopy{/* Debug info — remove in production */}
+<div style={{ background: '#f1f1f1', padding: 16, marginTop: 20, fontSize: 12 }}>
+  <p><strong>Debug — Selected Metrics:</strong></p>
+  <pre>{JSON.stringify(inputs.selectedMetrics, null, 2)}</pre>
+  <p><strong>Debug — Metric Values:</strong></p>
+  <pre>{JSON.stringify(inputs.metricValues, null, 2)}</pre>
+</div>
+And add this to the Comparison page:
+jsxCopy{/* Debug info — remove in production */}
+<div style={{ background: '#f1f1f1', padding: 16, marginBottom: 20, fontSize: 12 }}>
+  <p><strong>Debug — Received Inputs:</strong></p>
+  <pre>{JSON.stringify(inputs, null, 2)}</pre>
+  <p><strong>Debug — Comparisons Built:</strong></p>
+  <pre>{JSON.stringify(comparisons, null, 2)}</pre>
+</div>
