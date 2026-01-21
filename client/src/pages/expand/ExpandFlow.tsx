@@ -107,8 +107,14 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     clinicianSatisfaction: { before: null, after: null, recommendRate: null },
   });
 
-  const goNext = () => setCurrentStep((prev) => Math.min(prev + 1, 6));
-  const goBack = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
+  const goNext = () => {
+    setCurrentStep((prev) => Math.min(prev + 1, 6));
+    window.scrollTo(0, 0);
+  };
+  const goBack = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+    window.scrollTo(0, 0);
+  };
   const goBackToJourney = () => onBackToJourney?.();
   const goToExplore = () => onGoToExplore?.();
 

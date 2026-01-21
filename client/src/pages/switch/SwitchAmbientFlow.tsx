@@ -101,13 +101,17 @@ export default function SwitchAmbientFlow({ onBack, onBackToJourney }: SwitchAmb
   
   const totalSteps = inputs.mode === 'advanced' ? 4 : 3;
   
-  const goNext = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const goNext = () => {
+    setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+    window.scrollTo(0, 0);
+  };
   const goBack = () => {
     if (currentStep === 1) {
       onBack();
     } else {
       setCurrentStep(prev => prev - 1);
     }
+    window.scrollTo(0, 0);
   };
   
   const benchmarks: AmbientBenchmarks = {

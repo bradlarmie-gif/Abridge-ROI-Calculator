@@ -54,13 +54,17 @@ export default function SwitchScribesFlow({ onBack, onBackToJourney }: SwitchScr
   
   const totalSteps = 5;
   
-  const goNext = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const goNext = () => {
+    setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+    window.scrollTo(0, 0);
+  };
   const goBack = () => {
     if (currentStep === 1) {
       onBack();
     } else {
       setCurrentStep(prev => prev - 1);
     }
+    window.scrollTo(0, 0);
   };
   
   const calculateScribeMetrics = (): ScribeCalculations => {

@@ -30,6 +30,11 @@ interface SelectionState {
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>("journey");
 
+  const navigateTo = (view: AppView) => {
+    setCurrentView(view);
+    window.scrollTo(0, 0);
+  };
+
   const [selectionState, setSelectionState] = useState<SelectionState>({
     selectedSettings: [],
     selectedLevers: [],
@@ -45,33 +50,33 @@ export default function App() {
   ) => {
     setSelectionState({ selectedSettings, selectedLevers });
     setSeedInputs(seed);
-    setCurrentView("model-builder");
+    navigateTo("model-builder");
   };
 
   const handleValueComplete = (results: ValueResults) => {
     setValueResults(results);
-    setCurrentView("investment");
+    navigateTo("investment");
   };
 
   const handleInvestmentComplete = (results: ModelResults) => {
     setModelResults(results);
-    setCurrentView("calculator");
+    navigateTo("calculator");
   };
 
   const handleBackToValue = () => {
-    setCurrentView("model-builder");
+    navigateTo("model-builder");
   };
 
   const handleBackToExplore = () => {
-    setCurrentView("explore");
+    navigateTo("explore");
   };
 
   const handleBackToModelBuilder = () => {
-    setCurrentView("model-builder");
+    navigateTo("model-builder");
   };
 
   const handleBackToJourney = () => {
-    setCurrentView("journey");
+    navigateTo("journey");
   };
 
   const hasSelection = selectionState.selectedSettings.length > 0;
@@ -83,10 +88,10 @@ export default function App() {
 
         {currentView === "journey" && (
           <JourneySelector
-            onSelectExplore={() => setCurrentView("explore")}
-            onSelectExpand={() => setCurrentView("expand")}
-            onSelectSwitch={() => setCurrentView("switch")}
-            onSelectLearn={() => setCurrentView("learn")}
+            onSelectExplore={() => navigateTo("explore")}
+            onSelectExpand={() => navigateTo("expand")}
+            onSelectSwitch={() => navigateTo("switch")}
+            onSelectLearn={() => navigateTo("learn")}
           />
         )}
 
@@ -133,7 +138,7 @@ export default function App() {
         {currentView === "expand" && (
           <ExpandFlow 
             onBackToJourney={handleBackToJourney}
-            onGoToExplore={() => setCurrentView("explore")}
+            onGoToExplore={() => navigateTo("explore")}
           />
         )}
 
@@ -146,7 +151,7 @@ export default function App() {
             onBack={handleBackToJourney} 
             onStartCalculator={(setting) => {
               setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
-              setCurrentView("explore");
+              navigateTo("explore");
             }}
           />
         )}
