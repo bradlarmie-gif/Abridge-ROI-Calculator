@@ -1,0 +1,116 @@
+<div class="landing-page">
+  <!-- Top-left decoration -->
+  <svg class="bg-decoration bg-decoration-top-left" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Abridge A shape -->
+    <path d="M200 50 L280 350 L240 350 L225 290 L175 290 L160 350 L120 350 L200 50 Z M200 120 L185 240 L215 240 L200 120 Z" 
+          fill="#EA2C00" 
+          opacity="0.04"/>
+    <!-- Circle dot -->
+    <circle cx="200" cy="315" r="25" fill="#EA2C00" opacity="0.04"/>
+  </svg>
+
+  <!-- Bottom-right decoration -->
+  <svg class="bg-decoration bg-decoration-bottom-right" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M250 80 L340 420 L295 420 L278 355 L222 355 L205 420 L160 420 L250 80 Z M250 160 L233 305 L267 305 L250 160 Z" 
+          fill="#EA2C00" 
+          opacity="0.04"/>
+    <circle cx="250" cy="385" r="30" fill="#EA2C00" opacity="0.04"/>
+  </svg>
+
+  <!-- Your content here -->
+  <div class="hero-content">
+    <!-- ... -->
+  </div>
+</div>
+cssCopy.landing-page {
+  position: relative;
+  min-height: calc(100vh - 72px);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+  overflow: hidden;
+}
+
+.bg-decoration {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-decoration-top-left {
+  width: 550px;
+  height: 550px;
+  top: -180px;
+  left: -180px;
+  opacity: 1;
+  transform: rotate(-8deg);
+}
+
+.bg-decoration-bottom-right {
+  width: 650px;
+  height: 650px;
+  bottom: -220px;
+  right: -220px;
+  opacity: 1;
+  transform: rotate(12deg);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 48px;
+}
+COMPLETE LANDING PAGE EXAMPLE
+htmlCopy<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abridge ROI Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="global-header">
+    <div class="header-container">
+      <a href="/" class="logo-link">
+        <svg width="120" height="24" viewBox="0 0 120 24">
+          <text x="0" y="19" font-family="-apple-system, sans-serif" font-size="20" font-weight="700" fill="#EA2C00">ABRIDGE</text>
+        </svg>
+      </a>
+      <div class="header-context">
+        <a href="/" class="nav-link">ROI Calculator</a>
+        <a href="/" class="nav-link">Home</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Landing Page -->
+  <div class="landing-page">
+    <!-- Background decorations -->
+    <svg class="bg-decoration bg-decoration-top-left" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <path d="M200 50 L280 350 L240 350 L225 290 L175 290 L160 350 L120 350 L200 50 Z M200 120 L185 240 L215 240 Z" fill="#EA2C00" opacity="0.035"/>
+      <circle cx="200" cy="315" r="25" fill="#EA2C00" opacity="0.035"/>
+    </svg>
+    
+    <svg class="bg-decoration bg-decoration-bottom-right" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <path d="M250 80 L340 420 L295 420 L278 355 L222 355 L205 420 L160 420 L250 80 Z M250 160 L233 305 L267 305 Z" fill="#EA2C00" opacity="0.035"/>
+      <circle cx="250" cy="385" r="30" fill="#EA2C00" opacity="0.035"/>
+    </svg>
+
+    <!-- Content -->
+    <div class="hero-content">
+      <h1 class="hero-title">Model the impact of ambient documentation</h1>
+      <p class="hero-subtitle">Understand where the value actually comes from.</p>
+
+      <p class="section-label">WHAT BRINGS YOU HERE TODAY?</p>
+
+      <div class="pathway-cards">
+        <!-- Cards here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
