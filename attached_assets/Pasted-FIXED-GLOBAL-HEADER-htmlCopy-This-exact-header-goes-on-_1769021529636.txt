@@ -1,0 +1,256 @@
+FIXED GLOBAL HEADER
+htmlCopy<!-- This exact header goes on EVERY page -->
+<header class="global-header">
+  <div class="header-container">
+    <!-- Logo - clickable to home -->
+    <a href="/" class="logo-link" onclick="navigateHome(event)">
+      <svg class="abridge-logo" viewBox="0 0 120 24" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="20" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#EA2C00">ABRIDGE</text>
+      </svg>
+    </a>
+
+    <!-- Page context (only show on inner pages, not landing) -->
+    <div class="header-context">
+      <span class="app-name">ROI Calculator</span>
+    </div>
+
+    <!-- Right side actions (only on inner pages) -->
+    <div class="header-actions">
+      <button class="btn-save-progress" style="display: none;">
+        Save Progress
+      </button>
+    </div>
+  </div>
+</header>
+HEADER CSS
+cssCopy.global-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom: 1px solid #E5E7EB;
+  z-index: 1000;
+  height: 72px;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 48px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo */
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.logo-link:hover {
+  opacity: 0.7;
+}
+
+.abridge-logo {
+  height: 24px;
+  width: auto;
+}
+
+/* Alternative if you want to use an image */
+.abridge-logo-img {
+  height: 28px;
+  width: auto;
+}
+
+/* Page context */
+.header-context {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.app-name {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+/* Header actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-save-progress {
+  background: transparent;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save-progress:hover {
+  border-color: #EA2C00;
+  color: #EA2C00;
+}
+
+/* Account for fixed header on all pages */
+body {
+  padding-top: 72px;
+}
+
+/* Landing page - hide context */
+.landing-page .header-context,
+.landing-page .header-actions {
+  display: none;
+}
+NAVIGATION JAVASCRIPT
+javascriptCopy// Add this to your main app.js
+
+// Navigate home when logo clicked
+function navigateHome(event) {
+  event.preventDefault();
+  
+  // If you're using a single-page app
+  window.location.hash = '';
+  showLandingPage();
+  
+  // OR if you have separate pages
+  // window.location.href = '/';
+}
+
+// Make logo clickable on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const logoLink = document.querySelector('.logo-link');
+  if (logoLink) {
+    logoLink.addEventListener('click', navigateHome);
+  }
+});
+FOR THE "SWITCH" PAGE HEADER
+On your comparison page specifically, update it to:
+htmlCopy<header class="global-header">
+  <div class="header-container">
+    <!-- Left: Logo -->
+    <a href="/" class="logo-link" onclick="navigateHome(event)">
+      <svg class="abridge-logo" viewBox="0 0 120 24" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="20" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#EA2C00">ABRIDGE</text>
+      </svg>
+    </a>
+
+    <!-- Center: Context -->
+    <div class="header-context">
+      <span class="app-name">ROI Calculator</span>
+      <span class="separator">·</span>
+      <span class="page-name">Switch Comparison</span>
+    </div>
+
+    <!-- Right: Empty for now -->
+    <div class="header-actions"></div>
+  </div>
+</header>
+cssCopy.separator {
+  color: #D1D5DB;
+  margin: 0 8px;
+}
+
+.page-name {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 600;
+}
+FIX THE CURRENT PAGE HEADER SPACING
+Looking at your screenshot, here's what's wrong and how to fix it:
+htmlCopy<!-- WRONG (what you have now) -->
+<div style="display: flex; justify-content: space-between;">
+  <button>Back</button>
+  <div>ABRIDGE SWITCH</div>
+  <div>•••</div>
+</div>
+
+<!-- RIGHT (what you should have) -->
+<header class="global-header">
+  <div class="header-container">
+    <a href="/" class="logo-link">
+      <img src="/abridge-logo.svg" alt="Abridge" style="height: 24px;" />
+    </a>
+    
+    <div class="header-context">
+      <span class="app-name">ROI Calculator</span>
+    </div>
+    
+    <div class="header-actions">
+      <!-- Optional: Progress dots -->
+      <div class="progress-dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Back button goes BELOW header, in page content -->
+<div class="page-content">
+  <button class="btn-back" onclick="history.back()">
+    ← Back
+  </button>
+  
+  <h1>Let's see where you stand</h1>
+  <!-- rest of your content -->
+</div>
+cssCopy.page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 48px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #6B7280;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s ease;
+}
+
+.btn-back:hover {
+  color: #EA2C00;
+}
+
+/* Progress dots */
+.progress-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  background: #EA2C00;
+  width: 24px;
+  border-radius: 4px;
+}
