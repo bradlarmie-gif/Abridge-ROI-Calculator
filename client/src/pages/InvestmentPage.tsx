@@ -160,7 +160,12 @@ export default function InvestmentPage({
 
   const totalInvestment = (annualInvestment * effectiveContractTerm) + (includeImplementation ? implementationFee : 0);
   const netGainAnnual = totalAnnualValue - annualInvestment;
-  const roiMultiple = annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0;
+  const roiMultiple = useMemo(() => {
+    if (annualInvestment <= 0) return 0;
+    const roi = totalAnnualValue / annualInvestment;
+    console.log('[ROI DEBUG] totalAnnualValue:', totalAnnualValue, 'annualInvestment:', annualInvestment, 'ROI:', roi);
+    return roi;
+  }, [totalAnnualValue, annualInvestment]);
   const monthsToPayback = totalAnnualValue > 0 ? Math.round((annualInvestment / totalAnnualValue) * 12) : 0;
 
   // Animate number counting
@@ -346,9 +351,13 @@ export default function InvestmentPage({
               <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-4 bg-white/10 rounded-2xl px-8 py-5">
                   <span className="font-mono text-5xl md:text-6xl font-bold text-white tabular-nums" data-testid="roi-multiple">
-                    {animatedROI.toFixed(1)}×
+                    {roiMultiple.toFixed(1)}×
                   </span>
                   <span className="text-lg text-white/80 font-medium">Return on<br/>Investment</span>
+                </div>
+                {/* Debug display */}
+                <div className="text-xs text-white/50 mt-2">
+                  Debug: {totalAnnualValue} / {annualInvestment} = {roiMultiple.toFixed(2)}
                 </div>
               </div>
 
