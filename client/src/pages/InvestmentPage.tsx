@@ -48,8 +48,8 @@ const settingConfig = {
   outpatient: {
     unitName: "provider",
     unitNamePlural: "providers",
-    defaultPrice: 150,
-    priceRange: "$100-$200",
+    defaultPrice: 200,
+    priceRange: "$150-$250",
     pricingLabel: "Cost per provider"
   },
   ed: {
