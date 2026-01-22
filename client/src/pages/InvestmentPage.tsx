@@ -69,8 +69,8 @@ const settingConfig = {
   nursing: {
     unitName: "staffed bed",
     unitNamePlural: "staffed beds",
-    defaultPrice: 75,
-    priceRange: "$50-$125",
+    defaultPrice: 200,
+    priceRange: "$150-$250",
     pricingLabel: "Cost per staffed bed"
   }
 };
