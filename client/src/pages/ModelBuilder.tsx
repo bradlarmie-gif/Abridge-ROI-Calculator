@@ -410,7 +410,7 @@ export default function ModelBuilder({
       hccEligiblePercent: 35,
       abridgeCaptureRate: 40,
       avgHccValue: 800,
-      auditFactor: 60,
+      auditFactor: 25,
     },
     denials: {
       denialRate: 7,
@@ -2503,7 +2503,7 @@ export default function ModelBuilder({
           </div>
         </div>
 
-        {/* Why 60% Audit Factor */}
+        {/* Why 25% Audit Factor */}
         <div className="p-3 bg-slate-100 rounded-lg border border-slate-200 space-y-2">
           <p className="text-xs font-semibold text-slate-700">Why {auditFactor}% Audit Factor?</p>
           <p className="text-xs text-slate-600">
