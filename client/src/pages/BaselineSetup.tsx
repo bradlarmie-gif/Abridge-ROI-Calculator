@@ -1,8 +1,5 @@
 import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { GlobalHeader } from "@/components/GlobalHeader";
-import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import {
   type CareSettingType,
@@ -10,10 +7,12 @@ import {
 } from "@/lib/SETTING_CONFIG";
 import {
   ArrowLeft,
-  ArrowRight,
-  Lightbulb,
-  TrendingUp,
-  DollarSign,
+  ChevronRight,
+  Info,
+  Activity,
+  Star,
+  Check,
+  HelpCircle,
 } from "lucide-react";
 
 export interface BaselineInfo {
@@ -56,15 +55,17 @@ export default function BaselineSetup({
   const [utilizationRate, setUtilizationRate] = useState(initialBaseline?.utilizationRate || (isEDSetting ? 70 : isInpatientSetting ? 65 : 65));
 
   // Nursing-specific state
-  const [staffedBeds, setStaffedBeds] = useState(initialBaseline?.nursingStaffedBeds || 200);
-  const [nurseFTEs, setNurseFTEs] = useState(initialBaseline?.nursingFTEs || 300);
+  const [staffedBeds, setStaffedBeds] = useState(initialBaseline?.nursingStaffedBeds || "");
+  const [nurseFTEs, setNurseFTEs] = useState(initialBaseline?.nursingFTEs || "");
   const [unitType, setUnitType] = useState<"med-surg" | "icu" | "mixed">(initialBaseline?.nursingUnitType || "med-surg");
 
   // Compute derived values
   const documentationEventsPerFTE = 500;
   const numericEncounters = typeof encounters === "number" ? encounters : 0;
   const numericProviders = typeof providers === "number" ? providers : 0;
-  const documentationEvents = isNursingSetting ? nurseFTEs * documentationEventsPerFTE : numericEncounters;
+  const numericStaffedBeds = typeof staffedBeds === "number" ? staffedBeds : 0;
+  const numericNurseFTEs = typeof nurseFTEs === "number" ? nurseFTEs : 0;
+  const documentationEvents = isNursingSetting ? numericNurseFTEs * documentationEventsPerFTE : numericEncounters;
   
   const eligibleEncounters = useMemo(() => {
     if (isNursingSetting) {
@@ -82,8 +83,8 @@ export default function BaselineSetup({
     };
 
     if (isNursingSetting) {
-      baseline.nursingStaffedBeds = staffedBeds;
-      baseline.nursingFTEs = nurseFTEs;
+      baseline.nursingStaffedBeds = numericStaffedBeds;
+      baseline.nursingFTEs = numericNurseFTEs;
       baseline.nursingUnitType = unitType;
       baseline.nursingDocEventsPerBedPerYear = documentationEventsPerFTE;
     }
@@ -92,11 +93,34 @@ export default function BaselineSetup({
   };
 
   const canContinue = isNursingSetting 
-    ? staffedBeds > 0 && nurseFTEs > 0 
+    ? numericStaffedBeds > 0 && numericNurseFTEs > 0 
     : numericProviders > 0 && numericEncounters > 0;
 
+  // Get setting-specific labels
+  const getProviderLabel = () => {
+    if (isInpatientSetting) return "hospitalists";
+    if (isEDSetting) return "ED physicians";
+    return "providers";
+  };
+  
+  const getEncounterLabel = () => {
+    if (isInpatientSetting) return "admissions";
+    return "encounters";
+  };
+
+  // Utilization options by setting
+  const utilizationOptions = isEDSetting 
+    ? [{ value: 55, label: "Conservative" }, { value: 70, label: "Typical" }, { value: 85, label: "Aggressive" }]
+    : isInpatientSetting 
+      ? [{ value: 50, label: "Conservative" }, { value: 65, label: "Typical" }, { value: 80, label: "Aggressive" }]
+      : isNursingSetting
+        ? [{ value: 45, label: "Conservative" }, { value: 60, label: "Typical" }, { value: 75, label: "Aggressive" }]
+        : [{ value: 50, label: "Conservative" }, { value: 65, label: "Typical" }, { value: 80, label: "Aggressive" }];
+
+  const typicalUtilization = utilizationOptions[1].value;
+
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
+    <div className="min-h-screen bg-[#F9FAFB]">
       <GlobalHeader
         pageName="Your Organization"
         currentStep={3}
@@ -104,310 +128,347 @@ export default function BaselineSetup({
         onLogoClick={onBackToJourney}
       />
 
-      <div
-        className="h-[72px]"
-        style={{
-          backgroundImage: `url(${geometricPattern})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
+      <div className="pt-[96px] pb-16">
+        {/* Back Button */}
+        <div className="max-w-[900px] mx-auto px-6 md:px-12 mb-8">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 text-[15px] font-medium text-[#6B7280] transition-colors hover:text-[#EA2C00]"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+        </div>
 
-      <div className="max-w-[800px] mx-auto px-6 py-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-6 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
+        {/* Centered Page Header */}
+        <div className="text-center max-w-[700px] mx-auto px-6 mb-16">
+          <div className="inline-block text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-3 py-1.5 rounded-md mb-6">
+            Step 3 of 6
+          </div>
+          <h1 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4">
+            Size your opportunity
+          </h1>
+          <p className="text-[17px] leading-relaxed text-[#6B7280]">
+            We'll use your deployment scope to calculate your addressable market—the foundation for your ROI model.
+          </p>
+        </div>
 
-        <section className="bg-white rounded-2xl border border-neutral-200 p-6 sm:p-10">
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Organization</h2>
-            <p className="text-sm text-[#6B7280]">Let's start with the basics</p>
+        {/* Single Column Form */}
+        <div className="max-w-[900px] mx-auto px-6 md:px-12">
+          
+          {/* Section 1: Deployment Scope */}
+          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-8 md:p-10 mb-8">
+            <div className="flex items-start gap-5 mb-8">
+              <div className="w-10 h-10 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[17px] font-bold flex-shrink-0">
+                1
+              </div>
+              <div>
+                <h2 className="text-xl md:text-2xl font-semibold text-[#111827] mb-1">
+                  Deployment Scope
+                </h2>
+                <p className="text-[15px] text-[#6B7280]">
+                  This could be a pilot or full deployment
+                </p>
+              </div>
+            </div>
+
+            {isNursingSetting ? (
+              /* Nursing-specific inputs */
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
+                    How many staffed beds are in scope?
+                    <span className="text-[#9CA3AF] cursor-help" title="Total staffed beds in this deployment">
+                      <HelpCircle className="w-4 h-4" />
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={staffedBeds === "" ? "" : staffedBeds.toLocaleString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setStaffedBeds(val === "" ? "" : parseInt(val, 10));
+                      }}
+                      placeholder="e.g., 200"
+                      className="w-full px-5 py-4 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] transition-all"
+                      data-testid="input-staffed-beds"
+                    />
+                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF] font-medium pointer-events-none">
+                      beds
+                    </span>
+                  </div>
+                  <p className="text-[14px] text-[#9CA3AF] mt-2">
+                    This is your billing unit for Abridge Nursing
+                  </p>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
+                    How many nurse FTEs support these beds?
+                    <span className="text-[#9CA3AF] cursor-help" title="Full-time equivalent nurses">
+                      <HelpCircle className="w-4 h-4" />
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={nurseFTEs === "" ? "" : nurseFTEs.toLocaleString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setNurseFTEs(val === "" ? "" : parseInt(val, 10));
+                      }}
+                      placeholder="e.g., 300"
+                      className="w-full px-5 py-4 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] transition-all"
+                      data-testid="input-nurse-ftes"
+                    />
+                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF] font-medium pointer-events-none">
+                      FTEs
+                    </span>
+                  </div>
+                  <p className="text-[14px] text-[#9CA3AF] mt-2">
+                    ~1.5 FTEs per bed is typical for med-surg, higher for ICU
+                  </p>
+                </div>
+
+                {/* Unit Type */}
+                <div className="md:col-span-2">
+                  <label className="text-[15px] font-semibold text-[#111827] mb-3 block">
+                    What type of unit(s)?
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {(["med-surg", "icu", "mixed"] as const).map(type => (
+                      <button
+                        key={type}
+                        onClick={() => setUnitType(type)}
+                        className={`px-5 py-3 rounded-xl border-2 text-[15px] font-medium transition-all ${
+                          unitType === type
+                            ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)] text-[#EA2C00]"
+                            : "border-[#E5E7EB] text-[#6B7280] hover:border-[#EA2C00] bg-white"
+                        }`}
+                        data-testid={`unit-type-${type}`}
+                      >
+                        {type === "med-surg" && "Med-Surg"}
+                        {type === "icu" && "ICU/Critical Care"}
+                        {type === "mixed" && "Mixed"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Standard provider/encounter inputs */
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
+                    How many {getProviderLabel()} are in scope?
+                    <span className="text-[#9CA3AF] cursor-help" title={`Total ${getProviderLabel()} who will use Abridge in this deployment`}>
+                      <HelpCircle className="w-4 h-4" />
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={providers === "" ? "" : providers.toLocaleString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setProviders(val === "" ? "" : parseInt(val, 10));
+                      }}
+                      placeholder={isInpatientSetting ? "e.g., 20" : isEDSetting ? "e.g., 25" : "e.g., 50"}
+                      className="w-full px-5 py-4 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] transition-all"
+                      data-testid="input-providers"
+                    />
+                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF] font-medium pointer-events-none">
+                      {getProviderLabel()}
+                    </span>
+                  </div>
+                  <p className="text-[14px] text-[#9CA3AF] mt-2">
+                    {isInpatientSetting
+                      ? "Include all hospitalists who will use Abridge"
+                      : isEDSetting 
+                        ? "Include attendings and mid-levels who will use Abridge" 
+                        : "This is your starting point. Could be a pilot or full deployment."}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
+                    Annual {getEncounterLabel()} for these {getProviderLabel()}?
+                    <span className="text-[#9CA3AF] cursor-help" title={`Total patient ${getEncounterLabel()} per year`}>
+                      <HelpCircle className="w-4 h-4" />
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={encounters === "" ? "" : encounters.toLocaleString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setEncounters(val === "" ? "" : parseInt(val, 10));
+                      }}
+                      placeholder={isInpatientSetting ? "e.g., 8,000" : isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
+                      className="w-full px-5 py-4 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] transition-all"
+                      data-testid="input-encounters"
+                    />
+                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF] font-medium pointer-events-none">
+                      {getEncounterLabel()}/year
+                    </span>
+                  </div>
+                  <p className="text-[14px] text-[#9CA3AF] mt-2">
+                    {isInpatientSetting
+                      ? "~400/hospitalist is typical for a hospitalist program"
+                      : isEDSetting 
+                        ? "~1,800/physician is typical for a community ED"
+                        : "~2,000/provider is typical for primary care, ~1,500 for specialty"}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
-          {isNursingSetting ? (
-            /* Nursing-specific organization inputs */
-            <div className="space-y-8">
-              <div className="space-y-3">
-                <label className="text-base font-semibold text-[#111827]">
-                  How many staffed beds are in scope?
-                </label>
-                <Input
-                  type="number"
-                  value={staffedBeds}
-                  onChange={(e) => setStaffedBeds(Number(e.target.value) || 0)}
-                  placeholder="e.g., 200"
-                  className="w-[200px] font-mono text-lg py-3"
-                  data-testid="input-staffed-beds"
-                />
-                <p className="text-sm text-[#6B7280] flex items-center gap-1 mt-2">
-                  <Lightbulb className="w-3.5 h-3.5" /> This is your billing unit for Abridge Nursing
-                </p>
+          {/* Section 2: Expected Utilization */}
+          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-8 md:p-10 mb-8">
+            <div className="flex items-start gap-5 mb-8">
+              <div className="w-10 h-10 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[17px] font-bold flex-shrink-0">
+                2
               </div>
-
-              <div className="space-y-3">
-                <label className="text-base font-semibold text-[#111827]">
-                  How many nurse FTEs support these beds?
-                </label>
-                <Input
-                  type="number"
-                  value={nurseFTEs}
-                  onChange={(e) => setNurseFTEs(Number(e.target.value) || 0)}
-                  placeholder="e.g., 300"
-                  className="w-[200px] font-mono text-lg py-3"
-                  data-testid="input-nurse-ftes"
-                />
-                <p className="text-sm text-[#6B7280] flex items-center gap-1 mt-2">
-                  <Lightbulb className="w-3.5 h-3.5" /> ~1.5 FTEs per bed is typical for med-surg. Higher for ICU (~2.5-3.0)
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-base font-semibold text-[#111827]">What type of unit(s)?</label>
-                <p className="text-sm text-[#6B7280] mb-2">
-                  Unit type affects documentation burden and staffing ratios
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {(["med-surg", "icu", "mixed"] as const).map(type => (
-                    <button
-                      key={type}
-                      onClick={() => setUnitType(type)}
-                      className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                        unitType === type
-                          ? "border-[#EA2C00] bg-[#FEF0EC] text-[#EA2C00]"
-                          : "border-neutral-200 text-[#6B7280] hover:border-neutral-300 bg-white"
-                      }`}
-                      data-testid={`unit-type-${type}`}
-                    >
-                      {type === "med-surg" && "Med-Surg"}
-                      {type === "icu" && "ICU/Critical Care"}
-                      {type === "mixed" && "Mixed"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-base font-semibold text-[#111827]">Expected utilization rate?</label>
-                <p className="text-sm text-[#6B7280] mb-3">
-                  What percentage of documentation events will use Abridge?
-                </p>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {([45, 60, 75] as const).map(rate => (
-                    <button
-                      key={rate}
-                      onClick={() => setUtilizationRate(rate)}
-                      className={`flex flex-col items-center px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl border transition-all flex-1 min-w-[90px] sm:min-w-[100px] ${
-                        utilizationRate === rate
-                          ? "border-[#EA2C00] bg-[#FEF0EC]"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                      }`}
-                      data-testid={`utilization-${rate}`}
-                    >
-                      <span className={`text-xs font-medium mb-0.5 ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-500"}`}>
-                        {rate === 45 && "Conservative"}
-                        {rate === 60 && "Typical"}
-                        {rate === 75 && "Aggressive"}
-                      </span>
-                      <span className={`text-lg sm:text-xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
-                        {rate}%
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <p className="text-sm text-slate-500 flex items-center gap-2 mt-3">
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Not sure? Start with Typical — you can adjust later.</span>
-                </p>
-              </div>
-
-              {/* YOUR BASELINE Section - Nursing */}
-              <div className="mt-8 sm:mt-10 p-5 sm:p-8 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
-                <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                  <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Your Baseline</span>
-                </div>
-                <div className="font-mono text-3xl sm:text-5xl font-bold text-emerald-700 mb-2">
-                  {Math.round(documentationEvents * (utilizationRate / 100)).toLocaleString()}
-                </div>
-                <p className="text-sm sm:text-base font-medium text-emerald-700 mb-4 sm:mb-5">
-                  Abridge-documented events per year
-                </p>
-                <div className="pt-4 sm:pt-5 border-t border-emerald-200">
-                  <p className="font-mono text-xs sm:text-sm text-slate-500 tracking-tight leading-relaxed">
-                    {nurseFTEs.toLocaleString()} nurse FTEs × ~500 events/FTE × {utilizationRate}%
-                  </p>
-                </div>
-                <p className="text-sm text-emerald-600 mt-4 flex items-center gap-2">
-                  <ArrowRight className="w-4 h-4" />
-                  Everything below builds from this number
-                </p>
-              </div>
-
-              <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                <p className="text-sm text-amber-800 flex items-start gap-2">
-                  <DollarSign className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>
-                    <strong>Abridge Nursing is priced per staffed bed, not per nurse.</strong>
-                    <br />
-                    This means your ROI scales as utilization increases.
-                  </span>
+              <div>
+                <h2 className="text-xl md:text-2xl font-semibold text-[#111827] mb-1">
+                  Expected Utilization
+                </h2>
+                <p className="text-[15px] text-[#6B7280]">
+                  What percentage of {isNursingSetting ? "documentation events" : getEncounterLabel()} will use Abridge?
                 </p>
               </div>
             </div>
-          ) : (
-            /* Standard provider/encounter inputs */
-            <div className="space-y-9">
-              <div className="space-y-3">
-                <label className="text-base font-semibold text-[#111827]">
-                  {isInpatientSetting ? "How many hospitalists are in scope?" : isEDSetting ? "How many ED physicians are in scope?" : "How many providers are in scope?"}
-                </label>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={providers === "" ? "" : providers.toLocaleString()}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9]/g, '');
-                    setProviders(val === "" ? "" : parseInt(val, 10));
-                  }}
-                  placeholder={isInpatientSetting ? "e.g., 20" : isEDSetting ? "e.g., 25" : "e.g., 50"}
-                  className="w-[200px] font-mono text-lg py-3"
-                  data-testid="input-providers"
-                />
-                <p className="text-sm text-[#6B7280] mt-2">
-                  {isInpatientSetting
-                    ? "Include all hospitalists who will use Abridge for documentation"
-                    : isEDSetting 
-                      ? "Include attendings and mid-levels who will use Abridge" 
-                      : "This is your starting point. Could be a pilot or full deployment."}
-                </p>
-              </div>
 
-              <div className="space-y-3">
-                <label className="text-base font-semibold text-[#111827]">
-                  {isInpatientSetting 
-                    ? `Annual admissions for these hospitalists?` 
-                    : `Annual encounters for these ${isEDSetting ? "physicians" : "providers"}?`}
-                </label>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={encounters === "" ? "" : encounters.toLocaleString()}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9]/g, '');
-                    setEncounters(val === "" ? "" : parseInt(val, 10));
-                  }}
-                  placeholder={isInpatientSetting ? "e.g., 8,000" : isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
-                  className="w-[200px] font-mono text-lg py-3"
-                  data-testid="input-encounters"
-                />
-                <p className="text-sm text-[#6B7280] mt-2">
-                  {isInpatientSetting
-                    ? "~400/hospitalist is typical for a hospitalist program"
-                    : isEDSetting 
-                      ? "~1,800/physician is typical for a community ED"
-                      : "~2,000/provider is typical for primary care, ~1,500 for specialty"}
-                </p>
-              </div>
+            <p className="text-[17px] font-medium text-[#374151] mb-6">Choose your adoption scenario:</p>
 
-              <div className="space-y-3">
-                <label className="text-base font-semibold text-[#111827]">Expected utilization rate?</label>
-                <p className="text-sm text-[#6B7280] mb-3">
-                  {isEDSetting 
-                    ? "What percentage of encounters will use Abridge?"
-                    : isInpatientSetting 
-                      ? "What percentage of admissions will use Abridge?"
-                      : "What percentage of encounters will use Abridge?"}
-                </p>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {(isEDSetting ? [55, 70, 85] as const : isInpatientSetting ? [50, 65, 80] as const : [50, 65, 80] as const).map(rate => (
-                    <button
-                      key={rate}
-                      onClick={() => setUtilizationRate(rate)}
-                      className={`flex flex-col items-center px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl border transition-all flex-1 min-w-[90px] sm:min-w-[100px] ${
-                        utilizationRate === rate
-                          ? "border-[#EA2C00] bg-[#FEF0EC]"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+            <div className="grid grid-cols-3 gap-4 md:gap-6 mb-6">
+              {utilizationOptions.map((option, idx) => {
+                const isSelected = utilizationRate === option.value;
+                const isRecommended = idx === 1; // Middle option is recommended
+                
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => setUtilizationRate(option.value)}
+                    className={`relative text-left p-5 md:p-6 rounded-xl border-2 transition-all duration-300 ${
+                      isSelected
+                        ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)] shadow-[0_4px_16px_rgba(234,44,0,0.12)]"
+                        : isRecommended
+                          ? "border-[#EA2C00] bg-white hover:-translate-y-1 hover:shadow-lg"
+                          : "border-[#E5E7EB] bg-white hover:border-[#EA2C00] hover:-translate-y-1 hover:shadow-lg"
+                    }`}
+                    data-testid={`utilization-${option.value}`}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-lg font-semibold text-[#111827]">{option.label}</h3>
+                      <span className="text-2xl md:text-[32px] font-bold text-[#111827]">{option.value}%</span>
+                    </div>
+                    <p className="text-[13px] text-[#6B7280] mb-3">
+                      {option.label === "Conservative" && "Cautious rollout or optional use"}
+                      {option.label === "Typical" && "Standard deployment with provider choice"}
+                      {option.label === "Aggressive" && "Mandated use or mature adoption"}
+                    </p>
+                    <div className={`inline-flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-md ${
+                      isRecommended 
+                        ? "bg-[rgba(234,44,0,0.1)] text-[#EA2C00]" 
+                        : "bg-[#F3F4F6] text-[#6B7280]"
+                    }`}>
+                      {isRecommended && <Star className="w-3.5 h-3.5" />}
+                      {option.label === "Conservative" && "Lower risk estimate"}
+                      {option.label === "Typical" && "Recommended"}
+                      {option.label === "Aggressive" && "High adoption target"}
+                    </div>
+                    
+                    {/* Checkmark */}
+                    <div 
+                      className={`absolute top-5 right-5 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        isSelected 
+                          ? "bg-[#EA2C00] opacity-100 scale-100" 
+                          : "opacity-0 scale-75"
                       }`}
-                      data-testid={`utilization-${rate}`}
                     >
-                      <span className={`text-xs font-medium mb-0.5 ${utilizationRate === rate ? "text-[#c2410c]" : "text-slate-500"}`}>
-                        {isInpatientSetting ? (
-                          <>
-                            {rate === 50 && "Conservative"}
-                            {rate === 65 && "Typical"}
-                            {rate === 80 && "Aggressive"}
-                          </>
-                        ) : isEDSetting ? (
-                          <>
-                            {rate === 55 && "Conservative"}
-                            {rate === 70 && "Typical"}
-                            {rate === 85 && "Aggressive"}
-                          </>
-                        ) : (
-                          <>
-                            {rate === 50 && "Conservative"}
-                            {rate === 65 && "Typical"}
-                            {rate === 80 && "Aggressive"}
-                          </>
-                        )}
-                      </span>
-                      <span className={`text-lg sm:text-xl font-bold ${utilizationRate === rate ? "text-[#EA2C00]" : "text-slate-800"}`}>
-                        {rate}%
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <p className="text-sm text-slate-500 flex items-center gap-2 mt-3">
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Not sure? Start with Typical — you can adjust later.</span>
-                </p>
-              </div>
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
 
-              {/* YOUR BASELINE Section */}
-              <div className="mt-8 sm:mt-10 p-5 sm:p-8 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
-                <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                  <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Your Baseline</span>
+            <div className="flex items-start gap-2 p-4 bg-[#F9FAFB] rounded-lg">
+              <Info className="w-4 h-4 text-[#9CA3AF] flex-shrink-0 mt-0.5" />
+              <p className="text-[14px] text-[#6B7280]">
+                Not sure? Start with <strong>Typical ({typicalUtilization}%)</strong> — you can adjust later. Most organizations reach 70-80% at full scale.
+              </p>
+            </div>
+          </div>
+
+          {/* Baseline Result Hero */}
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-2xl p-8 md:p-10 mb-10">
+            <div className="flex items-center gap-2.5 mb-6">
+              <Activity className="w-6 h-6 text-emerald-600" />
+              <span className="text-[13px] font-semibold text-emerald-600 uppercase tracking-[0.1em]">Your Baseline</span>
+            </div>
+
+            <div className="text-center mb-8">
+              <div className="text-5xl md:text-6xl font-bold text-emerald-700 mb-2 font-mono">
+                {eligibleEncounters.toLocaleString()}
+              </div>
+              <p className="text-lg font-medium text-emerald-700">
+                eligible {isNursingSetting ? "documentation events" : getEncounterLabel()} per year
+              </p>
+            </div>
+
+            {/* Formula Breakdown */}
+            <div className="flex items-center justify-center gap-3 md:gap-6 flex-wrap p-6 bg-white/60 rounded-xl mb-6">
+              <div className="text-center">
+                <div className="text-xl md:text-2xl font-bold text-[#111827]">
+                  {isNursingSetting ? numericNurseFTEs.toLocaleString() : numericProviders.toLocaleString()}
                 </div>
-                <div className="font-mono text-3xl sm:text-5xl font-bold text-emerald-700 mb-2">
-                  {eligibleEncounters.toLocaleString()}
+                <div className="text-[13px] text-[#6B7280]">{isNursingSetting ? "nurse FTEs" : getProviderLabel()}</div>
+              </div>
+              <span className="text-2xl text-[#9CA3AF] font-light">×</span>
+              <div className="text-center">
+                <div className="text-xl md:text-2xl font-bold text-[#111827]">
+                  {isNursingSetting ? "~500" : numericEncounters.toLocaleString()}
                 </div>
-                <p className="text-sm sm:text-base font-medium text-emerald-700 mb-4 sm:mb-5">
-                  eligible {isInpatientSetting ? "admissions" : "encounters"} per year
-                </p>
-                <div className="pt-4 sm:pt-5 border-t border-emerald-200">
-                  <p className="font-mono text-xs sm:text-sm text-slate-500 tracking-tight leading-relaxed">
-                    {providers.toLocaleString()} {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} × {encounters.toLocaleString()} {isInpatientSetting ? "admissions" : "encounters"} × {utilizationRate}%
-                  </p>
-                </div>
-                <p className="text-sm text-emerald-600 mt-4 flex items-center gap-2">
-                  <ArrowRight className="w-4 h-4" />
-                  Everything below builds from this number
-                </p>
+                <div className="text-[13px] text-[#6B7280]">{isNursingSetting ? "events/FTE" : getEncounterLabel()}</div>
+              </div>
+              <span className="text-2xl text-[#9CA3AF] font-light">×</span>
+              <div className="text-center">
+                <div className="text-xl md:text-2xl font-bold text-[#111827]">{utilizationRate}%</div>
+                <div className="text-[13px] text-[#6B7280]">utilization</div>
               </div>
             </div>
-          )}
+
+            <div className="flex items-center justify-center gap-2 text-emerald-600">
+              <Check className="w-5 h-5" />
+              <p className="text-[15px] font-medium">Everything below builds from this number</p>
+            </div>
+          </div>
 
           {/* Continue Button */}
-          <div className="mt-10 pt-8 border-t border-neutral-200">
-            <Button
-              onClick={handleContinue}
-              disabled={!canContinue}
-              className="w-full h-12 bg-[#EA2C00] hover:bg-[#d12700] border-[#EA2C00] text-white text-base font-semibold disabled:opacity-50"
-              data-testid="button-continue-drivers"
-            >
-              Continue to Value Drivers
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </section>
+          <button
+            onClick={handleContinue}
+            disabled={!canContinue}
+            className={`w-full inline-flex items-center justify-center gap-2 px-8 py-5 rounded-xl font-semibold text-[17px] transition-all duration-200 ${
+              canContinue
+                ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
+            }`}
+            data-testid="button-continue-drivers"
+          >
+            Continue to Value Drivers
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   );

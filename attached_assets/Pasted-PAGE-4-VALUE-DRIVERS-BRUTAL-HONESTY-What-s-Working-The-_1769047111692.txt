@@ -1,0 +1,907 @@
+PAGE 4: VALUE DRIVERS - BRUTAL HONESTY
+🎯 What's Working:
+
+✅ The accordion/expandable model - Clean, progressive disclosure
+✅ "The Theory" sections - LOVE this. Explains the "why" before the "what"
+✅ Step-by-step math - Makes complex ROI feel transparent and defensible
+✅ Live calculation - Numbers update as you type, feels dynamic
+✅ The benchmark callouts - "Your input (blended)" in red creates urgency to adjust
+✅ Final summary box - Green box with the total is satisfying
+
+🚨 What Needs Work:
+
+TOO MUCH COGNITIVE LOAD - Each driver has 5 steps. By the 3rd driver, users are exhausted
+The "Your Calculation" header is redundant - We know it's our calculation, just show the theory
+Input fields look cramped - Need more breathing room, larger touch targets
+The × and = symbols - They're tiny, hard to parse quickly
+Benchmark section at bottom - Gets lost. Should be inline or a tooltip
+Missing: "Why should I trust this?" - No indication these are industry-validated assumptions
+
+
+MY REDESIGN APPROACH
+Philosophy: Make it feel like Stripe Billing configurator meets Apple product page
+Key Changes:
+
+Larger, clearer inputs with better visual hierarchy
+Inline benchmarks as context, not separate sections
+Collapsible "deep dive" - Simple mode by default, expert mode available
+Progress indicator showing which drivers you've reviewed
+Sticky summary sidebar showing running total
+
+
+REDESIGNED VALUE DRIVER ACCORDION
+htmlCopy<div class="page-container">
+  <button class="btn-back" onclick="history.back()">
+    ← Back to Your Organization
+  </button>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="step-indicator">Step 4 of 5</div>
+    <h1 class="page-title">Your Value Drivers</h1>
+    <p class="page-description">
+      Customize the calculation for each priority you selected. We've pre-filled industry benchmarks—adjust them to match your reality.
+    </p>
+  </div>
+
+  <!-- Two column: Drivers + Live Summary -->
+  <div class="two-column-layout drivers-layout">
+    
+    <!-- Left: Value Drivers -->
+    <div class="drivers-section">
+      
+      <!-- Driver Card: Patient Access -->
+      <div class="driver-card" data-driver="patient-access">
+        
+        <!-- Card Header - Always Visible -->
+        <div class="driver-header" onclick="toggleDriver(this)">
+          <div class="driver-header-left">
+            <div class="driver-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+            </div>
+            <div class="driver-title-group">
+              <h3 class="driver-title">Patient Access</h3>
+              <p class="driver-subtitle">Turn saved time into additional visit capacity</p>
+            </div>
+          </div>
+          
+          <div class="driver-header-right">
+            <div class="driver-value-display">
+              <span class="value-amount">$214,500</span>
+              <span class="value-label">/year</span>
+            </div>
+            <div class="driver-status reviewed">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>Reviewed</span>
+            </div>
+            <button class="expand-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Expandable Content -->
+        <div class="driver-content">
+          
+          <!-- The Theory - Collapsible -->
+          <details class="theory-section" open>
+            <summary class="theory-toggle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>How this works</span>
+            </summary>
+            <div class="theory-content">
+              <p>
+                When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but even a modest portion creates meaningful revenue.
+              </p>
+            </div>
+          </details>
+
+          <!-- Calculation Steps -->
+          <div class="calculation-steps">
+            
+            <!-- Step 1: Time Returned -->
+            <div class="calc-step">
+              <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">
+                  <h4>Time Returned</h4>
+                  <p>How much time does Abridge give back?</p>
+                </div>
+              </div>
+
+              <div class="step-inputs">
+                <div class="input-group">
+                  <label>Your baseline</label>
+                  <div class="calc-input-row">
+                    <div class="calc-value locked">
+                      <span class="value">65,000</span>
+                      <span class="unit">encounters</span>
+                    </div>
+                    <span class="calc-operator">×</span>
+                    <div class="calc-input-field">
+                      <input type="number" value="2.5" step="0.5" min="0" max="10" />
+                      <span class="unit">min</span>
+                    </div>
+                    <span class="calc-operator">=</span>
+                    <div class="calc-result">
+                      <span class="value">2,708</span>
+                      <span class="unit">hrs</span>
+                    </div>
+                  </div>
+                  <div class="input-hint">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>Typical time saved: <strong>2-4 min/encounter</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Time to Access -->
+            <div class="calc-step">
+              <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">
+                  <h4>Time Allocated to Access</h4>
+                  <p>What portion goes toward seeing more patients?</p>
+                </div>
+              </div>
+
+              <div class="step-inputs">
+                <div class="calc-input-row">
+                  <div class="calc-value">
+                    <span class="value">2,708</span>
+                    <span class="unit">hrs</span>
+                  </div>
+                  <span class="calc-operator">×</span>
+                  <div class="calc-input-field percentage">
+                    <input type="number" value="33" step="1" min="0" max="100" />
+                    <span class="unit">%</span>
+                  </div>
+                  <span class="calc-operator">=</span>
+                  <div class="calc-result">
+                    <span class="value">894</span>
+                    <span class="unit">hrs</span>
+                  </div>
+                </div>
+                <div class="input-context">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                  <p>We assume saved time splits three ways: 1/3 quality of life, 1/3 access, 1/3 cost reduction</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Conversion to Visits -->
+            <div class="calc-step">
+              <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">
+                  <h4>Conversion to Visits</h4>
+                  <p>How much actually converts to patient visits?</p>
+                </div>
+              </div>
+
+              <div class="step-inputs">
+                <div class="calc-input-row">
+                  <div class="calc-value">
+                    <span class="value">894</span>
+                    <span class="unit">hrs</span>
+                  </div>
+                  <span class="calc-operator">×</span>
+                  <div class="calc-input-field percentage">
+                    <input type="number" value="60" step="5" min="0" max="100" />
+                    <span class="unit">%</span>
+                  </div>
+                  <span class="calc-operator">=</span>
+                  <div class="calc-result">
+                    <span class="value">536</span>
+                    <span class="unit">hrs</span>
+                  </div>
+                </div>
+                <div class="input-hint">
+                  <span>Conversion depends on patient demand, room availability, and scheduling capacity. <strong>60% is conservative.</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: New Visits -->
+            <div class="calc-step">
+              <div class="step-header">
+                <div class="step-number">4</div>
+                <div class="step-title">
+                  <h4>New Visits</h4>
+                  <p>How many additional visits is that?</p>
+                </div>
+              </div>
+
+              <div class="step-inputs">
+                <div class="calc-input-row">
+                  <div class="calc-value">
+                    <span class="value">536</span>
+                    <span class="unit">hrs</span>
+                  </div>
+                  <span class="calc-operator">÷</span>
+                  <div class="calc-input-field">
+                    <input type="number" value="30" step="5" min="10" max="90" />
+                    <span class="unit">min/visit</span>
+                  </div>
+                  <span class="calc-operator">=</span>
+                  <div class="calc-result highlight">
+                    <span class="value">1,073</span>
+                    <span class="unit">visits</span>
+                  </div>
+                </div>
+                <div class="input-hint">
+                  <span>Avg visit length: <strong>15-20 min</strong> primary care, <strong>30-45 min</strong> specialty</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 5: Revenue Impact -->
+            <div class="calc-step final-step">
+              <div class="step-header">
+                <div class="step-number">5</div>
+                <div class="step-title">
+                  <h4>Revenue Impact</h4>
+                  <p>What's the revenue value?</p>
+                </div>
+              </div>
+
+              <div class="step-inputs">
+                <div class="calc-input-row">
+                  <div class="calc-value">
+                    <span class="value">1,073</span>
+                    <span class="unit">visits</span>
+                  </div>
+                  <span class="calc-operator">×</span>
+                  <span class="currency-symbol">$</span>
+                  <div class="calc-input-field">
+                    <input type="number" value="200" step="10" min="50" max="500" />
+                  </div>
+                  <span class="calc-operator">=</span>
+                  <div class="calc-result-final">
+                    <span class="value">$214,500</span>
+                  </div>
+                </div>
+
+                <!-- Benchmark Comparison -->
+                <div class="benchmark-inline">
+                  <div class="benchmark-label">BENCHMARK: REVENUE PER VISIT</div>
+                  <div class="benchmark-items">
+                    <div class="benchmark-item">
+                      <span class="benchmark-type">Primary Care</span>
+                      <span class="benchmark-range">$100 - $150</span>
+                      <span class="benchmark-note">Specialty</span>
+                    </div>
+                    <div class="benchmark-item">
+                      <span class="benchmark-type">Procedural</span>
+                      <span class="benchmark-range">$300 - $600+</span>
+                      <span class="benchmark-note">Your input</span>
+                    </div>
+                    <div class="benchmark-item current">
+                      <span class="benchmark-type">Your Setting</span>
+                      <span class="benchmark-range">$200</span>
+                      <span class="benchmark-note">(blended)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Summary -->
+          <div class="driver-summary">
+            <div class="summary-content">
+              <h4>Annual Patient Access Revenue</h4>
+              <div class="summary-calc">
+                <span>1,073 additional visits × $200/visit</span>
+              </div>
+            </div>
+            <div class="summary-value">
+              <span class="value-large">$214,500</span>
+              <span class="value-period">/year</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="driver-actions">
+            <button class="btn-secondary" onclick="resetDriver()">
+              Reset to Defaults
+            </button>
+            <button class="btn-primary" onclick="markAsReviewed()">
+              Looks Good →
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- More driver cards... -->
+      
+    </div>
+
+    <!-- Right: Live Summary Sidebar -->
+    <div class="summary-sidebar sticky">
+      <div class="sidebar-header">
+        <h3>Live Model</h3>
+        <div class="progress-indicator">
+          <span class="progress-count">1 of 3</span>
+          <span class="progress-label">reviewed</span>
+        </div>
+      </div>
+
+      <!-- Value Breakdown -->
+      <div class="value-breakdown">
+        <div class="breakdown-item reviewed">
+          <div class="item-left">
+            <div class="item-icon">✓</div>
+            <span class="item-name">Patient Access</span>
+          </div>
+          <span class="item-value">$214,500</span>
+        </div>
+
+        <div class="breakdown-item active">
+          <div class="item-left">
+            <div class="item-icon editing">•</div>
+            <span class="item-name">Overtime & Locum</span>
+          </div>
+          <span class="item-value">$207,900</span>
+        </div>
+
+        <div class="breakdown-item pending">
+          <div class="item-left">
+            <div class="item-icon">—</div>
+            <span class="item-name">Accurate Level of Service</span>
+          </div>
+          <span class="item-value text-gray">$0</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Total -->
+      <div class="total-value">
+        <div class="total-label">Total Annual Value</div>
+        <div class="total-amount">$422,400</div>
+        <div class="total-sublabel">From 2 of 3 drivers</div>
+      </div>
+
+      <button class="btn-primary btn-block" disabled>
+        Continue to Investment
+      </button>
+
+      <p class="sidebar-footnote">
+        Review all drivers to continue
+      </p>
+    </div>
+
+  </div>
+</div>
+
+CSS - PREMIUM VALUE DRIVERS
+cssCopy/* DRIVER CARD */
+.driver-card {
+  background: white;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--space-lg);
+  transition: all 0.3s ease;
+}
+
+.driver-card.active {
+  border-color: var(--abridge-red);
+  box-shadow: 0 8px 24px rgba(234, 44, 0, 0.08);
+}
+
+/* DRIVER HEADER - Always visible */
+.driver-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xl);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.driver-header:hover {
+  background: var(--gray-50);
+}
+
+.driver-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1;
+}
+
+.driver-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.driver-card.active .driver-icon {
+  background: rgba(234, 44, 0, 0.1);
+}
+
+.driver-icon svg {
+  color: var(--gray-600);
+}
+
+.driver-card.active .driver-icon svg {
+  color: var(--abridge-red);
+}
+
+.driver-title {
+  font-size: var(--title-sm);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.driver-subtitle {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+}
+
+/* DRIVER HEADER RIGHT */
+.driver-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.driver-value-display {
+  text-align: right;
+}
+
+.value-amount {
+  font-size: var(--title-md);
+  font-weight: 700;
+  color: var(--green-500);
+  display: block;
+  line-height: 1;
+}
+
+.value-label {
+  font-size: var(--body-xs);
+  color: var(--gray-500);
+}
+
+.driver-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: var(--body-xs);
+  font-weight: 600;
+}
+
+.driver-status.reviewed {
+  background: var(--green-50);
+  color: var(--green-500);
+}
+
+.driver-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.expand-icon {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--gray-400);
+  transition: all 0.3s;
+}
+
+.driver-card.expanded .expand-icon {
+  transform: rotate(180deg);
+}
+
+/* DRIVER CONTENT - Expandable */
+.driver-content {
+  display: none;
+  padding: 0 var(--space-xl) var(--space-xl) var(--space-xl);
+  border-top: 1px solid var(--gray-100);
+}
+
+.driver-card.expanded .driver-content {
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* THEORY SECTION */
+.theory-section {
+  margin: var(--space-xl) 0;
+  padding: var(--space-lg);
+  background: rgba(59, 130, 246, 0.05);
+  border-left: 3px solid #3B82F6;
+  border-radius: 8px;
+}
+
+.theory-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--body-md);
+  font-weight: 600;
+  color: #3B82F6;
+  cursor: pointer;
+  list-style: none;
+}
+
+.theory-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.theory-content {
+  margin-top: var(--space-md);
+  font-size: var(--body-md);
+  line-height: 1.7;
+  color: var(--gray-700);
+}
+
+/* CALCULATION STEPS */
+.calculation-steps {
+  margin-top: var(--space-xl);
+}
+
+.calc-step {
+  margin-bottom: var(--space-2xl);
+  padding-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.calc-step:last-child {
+  border-bottom: none;
+}
+
+.step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gray-900);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--body-sm);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-title h4 {
+  font-size: var(--body-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.step-title p {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+}
+
+/* CALC INPUT ROW */
+.calc-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-md);
+}
+
+.calc-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+.calc-value.locked {
+  opacity: 0.6;
+}
+
+.calc-value .value {
+  font-size: var(--title-md);
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.calc-value .unit {
+  font-size: var(--body-xs);
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.calc-operator {
+  font-size: var(--title-lg);
+  color: var(--gray-400);
+  font-weight: 300;
+  flex-shrink: 0;
+}
+
+/* CALC INPUT FIELD */
+.calc-input-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.calc-input-field input {
+  width: 100px;
+  padding: 12px 40px 12px 16px;
+  font-size: var(--title-sm);
+  font-weight: 600;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.calc-input-field input:focus {
+  outline: none;
+  border-color: var(--abridge-red);
+  box-shadow: 0 0 0 3px rgba(234, 44, 0, 0.1);
+}
+
+.calc-input-field .unit {
+  position: absolute;
+  right: 16px;
+  font-size: var(--body-sm);
+  color: var(--gray-500);
+  pointer-events: none;
+}
+
+.currency-symbol {
+  font-size: var(--title-sm);
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-right: -8px;
+}
+
+/* CALC RESULT */
+.calc-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+  padding: 12px 20px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid var(--gray-200);
+}
+
+.calc-result.highlight {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: var(--green-500);
+}
+
+.calc-result .value {
+  font-size: var(--title-md);
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.calc-result.highlight .value {
+  color: var(--green-500);
+}
+
+.calc-result .unit {
+  font-size: var(--body-xs);
+  color: var(--gray-600);
+  text-transform: uppercase;
+}
+
+/* FINAL RESULT */
+.calc-result-final {
+  padding: 16px 24px;
+  background: linear-gradient(135deg, var(--green-500) 0%, #059669 100%);
+  border-radius: 10px;
+}
+
+.calc-result-final .value {
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+}
+
+/* INPUT HINTS */
+.input-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+  line-height: 1.5;
+}
+
+.input-hint svg {
+  flex-shrink: 0;
+  color: var(--gray-400);
+}
+
+.input-context {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: rgba(251, 191, 36, 0.05);
+  border-radius: 6px;
+  font-size: var(--body-sm);
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+
+.input-context svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #F59E0B;
+}
+
+/* BENCHMARK INLINE */
+.benchmark-inline {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--gray-50);
+  border-radius: 8px;
+}
+
+.benchmark-label {
+  font-size: var(--body-xs);
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-sm);
+}
+
+.benchmark-items {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.benchmark-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-sm);
+  background: white;
+  border-radius: 6px;
+}
+
+.benchmark-item.current {
+  background: rgba(234, 44, 0, 0.05);
+  border: 1px solid var(--abridge-red);
+}
+
+.benchmark-type {
+  font-size: var(--body-xs);
+  color: var(--gray-600);
+}
+
+.benchmark-range {
+  font-size: var(--body-md);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.benchmark-item.current .benchmark-range {
+  color: var(--abridge-red);
+}
+
+.benchmark-note {
+  font-size: var(--body-xs);
+  color: var(--gray-500);
+}
+
+/* DRIVER SUMMARY */
+.driver-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xl);
+  background: var(--green-50);
+  border-radius: var(--border-radius);
+  margin: var(--space-xl) 0;
+}
+
+.summary-content h4 {
+  font-size: var(--body-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.summary-calc {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+}
+
+.summary-value {
+  text-align: right;
+}
+
+.value-large {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--green-500);
+  line-height: 1;
+  display: block;
+}
+
+.value-period {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+}
+
+/* DRIVER ACTIONS */
+.driver-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
+}
+
+🔥 KEY IMPROVEMENTS:
+
+✅ Bigger, clearer inputs - Touch-friendly, easy to read
+✅ Inline benchmarks - Context where you need it
+✅ Collapsible theory - Progressive disclosure
+✅ Live sidebar - See total update in real-time
+✅ Progress tracking - "1 of 3 reviewed" creates momentum
+✅ Better visual hierarchy - Step numbers, clear operators
+✅ Satisfying final reveal - Green gradient on final value
+
+This should feel less like "doing math homework" and more like "configuring your outcome."
