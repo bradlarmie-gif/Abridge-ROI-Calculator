@@ -449,7 +449,7 @@ export default function ModelBuilder({
       denialRate: 10,
       docRelatedPercent: 40,
       writtenOffPercent: 30,
-      abridgeCaptureRate: 75,
+      abridgeCaptureRate: 50,
       avgClaimValue: 650,
     },
     // Inpatient defaults
