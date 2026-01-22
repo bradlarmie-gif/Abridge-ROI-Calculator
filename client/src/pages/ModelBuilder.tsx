@@ -435,7 +435,7 @@ export default function ModelBuilder({
       edPhysicians: 25,
       turnoverRate: 8,
       burnoutAttribution: 50,
-      abridgeImpact: 30,
+      abridgeImpact: 15,
       replacementCost: 800000,
     },
     edLevelOfService: {
