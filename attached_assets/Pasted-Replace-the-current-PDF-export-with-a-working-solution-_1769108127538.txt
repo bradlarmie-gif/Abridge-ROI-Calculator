@@ -1,0 +1,440 @@
+Replace the current PDF export with a working solution:
+
+Remove the current html2pdf implementation - it's not working in Replit
+Use jsPDF with manual layout instead - more reliable, smaller library
+Add these libraries to your HTML <head>:
+htmlCopy<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+Replace your generatePremiumPDF function with this simpler version:
+
+javascriptCopyfunction generatePremiumPDF(modelData) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  // Brand colors
+  const abridgeRed = [234, 44, 0];
+  const green = [16, 185, 129];
+  const gray = [107, 114, 128];
+  
+  let yPos = 20;
+  
+  // === PAGE 1: COVER ===
+  
+  // Logo
+  doc.setFontSize(20);
+  doc.setTextColor(...abridgeRed);
+  doc.setFont('helvetica', 'bold');
+  doc.text('ABRIDGE', 20, yPos);
+  
+  // Title
+  yPos = 80;
+  doc.setFontSize(32);
+  doc.setTextColor(0, 0, 0);
+  doc.text('ROI Business Case', 105, yPos, { align: 'center' });
+  
+  yPos += 20;
+  doc.setFontSize(16);
+  doc.setTextColor(...gray);
+  doc.text(modelData.setting + ' • ' + modelData.providers + ' Providers', 105, yPos, { align: 'center' });
+  
+  // Big ROI number
+  yPos = 140;
+  doc.setFontSize(12);
+  doc.text('NET ANNUAL GAIN', 105, yPos, { align: 'center' });
+  
+  yPos += 15;
+  doc.setFontSize(48);
+  doc.setTextColor(...green);
+  doc.text('+$' + formatNumber(modelData.netGain), 105, yPos, { align: 'center' });
+  
+  yPos += 15;
+  doc.setFontSize(14);
+  doc.setTextColor(...gray);
+  doc.text(modelData.roi + '× Return on Investment', 105, yPos, { align: 'center' });
+  
+  // Date
+  yPos = 270;
+  doc.setFontSize(10);
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  doc.text('Generated: ' + today, 105, yPos, { align: 'center' });
+  doc.text('Model ID: ' + modelData.modelId, 105, yPos + 5, { align: 'center' });
+  
+  // === PAGE 2: EXECUTIVE SUMMARY ===
+  doc.addPage();
+  yPos = 20;
+  
+  // Header
+  doc.setFontSize(24);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Executive Summary', 20, yPos);
+  
+  // Red underline
+  doc.setDrawColor(...abridgeRed);
+  doc.setLineWidth(1);
+  doc.line(20, yPos + 2, 80, yPos + 2);
+  
+  yPos += 15;
+  doc.setFontSize(11);
+  doc.setTextColor(...gray);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Your opportunity at a glance', 20, yPos);
+  
+  yPos += 15;
+  
+  // Metrics boxes
+  const metrics = [
+    { label: 'Total Value', value: '$' + formatNumber(modelData.totalValue) },
+    { label: 'Investment', value: '$' + formatNumber(modelData.investment) },
+    { label: 'Net Gain', value: '+$' + formatNumber(modelData.netGain), highlight: true },
+    { label: 'ROI', value: modelData.roi + '×', highlight: true }
+  ];
+  
+  let xPos = 20;
+  metrics.forEach((metric, i) => {
+    if (i === 2) {
+      yPos += 25;
+      xPos = 20;
+    }
+    
+    // Box
+    doc.setFillColor(249, 250, 251);
+    doc.rect(xPos, yPos, 85, 20, 'F');
+    
+    // Label
+    doc.setFontSize(9);
+    doc.setTextColor(...gray);
+    doc.text(metric.label, xPos + 3, yPos + 6);
+    
+    // Value
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(metric.highlight ? ...green : 0, 0, 0);
+    doc.text(metric.value, xPos + 3, yPos + 16);
+    
+    xPos += 90;
+    if (xPos > 150) xPos = 20;
+  });
+  
+  yPos += 30;
+  
+  // Key outcomes
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text('Key Outcomes', 20, yPos);
+  
+  yPos += 8;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  
+  const outcomes = [
+    formatNumber(modelData.hoursReturned) + ' hours returned annually',
+    formatNumber(modelData.additionalVisits) + ' additional patient visits',
+    '$' + formatNumber(modelData.largestDriver.value) + ' in ' + modelData.largestDriver.name.toLowerCase()
+  ];
+  
+  outcomes.forEach(outcome => {
+    doc.setTextColor(...green);
+    doc.text('✓', 22, yPos);
+    doc.setTextColor(0, 0, 0);
+    doc.text(outcome, 28, yPos);
+    yPos += 7;
+  });
+  
+  // === PAGE 3: VALUE BREAKDOWN ===
+  doc.addPage();
+  yPos = 20;
+  
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text('Value Breakdown', 20, yPos);
+  
+  doc.setDrawColor(...abridgeRed);
+  doc.line(20, yPos + 2, 80, yPos + 2);
+  
+  yPos += 15;
+  doc.setFontSize(11);
+  doc.setTextColor(...gray);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Where your ROI comes from', 20, yPos);
+  
+  yPos += 15;
+  
+  // Value drivers
+  const selectedDrivers = modelData.valueDrivers.filter(d => d.selected);
+  const laborDrivers = selectedDrivers.filter(d => d.category === 'labor');
+  const revenueDrivers = selectedDrivers.filter(d => d.category === 'revenue');
+  
+  const laborTotal = laborDrivers.reduce((sum, d) => sum + d.value, 0);
+  const revenueTotal = revenueDrivers.reduce((sum, d) => sum + d.value, 0);
+  
+  // Labor section
+  if (laborDrivers.length > 0) {
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LABOR & EFFICIENCY', 20, yPos);
+    doc.text('$' + formatNumber(laborTotal), 190, yPos, { align: 'right' });
+    
+    yPos += 7;
+    laborDrivers.forEach(driver => {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(driver.name, 22, yPos);
+      doc.setTextColor(...green);
+      doc.text('$' + formatNumber(driver.value), 190, yPos, { align: 'right' });
+      
+      yPos += 5;
+      doc.setFontSize(9);
+      doc.setTextColor(...gray);
+      doc.setFont('helvetica', 'normal');
+      const desc = doc.splitTextToSize('→ ' + driver.description, 170);
+      doc.text(desc, 22, yPos);
+      yPos += (desc.length * 4) + 5;
+      doc.setTextColor(0, 0, 0);
+    });
+    
+    yPos += 5;
+  }
+  
+  // Revenue section
+  if (revenueDrivers.length > 0) {
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REVENUE & QUALITY', 20, yPos);
+    doc.text('$' + formatNumber(revenueTotal), 190, yPos, { align: 'right' });
+    
+    yPos += 7;
+    revenueDrivers.forEach(driver => {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(driver.name, 22, yPos);
+      doc.setTextColor(...green);
+      doc.text('$' + formatNumber(driver.value), 190, yPos, { align: 'right' });
+      
+      yPos += 5;
+      doc.setFontSize(9);
+      doc.setTextColor(...gray);
+      doc.setFont('helvetica', 'normal');
+      const desc = doc.splitTextToSize('→ ' + driver.description, 170);
+      doc.text(desc, 22, yPos);
+      yPos += (desc.length * 4) + 5;
+      doc.setTextColor(0, 0, 0);
+    });
+  }
+  
+  // === PAGE 4: INVESTMENT DETAILS ===
+  doc.addPage();
+  yPos = 20;
+  
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Investment Details', 20, yPos);
+  
+  doc.setDrawColor(...abridgeRed);
+  doc.line(20, yPos + 2, 80, yPos + 2);
+  
+  yPos += 20;
+  
+  // Configuration
+  doc.setFontSize(11);
+  doc.text('Your Configuration', 20, yPos);
+  
+  yPos += 8;
+  const config = [
+    ['Setting', modelData.setting],
+    ['Providers', modelData.providers],
+    ['Price/Provider', '$' + modelData.costPerProvider + '/mo'],
+    ['Annual Investment', '$' + formatNumber(modelData.investment)]
+  ];
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  config.forEach(([label, value]) => {
+    doc.setTextColor(...gray);
+    doc.text(label, 22, yPos);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.text(String(value), 80, yPos);
+    doc.setFont('helvetica', 'normal');
+    yPos += 7;
+  });
+  
+  yPos += 10;
+  
+  // Multi-year table
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Multi-Year Projection', 20, yPos);
+  
+  yPos += 5;
+  
+  doc.autoTable({
+    startY: yPos,
+    head: [['Year', 'Value', 'Cost', 'Net Gain', 'ROI']],
+    body: modelData.multiYearProjection.map(row => [
+      row.year,
+      '$' + row.value,
+      '$' + row.cost,
+      '+$' + row.net,
+      row.roi + '×'
+    ]),
+    theme: 'plain',
+    headStyles: {
+      fillColor: [243, 244, 246],
+      textColor: [55, 65, 81],
+      fontStyle: 'bold',
+      fontSize: 9
+    },
+    bodyStyles: {
+      fontSize: 10
+    }
+  });
+  
+  // === PAGE 5: NEXT STEPS ===
+  doc.addPage();
+  yPos = 20;
+  
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Next Steps', 20, yPos);
+  
+  doc.setDrawColor(...abridgeRed);
+  doc.line(20, yPos + 2, 60, yPos + 2);
+  
+  yPos += 20;
+  
+  const steps = [
+    { title: 'Validate Assumptions', desc: 'Review this model with your finance and operations teams.' },
+    { title: 'Start with a Pilot', desc: 'Most organizations begin with 10-20 providers to prove value.' },
+    { title: 'Build Your Business Case', desc: 'We\'ll help you present this to stakeholders with case studies.' }
+  ];
+  
+  steps.forEach((step, i) => {
+    // Number circle
+    doc.setFillColor(...abridgeRed);
+    doc.circle(24, yPos - 2, 4, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(String(i + 1), 24, yPos + 1, { align: 'center' });
+    
+    // Title
+    doc.setTextColor(0, 0, 0);
+    doc.text(step.title, 32, yPos);
+    
+    // Description
+    yPos += 5;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...gray);
+    const descLines = doc.splitTextToSize(step.desc, 160);
+    doc.text(descLines, 32, yPos);
+    yPos += (descLines.length * 5) + 10;
+  });
+  
+  yPos += 10;
+  
+  // Contact
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text('Contact', 20, yPos);
+  
+  yPos += 8;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(modelData.salesDirector.name, 20, yPos);
+  yPos += 6;
+  doc.text(modelData.salesDirector.email, 20, yPos);
+  yPos += 6;
+  doc.text(modelData.salesDirector.phone, 20, yPos);
+  yPos += 10;
+  doc.setTextColor(...abridgeRed);
+  doc.setFont('helvetica', 'bold');
+  doc.text('abridge.com', 20, yPos);
+  
+  // Save
+  const filename = 'Abridge_ROI_' + modelData.setting.replace(/\s+/g, '_') + '_' + modelData.providers + 'P.pdf';
+  doc.save(filename);
+}
+
+// Helper function
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return Math.round(num / 1000) + 'K';
+  return num.toLocaleString();
+}
+
+Update your Export button click handler:
+
+javascriptCopydocument.getElementById('export-pdf-btn').addEventListener('click', function() {
+  // Show loading state
+  this.innerHTML = '<span>Generating PDF...</span>';
+  this.disabled = true;
+  
+  // Gather your model data
+  const modelData = {
+    setting: 'Outpatient',
+    providers: 50,
+    netGain: 182000,
+    roi: 1.9,
+    totalValue: 377000,
+    investment: 195000,
+    hoursReturned: 2708,
+    additionalVisits: 1073,
+    costPerProvider: 150,
+    modelId: 'OP-50-65UTL-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
+    
+    valueDrivers: [
+      {
+        name: 'Clinician Retention',
+        value: 162000,
+        category: 'labor',
+        description: 'Lower burnout and turnover by reducing administrative burden',
+        selected: true
+      },
+      {
+        name: 'Patient Access',
+        value: 215000,
+        category: 'revenue',
+        description: '1,073 additional visits from time savings',
+        selected: true
+      }
+    ],
+    
+    largestDriver: {
+      name: 'Patient Access',
+      value: 215000
+    },
+    
+    multiYearProjection: [
+      { year: 'Year 1', value: '377K', cost: '195K', net: '182K', roi: 1.9 },
+      { year: 'Year 2', value: '414K', cost: '195K', net: '219K', roi: 2.1 },
+      { year: 'Year 3', value: '456K', cost: '195K', net: '261K', roi: 2.3 }
+    ],
+    
+    salesDirector: {
+      name: 'Your Name',
+      email: 'you@abridge.com',
+      phone: '(555) 123-4567'
+    }
+  };
+  
+  // Generate PDF
+  try {
+    generatePremiumPDF(modelData);
+    
+    // Reset button
+    setTimeout(() => {
+      this.innerHTML = '<svg>...</svg> Export PDF';
+      this.disabled = false;
+    }, 1000);
+  } catch (error) {
+    alert('PDF generation failed. Please try again.');
+    this.innerHTML = '<svg>...</svg> Export PDF';
+    this.disabled = false;
+  }
+});
