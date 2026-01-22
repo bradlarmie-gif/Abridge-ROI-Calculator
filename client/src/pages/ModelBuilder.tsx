@@ -1226,7 +1226,7 @@ export default function ModelBuilder({
                   type="number"
                   value={otPercentWithOT}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otPercentWithOT: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ot-percent-input"
                 />
               </div>
@@ -1237,7 +1237,7 @@ export default function ModelBuilder({
                   type="number"
                   value={otHoursPerWeek}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otHoursPerWeek: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ot-hours-per-week-input"
                 />
               </div>
@@ -1251,7 +1251,7 @@ export default function ModelBuilder({
                     type="number"
                     value={otWeeksPerYear}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otWeeksPerYear: Number(e.target.value) || 0 } }))}
-                    className="w-20 text-center font-mono text-sm h-8"
+                    className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     data-testid="ot-weeks-per-year-input"
                   />
                 </div>
@@ -1283,7 +1283,7 @@ export default function ModelBuilder({
                     type="number"
                     value={otReductionRate}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otReductionRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8"
+                    className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     data-testid="ot-reduction-rate-input"
                   />
                 </div>
@@ -1316,7 +1316,7 @@ export default function ModelBuilder({
                     type="number"
                     value={otConversionRate}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otConversionRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8"
+                    className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     data-testid="ot-conversion-rate-input"
                   />
                 </div>
@@ -1352,7 +1352,7 @@ export default function ModelBuilder({
                   type="number"
                   value={physicianHourlyRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, physicianHourlyRate: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8"
+                  className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ot-physician-rate-input"
                 />
                 <span className="text-xs text-[#6B7280]">/hr</span>
@@ -1401,7 +1401,7 @@ export default function ModelBuilder({
                       type="number"
                       value={locumProviders}
                       onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumProviders: Number(e.target.value) || 0 } }))}
-                      className="w-full text-center font-mono text-sm h-8"
+                      className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-providers-input"
                     />
                   </div>
@@ -1412,7 +1412,7 @@ export default function ModelBuilder({
                       type="number"
                       value={locumHoursPerWeek}
                       onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHoursPerWeek: Number(e.target.value) || 0 } }))}
-                      className="w-full text-center font-mono text-sm h-8"
+                      className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-hours-per-week-input"
                     />
                   </div>
@@ -1423,7 +1423,7 @@ export default function ModelBuilder({
                       type="number"
                       value={locumWeeksPerYear}
                       onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumWeeksPerYear: Number(e.target.value) || 0 } }))}
-                      className="w-full text-center font-mono text-sm h-8"
+                      className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-weeks-per-year-input"
                     />
                   </div>
@@ -1455,7 +1455,7 @@ export default function ModelBuilder({
                       type="number"
                       value={locumConversionRate}
                       onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumConversionRate: Number(e.target.value) || 0 } }))}
-                      className="w-16 text-center font-mono text-sm h-8"
+                      className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-conversion-rate-input"
                     />
                     <span className="text-xs text-[#6B7280]">%</span>
@@ -1490,7 +1490,7 @@ export default function ModelBuilder({
                       type="number"
                       value={locumHourlyRate}
                       onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHourlyRate: Number(e.target.value) || 0 } }))}
-                      className="w-20 text-center font-mono text-sm h-8"
+                      className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-hourly-rate-input"
                     />
                     <span className="text-xs text-[#6B7280]">/hr</span>
@@ -1614,7 +1614,7 @@ export default function ModelBuilder({
                   step="0.1"
                   value={timeSavedPerEncounter}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, timeSavedPerEncounter: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="pa-time-saved-input"
                 />
                 <span className="text-xs text-[#6B7280]">min</span>
@@ -1648,7 +1648,7 @@ export default function ModelBuilder({
                 type="number"
                 value={accessAllocation}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, accessAllocation: Number(e.target.value) || 0 } }))}
-                className="w-16 text-center font-mono text-sm h-8"
+                className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="pa-access-allocation-input"
               />
               <span className="text-xs text-[#6B7280]">%</span>
@@ -1682,7 +1682,7 @@ export default function ModelBuilder({
                 type="number"
                 value={conversionRate}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, conversionRate: Number(e.target.value) || 0 } }))}
-                className="w-16 text-center font-mono text-sm h-8"
+                className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="pa-conversion-rate-input"
               />
               <span className="text-xs text-[#6B7280]">%</span>
@@ -1716,7 +1716,7 @@ export default function ModelBuilder({
                 type="number"
                 value={timePerVisit}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, timePerVisit: Number(e.target.value) || 1 } }))}
-                className="w-16 text-center font-mono text-sm h-8"
+                className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="pa-time-per-visit-input"
               />
               <span className="text-xs text-[#6B7280]">min/visit</span>
@@ -1748,7 +1748,7 @@ export default function ModelBuilder({
                 type="number"
                 value={revenuePerVisit}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, revenuePerVisit: Number(e.target.value) || 0 } }))}
-                className="w-20 text-center font-mono text-sm h-8"
+                className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="pa-revenue-per-visit-input"
               />
             </div>
@@ -1916,7 +1916,7 @@ export default function ModelBuilder({
                     type="number"
                     value={turnoverRate}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, retention: { ...prev.retention, turnoverRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8"
+                    className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     data-testid="ret-turnover-rate-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -1953,7 +1953,7 @@ export default function ModelBuilder({
                   type="number"
                   value={burnoutAttribution}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, retention: { ...prev.retention, burnoutAttribution: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ret-burnout-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -1989,7 +1989,7 @@ export default function ModelBuilder({
                   type="number"
                   value={abridgeImpact}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, retention: { ...prev.retention, abridgeImpact: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ret-abridge-impact-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2033,7 +2033,7 @@ export default function ModelBuilder({
                 type="number"
                 value={replacementCost}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, retention: { ...prev.retention, replacementCost: Number(e.target.value) || 0 } }))}
-                className="w-28 text-center font-mono text-sm h-8"
+                className="w-28 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="ret-replacement-cost-input"
               />
             </div>
@@ -2127,7 +2127,7 @@ export default function ModelBuilder({
                   type="number"
                   value={avgWrvuPerEncounter}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, levelOfService: { ...prev.levelOfService, avgWrvuPerEncounter: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8"
+                  className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   step="0.1"
                   data-testid="los-wrvu-per-encounter-input"
                 />
@@ -2163,7 +2163,7 @@ export default function ModelBuilder({
                   type="number"
                   value={wrvuImprovementRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, levelOfService: { ...prev.levelOfService, wrvuImprovementRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="los-improvement-rate-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2199,7 +2199,7 @@ export default function ModelBuilder({
                 type="number"
                 value={conversionFactor}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, levelOfService: { ...prev.levelOfService, conversionFactor: Number(e.target.value) || 0 } }))}
-                className="w-20 text-center font-mono text-sm h-8"
+                className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="los-conversion-factor-input"
               />
             </div>
@@ -2310,7 +2310,7 @@ export default function ModelBuilder({
                     type="number"
                     value={riskContractPercent}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, riskContractPercent: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8"
+                    className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     data-testid="hcc-risk-contract-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -2432,7 +2432,7 @@ export default function ModelBuilder({
                   type="number"
                   value={abridgeCaptureRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, abridgeCaptureRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="hcc-capture-rate-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2470,7 +2470,7 @@ export default function ModelBuilder({
                   type="number"
                   value={avgHccValue}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, avgHccValue: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8"
+                  className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="hcc-value-input"
                 />
               </div>
@@ -2480,7 +2480,7 @@ export default function ModelBuilder({
                   type="number"
                   value={auditFactor}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, auditFactor: Number(e.target.value) || 0 } }))}
-                  className="w-14 text-center font-mono text-sm h-8"
+                  className="w-14 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="hcc-audit-factor-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2624,7 +2624,7 @@ export default function ModelBuilder({
                     type="number"
                     value={denialRate}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, denialRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8"
+                    className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     data-testid="denials-rate-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -2661,7 +2661,7 @@ export default function ModelBuilder({
                   type="number"
                   value={docRelatedPercent}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, docRelatedPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="denials-doc-related-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2697,7 +2697,7 @@ export default function ModelBuilder({
                   type="number"
                   value={writtenOffPercent}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, writtenOffPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="denials-written-off-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2733,7 +2733,7 @@ export default function ModelBuilder({
                   type="number"
                   value={abridgeCaptureRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, abridgeCaptureRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="denials-capture-rate-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2770,7 +2770,7 @@ export default function ModelBuilder({
                 type="number"
                 value={avgClaimValue}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, avgClaimValue: Number(e.target.value) || 0 } }))}
-                className="w-20 text-center font-mono text-sm h-8"
+                className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="denials-claim-value-input"
               />
             </div>
@@ -2886,7 +2886,7 @@ export default function ModelBuilder({
                   type="number"
                   value={annualEdVisits}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, annualEdVisits: Number(e.target.value) || 0 } }))}
-                  className="w-28 text-center font-mono text-sm h-8"
+                  className="w-28 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-annual-visits-input"
                 />
               </div>
@@ -2898,7 +2898,7 @@ export default function ModelBuilder({
                     type="number"
                     value={lwbsRate}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, lwbsRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8"
+                    className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     step="0.5"
                     data-testid="ed-lwbs-rate-input"
                   />
@@ -2936,7 +2936,7 @@ export default function ModelBuilder({
                   type="number"
                   value={improvementRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, improvementRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-improvement-rate-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2980,7 +2980,7 @@ export default function ModelBuilder({
                   type="number"
                   value={avgEdVisitRevenue}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, avgEdVisitRevenue: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8"
+                  className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-visit-revenue-input"
                 />
               </div>
@@ -3021,7 +3021,7 @@ export default function ModelBuilder({
                       type="number"
                       value={admissionPercent}
                       onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, admissionPercent: Number(e.target.value) || 0 } }))}
-                      className="w-14 text-center font-mono text-sm h-8"
+                      className="w-14 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                       data-testid="ed-admission-percent-input"
                     />
                     <span className="text-xs text-[#6B7280]">%</span>
@@ -3037,7 +3037,7 @@ export default function ModelBuilder({
                       type="number"
                       value={avgAdmissionRevenue}
                       onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, avgAdmissionRevenue: Number(e.target.value) || 0 } }))}
-                      className="w-24 text-center font-mono text-sm h-8"
+                      className="w-24 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                       data-testid="ed-admission-revenue-input"
                     />
                   </div>
@@ -3238,7 +3238,7 @@ export default function ModelBuilder({
                   type="number"
                   value={edPhysicians}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, edPhysicians: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8"
+                  className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-ret-physicians-input"
                 />
               </div>
@@ -3250,7 +3250,7 @@ export default function ModelBuilder({
                     type="number"
                     value={turnoverRate}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, turnoverRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8"
+                    className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     data-testid="ed-ret-turnover-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -3287,7 +3287,7 @@ export default function ModelBuilder({
                   type="number"
                   value={burnoutAttribution}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, burnoutAttribution: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-ret-burnout-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3323,7 +3323,7 @@ export default function ModelBuilder({
                   type="number"
                   value={abridgeImpact}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, abridgeImpact: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-ret-abridge-impact-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3370,7 +3370,7 @@ export default function ModelBuilder({
                   type="number"
                   value={replacementCost}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, replacementCost: Number(e.target.value) || 0 } }))}
-                  className="w-28 text-center font-mono text-sm h-8"
+                  className="w-28 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-ret-replacement-cost-input"
                 />
               </div>
@@ -3498,7 +3498,7 @@ export default function ModelBuilder({
                   type="number"
                   value={annualEdVisits}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, annualEdVisits: Number(e.target.value) || 0 } }))}
-                  className="w-28 text-center font-mono text-sm h-8"
+                  className="w-28 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-los-visits-input"
                 />
               </div>
@@ -3510,7 +3510,7 @@ export default function ModelBuilder({
                   step="0.1"
                   value={avgWrvuPerEncounter}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, avgWrvuPerEncounter: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8"
+                  className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-los-wrvu-per-enc-input"
                 />
               </div>
@@ -3572,7 +3572,7 @@ export default function ModelBuilder({
                   type="number"
                   value={wrvuImprovementRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, wrvuImprovementRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-los-improvement-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3611,7 +3611,7 @@ export default function ModelBuilder({
                   type="number"
                   value={conversionFactor}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, conversionFactor: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8"
+                  className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-los-conversion-input"
                 />
               </div>
@@ -3719,7 +3719,7 @@ export default function ModelBuilder({
                   type="number"
                   value={documentedEncounters}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, documentedEncounters: Number(e.target.value) || 0 } }))}
-                  className="w-28 text-center font-mono text-sm h-8"
+                  className="w-28 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-denials-encounters-input"
                 />
               </div>
@@ -3731,7 +3731,7 @@ export default function ModelBuilder({
                     type="number"
                     value={denialRate}
                     onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, denialRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8"
+                    className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                     data-testid="ed-denials-rate-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -3768,7 +3768,7 @@ export default function ModelBuilder({
                   type="number"
                   value={docRelatedPercent}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, docRelatedPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-denials-doc-related-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3805,7 +3805,7 @@ export default function ModelBuilder({
                   type="number"
                   value={writtenOffPercent}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, writtenOffPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-denials-writeoff-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3842,7 +3842,7 @@ export default function ModelBuilder({
                   type="number"
                   value={abridgeCaptureRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, abridgeCaptureRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8"
+                  className="w-16 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-denials-capture-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3880,7 +3880,7 @@ export default function ModelBuilder({
                   type="number"
                   value={avgClaimValue}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, avgClaimValue: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8"
+                  className="w-20 text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-denials-claim-value-input"
                 />
               </div>
@@ -4880,7 +4880,7 @@ export default function ModelBuilder({
                 type="number"
                 value={otHoursPerWeek}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, otHoursPerWeek: Number(e.target.value) || 0 } }))}
-                className="w-full text-center font-mono text-sm h-8"
+                className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="nursing-ot-hours-week-input"
               />
             </div>
@@ -4891,7 +4891,7 @@ export default function ModelBuilder({
                 type="number"
                 value={weeksPerYear}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, weeksPerYear: Number(e.target.value) || 0 } }))}
-                className="w-full text-center font-mono text-sm h-8"
+                className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="nursing-ot-weeks-year-input"
               />
             </div>
@@ -4926,7 +4926,7 @@ export default function ModelBuilder({
                   type="number"
                   value={docRelatedPct}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, docRelatedPct: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-ot-doc-pct-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -4963,7 +4963,7 @@ export default function ModelBuilder({
                   type="number"
                   value={reductionRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, reductionRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-ot-reduction-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5006,7 +5006,7 @@ export default function ModelBuilder({
                   type="number"
                   value={baseHourlyRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, baseHourlyRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-ot-hourly-input"
                 />
               </div>
@@ -5116,7 +5116,7 @@ export default function ModelBuilder({
                 type="number"
                 value={annualAdmissions}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, annualAdmissions: Number(e.target.value) || 0 } }))}
-                className="w-full text-center font-mono text-sm h-8"
+                className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 data-testid="nursing-hapi-admissions-input"
               />
             </div>
@@ -5128,7 +5128,7 @@ export default function ModelBuilder({
                   type="number"
                   value={hapiRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, hapiRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   step="0.1"
                   data-testid="nursing-hapi-rate-input"
                 />
@@ -5166,7 +5166,7 @@ export default function ModelBuilder({
                   type="number"
                   value={preventionRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, preventionRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-hapi-prevention-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5204,7 +5204,7 @@ export default function ModelBuilder({
                   type="number"
                   value={costPerHAPI}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, costPerHAPI: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-hapi-cost-input"
                 />
               </div>
@@ -5315,7 +5315,7 @@ export default function ModelBuilder({
                 type="number"
                 value={agencyFTEsPerBed}
                 onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyFTEsPerBed: Number(e.target.value) || 0 } }))}
-                className="w-full text-center font-mono text-sm h-8"
+                className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                 step="0.01"
                 data-testid="nursing-agency-ftes-per-bed-input"
               />
@@ -5347,7 +5347,7 @@ export default function ModelBuilder({
                   type="number"
                   value={staffSalary}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, staffSalary: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-agency-staff-salary-input"
                 />
               </div>
@@ -5361,7 +5361,7 @@ export default function ModelBuilder({
                   type="number"
                   value={agencyCost}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyCost: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-agency-cost-input"
                 />
               </div>
@@ -5397,7 +5397,7 @@ export default function ModelBuilder({
                   type="number"
                   value={retentionImpact}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, retentionImpact: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-agency-retention-impact-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5517,7 +5517,7 @@ export default function ModelBuilder({
                   type="number"
                   value={turnoverRate}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, turnoverRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-retention-turnover-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5554,7 +5554,7 @@ export default function ModelBuilder({
                   type="number"
                   value={burnoutAttribution}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, burnoutAttribution: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-retention-burnout-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5591,7 +5591,7 @@ export default function ModelBuilder({
                   type="number"
                   value={abridgeImpact}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, abridgeImpact: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-retention-impact-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5629,7 +5629,7 @@ export default function ModelBuilder({
                   type="number"
                   value={replacementCost}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, replacementCost: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8"
+                  className="w-full text-center font-mono text-sm h-8 bg-blue-50/50 border-b-2 border-b-blue-200 border-t-0 border-x-0 rounded-none hover:bg-blue-50 hover:border-b-blue-400 focus:bg-white focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-retention-cost-input"
                 />
               </div>
