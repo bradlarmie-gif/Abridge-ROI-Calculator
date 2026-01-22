@@ -6069,7 +6069,7 @@ export default function ModelBuilder({
                 </div>
                 <div className="flex flex-wrap items-end gap-4 mb-4">
                   <div className="font-mono text-4xl font-bold text-emerald-700">
-                    {eligibleEncounters.toLocaleString()}
+                    {(isNursingSetting ? eligibleDocEvents : eligibleEncounters).toLocaleString()}
                   </div>
                   <p className="text-base font-medium text-emerald-700 pb-1">
                     eligible {isNursingSetting ? "documentation events" : isInpatientSetting ? "admissions" : "encounters"} per year
