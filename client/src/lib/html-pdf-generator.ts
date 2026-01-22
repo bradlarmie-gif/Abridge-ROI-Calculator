@@ -1013,10 +1013,14 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
 
   const container = document.createElement('div');
   container.innerHTML = html;
-  container.style.position = 'fixed';
+  container.style.position = 'absolute';
   container.style.left = '-9999px';
   container.style.top = '0';
+  container.style.width = '210mm';
   document.body.appendChild(container);
+
+  // Wait for fonts and styles to load
+  await new Promise(resolve => setTimeout(resolve, 100));
 
   const filename = `Abridge_ROI_${data.setting.replace(/\s+/g, '_')}_${data.providers}P_${new Date().toISOString().split('T')[0]}.pdf`;
 
@@ -1027,8 +1031,10 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     html2canvas: {
       scale: 2,
       useCORS: true,
-      logging: false,
+      logging: true,
       letterRendering: true,
+      windowWidth: 794, // A4 width in pixels at 96dpi
+      windowHeight: 1123, // A4 height in pixels at 96dpi
     },
     jsPDF: {
       unit: 'mm' as const,
@@ -1036,11 +1042,16 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
       orientation: 'portrait' as const,
       compress: true,
     },
-    pagebreak: { mode: 'avoid-all' as const },
+    pagebreak: { mode: ['css', 'legacy'] as const, before: '.content-page', avoid: ['tr', 'td'] },
   };
 
   try {
+    console.log('Generating PDF with data:', data);
     await html2pdf().set(options).from(container).save();
+    console.log('PDF generated successfully');
+  } catch (error) {
+    console.error('PDF generation failed:', error);
+    throw error;
   } finally {
     document.body.removeChild(container);
   }
