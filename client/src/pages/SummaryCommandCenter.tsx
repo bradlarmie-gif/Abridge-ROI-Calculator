@@ -85,7 +85,7 @@ const DRIVER_CATEGORIES: Record<string, { category: "labor" | "revenue"; label: 
   nursingHAPI: { category: "revenue", label: "HAPI Prevention" },
   nursingSurvey: { category: "labor", label: "Staff Satisfaction" },
   nursingCareCoordination: { category: "labor", label: "Care Coordination" },
-  edThroughput: { category: "revenue", label: "Patient Throughput" },
+  edThroughput: { category: "labor", label: "Patient Throughput (LWBS Reduction)" },
   edScribe: { category: "labor", label: "Scribe Cost Reduction" },
   edRetention: { category: "labor", label: "Physician Retention" },
   edLevelOfService: { category: "revenue", label: "Level-of-Service Accuracy" },
