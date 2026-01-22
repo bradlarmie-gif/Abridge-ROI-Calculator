@@ -165,12 +165,6 @@ interface DriverInputs {
     admissionPercent: number;
     avgAdmissionRevenue: number;
   };
-  edScribe: {
-    hasScribes: boolean;
-    scribeFTEs: number;
-    costPerFTE: number;
-    reductionLevel: "partial" | "significant" | "full";
-  };
   edRetention: {
     edPhysicians: number;
     turnoverRate: number;
@@ -261,7 +255,6 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
   denials: FileX,
   // ED drivers
   edThroughput: Zap,
-  edScribe: Users,
   edRetention: Heart,
   edLevelOfService: BarChart3,
   edDenials: FileX,
@@ -288,7 +281,6 @@ const DRIVER_NAMES: Record<string, string> = {
   denials: "Documentation-Related Denials",
   // ED drivers
   edThroughput: "Patient Throughput (LWBS Reduction)",
-  edScribe: "Scribe Cost Reduction",
   edRetention: "Physician Retention",
   edLevelOfService: "Level-of-Service Accuracy",
   edDenials: "Documentation-Related Denials",
@@ -315,7 +307,6 @@ const DRIVER_THEORIES: Record<string, string> = {
   denials: "Clear, complete documentation reduces claims denied for insufficient clinical rationale. Preventing denials eliminates rework costs and improves cash flow.",
   // ED drivers
   edThroughput: "Faster documentation means physicians can move through patients more efficiently, reducing wait times and LWBS (left without being seen) rates. Every patient who stays is revenue captured.",
-  edScribe: "Many EDs rely on scribes to keep physicians productive. Abridge can replace or reduce scribe needs, converting labor costs to a technology investment with better scalability.",
   edRetention: "ED physicians face some of the highest burnout rates in medicine. Documentation burden is a major contributor. Reducing this burden helps retain expensive-to-replace ED talent.",
   edLevelOfService: "ED visits are complex and fast-paced. Under-documentation is common, leading to under-coding. AI-assisted documentation captures the full clinical picture for accurate E/M levels.",
   edDenials: "ED claims face intense payer scrutiny. Complete, clear documentation at the point of care reduces denials for insufficient clinical rationale and medical necessity.",
@@ -438,12 +429,6 @@ export default function ModelBuilder({
       admissionPercent: 10,
       avgAdmissionRevenue: 15000,
     },
-    edScribe: {
-      hasScribes: true,
-      scribeFTEs: 12.5,
-      costPerFTE: 45000,
-      reductionLevel: "significant",
-    },
     edRetention: {
       edPhysicians: 25,
       turnoverRate: 8,
@@ -563,7 +548,6 @@ export default function ModelBuilder({
       denialReduction: "denials",
       // ED mappings - keep ED drivers as-is
       edThroughput: "edThroughput",
-      edScribe: "edScribe",
       edRetention: "edRetention",
       edLevelOfService: "edLevelOfService",
       edDenials: "edDenials",
@@ -752,13 +736,6 @@ export default function ModelBuilder({
         // Step 4: Total Value
         return Math.round(edVisitRevenue + admissionRevenue);
       }
-      case "edScribe": {
-        const { hasScribes, scribeFTEs, costPerFTE, reductionLevel } = driverInputs.edScribe;
-        if (!hasScribes) return 0;
-        const reductionPct = reductionLevel === "partial" ? 40 : reductionLevel === "significant" ? 60 : 80;
-        const ftesEliminated = scribeFTEs * (reductionPct / 100) * (utilizationRate / 100);
-        return Math.round(ftesEliminated * costPerFTE);
-      }
       case "edRetention": {
         const { edPhysicians, turnoverRate, burnoutAttribution, abridgeImpact, replacementCost } = driverInputs.edRetention;
         // Step 1: Baseline Turnover
@@ -897,7 +874,7 @@ export default function ModelBuilder({
   
   const driverResults = useMemo(() => {
     const results: Record<string, { name: string; value: number; category: "time" | "quality" }> = {};
-    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRetention", "nursingOvertime", "nursingAgency", "nursingRetention"];
+    const timeDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edRetention", "inpatientRetention", "nursingOvertime", "nursingAgency", "nursingRetention"];
     activeDrivers.forEach(id => {
       results[id] = {
         name: DRIVER_NAMES[id],
@@ -1013,13 +990,6 @@ export default function ModelBuilder({
             includeAdmissions: driverInputs.edThroughput.includeAdmissions,
             admissionPercent: driverInputs.edThroughput.admissionPercent,
             avgAdmissionRevenue: driverInputs.edThroughput.avgAdmissionRevenue,
-          };
-        case "edScribe":
-          return {
-            hasScribes: driverInputs.edScribe.hasScribes,
-            scribeFTEs: driverInputs.edScribe.scribeFTEs,
-            costPerFTE: driverInputs.edScribe.costPerFTE,
-            reductionLevel: driverInputs.edScribe.reductionLevel,
           };
         case "edRetention":
           return {
@@ -1164,8 +1134,6 @@ export default function ModelBuilder({
       // ED drivers
       case "edThroughput":
         return renderEdThroughputInputs();
-      case "edScribe":
-        return renderEdScribeInputs();
       case "edRetention":
         return renderEdRetentionInputs();
       case "edLevelOfService":

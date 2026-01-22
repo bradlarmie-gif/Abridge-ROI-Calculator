@@ -119,7 +119,6 @@ const LEVER_ICONS: Record<string, typeof Users> = {
   denialReduction: AlertTriangle,
   // ED drivers
   edThroughput: Zap,
-  edScribe: Users,
   edRetention: HeartPulse,
   edLevelOfService: BarChart3,
   edDenials: FileX,
@@ -151,7 +150,6 @@ const LEVER_KEY_METRICS: Record<string, string> = {
   denialReduction: "Documentation-related denials prevented",
   // ED drivers
   edThroughput: "Patients retained from LWBS",
-  edScribe: "Scribe FTEs reduced",
   edRetention: "Physician departures avoided",
   edLevelOfService: "wRVU capture improvement",
   edDenials: "Denials prevented",
@@ -184,7 +182,6 @@ const LEVER_CONTEXT_TAGS: Record<string, { icon: string; text: string; color: st
   hccCapture: { icon: "alert", text: "Only relevant with MA/risk volume", color: "orange" },
   // ED drivers
   edThroughput: { icon: "dollar", text: "Direct revenue impact—every LWBS is lost revenue", color: "amber" },
-  edScribe: { icon: "alert", text: "Only relevant if you currently use scribes", color: "orange" },
   edRetention: { icon: "clock", text: "Long-term—12+ months to see full impact", color: "slate" },
   edLevelOfService: { icon: "check", text: "Universal—ED visits are often under-documented", color: "green" },
   edDenials: { icon: "dollar", text: "ED claims face heavy payer scrutiny", color: "amber" },
@@ -208,7 +205,6 @@ const LEVER_VALUE_RANGES: Record<string, { min: number; max: number; perProvider
   denialReduction: { min: 75000, max: 200000, perProviders: 25 },
   // ED drivers
   edThroughput: { min: 150000, max: 350000, perProviders: 25 },
-  edScribe: { min: 200000, max: 500000, perProviders: 25 },
   edRetention: { min: 150000, max: 300000, perProviders: 25 },
   edLevelOfService: { min: 150000, max: 300000, perProviders: 25 },
   edDenials: { min: 200000, max: 450000, perProviders: 25 },

@@ -487,50 +487,6 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         caveat: "Some retained patients would have been admitted (~15%). Conservative model excludes admission revenue."
       },
       {
-        id: "scribe-reduction",
-        name: "Scribe Cost Reduction",
-        description: "Convert labor cost to technology investment",
-        whyItMatters: "Convert labor cost to technology investment",
-        referenceValue: 337500,
-        icon: Users,
-        lane: "time",
-        order: 2,
-        theory: "Many EDs rely on scribes to handle documentation burden. Abridge can reduce scribe needs or eliminate them entirely—freeing up significant labor budget.",
-        calculationSteps: [
-          {
-            stepNumber: 1,
-            stepLabel: "CURRENT SCRIBE INVESTMENT",
-            question: "What are you spending on scribes?",
-            inputs: [
-              { label: "Physicians × scribe FTE each", value: "25 × 0.5" },
-              { label: "Cost per FTE", value: "$45,000/year" }
-            ],
-            output: { label: "Annual cost", value: "$562,500" }
-          },
-          {
-            stepNumber: 2,
-            stepLabel: "SCRIBE REDUCTION",
-            question: "How many can Abridge replace?",
-            inputs: [
-              { label: "Current FTEs", value: "12.5" },
-              { label: "Reduction rate", value: "60%" }
-            ],
-            output: { label: "FTEs reduced", value: "7.5" }
-          },
-          {
-            stepNumber: 3,
-            stepLabel: "COST SAVINGS",
-            question: "What's the budget impact?",
-            inputs: [
-              { label: "FTEs reduced", value: "7.5" },
-              { label: "Cost per FTE", value: "$45,000" }
-            ],
-            output: { label: "Annual savings", value: "$337,500" }
-          }
-        ],
-        caveat: "Some organizations redeploy scribes rather than eliminate—still creates budget flexibility"
-      },
-      {
         id: "ed-retention",
         name: "Physician Retention",
         description: "Reduced ED burnout and turnover",

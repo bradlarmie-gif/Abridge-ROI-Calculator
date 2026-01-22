@@ -77,17 +77,6 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       keyMetric: "$150K-350K for 25 physicians",
     },
     {
-      id: "edScribe",
-      label: "Scribe Cost Reduction",
-      category: "time",
-      description:
-        "Convert scribe labor cost to technology investment.",
-      driverSummary: "Only relevant if you currently use scribes",
-      keyMetric: "$200K-500K depending on scribe count",
-      hasWarning: true,
-      warningText: "Only relevant if you currently use scribes",
-    },
-    {
       id: "edRetention",
       label: "Physician Retention",
       category: "time",
