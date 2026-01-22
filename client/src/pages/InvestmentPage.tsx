@@ -582,8 +582,8 @@ export default function InvestmentPage({
                       <div className="text-[13px] text-[#6B7280]">One-time setup and training costs</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[15px] font-semibold text-[#111827]">+$</span>
+                  <div className="flex items-center gap-1 px-3 py-1.5 bg-[#F3F4F6] rounded-lg">
+                    <span className="text-[15px] font-semibold text-[#6B7280]">+$</span>
                     <input
                       type="text"
                       value={implementationFee.toLocaleString()}
@@ -592,7 +592,7 @@ export default function InvestmentPage({
                         setImplementationFee(val);
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      className="w-20 text-[15px] font-semibold text-[#111827] bg-white border-b border-[#EA2C00]/80 hover:bg-[#FAFAFA] focus:outline-none focus:border-[#EA2C00] text-right"
+                      className="w-20 text-[15px] font-semibold text-[#111827] bg-transparent focus:outline-none text-right"
                       data-testid="input-implementation-fee"
                     />
                   </div>
