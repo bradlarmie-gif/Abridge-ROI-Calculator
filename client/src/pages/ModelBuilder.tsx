@@ -367,6 +367,13 @@ export default function ModelBuilder({
   
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
   const [reviewedDrivers, setReviewedDrivers] = useState<Set<string>>(new Set());
+  const [showFirstDriverGlow, setShowFirstDriverGlow] = useState(true);
+  
+  // Stop the glow animation after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setShowFirstDriverGlow(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
   
   const isEDSetting = selectedSettings.includes("ed");
   
@@ -1079,31 +1086,67 @@ export default function ModelBuilder({
     onComplete(results);
   };
   
-  const renderDriverAccordion = (driverId: string) => {
+  const renderDriverAccordion = (driverId: string, index: number = 0) => {
     const isExpanded = expandedDriver === driverId;
+    const isReviewed = reviewedDrivers.has(driverId);
     const Icon = DRIVER_ICONS[driverId] || Calculator;
     const value = driverResults[driverId]?.value || 0;
+    const isFirstDriver = index === 0;
+    const shouldGlow = isFirstDriver && showFirstDriverGlow && !isExpanded && !isReviewed;
     
     return (
-      <div key={driverId} className="border border-neutral-200 rounded-xl overflow-hidden bg-white">
+      <div 
+        key={driverId} 
+        className={`border rounded-xl overflow-visible bg-white transition-all duration-200 cursor-pointer group ${
+          isExpanded 
+            ? 'border-[#EA2C00] shadow-md' 
+            : 'border-neutral-200 hover:border-neutral-300 hover:shadow-md hover:-translate-y-0.5'
+        } ${shouldGlow ? 'animate-[subtle-glow_2s_ease-in-out]' : ''}`}
+        style={shouldGlow ? {
+          animation: 'subtle-glow 2s ease-in-out'
+        } : undefined}
+      >
         <button
-          onClick={() => setExpandedDriver(isExpanded ? null : driverId)}
-          className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 transition-colors"
+          onClick={() => {
+            setExpandedDriver(isExpanded ? null : driverId);
+            if (!isReviewed) {
+              setReviewedDrivers(prev => new Set(Array.from(prev).concat(driverId)));
+            }
+          }}
+          className="w-full flex items-center justify-between p-4 transition-colors"
           data-testid={`accordion-${driverId}`}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-              <Icon className="w-5 h-5 text-neutral-600" />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+              isExpanded ? 'bg-[rgba(234,44,0,0.1)]' : 'bg-neutral-100 group-hover:bg-neutral-200'
+            }`}>
+              <Icon className={`w-5 h-5 ${isExpanded ? 'text-[#EA2C00]' : 'text-neutral-600'}`} />
             </div>
-            <span className="font-medium text-[#111827]">{DRIVER_NAMES[driverId]}</span>
+            <div className="flex flex-col items-start">
+              <span className="font-medium text-[#111827]">{DRIVER_NAMES[driverId]}</span>
+              {isReviewed && !isExpanded && (
+                <span className="text-xs text-emerald-600 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Customized
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="font-mono font-semibold text-emerald-600 text-lg">{formatCurrency(value)}</span>
-            {isExpanded ? (
-              <ChevronUp className="w-5 h-5 text-neutral-400" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-400" />
+          <div className="flex items-center gap-3">
+            {!isExpanded && !isReviewed && (
+              <span className="text-xs text-[#9CA3AF] opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
+                Click to customize
+              </span>
             )}
+            <span className="font-mono font-semibold text-emerald-600 text-lg">{formatCurrency(value)}</span>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+              isExpanded ? 'bg-[#EA2C00]' : 'bg-neutral-100 group-hover:bg-neutral-200'
+            }`}>
+              {isExpanded ? (
+                <ChevronUp className="w-4 h-4 text-white" />
+              ) : (
+                <ChevronDown className={`w-4 h-4 ${!isReviewed ? 'text-[#EA2C00] animate-bounce' : 'text-neutral-500'}`} style={!isReviewed ? { animationDuration: '2s' } : undefined} />
+              )}
+            </div>
           </div>
         </button>
         
@@ -6089,13 +6132,39 @@ export default function ModelBuilder({
                 </div>
               )}
               
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Value Drivers</h2>
-                <p className="text-sm text-[#6B7280]">Expand each driver to customize the calculation</p>
+              {/* Instructional Callout */}
+              <div className="flex items-start gap-3 bg-gradient-to-r from-[#EFF6FF] to-[#DBEAFE] border-l-4 border-[#3B82F6] rounded-lg p-4 mb-6">
+                <Lightbulb className="w-5 h-5 text-[#3B82F6] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-[#1E40AF] leading-relaxed">
+                    <span className="font-semibold">Click on each driver below</span> to expand and customize the assumptions. 
+                    Your total value updates automatically as you make changes.
+                  </p>
+                </div>
+              </div>
+              
+              {/* Progress Indicator */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-[#111827] mb-1">Your Value Drivers</h2>
+                  <p className="text-sm text-[#6B7280]">Expand each driver to customize the calculation</p>
+                </div>
+                <div className={`text-sm flex items-center gap-2 ${reviewedDrivers.size === activeDrivers.length ? 'text-emerald-600 font-semibold' : 'text-[#6B7280]'}`}>
+                  {reviewedDrivers.size === activeDrivers.length ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      All drivers reviewed
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-mono">{reviewedDrivers.size}</span> of <span className="font-mono">{activeDrivers.length}</span> customized
+                    </>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-4">
-                {activeDrivers.map(driverId => renderDriverAccordion(driverId))}
+                {activeDrivers.map((driverId, index) => renderDriverAccordion(driverId, index))}
               </div>
               
               {/* ED Downstream Value Callout - appears after ED drivers */}

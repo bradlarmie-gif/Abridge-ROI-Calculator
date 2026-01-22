@@ -1,0 +1,183 @@
+dd visual cues and guidance to the Value Drivers page to make it more intuitive:
+
+Add an instructional callout at the top (right below the subtitle):
+CopyPosition: Between the subtitle and "YOUR BASELINE" section
+
+Style: Light blue background box with info icon
+
+Content:
+"💡 Click on each driver below to expand and customize the assumptions. 
+Your total value updates automatically as you make changes."
+
+Design: 
+- Background: #EFF6FF (light blue)
+- Border-left: 3px solid #3B82F6 (blue accent)
+- Padding: 16px 20px
+- Border-radius: 8px
+- Font-size: 14px
+- Add a subtle pulsing animation on first page load (pulse once, then stop)
+
+Add visual indicators on the collapsed driver cards:
+CopyEach collapsed driver should show:
+- A small "Tap to customize >" text on the right side in gray
+- OR a subtle chevron-down icon that animates slightly (subtle bounce)
+- On hover: Card should lift slightly (2px translateY) and show a subtle shadow
+- Change cursor to pointer to indicate clickability
+
+Add a subtle animation on first page load:
+CopyWhen page loads:
+- The first driver card (Patient Access) should have a subtle glow effect for 2 seconds
+- Then fade back to normal
+- This draws attention to "click here first"
+
+CSS:
+@keyframes subtle-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(234, 44, 0, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(234, 44, 0, 0.1); }
+}
+
+.driver-card:first-child {
+  animation: subtle-glow 2s ease-in-out;
+}
+
+Add a progress indicator:
+CopyAbove or below the Live Model card, add:
+
+"Customized: 0 of 3 drivers"
+
+- Updates to "1 of 3" when user expands/edits first driver
+- Changes to green checkmark when all 3 are reviewed
+- Shows "✓ All drivers reviewed" when complete
+
+Make the chevron/arrow more prominent:
+CopyOn each collapsed driver card:
+- Show a downward chevron icon on the right
+- Make it slightly larger (20px)
+- Color: #EA2C00 (Abridge red) instead of gray
+- Add a subtle bounce animation every 3 seconds for unopened drivers
+
+Add empty state messaging:
+CopyIf user hasn't clicked on any driver after 5 seconds, show a tooltip:
+
+Position: Pointing to the first driver card
+Text: "Start here - click to customize your assumptions"
+Style: Small tooltip with arrow pointing down
+Auto-dismiss after 3 seconds or when user clicks anywhere
+
+
+
+VISUAL DESIGN:
+The callout box should look like this:
+Copy┌────────────────────────────────────────────────────────────┐
+│ 💡  Click on each driver below to expand and customize     │
+│     the assumptions. Your total value updates automatically │
+│     as you make changes.                                    │
+└────────────────────────────────────────────────────────────┘
+     ↓ (subtle visual flow indicator)
+
+YOUR BASELINE
+26,000 eligible encounters per year
+...
+
+Your Value Drivers
+Expand each driver to customize the calculation
+
+┌──────────────────────────────────────────────────┐
+│  👥  Patient Access              $65,000    ᐯ   │  ← Add "Click to expand" hint
+└──────────────────────────────────────────────────┘
+
+CSS/STYLING:
+cssCopy/* Instructional callout */
+.driver-instructions {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border-left: 4px solid #3B82F6;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: #1E40AF;
+  line-height: 1.6;
+}
+
+/* Make collapsed drivers more clickable */
+.driver-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.driver-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.driver-card::after {
+  content: 'Click to expand >';
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #9CA3AF;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.driver-card:not(.expanded):hover::after {
+  opacity: 1;
+}
+
+/* First driver glow on load */
+@keyframes first-driver-glow {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(234, 44, 0, 0);
+  }
+  50% { 
+    box-shadow: 0 0 0 4px rgba(234, 44, 0, 0.15);
+  }
+}
+
+.driver-card:first-of-type {
+  animation: first-driver-glow 2s ease-in-out 0.5s;
+}
+
+/* Chevron bounce for unopened drivers */
+@keyframes chevron-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+.driver-card:not(.expanded) .chevron-icon {
+  animation: chevron-bounce 2s ease-in-out infinite;
+  animation-delay: 3s; /* Start after 3 seconds */
+}
+
+/* Progress indicator */
+.driver-progress {
+  font-size: 13px;
+  color: #6B7280;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.driver-progress.complete {
+  color: #10B981;
+  font-weight: 600;
+}
+
+.driver-progress.complete::before {
+  content: '✓';
+  color: #10B981;
+  font-size: 16px;
+}
+
+ALTERNATIVE: TOOLTIP APPROACH
+If you want something more subtle, add a small pulsing info icon next to "Your Value Drivers" that shows a tooltip on hover:
+CopyYour Value Drivers  (i)  ← Pulsing blue dot
+                     ↓
+     [Tooltip: "Click each driver to customize assumptions"]

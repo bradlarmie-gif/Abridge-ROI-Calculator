@@ -633,3 +633,13 @@
     padding: 24px;
   }
 }
+
+/* Value Driver card animations */
+@keyframes subtle-glow {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(234, 44, 0, 0);
+  }
+  50% { 
+    box-shadow: 0 0 0 6px rgba(234, 44, 0, 0.15);
+  }
+}
