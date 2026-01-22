@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ArrowLeft, Share2, FileText, Mail, Link, Target, Lightbulb, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, ReferenceDot } from "recharts";
+import { useToast } from "@/hooks/use-toast";
 import type { DeploymentData, MetricType, MetricsData } from "./ExpandFlow";
 
 interface ExpandJourneyExpansionProps {
@@ -146,6 +147,146 @@ export default function ExpandJourneyExpansion({
   const currentValue = calculatedROI.netValue;
   const targetValue = hasValidExpansion ? chartData[chartData.length - 1].value : 0;
   const expansionValue = hasValidExpansion ? targetValue - currentValue : 0;
+
+  const { toast } = useToast();
+
+  const handleExportPDF = useCallback(() => {
+    const formatCurrency = (val: number) => 
+      val >= 1000000 ? `$${(val / 1000000).toFixed(1)}M` : `$${val.toLocaleString()}`;
+
+    const pdfContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Abridge ROI - Expansion Report</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #111827; padding: 40px; }
+          .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid #E5E7EB; }
+          .logo { font-size: 24px; font-weight: bold; color: #EA2C00; }
+          .date { color: #6B7280; font-size: 12px; }
+          h1 { font-size: 28px; margin-bottom: 8px; }
+          .subtitle { color: #6B7280; margin-bottom: 30px; }
+          .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+          .stat-card { background: #F9FAFB; border-radius: 12px; padding: 20px; text-align: center; }
+          .stat-card.dark { background: #1e293b; color: white; }
+          .stat-card.green { background: #ECFDF5; border: 1px solid #10B981; }
+          .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6B7280; margin-bottom: 8px; }
+          .stat-card.dark .stat-label { color: #9CA3AF; }
+          .stat-card.green .stat-label { color: #059669; }
+          .stat-value { font-size: 28px; font-weight: bold; }
+          .stat-card.green .stat-value { color: #059669; }
+          .section { margin-bottom: 30px; }
+          .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #E5E7EB; }
+          .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+          .comparison-card { padding: 20px; border-radius: 12px; border: 1px solid #E5E7EB; }
+          .comparison-card.current { border-left: 4px solid #f97316; }
+          .comparison-card.target { border-left: 4px solid #10B981; background: #ECFDF5; }
+          .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #E5E7EB; }
+          .row:last-child { border-bottom: none; }
+          .row-label { color: #6B7280; }
+          .row-value { font-weight: 600; }
+          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #E5E7EB; text-align: center; color: #9CA3AF; font-size: 11px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">ABRIDGE</div>
+          <div class="date">Generated ${new Date().toLocaleDateString()}</div>
+        </div>
+        
+        <h1>Your Growth Trajectory</h1>
+        <p class="subtitle">Based on your proven results</p>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Current Net Value</div>
+            <div class="stat-value">${formatCurrency(currentValue)}</div>
+          </div>
+          <div class="stat-card dark">
+            <div class="stat-label">Return on Investment</div>
+            <div class="stat-value">${calculatedROI.roi.toFixed(1)}x</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Expansion Value</div>
+            <div class="stat-value">${hasValidExpansion ? '+' + formatCurrency(expansionValue) : '$0'}</div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Expansion Comparison</div>
+          <div class="comparison">
+            <div class="comparison-card current">
+              <h3 style="font-size: 14px; margin-bottom: 16px;">CURRENT STATE</h3>
+              <div class="row">
+                <span class="row-label">Providers</span>
+                <span class="row-value">${providers}</span>
+              </div>
+              <div class="row">
+                <span class="row-label">Utilization</span>
+                <span class="row-value">${utilizationRate}%</span>
+              </div>
+              <div class="row">
+                <span class="row-label">Annual Value</span>
+                <span class="row-value" style="color: #059669;">${formatCurrency(currentValue)}</span>
+              </div>
+            </div>
+            ${hasValidExpansion ? `
+            <div class="comparison-card target">
+              <h3 style="font-size: 14px; margin-bottom: 16px;">EXPANSION TARGET</h3>
+              <div class="row">
+                <span class="row-label">Providers</span>
+                <span class="row-value">${expansionTarget.providers}</span>
+              </div>
+              <div class="row">
+                <span class="row-label">Utilization</span>
+                <span class="row-value">${expansionTarget.utilization}%</span>
+              </div>
+              <div class="row">
+                <span class="row-label">Projected Value</span>
+                <span class="row-value" style="color: #059669;">${formatCurrency(targetValue)}</span>
+              </div>
+            </div>
+            ` : `
+            <div class="comparison-card">
+              <p style="color: #6B7280; text-align: center; padding: 40px 0;">Enter expansion targets to see projections</p>
+            </div>
+            `}
+          </div>
+        </div>
+        
+        ${hasValidExpansion ? `
+        <div class="section">
+          <div class="section-title">How We Calculated This</div>
+          <ul style="color: #6B7280; padding-left: 20px; line-height: 1.8;">
+            <li>Value per provider: <strong style="color: #111827;">${formatCurrency(Math.round(valuePerProvider))}</strong></li>
+            <li>Scales with providers + utilization improvement</li>
+            <li>Utilization: ${utilizationRate}% → ${expansionTarget.utilization}% as adoption matures</li>
+          </ul>
+        </div>
+        ` : ''}
+        
+        <div class="footer">
+          <p>Generated by Abridge ROI Calculator • ${new Date().toLocaleDateString()}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(pdfContent);
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+      }, 250);
+      
+      toast({
+        title: "PDF Ready",
+        description: "Your expansion report is ready to print or save as PDF.",
+      });
+    }
+  }, [currentValue, calculatedROI.roi, hasValidExpansion, expansionValue, providers, utilizationRate, expansionTarget, targetValue, valuePerProvider, toast]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
@@ -449,7 +590,7 @@ export default function ExpandJourneyExpansion({
 
         {/* Export Actions */}
         <div className="flex items-center justify-center gap-4">
-          <Button variant="outline" className="gap-2" data-testid="button-export-pdf">
+          <Button variant="outline" className="gap-2" onClick={handleExportPDF} data-testid="button-export-pdf">
             <FileText className="w-4 h-4" />
             Export as PDF
           </Button>
