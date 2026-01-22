@@ -49,28 +49,24 @@ const settingConfig = {
     unitName: "provider",
     unitNamePlural: "providers",
     defaultPrice: 200,
-    priceRange: "$150-$250",
     pricingLabel: "Cost per provider"
   },
   ed: {
     unitName: "provider",
     unitNamePlural: "providers", 
-    defaultPrice: 175,
-    priceRange: "$125-$225",
+    defaultPrice: 200,
     pricingLabel: "Cost per provider"
   },
   inpatient: {
     unitName: "provider",
     unitNamePlural: "providers",
-    defaultPrice: 175,
-    priceRange: "$125-$225",
+    defaultPrice: 200,
     pricingLabel: "Cost per provider"
   },
   nursing: {
     unitName: "staffed bed",
     unitNamePlural: "staffed beds",
     defaultPrice: 200,
-    priceRange: "$150-$250",
     pricingLabel: "Cost per staffed bed"
   }
 };
