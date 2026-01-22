@@ -490,7 +490,7 @@ export default function ModelBuilder({
     nursingOvertime: {
       otHoursPerWeek: 4,
       weeksPerYear: 50,
-      docRelatedPct: 40,
+      docRelatedPct: 33,
       reductionRate: 50,
       baseHourlyRate: 45,
     },
@@ -5059,7 +5059,7 @@ export default function ModelBuilder({
               </div>
             </div>
           </div>
-          <p className="text-xs text-[#6B7280] mt-2">Not all OT is documentation. ~40% is end-of-shift charting catch-up that real-time ambient documentation can address.</p>
+          <p className="text-xs text-[#6B7280] mt-2">Not all OT is documentation. ~33% is end-of-shift charting catch-up that real-time ambient documentation can address.</p>
         </div>
 
         <StepDivider />
