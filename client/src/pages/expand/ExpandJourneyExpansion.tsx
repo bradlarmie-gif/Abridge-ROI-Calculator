@@ -100,19 +100,39 @@ export default function ExpandJourneyExpansion({
   // Value per provider (from their actual data)
   const valuePerProvider = calculatedROI.totalValue / providers;
 
+  // Generate smart X-axis ticks
+  const generateXAxisTicks = useCallback((start: number, end: number, count: number = 6) => {
+    const ticks = [];
+    const step = (end - start) / (count - 1);
+    for (let i = 0; i < count; i++) {
+      ticks.push(Math.round(start + step * i));
+    }
+    return ticks;
+  }, []);
+
   // Generate curve data points - only if valid expansion data
   const chartData = useMemo(() => {
     const points = [];
     const currentProviders = providers;
     
-    // If no valid expansion, just return current point
+    // If no valid expansion, create a range to show context
     if (!hasValidExpansion) {
-      return [{
-        providers: currentProviders,
-        value: calculatedROI.netValue,
-        isCurrent: true,
-        isTarget: false,
-      }];
+      // Default range: current to 2.5x current
+      const defaultMax = Math.round(currentProviders * 2.5);
+      const steps = 20;
+      
+      for (let i = 0; i <= steps; i++) {
+        const progress = i / steps;
+        const providerCount = Math.round(currentProviders + (defaultMax - currentProviders) * progress);
+        points.push({
+          providers: providerCount,
+          value: i === 0 ? calculatedROI.netValue : undefined, // Only current point has value
+          linearValue: undefined,
+          isCurrent: i === 0,
+          isTarget: false,
+        });
+      }
+      return points;
     }
 
     const targetProviders = expansionTarget.providers as number;
@@ -132,10 +152,14 @@ export default function ExpandJourneyExpansion({
       // Value scales with providers and utilization improvement
       const utilizationMultiplier = utilization / (utilizationRate / 100);
       const value = valuePerProvider * providerCount * utilizationMultiplier;
+      
+      // Linear projection (simpler growth, no utilization improvement)
+      const linearValue = valuePerProvider * providerCount;
 
       points.push({
         providers: providerCount,
         value: Math.round(value),
+        linearValue: Math.round(linearValue),
         isCurrent: i === 0,
         isTarget: i === steps,
       });
@@ -144,8 +168,29 @@ export default function ExpandJourneyExpansion({
     return points;
   }, [providers, expansionTarget, valuePerProvider, utilizationRate, hasValidExpansion, calculatedROI.netValue]);
 
+  // Calculate X-axis domain and ticks
+  const xAxisConfig = useMemo(() => {
+    const start = providers;
+    const end = hasValidExpansion 
+      ? (expansionTarget.providers as number)
+      : Math.round(providers * 2.5);
+    
+    const ticks = generateXAxisTicks(start, end, 6);
+    return { start, end, ticks };
+  }, [providers, hasValidExpansion, expansionTarget.providers, generateXAxisTicks]);
+
+  // Calculate Y-axis domain with padding
+  const yAxisConfig = useMemo(() => {
+    const maxValue = hasValidExpansion 
+      ? chartData[chartData.length - 1].value || 0
+      : calculatedROI.netValue;
+    const minValue = 0;
+    const maxWithPadding = Math.round(maxValue * 1.1); // 10% padding at top
+    return { min: minValue, max: maxWithPadding };
+  }, [hasValidExpansion, chartData, calculatedROI.netValue]);
+
   const currentValue = calculatedROI.netValue;
-  const targetValue = hasValidExpansion ? chartData[chartData.length - 1].value : 0;
+  const targetValue = hasValidExpansion ? (chartData[chartData.length - 1].value ?? 0) : 0;
   const expansionValue = hasValidExpansion ? targetValue - currentValue : 0;
 
   const { toast } = useToast();
@@ -384,9 +429,13 @@ export default function ExpandJourneyExpansion({
 
                 <XAxis
                   dataKey="providers"
+                  type="number"
+                  domain={[xAxisConfig.start, xAxisConfig.end]}
+                  ticks={xAxisConfig.ticks}
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#64748b", fontSize: 12 }}
+                  tickFormatter={(v) => Math.round(v).toString()}
                   label={{
                     value: "PROVIDERS",
                     position: "bottom",
@@ -400,10 +449,24 @@ export default function ExpandJourneyExpansion({
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#64748b", fontSize: 12 }}
-                  tickFormatter={(v) => `$${(v / 1000000).toFixed(1)}M`}
+                  domain={[0, yAxisConfig.max]}
+                  tickFormatter={(v) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : `$${Math.round(v / 1000)}K`}
                   width={70}
                 />
 
+                {/* Linear projection line - dashed, only when expansion entered */}
+                {hasValidExpansion && (
+                  <Area
+                    type="monotone"
+                    dataKey="linearValue"
+                    stroke="#9CA3AF"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    fill="none"
+                  />
+                )}
+
+                {/* Main growth curve - only when expansion entered */}
                 {hasValidExpansion && (
                   <Area
                     type="monotone"
@@ -411,13 +474,15 @@ export default function ExpandJourneyExpansion({
                     stroke="#059669"
                     strokeWidth={3}
                     fill="url(#journeyGradient)"
+                    animationDuration={800}
+                    animationEasing="ease-out"
                   />
                 )}
 
                 {/* Current marker - always visible */}
                 <ReferenceDot
                   x={chartData[0].providers}
-                  y={chartData[0].value}
+                  y={chartData[0].value ?? currentValue}
                   r={10}
                   fill="#f97316"
                   stroke="white"
@@ -425,10 +490,10 @@ export default function ExpandJourneyExpansion({
                 />
 
                 {/* Target marker - only when valid expansion */}
-                {hasValidExpansion && (
+                {hasValidExpansion && chartData[chartData.length - 1].value !== undefined && (
                   <ReferenceDot
                     x={chartData[chartData.length - 1].providers}
-                    y={chartData[chartData.length - 1].value}
+                    y={chartData[chartData.length - 1].value!}
                     r={10}
                     fill="#059669"
                     stroke="white"
@@ -440,16 +505,26 @@ export default function ExpandJourneyExpansion({
           </div>
 
           {/* Chart Legend */}
-          <div className="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-neutral-100">
+          <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-neutral-100 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-[#f97316]" />
-              <span className="text-sm text-[#6B7280]">You are here ({providers} providers)</span>
+              <span className="text-sm text-[#6B7280]">Pilot (Today)</span>
             </div>
             {hasValidExpansion && (
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-emerald-600" />
-                <span className="text-sm text-[#6B7280]">Your expansion target ({expansionTarget.providers} providers)</span>
-              </div>
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-0.5 bg-emerald-600" />
+                  <span className="text-sm text-[#6B7280]">Actual value (with compounding)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-0.5 border-t-2 border-dashed border-[#9CA3AF]" />
+                  <span className="text-sm text-[#6B7280]">Linear projection</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-emerald-600" />
+                  <span className="text-sm text-[#6B7280]">Full Scale</span>
+                </div>
+              </>
             )}
           </div>
         </div>

@@ -1,0 +1,172 @@
+Fix the expansion chart X-axis and initial state:
+
+X-axis labels should be smart/dynamic, not showing every number:
+
+Show only 5-7 evenly spaced labels on X-axis
+Calculate: Start (current providers), 25%, 50%, 75%, End (expansion target)
+Example: If current is 40 and expansion is 200, show: 40, 80, 120, 160, 200
+Round to clean numbers (no decimals)
+
+
+Initial state (before user enters expansion numbers):
+CopyChart should show:
+- Only the orange dot at current position (40 providers, $251K)
+- X-axis from 0 to ~100 (2.5x current providers as default range)
+- Gray overlay on chart with text: "Enter expansion targets below to model growth"
+- NO green line, NO green dot
+- Y-axis should auto-scale based on current value
+
+After user enters expansion numbers:
+CopyChart animates to show:
+- Orange dot (current state) stays in place
+- Green line draws from orange dot to green dot (0.8s animation)
+- Green dot appears at expansion target
+- X-axis re-scales to fit both points with padding
+- Y-axis re-scales to fit highest value with 10% padding at top
+- Dashed line appears below showing "linear projection" (slower growth)
+
+Legend should be dynamic:
+
+BEFORE expansion entered: Only show "Pilot (Today)"
+AFTER expansion entered: Show all 3 items (Pilot, Actual value with compounding, Linear projection, Full Scale)
+
+
+X-axis label formatting:
+javascriptCopy// Smart X-axis labels
+function generateXAxisLabels(start, end, count = 6) {
+  const labels = [];
+  const step = (end - start) / (count - 1);
+  
+  for (let i = 0; i < count; i++) {
+    const value = Math.round(start + (step * i));
+    labels.push(value);
+  }
+  
+  return labels;
+}
+
+// Example output for 40 → 200:
+// [40, 72, 104, 136, 168, 200]
+
+Chart dimensions should adjust:
+
+If no expansion: Chart should be more compact, maybe 60% width
+With expansion: Chart expands to full width with animation
+
+
+
+
+BETTER UX PATTERN:
+Instead of the current two-box layout, consider this:
+CopyYOUR PILOT                          YOUR OPPORTUNITY
+Current state                       [LOCKED until you enter data]
+─────────────────                   ─────────────────────────────
+Providers: 40                       ┌─────────────────────────┐
+Encounters/provider: 1500           │                         │
+Current utilization: 65%            │   📊  Enter expansion   │
+                                    │   targets to unlock     │
+Annual Value: $251,625              │   growth projection     │
+                                    │                         │
+                                    └─────────────────────────┘
+
+[Chart shows only orange dot with gray overlay]
+After entering expansion (e.g., 150 providers, 75%):
+CopyYOUR PILOT                          YOUR OPPORTUNITY
+Current state                       Full-scale potential
+─────────────────                   ─────────────────────────
+Providers: 40                       Providers: 150 ✓
+Encounters/provider: 1500           Target utilization: 75% ✓
+Current utilization: 65%            
+                                    Projected Value: $1.2M
+Annual Value: $251,625              
+                                    EXPANSION VALUE
+                                    +$948K
+                                    (3.8× your pilot)
+
+[Chart animates in showing growth curve]
+
+SPECIFIC FIX FOR X-AXIS:
+javascriptCopy// Current (broken):
+xAxis: {
+  categories: Array.from({length: 1000}, (_, i) => i + 40)
+  // This creates [40, 41, 42, 43... 1040] 🤦
+}
+
+// Fixed:
+xAxis: {
+  min: currentProviders,
+  max: expansionProviders || currentProviders * 2.5,
+  tickAmount: 6, // Show only 6 labels
+  labels: {
+    formatter: function(val) {
+      return Math.round(val); // Clean integers only
+    }
+  }
+}
+
+CSS FOR "LOCKED" STATE:
+cssCopy.opportunity-box.locked {
+  background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+  border: 2px dashed #E5E7EB;
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.locked-message {
+  text-align: center;
+  color: #9CA3AF;
+}
+
+.locked-message svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.opportunity-box.unlocked {
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+  border: 2px solid #10B981;
+  animation: unlock 0.5s ease-out;
+}
+
+@keyframes unlock {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+FINAL INSTRUCTION FOR REPLIT:
+Fix the expansion chart:
+
+Remove all pre-populated expansion values
+Show only current state (orange dot) on chart initially
+X-axis should show 5-6 evenly spaced labels, not every number
+Add gray overlay on chart with text: "Enter expansion targets below to see projection"
+When user enters expansion numbers, animate the green line and dot appearing
+X-axis should dynamically re-scale to show start → end with clean intervals
+Legend should only show items relevant to current state (hide "Full Scale" until expansion entered)
+
+X-axis calculation:
+
+Start: Current providers (40)
+End: Expansion target (or 100 if not entered yet)
+Labels: 5-6 evenly spaced points between start and end
+Format: Round to integers, no decimals
+
+Animation sequence when expansion entered:
+
+Chart re-scales X and Y axes (0.3s)
+Green line draws from orange dot to green dot (0.8s, ease-out)
+Green dot appears with subtle pulse (0.3s)
+Dashed "linear projection" line fades in below (0.5s, 0.3s delay)
+
+This will fix the axis crowding and make the expansion feel like an "unlock" moment.
