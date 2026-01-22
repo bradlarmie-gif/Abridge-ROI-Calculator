@@ -57,7 +57,7 @@ export default function BaselineSetup({
   // State for provider/encounter inputs - start empty unless returning with data
   const [providers, setProviders] = useState<number | "">(initialBaseline?.providers || "");
   const [encounters, setEncounters] = useState<number | "">(initialBaseline?.encounters || "");
-  const [utilizationRate, setUtilizationRate] = useState(initialBaseline?.utilizationRate || (isEDSetting ? 70 : isInpatientSetting ? 65 : 65));
+  const [utilizationRate, setUtilizationRate] = useState(initialBaseline?.utilizationRate || 65);
 
   // Nursing-specific state
   const [staffedBeds, setStaffedBeds] = useState(initialBaseline?.nursingStaffedBeds || "");
