@@ -113,14 +113,12 @@ export default function BaselineSetup({
     return "encounters";
   };
 
-  // Utilization options by setting
-  const utilizationOptions = isEDSetting 
-    ? [{ value: 55, label: "Conservative" }, { value: 70, label: "Typical" }, { value: 85, label: "Aggressive" }]
-    : isInpatientSetting 
-      ? [{ value: 50, label: "Conservative" }, { value: 65, label: "Typical" }, { value: 80, label: "Aggressive" }]
-      : isNursingSetting
-        ? [{ value: 45, label: "Conservative" }, { value: 60, label: "Typical" }, { value: 75, label: "Aggressive" }]
-        : [{ value: 50, label: "Conservative" }, { value: 65, label: "Typical" }, { value: 80, label: "Aggressive" }];
+  // Utilization options - consistent across all settings
+  const utilizationOptions = [
+    { value: 50, label: "Conservative" }, 
+    { value: 65, label: "Typical" }, 
+    { value: 80, label: "Aggressive" }
+  ];
 
   const typicalUtilization = utilizationOptions[1].value;
 
