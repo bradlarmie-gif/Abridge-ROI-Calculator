@@ -387,7 +387,7 @@ export default function ModelBuilder({
     },
     patientAccess: {
       timeSavedPerEncounter: 2.5,      // 2.5 min saved per encounter
-      accessAllocation: 33,            // 33% of saved time → access potential
+      accessAllocation: 25,            // 25% of saved time → access potential
       conversionRate: 60,              // 60% of access time → actual visits
       timePerVisit: 30,                // 30 min per visit
       revenuePerVisit: 200,            // $200 blended reimbursement
@@ -1661,7 +1661,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mt-2">
-            We assume saved time splits three ways: 1/3 quality of life, 1/3 access, 1/3 cost reduction
+            We assume saved time splits: 1/2 quality of life, 1/4 access, 1/4 cost reduction
           </p>
         </div>
 
