@@ -531,7 +531,7 @@ export default function ModelBuilder({
     nursingRetention: {
       turnoverRate: 18,          // 18% annual turnover
       burnoutAttribution: 50,    // 50% of turnover is burnout-related
-      abridgeImpact: 20,         // 20% of burnout turnover prevented
+      abridgeImpact: 15,         // 15% of burnout turnover prevented
       replacementCost: 50000,    // $50K replacement cost
     },
     nursingSurvey: {
@@ -5975,7 +5975,7 @@ export default function ModelBuilder({
               </div>
             </div>
           </div>
-          <p className="text-xs text-[#6B7280] mt-2">Documentation is ONE burnout driver for nurses (others: ratios, acuity, schedules). We use 20% — lower than physicians because nursing burnout is more multifactorial.</p>
+          <p className="text-xs text-[#6B7280] mt-2">Documentation is ONE burnout driver for nurses (others: ratios, acuity, schedules). We use 15% — lower than physicians because nursing burnout is more multifactorial.</p>
         </div>
 
         <StepDivider />
