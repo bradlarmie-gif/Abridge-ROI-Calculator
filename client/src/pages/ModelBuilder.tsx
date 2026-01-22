@@ -382,7 +382,7 @@ export default function ModelBuilder({
       locumProviders: 2,             // 2 locum providers
       locumHoursPerWeek: 40,         // 40 hrs/week per locum
       locumWeeksPerYear: 30,         // 30 weeks of coverage
-      locumConversionRate: 33,       // 33% reduction rate
+      locumConversionRate: 50,       // 50% reduction rate
       locumHourlyRate: 275,          // $275/hr locum cost
     },
     patientAccess: {
@@ -404,7 +404,7 @@ export default function ModelBuilder({
       conversionFactor: 33,
     },
     hcc: {
-      riskContractPercent: 25,
+      riskContractPercent: 15,
       conditionsPerVisit: 2.0,
       documentationGap: 20,
       hccEligiblePercent: 35,
