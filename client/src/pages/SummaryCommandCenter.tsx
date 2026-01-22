@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   ArrowLeft,
   Pencil,
@@ -29,6 +29,7 @@ import { GlobalHeader } from "@/components/GlobalHeader";
 import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
+import { generateSummaryPDF, type SummaryPDFData } from "@/lib/pdf-generator";
 import {
   ComposedChart,
   Area,
@@ -251,6 +252,57 @@ export default function SummaryCommandCenter({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const handleExportPdf = useCallback(() => {
+    const pdfData: SummaryPDFData = {
+      setting: CARE_SETTING_LABELS[activeSetting],
+      unitName: config.unitName,
+      unitNamePlural: config.unitNamePlural,
+      providers: pilotUnits,
+      encounters: pilotUnits * encountersPerUnit,
+      utilizationRate: pilotUtilization,
+      totalValue: totalAnnualValue,
+      annualInvestment: annualInvestment,
+      netGain: netValue,
+      roi: roiMultiple,
+      costPerUnit: pricePerUnit,
+      valueBreakdown: valueBreakdown.map((d) => ({
+        name: d.name,
+        value: d.value,
+        category: d.category,
+      })),
+      laborValue,
+      revenueValue,
+      laborPercent,
+      revenuePercent,
+      year1,
+      year2,
+      year3,
+      threeYearNet,
+    };
+
+    generateSummaryPDF(pdfData);
+  }, [
+    activeSetting,
+    config,
+    pilotUnits,
+    encountersPerUnit,
+    pilotUtilization,
+    totalAnnualValue,
+    annualInvestment,
+    netValue,
+    roiMultiple,
+    pricePerUnit,
+    valueBreakdown,
+    laborValue,
+    revenueValue,
+    laborPercent,
+    revenuePercent,
+    year1,
+    year2,
+    year3,
+    threeYearNet,
+  ]);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
@@ -892,7 +944,12 @@ export default function SummaryCommandCenter({
           </Button>
           
           <div className="flex gap-3 w-full sm:w-auto">
-            <Button variant="outline" className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" data-testid="button-export-pdf">
+            <Button 
+              variant="outline" 
+              className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" 
+              onClick={handleExportPdf}
+              data-testid="button-export-pdf"
+            >
               <FileText className="w-4 h-4" />
               Export PDF
             </Button>

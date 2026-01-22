@@ -1289,3 +1289,492 @@ class PdfGenerator {
 export function createPdfGenerator(): PdfGenerator {
   return new PdfGenerator();
 }
+
+// ================================================================
+// SIMPLE SUMMARY PDF EXPORT
+// ================================================================
+
+export interface SummaryPDFData {
+  setting: string;
+  unitName: string;
+  unitNamePlural: string;
+  providers: number;
+  encounters: number;
+  utilizationRate: number;
+  totalValue: number;
+  annualInvestment: number;
+  netGain: number;
+  roi: number;
+  costPerUnit: number;
+  valueBreakdown: { name: string; value: number; category: 'labor' | 'revenue' }[];
+  laborValue: number;
+  revenueValue: number;
+  laborPercent: number;
+  revenuePercent: number;
+  year1: number;
+  year2: number;
+  year3: number;
+  threeYearNet: number;
+}
+
+const formatCurrencyPdf = (value: number): string => {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  if (value >= 1000) {
+    return `$${Math.round(value / 1000).toLocaleString()}K`;
+  }
+  return `$${value.toLocaleString()}`;
+};
+
+export function generateSummaryPDF(data: SummaryPDFData): void {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const margin = 20;
+  const contentWidth = pageWidth - margin * 2;
+  let currentPage = 0;
+  const totalPages = 5;
+
+  const colors = {
+    abridgeRed: [234, 44, 0] as [number, number, number],
+    darkGray: [17, 24, 39] as [number, number, number],
+    mediumGray: [107, 114, 128] as [number, number, number],
+    lightGray: [243, 244, 246] as [number, number, number],
+    green: [16, 185, 129] as [number, number, number],
+    greenLight: [236, 253, 245] as [number, number, number],
+    blue: [59, 130, 246] as [number, number, number],
+    white: [255, 255, 255] as [number, number, number],
+  };
+
+  const addLogo = (x = margin, y = margin) => {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...colors.abridgeRed);
+    doc.text('ABRIDGE', x, y + 4);
+  };
+
+  const addPageNumber = () => {
+    currentPage++;
+    doc.setFontSize(9);
+    doc.setTextColor(...colors.mediumGray);
+    doc.text(`${currentPage} of ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+  };
+
+  const setTitle = (text: string, y = 40) => {
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...colors.darkGray);
+    doc.text(text, margin, y);
+    doc.setDrawColor(...colors.abridgeRed);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y + 2, margin + 50, y + 2);
+  };
+
+  const drawBox = (x: number, y: number, width: number, height: number, fillColor: [number, number, number]) => {
+    doc.setFillColor(...fillColor);
+    doc.roundedRect(x, y, width, height, 3, 3, 'F');
+  };
+
+  // ============================================
+  // PAGE 1: COVER
+  // ============================================
+  addLogo();
+
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('AMBIENT AI', pageWidth / 2, 70, { align: 'center' });
+  doc.text('ROI MODEL', pageWidth / 2, 82, { align: 'center' });
+
+  doc.setDrawColor(...colors.abridgeRed);
+  doc.setLineWidth(2);
+  doc.line(60, 88, 150, 88);
+
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+  
+  const details = [
+    `${data.setting} Care Setting`,
+    `${data.providers} ${data.unitNamePlural}`,
+  ];
+  
+  let detailY = 105;
+  details.forEach((detail) => {
+    doc.text(detail, pageWidth / 2, detailY, { align: 'center' });
+    detailY += 8;
+  });
+
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text('NET ANNUAL GAIN', pageWidth / 2, 145, { align: 'center' });
+
+  doc.setFontSize(48);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.green);
+  doc.text(`+${formatCurrencyPdf(data.netGain)}`, pageWidth / 2, 162, { align: 'center' });
+
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text(`${data.roi.toFixed(1)}x Return on Investment`, pageWidth / 2, 178, { align: 'center' });
+
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  doc.setFontSize(9);
+  doc.setTextColor(...colors.mediumGray);
+  doc.text(`Generated: ${today}`, pageWidth / 2, 270, { align: 'center' });
+
+  // ============================================
+  // PAGE 2: EXECUTIVE SUMMARY
+  // ============================================
+  doc.addPage();
+  addLogo();
+  setTitle('EXECUTIVE SUMMARY', 40);
+  addPageNumber();
+
+  let y = 55;
+
+  drawBox(margin, y, contentWidth, 50, colors.lightGray);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('AT A GLANCE', margin + 5, y + 8);
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+
+  const summaryItems = [
+    { label: 'Total Annual Value', value: formatCurrencyPdf(data.totalValue), color: colors.green },
+    { label: 'Annual Investment', value: formatCurrencyPdf(data.annualInvestment), color: colors.darkGray },
+    { label: 'Net Annual Gain', value: `+${formatCurrencyPdf(data.netGain)}`, color: colors.green },
+    { label: 'Return on Investment', value: `${data.roi.toFixed(1)}x`, color: colors.abridgeRed },
+  ];
+
+  const colWidth = contentWidth / 4;
+  summaryItems.forEach((item, i) => {
+    const colX = margin + i * colWidth + 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...colors.mediumGray);
+    doc.text(item.label, colX, y + 20);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(...item.color);
+    doc.text(item.value, colX, y + 30);
+    doc.setFontSize(10);
+  });
+
+  y += 60;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('KEY FINDINGS', margin, y);
+  y += 8;
+
+  const findings = [
+    `This ${data.setting} deployment with ${data.providers} ${data.unitNamePlural} is projected to generate ${formatCurrencyPdf(data.totalValue)} in annual value.`,
+    `At an investment of ${formatCurrencyPdf(data.annualInvestment)}, the organization will realize a net gain of ${formatCurrencyPdf(data.netGain)} per year.`,
+    `The ${data.roi.toFixed(1)}x ROI means every dollar invested returns $${data.roi.toFixed(2)} in value.`,
+    `Over 3 years, the projected net benefit is ${formatCurrencyPdf(data.threeYearNet)}.`,
+  ];
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.darkGray);
+
+  findings.forEach((finding) => {
+    const lines = doc.splitTextToSize(`- ${finding}`, contentWidth - 10);
+    doc.text(lines, margin + 5, y);
+    y += lines.length * 5 + 3;
+  });
+
+  // ============================================
+  // PAGE 3: VALUE BREAKDOWN
+  // ============================================
+  doc.addPage();
+  addLogo();
+  setTitle('VALUE BREAKDOWN', 40);
+  addPageNumber();
+
+  y = 55;
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text('Where your ROI comes from', margin, y);
+  y += 12;
+
+  const laborDrivers = data.valueBreakdown.filter((d) => d.category === 'labor');
+  const revenueDrivers = data.valueBreakdown.filter((d) => d.category === 'revenue');
+
+  // Labor & Efficiency Card
+  const laborCardHeight = 25 + laborDrivers.length * 8;
+  drawBox(margin, y, contentWidth / 2 - 5, laborCardHeight, colors.lightGray);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('LABOR & EFFICIENCY', margin + 5, y + 8);
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text(`${data.laborPercent}% of total value`, margin + 5, y + 14);
+
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.blue);
+  doc.text(formatCurrencyPdf(data.laborValue), margin + contentWidth / 2 - 15, y + 12, { align: 'right' });
+
+  let driverY = y + 22;
+  doc.setFontSize(9);
+  laborDrivers.forEach((driver) => {
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...colors.darkGray);
+    doc.text(driver.name, margin + 8, driverY);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...colors.green);
+    doc.text(formatCurrencyPdf(driver.value), margin + contentWidth / 2 - 15, driverY, { align: 'right' });
+    driverY += 8;
+  });
+
+  // Revenue & Quality Card
+  const revenueCardHeight = 25 + revenueDrivers.length * 8;
+  drawBox(margin + contentWidth / 2 + 5, y, contentWidth / 2 - 5, revenueCardHeight, colors.lightGray);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('REVENUE & QUALITY', margin + contentWidth / 2 + 10, y + 8);
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text(`${data.revenuePercent}% of total value`, margin + contentWidth / 2 + 10, y + 14);
+
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.green);
+  doc.text(formatCurrencyPdf(data.revenueValue), margin + contentWidth - 10, y + 12, { align: 'right' });
+
+  let revenueDriverY = y + 22;
+  doc.setFontSize(9);
+  revenueDrivers.forEach((driver) => {
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...colors.darkGray);
+    doc.text(driver.name, margin + contentWidth / 2 + 13, revenueDriverY);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...colors.green);
+    doc.text(formatCurrencyPdf(driver.value), margin + contentWidth - 10, revenueDriverY, { align: 'right' });
+    revenueDriverY += 8;
+  });
+
+  y += Math.max(laborCardHeight, revenueCardHeight) + 15;
+
+  // Value Distribution Bar
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('VALUE DISTRIBUTION', margin, y);
+  y += 8;
+
+  const barHeight = 12;
+  const laborBarWidth = (data.laborPercent / 100) * contentWidth;
+  const revenueBarWidth = (data.revenuePercent / 100) * contentWidth;
+
+  doc.setFillColor(...colors.blue);
+  doc.roundedRect(margin, y, laborBarWidth, barHeight, 2, 2, 'F');
+
+  doc.setFillColor(...colors.green);
+  doc.roundedRect(margin + laborBarWidth, y, revenueBarWidth, barHeight, 2, 2, 'F');
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.white);
+  if (data.laborPercent > 20) {
+    doc.text(`Labor ${data.laborPercent}%`, margin + laborBarWidth / 2, y + 8, { align: 'center' });
+  }
+  if (data.revenuePercent > 20) {
+    doc.text(`Revenue ${data.revenuePercent}%`, margin + laborBarWidth + revenueBarWidth / 2, y + 8, { align: 'center' });
+  }
+
+  // ============================================
+  // PAGE 4: INVESTMENT DETAILS
+  // ============================================
+  doc.addPage();
+  addLogo();
+  setTitle('INVESTMENT DETAILS', 40);
+  addPageNumber();
+
+  y = 55;
+
+  // Configuration Card
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('YOUR CONFIGURATION', margin, y);
+  y += 8;
+
+  drawBox(margin, y, contentWidth / 2 - 5, 55, colors.lightGray);
+
+  const configItems = [
+    { label: 'Setting', value: data.setting },
+    { label: data.unitNamePlural.charAt(0).toUpperCase() + data.unitNamePlural.slice(1), value: data.providers.toString() },
+    { label: 'Price', value: `$${data.costPerUnit}/${data.unitName}/month` },
+    { label: 'Annual Investment', value: formatCurrencyPdf(data.annualInvestment), bold: true },
+  ];
+
+  let configY = y + 10;
+  configItems.forEach((item) => {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...colors.mediumGray);
+    doc.text(item.label, margin + 5, configY);
+    doc.setFont('helvetica', item.bold ? 'bold' : 'normal');
+    doc.setTextColor(...colors.darkGray);
+    doc.text(item.value, margin + contentWidth / 2 - 15, configY, { align: 'right' });
+    configY += 10;
+  });
+
+  // Multi-Year Projection
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('MULTI-YEAR PROJECTION', margin + contentWidth / 2 + 5, y - 8);
+
+  drawBox(margin + contentWidth / 2 + 5, y, contentWidth / 2 - 5, 55, colors.lightGray);
+
+  const projY = y + 10;
+  doc.setFontSize(9);
+  
+  // Header
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text('', margin + contentWidth / 2 + 10, projY);
+  doc.text('Year 1', margin + contentWidth / 2 + 35, projY, { align: 'center' });
+  doc.text('Year 2', margin + contentWidth / 2 + 55, projY, { align: 'center' });
+  doc.text('Year 3', margin + contentWidth / 2 + 75, projY, { align: 'center' });
+
+  // Value row
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('Value', margin + contentWidth / 2 + 10, projY + 10);
+  doc.text(formatCurrencyPdf(data.year1), margin + contentWidth / 2 + 35, projY + 10, { align: 'center' });
+  doc.text(formatCurrencyPdf(data.year2), margin + contentWidth / 2 + 55, projY + 10, { align: 'center' });
+  doc.text(formatCurrencyPdf(data.year3), margin + contentWidth / 2 + 75, projY + 10, { align: 'center' });
+
+  // Cost row
+  doc.text('Cost', margin + contentWidth / 2 + 10, projY + 20);
+  doc.setTextColor(...colors.mediumGray);
+  doc.text(formatCurrencyPdf(data.annualInvestment), margin + contentWidth / 2 + 35, projY + 20, { align: 'center' });
+  doc.text(formatCurrencyPdf(data.annualInvestment), margin + contentWidth / 2 + 55, projY + 20, { align: 'center' });
+  doc.text(formatCurrencyPdf(data.annualInvestment), margin + contentWidth / 2 + 75, projY + 20, { align: 'center' });
+
+  // Net row
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.green);
+  doc.text('Net', margin + contentWidth / 2 + 10, projY + 30);
+  doc.text(formatCurrencyPdf(data.year1 - data.annualInvestment), margin + contentWidth / 2 + 35, projY + 30, { align: 'center' });
+  doc.text(formatCurrencyPdf(data.year2 - data.annualInvestment), margin + contentWidth / 2 + 55, projY + 30, { align: 'center' });
+  doc.text(formatCurrencyPdf(data.year3 - data.annualInvestment), margin + contentWidth / 2 + 75, projY + 30, { align: 'center' });
+
+  y += 70;
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text('* Assumes 10% annual value growth with increased adoption', margin, y);
+
+  // ============================================
+  // PAGE 5: KEY ASSUMPTIONS & NEXT STEPS
+  // ============================================
+  doc.addPage();
+  addLogo();
+  setTitle('KEY ASSUMPTIONS', 40);
+  addPageNumber();
+
+  y = 55;
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text('The following assumptions underpin this ROI model:', margin, y);
+  y += 12;
+
+  const eligibleEncounters = Math.round(data.encounters * (data.utilizationRate / 100));
+
+  const assumptions = [
+    `${data.providers} ${data.unitNamePlural} with ${data.encounters.toLocaleString()} total encounters annually`,
+    `${data.utilizationRate}% utilization rate = ${eligibleEncounters.toLocaleString()} Abridge-documented encounters`,
+    `Investment of ${formatCurrencyPdf(data.annualInvestment)} annually at $${data.costPerUnit}/${data.unitName}/month`,
+    `Value scales linearly with ${data.unitNamePlural} and utilization`,
+    `10% annual value growth assumed for multi-year projection`,
+    `All calculations based on industry benchmarks and Abridge customer data`,
+  ];
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.darkGray);
+
+  assumptions.forEach((assumption) => {
+    doc.setFillColor(...colors.green);
+    doc.circle(margin + 3, y - 1, 1.5, 'F');
+    const lines = doc.splitTextToSize(assumption, contentWidth - 15);
+    doc.text(lines, margin + 10, y);
+    y += lines.length * 5 + 5;
+  });
+
+  y += 20;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...colors.darkGray);
+  doc.text('NEXT STEPS', margin, y);
+  y += 10;
+
+  drawBox(margin, y, contentWidth, 45, colors.greenLight);
+
+  const nextSteps = [
+    'Schedule a discovery call with your Abridge representative',
+    'Review assumptions with your finance and operations teams',
+    'Identify pilot department or care setting',
+    'Begin implementation planning',
+  ];
+
+  let stepY = y + 10;
+  doc.setFontSize(10);
+  nextSteps.forEach((step, i) => {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...colors.green);
+    doc.text(`${i + 1}.`, margin + 5, stepY);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...colors.darkGray);
+    doc.text(step, margin + 15, stepY);
+    stepY += 8;
+  });
+
+  y += 60;
+
+  drawBox(margin, y, contentWidth, 20, colors.lightGray);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...colors.mediumGray);
+  doc.text('Questions? Contact your Abridge representative or visit abridge.com', margin + 5, y + 12);
+
+  // Save
+  const date = new Date().toISOString().split('T')[0];
+  const filename = `Abridge_ROI_${data.setting.replace(/\s+/g, '_')}_${data.providers}P_${date}.pdf`;
+  doc.save(filename);
+}

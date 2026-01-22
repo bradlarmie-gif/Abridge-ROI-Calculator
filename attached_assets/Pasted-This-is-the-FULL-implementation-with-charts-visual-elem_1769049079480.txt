@@ -1,0 +1,1554 @@
+This is the FULL implementation with charts, visual elements, and education built-in.
+
+FILE 1: index.html
+htmlCopy<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abridge ROI Calculator</title>
+  
+  <!-- PDF Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <!-- Your app content here -->
+  
+  <!-- Export Button (place this wherever you want) -->
+  <button id="export-pdf-btn" class="btn-primary btn-hero">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Download Your ROI Report
+  </button>
+
+  <script src="pdf-generator.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
+FILE 2: pdf-generator.js (COMPLETE WITH VISUALS)
+javascriptCopy// pdf-generator.js - Complete Premium PDF Generator
+
+// Abridge Logo as base64 SVG
+const ABRIDGE_LOGO = `data:image/svg+xml;base64,${btoa(`
+<svg width="120" height="24" viewBox="0 0 120 24" xmlns="http://www.w3.org/2000/svg">
+  <text x="0" y="19" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#EA2C00" letter-spacing="-0.5">ABRIDGE</text>
+</svg>
+`)}`;
+
+class AbridgeROIPDF {
+  constructor(modelData) {
+    this.data = modelData;
+    this.pdf = null;
+    this.pageWidth = 210;
+    this.pageHeight = 297;
+    this.margin = 20;
+    this.contentWidth = this.pageWidth - (this.margin * 2);
+    this.currentPage = 0;
+    this.totalPages = 8; // Updated to 8 pages
+    
+    // Brand colors (RGB arrays for jsPDF)
+    this.colors = {
+      abridgeRed: [234, 44, 0],
+      darkGray: [17, 24, 39],
+      mediumGray: [107, 114, 128],
+      lightGray: [243, 244, 246],
+      lighterGray: [249, 250, 251],
+      green: [16, 185, 129],
+      greenLight: [236, 253, 245],
+      yellow: [251, 191, 36],
+      yellowLight: [254, 243, 199],
+      blue: [59, 130, 246],
+      blueLight: [239, 246, 255],
+      white: [255, 255, 255]
+    };
+  }
+
+  async generate() {
+    const { jsPDF } = window.jspdf;
+    this.pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    // Generate all pages
+    this.addCoverPage();           // Page 1
+    this.addExecutiveSummary();    // Page 2
+    this.addValueBreakdown();      // Page 3
+    this.addInvestmentDetails();   // Page 4
+    this.addScenarioModel();       // Page 5
+    this.addJourneyChart();        // Page 6 - NEW
+    this.addAssumptions();         // Page 7
+    this.addNextSteps();           // Page 8
+
+    // Download
+    const filename = this.generateFilename();
+    this.pdf.save(filename);
+  }
+
+  generateFilename() {
+    const date = new Date().toISOString().split('T')[0];
+    const setting = this.data.setting.replace(/\s+/g, '_');
+    return `Abridge_ROI_${setting}_${this.data.providers}P_${date}.pdf`;
+  }
+
+  // ============================================
+  // HELPER METHODS
+  // ============================================
+
+  addLogo(x = this.margin, y = this.margin) {
+    try {
+      this.pdf.addImage(ABRIDGE_LOGO, 'PNG', x, y, 30, 6);
+    } catch (e) {
+      // Fallback: just write ABRIDGE
+      this.pdf.setFontSize(12);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.abridgeRed);
+      this.pdf.text('ABRIDGE', x, y + 4);
+    }
+  }
+
+  addPageNumber() {
+    this.currentPage++;
+    this.pdf.setFontSize(9);
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text(
+      `${this.currentPage} of ${this.totalPages}`,
+      this.pageWidth - this.margin,
+      this.pageHeight - 10,
+      { align: 'right' }
+    );
+  }
+
+  setTitle(text, y = 40) {
+    this.pdf.setFontSize(24);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text(text, this.margin, y);
+    
+    this.pdf.setDrawColor(...this.colors.abridgeRed);
+    this.pdf.setLineWidth(1);
+    this.pdf.line(this.margin, y + 2, this.margin + 80, y + 2);
+  }
+
+  setSubtitle(text, y) {
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'normal');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text(text, this.margin, y);
+  }
+
+  drawBox(x, y, width, height, fillColor = this.colors.lightGray, strokeColor = null) {
+    this.pdf.setFillColor(...fillColor);
+    if (strokeColor) {
+      this.pdf.setDrawColor(...strokeColor);
+      this.pdf.roundedRect(x, y, width, height, 3, 3, 'FD');
+    } else {
+      this.pdf.roundedRect(x, y, width, height, 3, 3, 'F');
+    }
+  }
+
+  drawCircle(x, y, radius, fillColor) {
+    this.pdf.setFillColor(...fillColor);
+    this.pdf.circle(x, y, radius, 'F');
+  }
+
+  // Draw a simple bar chart
+  drawBarChart(x, y, width, height, data) {
+    const barWidth = width / data.length;
+    const maxValue = Math.max(...data.map(d => d.value));
+    
+    data.forEach((item, i) => {
+      const barHeight = (item.value / maxValue) * height;
+      const barX = x + (i * barWidth) + 2;
+      const barY = y + height - barHeight;
+      
+      // Bar
+      this.pdf.setFillColor(...item.color);
+      this.pdf.rect(barX, barY, barWidth - 4, barHeight, 'F');
+      
+      // Label
+      this.pdf.setFontSize(8);
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(
+        item.label,
+        barX + (barWidth - 4) / 2,
+        y + height + 5,
+        { align: 'center' }
+      );
+      
+      // Value
+      this.pdf.setFontSize(9);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.text(
+        item.displayValue,
+        barX + (barWidth - 4) / 2,
+        barY - 2,
+        { align: 'center' }
+      );
+    });
+  }
+
+  // Draw growth curve chart
+  drawGrowthChart(x, y, width, height, currentData, growthData) {
+    // Draw axes
+    this.pdf.setDrawColor(...this.colors.mediumGray);
+    this.pdf.setLineWidth(0.3);
+    this.pdf.line(x, y + height, x + width, y + height); // X-axis
+    this.pdf.line(x, y, x, y + height); // Y-axis
+
+    // Y-axis labels
+    this.pdf.setFontSize(8);
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    const yLabels = ['$0', '$500K', '$1M', '$1.5M'];
+    yLabels.forEach((label, i) => {
+      const labelY = y + height - (i * height / 3);
+      this.pdf.text(label, x - 3, labelY, { align: 'right' });
+      this.pdf.setDrawColor(...this.colors.lightGray);
+      this.pdf.line(x, labelY, x + width, labelY);
+    });
+
+    // X-axis labels
+    const xLabels = ['Today', '6mo', '1yr', '2yr', '3yr'];
+    xLabels.forEach((label, i) => {
+      const labelX = x + (i * width / 4);
+      this.pdf.text(label, labelX, y + height + 4, { align: 'center' });
+    });
+
+    // Draw "stay with current" line (flat/slow growth)
+    const currentPoints = [
+      { x: x, y: y + height - 20 },
+      { x: x + width * 0.25, y: y + height - 22 },
+      { x: x + width * 0.5, y: y + height - 25 },
+      { x: x + width * 0.75, y: y + height - 28 },
+      { x: x + width, y: y + height - 30 }
+    ];
+
+    this.pdf.setDrawColor(...this.colors.mediumGray);
+    this.pdf.setLineWidth(0.5);
+    this.pdf.setLineDash([2, 2]);
+    for (let i = 0; i < currentPoints.length - 1; i++) {
+      this.pdf.line(
+        currentPoints[i].x,
+        currentPoints[i].y,
+        currentPoints[i + 1].x,
+        currentPoints[i + 1].y
+      );
+    }
+
+    // Draw "switch to Abridge" line (steep growth)
+    const growthPoints = [
+      { x: x, y: y + height - 20 },
+      { x: x + width * 0.25, y: y + height - 40 },
+      { x: x + width * 0.5, y: y + height - 65 },
+      { x: x + width * 0.75, y: y + height - 85 },
+      { x: x + width, y: y + height - 100 }
+    ];
+
+    this.pdf.setDrawColor(...this.colors.green);
+    this.pdf.setLineWidth(1);
+    this.pdf.setLineDash([]);
+    for (let i = 0; i < growthPoints.length - 1; i++) {
+      this.pdf.line(
+        growthPoints[i].x,
+        growthPoints[i].y,
+        growthPoints[i + 1].x,
+        growthPoints[i + 1].y
+      );
+    }
+
+    // Add dots at endpoints
+    this.pdf.setFillColor(...this.colors.mediumGray);
+    this.pdf.circle(currentPoints[currentPoints.length - 1].x, currentPoints[currentPoints.length - 1].y, 1.5, 'F');
+    
+    this.pdf.setFillColor(...this.colors.green);
+    this.pdf.circle(growthPoints[growthPoints.length - 1].x, growthPoints[growthPoints.length - 1].y, 2, 'F');
+
+    // Legend
+    const legendY = y - 5;
+    
+    this.pdf.setDrawColor(...this.colors.mediumGray);
+    this.pdf.setLineDash([2, 2]);
+    this.pdf.line(x + width - 60, legendY, x + width - 50, legendY);
+    this.pdf.setFontSize(9);
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text('Stay with current', x + width - 48, legendY + 1);
+
+    this.pdf.setDrawColor(...this.colors.green);
+    this.pdf.setLineDash([]);
+    this.pdf.line(x + width - 60, legendY + 5, x + width - 50, legendY + 5);
+    this.pdf.setTextColor(...this.colors.green);
+    this.pdf.text('Switch to Abridge', x + width - 48, legendY + 6);
+  }
+
+  // ============================================
+  // PAGE 1: COVER
+  // ============================================
+
+  addCoverPage() {
+    this.addLogo(this.margin, this.margin);
+
+    // Large decorative "A" in background
+    this.pdf.setFontSize(200);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(250, 250, 250);
+    this.pdf.text('A', this.pageWidth / 2, 180, { align: 'center' });
+
+    // Title
+    this.pdf.setFontSize(32);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('AMBIENT AI', this.pageWidth / 2, 70, { align: 'center' });
+    this.pdf.text('ROI MODEL', this.pageWidth / 2, 82, { align: 'center' });
+
+    // Red line
+    this.pdf.setDrawColor(...this.colors.abridgeRed);
+    this.pdf.setLineWidth(2);
+    this.pdf.line(60, 88, 150, 88);
+
+    // Organization details
+    this.pdf.setFontSize(14);
+    this.pdf.setFont('helvetica', 'normal');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    
+    const details = [
+      this.data.organizationName || '[Your Organization]',
+      `${this.data.setting} Care Setting`,
+      `${this.data.providers} Providers`
+    ];
+    
+    let detailY = 105;
+    details.forEach(detail => {
+      this.pdf.text(detail, this.pageWidth / 2, detailY, { align: 'center' });
+      detailY += 8;
+    });
+
+    // BIG NET GAIN
+    this.pdf.setFontSize(13);
+    this.pdf.setFont('helvetica', 'normal');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text('NET ANNUAL GAIN', this.pageWidth / 2, 145, { align: 'center' });
+
+    this.pdf.setFontSize(52);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.green);
+    this.pdf.text(
+      `+$${this.formatNumber(this.data.netGain)}`,
+      this.pageWidth / 2,
+      162,
+      { align: 'center' }
+    );
+
+    // ROI
+    this.pdf.setFontSize(13);
+    this.pdf.setFont('helvetica', 'normal');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text('─────────────────', this.pageWidth / 2, 170, { align: 'center' });
+    this.pdf.text(
+      `${this.data.roi}× Return on Investment`,
+      this.pageWidth / 2,
+      178,
+      { align: 'center' }
+    );
+
+    // Metadata
+    this.pdf.setFontSize(9);
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    const today = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    this.pdf.text(`Generated: ${today}`, this.pageWidth / 2, 270, { align: 'center' });
+    this.pdf.text(`Model ID: ${this.data.modelId}`, this.pageWidth / 2, 276, { align: 'center' });
+  }
+
+  // ============================================
+  // PAGE 2: EXECUTIVE SUMMARY
+  // ============================================
+
+  addExecutiveSummary() {
+    this.pdf.addPage();
+    this.addLogo();
+    this.setTitle('EXECUTIVE SUMMARY', 40);
+    
+    let y = 60;
+
+    // Educational callout
+    this.drawBox(this.margin, y, this.contentWidth, 12, this.colors.blueLight);
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.blue);
+    this.pdf.text(
+      '💡 This one-page summary is designed for executive review. Detailed methodology follows.',
+      this.margin + 3,
+      y + 7
+    );
+    y += 18;
+
+    // At a Glance Box
+    this.pdf.setFontSize(12);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('YOUR OPPORTUNITY AT A GLANCE', this.margin, y);
+    y += 8;
+
+    const boxHeight = 52;
+    this.drawBox(this.margin, y, this.contentWidth, boxHeight, this.colors.lighterGray);
+    
+    y += 8;
+    this.pdf.setFontSize(10);
+    
+    const metrics = [
+      { label: 'Total Annual Value', value: `$${this.formatNumber(this.data.totalValue)}`, bold: false },
+      { label: 'Annual Investment', value: `$${this.formatNumber(this.data.investment)}`, bold: false },
+      { label: 'Net Annual Gain', value: `+$${this.formatNumber(this.data.netGain)}`, bold: true, color: this.colors.green },
+      { label: 'Return on Investment', value: `${this.data.roi}×`, bold: true, color: this.colors.green }
+    ];
+
+    metrics.forEach((metric, i) => {
+      if (i === 2) {
+        this.pdf.setDrawColor(...this.colors.green);
+        this.pdf.setLineWidth(0.5);
+        this.pdf.line(this.margin + 5, y - 2, this.pageWidth - this.margin - 5, y - 2);
+        y += 3;
+      }
+
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      this.pdf.text(metric.label, this.margin + 5, y);
+
+      this.pdf.setFont('helvetica', metric.bold ? 'bold' : 'normal');
+      this.pdf.setTextColor(...(metric.color || this.colors.darkGray));
+      this.pdf.text(metric.value, this.pageWidth - this.margin - 5, y, { align: 'right' });
+
+      y += 9;
+    });
+
+    y += 12;
+
+    // KEY OUTCOMES
+    this.pdf.setFontSize(12);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('KEY OUTCOMES', this.margin, y);
+    y += 8;
+
+    const outcomes = [
+      {
+        title: `${this.formatNumber(this.data.hoursReturned)} hours returned annually`,
+        subtitle: `Equivalent to adding ${(this.data.hoursReturned / 2080).toFixed(1)} FTEs without the cost`
+      },
+      {
+        title: `${this.formatNumber(this.data.additionalVisits)} additional patient visits`,
+        subtitle: 'Turn saved documentation time into capacity'
+      },
+      {
+        title: `$${this.formatNumber(this.data.largestDriver.value)} in ${this.data.largestDriver.name.toLowerCase()}`,
+        subtitle: this.data.largestDriver.description
+      }
+    ];
+
+    outcomes.forEach(outcome => {
+      this.pdf.setTextColor(...this.colors.green);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setFontSize(11);
+      this.pdf.text('✓', this.margin + 2, y);
+
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setFontSize(10);
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(outcome.title, this.margin + 8, y);
+      y += 5;
+
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setFontSize(9);
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      const subLines = this.pdf.splitTextToSize(outcome.subtitle, this.contentWidth - 12);
+      this.pdf.text(subLines, this.margin + 8, y);
+      y += 5 * subLines.length + 8;
+    });
+
+    // DEPLOYMENT SCOPE
+    this.pdf.setFontSize(12);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('DEPLOYMENT SCOPE', this.margin, y);
+    y += 8;
+
+    const scope = [
+      { label: 'Care Setting', value: this.data.setting },
+      { label: 'Providers', value: this.data.providers },
+      { label: 'Annual Encounters', value: this.formatNumber(this.data.encounters) },
+      { label: 'Expected Usage', value: `${this.data.utilization}% (${this.data.utilizationLabel})` }
+    ];
+
+    scope.forEach(item => {
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setFontSize(10);
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      this.pdf.text(item.label, this.margin + 5, y);
+
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(String(item.value), this.margin + 60, y);
+
+      y += 7;
+    });
+
+    y += 10;
+
+    // Credibility statement
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    const credText = 'This model is based on proven methodologies from 200+ health system partners and uses conservative assumptions.';
+    const splitText = this.pdf.splitTextToSize(credText, this.contentWidth - 10);
+    this.pdf.text(splitText, this.margin + 5, y);
+
+    this.addPageNumber();
+  }
+
+  // ============================================
+  // PAGE 3: VALUE BREAKDOWN (with visual bar)
+  // ============================================
+
+  addValueBreakdown() {
+    this.pdf.addPage();
+    this.addLogo();
+    this.setTitle('VALUE BREAKDOWN', 40);
+    this.setSubtitle('Where your annual value comes from', 48);
+
+    let y = 60;
+
+    // Educational note
+    this.drawBox(this.margin, y, this.contentWidth, 12, this.colors.blueLight);
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.blue);
+    this.pdf.text(
+      '💡 ROI comes from multiple sources. We only include the value drivers you selected.',
+      this.margin + 3,
+      y + 7
+    );
+    y += 18;
+
+    const selectedDrivers = this.data.valueDrivers.filter(d => d.selected);
+    const laborDrivers = selectedDrivers.filter(d => d.category === 'labor');
+    const revenueDrivers = selectedDrivers.filter(d => d.category === 'revenue');
+
+    const laborTotal = laborDrivers.reduce((sum, d) => sum + d.value, 0);
+    const revenueTotal = revenueDrivers.reduce((sum, d) => sum + d.value, 0);
+    const totalValue = laborTotal + revenueTotal;
+
+    const laborPct = Math.round((laborTotal / totalValue) * 100);
+    const revenuePct = Math.round((revenueTotal / totalValue) * 100);
+
+    // LABOR & EFFICIENCY
+    if (laborDrivers.length > 0) {
+      this.pdf.setFontSize(11);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(`LABOR & EFFICIENCY`, this.margin, y);
+      
+      this.pdf.setTextColor(...this.colors.yellow);
+      this.pdf.text(`$${this.formatNumber(laborTotal)} (${laborPct}%)`, this.pageWidth - this.margin, y, { align: 'right' });
+      
+      y += 2;
+      this.pdf.setDrawColor(...this.colors.yellow);
+      this.pdf.setLineWidth(0.8);
+      this.pdf.line(this.margin, y, this.pageWidth - this.margin, y);
+      y += 8;
+
+      laborDrivers.forEach(driver => {
+        this.pdf.setFontSize(10);
+        this.pdf.setFont('helvetica', 'bold');
+        this.pdf.setTextColor(...this.colors.darkGray);
+        this.pdf.text(driver.name, this.margin + 3, y);
+        
+        this.pdf.setTextColor(...this.colors.green);
+        this.pdf.text(`$${this.formatNumber(driver.value)}`, this.pageWidth - this.margin - 3, y, { align: 'right' });
+        y += 5;
+
+        this.pdf.setFontSize(9);
+        this.pdf.setFont('helvetica', 'normal');
+        this.pdf.setTextColor(...this.colors.mediumGray);
+        const descLines = this.pdf.splitTextToSize(`→ ${driver.description}`, this.contentWidth - 10);
+        this.pdf.text(descLines, this.margin + 3, y);
+        y += 5 * descLines.length + 6;
+      });
+
+      y += 5;
+    }
+
+    // REVENUE & QUALITY
+    if (revenueDrivers.length > 0) {
+      this.pdf.setFontSize(11);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(`REVENUE & QUALITY`, this.margin, y);
+      
+      this.pdf.setTextColor(...this.colors.green);
+      this.pdf.text(`$${this.formatNumber(revenueTotal)} (${revenuePct}%)`, this.pageWidth - this.margin, y, { align: 'right' });
+      
+      y += 2;
+      this.pdf.setDrawColor(...this.colors.green);
+      this.pdf.setLineWidth(0.8);
+      this.pdf.line(this.margin, y, this.pageWidth - this.margin, y);
+      y += 8;
+
+      revenueDrivers.forEach(driver => {
+        this.pdf.setFontSize(10);
+        this.pdf.setFont('helvetica', 'bold');
+        this.pdf.setTextColor(...this.colors.darkGray);
+        this.pdf.text(driver.name, this.margin + 3, y);
+        
+        this.pdf.setTextColor(...this.colors.green);
+        this.pdf.text(`$${this.formatNumber(driver.value)}`, this.pageWidth - this.margin - 3, y, { align: 'right' });
+        y += 5;
+
+        this.pdf.setFontSize(9);
+        this.pdf.setFont('helvetica', 'normal');
+        this.pdf.setTextColor(...this.colors.mediumGray);
+        const descLines = this.pdf.splitTextToSize(`→ ${driver.description}`, this.contentWidth - 10);
+        this.pdf.text(descLines, this.margin + 3, y);
+        y += 5 * descLines.length + 6;
+      });
+    }
+
+    y += 10;
+
+    // STACKED BAR VISUALIZATION
+    this.pdf.setFontSize(10);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('VALUE DISTRIBUTION', this.margin, y);
+    y += 8;
+
+    const barY = y;
+    const barHeight = 24;
+    
+    const laborWidth = this.contentWidth * (laborPct / 100);
+    
+    // Labor segment
+    this.pdf.setFillColor(...this.colors.yellow);
+    this.pdf.roundedRect(this.margin, barY, laborWidth, barHeight, 2, 2, 'F');
+    
+    // Revenue segment
+    this.pdf.setFillColor(...this.colors.green);
+    this.pdf.roundedRect(this.margin + laborWidth, barY, this.contentWidth - laborWidth, barHeight, 2, 2, 'F');
+    
+    // Labels on bar
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(255, 255, 255);
+    
+    if (laborPct > 15) {
+      this.pdf.text(
+        `Labor ${laborPct}%`,
+        this.margin + (laborWidth / 2),
+        barY + 14,
+        { align: 'center' }
+      );
+    }
+    if (revenuePct > 15) {
+      this.pdf.text(
+        `Revenue ${revenuePct}%`,
+        this.margin + laborWidth + ((this.contentWidth - laborWidth) / 2),
+        barY + 14,
+        { align: 'center' }
+      );
+    }
+
+    this.addPageNumber();
+  }
+
+  // ============================================
+  // PAGE 4: INVESTMENT DETAILS (with table)
+  // ============================================
+
+  addInvestmentDetails() {
+    this.pdf.addPage();
+    this.addLogo();
+    this.setTitle('INVESTMENT DETAILS', 40);
+
+    let y = 60;
+
+    // Educational note
+    this.drawBox(this.margin, y, this.contentWidth, 12, this.colors.blueLight);
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.blue);
+    this.pdf.text(
+      '💡 Your investment is predictable and scales with your deployment. Value grows as adoption matures.',
+      this.margin + 3,
+      y + 7
+    );
+    y += 18;
+
+    // YOUR CONFIGURATION
+    this.pdf.setFontSize(12);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('YOUR CONFIGURATION', this.margin, y);
+    y += 10;
+
+    const config = [
+      { label: 'Pricing Model', value: this.data.pricingModel },
+      { label: 'Providers in Scope', value: this.data.providers },
+      { label: 'Cost per Provider', value: `$${this.data.costPerProvider}/month` },
+      { label: 'Contract Term', value: `${this.data.contractTerm} months` }
+    ];
+
+    config.forEach(item => {
+      this.pdf.setFontSize(10);
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      this.pdf.text(item.label, this.margin + 5, y);
+
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(String(item.value), this.margin + 70, y);
+
+      y += 7;
+    });
+
+    y += 2;
+    this.pdf.setDrawColor(...this.colors.mediumGray);
+    this.pdf.setLineWidth(0.3);
+    this.pdf.line(this.margin + 5, y, this.margin + 120, y);
+    y += 5;
+
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('Annual Investment', this.margin + 5, y);
+    
+    this.pdf.setTextColor(...this.colors.abridgeRed);
+    this.pdf.text(`$${this.formatNumber(this.data.investment)}`, this.margin + 70, y);
+
+    y += 20;
+
+    // MULTI-YEAR PROJECTION
+    this.pdf.setFontSize(12);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('MULTI-YEAR PROJECTION', this.margin, y);
+    y += 10;
+
+    this.pdf.autoTable({
+      startY: y,
+      head: [['Year', 'Value', 'Cost', 'Net Gain', 'ROI']],
+      body: this.data.multiYearProjection.map(row => [
+        row.year,
+        `$${row.value}`,
+        `$${row.cost}`,
+        `$${row.net}`,
+        `${row.roi}×`
+      ]),
+      foot: [[
+        '3-Yr Total',
+        `$${this.data.threeYearTotal.value}`,
+        `$${this.data.threeYearTotal.cost}`,
+        `$${this.data.threeYearTotal.net}`,
+        `${this.data.threeYearTotal.roi}×`
+      ]],
+      theme: 'plain',
+      styles: {
+        fontSize: 10,
+        cellPadding: 4,
+        textColor: this.colors.darkGray,
+        halign: 'center'
+      },
+      headStyles: {
+        fillColor: this.colors.lightGray,
+        textColor: this.colors.darkGray,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      footStyles: {
+        fillColor: this.colors.greenLight,
+        textColor: this.colors.green,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { halign: 'left' },
+        3: { textColor: this.colors.green, fontStyle: 'bold' },
+        4: { textColor: this.colors.green, fontStyle: 'bold' }
+      }
+    });
+
+    y = this.pdf.lastAutoTable.finalY + 8;
+
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    const noteText = '* Assumes 10% annual value growth from increased adoption and workflow optimization';
+    this.pdf.text(noteText, this.margin, y);
+
+    y += 15;
+
+    // Simple bar chart showing growth
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('VALUE GROWTH TRAJECTORY', this.margin, y);
+    y += 8;
+
+    const chartData = [
+      { label: 'Year 1', value: 245, displayValue: '$245K', color: this.colors.green },
+      { label: 'Year 2', value: 270, displayValue: '$270K', color: this.colors.green },
+      { label: 'Year 3', value: 297, displayValue: '$297K', color: this.colors.green }
+    ];
+
+    this.drawBarChart(this.margin, y, this.contentWidth, 35, chartData);
+
+    this.addPageNumber();
+  }
+
+  // ============================================
+  // PAGE 5: SCENARIO MODEL
+  // ============================================
+
+  addScenarioModel() {
+    this.pdf.addPage();
+    this.addLogo();
+    this.setTitle('YOUR SCENARIO MODEL', 40);
+    this.setSubtitle('From pilot to full scale', 48);
+
+    let y = 65;
+
+    // Educational note
+    this.drawBox(this.margin, y, this.contentWidth, 12, this.colors.blueLight);
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.blue);
+    this.pdf.text(
+      '💡 Most organizations start small to prove value, then scale. This shows what expansion looks like.',
+      this.margin + 3,
+      y + 7
+    );
+    y += 18;
+
+    const colWidth = (this.contentWidth - 10) / 2;
+    const col1X = this.margin;
+    const col2X = this.margin + colWidth + 10;
+
+    // PILOT COLUMN
+    this.drawBox(col1X, y, colWidth, 85, this.colors.lighterGray, this.colors.mediumGray);
+    
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.abridgeRed);
+    this.pdf.text('YOUR PILOT', col1X + 5, y + 7);
+
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('Current State', col1X + 5, y + 15);
+
+    const pilotStats = [
+      `${this.data.providers} providers`,
+      `${this.data.encountersPerProvider} encounters/provider`,
+      `${this.data.utilization}% utilization`
+    ];
+
+    let pilotY = y + 23;
+    pilotStats.forEach(stat => {
+      this.pdf.setFontSize(9);
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      this.pdf.text(stat, col1X + 5, pilotY);
+      pilotY += 6;
+    });
+
+    pilotY += 6;
+    this.pdf.setFontSize(8);
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text('PILOT (TODAY)', col1X + 5, pilotY);
+    pilotY += 6;
+
+    this.pdf.setFontSize(18);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.green);
+    this.pdf.text(`$${this.formatNumber(this.data.totalValue)}`, col1X + 5, pilotY);
+    pilotY += 5;
+
+    this.pdf.setFontSize(8);
+    this.pdf.setFont('helvetica', 'normal');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text('annual value', col1X + 5, pilotY);
+    pilotY += 7;
+
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.green);
+    this.pdf.text(`${this.data.roi}× ROI`, col1X + 5, pilotY);
+
+    // Arrow
+    this.pdf.setFontSize(28);
+    this.pdf.setTextColor(...this.colors.abridgeRed);
+    this.pdf.text('→', this.pageWidth / 2 - 4, y + 48);
+
+    // FULL SCALE COLUMN
+    this.drawBox(col2X, y, colWidth, 85, this.colors.greenLight, this.colors.green);
+    
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.green);
+    this.pdf.text('YOUR OPPORTUNITY', col2X + 5, y + 7);
+
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('Full-Scale Potential', col2X + 5, y + 15);
+
+    const fullScaleStats = [
+      `${this.data.fullScale.providers} providers`,
+      `${this.data.fullScale.encountersPerProvider} encounters/provider`,
+      `${this.data.fullScale.utilization}% utilization`
+    ];
+
+    let fullY = y + 23;
+    fullScaleStats.forEach(stat => {
+      this.pdf.setFontSize(9);
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      this.pdf.text(stat, col2X + 5, fullY);
+      fullY += 6;
+    });
+
+    fullY += 6;
+    this.pdf.setFontSize(8);
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text('FULL SCALE', col2X + 5, fullY);
+    fullY += 6;
+
+    this.pdf.setFontSize(18);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.green);
+    this.pdf.text(`$${this.formatNumber(this.data.fullScale.value)}`, col2X + 5, fullY);
+    fullY += 5;
+
+    this.pdf.setFontSize(8);
+    this.pdf.setFont('helvetica', 'normal');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    this.pdf.text('annual value', col2X + 5, fullY);
+    fullY += 7;
+
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.green);
+    this.pdf.text(`${this.data.fullScale.roi}× ROI`, col2X + 5, fullY);
+
+    y += 100;
+
+    // NETWORK EFFECT CALLOUT
+    this.drawBox(this.margin, y, this.contentWidth, 32, this.colors.greenLight, this.colors.green);
+    
+    this.pdf.setFontSize(10);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.green);
+    this.pdf.text('📈  NETWORK EFFECT', this.margin + 5, y + 8);
+
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'normal');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    const networkText = `+$${this.formatNumber(this.data.networkEffect)} compounding value — Beyond linear projection. Utilization typically increases as adoption matures. Most organizations reach 70-80% at full scale.`;
+    const networkLines = this.pdf.splitTextToSize(networkText, this.contentWidth - 15);
+    this.pdf.text(networkLines, this.margin + 5, y + 15);
+
+    y += 42;
+
+    // THE COMPOUNDING EFFECT
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('WHY ROI IS MULTIPLICATIVE', this.margin, y);
+    y += 8;
+
+    const factors = [
+      '📈 Utilization: 65% → 75% as adoption matures',
+      '🔄 Retention: Benefits materialize after 6-12 months',
+      '⚡ Efficiency: Shared learnings, optimized workflows'
+    ];
+
+    factors.forEach(factor => {
+      this.pdf.setFontSize(9);
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(factor, this.margin + 3, y);
+      y += 7;
+    });
+
+    y += 5;
+
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    const compoundText = 'Small gaps in each dimension compound into large gaps overall. If your utilization is 77% of potential, and your efficiency is 50% of potential, you\'re capturing roughly 63% of the value you could be.';
+    const compoundLines = this.pdf.splitTextToSize(compoundText, this.contentWidth - 10);
+    this.pdf.text(compoundLines, this.margin + 3, y);
+
+    this.addPageNumber();
+  }
+
+  // ============================================
+  // PAGE 6: JOURNEY CHART (NEW!)
+  // ============================================
+
+  addJourneyChart() {
+    this.pdf.addPage();
+    this.addLogo();
+    this.setTitle('YOUR JOURNEY WITH ABRIDGE', 40);
+    this.setSubtitle('Start with a pilot. Prove the value. Scale across your organization.', 48);
+
+    let y = 65;
+
+    // Educational note
+    this.drawBox(this.margin, y, this.contentWidth, 12, this.colors.blueLight);
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.blue);
+    this.pdf.text(
+      '💡 This chart shows the difference between staying with your current approach vs. switching to ambient AI.',
+      this.margin + 3,
+      y + 7
+    );
+    y += 18;
+
+    // Chart title
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('CUMULATIVE VALUE OVER TIME', this.margin, y);
+    y += 10;
+
+    // Draw the growth chart
+    const chartHeight = 80;
+    this.drawGrowthChart(
+      this.margin + 10,
+      y,
+      this.contentWidth - 20,
+      chartHeight,
+      { current: true },
+      { growth: true }
+    );
+
+    y += chartHeight + 15;
+
+    // THE GAP explanation
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('UNDERSTANDING THE GAP', this.margin, y);
+    y += 8;
+
+    this.drawBox(this.margin, y, this.contentWidth, 45, this.colors.yellowLight);
+
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'normal');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    
+    const gapText = 'The gap between these two lines represents unrealized value — not because your current solution is bad, but because ambient AI ROI is multiplicative:';
+    const gapLines = this.pdf.splitTextToSize(gapText, this.contentWidth - 15);
+    this.pdf.text(gapLines, this.margin + 5, y + 6);
+    
+    y += 6 + (gapLines.length * 5);
+
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.text('Utilization × Efficiency × Quality = Total Value', this.margin + 5, y);
+    y += 6;
+
+    this.pdf.setFont('helvetica', 'normal');
+    const mathText = 'Small gaps in each dimension compound into large gaps overall.';
+    this.pdf.text(mathText, this.margin + 5, y);
+
+    y += 25;
+
+    // Timeline milestones
+    this.pdf.setFontSize(11);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('TYPICAL DEPLOYMENT MILESTONES', this.margin, y);
+    y += 10;
+
+    const milestones = [
+      { time: 'Month 1-2', title: 'Pilot Launch', description: 'Deploy to 10-20 providers, establish baseline metrics' },
+      { time: 'Month 3-6', title: 'Initial Results', description: 'Measure time savings, satisfaction, and early ROI indicators' },
+      { time: 'Month 6-12', title: 'Expansion', description: 'Scale to additional departments based on pilot success' },
+      { time: 'Month 12+', title: 'Optimization', description: 'Reach 70-80% utilization, realize full financial impact' }
+    ];
+
+    milestones.forEach((milestone, i) => {
+      // Timeline dot
+      this.drawCircle(this.margin + 3, y - 2, 2, this.colors.green);
+      
+      if (i < milestones.length - 1) {
+        this.pdf.setDrawColor(...this.colors.lightGray);
+        this.pdf.setLineWidth(0.5);
+        this.pdf.line(this.margin + 3, y, this.margin + 3, y + 14);
+      }
+
+      this.pdf.setFontSize(9);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(milestone.time, this.margin + 8, y);
+      
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.abridgeRed);
+      this.pdf.text(milestone.title, this.margin + 28, y);
+      y += 5;
+
+      this.pdf.setFontSize(8);
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      const descLines = this.pdf.splitTextToSize(milestone.description, this.contentWidth - 35);
+      this.pdf.text(descLines, this.margin + 8, y);
+      y += 5 * descLines.length + 9;
+    });
+
+    this.addPageNumber();
+  }
+
+  // ============================================
+  // PAGE 7: ASSUMPTIONS
+  // ============================================
+
+  addAssumptions() {
+    this.pdf.addPage();
+    this.addLogo();
+    this.setTitle('KEY ASSUMPTIONS', 40);
+    this.setSubtitle('Evidence-based assumptions from 200+ health system deployments', 48);
+
+    let y = 65;
+
+    // Educational note
+    this.drawBox(this.margin, y, this.contentWidth, 12, this.colors.blueLight);
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.blue);
+    this.pdf.text(
+      '💡 All assumptions are adjustable. We use conservative industry benchmarks by default.',
+      this.margin + 3,
+      y + 7
+    );
+    y += 18;
+
+    const assumptions = [
+      {
+        title: 'TIME SAVINGS',
+        items: [
+          { label: 'Your Assumption', value: `${this.data.timeSavedPerEncounter} min/encounter` },
+          { label: 'Industry Range', value: '2-4 min/encounter' }
+        ],
+        calculation: `${this.data.providers} providers × ${this.formatNumber(this.data.encounters)} encounters × ${this.data.utilization}% × ${this.data.timeSavedPerEncounter} min = ${this.formatNumber(this.data.hoursReturned)} hours`
+      },
+      {
+        title: 'TIME ALLOCATION',
+        items: [
+          { label: 'Quality of Life', value: '33%' },
+          { label: 'Patient Access', value: '33%' },
+          { label: 'Cost Reduction', value: '33%' }
+        ],
+        note: 'We assume saved time splits three ways based on organizational priorities'
+      },
+      {
+        title: 'UTILIZATION RATE',
+        items: [
+          { label: 'Your Selection', value: `${this.data.utilization}% (${this.data.utilizationLabel})` },
+          { label: 'Conservative Range', value: '50-60%' },
+          { label: 'Mature Adoption', value: '70-80%' }
+        ],
+        note: 'Most organizations start at 50-60% and reach 70-80% within 12-18 months as providers adopt the tool'
+      },
+      {
+        title: 'CONVERSION RATES',
+        items: [
+          { label: 'Patient Access Conversion', value: '60%' },
+          { label: 'Why not 100%?', value: 'Scheduling, room availability, demand constraints' }
+        ],
+        note: 'Not all saved time converts to visits due to operational constraints'
+      }
+    ];
+
+    assumptions.forEach(section => {
+      this.pdf.setFontSize(11);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(section.title, this.margin, y);
+      y += 8;
+
+      section.items.forEach(item => {
+        this.pdf.setFontSize(9);
+        this.pdf.setFont('helvetica', 'normal');
+        this.pdf.setTextColor(...this.colors.mediumGray);
+        this.pdf.text(item.label, this.margin + 5, y);
+
+        this.pdf.setFont('helvetica', 'bold');
+        this.pdf.setTextColor(...this.colors.darkGray);
+        const valueLines = this.pdf.splitTextToSize(String(item.value), this.contentWidth - 65);
+        this.pdf.text(valueLines, this.margin + 60, y);
+
+        y += Math.max(6, valueLines.length * 5);
+      });
+
+      if (section.calculation) {
+        y += 2;
+        this.pdf.setFontSize(8);
+        this.pdf.setFont('helvetica', 'italic');
+        this.pdf.setTextColor(...this.colors.mediumGray);
+        const calcLines = this.pdf.splitTextToSize(`Your Calculation: ${section.calculation}`, this.contentWidth - 10);
+        this.pdf.text(calcLines, this.margin + 5, y);
+        y += 4 * calcLines.length;
+      }
+
+      if (section.note) {
+        y += 2;
+        this.pdf.setFontSize(8);
+        this.pdf.setFont('helvetica', 'italic');
+        this.pdf.setTextColor(...this.colors.mediumGray);
+        const noteLines = this.pdf.splitTextToSize(section.note, this.contentWidth - 10);
+        this.pdf.text(noteLines, this.margin + 5, y);
+        y += 4 * noteLines.length;
+      }
+
+      y += 10;
+    });
+
+    y += 5;
+
+    // Methodology note
+    this.drawBox(this.margin, y, this.contentWidth, 22, this.colors.lighterGray);
+    
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('METHODOLOGY NOTE', this.margin + 5, y + 7);
+    
+    this.pdf.setFont('helvetica', 'normal');
+    const methText = 'All assumptions can be adjusted in the interactive model. This PDF represents your configuration as of the generation date. Contact us to refine or update your model based on your organization\'s specific data.';
+    const methLines = this.pdf.splitTextToSize(methText, this.contentWidth - 15);
+    this.pdf.text(methLines, this.margin + 5, y + 13);
+
+    this.addPageNumber();
+  }
+
+  // ============================================
+  // PAGE 8: NEXT STEPS
+  // ============================================
+
+  addNextSteps() {
+    this.pdf.addPage();
+    this.addLogo();
+    this.setTitle('NEXT STEPS', 40);
+
+    let y = 60;
+
+    const steps = [
+      {
+        number: '1',
+        title: 'VALIDATE ASSUMPTIONS',
+        description: 'Review this model with your finance and operations teams. We can schedule a working session to refine assumptions based on your specific data and organizational priorities.'
+      },
+      {
+        number: '2',
+        title: 'START WITH A PILOT',
+        description: 'Most organizations begin with 10-20 providers to prove value before scaling. We can scope a pilot that validates your ROI assumptions and builds internal momentum.'
+      },
+      {
+        number: '3',
+        title: 'BUILD YOUR BUSINESS CASE',
+        description: 'We\'ll help you present this to stakeholders with additional supporting materials, case studies, and reference calls from similar organizations in your region.'
+      }
+    ];
+
+    steps.forEach(step => {
+      this.drawCircle(this.margin + 5, y - 2, 4.5, this.colors.abridgeRed);
+      
+      this.pdf.setFontSize(12);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(255, 255, 255);
+      this.pdf.text(step.number, this.margin + 5, y + 1.5, { align: 'center' });
+
+      this.pdf.setFontSize(11);
+      this.pdf.setFont('helvetica', 'bold');
+      this.pdf.setTextColor(...this.colors.darkGray);
+      this.pdf.text(step.title, this.margin + 15, y);
+      y += 6;
+
+      this.pdf.setFontSize(9);
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      const descLines = this.pdf.splitTextToSize(step.description, this.contentWidth - 15);
+      this.pdf.text(descLines, this.margin + 15, y);
+      y += 5 * descLines.length + 12;
+    });
+
+    y += 15;
+
+    // Contact section
+    this.pdf.setDrawColor(...this.colors.mediumGray);
+    this.pdf.setLineWidth(0.3);
+    this.pdf.line(this.margin, y, this.pageWidth - this.margin, y);
+    y += 10;
+
+    this.pdf.setFontSize(12);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('CONTACT', this.margin, y);
+    y += 10;
+
+    const contact = [
+      this.data.salesDirector.name,
+      this.data.salesDirector.email,
+      this.data.salesDirector.phone
+    ];
+
+    contact.forEach(line => {
+      this.pdf.setFontSize(10);
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      this.pdf.text(line, this.margin, y);
+      y += 6;
+    });
+
+    y += 5;
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.abridgeRed);
+    this.pdf.text('www.abridge.com', this.margin, y);
+
+    y += 20;
+
+    // Model details
+    this.pdf.setDrawColor(...this.colors.mediumGray);
+    this.pdf.line(this.margin, y, this.pageWidth - this.margin, y);
+    y += 10;
+
+    this.pdf.setFontSize(9);
+    this.pdf.setFont('helvetica', 'bold');
+    this.pdf.setTextColor(...this.colors.darkGray);
+    this.pdf.text('Model Details', this.margin, y);
+    y += 6;
+
+    const details = [
+      `Generated: ${new Date().toLocaleString('en-US', { 
+        dateStyle: 'long',
+        timeStyle: 'short'
+      })}`,
+      `Model ID: ${this.data.modelId}`,
+      `Version: 2.1`,
+      `Methodology: Based on 200+ health system deployments`
+    ];
+
+    details.forEach(detail => {
+      this.pdf.setFontSize(8);
+      this.pdf.setFont('helvetica', 'normal');
+      this.pdf.setTextColor(...this.colors.mediumGray);
+      this.pdf.text(detail, this.margin, y);
+      y += 5;
+    });
+
+    y += 8;
+
+    // Disclaimer
+    this.pdf.setFontSize(7);
+    this.pdf.setFont('helvetica', 'italic');
+    this.pdf.setTextColor(...this.colors.mediumGray);
+    const disclaimer = 'This model is provided for evaluation purposes. Actual results may vary based on deployment specifics, adoption rates, and organizational factors. All financial projections are estimates based on industry data and should be validated with your finance team.';
+    const disclaimerLines = this.pdf.splitTextToSize(disclaimer, this.contentWidth);
+    this.pdf.text(disclaimerLines, this.margin, y);
+
+    this.addPageNumber();
+  }
+
+  // ============================================
+  // UTILITY METHODS
+  // ============================================
+
+  formatNumber(num) {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(0) + 'K';
+    }
+    return num.toLocaleString();
+  }
+}
+
+// MAIN EXPORT FUNCTION
+function exportROIPDF(modelData) {
+  const generator = new AbridgeROIPDF(modelData);
+  generator.generate();
+}
+
+// Make it globally available
+window.exportROIPDF = exportROIPDF;
+
+FILE 3: app.js (Wire it up)
+javascriptCopy// app.js - Connect your app to the PDF generator
+
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Your export button
+  const exportBtn = document.getElementById('export-pdf-btn');
+  
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function() {
+      
+      // Gather all your model data from the app state
+      const modelData = gatherModelData();
+      
+      // Generate the PDF
+      exportROIPDF(modelData);
+    });
+  }
+  
+});
+
+// Function to gather all model data from your app
+function gatherModelData() {
+  
+  // This is example data - replace with your actual app state
+  return {
+    // Basic info
+    organizationName: '', // Leave blank or get from user input
+    setting: 'Outpatient', // From care setting selection
+    providers: 50,
+    encounters: 100000,
+    encountersPerProvider: 2000,
+    utilization: 65,
+    utilizationLabel: 'Typical',
+    
+    // Financial summary
+    totalValue: 245438,
+    investment: 90000,
+    netGain: 155438,
+    roi: 2.7,
+    
+    // Key metrics
+    hoursReturned: 2708,
+    additionalVisits: 1073,
+    timeSavedPerEncounter: 2.5,
+    
+    // Pricing config
+    pricingModel: 'Per Provider / Month',
+    costPerProvider: 150,
+    contractTerm: 12,
+    
+    // Value drivers (only include selected ones)
+    valueDrivers: [
+      {
+        name: 'Overtime & Locum Cost Savings',
+        value: 207900,
+        category: 'labor',
+        description: 'Reduce after-hours documentation burden and temporary staff reliance',
+        selected: true
+      },
+      {
+        name: 'Patient Access',
+        value: 21450,
+        category: 'revenue',
+        description: '1,073 additional visits from time savings at $200/visit',
+        selected: true
+      },
+      {
+        name: 'Accurate Level of Service',
+        value: 16088,
+        category: 'revenue',
+        description: 'Capture appropriate E&M levels with complete documentation',
+        selected: true
+      }
+    ],
+    
+    // Largest driver for summary
+    largestDriver: {
+      name: 'Overtime & Locum Cost Savings',
+      value: 207900,
+      description: 'Reduce burnout and improve retention'
+    },
+    
+    // Multi-year projection
+    multiYearProjection: [
+      { year: 'Year 1', value: '245K', cost: '90K', net: '155K', roi: 2.7 },
+      { year: 'Year 2', value: '270K', cost: '90K', net: '180K', roi: 3.0 },
+      { year: 'Year 3', value: '297K', cost: '90K', net: '207K', roi: 3.3 }
+    ],
+    threeYearTotal: {
+      value: '812K',
+      cost: '270K',
+      net: '542K',
+      roi: 3.0
+    },
+    
+    // Full scale scenario
+    fullScale: {
+      providers: 200,
+      encountersPerProvider: 2000,
+      utilization: 75,
+      value: 1300000,
+      roi: 3.6
+    },
+    networkEffect: 320957,
+    
+    // Contact info
+    salesDirector: {
+      name: 'Your Name Here',
+      email: 'you@abridge.com',
+      phone: '(555) 123-4567'
+    },
+    
+    // Auto-generated model ID
+    modelId: generateModelId()
+  };
+}
+
+// Generate unique model ID
+function generateModelId() {
+  const setting = 'OP'; // Outpatient = OP, ED = ED, etc.
+  const providers = 50;
+  const utilization = 65;
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  
+  return `${setting}-${providers}-${utilization}UTL-${random}`;
+}
+
+WHAT YOU GET:
+8-page premium PDF with:
+
+✅ Cover page - Giant A watermark, net gain hero
+✅ Executive summary - One page for CFO
+✅ Value breakdown - Visual stacked bar chart
+✅ Investment details - Table + growth bar chart
+✅ Scenario model - Pilot vs full scale comparison
+✅ Journey chart - Growth curve visualization (NEW!)
+✅ Assumptions - Full transparency
+✅ Next steps - Clear call to action
+
+Educational elements throughout:
+
+💡 Blue info boxes explaining concepts
+Visual charts (bar charts, growth curves)
+Clear labels and context
+Conservative assumptions highlighted
+
+Premium design:
+
+Abridge logo on every page
+Consistent typography
+Brand colors used strategically
+White space = premium feel
+Page numbers
+Professional footer
+
+This feels like Apple × Stripe × McKinsey had a baby.
+Just paste these files into Replit and you're done. 🔥Add to Conversation
