@@ -885,7 +885,12 @@ export default function SummaryCommandCenter({
                       type="number" 
                       value={fullScaleUnits}
                       placeholder="e.g., 150"
-                      onChange={(e) => setFullScaleUnits(e.target.value === "" ? "" : Math.max(pilotUnits + 1, Number(e.target.value)))}
+                      onChange={(e) => setFullScaleUnits(e.target.value === "" ? "" : Number(e.target.value))}
+                      onBlur={(e) => {
+                        if (e.target.value !== "" && Number(e.target.value) < pilotUnits + 1) {
+                          setFullScaleUnits(pilotUnits + 1);
+                        }
+                      }}
                       min={pilotUnits + 1}
                       max={1000}
                       className="w-full px-3 py-2 rounded-lg border border-[#E5E7EB] font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
@@ -900,7 +905,14 @@ export default function SummaryCommandCenter({
                         type="number" 
                         value={fullScaleUtilization}
                         placeholder="e.g., 75"
-                        onChange={(e) => setFullScaleUtilization(e.target.value === "" ? "" : Math.min(95, Math.max(50, Number(e.target.value))))}
+                        onChange={(e) => setFullScaleUtilization(e.target.value === "" ? "" : Number(e.target.value))}
+                        onBlur={(e) => {
+                          if (e.target.value !== "") {
+                            const val = Number(e.target.value);
+                            if (val < 50) setFullScaleUtilization(50);
+                            else if (val > 95) setFullScaleUtilization(95);
+                          }
+                        }}
                         min={50}
                         max={95}
                         className="flex-1 px-3 py-2 rounded-lg border border-[#E5E7EB] font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
