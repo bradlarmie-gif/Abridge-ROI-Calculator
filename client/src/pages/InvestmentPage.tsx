@@ -297,11 +297,8 @@ export default function InvestmentPage({
               {/* Cost Per Unit (if per-unit selected) */}
               {pricingModel === "per_unit_monthly" && (
                 <div className="mb-8">
-                  <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
+                  <label className="text-[15px] font-semibold text-[#111827] mb-3 block">
                     Cost per {config.unitName}/month
-                    <span className="text-[#9CA3AF] cursor-help" title={`Industry standard: ${config.priceRange}/${config.unitName}/month`}>
-                      <Info className="w-4 h-4" />
-                    </span>
                   </label>
                   <div className="flex items-center gap-3">
                     <div className="relative flex-1 max-w-[200px]">
@@ -316,10 +313,6 @@ export default function InvestmentPage({
                     </div>
                     <span className="text-[15px] text-[#6B7280]">/month</span>
                   </div>
-                  <p className="text-[14px] text-[#9CA3AF] mt-2 flex items-center gap-1.5">
-                    <Clock className="w-4 h-4" />
-                    Typical: <strong>{config.priceRange}/{config.unitName}/month</strong>
-                  </p>
                 </div>
               )}
 
