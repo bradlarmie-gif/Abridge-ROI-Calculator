@@ -160,6 +160,7 @@ interface DriverInputs {
     annualEdVisits: number;
     lwbsRate: number;
     improvementRate: number;
+    abridgeAttributionPercent: number;
     avgEdVisitRevenue: number;
     includeAdmissions: boolean;
     admissionPercent: number;
@@ -424,6 +425,7 @@ export default function ModelBuilder({
       annualEdVisits: 45000,
       lwbsRate: 3.5,
       improvementRate: 20,
+      abridgeAttributionPercent: 33,
       avgEdVisitRevenue: 600,
       includeAdmissions: true,
       admissionPercent: 10,
@@ -715,20 +717,22 @@ export default function ModelBuilder({
       }
       // ED Drivers
       case "edThroughput": {
-        const { annualEdVisits, lwbsRate, improvementRate, avgEdVisitRevenue, includeAdmissions, admissionPercent, avgAdmissionRevenue } = driverInputs.edThroughput;
+        const { annualEdVisits, lwbsRate, improvementRate, abridgeAttributionPercent, avgEdVisitRevenue, includeAdmissions, admissionPercent, avgAdmissionRevenue } = driverInputs.edThroughput;
         // Step 1: Current LWBS
         const patientsLeaving = annualEdVisits * (lwbsRate / 100);
         // Step 2: Patients Retained
         const patientsRetained = patientsLeaving * (improvementRate / 100);
-        // Step 3: Revenue Mix
+        // Step 2.5: Attributed to Abridge
+        const patientsAttributedToAbridge = patientsRetained * (abridgeAttributionPercent / 100);
+        // Step 3: Revenue Mix (using attributed patients)
         let edVisitPatients, admissionPatients, edVisitRevenue, admissionRevenue;
         if (includeAdmissions) {
-          edVisitPatients = patientsRetained * (1 - admissionPercent / 100);
-          admissionPatients = patientsRetained * (admissionPercent / 100);
+          edVisitPatients = patientsAttributedToAbridge * (1 - admissionPercent / 100);
+          admissionPatients = patientsAttributedToAbridge * (admissionPercent / 100);
           edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
           admissionRevenue = admissionPatients * avgAdmissionRevenue;
         } else {
-          edVisitPatients = patientsRetained;
+          edVisitPatients = patientsAttributedToAbridge;
           admissionPatients = 0;
           edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
           admissionRevenue = 0;
@@ -986,6 +990,7 @@ export default function ModelBuilder({
             annualEdVisits: driverInputs.edThroughput.annualEdVisits,
             lwbsRate: driverInputs.edThroughput.lwbsRate,
             improvementRate: driverInputs.edThroughput.improvementRate,
+            abridgeAttributionPercent: driverInputs.edThroughput.abridgeAttributionPercent,
             avgEdVisitRevenue: driverInputs.edThroughput.avgEdVisitRevenue,
             includeAdmissions: driverInputs.edThroughput.includeAdmissions,
             admissionPercent: driverInputs.edThroughput.admissionPercent,
@@ -2834,24 +2839,27 @@ export default function ModelBuilder({
   // ============================================================================
   
   const renderEdThroughputInputs = () => {
-    const { annualEdVisits, lwbsRate, improvementRate, avgEdVisitRevenue, includeAdmissions, admissionPercent, avgAdmissionRevenue } = driverInputs.edThroughput;
+    const { annualEdVisits, lwbsRate, improvementRate, abridgeAttributionPercent, avgEdVisitRevenue, includeAdmissions, admissionPercent, avgAdmissionRevenue } = driverInputs.edThroughput;
 
-    // ED PATIENT THROUGHPUT (LWBS) CALCULATIONS (4-step)
+    // ED PATIENT THROUGHPUT (LWBS) CALCULATIONS (5-step)
     // Step 1: Current LWBS
     const patientsLeaving = annualEdVisits * (lwbsRate / 100);
     
     // Step 2: Patients Retained
     const patientsRetained = patientsLeaving * (improvementRate / 100);
     
-    // Step 3: Revenue Mix
+    // Step 2.5: Attributed to Abridge
+    const patientsAttributedToAbridge = patientsRetained * (abridgeAttributionPercent / 100);
+    
+    // Step 3: Revenue Mix (using attributed patients)
     let edVisitPatients, admissionPatients, edVisitRevenue, admissionRevenue;
     if (includeAdmissions) {
-      edVisitPatients = patientsRetained * (1 - admissionPercent / 100);
-      admissionPatients = patientsRetained * (admissionPercent / 100);
+      edVisitPatients = patientsAttributedToAbridge * (1 - admissionPercent / 100);
+      admissionPatients = patientsAttributedToAbridge * (admissionPercent / 100);
       edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
       admissionRevenue = admissionPatients * avgAdmissionRevenue;
     } else {
-      edVisitPatients = patientsRetained;
+      edVisitPatients = patientsAttributedToAbridge;
       admissionPatients = 0;
       edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
       admissionRevenue = 0;
@@ -2964,6 +2972,44 @@ export default function ModelBuilder({
 
         <StepDivider />
 
+        {/* Step 2.5: Attributed to Abridge */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2.5: Attributed to Abridge</p>
+          <p className="text-xs text-[#6B7280]">What % of retention is due to Abridge's impact?</p>
+          
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(patientsRetained).toLocaleString()} patients retained
+              </div>
+              <span className="text-neutral-400">×</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={abridgeAttributionPercent}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, abridgeAttributionPercent: Number(e.target.value) || 0 } }))}
+                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  min={20}
+                  max={50}
+                  data-testid="ed-abridge-attribution-input"
+                />
+                <span className="text-xs text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(patientsAttributedToAbridge).toLocaleString()} patients attributed to Abridge
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Abridge specifically impacts ED throughput through faster documentation (2.5 min/encounter), reduced after-visit work, and improved handoffs. Industry data suggests ambient AI accounts for 30-40% of measurable throughput improvements when combined with other ED optimization efforts.
+          </p>
+        </div>
+
+        <StepDivider />
+
         {/* Step 3: Revenue Recaptured */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-4">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Revenue Recaptured</p>
@@ -3022,7 +3068,7 @@ export default function ModelBuilder({
             
             {includeAdmissions ? (
               <>
-                <p className="text-xs text-[#6B7280]">Include admission revenue for retained patients</p>
+                <p className="text-xs text-[#6B7280]">Include admission revenue for attributed patients</p>
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1">
                     <Input
@@ -3034,7 +3080,7 @@ export default function ModelBuilder({
                     />
                     <span className="text-xs text-[#6B7280]">%</span>
                   </div>
-                  <span className="text-xs text-[#6B7280]">of {Math.round(patientsRetained).toLocaleString()} =</span>
+                  <span className="text-xs text-[#6B7280]">of {Math.round(patientsAttributedToAbridge).toLocaleString()} =</span>
                   <div className="font-mono text-sm bg-neutral-50 border border-neutral-200 rounded px-2 py-1.5">
                     {Math.round(admissionPatients).toLocaleString()} patients
                   </div>
