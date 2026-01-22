@@ -14,6 +14,11 @@ import {
   Check,
   HelpCircle,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export interface BaselineInfo {
   providers: number;
@@ -179,9 +184,16 @@ export default function BaselineSetup({
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     How many staffed beds are in scope?
-                    <span className="text-[#9CA3AF] cursor-help" title="Total staffed beds in this deployment">
-                      <HelpCircle className="w-4 h-4" />
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-[#9CA3AF] cursor-help">
+                          <HelpCircle className="w-4 h-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[240px]">
+                        <p>Total staffed beds in this deployment. This is how Abridge Nursing is billed.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </label>
                   <div className="relative">
                     <input
@@ -208,9 +220,16 @@ export default function BaselineSetup({
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     How many nurse FTEs support these beds?
-                    <span className="text-[#9CA3AF] cursor-help" title="Full-time equivalent nurses">
-                      <HelpCircle className="w-4 h-4" />
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-[#9CA3AF] cursor-help">
+                          <HelpCircle className="w-4 h-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[240px]">
+                        <p>Full-time equivalent nurses supporting these beds. Used to calculate labor savings.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </label>
                   <div className="relative">
                     <input
@@ -265,9 +284,16 @@ export default function BaselineSetup({
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     How many {getProviderLabel()} are in scope?
-                    <span className="text-[#9CA3AF] cursor-help" title={`Total ${getProviderLabel()} who will use Abridge in this deployment`}>
-                      <HelpCircle className="w-4 h-4" />
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-[#9CA3AF] cursor-help">
+                          <HelpCircle className="w-4 h-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[240px]">
+                        <p>Total {getProviderLabel()} who will use Abridge. Start with a pilot group or include your full deployment.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </label>
                   <div className="relative">
                     <input
@@ -298,9 +324,16 @@ export default function BaselineSetup({
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     Annual {getEncounterLabel()} for these {getProviderLabel()}?
-                    <span className="text-[#9CA3AF] cursor-help" title={`Total patient ${getEncounterLabel()} per year`}>
-                      <HelpCircle className="w-4 h-4" />
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-[#9CA3AF] cursor-help">
+                          <HelpCircle className="w-4 h-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[240px]">
+                        <p>Total patient {getEncounterLabel()} per year for these {getProviderLabel()}. This drives all value calculations.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </label>
                   <div className="relative">
                     <input
