@@ -87,6 +87,10 @@ export default function App() {
     navigateTo("model-builder");
   };
 
+  const handleBackToInvestment = () => {
+    navigateTo("investment");
+  };
+
   const handleBackToJourney = () => {
     navigateTo("journey");
   };
@@ -154,7 +158,7 @@ export default function App() {
             selectedSettings={selectionState.selectedSettings}
             selectedLevers={selectionState.selectedLevers}
             modelResults={modelResults}
-            onBack={handleBackToModelBuilder}
+            onBack={handleBackToInvestment}
             onEditModel={handleBackToModelBuilder}
             onBackToJourney={handleBackToJourney}
           />
