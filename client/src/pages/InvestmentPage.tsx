@@ -91,7 +91,7 @@ export default function InvestmentPage({
   const [enterpriseAnnual, setEnterpriseAnnual] = useState(100000);
   const [contractTerm, setContractTerm] = useState<1 | 2 | 3>(1);
   const [includeImplementation, setIncludeImplementation] = useState(false);
-  const implementationFee = 15000;
+  const [implementationFee, setImplementationFee] = useState(15000);
 
   const units = isNursingSetting 
     ? (valueResults.nursingStaffedBeds || 200)
@@ -386,7 +386,20 @@ export default function InvestmentPage({
                       <div className="text-[13px] text-[#6B7280]">One-time setup and training costs</div>
                     </div>
                   </div>
-                  <span className="text-[15px] font-semibold text-[#111827]">+${implementationFee.toLocaleString()}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[15px] font-semibold text-[#111827]">+$</span>
+                    <input
+                      type="text"
+                      value={implementationFee.toLocaleString()}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value.replace(/,/g, '')) || 0;
+                        setImplementationFee(val);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-20 text-[15px] font-semibold text-[#111827] bg-white border-b border-[#EA2C00]/80 hover:bg-[#FAFAFA] focus:outline-none focus:border-[#EA2C00] text-right"
+                      data-testid="input-implementation-fee"
+                    />
+                  </div>
                 </label>
                 {includeImplementation && (
                   <p className="text-[13px] text-[#9CA3AF] mt-2 ml-1">
