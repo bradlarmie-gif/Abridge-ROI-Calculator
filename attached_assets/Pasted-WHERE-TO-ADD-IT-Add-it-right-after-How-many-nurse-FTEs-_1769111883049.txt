@@ -1,0 +1,132 @@
+WHERE TO ADD IT:
+Add it right after "How many nurse FTEs support these beds?"
+CopySTEP 1: DEPLOYMENT SCOPE
+
+┌─────────────────────────────────────────────┐
+│ How many staffed beds are in scope?         │
+│ [200] beds                                  │
+└─────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────┐
+│ How many nurse FTEs support these beds?     │
+│ [150] FTEs                                  │
+│ ~1.5 FTEs per bed is typical for med-surg  │
+└─────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────┐  ← NEW
+│ Documentation events per nurse FTE          │
+│ [500] events/year                           │
+│                                             │
+│ 💡 Typical ranges by unit type:            │
+│    • ICU/Critical Care: 300-400/year       │
+│    • Med-Surg: 500-700/year                │
+│    • Emergency Dept: 800-1,200/year        │
+└─────────────────────────────────────────────┘
+
+WHAT IS A "DOCUMENTATION EVENT"?
+Add this explanation as a tooltip or expandable section:
+Copyⓘ What counts as a documentation event?
+
+A documentation event is any patient interaction that requires 
+structured charting in your EMR, including:
+
+✓ Initial patient assessments
+✓ Shift-to-shift handoffs
+✓ Medication administration records
+✓ Vital signs documentation
+✓ Care plan updates
+✓ Discharge summaries
+
+For calculation purposes, use your organization's annual 
+admission count divided by number of nursing FTEs as a 
+starting estimate.
+
+REPLIT INSTRUCTION:
+Add a new input field in Step 1 (Deployment Scope):
+
+Position: After "How many nurse FTEs support these beds?"
+Field design:
+htmlCopy<div class="input-field">
+  <label>
+    Documentation events per nurse FTE
+    <span class="tooltip-icon" data-tooltip="Annual number of patient encounters each nurse documents">
+      ⓘ
+    </span>
+  </label>
+  
+  <div class="input-with-unit">
+    <input 
+      type="number" 
+      id="events-per-fte" 
+      value="500" 
+      min="200" 
+      max="1500" 
+      step="50"
+    />
+    <span class="unit">events/year</span>
+  </div>
+  
+  <div class="input-guidance">
+    <div class="guidance-title">💡 Typical ranges by unit type:</div>
+    <div class="guidance-options">
+      <button class="preset-btn" onclick="setEventsPerFTE(350)">
+        ICU/Critical: 300-400
+      </button>
+      <button class="preset-btn" onclick="setEventsPerFTE(600)">
+        Med-Surg: 500-700
+      </button>
+      <button class="preset-btn" onclick="setEventsPerFTE(1000)">
+        Emergency: 800-1,200
+      </button>
+    </div>
+  </div>
+</div>
+
+Update the baseline calculation:
+javascriptCopy// OLD (hardcoded)
+const eventsPerFTE = 500;
+
+// NEW (user input)
+const eventsPerFTE = parseInt(document.getElementById('events-per-fte').value) || 500;
+
+// Calculate baseline
+const nurseFTEs = parseInt(document.getElementById('nurse-ftes').value) || 150;
+const totalEvents = nurseFTEs * eventsPerFTE;
+const utilization = getSelectedUtilization(); // 50%, 65%, 80%
+const eligibleEvents = Math.round(totalEvents * (utilization / 100));
+
+Update the baseline display:
+javascriptCopy// In YOUR BASELINE section
+document.getElementById('eligible-events').textContent = eligibleEvents.toLocaleString();
+
+// Update the breakdown
+document.getElementById('nurse-ftes-display').textContent = nurseFTEs;
+document.getElementById('events-per-fte-display').textContent = eventsPerFTE;
+document.getElementById('utilization-display').textContent = utilization + '%';
+
+Add preset buttons for quick selection:
+javascriptCopyfunction setEventsPerFTE(value) {
+  document.getElementById('events-per-fte').value = value;
+  // Trigger recalculation
+  calculateBaseline();
+}
+
+
+
+THE UPDATED BASELINE DISPLAY:
+CopyYOUR BASELINE
+
+48,750 eligible documentation events per year
+
+150 nurse FTEs  ×  500 events/FTE  ×  65% utilization
+
+✓ Everything below builds from this number
+This makes it crystal clear where the 48,750 comes from.
+
+WHY THIS MAKES YOUR CALCULATOR UNDENIABLE:
+
+✅ Transparency: Shows the exact calculation
+✅ Flexibility: Works for ICU, Med-Surg, ED, etc.
+✅ Education: The presets teach them what's typical
+✅ Defensibility: They can match it to their actual data
+✅ Reduces pushback: "Where'd you get 500 from?" → "You entered it."

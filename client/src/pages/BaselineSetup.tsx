@@ -63,14 +63,15 @@ export default function BaselineSetup({
   const [staffedBeds, setStaffedBeds] = useState(initialBaseline?.nursingStaffedBeds || "");
   const [nurseFTEs, setNurseFTEs] = useState(initialBaseline?.nursingFTEs || "");
   const [unitType, setUnitType] = useState<"med-surg" | "icu" | "mixed">(initialBaseline?.nursingUnitType || "med-surg");
+  const [documentationEventsPerFTE, setDocumentationEventsPerFTE] = useState<number | "">(initialBaseline?.nursingDocEventsPerBedPerYear || 500);
 
   // Compute derived values
-  const documentationEventsPerFTE = 500;
+  const numericDocEventsPerFTE = typeof documentationEventsPerFTE === "number" ? documentationEventsPerFTE : 500;
   const numericEncounters = typeof encounters === "number" ? encounters : 0;
   const numericProviders = typeof providers === "number" ? providers : 0;
   const numericStaffedBeds = typeof staffedBeds === "number" ? staffedBeds : 0;
   const numericNurseFTEs = typeof nurseFTEs === "number" ? nurseFTEs : 0;
-  const documentationEvents = isNursingSetting ? numericNurseFTEs * documentationEventsPerFTE : numericEncounters;
+  const documentationEvents = isNursingSetting ? numericNurseFTEs * numericDocEventsPerFTE : numericEncounters;
   
   const eligibleEncounters = useMemo(() => {
     if (isNursingSetting) {
@@ -91,14 +92,14 @@ export default function BaselineSetup({
       baseline.nursingStaffedBeds = numericStaffedBeds;
       baseline.nursingFTEs = numericNurseFTEs;
       baseline.nursingUnitType = unitType;
-      baseline.nursingDocEventsPerBedPerYear = documentationEventsPerFTE;
+      baseline.nursingDocEventsPerBedPerYear = numericDocEventsPerFTE;
     }
 
     onComplete(baseline);
   };
 
   const canContinue = isNursingSetting 
-    ? numericStaffedBeds > 0 && numericNurseFTEs > 0 
+    ? numericStaffedBeds > 0 && numericNurseFTEs > 0 && numericDocEventsPerFTE > 0
     : numericProviders > 0 && numericEncounters > 0;
 
   // Get setting-specific labels
@@ -255,6 +256,92 @@ export default function BaselineSetup({
                   <p className="text-[14px] text-[#9CA3AF] mt-2">
                     ~1.5 FTEs per bed is typical for med-surg, higher for ICU
                   </p>
+                </div>
+
+                {/* Documentation Events per FTE */}
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
+                    Documentation events per nurse FTE
+                    <Tooltip delayDuration={200}>
+                      <TooltipTrigger asChild>
+                        <span className="text-[#9CA3AF] cursor-help hover:text-[#6B7280] transition-colors">
+                          <HelpCircle className="w-4 h-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent 
+                        side="top" 
+                        className="bg-[#1F2937] text-white border-none shadow-lg max-w-[280px] text-[13px] leading-relaxed px-3 py-2"
+                      >
+                        <p className="font-medium mb-2">What counts as a documentation event?</p>
+                        <p className="text-[#D1D5DB] text-[12px]">
+                          Any patient interaction requiring structured charting: assessments, handoffs, medication records, vital signs, care plan updates, discharge summaries.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </label>
+                  <div className="relative max-w-[280px]">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={documentationEventsPerFTE === "" ? "" : documentationEventsPerFTE.toLocaleString()}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setDocumentationEventsPerFTE(val === "" ? "" : parseInt(val, 10));
+                      }}
+                      placeholder="e.g., 500"
+                      className="w-full px-5 py-4 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] transition-all"
+                      data-testid="input-doc-events-per-fte"
+                    />
+                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF] font-medium pointer-events-none">
+                      events/year
+                    </span>
+                  </div>
+                  
+                  {/* Preset buttons */}
+                  <div className="mt-3">
+                    <p className="text-[13px] text-[#6B7280] mb-2 flex items-center gap-1.5">
+                      <Info className="w-3.5 h-3.5" />
+                      Typical ranges by unit type:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDocumentationEventsPerFTE(350)}
+                        className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-all ${
+                          documentationEventsPerFTE === 350
+                            ? "border-[#EA2C00] bg-[rgba(234,44,0,0.05)] text-[#EA2C00]"
+                            : "border-[#E5E7EB] text-[#6B7280] hover:border-[#EA2C00] hover:text-[#EA2C00] bg-white"
+                        }`}
+                        data-testid="preset-icu"
+                      >
+                        ICU/Critical: 300-400
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDocumentationEventsPerFTE(600)}
+                        className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-all ${
+                          documentationEventsPerFTE === 600
+                            ? "border-[#EA2C00] bg-[rgba(234,44,0,0.05)] text-[#EA2C00]"
+                            : "border-[#E5E7EB] text-[#6B7280] hover:border-[#EA2C00] hover:text-[#EA2C00] bg-white"
+                        }`}
+                        data-testid="preset-medsurg"
+                      >
+                        Med-Surg: 500-700
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDocumentationEventsPerFTE(1000)}
+                        className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-all ${
+                          documentationEventsPerFTE === 1000
+                            ? "border-[#EA2C00] bg-[rgba(234,44,0,0.05)] text-[#EA2C00]"
+                            : "border-[#E5E7EB] text-[#6B7280] hover:border-[#EA2C00] hover:text-[#EA2C00] bg-white"
+                        }`}
+                        data-testid="preset-emergency"
+                      >
+                        Emergency: 800-1,200
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Unit Type */}
@@ -472,7 +559,7 @@ export default function BaselineSetup({
               <span className="text-2xl text-[#9CA3AF] font-light">×</span>
               <div className="text-center">
                 <div className="text-xl md:text-2xl font-bold text-[#111827]">
-                  {isNursingSetting ? "~500" : numericEncounters.toLocaleString()}
+                  {isNursingSetting ? numericDocEventsPerFTE.toLocaleString() : numericEncounters.toLocaleString()}
                 </div>
                 <div className="text-[13px] text-[#6B7280]">{isNursingSetting ? "events/FTE" : getEncounterLabel()}</div>
               </div>
