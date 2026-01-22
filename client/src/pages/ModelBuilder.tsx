@@ -1640,22 +1640,22 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Time Returned</p>
           <p className="text-xs text-[#6B7280]">How much time does Abridge give back?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="text-center">
               <label className="text-xs text-[#6B7280] block mb-1">Encounters</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-3 py-1.5 min-w-[70px]">
                 {eligibleEncounters.toLocaleString()}
               </div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <div className="text-neutral-400 pb-2">×</div>
+            <div className="text-center">
               <label className="text-xs text-[#6B7280] block mb-1">Utilization</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-3 py-1.5 min-w-[50px]">
                 {utilizationRate}%
               </div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <div className="text-neutral-400 pb-2">×</div>
+            <div className="text-center">
               <label className="text-xs text-[#6B7280] block mb-1">Time Saved</label>
               <div className="flex items-center gap-1">
                 <Input
@@ -1663,19 +1663,15 @@ export default function ModelBuilder({
                   step="0.1"
                   value={timeSavedPerEncounter}
                   onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, timeSavedPerEncounter: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  className="w-14 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="pa-time-saved-input"
                 />
                 <span className="text-xs text-[#6B7280]">min</span>
               </div>
             </div>
-          </div>
-          <div className="flex justify-end mt-2">
-            <div className="flex items-center gap-2">
-              <span className="text-neutral-400">=</span>
-              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {Math.round(hoursReturned).toLocaleString()} hrs
-              </div>
+            <div className="text-neutral-400 pb-2">=</div>
+            <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+              {Math.round(hoursReturned).toLocaleString()} hrs
             </div>
           </div>
         </div>
