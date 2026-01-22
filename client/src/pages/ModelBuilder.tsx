@@ -1745,9 +1745,13 @@ export default function ModelBuilder({
               <span className="text-neutral-400">×</span>
               <span className="text-sm text-[#6B7280]">$</span>
               <Input
-                type="number"
-                value={revenuePerVisit}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, revenuePerVisit: Number(e.target.value) || 0 } }))}
+                type="text"
+                value={revenuePerVisit.toLocaleString()}
+                onChange={(e) => {
+                  const rawValue = e.target.value.replace(/,/g, '');
+                  const numValue = Number(rawValue) || 0;
+                  setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, revenuePerVisit: numValue } }));
+                }}
                 className="w-20 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                 data-testid="pa-revenue-per-visit-input"
               />
@@ -2030,9 +2034,13 @@ export default function ModelBuilder({
               <span className="text-neutral-400">×</span>
               <span className="text-sm text-[#6B7280]">$</span>
               <Input
-                type="number"
-                value={replacementCost}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, retention: { ...prev.retention, replacementCost: Number(e.target.value) || 0 } }))}
+                type="text"
+                value={replacementCost.toLocaleString()}
+                onChange={(e) => {
+                  const rawValue = e.target.value.replace(/,/g, '');
+                  const numValue = Number(rawValue) || 0;
+                  setDriverInputs(prev => ({ ...prev, retention: { ...prev.retention, replacementCost: numValue } }));
+                }}
                 className="w-28 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                 data-testid="ret-replacement-cost-input"
               />
@@ -3034,9 +3042,13 @@ export default function ModelBuilder({
                   <div className="flex items-center gap-1">
                     <span className="text-sm text-[#6B7280]">$</span>
                     <Input
-                      type="number"
-                      value={avgAdmissionRevenue}
-                      onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, avgAdmissionRevenue: Number(e.target.value) || 0 } }))}
+                      type="text"
+                      value={avgAdmissionRevenue.toLocaleString()}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/,/g, '');
+                        const numValue = Number(rawValue) || 0;
+                        setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, avgAdmissionRevenue: numValue } }));
+                      }}
                       className="w-24 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                       data-testid="ed-admission-revenue-input"
                     />
@@ -3367,9 +3379,13 @@ export default function ModelBuilder({
               <div className="flex items-center gap-1">
                 <span className="text-sm text-[#6B7280]">$</span>
                 <Input
-                  type="number"
-                  value={replacementCost}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, replacementCost: Number(e.target.value) || 0 } }))}
+                  type="text"
+                  value={replacementCost.toLocaleString()}
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/,/g, '');
+                    const numValue = Number(rawValue) || 0;
+                    setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, replacementCost: numValue } }));
+                  }}
                   className="w-28 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-ret-replacement-cost-input"
                 />
@@ -4107,10 +4123,14 @@ export default function ModelBuilder({
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
                 <span className="text-sm text-[#6B7280]">$</span>
                 <Input
-                  type="number"
-                  value={replacementCost}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, replacementCost: Number(e.target.value) || 0 } }))}
-                  className="w-24 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  type="text"
+                  value={replacementCost.toLocaleString()}
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/,/g, '');
+                    const numValue = Number(rawValue) || 0;
+                    setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, replacementCost: numValue } }));
+                  }}
+                  className="w-28 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-retention-cost-input"
                 />
               </div>
@@ -5626,9 +5646,13 @@ export default function ModelBuilder({
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
                 <Input
-                  type="number"
-                  value={replacementCost}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, replacementCost: Number(e.target.value) || 0 } }))}
+                  type="text"
+                  value={replacementCost.toLocaleString()}
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/,/g, '');
+                    const numValue = Number(rawValue) || 0;
+                    setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, replacementCost: numValue } }));
+                  }}
                   className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-retention-cost-input"
                 />
