@@ -89,8 +89,15 @@ export default function InvestmentPage({
   const [pricingModel, setPricingModel] = useState<"per_unit_monthly" | "enterprise_annual" | null>(null);
   const [costPerUnit, setCostPerUnit] = useState<number | "">(""); 
   const [enterpriseAnnual, setEnterpriseAnnual] = useState<number | "">(""); 
-  const [contractTerm, setContractTerm] = useState<1 | 2 | 3>(1);
+  const [contractTerm, setContractTerm] = useState<number>(2);
+  const [isCustomTerm, setIsCustomTerm] = useState(false);
+  const [customTermValue, setCustomTermValue] = useState<number | "">(1);
   const [includeImplementation, setIncludeImplementation] = useState(false);
+  
+  // Effective contract term (use custom if enabled, otherwise selected)
+  const effectiveContractTerm = isCustomTerm 
+    ? (typeof customTermValue === "number" ? Math.min(Math.max(customTermValue, 1), 4) : 1)
+    : contractTerm;
   const [implementationFee, setImplementationFee] = useState(15000);
   
   // Animation states
@@ -151,7 +158,7 @@ export default function InvestmentPage({
     return false;
   }, [pricingModel, costPerUnit, enterpriseAnnual]);
 
-  const totalInvestment = (annualInvestment * contractTerm) + (includeImplementation ? implementationFee : 0);
+  const totalInvestment = (annualInvestment * effectiveContractTerm) + (includeImplementation ? implementationFee : 0);
   const netGainAnnual = totalAnnualValue - annualInvestment;
   const roiMultiple = annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0;
   const monthsToPayback = totalAnnualValue > 0 ? Math.round((annualInvestment / totalAnnualValue) * 12) : 0;
@@ -242,6 +249,7 @@ export default function InvestmentPage({
       enterpriseAnnual: enterpriseAnnual === "" ? 0 : enterpriseAnnual,
       pricingModel: pricingModel === "per_unit_monthly" ? "per_clinician" : "enterprise",
       nursingCostPerBedPerMonth: isNursingSetting ? (costPerUnit === "" ? 0 : costPerUnit) : undefined,
+      contractYears: effectiveContractTerm,
     });
   };
 
@@ -481,30 +489,81 @@ export default function InvestmentPage({
               <div className="mb-8">
                 <label className="text-[15px] font-semibold text-[#111827] block mb-4">Contract Term</label>
                 <div className="grid grid-cols-3 gap-3">
-                  {([1, 2, 3] as const).map((term, idx) => (
-                    <button
-                      key={term}
-                      onClick={() => setContractTerm(term)}
-                      className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
-                        contractTerm === term
-                          ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
-                          : "border-[#E5E7EB] bg-white hover:border-[#EA2C00]"
-                      }`}
-                      data-testid={`contract-term-${term}`}
-                    >
-                      <div className="text-lg font-bold text-[#111827]">{term} year{term > 1 ? "s" : ""}</div>
-                      {idx === 0 && (
-                        <div className="text-[12px] font-medium text-[#EA2C00]">Standard</div>
-                      )}
-                      {idx === 1 && (
-                        <div className="text-[12px] font-medium text-emerald-600">~10% savings</div>
-                      )}
-                      {idx === 2 && (
-                        <div className="text-[12px] font-medium text-emerald-600">~15% savings</div>
-                      )}
-                    </button>
-                  ))}
+                  {/* Custom option */}
+                  <button
+                    onClick={() => {
+                      setIsCustomTerm(true);
+                      setContractTerm(0);
+                    }}
+                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
+                      isCustomTerm
+                        ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
+                        : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
+                    }`}
+                    data-testid="contract-term-custom"
+                  >
+                    <div className="text-lg font-bold text-[#111827]">Custom</div>
+                  </button>
+                  
+                  {/* 2 years */}
+                  <button
+                    onClick={() => {
+                      setIsCustomTerm(false);
+                      setContractTerm(2);
+                    }}
+                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
+                      !isCustomTerm && contractTerm === 2
+                        ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
+                        : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
+                    }`}
+                    data-testid="contract-term-2"
+                  >
+                    <div className="text-lg font-bold text-[#111827]">2 years</div>
+                  </button>
+                  
+                  {/* 3 years */}
+                  <button
+                    onClick={() => {
+                      setIsCustomTerm(false);
+                      setContractTerm(3);
+                    }}
+                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
+                      !isCustomTerm && contractTerm === 3
+                        ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
+                        : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
+                    }`}
+                    data-testid="contract-term-3"
+                  >
+                    <div className="text-lg font-bold text-[#111827]">3 years</div>
+                  </button>
                 </div>
+                
+                {/* Custom input field */}
+                {isCustomTerm && (
+                  <div className="mt-4">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        min={1}
+                        max={4}
+                        value={customTermValue}
+                        placeholder="1-4"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "") {
+                            setCustomTermValue("");
+                          } else {
+                            const num = parseInt(val, 10);
+                            setCustomTermValue(Math.min(Math.max(num, 1), 4));
+                          }
+                        }}
+                        className="w-20 px-3 py-2 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] text-center"
+                        data-testid="input-custom-term"
+                      />
+                      <span className="text-[15px] text-[#6B7280]">year{typeof customTermValue === "number" && customTermValue !== 1 ? "s" : ""} (max 4)</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Implementation Fee */}
@@ -574,7 +633,7 @@ export default function InvestmentPage({
                   )}
                   <div className="flex justify-between">
                     <span className="text-[#6B7280]">Term</span>
-                    <span className="font-medium text-[#111827]">{contractTerm * 12} months</span>
+                    <span className="font-medium text-[#111827]">{effectiveContractTerm} year{effectiveContractTerm !== 1 ? "s" : ""}</span>
                   </div>
                   <div className="border-t border-[#E5E7EB] my-3" />
                   <div className="flex justify-between">

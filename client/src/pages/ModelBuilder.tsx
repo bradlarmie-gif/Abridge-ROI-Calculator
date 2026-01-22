@@ -84,6 +84,7 @@ export interface ModelResults {
   costPerMonth?: number;
   enterpriseAnnual?: number;
   pricingModel?: "per_clinician" | "enterprise";
+  contractYears?: number;
   // Nursing-specific fields
   nursingStaffedBeds?: number;
   nursingFTEs?: number;
