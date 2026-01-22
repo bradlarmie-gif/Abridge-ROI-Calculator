@@ -1,0 +1,206 @@
+Revert the expansion chart to work correctly with user inputs:
+The chart should have TWO data points that matter:
+
+Orange dot (TODAY): Current state - 30 providers, $242K
+Green dot (FULL SCALE): User's expansion target - whatever they enter
+
+Everything in between should be interpolated growth milestones.
+Fix the chart data structure:
+javascriptCopyfunction updateExpansionChart() {
+  // Get current state
+  const currentProviders = parseInt(document.getElementById('current-providers').value) || 30;
+  const currentValue = calculateCurrentValue(); // Your existing calculation
+  
+  // Get user's expansion inputs
+  const targetProviders = parseInt(document.getElementById('expansion-providers').value);
+  const targetUtilization = parseInt(document.getElementById('expansion-utilization').value);
+  
+  // Only show chart if user has entered BOTH expansion values
+  if (!targetProviders || !targetUtilization) {
+    // Show placeholder state
+    showChartPlaceholder();
+    return;
+  }
+  
+  // Calculate target value based on user's inputs
+  const targetValue = calculateExpansionValue(targetProviders, targetUtilization);
+  
+  // Create 5 milestone points for smooth curve
+  const milestones = [
+    {
+      x: currentProviders,
+      y: currentValue,
+      label: 'Today',
+      color: '#EA2C00' // Orange dot
+    },
+    {
+      x: currentProviders + (targetProviders - currentProviders) * 0.25,
+      y: currentValue + (targetValue - currentValue) * 0.20, // Slower start
+      label: '6 months'
+    },
+    {
+      x: currentProviders + (targetProviders - currentProviders) * 0.50,
+      y: currentValue + (targetValue - currentValue) * 0.45, // Acceleration
+      label: '1 year'
+    },
+    {
+      x: currentProviders + (targetProviders - currentProviders) * 0.75,
+      y: currentValue + (targetValue - currentValue) * 0.75, // Peak growth
+      label: '18 months'
+    },
+    {
+      x: targetProviders,
+      y: targetValue,
+      label: 'Full Scale',
+      color: '#10B981' // Green dot
+    }
+  ];
+  
+  // Linear projection for comparison (straight line)
+  const linearProjection = [
+    { x: currentProviders, y: currentValue },
+    { x: targetProviders, y: targetValue * 0.85 } // Show it's less optimized
+  ];
+  
+  updateChart(milestones, linearProjection);
+}
+
+function calculateExpansionValue(providers, utilization) {
+  // Use YOUR existing value driver calculations
+  // Just scale them by the new provider count and utilization
+  
+  const encountersPerProvider = 1500; // From your model
+  const eligibleEncounters = providers * encountersPerProvider * (utilization / 100);
+  
+  // Apply your value drivers to this new encounter volume
+  return calculateTotalValueFromEncounters(eligibleEncounters);
+}
+
+Chart configuration (clean version):
+javascriptCopyconst chartOptions = {
+  series: [
+    {
+      name: 'Actual value (with compounding)',
+      data: milestones.map(m => ({ x: m.x, y: m.y })),
+      color: '#10B981'
+    },
+    {
+      name: 'Linear projection',
+      data: linearProjection,
+      color: '#9CA3AF'
+    }
+  ],
+  
+  chart: {
+    type: 'line',
+    height: 350,
+    toolbar: { show: false },
+    animations: {
+      enabled: true,
+      easing: 'easeinout',
+      speed: 800
+    }
+  },
+  
+  stroke: {
+    curve: 'smooth',
+    width: [3, 2],
+    dashArray: [0, 5]
+  },
+  
+  markers: {
+    size: [6, 6, 6, 6, 8], // Bigger dots at start and end
+    colors: ['#EA2C00', '#10B981', '#10B981', '#10B981', '#10B981'],
+    strokeColors: '#fff',
+    strokeWidth: 2
+  },
+  
+  fill: {
+    type: 'gradient',
+    gradient: {
+      shade: 'light',
+      type: 'vertical',
+      opacityFrom: 0.4,
+      opacityTo: 0.05
+    }
+  },
+  
+  xaxis: {
+    type: 'numeric',
+    min: currentProviders,
+    max: targetProviders,
+    
+    labels: {
+      formatter: function(value) {
+        const milestone = milestones.find(m => Math.abs(m.x - value) < 5);
+        if (milestone) {
+          return milestone.label + '\n' + Math.round(milestone.x) + ' providers';
+        }
+        return '';
+      },
+      style: {
+        fontSize: '11px',
+        colors: '#6B7280'
+      }
+    }
+  },
+  
+  yaxis: {
+    min: 0,
+    max: targetValue * 1.1,
+    labels: {
+      formatter: function(val) {
+        if (val >= 1000000) return '$' + (val/1000000).toFixed(1) + 'M';
+        return '$' + Math.round(val/1000) + 'K';
+      }
+    }
+  },
+  
+  tooltip: {
+    custom: function({seriesIndex, dataPointIndex, w}) {
+      const point = milestones[dataPointIndex];
+      if (!point) return '';
+      
+      return `
+        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+          <div style="font-weight: 700; margin-bottom: 4px;">${point.label}</div>
+          <div style="color: #6B7280; font-size: 13px;">${Math.round(point.x)} providers</div>
+          <div style="color: #10B981; font-weight: 600; font-size: 14px; margin-top: 4px;">
+            $${Math.round(point.y/1000)}K annual value
+          </div>
+        </div>
+      `;
+    }
+  }
+};
+
+The key behavior:
+BEFORE user enters expansion data:
+Copy[Chart shows only orange dot with gray overlay]
+"Enter expansion targets below to see growth projection"
+AFTER user enters 150 providers and 75% utilization:
+Copy[Chart shows smooth green curve from orange dot to green dot]
+- Orange dot at (30 providers, $242K)
+- Green curve sweeps upward through milestones
+- Green dot at (150 providers, $1.2M calculated value)
+- Gray dashed line below for comparison
+
+Event listeners:
+javascriptCopy// Recalculate chart when user changes expansion inputs
+document.getElementById('expansion-providers').addEventListener('input', updateExpansionChart);
+document.getElementById('expansion-utilization').addEventListener('input', updateExpansionChart);
+
+// Also update when they change current pilot data
+document.getElementById('current-providers').addEventListener('input', updateExpansionChart);
+document.getElementById('current-utilization').addEventListener('input', updateExpansionChart);
+
+THE CORE FIX:
+The chart should:
+
+✅ Start at YOUR CURRENT PILOT values (orange dot)
+✅ End at USER'S EXPANSION TARGET (green dot) - calculated from their inputs
+✅ Show smooth growth curve between them (compounding)
+✅ Show linear projection below (non-compounding for comparison)
+✅ Only appear once user enters BOTH expansion fields
+
+The milestones (6mo, 1yr, 18mo) are just visual aids showing the journey - the actual endpoints are based on real data (current state → user's target).

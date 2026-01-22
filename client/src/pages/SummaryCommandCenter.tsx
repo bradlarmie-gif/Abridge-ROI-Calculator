@@ -201,81 +201,78 @@ export default function SummaryCommandCenter({
     const points = [];
     const steps = 20;
     
-    const targetUnits = typeof fullScaleUnits === "number" ? fullScaleUnits : pilotUnits;
-    const targetUtilization = typeof fullScaleUtilization === "number" ? fullScaleUtilization : pilotUtilization;
+    // Current state (TODAY - Orange dot)
+    const currentValue = totalAnnualValue;
+    const currentProviders = pilotUnits;
     
-    // Calculate pilot (today) value
-    const pilotEncountersCalc = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
-    const pilotValueCalc = pilotEncountersCalc * valuePerEncounter;
-    const valuePerUnit = pilotUnits > 0 ? pilotValueCalc / pilotUnits : 0;
+    // Target state (FULL SCALE - Green dot) - based on user inputs
+    const targetProviders = typeof fullScaleUnits === "number" && fullScaleUnits > pilotUnits 
+      ? fullScaleUnits 
+      : pilotUnits * 3; // Default to 3x if not entered
+    const targetUtilization = typeof fullScaleUtilization === "number" 
+      ? fullScaleUtilization 
+      : Math.min(pilotUtilization + 10, 80); // Default to +10% or 80%
     
-    // Calculate full scale value
-    const fullScaleEncounters = targetUnits * encountersPerUnit * (targetUtilization / 100);
-    const fullScaleValue = fullScaleEncounters * valuePerEncounter * 1.15; // 15% efficiency bonus at maturity
+    // Calculate target value based on user's expansion inputs
+    const targetEncounters = targetProviders * encountersPerUnit * (targetUtilization / 100);
+    const targetValue = targetEncounters * valuePerEncounter * 1.15; // 15% efficiency bonus at full scale
     
-    // Value growth multipliers (monotonically increasing - never dips)
-    const milestoneMultipliers = [
-      { index: 0, label: "Today", month: 0, multiplier: 1.0 },
-      { index: 5, label: "6 months", month: 6, multiplier: 1.18 },
-      { index: 10, label: "1 year", month: 12, multiplier: 1.52 },
-      { index: 15, label: "18 months", month: 18, multiplier: 1.95 },
-      { index: 20, label: "Full Scale", month: 24, multiplier: fullScaleValue / pilotValueCalc }
+    // Linear value for comparison (simple scaling without compounding)
+    const linearTargetValue = currentValue * (targetProviders / currentProviders);
+    
+    // Create milestone points (guaranteed monotonic - only goes UP)
+    // Growth percentages: 0% → 20% → 45% → 75% → 100%
+    const milestoneData = [
+      { index: 0, label: "Today", month: 0, providerPct: 0, valuePct: 0 },
+      { index: 5, label: "6 months", month: 6, providerPct: 0.25, valuePct: 0.20 },
+      { index: 10, label: "1 year", month: 12, providerPct: 0.50, valuePct: 0.45 },
+      { index: 15, label: "18 months", month: 18, providerPct: 0.75, valuePct: 0.75 },
+      { index: 20, label: "Full Scale", month: 24, providerPct: 1.0, valuePct: 1.0 }
     ];
-    
-    // Ensure final multiplier is at least as high as 18-month multiplier
-    if (milestoneMultipliers[4].multiplier < milestoneMultipliers[3].multiplier) {
-      milestoneMultipliers[4].multiplier = milestoneMultipliers[3].multiplier * 1.15;
-    }
     
     for (let i = 0; i <= steps; i++) {
       const progress = i / steps;
       
       // Find surrounding milestones for interpolation
-      let prevMilestone = milestoneMultipliers[0];
-      let nextMilestone = milestoneMultipliers[milestoneMultipliers.length - 1];
-      for (let m = 0; m < milestoneMultipliers.length - 1; m++) {
-        if (i >= milestoneMultipliers[m].index && i <= milestoneMultipliers[m + 1].index) {
-          prevMilestone = milestoneMultipliers[m];
-          nextMilestone = milestoneMultipliers[m + 1];
+      let prevM = milestoneData[0];
+      let nextM = milestoneData[milestoneData.length - 1];
+      for (let m = 0; m < milestoneData.length - 1; m++) {
+        if (i >= milestoneData[m].index && i <= milestoneData[m + 1].index) {
+          prevM = milestoneData[m];
+          nextM = milestoneData[m + 1];
           break;
         }
       }
       
-      // Linear interpolation between milestones (guaranteed monotonic)
-      const segmentProgress = (i - prevMilestone.index) / (nextMilestone.index - prevMilestone.index);
-      const multiplier = prevMilestone.multiplier + (nextMilestone.multiplier - prevMilestone.multiplier) * segmentProgress;
+      // Linear interpolation between milestone percentages
+      const segmentProgress = nextM.index === prevM.index ? 1 : (i - prevM.index) / (nextM.index - prevM.index);
+      const providerPct = prevM.providerPct + (nextM.providerPct - prevM.providerPct) * segmentProgress;
+      const valuePct = prevM.valuePct + (nextM.valuePct - prevM.valuePct) * segmentProgress;
       
-      // Calculate providers at this point (linear growth)
-      const providerProgress = i / steps;
-      const units = Math.round(pilotUnits + (targetUnits - pilotUnits) * providerProgress);
+      // Calculate actual values
+      const units = Math.round(currentProviders + (targetProviders - currentProviders) * providerPct);
+      const actualValue = Math.round(currentValue + (targetValue - currentValue) * valuePct);
+      const linearValue = Math.round(currentValue + (linearTargetValue - currentValue) * providerPct);
       
-      // Linear projection (simple per-unit scaling)
-      const linearValue = Math.round(valuePerUnit * units);
-      
-      // Actual value with compounding (guaranteed monotonic)
-      const actualValue = Math.round(pilotValueCalc * multiplier);
-      
-      // Utilization grows linearly
       const utilization = pilotUtilization + (targetUtilization - pilotUtilization) * progress;
-      
       const investment = units * pricePerUnit * 12;
       const net = actualValue - investment;
       const roi = investment > 0 ? (actualValue / investment) : 0;
       
-      const milestone = milestoneMultipliers.find(m => m.index === i);
+      const milestone = milestoneData.find(m => m.index === i);
       const isMilestone = !!milestone;
       
       points.push({
         providers: units,
         index: i,
-        month: milestone?.month || Math.round((i / steps) * 24),
+        month: milestone?.month || Math.round(progress * 24),
         linearValue,
         actualValue,
         value: actualValue,
         net: Math.round(net),
         roi: roi.toFixed(1),
         utilization: Math.round(utilization),
-        adoptionRate: Math.round(85 + progress * 10), // 85% to 95%
+        adoptionRate: Math.round(85 + progress * 10),
         isPilot: i === 0,
         isFullScale: i === steps,
         isMilestone,
@@ -284,7 +281,7 @@ export default function SummaryCommandCenter({
     }
     
     return points;
-  }, [pilotUnits, fullScaleUnits, pilotUtilization, fullScaleUtilization, encountersPerUnit, valuePerEncounter, pricePerUnit]);
+  }, [pilotUnits, fullScaleUnits, pilotUtilization, fullScaleUtilization, encountersPerUnit, valuePerEncounter, pricePerUnit, totalAnnualValue]);
   
   const pilot = chartData[0];
   const fullScale = chartData[chartData.length - 1];
