@@ -432,10 +432,12 @@ export default function ExpandJourneyExpansion({
                   type="number"
                   domain={[xAxisConfig.start, xAxisConfig.end]}
                   ticks={xAxisConfig.ticks}
+                  allowDecimals={false}
+                  interval={0}
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#64748b", fontSize: 12 }}
-                  tickFormatter={(v) => Math.round(v).toString()}
+                  tickFormatter={(value) => String(Math.round(value))}
                   label={{
                     value: "PROVIDERS",
                     position: "bottom",
