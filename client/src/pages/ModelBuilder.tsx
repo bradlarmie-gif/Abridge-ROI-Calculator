@@ -519,7 +519,7 @@ export default function ModelBuilder({
       annualAdmissions: 10000,   // 10,000 annual admissions
       fallsRate: 3.5,            // 3.5 falls per 1,000 patient days
       avgLOS: 4,                 // 4 day average length of stay
-      preventionRate: 8,         // 8% documentation-preventable
+      preventionRate: 5,         // 5% documentation-preventable
       costPerFall: 6500,         // $6,500 average cost per fall
     },
     nursingAgency: {
@@ -5527,7 +5527,7 @@ export default function ModelBuilder({
               </div>
             </div>
           </div>
-          <p className="text-xs text-[#6B7280] mt-2">Not all falls are documentation-preventable. 8% is conservative — represents cases where real-time risk assessment would have triggered earlier intervention.</p>
+          <p className="text-xs text-[#6B7280] mt-2">Not all falls are documentation-preventable. 5% is conservative — represents cases where real-time risk assessment would have triggered earlier intervention.</p>
         </div>
 
         <StepDivider />
