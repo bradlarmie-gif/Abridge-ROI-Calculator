@@ -373,6 +373,7 @@ export default function ModelBuilder({
   const [implementationFee, setImplementationFee] = useState<number>(25000);
   
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
+  const [reviewedDrivers, setReviewedDrivers] = useState<Set<string>>(new Set());
   
   const isEDSetting = selectedSettings.includes("ed");
   
@@ -5962,104 +5963,134 @@ export default function ModelBuilder({
   };
   
   return (
-    <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
-      <div
-        className="absolute inset-0 opacity-[0.015] pointer-events-none"
-        style={{
-          backgroundImage: `url(${geometricPattern})`,
-          backgroundSize: "800px 800px",
-          backgroundPosition: "center",
-          backgroundRepeat: "repeat",
-        }}
-      />
+    <div className="min-h-screen bg-[#F9FAFB]">
+      <GlobalHeader pageName="Value Drivers" currentStep={4} totalSteps={6} onLogoClick={onBackToJourney} />
       
-      <GlobalHeader pageName="Explore Model" currentStep={4} totalSteps={6} onLogoClick={onBackToJourney} />
-      
-      <div className="max-w-7xl mx-auto px-6 pt-[96px] pb-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-6 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* Live Model Sidebar - appears first in DOM for mobile accessibility */}
-          <div className="w-full lg:w-[35%] lg:order-2">
-            <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-neutral-200 p-5 sm:p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-[#111827] mb-4">Live Model</h3>
-              
-              <div className="space-y-4">
-                <div className="text-xs uppercase tracking-wider text-[#6B7280] mb-2">Your Value</div>
-                
-                <div className="space-y-2">
-                  {activeDrivers.map(driverId => (
-                    <div key={driverId} className="flex justify-between items-center py-1">
-                      <span className="text-sm text-[#111827]">{DRIVER_NAMES[driverId]}</span>
-                      <span className="font-mono text-sm text-emerald-600">{formatCurrency(driverResults[driverId]?.value || 0)}</span>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="border-t border-neutral-200 pt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-[#111827]">Total Value</span>
-                    <span className="font-mono font-bold text-lg text-emerald-600">{formatCurrency(totalBenefit)}/yr</span>
+      <div className="pt-[96px] pb-16">
+        {/* Back Button */}
+        <div className="max-w-7xl mx-auto px-6 mb-6">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 text-[15px] font-medium text-[#6B7280] transition-colors hover:text-[#EA2C00]"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Your Organization
+          </button>
+        </div>
+
+        {/* Centered Page Header */}
+        <div className="text-center max-w-[800px] mx-auto px-6 mb-12">
+          <div className="inline-block text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-3 py-1.5 rounded-md mb-6">
+            Step 4 of 6
+          </div>
+          <h1 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4">
+            Your Value Drivers
+          </h1>
+          <p className="text-[17px] leading-relaxed text-[#6B7280]">
+            Customize the calculation for each priority you selected. We've pre-filled industry benchmarks—adjust them to match your reality.
+          </p>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+            {/* Live Model Sidebar - appears first in DOM for mobile accessibility */}
+            <div className="w-full lg:w-[380px] lg:order-2 lg:flex-shrink-0">
+              <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <Calculator className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#111827]">Live Model</h3>
+                    <p className="text-xs text-[#6B7280]">Updates as you customize</p>
                   </div>
                 </div>
                 
-                <p className="text-xs text-[#6B7280] text-center py-2">Investment calculated in next step</p>
+                <div className="space-y-1 mb-4">
+                  {activeDrivers.map((driverId, idx) => {
+                    const isReviewed = expandedDriver === driverId || reviewedDrivers.has(driverId);
+                    return (
+                      <div 
+                        key={driverId} 
+                        className={`flex justify-between items-center py-2.5 px-3 rounded-lg transition-colors ${
+                          expandedDriver === driverId ? 'bg-[rgba(234,44,0,0.05)]' : 'hover:bg-neutral-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isReviewed && (
+                            <Check className="w-4 h-4 text-emerald-500" />
+                          )}
+                          <span className={`text-sm ${isReviewed ? 'text-[#111827]' : 'text-[#6B7280]'}`}>
+                            {DRIVER_NAMES[driverId]}
+                          </span>
+                        </div>
+                        <span className="font-mono text-sm font-semibold text-emerald-600">
+                          {formatCurrency(driverResults[driverId]?.value || 0)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
                 
-                <Button
+                <div className="border-t border-neutral-200 pt-4 mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-semibold text-[#111827]">Total Annual Value</span>
+                    <span className="font-mono font-bold text-xl text-emerald-600">{formatCurrency(totalBenefit)}</span>
+                  </div>
+                  <p className="text-xs text-[#6B7280] mt-1">per year</p>
+                </div>
+                
+                <div className="bg-neutral-50 rounded-lg p-3 mb-6">
+                  <p className="text-xs text-[#6B7280] text-center">
+                    Investment calculated in next step
+                  </p>
+                </div>
+                
+                <button
                   onClick={handleComplete}
-                  className="w-full h-12 bg-[#EA2C00] hover:bg-[#d12700] border-[#EA2C00] text-white text-base font-semibold"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-[15px] bg-[#EA2C00] text-white hover:bg-[#d12700] transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
                   data-testid="button-continue-investment"
                 >
                   Continue to Investment
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </div>
             </div>
-          </div>
-          
-          {/* Main Content - appears second in DOM but first visually on desktop */}
-          <div className="flex-1 lg:max-w-[65%] space-y-6 lg:space-y-8 lg:order-1">
-            <section className="bg-white rounded-2xl border border-neutral-200 p-5 sm:p-8">
+            
+            {/* Main Content - appears second in DOM but first visually on desktop */}
+            <div className="flex-1 space-y-6 lg:order-1">
               {/* Baseline Summary Card */}
-              <div className="mb-6 p-6 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl border border-emerald-200">
-                <div className="flex items-center gap-2.5 mb-3">
+              <div className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
+                <div className="flex items-center gap-2.5 mb-4">
                   <TrendingUp className="w-5 h-5 text-emerald-600" />
                   <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Your Baseline</span>
                 </div>
-                <div className="font-mono text-3xl font-bold text-emerald-700 mb-1">
-                  {eligibleEncounters.toLocaleString()}
+                <div className="flex flex-wrap items-end gap-4 mb-4">
+                  <div className="font-mono text-4xl font-bold text-emerald-700">
+                    {eligibleEncounters.toLocaleString()}
+                  </div>
+                  <p className="text-base font-medium text-emerald-700 pb-1">
+                    eligible {isNursingSetting ? "documentation events" : isInpatientSetting ? "admissions" : "encounters"} per year
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-emerald-700 mb-3">
-                  eligible {isNursingSetting ? "documentation events" : isInpatientSetting ? "admissions" : "encounters"} per year
-                </p>
-                <p className="font-mono text-xs text-slate-500">
+                <p className="font-mono text-sm text-slate-500 mb-3">
                   {isNursingSetting 
                     ? `${nurseFTEs.toLocaleString()} nurse FTEs × ~500 events/FTE × ${utilizationRate}% utilization`
                     : `${providers.toLocaleString()} ${isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} × ${encounters.toLocaleString()} ${isInpatientSetting ? "admissions" : "encounters"} × ${utilizationRate}% utilization`
                   }
                 </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={onBack}
-                  className="mt-3 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 -ml-2"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
                   data-testid="button-edit-baseline"
                 >
-                  <ArrowLeft className="w-3 h-3 mr-1" />
+                  <ArrowLeft className="w-3.5 h-3.5" />
                   Edit baseline
-                </Button>
+                </button>
               </div>
-            </section>
-            
-            <section className="bg-white rounded-2xl border border-neutral-200 p-8">
+              
+              <section className="bg-white rounded-2xl border border-neutral-200 p-6 md:p-8">
               {/* Inpatient ED Connection Callout - appears at TOP before drivers */}
               {isInpatientSetting && (
                 <div className="mb-8 relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-6" data-testid="inpatient-ed-connection-callout">
@@ -6202,7 +6233,8 @@ export default function ModelBuilder({
                 </div>
               )}
             </section>
-            
+              
+            </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,835 @@
+Let me analyze what I see:
+🔥 What's KILLING IT (Don't Touch):
+
+✅ "Value Breakdown" section - Labor & Efficiency (85%) vs Revenue & Quality (15%) with the stacked bar is PERFECT
+✅ "Investment Details" section - Clean two-column layout showing config vs multi-year projection
+✅ The multi-year projection table - Year 1, Year 2, Year 3 with cumulative totals = chef's kiss
+✅ "Model Your Scenario" section with the pilot vs full scale comparison - BRILLIANT framing
+✅ The compound effect explanation - "The gap between these two lines represents unrealized value" is EXACTLY the kind of framing that makes you undeniable
+✅ "Your Journey with Abridge" chart - Showing the growth curve vs staying put is powerful storytelling
+
+💎 What I'd ENHANCE (Not Replace):
+
+Top hero section - Needs even MORE prominence. That $155K net gain and 2.7x ROI should slap harder
+The page title - "Explore Summary" is weak. This should be "Your ROI Model" or "Your Business Case"
+Breadcrumb at top - "Outpatient | 50 providers | $155,438 net value | 2.7x ROI" is good but could be stickier
+Export & Share button - Should be HUGE and persistent
+Key Assumptions section - Needs to be collapsible but easily accessible for stakeholder questions
+
+
+MY ENHANCEMENTS (Keeping Your Structure)
+htmlCopy<div class="page-container summary-page">
+  
+  <!-- Sticky Header Bar -->
+  <div class="summary-header-bar sticky">
+    <div class="header-bar-content">
+      <div class="summary-breadcrumb">
+        <span class="breadcrumb-item">Outpatient</span>
+        <span class="breadcrumb-separator">•</span>
+        <span class="breadcrumb-item">50 providers</span>
+        <span class="breadcrumb-separator">•</span>
+        <span class="breadcrumb-item highlight">$155,438 net value</span>
+        <span class="breadcrumb-separator">•</span>
+        <span class="breadcrumb-item highlight">2.7x ROI</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary btn-icon" onclick="editModel()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Edit Model
+        </button>
+        <button class="btn-primary btn-icon" onclick="exportPDF()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export & Share
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero ROI Card - ENHANCED -->
+  <div class="summary-hero">
+    <div class="hero-label">YOUR ROI AT A GLANCE</div>
+    <div class="hero-split">
+      <div class="hero-left">
+        <div class="hero-stat-group">
+          <div class="hero-stat-label">Net Annual Gain</div>
+          <div class="hero-stat-value gain">+$155,438</div>
+          <div class="hero-stat-sublabel">$245,438 value − $90,000 investment</div>
+        </div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-right">
+        <div class="hero-stat-group">
+          <div class="hero-stat-label">Return on Investment</div>
+          <div class="hero-stat-value roi">2.7×</div>
+          <div class="hero-stat-sublabel">Every $1 invested returns $2.70</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Stats Bar -->
+    <div class="quick-stats">
+      <div class="quick-stat">
+        <div class="stat-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">2,708 hrs</div>
+          <div class="stat-label">Time returned annually</div>
+        </div>
+      </div>
+      <div class="quick-stat">
+        <div class="stat-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">1,073</div>
+          <div class="stat-label">Additional patient visits</div>
+        </div>
+      </div>
+      <div class="quick-stat">
+        <div class="stat-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">65%</div>
+          <div class="stat-label">Expected utilization</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALUE BREAKDOWN - Keep your exact structure, just enhance styling -->
+  <div class="summary-section">
+    <div class="section-header-enhanced">
+      <div class="section-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="section-title-enhanced">VALUE BREAKDOWN</h2>
+        <p class="section-subtitle-enhanced">Where your ROI comes from</p>
+      </div>
+    </div>
+
+    <div class="value-breakdown-grid">
+      <!-- KEEP YOUR EXACT CONTENT - just wrapped in better containers -->
+      <div class="value-category-card labor-card">
+        <div class="category-header">
+          <div class="category-icon-large">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="category-title-large">LABOR & EFFICIENCY</h3>
+            <p class="category-percentage">85% of total value</p>
+          </div>
+        </div>
+        <div class="category-value">$207,900</div>
+        <div class="category-drivers">
+          <div class="driver-line">
+            <span class="driver-name">Overtime & Locum Savings</span>
+            <span class="driver-amount">$207,900</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="value-category-card revenue-card">
+        <div class="category-header">
+          <div class="category-icon-large">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="category-title-large">REVENUE & QUALITY</h3>
+            <p class="category-percentage">15% of total value</p>
+          </div>
+        </div>
+        <div class="category-value">$37,538</div>
+        <div class="category-drivers">
+          <div class="driver-line">
+            <span class="driver-name">Patient Access</span>
+            <span class="driver-amount">$21,450</span>
+          </div>
+          <div class="driver-line">
+            <span class="driver-name">Accurate Level of Service</span>
+            <span class="driver-amount">$16,088</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KEEP YOUR STACKED BAR EXACTLY AS IS -->
+    <div class="stacked-bar-container">
+      <div class="stacked-bar-large">
+        <div class="bar-segment-large labor" style="width: 85%;">
+          <span class="segment-label-large">Labor & Efficiency (85%)</span>
+        </div>
+        <div class="bar-segment-large revenue" style="width: 15%;">
+          <span class="segment-label-large">15%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVESTMENT DETAILS - Keep your two-column layout -->
+  <div class="summary-section">
+    <div class="section-header-enhanced">
+      <div class="section-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="9" y1="21" x2="9" y2="9"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="section-title-enhanced">INVESTMENT DETAILS</h2>
+      </div>
+    </div>
+
+    <div class="investment-grid">
+      <!-- Left: Your Configuration - KEEP EXACTLY AS IS -->
+      <div class="config-display">
+        <h3 class="subsection-title">Your Configuration</h3>
+        <div class="config-items">
+          <div class="config-item">
+            <span class="config-key">Setting</span>
+            <span class="config-value">Outpatient</span>
+          </div>
+          <div class="config-item">
+            <span class="config-key">Providers</span>
+            <span class="config-value">50</span>
+          </div>
+          <div class="config-item">
+            <span class="config-key">Price</span>
+            <span class="config-value">$150/provider/month</span>
+          </div>
+          <div class="config-item">
+            <span class="config-key">Contract Term</span>
+            <span class="config-value">12 months</span>
+          </div>
+          <div class="config-divider"></div>
+          <div class="config-item total">
+            <span class="config-key">Annual Investment</span>
+            <span class="config-value">$90,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Multi-Year Projection - KEEP YOUR TABLE -->
+      <div class="projection-display">
+        <h3 class="subsection-title">Multi-Year Projection</h3>
+        <table class="projection-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Year 1</th>
+              <th>Year 2</th>
+              <th>Year 3</th>
+              <th>3-Yr Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="row-label">Value</td>
+              <td>$245K</td>
+              <td>$270K</td>
+              <td>$297K</td>
+              <td class="total-cell">$812K</td>
+            </tr>
+            <tr>
+              <td class="row-label">Cost</td>
+              <td>$90K</td>
+              <td>$90K</td>
+              <td>$90K</td>
+              <td class="total-cell">$270K</td>
+            </tr>
+            <tr class="net-row">
+              <td class="row-label">Net</td>
+              <td class="net-cell">$155K</td>
+              <td class="net-cell">$180K</td>
+              <td class="net-cell">$207K</td>
+              <td class="net-total">$542K</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="projection-note">Assumes 10% annual value growth with increased adoption</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL YOUR SCENARIO - KEEP THIS ENTIRE SECTION -->
+  <div class="summary-section scenario-section">
+    <div class="section-header-enhanced">
+      <div class="section-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="section-title-enhanced">MODEL YOUR SCENARIO</h2>
+        <p class="section-subtitle-enhanced">See what full scale looks like</p>
+      </div>
+    </div>
+
+    <!-- KEEP YOUR PILOT vs FULL SCALE COMPARISON EXACTLY -->
+    <div class="scenario-comparison">
+      <div class="scenario-card current">
+        <div class="scenario-badge">YOUR PILOT</div>
+        <div class="scenario-label">Current State</div>
+        <div class="scenario-providers">50 providers</div>
+        <div class="scenario-encounters">200 encounters per provider</div>
+        <div class="scenario-utilization">Current utilization: 65%</div>
+        <div class="scenario-results">
+          <div class="result-item">
+            <span class="result-label">PILOT (TODAY)</span>
+            <span class="result-value">$245,438</span>
+            <span class="result-sublabel">annual value</span>
+            <span class="result-roi">2.7x ROI</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-arrow">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </div>
+
+      <div class="scenario-card opportunity">
+        <div class="scenario-badge">YOUR OPPORTUNITY</div>
+        <div class="scenario-label">Full-Scale Potential</div>
+        <div class="scenario-providers">200 providers</div>
+        <div class="scenario-encounters">200 encounters per provider</div>
+        <div class="scenario-utilization">Target utilization: 75%</div>
+        <div class="scenario-results highlight">
+          <div class="result-item">
+            <span class="result-label">FULL SCALE</span>
+            <span class="result-value">$1.3M</span>
+            <span class="result-sublabel">annual value</span>
+            <span class="result-roi">3.6x ROI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="network-effect-callout">
+      <div class="callout-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+          <polyline points="17 6 23 6 23 12"/>
+        </svg>
+      </div>
+      <div class="callout-content">
+        <h4>NETWORK EFFECT</h4>
+        <p>
+          <strong>+$320,957</strong> compounding value — Beyond linear projection. Utilization typically increases as adoption matures. Most organizations reach 70-80% at full scale.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- THE COMPOUNDING EFFECT - KEEP YOUR EXPLANATION -->
+  <div class="summary-section">
+    <div class="section-header-enhanced">
+      <div class="section-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M2 12h20"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="section-title-enhanced">THE COMPOUNDING EFFECT</h2>
+      </div>
+    </div>
+
+    <!-- KEEP YOUR EXPLANATION BOX -->
+    <div class="compounding-explanation">
+      <p class="explanation-intro">
+        The gap between these two lines represents unrealized value — not because your current solution is bad, but because ambient AI ROI is <strong>multiplicative</strong>:
+      </p>
+      <div class="explanation-formula">
+        <div class="formula-item-enhanced">
+          <div class="formula-icon">📈</div>
+          <div class="formula-text">
+            <strong>Utilization:</strong> 65% → 75% as adoption matures
+          </div>
+        </div>
+        <div class="formula-item-enhanced">
+          <div class="formula-icon">🔄</div>
+          <div class="formula-text">
+            <strong>Retention:</strong> Benefits materialize after 6-12 months
+          </div>
+        </div>
+        <div class="formula-item-enhanced">
+          <div class="formula-icon">⚡</div>
+          <div class="formula-text">
+            <strong>Efficiency:</strong> Shared learnings, optimized workflows
+          </div>
+        </div>
+      </div>
+      <p class="explanation-footnote">
+        Small gaps in each dimension compound into large gaps overall. If your utilization is <strong>77%</strong> of potential, and your efficiency is <strong>50%</strong> of potential, you're capturing roughly <strong>63%</strong> of the value you could be.
+      </p>
+    </div>
+  </div>
+
+  <!-- YOUR JOURNEY WITH ABRIDGE CHART - KEEP EXACTLY AS IS -->
+  <div class="summary-section">
+    <div class="section-header-enhanced">
+      <div class="section-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="section-title-enhanced">Your Journey with Abridge</h2>
+        <p class="section-subtitle-enhanced">Start with a pilot. Prove the value. Scale across your organization.</p>
+      </div>
+    </div>
+
+    <!-- KEEP YOUR CHART - just make container prettier -->
+    <div class="journey-chart-container">
+      <!-- Your existing chart implementation -->
+      <div class="chart-placeholder">
+        [Your existing chart showing growth curve vs current state]
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY ASSUMPTIONS - Make collapsible but prominent -->
+  <details class="summary-section assumptions-section">
+    <summary class="assumptions-toggle">
+      <div class="toggle-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+        </svg>
+        <span class="toggle-title">Key Assumptions & Methodology</span>
+      </div>
+      <svg class="toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </summary>
+    
+    <div class="assumptions-content">
+      <!-- KEEP YOUR ASSUMPTIONS EXACTLY AS YOU HAVE THEM -->
+      <p>Based on proven methodologies from 200+ health system partners...</p>
+    </div>
+  </details>
+
+  <!-- FINAL CTA - BIGGER -->
+  <div class="summary-cta">
+    <div class="cta-content">
+      <h2>Ready to build your business case?</h2>
+      <p>Export this model as a PDF to share with stakeholders, or schedule time with our team to refine your assumptions.</p>
+    </div>
+    <div class="cta-actions">
+      <button class="btn-primary btn-hero" onclick="exportPDF()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download Full Report
+      </button>
+      <button class="btn-secondary btn-large" onclick="scheduleCall()">
+        Schedule Strategy Session
+      </button>
+    </div>
+  </div>
+
+</div>
+
+CSS ENHANCEMENTS (Not replacements)
+cssCopy/* STICKY HEADER BAR */
+.summary-header-bar {
+  position: sticky;
+  top: 72px; /* Below main header */
+  background: white;
+  border-bottom: 2px solid var(--gray-200);
+  z-index: 100;
+  padding: var(--space-md) 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.header-bar-content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--body-sm);
+}
+
+.breadcrumb-item {
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.breadcrumb-item.highlight {
+  color: var(--abridge-red);
+  font-weight: 700;
+}
+
+.breadcrumb-separator {
+  color: var(--gray-300);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* SUMMARY HERO - ENHANCED */
+.summary-hero {
+  background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-3xl);
+  margin-bottom: var(--space-3xl);
+  color: white;
+}
+
+.hero-label {
+  font-size: var(--body-sm);
+  font-weight: 700;
+  color: var(--green-500);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.hero-split {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-xl);
+}
+
+.hero-divider {
+  width: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-stat-group {
+  text-align: center;
+}
+
+.hero-stat-label {
+  font-size: var(--body-md);
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hero-stat-value {
+  font-size: 72px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: var(--space-sm);
+}
+
+.hero-stat-value.gain {
+  color: var(--green-500);
+}
+
+.hero-stat-value.roi {
+  background: linear-gradient(135deg, var(--green-500) 0%, #34D399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-stat-sublabel {
+  font-size: var(--body-sm);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* QUICK STATS */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  padding-top: var(--space-xl);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-value {
+  font-size: var(--title-md);
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: var(--body-xs);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* SECTION HEADERS - ENHANCED */
+.section-header-enhanced {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.section-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: rgba(234, 44, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--abridge-red);
+  flex-shrink: 0;
+}
+
+.section-title-enhanced {
+  font-size: var(--title-lg);
+  font-weight: 700;
+  color: var(--gray-900);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.section-subtitle-enhanced {
+  font-size: var(--body-md);
+  color: var(--gray-600);
+}
+
+/* VALUE CATEGORY CARDS - ENHANCED */
+.value-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.value-category-card {
+  padding: var(--space-xl);
+  border-radius: var(--border-radius-lg);
+  border: 2px solid var(--gray-200);
+}
+
+.value-category-card.labor-card {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(251, 191, 36, 0.02) 100%);
+  border-color: #F59E0B;
+}
+
+.value-category-card.revenue-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+  border-color: var(--green-500);
+}
+
+.category-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: var(--space-lg) 0;
+}
+
+/* COMPOUNDING EXPLANATION - ENHANCED */
+.compounding-explanation {
+  padding: var(--space-xl);
+  background: rgba(59, 130, 246, 0.05);
+  border-left: 4px solid #3B82F6;
+  border-radius: var(--border-radius);
+}
+
+.explanation-intro {
+  font-size: var(--body-lg);
+  line-height: 1.7;
+  color: var(--gray-700);
+  margin-bottom: var(--space-lg);
+}
+
+.explanation-formula {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.formula-item-enhanced {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: white;
+  border-radius: 8px;
+}
+
+.formula-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.formula-text {
+  font-size: var(--body-md);
+  line-height: 1.6;
+  color: var(--gray-700);
+}
+
+.explanation-footnote {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* ASSUMPTIONS COLLAPSIBLE */
+.assumptions-section {
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  padding: 0;
+}
+
+.assumptions-toggle {
+  padding: var(--space-lg);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+}
+
+.assumptions-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.toggle-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.toggle-title {
+  font-size: var(--body-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.toggle-icon {
+  transition: transform 0.3s;
+}
+
+details[open] .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.assumptions-content {
+  padding: 0 var(--space-lg) var(--space-lg) var(--space-lg);
+  border-top: 1px solid var(--gray-200);
+}
+
+/* FINAL CTA - ENHANCED */
+.summary-cta {
+  background: linear-gradient(135deg, rgba(234, 44, 0, 0.05) 0%, rgba(234, 44, 0, 0.02) 100%);
+  border: 2px solid var(--abridge-red);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-3xl);
+  text-align: center;
+  margin-top: var(--space-3xl);
+}
+
+.cta-content {
+  margin-bottom: var(--space-xl);
+}
+
+.cta-content h2 {
+  font-size: var(--title-lg);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--space-sm);
+}
+
+.cta-content p {
+  font-size: var(--body-lg);
+  color: var(--gray-600);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.cta-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+}
+
+.btn-hero {
+  padding: 20px 48px;
+  font-size: var(--body-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+🔥 WHAT I ENHANCED (Without Breaking Your Flow):
+
+✅ Sticky header bar - Shows key metrics, Edit + Export always accessible
+✅ Bigger hero section - Net gain and ROI get MORE prominence
+✅ Quick stats row - Hours, visits, utilization at a glance
+✅ Enhanced section headers - Icons + better typography
+✅ Value cards have subtle gradients - Labor = yellow tint, Revenue = green tint
+✅ Compounding explanation gets formula icons - Makes it more scannable
+✅ Assumptions are collapsible - Clean by default, accessible when needed
+✅ Final CTA is HUGE - "Download Full Report" is the obvious next step
+
