@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowLeft, Share2, FileText, Mail, Link, Target, Lightbulb } from "lucide-react";
+import { ArrowLeft, Share2, FileText, Mail, Link, Target, Lightbulb, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, ReferenceDot } from "recharts";
@@ -24,10 +24,41 @@ export default function ExpandJourneyExpansion({
   const providers = deploymentData.providers || 100;
   const utilizationRate = deploymentData.utilizationRate || 70;
   
-  const [expansionTarget, setExpansionTarget] = useState({
-    providers: providers * 4,
-    utilization: 80,
+  const [expansionTarget, setExpansionTarget] = useState<{
+    providers: number | "";
+    utilization: number | "";
+  }>({
+    providers: "",
+    utilization: "",
   });
+
+  // Validation states
+  const providerError = useMemo(() => {
+    if (expansionTarget.providers === "") return null;
+    if (typeof expansionTarget.providers === "number" && expansionTarget.providers <= providers) {
+      return `Expansion must be greater than current ${providers} providers`;
+    }
+    return null;
+  }, [expansionTarget.providers, providers]);
+
+  const utilizationError = useMemo(() => {
+    if (expansionTarget.utilization === "") return null;
+    if (typeof expansionTarget.utilization === "number" && (expansionTarget.utilization < 50 || expansionTarget.utilization > 90)) {
+      return "Utilization must be between 50% and 90%";
+    }
+    return null;
+  }, [expansionTarget.utilization]);
+
+  // Check if valid expansion data is entered
+  const hasValidExpansion = useMemo(() => {
+    return (
+      typeof expansionTarget.providers === "number" && 
+      expansionTarget.providers > providers &&
+      typeof expansionTarget.utilization === "number" &&
+      expansionTarget.utilization >= 50 &&
+      expansionTarget.utilization <= 90
+    );
+  }, [expansionTarget, providers]);
 
   // Calculate value from their actual data
   const calculatedROI = useMemo(() => {
@@ -68,11 +99,23 @@ export default function ExpandJourneyExpansion({
   // Value per provider (from their actual data)
   const valuePerProvider = calculatedROI.totalValue / providers;
 
-  // Generate curve data points
+  // Generate curve data points - only if valid expansion data
   const chartData = useMemo(() => {
     const points = [];
     const currentProviders = providers;
-    const targetProviders = expansionTarget.providers;
+    
+    // If no valid expansion, just return current point
+    if (!hasValidExpansion) {
+      return [{
+        providers: currentProviders,
+        value: calculatedROI.netValue,
+        isCurrent: true,
+        isTarget: false,
+      }];
+    }
+
+    const targetProviders = expansionTarget.providers as number;
+    const targetUtilization = expansionTarget.utilization as number;
     const steps = 20;
 
     for (let i = 0; i <= steps; i++) {
@@ -82,7 +125,7 @@ export default function ExpandJourneyExpansion({
       // Utilization improves as adoption matures
       const utilization = (
         utilizationRate + 
-        (expansionTarget.utilization - utilizationRate) * progress
+        (targetUtilization - utilizationRate) * progress
       ) / 100;
 
       // Value scales with providers and utilization improvement
@@ -98,11 +141,11 @@ export default function ExpandJourneyExpansion({
     }
 
     return points;
-  }, [providers, expansionTarget, valuePerProvider, utilizationRate]);
+  }, [providers, expansionTarget, valuePerProvider, utilizationRate, hasValidExpansion, calculatedROI.netValue]);
 
-  const currentValue = chartData[0].value;
-  const targetValue = chartData[chartData.length - 1].value;
-  const expansionPotential = targetValue - currentValue;
+  const currentValue = calculatedROI.netValue;
+  const targetValue = hasValidExpansion ? chartData[chartData.length - 1].value : 0;
+  const expansionValue = hasValidExpansion ? targetValue - currentValue : 0;
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
@@ -162,17 +205,33 @@ export default function ExpandJourneyExpansion({
           
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center" data-testid="summary-expansion">
             <span className="block text-xs font-semibold text-emerald-700 tracking-wider uppercase mb-2">
-              EXPANSION POTENTIAL
+              EXPANSION VALUE
             </span>
-            <span className="text-3xl font-bold text-emerald-600">
-              +${(expansionPotential / 1000000).toFixed(1)}M
-            </span>
+            {hasValidExpansion ? (
+              <span className="text-3xl font-bold text-emerald-600">
+                +${expansionValue >= 1000000 
+                  ? `${(expansionValue / 1000000).toFixed(1)}M` 
+                  : expansionValue.toLocaleString()}
+              </span>
+            ) : (
+              <div>
+                <span className="text-3xl font-bold text-emerald-600">$0</span>
+                <p className="text-xs text-emerald-600 mt-1">Enter targets below</p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Growth Chart */}
         <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-10">
-          <div className="h-[400px]">
+          <div className="h-[400px] relative">
+            {!hasValidExpansion && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                <div className="bg-white/90 px-6 py-4 rounded-xl border border-neutral-200 text-center">
+                  <p className="text-[#6B7280] text-sm">Enter expansion targets below to see growth projection</p>
+                </div>
+              </div>
+            )}
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                 <defs>
@@ -204,15 +263,17 @@ export default function ExpandJourneyExpansion({
                   width={70}
                 />
 
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#059669"
-                  strokeWidth={3}
-                  fill="url(#journeyGradient)"
-                />
+                {hasValidExpansion && (
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#059669"
+                    strokeWidth={3}
+                    fill="url(#journeyGradient)"
+                  />
+                )}
 
-                {/* Current marker */}
+                {/* Current marker - always visible */}
                 <ReferenceDot
                   x={chartData[0].providers}
                   y={chartData[0].value}
@@ -222,15 +283,17 @@ export default function ExpandJourneyExpansion({
                   strokeWidth={3}
                 />
 
-                {/* Target marker */}
-                <ReferenceDot
-                  x={chartData[chartData.length - 1].providers}
-                  y={chartData[chartData.length - 1].value}
-                  r={10}
-                  fill="#059669"
-                  stroke="white"
-                  strokeWidth={3}
-                />
+                {/* Target marker - only when valid expansion */}
+                {hasValidExpansion && (
+                  <ReferenceDot
+                    x={chartData[chartData.length - 1].providers}
+                    y={chartData[chartData.length - 1].value}
+                    r={10}
+                    fill="#059669"
+                    stroke="white"
+                    strokeWidth={3}
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -241,19 +304,24 @@ export default function ExpandJourneyExpansion({
               <span className="w-3 h-3 rounded-full bg-[#f97316]" />
               <span className="text-sm text-[#6B7280]">You are here ({providers} providers)</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-emerald-600" />
-              <span className="text-sm text-[#6B7280]">Your opportunity ({expansionTarget.providers} providers)</span>
-            </div>
+            {hasValidExpansion && (
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-emerald-600" />
+                <span className="text-sm text-[#6B7280]">Your expansion target ({expansionTarget.providers} providers)</span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Model Your Expansion */}
         <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-10">
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-2">
             <Target className="w-6 h-6 text-[#f97316]" />
             <h2 className="text-lg font-semibold text-[#111827]">MODEL YOUR EXPANSION</h2>
           </div>
+          <p className="text-sm text-[#6B7280] mb-6 ml-9">
+            Model what full-scale deployment could look like if you expand beyond your current pilot.
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
             {/* Current State */}
@@ -292,7 +360,7 @@ export default function ExpandJourneyExpansion({
                 <span className="w-3 h-3 rounded-full bg-emerald-500" />
                 <div>
                   <h3 className="font-semibold text-[#111827]">EXPANSION TARGET</h3>
-                  <p className="text-xs text-[#6B7280]">Model your opportunity</p>
+                  <p className="text-xs text-[#6B7280]">What if you scaled to more providers?</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -301,13 +369,22 @@ export default function ExpandJourneyExpansion({
                   <input
                     type="number"
                     value={expansionTarget.providers}
+                    placeholder="e.g., 150"
                     onChange={(e) => setExpansionTarget({
                       ...expansionTarget,
-                      providers: Number(e.target.value),
+                      providers: e.target.value === "" ? "" : Number(e.target.value),
                     })}
-                    className="w-full px-3 py-2 border border-emerald-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className={`w-full px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                      providerError ? "border-red-300" : "border-emerald-200"
+                    }`}
                     data-testid="input-expansion-providers"
                   />
+                  {providerError && (
+                    <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                      <AlertCircle className="w-3 h-3" />
+                      {providerError}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs text-[#6B7280] block mb-1">Target utilization</label>
@@ -315,37 +392,60 @@ export default function ExpandJourneyExpansion({
                     <input
                       type="number"
                       value={expansionTarget.utilization}
+                      placeholder="e.g., 75"
                       onChange={(e) => setExpansionTarget({
                         ...expansionTarget,
-                        utilization: Number(e.target.value),
+                        utilization: e.target.value === "" ? "" : Number(e.target.value),
                       })}
-                      className="flex-1 px-3 py-2 border border-emerald-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className={`flex-1 px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                        utilizationError ? "border-red-300" : "border-emerald-200"
+                      }`}
                       data-testid="input-expansion-utilization"
                     />
                     <span className="text-sm text-[#6B7280]">%</span>
                   </div>
+                  {utilizationError && (
+                    <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                      <AlertCircle className="w-3 h-3" />
+                      {utilizationError}
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between pt-3 border-t border-emerald-200">
-                  <span className="text-sm text-[#6B7280]">Projected Value</span>
-                  <span className="font-bold text-emerald-600">${targetValue.toLocaleString()}</span>
-                </div>
+                {hasValidExpansion && (
+                  <div className="flex justify-between pt-3 border-t border-emerald-200">
+                    <span className="text-sm text-[#6B7280]">Projected Value</span>
+                    <span className="font-bold text-emerald-600">${targetValue.toLocaleString()}</span>
+                  </div>
+                )}
+                {hasValidExpansion && (
+                  <div className="bg-emerald-100 rounded-lg p-3 text-center mt-2">
+                    <span className="text-xs text-emerald-700 font-medium">EXPANSION VALUE</span>
+                    <p className="text-lg font-bold text-emerald-600">
+                      +${expansionValue >= 1000000 
+                        ? `${(expansionValue / 1000000).toFixed(1)}M` 
+                        : expansionValue.toLocaleString()}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Calculation Transparency */}
-        <div className="flex items-start gap-3 p-5 bg-neutral-50 border border-neutral-200 rounded-xl mb-10">
-          <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <strong className="text-[#111827]">How we calculated this:</strong>
-            <ul className="text-sm text-[#6B7280] mt-2 space-y-1">
-              <li>• Your current value per provider: <strong>${Math.round(valuePerProvider).toLocaleString()}</strong></li>
-              <li>• Scales with providers + utilization improvement</li>
-              <li>• Assumes utilization increases from {utilizationRate}% → {expansionTarget.utilization}% as adoption matures</li>
-            </ul>
+        {/* Calculation Transparency - only show when valid expansion */}
+        {hasValidExpansion && (
+          <div className="flex items-start gap-3 p-5 bg-neutral-50 border border-neutral-200 rounded-xl mb-10">
+            <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-[#111827]">How we calculated this:</strong>
+              <ul className="text-sm text-[#6B7280] mt-2 space-y-1">
+                <li>• Your current value per provider: <strong>${Math.round(valuePerProvider).toLocaleString()}</strong></li>
+                <li>• Scales with providers + utilization improvement</li>
+                <li>• Assumes utilization increases from {utilizationRate}% → {expansionTarget.utilization}% as adoption matures</li>
+              </ul>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Export Actions */}
         <div className="flex items-center justify-center gap-4">

@@ -1,0 +1,87 @@
+REPLIT INSTRUCTION:
+Fix the "MODEL YOUR EXPANSION" section:
+
+Remove all pre-populated numbers from the EXPANSION TARGET inputs
+
+"Total providers" field should be EMPTY (placeholder text only)
+"Target utilization" field should be EMPTY (placeholder text only)
+Do NOT default to 236 providers or 80%
+
+
+Change the placeholder text to:
+
+Total providers: "e.g., 150"
+Target utilization: "e.g., 75"
+
+
+Add helper text above the expansion inputs:
+CopyModel what full-scale deployment could look like if you expand beyond your current pilot.
+
+The chart should show:
+
+Orange dot at current state (59 providers, $242K) - always visible
+Green dot and growth line should ONLY appear once user enters expansion numbers
+If no expansion numbers entered, show placeholder text on chart: "Enter expansion targets below to see growth projection"
+
+
+The "EXPANSION POTENTIAL" card at top should:
+
+Show "$0" if no expansion numbers entered
+Only calculate and show "+$1.0M" once user fills in both expansion fields
+Change label to "EXPANSION VALUE" (not "potential")
+
+
+Add validation:
+
+Expansion provider count must be GREATER than current providers (59)
+If user enters less than or equal to 59, show error: "Expansion must be greater than current 59 providers"
+Target utilization must be between 50% and 90%
+
+
+
+
+BETTER FRAMING:
+Instead of calling it "Your opportunity" which implies they should aim for 236 (where did that even come from?), frame it as:
+"Model Your Expansion Scenario"
+Current copy says:
+
+"Your opportunity (236 providers)"
+
+Should say:
+
+"What if you scaled to ___ providers?"
+
+
+VISUAL FLOW:
+BEFORE user enters data:
+CopyMODEL YOUR EXPANSION
+
+[Chart shows only orange dot with text overlay]
+"Enter expansion targets below to model growth trajectory"
+
+CURRENT STATE              EXPANSION TARGET
+Your proven results        Model your opportunity
+
+Providers: 59              Total providers: [____] 
+Utilization: 65%           Target utilization: [____] %
+Annual Value: $242,515     
+
+                           Calculate →
+AFTER user enters data (e.g., 150 providers, 75%):
+CopyMODEL YOUR EXPANSION
+
+[Chart shows orange dot → green line → green dot]
+
+CURRENT STATE              EXPANSION TARGET
+Your proven results        Model your opportunity
+
+Providers: 59              Total providers: 150
+Utilization: 65%           Target utilization: 75%
+Annual Value: $242,515     Projected Value: $615,000
+
+                           EXPANSION VALUE: +$372,485
+
+THE TOP CARDS SHOULD BE:
+CopyCURRENT NET VALUE          RETURN ON INVESTMENT          EXPANSION VALUE
+$242,515                   1.4×                          [Empty until calculated]
+                                                         Enter targets below
