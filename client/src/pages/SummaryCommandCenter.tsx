@@ -104,15 +104,39 @@ const settingConfig: Record<string, { unitName: string; unitNamePlural: string; 
   nursing: { unitName: "staffed bed", unitNamePlural: "staffed beds", encounterName: "documentation events" },
 };
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; roi: string } }> }) {
+function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; linearValue: number; actualValue: number; roi: string } }> }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
+    const networkBonus = data.actualValue - data.linearValue;
     return (
-      <div className="bg-[#1e293b] rounded-lg p-3 shadow-xl">
-        <p className="text-white font-semibold text-sm mb-1">{data.providers} providers</p>
-        <p className="text-neutral-300 text-xs mb-1">{data.utilization}% utilization</p>
-        <p className="text-emerald-400 font-semibold text-sm">{formatCurrency(data.value)} value</p>
-        <p className="text-neutral-300 text-xs">{data.roi}x ROI</p>
+      <div className="bg-[#1e293b] rounded-lg p-3 shadow-xl min-w-[180px]">
+        <p className="text-white font-semibold text-sm mb-2">{data.providers} {data.providers === 1 ? 'provider' : 'providers'}</p>
+        <p className="text-neutral-400 text-xs mb-3">{data.utilization}% utilization</p>
+        
+        <div className="space-y-1.5 border-t border-neutral-600 pt-2">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-blue-400 text-xs flex items-center gap-1.5">
+              <span className="w-3 h-0.5 bg-blue-400 opacity-60" style={{ backgroundImage: 'linear-gradient(90deg, #3b82f6 60%, transparent 40%)' }}></span>
+              Linear
+            </span>
+            <span className="text-blue-300 font-medium text-sm">{formatCurrency(data.linearValue)}</span>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-emerald-400 text-xs flex items-center gap-1.5">
+              <span className="w-3 h-0.5 bg-emerald-500 rounded-full"></span>
+              Full Scale
+            </span>
+            <span className="text-emerald-400 font-semibold text-sm">{formatCurrency(data.actualValue)}</span>
+          </div>
+          {networkBonus > 0 && (
+            <div className="flex items-center justify-between gap-3 pt-1 border-t border-neutral-700">
+              <span className="text-neutral-400 text-xs">Network bonus</span>
+              <span className="text-emerald-300 text-xs">+{formatCurrency(networkBonus)}</span>
+            </div>
+          )}
+        </div>
+        
+        <p className="text-neutral-400 text-xs mt-2 pt-2 border-t border-neutral-600">{data.roi}x ROI</p>
       </div>
     );
   }
