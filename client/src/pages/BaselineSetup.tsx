@@ -672,6 +672,13 @@ export default function BaselineSetup({
                     <div className="text-[12px] text-emerald-600 font-medium">eligible events</div>
                   </div>
                 </div>
+                
+                {/* Implied FTEs Context */}
+                <div className="text-center p-3 bg-emerald-50/50 rounded-lg text-[13px] text-[#6B7280] italic">
+                  <Info className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                  This accounts for ~{Math.round(numericStaffedBeds * 1.5).toLocaleString()} nurse FTEs
+                  ({(1.5).toFixed(1)} FTEs per bed staffing ratio)
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-3 md:gap-6 flex-wrap p-6 bg-white/60 rounded-xl mb-6">

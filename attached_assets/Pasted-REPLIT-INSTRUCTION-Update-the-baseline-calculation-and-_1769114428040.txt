@@ -1,0 +1,378 @@
+REPLIT INSTRUCTION:
+Update the baseline calculation and display to use patient days methodology:
+Step 1: Update the baseline calculation function
+javascriptCopyfunction calculateNursingBaseline() {
+  // Get inputs from Your Organization page
+  const beds = parseInt(document.getElementById('staffed-beds').value) || 200;
+  const occupancy = parseFloat(document.getElementById('occupancy-rate').value) || 85;
+  const eventsPerDay = parseInt(document.getElementById('events-per-patient-day').value) || 3;
+  const utilization = getSelectedUtilization(); // Returns 50, 65, or 80
+  
+  // Calculate patient days
+  const patientDaysPerYear = Math.round(beds * (occupancy / 100) * 365);
+  
+  // Calculate total documentation events
+  const totalEvents = patientDaysPerYear * eventsPerDay;
+  
+  // Calculate eligible events (with Abridge utilization)
+  const eligibleEvents = Math.round(totalEvents * (utilization / 100));
+  
+  // Calculate implied nurse FTEs for context (1.5 FTEs per bed is standard)
+  const impliedFTEs = Math.round(beds * 1.5);
+  
+  return {
+    beds,
+    occupancy,
+    eventsPerDay,
+    utilization,
+    patientDaysPerYear,
+    totalEvents,
+    eligibleEvents,
+    impliedFTEs
+  };
+}
+
+Step 2: Update the baseline display HTML
+htmlCopy<div class="baseline-section">
+  <div class="baseline-header">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    <span>YOUR BASELINE</span>
+  </div>
+  
+  <div class="baseline-main-number" id="eligible-events-display">
+    120,998
+  </div>
+  <div class="baseline-label">eligible documentation events per year</div>
+  
+  <!-- The calculation breakdown -->
+  <div class="baseline-formula" id="baseline-formula">
+    <!-- This gets populated by JavaScript -->
+  </div>
+  
+  <div class="baseline-edit-link">
+    <button class="link-button" onclick="editBaseline()">
+      ← Edit baseline
+    </button>
+  </div>
+</div>
+
+Step 3: Update the formula display function
+javascriptCopyfunction updateBaselineDisplay() {
+  const baseline = calculateNursingBaseline();
+  
+  // Update the big number
+  document.getElementById('eligible-events-display').textContent = 
+    baseline.eligibleEvents.toLocaleString();
+  
+  // Update the formula breakdown
+  document.getElementById('baseline-formula').innerHTML = `
+    <div class="formula-grid">
+      <div class="formula-row">
+        <span class="formula-value">${baseline.beds}</span>
+        <span class="formula-label">beds</span>
+      </div>
+      
+      <span class="formula-operator">×</span>
+      
+      <div class="formula-row">
+        <span class="formula-value">${baseline.occupancy}%</span>
+        <span class="formula-label">occupancy</span>
+      </div>
+      
+      <span class="formula-operator">×</span>
+      
+      <div class="formula-row">
+        <span class="formula-value">365</span>
+        <span class="formula-label">days</span>
+      </div>
+      
+      <span class="formula-equals">=</span>
+      
+      <div class="formula-row highlight">
+        <span class="formula-value">${baseline.patientDaysPerYear.toLocaleString()}</span>
+        <span class="formula-label">patient days</span>
+      </div>
+    </div>
+    
+    <div class="formula-divider"></div>
+    
+    <div class="formula-grid">
+      <div class="formula-row">
+        <span class="formula-value">${baseline.patientDaysPerYear.toLocaleString()}</span>
+        <span class="formula-label">patient days</span>
+      </div>
+      
+      <span class="formula-operator">×</span>
+      
+      <div class="formula-row">
+        <span class="formula-value">${baseline.eventsPerDay}</span>
+        <span class="formula-label">events/day</span>
+      </div>
+      
+      <span class="formula-operator">×</span>
+      
+      <div class="formula-row">
+        <span class="formula-value">${baseline.utilization}%</span>
+        <span class="formula-label">utilization</span>
+      </div>
+      
+      <span class="formula-equals">=</span>
+      
+      <div class="formula-row highlight">
+        <span class="formula-value">${baseline.eligibleEvents.toLocaleString()}</span>
+        <span class="formula-label">eligible events</span>
+      </div>
+    </div>
+    
+    <div class="baseline-context">
+      💡 This accounts for ~${baseline.impliedFTEs} nurse FTEs
+      (${(baseline.impliedFTEs / baseline.beds).toFixed(1)} FTEs per bed staffing ratio)
+    </div>
+  `;
+  
+  // Store this in your app state for value driver calculations
+  window.nursingBaseline = baseline;
+}
+
+Step 4: Add the CSS styling
+cssCopy/* Baseline Section */
+.baseline-section {
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+  border: 2px solid #10B981;
+  border-radius: 12px;
+  padding: 32px;
+  margin: 24px 0;
+}
+
+.baseline-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #10B981;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.baseline-header svg {
+  color: #10B981;
+}
+
+.baseline-main-number {
+  font-size: 56px;
+  font-weight: 700;
+  color: #10B981;
+  line-height: 1;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.baseline-label {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 24px;
+}
+
+/* Formula Grid */
+.formula-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+}
+
+.formula-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.formula-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.formula-label {
+  font-size: 11px;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.formula-operator {
+  font-size: 20px;
+  color: #9CA3AF;
+  font-weight: 300;
+  margin: 0 4px;
+}
+
+.formula-equals {
+  font-size: 20px;
+  color: #10B981;
+  font-weight: 700;
+  margin: 0 8px;
+}
+
+.formula-row.highlight {
+  background: rgba(16, 185, 129, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.formula-row.highlight .formula-value {
+  color: #10B981;
+}
+
+.formula-divider {
+  width: 100%;
+  height: 1px;
+  background: #E5E7EB;
+  margin: 8px 0;
+}
+
+/* Baseline Context */
+.baseline-context {
+  font-size: 13px;
+  color: #6B7280;
+  padding: 12px;
+  background: rgba(16, 185, 129, 0.05);
+  border-radius: 6px;
+  margin-top: 16px;
+  text-align: center;
+  font-style: italic;
+}
+
+.baseline-edit-link {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #10B981;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: all 0.2s;
+}
+
+.link-button:hover {
+  color: #059669;
+  text-decoration: underline;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .baseline-main-number {
+    font-size: 42px;
+  }
+  
+  .formula-grid {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .formula-operator,
+  .formula-equals {
+    transform: rotate(90deg);
+  }
+}
+
+Step 5: Wire it up to the utilization selector
+javascriptCopy// When user selects utilization scenario
+document.querySelectorAll('input[name="utilization"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    updateBaselineDisplay();
+  });
+});
+
+// When user changes any input on Your Organization page
+document.getElementById('staffed-beds')?.addEventListener('input', updateBaselineDisplay);
+document.getElementById('occupancy-rate')?.addEventListener('input', updateBaselineDisplay);
+document.getElementById('events-per-patient-day')?.addEventListener('input', updateBaselineDisplay);
+
+Step 6: Add the "Edit baseline" function
+javascriptCopyfunction editBaseline() {
+  // Navigate back to Your Organization page
+  // Scroll to the deployment scope section
+  window.location.hash = '#your-organization';
+  
+  // Or if single-page app:
+  showPage('your-organization');
+  
+  // Smooth scroll to inputs
+  setTimeout(() => {
+    document.getElementById('staffed-beds')?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'center' 
+    });
+  }, 100);
+}
+
+THE RESULT:
+Your baseline will now display like this:
+Copy┌─────────────────────────────────────────────────┐
+│ 📊 YOUR BASELINE                                │
+│                                                 │
+│ 120,998                                         │
+│ eligible documentation events per year          │
+│                                                 │
+│ ┌──────────────────────────────────────────┐  │
+│ │ 200 × 85% × 365 = 62,050                 │  │
+│ │ beds  occupancy  days  patient days      │  │
+│ └──────────────────────────────────────────┘  │
+│                                                 │
+│ ┌──────────────────────────────────────────┐  │
+│ │ 62,050 × 3 × 65% = 120,998              │  │
+│ │ patient  events  util   eligible         │  │
+│ │ days     /day           events           │  │
+│ └──────────────────────────────────────────┘  │
+│                                                 │
+│ 💡 This accounts for ~300 nurse FTEs           │
+│    (1.5 FTEs per bed staffing ratio)           │
+│                                                 │
+│ [← Edit baseline]                               │
+└─────────────────────────────────────────────────┘
+
+CRITICAL: Update your value drivers to use this baseline
+javascriptCopy// In each value driver calculation
+function calculateOvertimeReduction() {
+  const baseline = window.nursingBaseline;
+  const eligibleEvents = baseline.eligibleEvents; // 120,998
+  
+  // Your driver logic here using the correct baseline
+  const timeSavedPerEvent = 2.5; // minutes
+  const totalTimeSaved = eligibleEvents * timeSavedPerEvent;
+  const hoursReturned = Math.round(totalTimeSaved / 60);
+  
+  // etc...
+}
+
+VERIFY IT WORKS:
+Test with your current inputs:
+
+200 beds
+85% occupancy
+3 events/day
+65% utilization
+
+Expected output:
+
+Patient days: 62,050
+Eligible events: 120,998 ✓
+
+This matches your new calculation and makes the math transparent and defensible.
