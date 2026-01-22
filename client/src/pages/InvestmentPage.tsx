@@ -162,9 +162,7 @@ export default function InvestmentPage({
   const netGainAnnual = totalAnnualValue - annualInvestment;
   const roiMultiple = useMemo(() => {
     if (annualInvestment <= 0) return 0;
-    const roi = totalAnnualValue / annualInvestment;
-    console.log('[ROI DEBUG] totalAnnualValue:', totalAnnualValue, 'annualInvestment:', annualInvestment, 'ROI:', roi);
-    return roi;
+    return totalAnnualValue / annualInvestment;
   }, [totalAnnualValue, annualInvestment]);
   const monthsToPayback = totalAnnualValue > 0 ? Math.round((annualInvestment / totalAnnualValue) * 12) : 0;
 
@@ -354,10 +352,6 @@ export default function InvestmentPage({
                     {roiMultiple.toFixed(1)}×
                   </span>
                   <span className="text-lg text-white/80 font-medium">Return on<br/>Investment</span>
-                </div>
-                {/* Debug display */}
-                <div className="text-xs text-white/50 mt-2">
-                  Debug: {totalAnnualValue} / {annualInvestment} = {roiMultiple.toFixed(2)}
                 </div>
               </div>
 
@@ -634,6 +628,19 @@ export default function InvestmentPage({
                     <span className="text-[#6B7280]">{config.unitNamePlural.charAt(0).toUpperCase() + config.unitNamePlural.slice(1)}</span>
                     <span className="font-medium text-[#111827]">{units}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#6B7280]">Annual Encounters</span>
+                    <span className="font-medium text-[#111827]">{valueResults.encounters.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#6B7280]">Utilization Rate</span>
+                    <span className="font-medium text-[#111827]">{valueResults.utilizationRate}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#6B7280]">Eligible Encounters</span>
+                    <span className="font-medium text-emerald-600">{valueResults.eligibleEncounters.toLocaleString()}</span>
+                  </div>
+                  <div className="border-t border-[#E5E7EB] my-3" />
                   {pricingModel === "per_unit_monthly" && costPerUnit !== "" && (
                     <div className="flex justify-between">
                       <span className="text-[#6B7280]">Price</span>
