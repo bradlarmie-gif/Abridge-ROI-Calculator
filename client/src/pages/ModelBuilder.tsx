@@ -5218,11 +5218,10 @@ export default function ModelBuilder({
           <div className="grid grid-cols-5 gap-2 items-center text-center">
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Annual Admissions</label>
-              <Input
-                type="number"
+              <FormattedNumberInput
                 value={annualAdmissions}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, annualAdmissions: Number(e.target.value) || 0 } }))}
-                className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, annualAdmissions: val } }))}
+                className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                 data-testid="nursing-hapi-admissions-input"
               />
             </div>
