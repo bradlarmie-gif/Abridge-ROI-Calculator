@@ -871,55 +871,56 @@ function CareSettingRow({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative w-full text-left rounded-xl transition-all duration-200 ease-out ${
+      className={`group relative w-full text-left rounded-xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
         disabled
-          ? "cursor-not-allowed bg-white border border-dashed border-[#D1D5DB]"
+          ? "cursor-not-allowed bg-white border-2 border-dashed border-[#D1D5DB]"
           : selected
-            ? "bg-[#FEF0EC] border-2 border-[#EA2C00] shadow-[0_0_0_3px_rgba(232,93,63,0.1)]"
-            : "bg-white border border-[#E5E7EB] hover:border-[#EA2C00] hover:shadow-md cursor-pointer"
+            ? "bg-[rgba(234,44,0,0.02)] border-2 border-[#EA2C00]"
+            : "bg-white border-2 border-[#E5E7EB] hover:border-[#EA2C00] hover:-translate-y-0.5 hover:shadow-[0_8px_16px_rgba(0,0,0,0.06)] cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      <div className="flex items-center gap-4 p-5">
+      <div className="flex items-start gap-6 p-6">
         <div
-          className={`flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0 ${
+          className={`flex items-center justify-center w-12 h-12 rounded-[10px] flex-shrink-0 transition-all duration-300 ${
             selected
-              ? "bg-[#EA2C00]"
+              ? "bg-[rgba(234,44,0,0.1)]"
               : disabled
-                ? "bg-neutral-100"
-                : "bg-neutral-100 group-hover:bg-[#FEF0EC]"
+                ? "bg-[#F9FAFB]"
+                : "bg-[#F9FAFB] group-hover:bg-[rgba(234,44,0,0.08)]"
           }`}
         >
           <Icon
-            className={`w-6 h-6 ${selected ? "text-white" : disabled ? "text-neutral-400" : "text-neutral-600 group-hover:text-[#EA2C00]"}`}
+            className={`w-6 h-6 transition-colors duration-300 ${selected ? "text-[#EA2C00]" : disabled ? "text-[#9CA3AF]" : "text-[#6B7280] group-hover:text-[#EA2C00]"}`}
           />
         </div>
         
         <div className="flex-1 min-w-0">
           <span
-            className={`text-base font-semibold block ${
-              disabled ? "text-neutral-400" : "text-[#111827]"
+            className={`text-lg font-semibold block ${
+              disabled ? "text-[#9CA3AF]" : "text-[#111827]"
             }`}
           >
             {label}
           </span>
-          <p className={`text-sm mt-0.5 ${disabled ? "text-neutral-400" : "text-[#6B7280]"}`}>
+          <p className={`text-sm mt-1 leading-relaxed ${disabled ? "text-[#9CA3AF]" : "text-[#6B7280]"}`}>
             {description}
           </p>
           {disabled && (
-            <p className="text-xs text-[#9CA3AF] italic mt-1">Coming soon</p>
+            <p className="text-xs text-[#9CA3AF] italic mt-2">Coming soon</p>
           )}
         </div>
-        
-        <div className="flex-shrink-0">
-          {selected ? (
-            <div className="w-6 h-6 rounded-full bg-[#EA2C00] flex items-center justify-center">
-              <Check className="w-4 h-4 text-white" />
-            </div>
-          ) : !disabled ? (
-            <div className="w-6 h-6 rounded-full border-2 border-[#D1D5DB] group-hover:border-[#EA2C00]" />
-          ) : null}
-        </div>
+      </div>
+      
+      {/* Checkmark in top-right corner */}
+      <div 
+        className={`absolute top-6 right-6 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+          selected 
+            ? "bg-[#EA2C00] opacity-100 scale-100" 
+            : "opacity-0 scale-[0.8]"
+        }`}
+      >
+        <Check className="w-4 h-4 text-white" strokeWidth={3} />
       </div>
     </button>
   );
@@ -2502,47 +2503,50 @@ export default function ObjectiveSelectionScreen({
 
         {/* PAGE 1 — CARE SETTING */}
         {currentPage === "setting" && (
-          <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-8 md:py-12">
-            <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-6">
-              Select a care setting
-            </h2>
-            
-            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
-              <p className="text-base text-[#6B7280] leading-relaxed mb-4">
+          <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-12 md:py-16">
+            {/* Page Header */}
+            <div className="mb-12">
+              <h2 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4">
+                Select a care setting
+              </h2>
+              <p className="text-[17px] leading-relaxed text-[#6B7280] max-w-[700px]">
                 Each care setting has unique documentation workflows and value drivers. Your selection determines the baseline assumptions throughout this calculator.
               </p>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[#6B7280]">
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-[#EA2C00]" />
-                  Setting-specific ROI drivers
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-[#EA2C00]" />
-                  Tailored assumptions
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-[#EA2C00]" />
-                  Shareable output
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <BarChart3 className="w-3.5 h-3.5" />
-                  Based on 200+ health system partners
-                </span>
-              </div>
+            </div>
+            
+            {/* Benefits Bar */}
+            <div className="flex flex-wrap gap-6 p-6 md:p-8 bg-[#F9FAFB] rounded-xl mb-16">
+              <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
+                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+                Setting-specific ROI drivers
+              </span>
+              <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
+                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+                Tailored assumptions
+              </span>
+              <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
+                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+                Shareable output
+              </span>
+              <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
+                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+                Based on 200+ health system partners
+              </span>
             </div>
 
-            <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12">
+            <div className="grid lg:grid-cols-[1fr_380px] gap-12 lg:gap-16">
+              {/* Left: Options */}
               <div>
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-1">
+                <div className="mb-8">
+                  <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em] mb-2">
                     Available Care Settings
                   </h3>
-                  <p className="text-sm text-[#6B7280]">
+                  <p className="text-[15px] text-[#6B7280]">
                     Choose the environment that matches your organization
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {ALL_SETTINGS.map((setting) => {
                     return (
                       <CareSettingRow
@@ -2559,32 +2563,31 @@ export default function ObjectiveSelectionScreen({
                 </div>
               </div>
 
+              {/* Right: Selection Sidebar */}
               <div className="hidden lg:block">
-                <div className="sticky top-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm overflow-hidden">
-                  <div className="px-6 py-5 border-b border-[#E5E7EB]">
-                    <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
+                <div className="sticky top-[100px] bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
+                  <div className="px-8 py-6 border-b border-[#E5E7EB]">
+                    <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em]">
                       Your Selection
                     </h3>
                   </div>
                   
-                  <div className="p-6">
-                    <p className="text-xs font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-2">
+                  <div className="px-8 py-8">
+                    <p className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.05em] mb-2">
                       Care Setting
                     </p>
                     {selectedSetting ? (
-                      <div className="flex items-center justify-between">
-                        <span className="text-base font-medium text-[#111827]">
-                          {CARE_SETTING_LABELS[selectedSetting]}
-                        </span>
-                      </div>
+                      <span className="text-[17px] font-semibold text-[#111827]">
+                        {CARE_SETTING_LABELS[selectedSetting]}
+                      </span>
                     ) : (
-                      <p className="text-sm text-[#9CA3AF] italic">No setting selected</p>
+                      <p className="text-[15px] text-[#9CA3AF]">No setting selected</p>
                     )}
                     
                     {selectedSetting && SETTING_DRIVERS[selectedSetting] && SETTING_DRIVERS[selectedSetting].length > 0 && (
-                      <div className="mt-4">
+                      <div className="mt-6">
                         <p className="text-sm text-[#6B7280] mb-2">Typical drivers:</p>
-                        <ul className="space-y-1 text-[13px] text-[#6B7280] leading-relaxed">
+                        <ul className="space-y-1.5 text-[14px] text-[#6B7280] leading-relaxed">
                           {SETTING_DRIVERS[selectedSetting].map((driver, idx) => (
                             <li key={idx}>• {driver}</li>
                           ))}
@@ -2593,15 +2596,15 @@ export default function ObjectiveSelectionScreen({
                     )}
                   </div>
                   
-                  <div className="border-t border-[#E5E7EB] px-6 py-5">
+                  <div className="border-t border-[#E5E7EB] px-8 py-6">
                     <button
                       type="button"
                       disabled={!canContinuePage1}
                       onClick={handleContinueToPage2}
-                      className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                      className={`w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-[15px] transition-all duration-200 ${
                         canContinuePage1
-                          ? "bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm hover:shadow"
-                          : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
+                          ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                          : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
                       }`}
                       data-testid="button-continue-to-priorities"
                     >
@@ -2614,11 +2617,11 @@ export default function ObjectiveSelectionScreen({
             </div>
             
             {/* Mobile sticky bottom bar */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-2px_8px_rgba(0,0,0,0.1)] px-4 py-4 z-50">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-4px_12px_rgba(0,0,0,0.08)] px-6 py-5 z-50">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-sm text-[#6B7280]">
+                <span className="text-[15px] text-[#6B7280]">
                   {selectedSetting ? (
-                    <span className="text-[#111827] font-medium">{CARE_SETTING_LABELS[selectedSetting]} selected</span>
+                    <span className="text-[#111827] font-semibold">{CARE_SETTING_LABELS[selectedSetting]} selected</span>
                   ) : (
                     "Select a care setting"
                   )}
@@ -2627,10 +2630,10 @@ export default function ObjectiveSelectionScreen({
                   type="button"
                   disabled={!canContinuePage1}
                   onClick={handleContinueToPage2}
-                  className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                  className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-[15px] transition-all duration-200 ${
                     canContinuePage1
-                      ? "bg-neutral-900 text-white hover:bg-neutral-800"
-                      : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
+                      ? "bg-[#EA2C00] text-white hover:bg-[#d12700]"
+                      : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
                   }`}
                   data-testid="button-continue-to-priorities-mobile"
                 >

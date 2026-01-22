@@ -1,0 +1,493 @@
+cssCopy/* TYPOGRAPHY SCALE */
+:root {
+  /* Page Titles */
+  --title-xl: 48px;        /* Main page headings */
+  --title-lg: 32px;        /* Section headings */
+  --title-md: 24px;        /* Card titles */
+  --title-sm: 18px;        /* Subsection titles */
+  
+  /* Body Text */
+  --body-lg: 17px;         /* Descriptions, important text */
+  --body-md: 15px;         /* Standard body */
+  --body-sm: 14px;         /* Helper text */
+  --body-xs: 13px;         /* Labels, captions */
+  
+  /* Spacing */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
+  --space-3xl: 80px;
+  
+  /* Colors */
+  --abridge-red: #EA2C00;
+  --red-hover: #d12700;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-400: #9CA3AF;
+  --gray-600: #6B7280;
+  --gray-900: #111827;
+  --green-500: #10B981;
+  --green-50: #ECFDF5;
+  --yellow-400: #FBBF24;
+  
+  /* Layout */
+  --max-width: 1200px;
+  --content-width: 800px;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
+}
+
+PAGE 1: SELECT CARE SETTING
+Issues to fix:
+
+Title needs more presence
+Benefit badges need better spacing
+Cards need more breathing room
+"YOUR SELECTION" sidebar is too cramped
+
+HTML
+htmlCopy<div class="page-container">
+  <!-- Progress dots - now in header -->
+  
+  <!-- Back button -->
+  <button class="btn-back" onclick="history.back()">
+    ← Back
+  </button>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">Select a care setting</h1>
+    <p class="page-description">
+      Each care setting has unique documentation workflows and value drivers. Your selection determines the baseline assumptions throughout this calculator.
+    </p>
+  </div>
+
+  <!-- Benefits bar -->
+  <div class="benefits-bar">
+    <div class="benefit-badge">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>Setting-specific ROI drivers</span>
+    </div>
+    <div class="benefit-badge">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>Tailored assumptions</span>
+    </div>
+    <div class="benefit-badge">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>Shareable output</span>
+    </div>
+    <div class="benefit-badge">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>Based on 200+ health system partners</span>
+    </div>
+  </div>
+
+  <!-- Two column layout -->
+  <div class="two-column-layout">
+    <!-- Left: Options -->
+    <div class="options-section">
+      <div class="section-label">AVAILABLE CARE SETTINGS</div>
+      <p class="section-sublabel">Choose the environment that matches your organization</p>
+
+      <div class="care-settings-grid">
+        <!-- Outpatient Card -->
+        <label class="care-setting-card">
+          <input type="radio" name="care-setting" value="outpatient" />
+          <div class="card-content">
+            <div class="card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="card-text">
+              <h3>Outpatient</h3>
+              <p>Primary care, specialty visits, clinics</p>
+            </div>
+          </div>
+          <div class="card-checkmark">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+        </label>
+
+        <!-- Emergency Department -->
+        <label class="care-setting-card">
+          <input type="radio" name="care-setting" value="ed" />
+          <div class="card-content">
+            <div class="card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="card-text">
+              <h3>Emergency Department</h3>
+              <p>High-volume, fast-paced encounters</p>
+            </div>
+          </div>
+          <div class="card-checkmark">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+        </label>
+
+        <!-- Nursing -->
+        <label class="care-setting-card">
+          <input type="radio" name="care-setting" value="nursing" />
+          <div class="card-content">
+            <div class="card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+            <div class="card-text">
+              <h3>Nursing</h3>
+              <p>Bedside documentation, care coordination</p>
+            </div>
+          </div>
+          <div class="card-checkmark">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+        </label>
+
+        <!-- Inpatient -->
+        <label class="care-setting-card">
+          <input type="radio" name="care-setting" value="inpatient" />
+          <div class="card-content">
+            <div class="card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="card-text">
+              <h3>Inpatient</h3>
+              <p>Hospital admissions, rounding</p>
+            </div>
+          </div>
+          <div class="card-checkmark">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Right: Selection Summary -->
+    <div class="selection-sidebar">
+      <div class="sidebar-label">YOUR SELECTION</div>
+      
+      <div class="selected-item">
+        <div class="selected-label">CARE SETTING</div>
+        <div class="selected-value" id="selected-setting">No setting selected</div>
+      </div>
+
+      <button class="btn-primary btn-continue" disabled>
+        Continue →
+      </button>
+    </div>
+  </div>
+</div>
+CSS
+cssCopy/* PAGE CONTAINER */
+.page-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-xl);
+}
+
+/* BACK BUTTON */
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--gray-600);
+  font-size: var(--body-md);
+  font-weight: 500;
+  cursor: pointer;
+  padding: var(--space-sm) 0;
+  margin-bottom: var(--space-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  transition: color 0.2s ease;
+}
+
+.btn-back:hover {
+  color: var(--abridge-red);
+}
+
+/* PAGE HEADER */
+.page-header {
+  margin-bottom: var(--space-xl);
+}
+
+.page-title {
+  font-size: var(--title-xl);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--gray-900);
+  margin-bottom: var(--space-sm);
+}
+
+.page-description {
+  font-size: var(--body-lg);
+  line-height: 1.6;
+  color: var(--gray-600);
+  max-width: 700px;
+}
+
+/* BENEFITS BAR */
+.benefits-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-2xl);
+}
+
+.benefit-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.benefit-badge svg {
+  color: var(--green-500);
+  flex-shrink: 0;
+}
+
+/* TWO COLUMN LAYOUT */
+.two-column-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--space-2xl);
+  align-items: start;
+}
+
+/* SECTION LABELS */
+.section-label {
+  font-size: var(--body-xs);
+  font-weight: 600;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-xs);
+}
+
+.section-sublabel {
+  font-size: var(--body-md);
+  color: var(--gray-600);
+  margin-bottom: var(--space-lg);
+}
+
+/* CARE SETTINGS GRID */
+.care-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+/* CARE SETTING CARD */
+.care-setting-card {
+  position: relative;
+  background: white;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  padding: var(--space-lg);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+}
+
+.care-setting-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.care-setting-card:hover {
+  border-color: var(--abridge-red);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.care-setting-card input:checked ~ .card-content {
+  /* Selected state handled by border */
+}
+
+.care-setting-card input:checked + .card-content {
+  border-color: var(--abridge-red);
+}
+
+.care-setting-card:has(input:checked) {
+  border-color: var(--abridge-red);
+  background: rgba(234, 44, 0, 0.02);
+}
+
+.card-content {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.care-setting-card:hover .card-icon {
+  background: rgba(234, 44, 0, 0.08);
+}
+
+.care-setting-card:has(input:checked) .card-icon {
+  background: rgba(234, 44, 0, 0.1);
+}
+
+.card-icon svg {
+  color: var(--gray-600);
+  transition: color 0.3s ease;
+}
+
+.care-setting-card:has(input:checked) .card-icon svg {
+  color: var(--abridge-red);
+}
+
+.card-text h3 {
+  font-size: var(--title-sm);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.card-text p {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+  line-height: 1.5;
+}
+
+/* CHECKMARK */
+.card-checkmark {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--abridge-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.care-setting-card:has(input:checked) .card-checkmark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* SELECTION SIDEBAR */
+.selection-sidebar {
+  position: sticky;
+  top: 100px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-xl);
+}
+
+.sidebar-label {
+  font-size: var(--body-xs);
+  font-weight: 600;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-lg);
+}
+
+.selected-item {
+  margin-bottom: var(--space-xl);
+}
+
+.selected-label {
+  font-size: var(--body-xs);
+  font-weight: 600;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-xs);
+}
+
+.selected-value {
+  font-size: var(--body-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.selected-value:empty::before {
+  content: 'No setting selected';
+  color: var(--gray-400);
+  font-weight: 400;
+}
+
+/* CONTINUE BUTTON */
+.btn-continue {
+  width: 100%;
+  background: var(--abridge-red);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 16px 24px;
+  font-size: var(--body-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+}
+
+.btn-continue:hover:not(:disabled) {
+  background: var(--red-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(234, 44, 0, 0.3);
+}
+
+.btn-continue:disabled {
+  background: var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}

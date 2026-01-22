@@ -1,0 +1,689 @@
+PAGE 2: STRATEGIC PRIORITIES - ANALYSIS & REDESIGN
+🎯 Current Issues:
+
+The scrolling problem - You can't see all priorities at once, kills the "selection" feeling
+Cards are too tall - Unnecessary vertical padding
+No visual hierarchy - Hard to scan categories (Capacity vs Revenue)
+Sidebar feels disconnected - Should show live count as you select
+"Build Your Model" button - Comes too early, should be "Continue"
+
+💡 My Solution:
+Compact card design + better use of horizontal space + sticky category headers
+
+REDESIGNED LAYOUT
+htmlCopy<div class="page-container">
+  <!-- Back button -->
+  <button class="btn-back" onclick="history.back()">
+    ← Back
+  </button>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">Strategic Priorities</h1>
+    <div class="page-header-split">
+      <div>
+        <h2 class="page-question">What outcomes matter most right now?</h2>
+        <p class="page-description">
+          Select 2-6 strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
+        </p>
+      </div>
+      <div class="selection-counter">
+        <div class="counter-circle">
+          <span class="counter-number">0</span>
+          <span class="counter-label">selected</span>
+        </div>
+        <p class="counter-hint">Select 2-6 priorities</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proof point -->
+  <div class="proof-badge">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 11l3 3L22 4"/>
+      <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+    </svg>
+    <span>Based on proven methodologies from 200+ health system partners</span>
+  </div>
+
+  <!-- Two column layout -->
+  <div class="two-column-layout priorities-layout">
+    <!-- Left: Priorities -->
+    <div class="priorities-section">
+      
+      <!-- CAPACITY & LABOR CATEGORY -->
+      <div class="priority-category">
+        <div class="category-header">
+          <div class="category-icon capacity-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="category-title">CAPACITY & LABOR</h3>
+            <p class="category-subtitle">Workforce efficiency and utilization</p>
+          </div>
+        </div>
+
+        <div class="priority-cards-compact">
+          
+          <!-- Priority Card - Compact -->
+          <label class="priority-card-compact">
+            <input type="checkbox" name="priority" value="patient-access" />
+            <div class="priority-card-inner">
+              <div class="priority-header">
+                <div class="priority-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                  </svg>
+                </div>
+                <div class="priority-text">
+                  <h4>Patient Access</h4>
+                  <p>Turn documentation efficiency into additional visit capacity.</p>
+                </div>
+              </div>
+              <div class="priority-value">
+                <span class="value-range">$150K-$350K</span>
+                <span class="value-label">for 50 providers</span>
+              </div>
+              <div class="priority-checkmark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+          </label>
+
+          <!-- Overtime & Locum -->
+          <label class="priority-card-compact">
+            <input type="checkbox" name="priority" value="overtime-locum" />
+            <div class="priority-card-inner">
+              <div class="priority-header">
+                <div class="priority-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+                <div class="priority-text">
+                  <h4>Overtime & Locum Cost Savings</h4>
+                  <p>Reduce overtime and locum reliance driven by after-hours documentation.</p>
+                </div>
+              </div>
+              <div class="priority-value">
+                <span class="value-range">$80K-$200K</span>
+                <span class="value-label">for 50 providers</span>
+              </div>
+              <div class="priority-checkmark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+          </label>
+
+          <!-- Clinician Retention -->
+          <label class="priority-card-compact">
+            <input type="checkbox" name="priority" value="clinician-retention" />
+            <div class="priority-card-inner">
+              <div class="priority-header">
+                <div class="priority-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                  </svg>
+                </div>
+                <div class="priority-text">
+                  <h4>Clinician Retention</h4>
+                  <p>Lower burnout and turnover by reducing administrative burden.</p>
+                </div>
+              </div>
+              <div class="priority-value">
+                <span class="value-range">$40K-$120K</span>
+                <span class="value-label">for 50 providers</span>
+              </div>
+              <div class="priority-checkmark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+          </label>
+
+        </div>
+      </div>
+
+      <!-- REVENUE & RISK CATEGORY -->
+      <div class="priority-category">
+        <div class="category-header">
+          <div class="category-icon revenue-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="category-title">REVENUE & QUALITY</h3>
+            <p class="category-subtitle">Clinical documentation and financial performance</p>
+          </div>
+        </div>
+
+        <div class="priority-cards-compact">
+          
+          <!-- Accurate Level of Service -->
+          <label class="priority-card-compact">
+            <input type="checkbox" name="priority" value="accurate-service" />
+            <div class="priority-card-inner">
+              <div class="priority-header">
+                <div class="priority-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                  </svg>
+                </div>
+                <div class="priority-text">
+                  <h4>Accurate Level of Service</h4>
+                  <p>Capture appropriate E&M levels with complete documentation.</p>
+                </div>
+              </div>
+              <div class="priority-value">
+                <span class="value-range">$80K-$180K</span>
+                <span class="value-label">for 50 providers</span>
+              </div>
+              <div class="priority-checkmark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+          </label>
+
+          <!-- Quality Measures -->
+          <label class="priority-card-compact">
+            <input type="checkbox" name="priority" value="quality-measures" />
+            <div class="priority-card-inner">
+              <div class="priority-header">
+                <div class="priority-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <div class="priority-text">
+                  <h4>Quality Measures & Risk Adjustment</h4>
+                  <p>Improve documentation completeness for quality programs and HCC coding.</p>
+                </div>
+              </div>
+              <div class="priority-value">
+                <span class="value-range">$60K-$150K</span>
+                <span class="value-label">for 50 providers</span>
+              </div>
+              <div class="priority-checkmark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+          </label>
+
+          <!-- Denial Prevention -->
+          <label class="priority-card-compact">
+            <input type="checkbox" name="priority" value="denial-prevention" />
+            <div class="priority-card-inner">
+              <div class="priority-header">
+                <div class="priority-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                </div>
+                <div class="priority-text">
+                  <h4>Denial Prevention</h4>
+                  <p>Reduce claim denials with complete and accurate documentation.</p>
+                </div>
+              </div>
+              <div class="priority-value">
+                <span class="value-range">$40K-$100K</span>
+                <span class="value-label">for 50 providers</span>
+              </div>
+              <div class="priority-checkmark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+          </label>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Selection Summary -->
+    <div class="selection-sidebar">
+      <div class="sidebar-label">YOUR SELECTIONS</div>
+      
+      <div class="selected-item">
+        <div class="selected-label">CARE SETTING</div>
+        <div class="selected-value">Outpatient</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="selected-item">
+        <div class="selected-label">STRATEGIC PRIORITIES</div>
+        <div class="selected-count">
+          <span id="priority-count">0</span> of 2-6 selected
+        </div>
+        <div class="selection-hint">Most organizations select 3-5</div>
+        
+        <!-- Live list of selected priorities -->
+        <ul class="selected-priorities-list" id="selected-list">
+          <!-- Populated by JS -->
+        </ul>
+      </div>
+
+      <button class="btn-primary btn-continue" id="continue-btn" disabled>
+        Continue →
+      </button>
+
+      <p class="sidebar-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        You can adjust these assumptions later
+      </p>
+    </div>
+  </div>
+</div>
+
+CSS - COMPACT PRIORITY CARDS
+cssCopy/* PAGE HEADER ENHANCEMENT */
+.page-header-split {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2xl);
+}
+
+.page-question {
+  font-size: var(--title-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--space-sm);
+}
+
+/* SELECTION COUNTER (in header) */
+.selection-counter {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.counter-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(234, 44, 0, 0.1) 0%, rgba(234, 44, 0, 0.05) 100%);
+  border: 3px solid var(--gray-200);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-sm);
+  transition: all 0.3s ease;
+}
+
+.counter-circle.has-selections {
+  border-color: var(--abridge-red);
+  background: linear-gradient(135deg, rgba(234, 44, 0, 0.15) 0%, rgba(234, 44, 0, 0.08) 100%);
+}
+
+.counter-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--abridge-red);
+  line-height: 1;
+}
+
+.counter-label {
+  font-size: var(--body-xs);
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.counter-hint {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+}
+
+/* PROOF BADGE */
+.proof-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--gray-50);
+  border-radius: 8px;
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+  margin-bottom: var(--space-2xl);
+}
+
+.proof-badge svg {
+  color: var(--green-500);
+  flex-shrink: 0;
+}
+
+/* PRIORITY CATEGORY */
+.priority-category {
+  margin-bottom: var(--space-2xl);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.category-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.capacity-icon {
+  background: rgba(251, 191, 36, 0.1);
+  color: #F59E0B;
+}
+
+.revenue-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--green-500);
+}
+
+.category-title {
+  font-size: var(--body-sm);
+  font-weight: 700;
+  color: var(--gray-900);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 2px;
+}
+
+.category-subtitle {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+}
+
+/* COMPACT PRIORITY CARDS */
+.priority-cards-compact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.priority-card-compact {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+
+.priority-card-compact input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.priority-card-inner {
+  position: relative;
+  background: white;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  padding: var(--space-md) var(--space-lg);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.priority-card-compact:hover .priority-card-inner {
+  border-color: var(--abridge-red);
+  transform: translateX(4px);
+  box-shadow: -4px 0 0 0 var(--abridge-red);
+}
+
+.priority-card-compact:has(input:checked) .priority-card-inner {
+  border-color: var(--abridge-red);
+  background: rgba(234, 44, 0, 0.02);
+  box-shadow: -4px 0 0 0 var(--abridge-red);
+}
+
+/* PRIORITY HEADER (icon + text) */
+.priority-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  flex: 1;
+}
+
+.priority-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.priority-card-compact:hover .priority-icon {
+  background: rgba(234, 44, 0, 0.08);
+}
+
+.priority-card-compact:has(input:checked) .priority-icon {
+  background: rgba(234, 44, 0, 0.1);
+}
+
+.priority-icon svg {
+  color: var(--gray-600);
+  transition: color 0.3s ease;
+}
+
+.priority-card-compact:has(input:checked) .priority-icon svg {
+  color: var(--abridge-red);
+}
+
+.priority-text h4 {
+  font-size: var(--body-md);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.priority-text p {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+  line-height: 1.4;
+}
+
+/* PRIORITY VALUE */
+.priority-value {
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 140px;
+}
+
+.value-range {
+  display: block;
+  font-size: var(--body-md);
+  font-weight: 600;
+  color: var(--green-500);
+  margin-bottom: 2px;
+}
+
+.value-label {
+  display: block;
+  font-size: var(--body-xs);
+  color: var(--gray-500);
+}
+
+/* CHECKMARK */
+.priority-checkmark {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--abridge-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.priority-card-compact:has(input:checked) .priority-checkmark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* SIDEBAR ENHANCEMENTS */
+.divider {
+  height: 1px;
+  background: var(--gray-200);
+  margin: var(--space-lg) 0;
+}
+
+.selected-count {
+  font-size: var(--title-md);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--space-xs);
+}
+
+.selected-count #priority-count {
+  color: var(--abridge-red);
+}
+
+.selection-hint {
+  font-size: var(--body-sm);
+  color: var(--gray-500);
+  margin-bottom: var(--space-md);
+}
+
+.selected-priorities-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.selected-priorities-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  font-size: var(--body-sm);
+  color: var(--gray-700);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.selected-priorities-list li:last-child {
+  border-bottom: none;
+}
+
+.selected-priorities-list li::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--abridge-red);
+  flex-shrink: 0;
+}
+
+.sidebar-note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--body-xs);
+  color: var(--gray-500);
+  margin-top: var(--space-md);
+  padding: var(--space-sm);
+  background: var(--gray-50);
+  border-radius: 6px;
+}
+
+.sidebar-note svg {
+  flex-shrink: 0;
+}
+
+JAVASCRIPT FOR INTERACTIVITY
+javascriptCopy// Track selections
+let selectedPriorities = new Set();
+
+// Update counter and validation
+function updateSelections() {
+  const count = selectedPriorities.size;
+  
+  // Update counter in header
+  document.querySelector('.counter-number').textContent = count;
+  const counterCircle = document.querySelector('.counter-circle');
+  if (count > 0) {
+    counterCircle.classList.add('has-selections');
+  } else {
+    counterCircle.classList.remove('has-selections');
+  }
+  
+  // Update sidebar count
+  document.getElementById('priority-count').textContent = count;
+  
+  // Update selected list
+  const listEl = document.getElementById('selected-list');
+  listEl.innerHTML = '';
+  selectedPriorities.forEach(priority => {
+    const li = document.createElement('li');
+    li.textContent = priority;
+    listEl.appendChild(li);
+  });
+  
+  // Enable/disable continue button
+  const continueBtn = document.getElementById('continue-btn');
+  if (count >= 2 && count <= 6) {
+    continueBtn.disabled = false;
+  } else {
+    continueBtn.disabled = true;
+  }
+}
+
+// Listen to checkbox changes
+document.querySelectorAll('.priority-card-compact input[type="checkbox"]').forEach(checkbox => {
+  checkbox.addEventListener('change', function() {
+    const label = this.closest('label').querySelector('h4').textContent;
+    
+    if (this.checked) {
+      selectedPriorities.add(label);
+    } else {
+      selectedPriorities.delete(label);
+    }
+    
+    updateSelections();
+  });
+});
