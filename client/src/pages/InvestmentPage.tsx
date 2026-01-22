@@ -244,7 +244,7 @@ export default function InvestmentPage({
   const handleComplete = () => {
     onComplete({
       ...valueResults,
-      investment: totalInvestment,
+      investment: annualInvestment,
       netGain: netGainAnnual,
       roiMultiple,
       paybackMonths: monthsToPayback,
