@@ -190,7 +190,7 @@ export default function InvestmentPage({
             <div className="max-w-2xl mx-auto mb-8">
               <div className="relative h-16 bg-white/10 rounded-xl overflow-hidden">
                 <div 
-                  className="absolute inset-y-0 left-0 bg-white/30 flex items-center justify-center transition-all duration-500"
+                  className="absolute inset-y-0 left-0 bg-[#EA2C00] flex items-center justify-center transition-all duration-500"
                   style={{ width: `${investmentBarWidth}%` }}
                 >
                   <div className="text-center">
