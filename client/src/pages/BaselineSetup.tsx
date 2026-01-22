@@ -389,16 +389,6 @@ export default function BaselineSetup({
                       {option.label === "Aggressive" && "High adoption target"}
                     </div>
                     
-                    {/* Checkmark */}
-                    <div 
-                      className={`absolute top-5 right-5 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        isSelected 
-                          ? "bg-[#EA2C00] opacity-100 scale-100" 
-                          : "opacity-0 scale-75"
-                      }`}
-                    >
-                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                    </div>
                   </button>
                 );
               })}
