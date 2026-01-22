@@ -5191,19 +5191,6 @@ export default function ModelBuilder({
             <div>
               <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
               <p className="text-sm text-amber-800 leading-relaxed">
-                Hospital-acquired pressure injuries (HAPIs) cost $10K-$40K each — and CMS doesn't reimburse. Prevention depends on timely skin assessments and interventions. When assessments are documented in real-time, nothing falls through the cracks.
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        {/* Why this is shown separately */}
-        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-          <div className="flex items-start gap-3">
-            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
-              <p className="text-sm text-amber-800 leading-relaxed">
                 HAPIs happen when assessments are missed or interventions are delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured as they're observed — enabling earlier intervention. We show this as POTENTIAL value because the causal link is indirect.
               </p>
             </div>
