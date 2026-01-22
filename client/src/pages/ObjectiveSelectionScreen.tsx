@@ -956,35 +956,11 @@ function PriorityCard({
   onToggle: () => void;
 }) {
   const LeverIcon = LEVER_ICONS[lever.id] || FileText;
-  const keyMetric = LEVER_KEY_METRICS[lever.id];
-  const contextTag = LEVER_CONTEXT_TAGS[lever.id];
   const valueRange = LEVER_VALUE_RANGES[lever.id];
   
   const formatCurrency = (value: number) => {
     if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
     return `$${(value / 1000).toFixed(0)}K`;
-  };
-
-  const getTagColors = (color: string) => {
-    switch (color) {
-      case "amber": return "bg-amber-50 text-amber-700 border-amber-200";
-      case "orange": return "bg-orange-50 text-orange-700 border-orange-200";
-      case "green": return "bg-green-50 text-green-700 border-green-200";
-      case "emerald": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "slate": return "bg-slate-50 text-slate-600 border-slate-200";
-      default: return "bg-neutral-50 text-neutral-600 border-neutral-200";
-    }
-  };
-
-  const getTagIcon = (icon: string) => {
-    switch (icon) {
-      case "zap": return <Zap className="w-3 h-3" />;
-      case "alert": return <AlertTriangle className="w-3 h-3" />;
-      case "clock": return <Clock className="w-3 h-3" />;
-      case "check": return <Check className="w-3 h-3" />;
-      case "dollar": return <DollarSign className="w-3 h-3" />;
-      default: return null;
-    }
   };
 
   return (
@@ -998,47 +974,53 @@ function PriorityCard({
           onToggle();
         }
       }}
-      className={`group relative w-full text-left cursor-pointer rounded-lg transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#EA2C00]/25 ${
+      className={`group relative w-full text-left cursor-pointer rounded-xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#EA2C00]/25 ${
         isSelected
-          ? "bg-white border border-[#EA2C00] shadow-[0_2px_4px_rgba(0,0,0,0.08)]"
-          : "bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-[#EA2C00]"
+          ? "bg-[rgba(234,44,0,0.02)] border-2 border-[#EA2C00]"
+          : "bg-white border-2 border-[#E5E7EB] hover:border-[#EA2C00] hover:-translate-y-0.5 hover:shadow-[0_8px_16px_rgba(0,0,0,0.06)]"
       }`}
       data-testid={`priority-card-${lever.id}`}
     >
-      {isSelected && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#EA2C00] rounded-l-lg" />
-      )}
-
       <div className="p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0 ${
-              isSelected ? "bg-[#EA2C00]/10" : "bg-neutral-100"
-            }`}>
-              <LeverIcon className={`w-5 h-5 ${isSelected ? "text-[#EA2C00]" : "text-neutral-600"}`} />
-            </div>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <h4 className="text-base font-medium text-[#111827] leading-snug mb-1">
-                {lever.label}
-              </h4>
-              <p className="text-sm text-[#6B7280] leading-relaxed">
-                {lever.description}
-              </p>
-              {valueRange && (
-                <p className="mt-2 text-[12px] text-[#6B7280] flex items-center gap-1.5 font-mono">
-                  <BarChart3 className="w-3.5 h-3.5 text-[#9CA3AF]" />
-                  Typical range: {formatCurrency(valueRange.min)}–{formatCurrency(valueRange.max)} for {valueRange.perProviders} providers
-                </p>
-              )}
-            </div>
+        <div className="flex items-start gap-4">
+          {/* Icon */}
+          <div className={`flex items-center justify-center w-10 h-10 rounded-[10px] flex-shrink-0 transition-colors duration-300 ${
+            isSelected ? "bg-[rgba(234,44,0,0.1)]" : "bg-[#F9FAFB] group-hover:bg-[rgba(234,44,0,0.08)]"
+          }`}>
+            <LeverIcon className={`w-5 h-5 transition-colors duration-300 ${isSelected ? "text-[#EA2C00]" : "text-[#6B7280] group-hover:text-[#EA2C00]"}`} />
           </div>
-          <div onClick={(e) => e.stopPropagation()}>
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={onToggle}
-              className={`flex-shrink-0 mt-1 ${isSelected ? "border-[#EA2C00] data-[state=checked]:bg-[#EA2C00]" : ""}`}
-              data-testid={`checkbox-${lever.id}`}
-            />
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <h4 className="text-[17px] font-semibold text-[#111827] leading-snug mb-1">
+              {lever.label}
+            </h4>
+            <p className="text-[14px] text-[#6B7280] leading-relaxed">
+              {lever.description}
+            </p>
+          </div>
+          
+          {/* Value Range + Checkmark */}
+          <div className="flex-shrink-0 flex flex-col items-end gap-2">
+            {valueRange && (
+              <div className="text-right">
+                <span className="text-[15px] font-semibold text-[#10B981]">
+                  {formatCurrency(valueRange.min)}–{formatCurrency(valueRange.max)}
+                </span>
+                <p className="text-[12px] text-[#9CA3AF]">for {valueRange.perProviders} providers</p>
+              </div>
+            )}
+            
+            {/* Checkmark */}
+            <div 
+              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+                isSelected 
+                  ? "bg-[#EA2C00] opacity-100 scale-100" 
+                  : "border-2 border-[#D1D5DB] opacity-100 scale-100 group-hover:border-[#EA2C00]"
+              }`}
+            >
+              {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+            </div>
           </div>
         </div>
       </div>
@@ -2389,9 +2371,9 @@ export default function ObjectiveSelectionScreen({
     // Map categories to their display labels
     const categoryLabels: Record<LeverCategory, string> = {
       time: "Capacity & Labor",
-      documentation: "Revenue & Risk",
+      documentation: "Revenue & Quality",
       capacityLabor: "Capacity & Labor",
-      qualityRevenue: "Revenue & Risk",
+      qualityRevenue: "Revenue & Quality",
       documentationQuality: "Documentation Quality",
       laborCost: "Labor Cost Benefits",
       qualitySafety: "Quality & Safety Benefits",
@@ -2399,20 +2381,37 @@ export default function ObjectiveSelectionScreen({
     };
     const categoryLabel = categoryLabels[category] || "Drivers";
     const categorySubtitle = CATEGORY_SUBTITLES[category];
+    
+    // Category-specific icon background colors
+    const categoryColors: Record<LeverCategory, string> = {
+      time: "bg-blue-50 text-blue-600",
+      documentation: "bg-emerald-50 text-emerald-600",
+      capacityLabor: "bg-blue-50 text-blue-600",
+      qualityRevenue: "bg-emerald-50 text-emerald-600",
+      documentationQuality: "bg-purple-50 text-purple-600",
+      laborCost: "bg-blue-50 text-blue-600",
+      qualitySafety: "bg-emerald-50 text-emerald-600",
+      additional: "bg-amber-50 text-amber-600",
+    };
+    const iconColorClass = categoryColors[category] || "bg-neutral-50 text-neutral-600";
 
     return (
-      <div key={category} className={isFirst ? "pt-4" : "pt-10"}>
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <CategoryIcon className="h-4 w-4 text-[#111827]" />
-            <span className="text-sm font-semibold text-[#111827] uppercase tracking-[0.05em]">
-              {categoryLabel}
-            </span>
+      <div key={category} className={isFirst ? "" : "mt-10"}>
+        {/* Category Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${iconColorClass}`}>
+            <CategoryIcon className="h-5 w-5" />
           </div>
-          <p className="text-sm text-[#6B7280] italic mb-4">{categorySubtitle}</p>
-          <div className="border-b border-[#E5E7EB]" />
+          <div>
+            <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em]">
+              {categoryLabel}
+            </h3>
+            <p className="text-[15px] text-[#6B7280]">{categorySubtitle}</p>
+          </div>
         </div>
-        <div className="space-y-4">
+        
+        {/* Priority Cards - Compact Grid */}
+        <div className="space-y-3">
           {levers.map((lever) => (
             <PriorityCard
               key={lever.id}
@@ -2648,31 +2647,53 @@ export default function ObjectiveSelectionScreen({
 
         {/* PAGE 2 — STRATEGIC PRIORITIES */}
         {currentPage === "priorities" && selectedSetting && (
-          <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-8 md:py-12">
+          <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-12 md:py-16">
+            {/* Back button */}
             <button
               onClick={handleBackToPage1}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#EA2C00] transition-opacity hover:opacity-70 mb-6"
+              className="inline-flex items-center gap-2 text-[15px] font-medium text-[#6B7280] transition-colors hover:text-[#EA2C00] mb-8"
               data-testid="button-back-to-setting"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
 
-            <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-6">
-              Strategic Priorities
-            </h2>
+            {/* Page Header with Selection Counter */}
+            <div className="mb-12">
+              <h2 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-6">
+                Strategic Priorities
+              </h2>
+              
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 md:gap-12">
+                <div className="flex-1">
+                  <h3 className="text-2xl md:text-[32px] font-semibold text-[#111827] leading-tight mb-3">
+                    What outcomes matter most right now?
+                  </h3>
+                  <p className="text-[17px] leading-relaxed text-[#6B7280] max-w-[600px]">
+                    Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6} strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
+                  </p>
+                </div>
+                
+                {/* Selection Counter */}
+                <div className="flex-shrink-0 flex items-center gap-4 md:gap-6">
+                  <div className="flex flex-col items-center justify-center w-20 h-20 rounded-full border-2 border-[#E5E7EB] bg-white">
+                    <span className={`text-2xl font-bold ${selectedLeverIds.size >= 2 ? 'text-[#10B981]' : 'text-[#111827]'}`}>
+                      {selectedLeverIds.size}
+                    </span>
+                    <span className="text-[11px] text-[#9CA3AF] uppercase tracking-wide">selected</span>
+                  </div>
+                  <p className="text-sm text-[#6B7280]">Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6}<br/>priorities</p>
+                </div>
+              </div>
+            </div>
             
-            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 mb-8">
-              <p className="text-lg font-semibold text-[#111827] mb-2">What outcomes matter most right now?</p>
-              <p className="text-sm text-[#6B7280] leading-relaxed">
-                Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6} strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
-              </p>
-              <p className="text-[13px] text-[#6B7280] mt-4 flex items-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5" /> Based on proven methodologies from 200+ health system partners
-              </p>
+            {/* Proof Badge */}
+            <div className="flex items-center gap-2 p-4 bg-[#F9FAFB] rounded-lg mb-10 w-fit">
+              <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+              <span className="text-sm text-[#6B7280]">Based on proven methodologies from 200+ health system partners</span>
             </div>
 
-            <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
+            <div className="grid lg:grid-cols-[1fr_380px] gap-12 lg:gap-16">
               <div>
                 {leversByCategory && (
                   <div>
@@ -2723,74 +2744,76 @@ export default function ObjectiveSelectionScreen({
                 )}
               </div>
               
+              {/* Right: Selection Sidebar */}
               <div className="hidden lg:block">
-                <div className="sticky top-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm overflow-hidden">
-                  <div className="px-6 py-5 border-b border-[#E5E7EB]">
-                    <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-[0.05em]">
+                <div className="sticky top-[100px] bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
+                  <div className="px-8 py-6 border-b border-[#E5E7EB]">
+                    <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em]">
                       Your Selections
                     </h3>
                   </div>
                   
-                  <div className="p-6">
-                    <div className="mb-5 pb-5 border-b border-[#E5E7EB]">
-                      <p className="text-xs font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-2">
+                  <div className="px-8 py-8">
+                    {/* Care Setting */}
+                    <div className="mb-6 pb-6 border-b border-[#E5E7EB]">
+                      <p className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.05em] mb-2">
                         Care Setting
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-base font-medium text-[#111827]">
-                          {CARE_SETTING_LABELS[selectedSetting]}
-                        </span>
-                      </div>
+                      <span className="text-[17px] font-semibold text-[#111827]">
+                        {CARE_SETTING_LABELS[selectedSetting]}
+                      </span>
                     </div>
                     
+                    {/* Strategic Priorities */}
                     <div>
-                      <p className="text-xs font-medium text-[#6B7280] uppercase tracking-[0.05em] mb-1">
+                      <p className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.05em] mb-1">
                         Strategic Priorities
                       </p>
-                      <p className="text-[13px] text-[#6B7280] mb-1">Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6} drivers</p>
-                      <p className="text-[12px] text-[#9CA3AF] mb-4">Most organizations select 2-3</p>
+                      <div className="flex items-baseline gap-1 mb-1">
+                        <span className={`text-xl font-bold ${selectedLeverIds.size >= 2 ? 'text-[#10B981]' : 'text-[#111827]'}`}>
+                          {selectedLeverIds.size}
+                        </span>
+                        <span className="text-[15px] text-[#6B7280]">of 2-{SETTING_CONFIG[selectedSetting]?.length || 6} selected</span>
+                      </div>
+                      <p className="text-[13px] text-[#9CA3AF] mb-5">Most organizations select 3-5</p>
                       
-                      {selectedLeverIds.size < 2 ? (
-                        <p className="text-sm text-[#6B7280] leading-relaxed">
-                          Choose at least 2 drivers to continue
-                        </p>
-                      ) : (
-                        <>
-                          <ul className="space-y-2 mb-4">
-                            {Array.from(selectedLeverIds).map((leverId) => {
-                              const lever = SETTING_CONFIG[selectedSetting]?.find((l: LeverConfig) => l.id === leverId);
-                              if (!lever) return null;
-                              return (
-                                <li key={leverId} className="flex items-center gap-2 text-sm text-[#111827]">
-                                  <Check className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
-                                  <span>{lever.label}</span>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                          <p className="text-[13px] text-[#6B7280]">
-                            {selectedLeverIds.size} of {SETTING_CONFIG[selectedSetting]?.length || 6} selected
-                          </p>
-                        </>
+                      {selectedLeverIds.size > 0 && (
+                        <ul className="space-y-2.5">
+                          {Array.from(selectedLeverIds).map((leverId) => {
+                            const lever = SETTING_CONFIG[selectedSetting]?.find((l: LeverConfig) => l.id === leverId);
+                            if (!lever) return null;
+                            return (
+                              <li key={leverId} className="flex items-start gap-2 text-[14px] text-[#111827]">
+                                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-0.5" />
+                                <span>{lever.label}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
                       )}
                     </div>
                   </div>
                   
-                  <div className="border-t border-[#E5E7EB] px-6 py-5">
+                  <div className="border-t border-[#E5E7EB] px-8 py-6">
                     <button
                       type="button"
                       disabled={!canContinuePage2}
                       onClick={handleBuildYourModel}
-                      className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                      className={`w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-[15px] transition-all duration-200 ${
                         canContinuePage2
-                          ? "bg-[#111827] text-white hover:bg-[#EA2C00]"
+                          ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-sm hover:shadow-md hover:-translate-y-0.5"
                           : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
                       }`}
                       data-testid="button-build-your-model"
                     >
-                      Build Your Model
-                      <ArrowRight className="h-5 w-5" />
+                      Continue
+                      <ChevronRight className="h-5 w-5" />
                     </button>
+                    
+                    <p className="flex items-center justify-center gap-1.5 text-[13px] text-[#9CA3AF] mt-4">
+                      <Info className="w-3.5 h-3.5" />
+                      You can adjust these assumptions later
+                    </p>
                   </div>
                 </div>
               </div>

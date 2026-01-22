@@ -1,0 +1,710 @@
+htmlCopy<div class="page-container">
+  <!-- Back button -->
+  <button class="btn-back" onclick="history.back()">
+    ← Back
+  </button>
+
+  <!-- Page Header - REFRAMED -->
+  <div class="page-header centered-header">
+    <div class="step-indicator">Step 3 of 5</div>
+    <h1 class="page-title">Size your opportunity</h1>
+    <p class="page-description">
+      We'll use your deployment scope to calculate your addressable market—the foundation for your ROI model.
+    </p>
+  </div>
+
+  <!-- Single column, wider layout -->
+  <div class="single-column-form">
+    
+    <!-- Input Section -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="section-number">1</div>
+        <div>
+          <h2 class="section-title">Deployment Scope</h2>
+          <p class="section-description">This could be a pilot or full deployment</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="field-label">
+            How many providers are in scope?
+            <span class="field-tooltip" data-tooltip="Total clinicians who will use Abridge in this deployment">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </span>
+          </label>
+          <div class="input-with-unit">
+            <input 
+              type="number" 
+              id="providers-input" 
+              placeholder="e.g., 50" 
+              min="1"
+              class="form-input large-input"
+            />
+            <span class="input-unit">providers</span>
+          </div>
+          <p class="field-hint">This is your starting point. Could be a pilot or full deployment.</p>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">
+            Annual encounters for these providers?
+            <span class="field-tooltip" data-tooltip="Total patient visits per year across all providers">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </span>
+          </label>
+          <div class="input-with-unit">
+            <input 
+              type="number" 
+              id="encounters-input" 
+              placeholder="e.g., 100,000" 
+              min="1"
+              class="form-input large-input"
+            />
+            <span class="input-unit">encounters/year</span>
+          </div>
+          <p class="field-hint">~2,000/provider is typical for primary care, ~1,500 for specialty</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Utilization Section -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="section-number">2</div>
+        <div>
+          <h2 class="section-title">Expected Utilization</h2>
+          <p class="section-description">What percentage of encounters will use Abridge?</p>
+        </div>
+      </div>
+
+      <div class="utilization-selector">
+        <p class="utilization-question">Choose your adoption scenario:</p>
+        
+        <div class="utilization-cards">
+          <!-- Conservative -->
+          <label class="utilization-card">
+            <input type="radio" name="utilization" value="0.5" />
+            <div class="util-card-content">
+              <div class="util-card-header">
+                <h3>Conservative</h3>
+                <div class="util-percentage">50%</div>
+              </div>
+              <p class="util-description">
+                Cautious rollout or optional use
+              </p>
+              <div class="util-badge">Lower risk estimate</div>
+            </div>
+            <div class="util-checkmark">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </label>
+
+          <!-- Typical - DEFAULT -->
+          <label class="utilization-card recommended">
+            <input type="radio" name="utilization" value="0.65" checked />
+            <div class="util-card-content">
+              <div class="util-card-header">
+                <h3>Typical</h3>
+                <div class="util-percentage">65%</div>
+              </div>
+              <p class="util-description">
+                Standard deployment with provider choice
+              </p>
+              <div class="util-badge recommended-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Recommended
+              </div>
+            </div>
+            <div class="util-checkmark">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </label>
+
+          <!-- Aggressive -->
+          <label class="utilization-card">
+            <input type="radio" name="utilization" value="0.8" />
+            <div class="util-card-content">
+              <div class="util-card-header">
+                <h3>Aggressive</h3>
+                <div class="util-percentage">80%</div>
+              </div>
+              <p class="util-description">
+                Mandated use or mature adoption
+              </p>
+              <div class="util-badge">High adoption target</div>
+            </div>
+            <div class="util-checkmark">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </label>
+        </div>
+
+        <div class="utilization-context">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <p>Not sure? Start with <strong>Typical (65%)</strong> — you can adjust later. Most organizations reach 70-80% at full scale.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- BASELINE RESULT - THE HERO MOMENT -->
+    <div class="baseline-result-hero">
+      <div class="baseline-header">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        <span>YOUR BASELINE</span>
+      </div>
+
+      <div class="baseline-content">
+        <div class="baseline-main">
+          <div class="baseline-number" id="eligible-encounters">
+            0
+          </div>
+          <div class="baseline-label">eligible encounters per year</div>
+        </div>
+
+        <div class="baseline-formula">
+          <div class="formula-item">
+            <div class="formula-value" id="formula-providers">50</div>
+            <div class="formula-label">providers</div>
+          </div>
+          <div class="formula-operator">×</div>
+          <div class="formula-item">
+            <div class="formula-value" id="formula-encounters">10,000</div>
+            <div class="formula-label">encounters</div>
+          </div>
+          <div class="formula-operator">×</div>
+          <div class="formula-item">
+            <div class="formula-value" id="formula-utilization">65%</div>
+            <div class="formula-label">utilization</div>
+          </div>
+        </div>
+
+        <div class="baseline-insight">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <p>Everything below builds from this number</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Continue Button -->
+    <div class="form-actions">
+      <button class="btn-primary btn-large" id="continue-baseline" disabled>
+        Continue to Value Drivers →
+      </button>
+    </div>
+
+  </div>
+</div>
+
+CSS - SPACIOUS & CONFIDENT
+cssCopy/* CENTERED HEADER */
+.centered-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto var(--space-3xl) auto;
+}
+
+.step-indicator {
+  display: inline-block;
+  font-size: var(--body-xs);
+  font-weight: 600;
+  color: var(--abridge-red);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(234, 44, 0, 0.08);
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-bottom: var(--space-md);
+}
+
+/* SINGLE COLUMN FORM - WIDER */
+.single-column-form {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* FORM SECTION */
+.form-section {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-2xl);
+  margin-bottom: var(--space-xl);
+}
+
+.form-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.section-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--abridge-red);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--body-lg);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-size: var(--title-md);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.section-description {
+  font-size: var(--body-md);
+  color: var(--gray-600);
+}
+
+/* FORM ROW */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+}
+
+/* FORM FIELD */
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  font-size: var(--body-md);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.field-tooltip {
+  cursor: help;
+  color: var(--gray-400);
+  transition: color 0.2s;
+}
+
+.field-tooltip:hover {
+  color: var(--abridge-red);
+}
+
+.input-with-unit {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: var(--body-md);
+  border: 2px solid var(--gray-200);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.large-input {
+  padding: 18px 20px;
+  font-size: var(--body-lg);
+  font-weight: 600;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--abridge-red);
+  box-shadow: 0 0 0 3px rgba(234, 44, 0, 0.1);
+}
+
+.input-unit {
+  position: absolute;
+  right: 20px;
+  font-size: var(--body-sm);
+  color: var(--gray-500);
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.field-hint {
+  font-size: var(--body-sm);
+  color: var(--gray-500);
+  margin-top: var(--space-xs);
+}
+
+/* UTILIZATION SELECTOR */
+.utilization-selector {
+  /* Inherits form-section padding */
+}
+
+.utilization-question {
+  font-size: var(--body-lg);
+  font-weight: 500;
+  color: var(--gray-700);
+  margin-bottom: var(--space-lg);
+}
+
+.utilization-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+/* UTILIZATION CARD */
+.utilization-card {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+
+.utilization-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.util-card-content {
+  background: white;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  padding: var(--space-lg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+}
+
+.utilization-card:hover .util-card-content {
+  border-color: var(--abridge-red);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.utilization-card:has(input:checked) .util-card-content {
+  border-color: var(--abridge-red);
+  background: rgba(234, 44, 0, 0.02);
+  box-shadow: 0 4px 16px rgba(234, 44, 0, 0.12);
+}
+
+.utilization-card.recommended .util-card-content {
+  border-color: var(--abridge-red);
+  border-width: 3px;
+}
+
+.util-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.util-card-header h3 {
+  font-size: var(--title-sm);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.util-percentage {
+  font-size: var(--title-lg);
+  font-weight: 700;
+  color: var(--abridge-red);
+}
+
+.util-description {
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin-bottom: var(--space-md);
+}
+
+.util-badge {
+  display: inline-block;
+  font-size: var(--body-xs);
+  font-weight: 600;
+  color: var(--gray-600);
+  background: var(--gray-100);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.recommended-badge {
+  background: rgba(234, 44, 0, 0.1);
+  color: var(--abridge-red);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.recommended-badge svg {
+  fill: var(--abridge-red);
+}
+
+/* CHECKMARK */
+.util-checkmark {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--abridge-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.utilization-card:has(input:checked) .util-checkmark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* UTILIZATION CONTEXT */
+.utilization-context {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--gray-50);
+  border-radius: 8px;
+  font-size: var(--body-sm);
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+.utilization-context svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* BASELINE RESULT - HERO MOMENT */
+.baseline-result-hero {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+  border: 2px solid var(--green-500);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-2xl);
+  margin-bottom: var(--space-xl);
+  animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.baseline-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--body-xs);
+  font-weight: 700;
+  color: var(--green-500);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-lg);
+}
+
+.baseline-header svg {
+  color: var(--green-500);
+}
+
+.baseline-content {
+  text-align: center;
+}
+
+.baseline-main {
+  margin-bottom: var(--space-xl);
+}
+
+.baseline-number {
+  font-size: 72px;
+  font-weight: 700;
+  color: var(--green-500);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.baseline-label {
+  font-size: var(--body-lg);
+  color: var(--gray-700);
+  font-weight: 500;
+}
+
+/* FORMULA BREAKDOWN */
+.baseline-formula {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: white;
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-lg);
+}
+
+.formula-item {
+  text-align: center;
+}
+
+.formula-value {
+  font-size: var(--title-md);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.formula-label {
+  font-size: var(--body-xs);
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.formula-operator {
+  font-size: var(--title-md);
+  color: var(--gray-400);
+  font-weight: 300;
+}
+
+/* BASELINE INSIGHT */
+.baseline-insight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  font-size: var(--body-md);
+  color: var(--gray-600);
+}
+
+.baseline-insight svg {
+  color: var(--green-500);
+  flex-shrink: 0;
+}
+
+/* FORM ACTIONS */
+.form-actions {
+  text-align: center;
+}
+
+.btn-large {
+  padding: 18px 40px;
+  font-size: var(--body-lg);
+  min-width: 300px;
+}
+
+JAVASCRIPT - LIVE CALCULATION
+javascriptCopyconst providersInput = document.getElementById('providers-input');
+const encountersInput = document.getElementById('encounters-input');
+const utilizationInputs = document.querySelectorAll('input[name="utilization"]');
+const continueBtn = document.getElementById('continue-baseline');
+
+function calculateBaseline() {
+  const providers = parseInt(providersInput.value) || 0;
+  const encounters = parseInt(encountersInput.value) || 0;
+  const utilization = parseFloat(document.querySelector('input[name="utilization"]:checked').value) || 0.65;
+  
+  const eligible = Math.round(providers * encounters * utilization);
+  
+  // Animate the number
+  animateNumber(document.getElementById('eligible-encounters'), eligible);
+  
+  // Update formula
+  document.getElementById('formula-providers').textContent = providers.toLocaleString();
+  document.getElementById('formula-encounters').textContent = encounters.toLocaleString();
+  document.getElementById('formula-utilization').textContent = (utilization * 100) + '%';
+  
+  // Enable continue if valid
+  if (providers > 0 && encounters > 0) {
+    continueBtn.disabled = false;
+  } else {
+    continueBtn.disabled = true;
+  }
+}
+
+function animateNumber(element, target) {
+  const duration = 800;
+  const start = parseInt(element.textContent.replace(/,/g, '')) || 0;
+  const range = target - start;
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(start + (range * easeOut));
+    
+    element.textContent = current.toLocaleString();
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+// Listen to changes
+providersInput.addEventListener('input', calculateBaseline);
+encountersInput.addEventListener('input', calculateBaseline);
+utilizationInputs.forEach(input => {
+  input.addEventListener('change', calculateBaseline);
+});
+
+// Initial calculation
+calculateBaseline();
+
+🔥 KEY IMPROVEMENTS:
+
+✅ Reframed as "Size your opportunity" - Not boring admin data
+✅ Wider, more spacious - 900px content width, generous padding
+✅ Numbered steps - Creates clear progression
+✅ THE BASELINE IS THE HERO - Big number, animated, centered, green = success
+✅ Formula breakdown - Shows the math visually
+✅ Better utilization framing - "Typical" is recommended, explains why
+✅ Live calculation - Number updates as you type
+✅ Single column - Feels confident, not cramped
+
+This page now feels like: "Look how big your opportunity is!" instead of "Fill out this form."
