@@ -367,9 +367,11 @@ export default function BaselineSetup({
                     }`}
                     data-testid={`utilization-${option.value}`}
                   >
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-lg font-semibold text-[#111827]">{option.label}</h3>
-                      <span className="text-2xl md:text-[32px] font-bold text-[#111827]">{option.value}%</span>
+                    <div className="mb-3">
+                      <div className="flex items-baseline justify-between gap-2 mb-1">
+                        <h3 className="text-[15px] font-semibold text-[#111827]">{option.label}</h3>
+                        <span className="text-xl font-bold text-[#374151]">{option.value}%</span>
+                      </div>
                     </div>
                     <p className="text-[13px] text-[#6B7280] mb-3">
                       {option.label === "Conservative" && "Cautious rollout or optional use"}
