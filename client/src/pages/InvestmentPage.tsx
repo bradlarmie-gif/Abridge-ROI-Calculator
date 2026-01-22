@@ -89,7 +89,7 @@ export default function InvestmentPage({
   const [pricingModel, setPricingModel] = useState<"per_unit_monthly" | "enterprise_annual" | null>(null);
   const [costPerUnit, setCostPerUnit] = useState<number | "">(""); 
   const [enterpriseAnnual, setEnterpriseAnnual] = useState<number | "">(""); 
-  const [contractTerm, setContractTerm] = useState<number>(2);
+  const [contractTerm, setContractTerm] = useState<number>(1);
   const [isCustomTerm, setIsCustomTerm] = useState(false);
   const [customTermValue, setCustomTermValue] = useState<number | "">(1);
   const [includeImplementation, setIncludeImplementation] = useState(false);
@@ -492,20 +492,21 @@ export default function InvestmentPage({
               <div className="mb-8">
                 <label className="text-[15px] font-semibold text-[#111827] block mb-4">Contract Term</label>
                 <div className="grid grid-cols-3 gap-3">
-                  {/* Custom option */}
+                  {/* 1 year */}
                   <button
                     onClick={() => {
-                      setIsCustomTerm(true);
-                      setContractTerm(0);
+                      setIsCustomTerm(false);
+                      setContractTerm(1);
                     }}
                     className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
-                      isCustomTerm
+                      !isCustomTerm && contractTerm === 1
                         ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
                         : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
                     }`}
-                    data-testid="contract-term-custom"
+                    data-testid="contract-term-1"
                   >
-                    <div className="text-lg font-bold text-[#111827]">Custom</div>
+                    <div className="text-lg font-bold text-[#111827]">1 year</div>
+                    <div className="text-xs text-[#6B7280]">Standard</div>
                   </button>
                   
                   {/* 2 years */}
@@ -522,6 +523,7 @@ export default function InvestmentPage({
                     data-testid="contract-term-2"
                   >
                     <div className="text-lg font-bold text-[#111827]">2 years</div>
+                    <div className="text-xs text-[#EA2C00]">~10% savings</div>
                   </button>
                   
                   {/* 3 years */}
@@ -538,35 +540,9 @@ export default function InvestmentPage({
                     data-testid="contract-term-3"
                   >
                     <div className="text-lg font-bold text-[#111827]">3 years</div>
+                    <div className="text-xs text-[#EA2C00]">~15% savings</div>
                   </button>
                 </div>
-                
-                {/* Custom input field */}
-                {isCustomTerm && (
-                  <div className="mt-4">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="number"
-                        min={1}
-                        max={4}
-                        value={customTermValue}
-                        placeholder="1-4"
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === "") {
-                            setCustomTermValue("");
-                          } else {
-                            const num = parseInt(val, 10);
-                            setCustomTermValue(Math.min(Math.max(num, 1), 4));
-                          }
-                        }}
-                        className="w-20 px-3 py-2 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] text-center"
-                        data-testid="input-custom-term"
-                      />
-                      <span className="text-[15px] text-[#6B7280]">year{typeof customTermValue === "number" && customTermValue !== 1 ? "s" : ""} (max 4)</span>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Implementation Fee */}
