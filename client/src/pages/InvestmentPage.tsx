@@ -98,7 +98,7 @@ export default function InvestmentPage({
   const effectiveContractTerm = isCustomTerm 
     ? (typeof customTermValue === "number" ? Math.min(Math.max(customTermValue, 1), 4) : 1)
     : contractTerm;
-  const [implementationFee, setImplementationFee] = useState(15000);
+  const [implementationFee, setImplementationFee] = useState(25000);
   
   // Animation states
   const [showReturnCard, setShowReturnCard] = useState(false);
@@ -492,21 +492,20 @@ export default function InvestmentPage({
               <div className="mb-8">
                 <label className="text-[15px] font-semibold text-[#111827] block mb-4">Contract Term</label>
                 <div className="grid grid-cols-3 gap-3">
-                  {/* 1 year */}
+                  {/* Custom */}
                   <button
                     onClick={() => {
-                      setIsCustomTerm(false);
+                      setIsCustomTerm(true);
                       setContractTerm(1);
                     }}
                     className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
-                      !isCustomTerm && contractTerm === 1
+                      isCustomTerm
                         ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
                         : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
                     }`}
-                    data-testid="contract-term-1"
+                    data-testid="contract-term-custom"
                   >
-                    <div className="text-lg font-bold text-[#111827]">1 year</div>
-                    <div className="text-xs text-[#6B7280]">Standard</div>
+                    <div className="text-lg font-bold text-[#111827]">Custom</div>
                   </button>
                   
                   {/* 2 years */}
@@ -523,7 +522,6 @@ export default function InvestmentPage({
                     data-testid="contract-term-2"
                   >
                     <div className="text-lg font-bold text-[#111827]">2 years</div>
-                    <div className="text-xs text-[#EA2C00]">~10% savings</div>
                   </button>
                   
                   {/* 3 years */}
@@ -540,7 +538,6 @@ export default function InvestmentPage({
                     data-testid="contract-term-3"
                   >
                     <div className="text-lg font-bold text-[#111827]">3 years</div>
-                    <div className="text-xs text-[#EA2C00]">~15% savings</div>
                   </button>
                 </div>
               </div>
