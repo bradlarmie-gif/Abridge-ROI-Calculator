@@ -184,13 +184,16 @@ export default function BaselineSetup({
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     How many staffed beds are in scope?
-                    <Tooltip>
+                    <Tooltip delayDuration={200}>
                       <TooltipTrigger asChild>
-                        <span className="text-[#9CA3AF] cursor-help">
+                        <span className="text-[#9CA3AF] cursor-help hover:text-[#6B7280] transition-colors">
                           <HelpCircle className="w-4 h-4" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[240px]">
+                      <TooltipContent 
+                        side="top" 
+                        className="bg-[#1F2937] text-white border-none shadow-lg max-w-[220px] text-[13px] leading-relaxed px-3 py-2"
+                      >
                         <p>Total staffed beds in this deployment. This is how Abridge Nursing is billed.</p>
                       </TooltipContent>
                     </Tooltip>
@@ -220,14 +223,17 @@ export default function BaselineSetup({
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     How many nurse FTEs support these beds?
-                    <Tooltip>
+                    <Tooltip delayDuration={200}>
                       <TooltipTrigger asChild>
-                        <span className="text-[#9CA3AF] cursor-help">
+                        <span className="text-[#9CA3AF] cursor-help hover:text-[#6B7280] transition-colors">
                           <HelpCircle className="w-4 h-4" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[240px]">
-                        <p>Full-time equivalent nurses supporting these beds. Used to calculate labor savings.</p>
+                      <TooltipContent 
+                        side="top" 
+                        className="bg-[#1F2937] text-white border-none shadow-lg max-w-[220px] text-[13px] leading-relaxed px-3 py-2"
+                      >
+                        <p>Full-time equivalent nurses. Used to calculate labor savings.</p>
                       </TooltipContent>
                     </Tooltip>
                   </label>
@@ -284,14 +290,17 @@ export default function BaselineSetup({
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     How many {getProviderLabel()} are in scope?
-                    <Tooltip>
+                    <Tooltip delayDuration={200}>
                       <TooltipTrigger asChild>
-                        <span className="text-[#9CA3AF] cursor-help">
+                        <span className="text-[#9CA3AF] cursor-help hover:text-[#6B7280] transition-colors">
                           <HelpCircle className="w-4 h-4" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[240px]">
-                        <p>Total {getProviderLabel()} who will use Abridge. Start with a pilot group or include your full deployment.</p>
+                      <TooltipContent 
+                        side="top" 
+                        className="bg-[#1F2937] text-white border-none shadow-lg max-w-[220px] text-[13px] leading-relaxed px-3 py-2"
+                      >
+                        <p>Total {getProviderLabel()} who will use Abridge. Start with a pilot or full deployment.</p>
                       </TooltipContent>
                     </Tooltip>
                   </label>
@@ -324,14 +333,17 @@ export default function BaselineSetup({
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     Annual {getEncounterLabel()} for these {getProviderLabel()}?
-                    <Tooltip>
+                    <Tooltip delayDuration={200}>
                       <TooltipTrigger asChild>
-                        <span className="text-[#9CA3AF] cursor-help">
+                        <span className="text-[#9CA3AF] cursor-help hover:text-[#6B7280] transition-colors">
                           <HelpCircle className="w-4 h-4" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[240px]">
-                        <p>Total patient {getEncounterLabel()} per year for these {getProviderLabel()}. This drives all value calculations.</p>
+                      <TooltipContent 
+                        side="top" 
+                        className="bg-[#1F2937] text-white border-none shadow-lg max-w-[220px] text-[13px] leading-relaxed px-3 py-2"
+                      >
+                        <p>Total {getEncounterLabel()} per year. This drives all ROI calculations.</p>
                       </TooltipContent>
                     </Tooltip>
                   </label>
