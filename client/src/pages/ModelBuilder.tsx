@@ -534,6 +534,18 @@ export default function ModelBuilder({
   }, []);
   
   const eligibleEncounters = Math.round(encounters * (utilizationRate / 100));
+  
+  // Sync ED driver inputs with eligibleEncounters when encounters or utilization changes
+  useEffect(() => {
+    if (selectedSettings.includes("ed")) {
+      setDriverInputs(prev => ({
+        ...prev,
+        edThroughput: { ...prev.edThroughput, annualEdVisits: eligibleEncounters },
+        edLevelOfService: { ...prev.edLevelOfService, annualEdVisits: eligibleEncounters },
+        edDenials: { ...prev.edDenials, documentedEncounters: eligibleEncounters },
+      }));
+    }
+  }, [eligibleEncounters, selectedSettings]);
   // For nursing: eligible documentation events (nursing uses documentationEvents, not encounters)
   const eligibleDocEvents = Math.round(documentationEvents * (utilizationRate / 100));
   
@@ -2901,7 +2913,7 @@ export default function ModelBuilder({
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               <div>
-                <label className="text-xs text-[#6B7280] block mb-1">Annual ED Visits</label>
+                <label className="text-xs text-[#6B7280] block mb-1">Modeled ED Visits</label>
                 <Input
                   type="number"
                   value={annualEdVisits}
@@ -3625,7 +3637,7 @@ export default function ModelBuilder({
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               <div>
-                <label className="text-xs text-[#6B7280] block mb-1">Annual ED Visits</label>
+                <label className="text-xs text-[#6B7280] block mb-1">Modeled ED Visits</label>
                 <Input
                   type="number"
                   value={annualEdVisits}
