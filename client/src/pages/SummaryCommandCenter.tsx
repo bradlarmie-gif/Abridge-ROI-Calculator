@@ -104,14 +104,21 @@ const settingConfig: Record<string, { unitName: string; unitNamePlural: string; 
   nursing: { unitName: "staffed bed", unitNamePlural: "staffed beds", encounterName: "documentation events" },
 };
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; linearValue: number; actualValue: number; roi: string } }> }) {
+function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; linearValue: number; actualValue: number; roi: string; milestoneLabel?: string | null; adoptionRate?: number; month?: number } }> }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const networkBonus = data.actualValue - data.linearValue;
     return (
-      <div className="bg-[#1e293b] rounded-lg p-3 shadow-xl min-w-[180px]">
-        <p className="text-white font-semibold text-sm mb-2">{data.providers} {data.providers === 1 ? 'provider' : 'providers'}</p>
-        <p className="text-neutral-400 text-xs mb-3">{data.utilization}% utilization</p>
+      <div className="bg-[#1e293b] rounded-lg p-3 shadow-xl min-w-[200px]">
+        {data.milestoneLabel && (
+          <p className="text-white font-bold text-sm mb-1">{data.milestoneLabel}</p>
+        )}
+        <p className="text-neutral-300 text-xs mb-2">
+          {data.providers} {data.providers === 1 ? 'provider' : 'providers'} · {data.utilization}% utilization
+        </p>
+        {data.adoptionRate && (
+          <p className="text-neutral-400 text-xs mb-3">{data.adoptionRate}% adoption rate</p>
+        )}
         
         <div className="space-y-1.5 border-t border-neutral-600 pt-2">
           <div className="flex items-center justify-between gap-3">
@@ -124,13 +131,13 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
           <div className="flex items-center justify-between gap-3">
             <span className="text-emerald-400 text-xs flex items-center gap-1.5">
               <span className="w-3 h-0.5 bg-emerald-500 rounded-full"></span>
-              Full Scale
+              Actual
             </span>
             <span className="text-emerald-400 font-semibold text-sm">{formatCurrency(data.actualValue)}</span>
           </div>
           {networkBonus > 0 && (
             <div className="flex items-center justify-between gap-3 pt-1 border-t border-neutral-700">
-              <span className="text-neutral-400 text-xs">Network bonus</span>
+              <span className="text-neutral-400 text-xs">Compounding bonus</span>
               <span className="text-emerald-300 text-xs">+{formatCurrency(networkBonus)}</span>
             </div>
           )}
@@ -194,54 +201,87 @@ export default function SummaryCommandCenter({
     const points = [];
     const steps = 20;
     
+    const targetUnits = typeof fullScaleUnits === "number" ? fullScaleUnits : pilotUnits;
+    const targetUtilization = typeof fullScaleUtilization === "number" ? fullScaleUtilization : pilotUtilization;
+    
+    // S-curve milestone definitions (realistic 24-month rollout)
+    const milestones = [
+      { index: 0, label: "Today", month: 0, growthPct: 0, adoptionRate: 1.0, utilizationBonus: 0 },
+      { index: 5, label: "6 months", month: 6, growthPct: 0.15, adoptionRate: 0.85, utilizationBonus: 3 },
+      { index: 10, label: "1 year", month: 12, growthPct: 0.40, adoptionRate: 0.90, utilizationBonus: 6 },
+      { index: 15, label: "18 months", month: 18, growthPct: 0.70, adoptionRate: 0.93, utilizationBonus: 9 },
+      { index: 20, label: "Full Scale", month: 24, growthPct: 1.0, adoptionRate: 0.95, utilizationBonus: targetUtilization - pilotUtilization }
+    ];
+    
+    // Linear value calculation (simple per-unit scaling)
     const pilotEncountersCalc = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
     const pilotValueCalc = pilotEncountersCalc * valuePerEncounter;
     const valuePerUnit = pilotUnits > 0 ? pilotValueCalc / pilotUnits : 0;
     
-    const targetUnits = typeof fullScaleUnits === "number" ? fullScaleUnits : pilotUnits;
-    const targetUtilization = typeof fullScaleUtilization === "number" ? fullScaleUtilization : pilotUtilization;
-    
-    const milestoneIndices = [0, 5, 10, 15, 20];
-    const milestoneLabels = ["Today", "6 months", "1 year", "18 months", "Full Scale"];
-    
     for (let i = 0; i <= steps; i++) {
       const progress = i / steps;
       
-      const units = Math.round(
-        pilotUnits + (targetUnits - pilotUnits) * progress
-      );
+      // Find surrounding milestones for interpolation
+      let prevMilestone = milestones[0];
+      let nextMilestone = milestones[milestones.length - 1];
+      for (let m = 0; m < milestones.length - 1; m++) {
+        if (i >= milestones[m].index && i <= milestones[m + 1].index) {
+          prevMilestone = milestones[m];
+          nextMilestone = milestones[m + 1];
+          break;
+        }
+      }
       
+      // S-curve interpolation between milestones (ease-in-out)
+      const segmentProgress = (i - prevMilestone.index) / (nextMilestone.index - prevMilestone.index);
+      const eased = segmentProgress < 0.5
+        ? 4 * segmentProgress * segmentProgress * segmentProgress
+        : 1 - Math.pow(-2 * segmentProgress + 2, 3) / 2;
+      
+      // Interpolate growth percentage
+      const growthPct = prevMilestone.growthPct + (nextMilestone.growthPct - prevMilestone.growthPct) * eased;
+      const adoptionRate = prevMilestone.adoptionRate + (nextMilestone.adoptionRate - prevMilestone.adoptionRate) * eased;
+      const utilizationBonus = prevMilestone.utilizationBonus + (nextMilestone.utilizationBonus - prevMilestone.utilizationBonus) * eased;
+      
+      // Calculate providers at this point
+      const units = Math.round(pilotUnits + (targetUnits - pilotUnits) * growthPct);
+      
+      // Linear projection (simple scaling without compounding)
       const linearValue = Math.round(valuePerUnit * units);
       
-      const utilization = (
-        pilotUtilization + (targetUtilization - pilotUtilization) * progress
-      ) / 100;
+      // Actual utilization at this point
+      const actualUtilization = (pilotUtilization + utilizationBonus) / 100;
       
-      const encounters = units * encountersPerUnit * utilization;
+      // Efficiency compounds as team learns (up to 15% over full rollout)
+      const efficiencyMultiplier = 1 + (progress * 0.15);
+      
+      // Calculate actual value with adoption rate and efficiency
+      const encounters = units * encountersPerUnit * actualUtilization * adoptionRate;
       const baseValue = encounters * valuePerEncounter;
-      const compoundingFactor = 1 + (progress * 0.15);
-      const actualValue = Math.round(baseValue * compoundingFactor);
+      const actualValue = Math.round(baseValue * efficiencyMultiplier);
       
       const investment = units * pricePerUnit * 12;
       const net = actualValue - investment;
       const roi = investment > 0 ? (actualValue / investment) : 0;
       
-      const milestoneIdx = milestoneIndices.indexOf(i);
-      const isMilestone = milestoneIdx !== -1;
+      const milestone = milestones.find(m => m.index === i);
+      const isMilestone = !!milestone;
       
       points.push({
         providers: units,
         index: i,
+        month: milestone?.month || Math.round((i / steps) * 24),
         linearValue,
         actualValue,
         value: actualValue,
         net: Math.round(net),
         roi: roi.toFixed(1),
-        utilization: Math.round(utilization * 100),
+        utilization: Math.round(actualUtilization * 100),
+        adoptionRate: Math.round(adoptionRate * 100),
         isPilot: i === 0,
         isFullScale: i === steps,
         isMilestone,
-        milestoneLabel: isMilestone ? milestoneLabels[milestoneIdx] : null
+        milestoneLabel: milestone?.label || null
       });
     }
     
