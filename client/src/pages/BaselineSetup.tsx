@@ -63,15 +63,19 @@ export default function BaselineSetup({
   const [staffedBeds, setStaffedBeds] = useState(initialBaseline?.nursingStaffedBeds || "");
   const [nurseFTEs, setNurseFTEs] = useState(initialBaseline?.nursingFTEs || "");
   const [unitType, setUnitType] = useState<"med-surg" | "icu" | "mixed">(initialBaseline?.nursingUnitType || "med-surg");
-  const [documentationEventsPerFTE, setDocumentationEventsPerFTE] = useState<number | "">(initialBaseline?.nursingDocEventsPerBedPerYear || 500);
+  const [occupancyRate, setOccupancyRate] = useState<number>(85);
+  const [eventsPerPatientDay, setEventsPerPatientDay] = useState<number | "">(initialBaseline?.nursingDocEventsPerBedPerYear || 3);
 
   // Compute derived values
-  const numericDocEventsPerFTE = typeof documentationEventsPerFTE === "number" ? documentationEventsPerFTE : 500;
+  const numericEventsPerPatientDay = typeof eventsPerPatientDay === "number" ? eventsPerPatientDay : 3;
   const numericEncounters = typeof encounters === "number" ? encounters : 0;
   const numericProviders = typeof providers === "number" ? providers : 0;
   const numericStaffedBeds = typeof staffedBeds === "number" ? staffedBeds : 0;
   const numericNurseFTEs = typeof nurseFTEs === "number" ? nurseFTEs : 0;
-  const documentationEvents = isNursingSetting ? numericNurseFTEs * numericDocEventsPerFTE : numericEncounters;
+  
+  // Calculate patient days and documentation events for nursing
+  const patientDays = Math.round(numericStaffedBeds * (occupancyRate / 100) * 365);
+  const documentationEvents = isNursingSetting ? patientDays * numericEventsPerPatientDay : numericEncounters;
   
   const eligibleEncounters = useMemo(() => {
     if (isNursingSetting) {
@@ -92,14 +96,14 @@ export default function BaselineSetup({
       baseline.nursingStaffedBeds = numericStaffedBeds;
       baseline.nursingFTEs = numericNurseFTEs;
       baseline.nursingUnitType = unitType;
-      baseline.nursingDocEventsPerBedPerYear = numericDocEventsPerFTE;
+      baseline.nursingDocEventsPerBedPerYear = numericEventsPerPatientDay;
     }
 
     onComplete(baseline);
   };
 
   const canContinue = isNursingSetting 
-    ? numericStaffedBeds > 0 && numericNurseFTEs > 0 && numericDocEventsPerFTE > 0
+    ? numericStaffedBeds > 0 && numericNurseFTEs > 0 && numericEventsPerPatientDay > 0
     : numericProviders > 0 && numericEncounters > 0;
 
   // Get setting-specific labels
@@ -258,10 +262,10 @@ export default function BaselineSetup({
                   </p>
                 </div>
 
-                {/* Documentation Events per FTE */}
-                <div className="md:col-span-2">
+                {/* Occupancy Rate */}
+                <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
-                    Documentation events per nurse FTE
+                    Average bed occupancy rate
                     <Tooltip delayDuration={200}>
                       <TooltipTrigger asChild>
                         <span className="text-[#9CA3AF] cursor-help hover:text-[#6B7280] transition-colors">
@@ -270,30 +274,90 @@ export default function BaselineSetup({
                       </TooltipTrigger>
                       <TooltipContent 
                         side="top" 
-                        className="bg-[#1F2937] text-white border-none shadow-lg max-w-[280px] text-[13px] leading-relaxed px-3 py-2"
+                        className="bg-[#1F2937] text-white border-none shadow-lg max-w-[220px] text-[13px] leading-relaxed px-3 py-2"
+                      >
+                        <p>Your average daily bed occupancy. Used to calculate patient days per year.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={50}
+                      max={100}
+                      value={occupancyRate}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val >= 0 && val <= 100) {
+                          setOccupancyRate(val);
+                        }
+                      }}
+                      placeholder="e.g., 85"
+                      className="w-full px-5 py-4 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] transition-all"
+                      data-testid="input-occupancy-rate"
+                    />
+                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF] font-medium pointer-events-none">
+                      %
+                    </span>
+                  </div>
+                  <p className="text-[14px] text-[#9CA3AF] mt-2">
+                    Most hospitals run 75-90% occupancy
+                  </p>
+                </div>
+
+                {/* Events per Patient Day */}
+                <div>
+                  <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
+                    Doc events per patient day
+                    <Tooltip delayDuration={200}>
+                      <TooltipTrigger asChild>
+                        <span className="text-[#9CA3AF] cursor-help hover:text-[#6B7280] transition-colors">
+                          <HelpCircle className="w-4 h-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent 
+                        side="top" 
+                        className="bg-[#1F2937] text-white border-none shadow-lg max-w-[320px] text-[13px] leading-relaxed px-3 py-2"
                       >
                         <p className="font-medium mb-2">What counts as a documentation event?</p>
-                        <p className="text-[#D1D5DB] text-[12px]">
-                          Any patient interaction requiring structured charting: assessments, handoffs, medication records, vital signs, care plan updates, discharge summaries.
+                        <p className="text-[#D1D5DB] text-[12px] mb-2">
+                          Any patient interaction requiring a structured note in your EMR:
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          <div className="text-emerald-400">
+                            <p>✓ Shift assessments</p>
+                            <p>✓ Admission/discharge notes</p>
+                            <p>✓ Procedure documentation</p>
+                            <p>✓ PRN medication notes</p>
+                          </div>
+                          <div className="text-red-400">
+                            <p>✗ Individual vital signs</p>
+                            <p>✗ Single flowsheet clicks</p>
+                            <p>✗ MAR checkboxes alone</p>
+                            <p>✗ Care plan reviews</p>
+                          </div>
+                        </div>
+                        <p className="text-[#9CA3AF] text-[11px] mt-2 italic">
+                          Think: "How many times does a nurse open a documentation template per patient per day?"
                         </p>
                       </TooltipContent>
                     </Tooltip>
                   </label>
-                  <div className="relative max-w-[280px]">
+                  <div className="relative">
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={documentationEventsPerFTE === "" ? "" : documentationEventsPerFTE.toLocaleString()}
+                      value={eventsPerPatientDay === "" ? "" : eventsPerPatientDay.toString()}
                       onChange={(e) => {
                         const val = e.target.value.replace(/[^0-9]/g, '');
-                        setDocumentationEventsPerFTE(val === "" ? "" : parseInt(val, 10));
+                        setEventsPerPatientDay(val === "" ? "" : parseInt(val, 10));
                       }}
-                      placeholder="e.g., 500"
+                      placeholder="e.g., 3"
                       className="w-full px-5 py-4 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] transition-all"
-                      data-testid="input-doc-events-per-fte"
+                      data-testid="input-events-per-patient-day"
                     />
                     <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF] font-medium pointer-events-none">
-                      events/year
+                      events/day
                     </span>
                   </div>
                   
@@ -301,44 +365,44 @@ export default function BaselineSetup({
                   <div className="mt-3">
                     <p className="text-[13px] text-[#6B7280] mb-2 flex items-center gap-1.5">
                       <Info className="w-3.5 h-3.5" />
-                      Typical ranges by unit type:
+                      Typical ranges:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => setDocumentationEventsPerFTE(350)}
+                        onClick={() => setEventsPerPatientDay(2)}
                         className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-all ${
-                          documentationEventsPerFTE === 350
+                          eventsPerPatientDay === 2
                             ? "border-[#EA2C00] bg-[rgba(234,44,0,0.05)] text-[#EA2C00]"
                             : "border-[#E5E7EB] text-[#6B7280] hover:border-[#EA2C00] hover:text-[#EA2C00] bg-white"
                         }`}
-                        data-testid="preset-icu"
+                        data-testid="preset-light"
                       >
-                        ICU/Critical: 300-400
+                        Light: 2/day
                       </button>
                       <button
                         type="button"
-                        onClick={() => setDocumentationEventsPerFTE(600)}
+                        onClick={() => setEventsPerPatientDay(3)}
                         className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-all ${
-                          documentationEventsPerFTE === 600
+                          eventsPerPatientDay === 3
                             ? "border-[#EA2C00] bg-[rgba(234,44,0,0.05)] text-[#EA2C00]"
                             : "border-[#E5E7EB] text-[#6B7280] hover:border-[#EA2C00] hover:text-[#EA2C00] bg-white"
                         }`}
-                        data-testid="preset-medsurg"
+                        data-testid="preset-typical"
                       >
-                        Med-Surg: 500-700
+                        Typical: 3/day
                       </button>
                       <button
                         type="button"
-                        onClick={() => setDocumentationEventsPerFTE(1000)}
+                        onClick={() => setEventsPerPatientDay(5)}
                         className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-all ${
-                          documentationEventsPerFTE === 1000
+                          eventsPerPatientDay === 5
                             ? "border-[#EA2C00] bg-[rgba(234,44,0,0.05)] text-[#EA2C00]"
                             : "border-[#E5E7EB] text-[#6B7280] hover:border-[#EA2C00] hover:text-[#EA2C00] bg-white"
                         }`}
-                        data-testid="preset-emergency"
+                        data-testid="preset-heavy"
                       >
-                        Emergency: 800-1,200
+                        Heavy: 5/day
                       </button>
                     </div>
                   </div>
@@ -549,26 +613,88 @@ export default function BaselineSetup({
             </div>
 
             {/* Formula Breakdown */}
-            <div className="flex items-center justify-center gap-3 md:gap-6 flex-wrap p-6 bg-white/60 rounded-xl mb-6">
-              <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-[#111827]">
-                  {isNursingSetting ? numericNurseFTEs.toLocaleString() : numericProviders.toLocaleString()}
+            {isNursingSetting ? (
+              <div className="p-6 bg-white/60 rounded-xl mb-6 space-y-4">
+                {/* Step 1: Patient Days Calculation */}
+                <div className="flex items-center justify-center gap-3 md:gap-5 flex-wrap">
+                  <div className="text-center">
+                    <div className="text-lg md:text-xl font-bold text-[#111827]">
+                      {numericStaffedBeds.toLocaleString()}
+                    </div>
+                    <div className="text-[12px] text-[#6B7280]">beds</div>
+                  </div>
+                  <span className="text-xl text-[#9CA3AF] font-light">×</span>
+                  <div className="text-center">
+                    <div className="text-lg md:text-xl font-bold text-[#111827]">
+                      {occupancyRate}%
+                    </div>
+                    <div className="text-[12px] text-[#6B7280]">occupancy</div>
+                  </div>
+                  <span className="text-xl text-[#9CA3AF] font-light">×</span>
+                  <div className="text-center">
+                    <div className="text-lg md:text-xl font-bold text-[#111827]">365</div>
+                    <div className="text-[12px] text-[#6B7280]">days</div>
+                  </div>
+                  <span className="text-xl text-[#9CA3AF] font-light">=</span>
+                  <div className="text-center">
+                    <div className="text-lg md:text-xl font-bold text-emerald-600">
+                      {patientDays.toLocaleString()}
+                    </div>
+                    <div className="text-[12px] text-emerald-600 font-medium">patient days</div>
+                  </div>
                 </div>
-                <div className="text-[13px] text-[#6B7280]">{isNursingSetting ? "nurse FTEs" : getProviderLabel()}</div>
-              </div>
-              <span className="text-2xl text-[#9CA3AF] font-light">×</span>
-              <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-[#111827]">
-                  {isNursingSetting ? numericDocEventsPerFTE.toLocaleString() : numericEncounters.toLocaleString()}
+                
+                {/* Step 2: Eligible Events Calculation */}
+                <div className="flex items-center justify-center gap-3 md:gap-5 flex-wrap pt-3 border-t border-emerald-200">
+                  <div className="text-center">
+                    <div className="text-lg md:text-xl font-bold text-[#111827]">
+                      {patientDays.toLocaleString()}
+                    </div>
+                    <div className="text-[12px] text-[#6B7280]">patient days</div>
+                  </div>
+                  <span className="text-xl text-[#9CA3AF] font-light">×</span>
+                  <div className="text-center">
+                    <div className="text-lg md:text-xl font-bold text-[#111827]">
+                      {numericEventsPerPatientDay}
+                    </div>
+                    <div className="text-[12px] text-[#6B7280]">events/day</div>
+                  </div>
+                  <span className="text-xl text-[#9CA3AF] font-light">×</span>
+                  <div className="text-center">
+                    <div className="text-lg md:text-xl font-bold text-[#111827]">{utilizationRate}%</div>
+                    <div className="text-[12px] text-[#6B7280]">utilization</div>
+                  </div>
+                  <span className="text-xl text-[#9CA3AF] font-light">=</span>
+                  <div className="text-center">
+                    <div className="text-lg md:text-xl font-bold text-emerald-600">
+                      {eligibleEncounters.toLocaleString()}
+                    </div>
+                    <div className="text-[12px] text-emerald-600 font-medium">eligible events</div>
+                  </div>
                 </div>
-                <div className="text-[13px] text-[#6B7280]">{isNursingSetting ? "events/FTE" : getEncounterLabel()}</div>
               </div>
-              <span className="text-2xl text-[#9CA3AF] font-light">×</span>
-              <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-[#111827]">{utilizationRate}%</div>
-                <div className="text-[13px] text-[#6B7280]">utilization</div>
+            ) : (
+              <div className="flex items-center justify-center gap-3 md:gap-6 flex-wrap p-6 bg-white/60 rounded-xl mb-6">
+                <div className="text-center">
+                  <div className="text-xl md:text-2xl font-bold text-[#111827]">
+                    {numericProviders.toLocaleString()}
+                  </div>
+                  <div className="text-[13px] text-[#6B7280]">{getProviderLabel()}</div>
+                </div>
+                <span className="text-2xl text-[#9CA3AF] font-light">×</span>
+                <div className="text-center">
+                  <div className="text-xl md:text-2xl font-bold text-[#111827]">
+                    {numericEncounters.toLocaleString()}
+                  </div>
+                  <div className="text-[13px] text-[#6B7280]">{getEncounterLabel()}</div>
+                </div>
+                <span className="text-2xl text-[#9CA3AF] font-light">×</span>
+                <div className="text-center">
+                  <div className="text-xl md:text-2xl font-bold text-[#111827]">{utilizationRate}%</div>
+                  <div className="text-[13px] text-[#6B7280]">utilization</div>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex items-center justify-center gap-2 text-emerald-600">
               <Check className="w-5 h-5" />
