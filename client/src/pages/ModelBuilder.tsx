@@ -4969,6 +4969,19 @@ export default function ModelBuilder({
     
     return (
       <div className="space-y-4">
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Nurses often stay late completing documentation. By reducing charting time, nurses can finish their shifts on time—eliminating overtime hours that cost 1.5× regular pay. This creates immediate, measurable labor cost savings.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Step 1: Current Overtime */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Overtime</p>
@@ -5390,6 +5403,19 @@ export default function ModelBuilder({
     
     return (
       <div className="space-y-4">
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                When staff nurses leave due to burnout, hospitals must fill gaps with expensive agency and travel nurses at 2× the cost. By improving retention through reduced documentation burden, we convert costly agency positions back to staff positions—saving the premium difference.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Step 1: Current Agency Utilization */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Agency Utilization</p>
@@ -5589,6 +5615,19 @@ export default function ModelBuilder({
     
     return (
       <div className="space-y-4">
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Documentation burden is the #1 driver of nursing burnout. Nurses spend 25-35% of their shift on charting instead of patient care. By reducing this burden, we help prevent burnout-related departures—each costing $40-60K to replace when factoring in recruitment, onboarding, and lost productivity.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Step 1: Baseline Turnover */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Baseline Turnover</p>
