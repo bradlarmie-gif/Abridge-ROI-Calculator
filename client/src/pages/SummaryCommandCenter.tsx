@@ -168,8 +168,8 @@ export default function SummaryCommandCenter({
   const [encountersPerUnit, setEncountersPerUnit] = useState(Math.round(initialEncountersPerUnit));
   const [pilotUtilization, setPilotUtilization] = useState(initialUtilization);
   
-  const [fullScaleUnits, setFullScaleUnits] = useState(initialUnits * 4);
-  const [fullScaleUtilization, setFullScaleUtilization] = useState(75);
+  const [fullScaleUnits, setFullScaleUnits] = useState<number | "">(""); 
+  const [fullScaleUtilization, setFullScaleUtilization] = useState<number | "">("");
   
   const totalAnnualValue = modelResults.totalBenefit;
   const annualInvestment = modelResults.investment || 0;
@@ -186,6 +186,10 @@ export default function SummaryCommandCenter({
   const hoursReturnedAnnually = Math.round((totalAnnualValue / 85) * 0.6); // Estimate: $85/hr average * 60% time savings
   const additionalPatientVisits = Math.round((totalAnnualValue / 200) * 0.3); // Estimate: additional visits from efficiency
   
+  // Check if valid full scale data is entered
+  const hasValidFullScale = typeof fullScaleUnits === "number" && fullScaleUnits > pilotUnits && 
+    typeof fullScaleUtilization === "number" && fullScaleUtilization >= 50 && fullScaleUtilization <= 95;
+  
   const chartData = useMemo(() => {
     const points = [];
     const steps = 20;
@@ -194,17 +198,21 @@ export default function SummaryCommandCenter({
     const pilotValueCalc = pilotEncountersCalc * valuePerEncounter;
     const valuePerUnit = pilotUnits > 0 ? pilotValueCalc / pilotUnits : 0;
     
+    // Use actual values if entered, otherwise default to pilot values for chart
+    const targetUnits = typeof fullScaleUnits === "number" ? fullScaleUnits : pilotUnits;
+    const targetUtilization = typeof fullScaleUtilization === "number" ? fullScaleUtilization : pilotUtilization;
+    
     for (let i = 0; i <= steps; i++) {
       const progress = i / steps;
       
       const units = Math.round(
-        pilotUnits + (fullScaleUnits - pilotUnits) * progress
+        pilotUnits + (targetUnits - pilotUnits) * progress
       );
       
       const linearValue = Math.round(valuePerUnit * units);
       
       const utilization = (
-        pilotUtilization + (fullScaleUtilization - pilotUtilization) * progress
+        pilotUtilization + (targetUtilization - pilotUtilization) * progress
       ) / 100;
       
       const encounters = units * encountersPerUnit * utilization;
@@ -313,10 +321,10 @@ export default function SummaryCommandCenter({
       threeYearValue,
       threeYearCost,
       threeYearNet,
-      fullScaleProviders: fullScaleUnits,
-      fullScaleUtil: fullScaleUtilization,
-      fullScaleValue: fullScale.value,
-      fullScaleROI: annualInvestment > 0 ? fullScale.value / (fullScaleUnits * pricePerUnit * 12) : 0,
+      fullScaleProviders: typeof fullScaleUnits === "number" ? fullScaleUnits : pilotUnits,
+      fullScaleUtil: typeof fullScaleUtilization === "number" ? fullScaleUtilization : pilotUtilization,
+      fullScaleValue: hasValidFullScale ? fullScale.value : 0,
+      fullScaleROI: hasValidFullScale && typeof fullScaleUnits === "number" && annualInvestment > 0 ? fullScale.value / (fullScaleUnits * pricePerUnit * 12) : 0,
       networkEffect,
     };
 
@@ -843,8 +851,9 @@ export default function SummaryCommandCenter({
                     <input 
                       type="number" 
                       value={fullScaleUnits}
-                      onChange={(e) => setFullScaleUnits(Math.max(pilotUnits, Number(e.target.value)))}
-                      min={pilotUnits}
+                      placeholder="e.g., 150"
+                      onChange={(e) => setFullScaleUnits(e.target.value === "" ? "" : Math.max(pilotUnits + 1, Number(e.target.value)))}
+                      min={pilotUnits + 1}
                       max={1000}
                       className="w-full px-3 py-2 rounded-lg border border-[#E5E7EB] font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                       data-testid="input-fullscale-units"
@@ -857,7 +866,8 @@ export default function SummaryCommandCenter({
                       <input 
                         type="number" 
                         value={fullScaleUtilization}
-                        onChange={(e) => setFullScaleUtilization(Math.min(95, Math.max(50, Number(e.target.value))))}
+                        placeholder="e.g., 75"
+                        onChange={(e) => setFullScaleUtilization(e.target.value === "" ? "" : Math.min(95, Math.max(50, Number(e.target.value))))}
                         min={50}
                         max={95}
                         className="flex-1 px-3 py-2 rounded-lg border border-[#E5E7EB] font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
@@ -913,7 +923,7 @@ export default function SummaryCommandCenter({
               <div className="flex items-center gap-3 py-3 border-b border-emerald-200">
                 <TrendingUp className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                 <p className="text-sm text-emerald-800">
-                  <span className="font-semibold">Utilization:</span> {pilotUtilization}% → {fullScaleUtilization}% as adoption matures
+                  <span className="font-semibold">Utilization:</span> {pilotUtilization}% → {typeof fullScaleUtilization === "number" ? fullScaleUtilization : "—"}% as adoption matures
                 </p>
               </div>
               <div className="flex items-center gap-3 py-3 border-b border-emerald-200">
