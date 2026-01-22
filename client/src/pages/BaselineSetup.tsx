@@ -50,9 +50,9 @@ export default function BaselineSetup({
   const isEDSetting = primarySetting === "ed";
   const isInpatientSetting = primarySetting === "inpatient";
 
-  // State for provider/encounter inputs
-  const [providers, setProviders] = useState(initialBaseline?.providers || (isInpatientSetting ? 20 : isEDSetting ? 25 : 50));
-  const [encounters, setEncounters] = useState(initialBaseline?.encounters || (isInpatientSetting ? 8000 : isEDSetting ? 45000 : 100000));
+  // State for provider/encounter inputs - start empty unless returning with data
+  const [providers, setProviders] = useState<number | "">(initialBaseline?.providers || "");
+  const [encounters, setEncounters] = useState<number | "">(initialBaseline?.encounters || "");
   const [utilizationRate, setUtilizationRate] = useState(initialBaseline?.utilizationRate || (isEDSetting ? 70 : isInpatientSetting ? 65 : 65));
 
   // Nursing-specific state
@@ -62,19 +62,21 @@ export default function BaselineSetup({
 
   // Compute derived values
   const documentationEventsPerFTE = 500;
-  const documentationEvents = isNursingSetting ? nurseFTEs * documentationEventsPerFTE : encounters;
+  const numericEncounters = typeof encounters === "number" ? encounters : 0;
+  const numericProviders = typeof providers === "number" ? providers : 0;
+  const documentationEvents = isNursingSetting ? nurseFTEs * documentationEventsPerFTE : numericEncounters;
   
   const eligibleEncounters = useMemo(() => {
     if (isNursingSetting) {
       return Math.round(documentationEvents * (utilizationRate / 100));
     }
-    return Math.round(encounters * (utilizationRate / 100));
-  }, [isNursingSetting, documentationEvents, encounters, utilizationRate]);
+    return Math.round(numericEncounters * (utilizationRate / 100));
+  }, [isNursingSetting, documentationEvents, numericEncounters, utilizationRate]);
 
   const handleContinue = () => {
     const baseline: BaselineInfo = {
-      providers,
-      encounters,
+      providers: numericProviders,
+      encounters: numericEncounters,
       utilizationRate,
       eligibleEncounters,
     };
@@ -91,7 +93,7 @@ export default function BaselineSetup({
 
   const canContinue = isNursingSetting 
     ? staffedBeds > 0 && nurseFTEs > 0 
-    : providers > 0 && encounters > 0;
+    : numericProviders > 0 && numericEncounters > 0;
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
@@ -269,10 +271,10 @@ export default function BaselineSetup({
                 <Input
                   type="text"
                   inputMode="numeric"
-                  value={providers === 0 ? "" : providers.toLocaleString()}
+                  value={providers === "" ? "" : providers.toLocaleString()}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9]/g, '');
-                    setProviders(val === "" ? 0 : parseInt(val, 10));
+                    setProviders(val === "" ? "" : parseInt(val, 10));
                   }}
                   placeholder={isInpatientSetting ? "e.g., 20" : isEDSetting ? "e.g., 25" : "e.g., 50"}
                   className="w-[200px] font-mono text-lg py-3"
@@ -296,10 +298,10 @@ export default function BaselineSetup({
                 <Input
                   type="text"
                   inputMode="numeric"
-                  value={encounters === 0 ? "" : encounters.toLocaleString()}
+                  value={encounters === "" ? "" : encounters.toLocaleString()}
                   onChange={(e) => {
                     const val = e.target.value.replace(/[^0-9]/g, '');
-                    setEncounters(val === "" ? 0 : parseInt(val, 10));
+                    setEncounters(val === "" ? "" : parseInt(val, 10));
                   }}
                   placeholder={isInpatientSetting ? "e.g., 8,000" : isEDSetting ? "e.g., 45,000" : "e.g., 100,000"}
                   className="w-[200px] font-mono text-lg py-3"
