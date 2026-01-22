@@ -602,16 +602,24 @@ export default function InvestmentPage({
                     <span className="font-medium text-[#111827]">{units}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#6B7280]">Annual Encounters</span>
-                    <span className="font-medium text-[#111827]">{valueResults.encounters.toLocaleString()}</span>
+                    <span className="text-[#6B7280]">{isNursingSetting ? "Documentation Events" : "Annual Encounters"}</span>
+                    <span className="font-medium text-[#111827]">
+                      {isNursingSetting 
+                        ? ((valueResults.nursingFTEs || 300) * 500).toLocaleString()
+                        : valueResults.encounters.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#6B7280]">Utilization Rate</span>
                     <span className="font-medium text-[#111827]">{valueResults.utilizationRate}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#6B7280]">Eligible Encounters</span>
-                    <span className="font-medium text-emerald-600">{valueResults.eligibleEncounters.toLocaleString()}</span>
+                    <span className="text-[#6B7280]">{isNursingSetting ? "Eligible Doc Events" : "Eligible Encounters"}</span>
+                    <span className="font-medium text-emerald-600">
+                      {isNursingSetting 
+                        ? Math.round((valueResults.nursingFTEs || 300) * 500 * (valueResults.utilizationRate / 100)).toLocaleString()
+                        : valueResults.eligibleEncounters.toLocaleString()}
+                    </span>
                   </div>
                   <div className="border-t border-[#E5E7EB] my-3" />
                   {pricingModel === "per_unit_monthly" && costPerUnit !== "" && (
