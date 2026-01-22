@@ -29,7 +29,7 @@ import { GlobalHeader } from "@/components/GlobalHeader";
 import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
-import { generateSummaryPDF, type SummaryPDFData } from "@/lib/pdf-generator";
+import { generatePremiumPDF, type PremiumPDFData } from "@/lib/html-pdf-generator";
 import {
   ComposedChart,
   Area,
@@ -253,35 +253,50 @@ export default function SummaryCommandCenter({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleExportPdf = useCallback(() => {
-    const pdfData: SummaryPDFData = {
+  const handleExportPdf = useCallback(async () => {
+    const pdfData: PremiumPDFData = {
       setting: CARE_SETTING_LABELS[activeSetting],
       unitName: config.unitName,
       unitNamePlural: config.unitNamePlural,
       providers: pilotUnits,
       encounters: pilotUnits * encountersPerUnit,
-      utilizationRate: pilotUtilization,
+      utilization: pilotUtilization,
       totalValue: totalAnnualValue,
-      annualInvestment: annualInvestment,
+      investment: annualInvestment,
       netGain: netValue,
       roi: roiMultiple,
-      costPerUnit: pricePerUnit,
-      valueBreakdown: valueBreakdown.map((d) => ({
+      costPerProvider: pricePerUnit,
+      hoursReturned: hoursReturnedAnnually,
+      additionalVisits: additionalPatientVisits,
+      timeSaved: 2.5,
+      laborDrivers: laborDrivers.map((d) => ({
         name: d.name,
         value: d.value,
-        category: d.category,
+        description: 'Reduces administrative burden and improves efficiency',
       })),
-      laborValue,
-      revenueValue,
-      laborPercent,
-      revenuePercent,
+      revenueDrivers: revenueDrivers.map((d) => ({
+        name: d.name,
+        value: d.value,
+        description: 'Improves revenue capture and quality outcomes',
+      })),
+      laborTotal: laborValue,
+      revenueTotal: revenueValue,
+      laborPct: laborPercent,
+      revenuePct: revenuePercent,
       year1,
       year2,
       year3,
+      threeYearValue,
+      threeYearCost,
       threeYearNet,
+      fullScaleProviders: fullScaleUnits,
+      fullScaleUtil: fullScaleUtilization,
+      fullScaleValue: fullScale.value,
+      fullScaleROI: annualInvestment > 0 ? fullScale.value / (fullScaleUnits * pricePerUnit * 12) : 0,
+      networkEffect,
     };
 
-    generateSummaryPDF(pdfData);
+    await generatePremiumPDF(pdfData);
   }, [
     activeSetting,
     config,
@@ -293,7 +308,10 @@ export default function SummaryCommandCenter({
     netValue,
     roiMultiple,
     pricePerUnit,
-    valueBreakdown,
+    hoursReturnedAnnually,
+    additionalPatientVisits,
+    laborDrivers,
+    revenueDrivers,
     laborValue,
     revenueValue,
     laborPercent,
@@ -301,7 +319,13 @@ export default function SummaryCommandCenter({
     year1,
     year2,
     year3,
+    threeYearValue,
+    threeYearCost,
     threeYearNet,
+    fullScaleUnits,
+    fullScaleUtilization,
+    fullScale,
+    networkEffect,
   ]);
 
   return (
