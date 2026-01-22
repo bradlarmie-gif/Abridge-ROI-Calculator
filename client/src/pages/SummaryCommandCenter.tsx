@@ -204,67 +204,65 @@ export default function SummaryCommandCenter({
     const targetUnits = typeof fullScaleUnits === "number" ? fullScaleUnits : pilotUnits;
     const targetUtilization = typeof fullScaleUtilization === "number" ? fullScaleUtilization : pilotUtilization;
     
-    // S-curve milestone definitions (realistic 24-month rollout)
-    const milestones = [
-      { index: 0, label: "Today", month: 0, growthPct: 0, adoptionRate: 1.0, utilizationBonus: 0 },
-      { index: 5, label: "6 months", month: 6, growthPct: 0.15, adoptionRate: 0.85, utilizationBonus: 3 },
-      { index: 10, label: "1 year", month: 12, growthPct: 0.40, adoptionRate: 0.90, utilizationBonus: 6 },
-      { index: 15, label: "18 months", month: 18, growthPct: 0.70, adoptionRate: 0.93, utilizationBonus: 9 },
-      { index: 20, label: "Full Scale", month: 24, growthPct: 1.0, adoptionRate: 0.95, utilizationBonus: targetUtilization - pilotUtilization }
-    ];
-    
-    // Linear value calculation (simple per-unit scaling)
+    // Calculate pilot (today) value
     const pilotEncountersCalc = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
     const pilotValueCalc = pilotEncountersCalc * valuePerEncounter;
     const valuePerUnit = pilotUnits > 0 ? pilotValueCalc / pilotUnits : 0;
+    
+    // Calculate full scale value
+    const fullScaleEncounters = targetUnits * encountersPerUnit * (targetUtilization / 100);
+    const fullScaleValue = fullScaleEncounters * valuePerEncounter * 1.15; // 15% efficiency bonus at maturity
+    
+    // Value growth multipliers (monotonically increasing - never dips)
+    const milestoneMultipliers = [
+      { index: 0, label: "Today", month: 0, multiplier: 1.0 },
+      { index: 5, label: "6 months", month: 6, multiplier: 1.18 },
+      { index: 10, label: "1 year", month: 12, multiplier: 1.52 },
+      { index: 15, label: "18 months", month: 18, multiplier: 1.95 },
+      { index: 20, label: "Full Scale", month: 24, multiplier: fullScaleValue / pilotValueCalc }
+    ];
+    
+    // Ensure final multiplier is at least as high as 18-month multiplier
+    if (milestoneMultipliers[4].multiplier < milestoneMultipliers[3].multiplier) {
+      milestoneMultipliers[4].multiplier = milestoneMultipliers[3].multiplier * 1.15;
+    }
     
     for (let i = 0; i <= steps; i++) {
       const progress = i / steps;
       
       // Find surrounding milestones for interpolation
-      let prevMilestone = milestones[0];
-      let nextMilestone = milestones[milestones.length - 1];
-      for (let m = 0; m < milestones.length - 1; m++) {
-        if (i >= milestones[m].index && i <= milestones[m + 1].index) {
-          prevMilestone = milestones[m];
-          nextMilestone = milestones[m + 1];
+      let prevMilestone = milestoneMultipliers[0];
+      let nextMilestone = milestoneMultipliers[milestoneMultipliers.length - 1];
+      for (let m = 0; m < milestoneMultipliers.length - 1; m++) {
+        if (i >= milestoneMultipliers[m].index && i <= milestoneMultipliers[m + 1].index) {
+          prevMilestone = milestoneMultipliers[m];
+          nextMilestone = milestoneMultipliers[m + 1];
           break;
         }
       }
       
-      // S-curve interpolation between milestones (ease-in-out)
+      // Linear interpolation between milestones (guaranteed monotonic)
       const segmentProgress = (i - prevMilestone.index) / (nextMilestone.index - prevMilestone.index);
-      const eased = segmentProgress < 0.5
-        ? 4 * segmentProgress * segmentProgress * segmentProgress
-        : 1 - Math.pow(-2 * segmentProgress + 2, 3) / 2;
+      const multiplier = prevMilestone.multiplier + (nextMilestone.multiplier - prevMilestone.multiplier) * segmentProgress;
       
-      // Interpolate growth percentage
-      const growthPct = prevMilestone.growthPct + (nextMilestone.growthPct - prevMilestone.growthPct) * eased;
-      const adoptionRate = prevMilestone.adoptionRate + (nextMilestone.adoptionRate - prevMilestone.adoptionRate) * eased;
-      const utilizationBonus = prevMilestone.utilizationBonus + (nextMilestone.utilizationBonus - prevMilestone.utilizationBonus) * eased;
+      // Calculate providers at this point (linear growth)
+      const providerProgress = i / steps;
+      const units = Math.round(pilotUnits + (targetUnits - pilotUnits) * providerProgress);
       
-      // Calculate providers at this point
-      const units = Math.round(pilotUnits + (targetUnits - pilotUnits) * growthPct);
-      
-      // Linear projection (simple scaling without compounding)
+      // Linear projection (simple per-unit scaling)
       const linearValue = Math.round(valuePerUnit * units);
       
-      // Actual utilization at this point
-      const actualUtilization = (pilotUtilization + utilizationBonus) / 100;
+      // Actual value with compounding (guaranteed monotonic)
+      const actualValue = Math.round(pilotValueCalc * multiplier);
       
-      // Efficiency compounds as team learns (up to 15% over full rollout)
-      const efficiencyMultiplier = 1 + (progress * 0.15);
-      
-      // Calculate actual value with adoption rate and efficiency
-      const encounters = units * encountersPerUnit * actualUtilization * adoptionRate;
-      const baseValue = encounters * valuePerEncounter;
-      const actualValue = Math.round(baseValue * efficiencyMultiplier);
+      // Utilization grows linearly
+      const utilization = pilotUtilization + (targetUtilization - pilotUtilization) * progress;
       
       const investment = units * pricePerUnit * 12;
       const net = actualValue - investment;
       const roi = investment > 0 ? (actualValue / investment) : 0;
       
-      const milestone = milestones.find(m => m.index === i);
+      const milestone = milestoneMultipliers.find(m => m.index === i);
       const isMilestone = !!milestone;
       
       points.push({
@@ -276,8 +274,8 @@ export default function SummaryCommandCenter({
         value: actualValue,
         net: Math.round(net),
         roi: roi.toFixed(1),
-        utilization: Math.round(actualUtilization * 100),
-        adoptionRate: Math.round(adoptionRate * 100),
+        utilization: Math.round(utilization),
+        adoptionRate: Math.round(85 + progress * 10), // 85% to 95%
         isPilot: i === 0,
         isFullScale: i === steps,
         isMilestone,
