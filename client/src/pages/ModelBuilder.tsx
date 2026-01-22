@@ -5306,10 +5306,9 @@ export default function ModelBuilder({
               <label className="text-xs text-[#6B7280] block mb-1">Cost per HAPI</label>
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
-                <Input
-                  type="number"
+                <FormattedNumberInput
                   value={costPerHAPI}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, costPerHAPI: Number(e.target.value) || 0 } }))}
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, costPerHAPI: val } }))}
                   className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-hapi-cost-input"
                 />
@@ -5449,10 +5448,9 @@ export default function ModelBuilder({
               <label className="text-xs text-[#6B7280] block mb-1">Staff Salary</label>
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
-                <Input
-                  type="number"
+                <FormattedNumberInput
                   value={staffSalary}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, staffSalary: Number(e.target.value) || 0 } }))}
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, staffSalary: val } }))}
                   className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-agency-staff-salary-input"
                 />
@@ -5463,10 +5461,9 @@ export default function ModelBuilder({
               <label className="text-xs text-[#6B7280] block mb-1">Agency Cost</label>
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
-                <Input
-                  type="number"
+                <FormattedNumberInput
                   value={agencyCost}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyCost: Number(e.target.value) || 0 } }))}
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyCost: val } }))}
                   className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-agency-cost-input"
                 />
