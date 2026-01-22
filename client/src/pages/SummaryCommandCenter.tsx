@@ -198,9 +198,11 @@ export default function SummaryCommandCenter({
     const pilotValueCalc = pilotEncountersCalc * valuePerEncounter;
     const valuePerUnit = pilotUnits > 0 ? pilotValueCalc / pilotUnits : 0;
     
-    // Use actual values if entered, otherwise default to pilot values for chart
     const targetUnits = typeof fullScaleUnits === "number" ? fullScaleUnits : pilotUnits;
     const targetUtilization = typeof fullScaleUtilization === "number" ? fullScaleUtilization : pilotUtilization;
+    
+    const milestoneIndices = [0, 5, 10, 15, 20];
+    const milestoneLabels = ["Today", "6 months", "1 year", "18 months", "Full Scale"];
     
     for (let i = 0; i <= steps; i++) {
       const progress = i / steps;
@@ -224,8 +226,12 @@ export default function SummaryCommandCenter({
       const net = actualValue - investment;
       const roi = investment > 0 ? (actualValue / investment) : 0;
       
+      const milestoneIdx = milestoneIndices.indexOf(i);
+      const isMilestone = milestoneIdx !== -1;
+      
       points.push({
         providers: units,
+        index: i,
         linearValue,
         actualValue,
         value: actualValue,
@@ -233,7 +239,9 @@ export default function SummaryCommandCenter({
         roi: roi.toFixed(1),
         utilization: Math.round(utilization * 100),
         isPilot: i === 0,
-        isFullScale: i === steps
+        isFullScale: i === steps,
+        isMilestone,
+        milestoneLabel: isMilestone ? milestoneLabels[milestoneIdx] : null
       });
     }
     
@@ -659,7 +667,7 @@ export default function SummaryCommandCenter({
           {/* Chart */}
           <div className="h-96 mb-6 relative">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+              <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
                 <defs>
                   <linearGradient id="networkEffectGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#059669" stopOpacity={0.15} />
@@ -668,18 +676,43 @@ export default function SummaryCommandCenter({
                 </defs>
                 
                 <XAxis 
-                  dataKey="providers" 
-                  axisLine={false}
+                  dataKey="index"
+                  type="number"
+                  domain={[0, 20]}
+                  ticks={[0, 5, 10, 15, 20]}
+                  axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
                   tickLine={false}
-                  tick={{ fill: "#6B7280", fontSize: 12 }}
-                  label={{ 
-                    value: config.unitNamePlural.toUpperCase(), 
-                    position: "bottom", 
-                    fill: "#94a3b8",
-                    fontSize: 11,
-                    fontWeight: 500,
-                    offset: -10
+                  tick={(props: { x: number; y: number; payload: { value: number } }) => {
+                    const { x, y, payload } = props;
+                    const point = chartData.find(d => d.index === payload.value);
+                    if (!point?.isMilestone) return <g />;
+                    const isEndpoint = point.isPilot || point.isFullScale;
+                    return (
+                      <g transform={`translate(${x},${y})`}>
+                        <text 
+                          x={0} 
+                          y={8} 
+                          textAnchor="middle" 
+                          fill={isEndpoint ? "#EA2C00" : "#111827"}
+                          fontSize={11}
+                          fontWeight={isEndpoint ? 700 : 600}
+                        >
+                          {point.milestoneLabel}
+                        </text>
+                        <text 
+                          x={0} 
+                          y={22} 
+                          textAnchor="middle" 
+                          fill="#6B7280"
+                          fontSize={10}
+                          fontWeight={400}
+                        >
+                          {point.providers} {config.unitNamePlural.toLowerCase()}
+                        </text>
+                      </g>
+                    );
                   }}
+                  height={50}
                 />
                 
                 <YAxis 
@@ -717,7 +750,7 @@ export default function SummaryCommandCenter({
                 />
                 
                 <ReferenceDot 
-                  x={pilot.providers} 
+                  x={0} 
                   y={pilot.actualValue} 
                   r={10} 
                   fill="#EA2C00" 
@@ -726,7 +759,7 @@ export default function SummaryCommandCenter({
                 />
                 
                 <ReferenceDot 
-                  x={fullScale.providers} 
+                  x={20} 
                   y={fullScale.actualValue} 
                   r={10} 
                   fill="#059669" 
