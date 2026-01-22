@@ -1,0 +1,205 @@
+Make the "YOUR RETURN" card animate in when pricing is entered:
+
+Remove pre-population:
+
+"Cost per provider/month" field should be EMPTY (no default $150)
+"Pricing Model" should have NO selection by default (both buttons unselected)
+
+
+Initial state of "YOUR RETURN" card:
+
+The dark card should be HIDDEN/not visible when page loads
+Show placeholder text instead: "Enter your pricing to see your return"
+Style this placeholder as a dashed border box with gray text
+
+
+Animation trigger:
+
+When user enters a number in "Cost per provider/month" field AND
+When that number is greater than 0
+THEN animate the "YOUR RETURN" card into view
+
+
+Animation style (Stripe/Wall Street vibe):
+Copy- Card slides down from above with ease-out timing (0.6s duration)
+- As it slides in, the ROI number counts up from 0.0× to 6.1× 
+- The Net Annual Gain counts up from $0 to $230,025
+- Use a smooth easing function: cubic-bezier(0.4, 0, 0.2, 1)
+- Add a subtle scale effect: starts at 0.95, grows to 1.0
+- Optional: Add a very subtle glow/shadow that pulses once when it appears
+
+Number animation (the "roll in" effect):
+javascriptCopy// When card appears:
+- ROI: 0.0× → 6.1× (animate over 800ms)
+- Net Gain: $0 → $230,025 (animate over 800ms)
+- Use a smooth easing that accelerates at the end
+- Numbers should "tick up" like a stock ticker
+
+The red/green bar animation:
+
+Investment bar (red) slides in from left (0% width → 18% width) - 400ms delay
+Annual Value bar (green) slides in from left (0% width → 82% width) - 500ms delay
+Both use ease-out timing
+
+
+Behavior:
+
+If user changes the price, the numbers should re-animate (but faster, 400ms)
+If user clears the price field, card should fade out and return to placeholder state
+
+
+
+
+CSS REFERENCE (what it should look like):
+cssCopy/* Initial state - hidden */
+.return-card {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When pricing entered - visible */
+.return-card.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Placeholder state */
+.return-placeholder {
+  border: 2px dashed #E5E7EB;
+  border-radius: 12px;
+  padding: 60px;
+  text-align: center;
+  background: #F9FAFB;
+}
+
+.return-placeholder-text {
+  font-size: 16px;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+/* Number counting animation */
+.roi-number {
+  font-variant-numeric: tabular-nums;
+  transition: all 0.1s;
+}
+
+/* Bar slide animation */
+.investment-bar,
+.value-bar {
+  width: 0;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.investment-bar.animate {
+  width: 18%;
+  transition-delay: 0.4s;
+}
+
+.value-bar.animate {
+  width: 82%;
+  transition-delay: 0.5s;
+}
+
+JAVASCRIPT REFERENCE (the counting effect):
+javascriptCopy// When user enters price
+function animateROICard() {
+  const card = document.querySelector('.return-card');
+  card.classList.add('visible');
+  
+  // Animate ROI number
+  animateNumber(
+    document.querySelector('.roi-number'),
+    0,
+    6.1,
+    800,
+    (val) => val.toFixed(1) + '×'
+  );
+  
+  // Animate Net Gain
+  animateNumber(
+    document.querySelector('.net-gain-number'),
+    0,
+    230025,
+    800,
+    (val) => '+$' + Math.round(val).toLocaleString()
+  );
+  
+  // Animate bars
+  setTimeout(() => {
+    document.querySelector('.investment-bar').classList.add('animate');
+    document.querySelector('.value-bar').classList.add('animate');
+  }, 300);
+}
+
+function animateNumber(element, start, end, duration, formatter) {
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Ease-out-cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    
+    const current = start + (end - start) * eased;
+    element.textContent = formatter(current);
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+BEFORE/AFTER:
+BEFORE (no price entered):
+CopyConfigure Your Investment
+Adjust pricing model and contract terms
+
+Pricing Model
+[ ] Per provider / Month
+[ ] Enterprise Annual
+
+Cost per provider/month
+$ [____] /month
+
+┌─────────────────────────────────────┐
+│                                     │
+│   Enter your pricing to see your    │
+│         return on investment        │
+│                                     │
+└─────────────────────────────────────┘
+       (dashed border, gray text)
+AFTER (user types $150):
+CopyConfigure Your Investment
+
+Cost per provider/month
+$ 150 /month
+
+[CARD SLIDES DOWN WITH ANIMATION]
+
+┌─────────────────────────────────────┐
+│           YOUR RETURN               │
+│                                     │
+│  [$45K]──────────[$275K]           │
+│   (Investment)    (Annual Value)    │
+│                                     │
+│         6.1×  Return on             │
+│              Investment             │
+│                                     │
+│      Net Annual Gain                │
+│        +$230,025                    │
+│   (numbers count up smoothly)       │
+└─────────────────────────────────────┘
+
+THE VIBE:
+
+Stripe: Clean, confident, numbers slide in with purpose
+Wall Street: Ticker-style number counting, financial precision
+Premium: Smooth easing, no jarring movements
+Satisfying: The moment they enter the price, BAM - instant ROI reveal
+
+This creates a "holy shit" moment when they see their return calculate in real-time. It's like watching a stock price update, but it's THEIR ROI.

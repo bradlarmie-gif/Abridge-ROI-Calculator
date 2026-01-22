@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
@@ -86,12 +86,21 @@ export default function InvestmentPage({
   const activeSetting = selectedSettings[0] || "outpatient";
   const config = settingConfig[activeSetting as keyof typeof settingConfig] || settingConfig.outpatient;
   
-  const [pricingModel, setPricingModel] = useState<"per_unit_monthly" | "enterprise_annual">("per_unit_monthly");
-  const [costPerUnit, setCostPerUnit] = useState(config.defaultPrice);
-  const [enterpriseAnnual, setEnterpriseAnnual] = useState(100000);
+  const [pricingModel, setPricingModel] = useState<"per_unit_monthly" | "enterprise_annual" | null>(null);
+  const [costPerUnit, setCostPerUnit] = useState<number | "">(""); 
+  const [enterpriseAnnual, setEnterpriseAnnual] = useState<number | "">(""); 
   const [contractTerm, setContractTerm] = useState<1 | 2 | 3>(1);
   const [includeImplementation, setIncludeImplementation] = useState(false);
   const [implementationFee, setImplementationFee] = useState(15000);
+  
+  // Animation states
+  const [showReturnCard, setShowReturnCard] = useState(false);
+  const [animateCard, setAnimateCard] = useState(false);
+  const [animatedROI, setAnimatedROI] = useState(0);
+  const [animatedNetGain, setAnimatedNetGain] = useState(0);
+  const [animateBars, setAnimateBars] = useState(false);
+  const animationRef = useRef<number | null>(null);
+  const previousPriceRef = useRef<number>(0);
 
   const units = isNursingSetting 
     ? (valueResults.nursingStaffedBeds || 200)
@@ -122,16 +131,105 @@ export default function InvestmentPage({
   const revenuePercent = totalAnnualValue > 0 ? Math.round((revenueTotal / totalAnnualValue) * 100) : 0;
 
   const annualInvestment = useMemo(() => {
-    if (pricingModel === "per_unit_monthly") {
+    if (pricingModel === "per_unit_monthly" && costPerUnit !== "") {
       return units * costPerUnit * 12;
     }
-    return enterpriseAnnual;
+    if (pricingModel === "enterprise_annual" && enterpriseAnnual !== "") {
+      return enterpriseAnnual;
+    }
+    return 0;
   }, [pricingModel, units, costPerUnit, enterpriseAnnual]);
+
+  // Check if we have valid pricing entered
+  const hasPricingEntered = useMemo(() => {
+    if (pricingModel === "per_unit_monthly" && costPerUnit !== "" && costPerUnit > 0) {
+      return true;
+    }
+    if (pricingModel === "enterprise_annual" && enterpriseAnnual !== "" && enterpriseAnnual > 0) {
+      return true;
+    }
+    return false;
+  }, [pricingModel, costPerUnit, enterpriseAnnual]);
 
   const totalInvestment = (annualInvestment * contractTerm) + (includeImplementation ? implementationFee : 0);
   const netGainAnnual = totalAnnualValue - annualInvestment;
   const roiMultiple = annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0;
   const monthsToPayback = totalAnnualValue > 0 ? Math.round((annualInvestment / totalAnnualValue) * 12) : 0;
+
+  // Animate number counting
+  const animateNumber = useCallback((
+    start: number,
+    end: number,
+    duration: number,
+    onUpdate: (val: number) => void,
+    onComplete?: () => void
+  ) => {
+    const startTime = performance.now();
+    
+    const update = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Ease-out-cubic for smooth deceleration
+      const eased = 1 - Math.pow(1 - progress, 3);
+      
+      const current = start + (end - start) * eased;
+      onUpdate(current);
+      
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(update);
+      } else {
+        onComplete?.();
+      }
+    };
+    
+    animationRef.current = requestAnimationFrame(update);
+  }, []);
+
+  // Handle animation when pricing is entered
+  useEffect(() => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
+    if (hasPricingEntered && annualInvestment > 0) {
+      const isReanimation = previousPriceRef.current > 0;
+      const duration = isReanimation ? 400 : 800;
+      
+      // Show the card
+      setShowReturnCard(true);
+      
+      // Small delay then animate in
+      setTimeout(() => {
+        setAnimateCard(true);
+        
+        // Animate numbers
+        animateNumber(0, roiMultiple, duration, (val) => setAnimatedROI(val));
+        animateNumber(0, netGainAnnual, duration, (val) => setAnimatedNetGain(val));
+        
+        // Animate bars with delay
+        setTimeout(() => setAnimateBars(true), 300);
+      }, 50);
+      
+      previousPriceRef.current = annualInvestment;
+    } else {
+      // Hide the card
+      setAnimateCard(false);
+      setAnimateBars(false);
+      setTimeout(() => {
+        setShowReturnCard(false);
+        setAnimatedROI(0);
+        setAnimatedNetGain(0);
+      }, 300);
+      previousPriceRef.current = 0;
+    }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [hasPricingEntered, annualInvestment, roiMultiple, netGainAnnual, animateNumber]);
 
   const handleComplete = () => {
     onComplete({
@@ -140,10 +238,10 @@ export default function InvestmentPage({
       netGain: netGainAnnual,
       roiMultiple,
       paybackMonths: monthsToPayback,
-      costPerMonth: costPerUnit,
-      enterpriseAnnual,
+      costPerMonth: costPerUnit === "" ? 0 : costPerUnit,
+      enterpriseAnnual: enterpriseAnnual === "" ? 0 : enterpriseAnnual,
       pricingModel: pricingModel === "per_unit_monthly" ? "per_clinician" : "enterprise",
-      nursingCostPerBedPerMonth: isNursingSetting ? costPerUnit : undefined,
+      nursingCostPerBedPerMonth: isNursingSetting ? (costPerUnit === "" ? 0 : costPerUnit) : undefined,
     });
   };
 
@@ -181,53 +279,80 @@ export default function InvestmentPage({
 
         {/* ROI Hero Section */}
         <div className="max-w-6xl mx-auto px-6 mb-12">
-          <div className="bg-[#111827] rounded-2xl p-8 md:p-10">
-            <div className="text-center mb-8">
-              <span className="text-[13px] font-semibold text-white/60 uppercase tracking-[0.1em]">Your Return</span>
-            </div>
-
-            {/* ROI Visual Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
-              <div className="relative h-16 bg-white/10 rounded-xl overflow-hidden">
-                <div 
-                  className="absolute inset-y-0 left-0 bg-[#EA2C00] flex items-center justify-center transition-all duration-500"
-                  style={{ width: `${investmentBarWidth}%` }}
-                >
-                  <div className="text-center">
-                    <div className="text-[11px] font-medium text-white/80 uppercase">Investment</div>
-                    <div className="text-lg font-bold text-white">{formatCurrencyCompact(annualInvestment)}</div>
-                  </div>
+          {!showReturnCard ? (
+            // Placeholder state - dashed border box
+            <div className="border-2 border-dashed border-[#E5E7EB] rounded-2xl p-16 bg-[#F9FAFB]">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#F3F4F6] flex items-center justify-center">
+                  <DollarSign className="w-8 h-8 text-[#9CA3AF]" />
                 </div>
-                <div 
-                  className="absolute inset-y-0 right-0 bg-emerald-500 flex items-center justify-center transition-all duration-500"
-                  style={{ width: `${100 - investmentBarWidth}%` }}
-                >
-                  <div className="text-center">
-                    <div className="text-[11px] font-medium text-white/80 uppercase">Annual Value</div>
-                    <div className="text-lg font-bold text-white">{formatCurrencyCompact(totalAnnualValue)}</div>
+                <p className="text-[16px] font-medium text-[#9CA3AF]">
+                  Select a pricing model and enter your cost to see your return
+                </p>
+              </div>
+            </div>
+          ) : (
+            // Animated return card
+            <div 
+              className={`bg-[#111827] rounded-2xl p-8 md:p-10 transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                animateCard 
+                  ? "opacity-100 translate-y-0 scale-100" 
+                  : "opacity-0 -translate-y-5 scale-[0.95]"
+              }`}
+            >
+              <div className="text-center mb-8">
+                <span className="text-[13px] font-semibold text-white/60 uppercase tracking-[0.1em]">Your Return</span>
+              </div>
+
+              {/* ROI Visual Bar */}
+              <div className="max-w-2xl mx-auto mb-8">
+                <div className="relative h-16 bg-white/10 rounded-xl overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-[#EA2C00] flex items-center justify-center transition-all duration-[800ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+                    style={{ 
+                      width: animateBars ? `${investmentBarWidth}%` : '0%',
+                      transitionDelay: '400ms'
+                    }}
+                  >
+                    <div className="text-center">
+                      <div className="text-[11px] font-medium text-white/80 uppercase">Investment</div>
+                      <div className="text-lg font-bold text-white">{formatCurrencyCompact(annualInvestment)}</div>
+                    </div>
+                  </div>
+                  <div 
+                    className="absolute inset-y-0 right-0 bg-emerald-500 flex items-center justify-center transition-all duration-[800ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+                    style={{ 
+                      width: animateBars ? `${100 - investmentBarWidth}%` : '0%',
+                      transitionDelay: '500ms'
+                    }}
+                  >
+                    <div className="text-center">
+                      <div className="text-[11px] font-medium text-white/80 uppercase">Annual Value</div>
+                      <div className="text-lg font-bold text-white">{formatCurrencyCompact(totalAnnualValue)}</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* ROI Multiplier */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-4 bg-white/10 rounded-2xl px-8 py-5">
-                <span className="font-mono text-5xl md:text-6xl font-bold text-white" data-testid="roi-multiple">
-                  {roiMultiple.toFixed(1)}×
+              {/* ROI Multiplier */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-4 bg-white/10 rounded-2xl px-8 py-5">
+                  <span className="font-mono text-5xl md:text-6xl font-bold text-white tabular-nums" data-testid="roi-multiple">
+                    {animatedROI.toFixed(1)}×
+                  </span>
+                  <span className="text-lg text-white/80 font-medium">Return on<br/>Investment</span>
+                </div>
+              </div>
+
+              {/* Net Annual Gain */}
+              <div className="text-center">
+                <span className="text-sm text-white/60 block mb-1">Net Annual Gain</span>
+                <span className="font-mono text-3xl font-bold text-emerald-400 tabular-nums" data-testid="net-gain">
+                  +{formatCurrency(Math.round(animatedNetGain))}
                 </span>
-                <span className="text-lg text-white/80 font-medium">Return on<br/>Investment</span>
               </div>
             </div>
-
-            {/* Net Annual Gain */}
-            <div className="text-center">
-              <span className="text-sm text-white/60 block mb-1">Net Annual Gain</span>
-              <span className="font-mono text-3xl font-bold text-emerald-400" data-testid="net-gain">
-                +{formatCurrency(netGainAnnual)}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Two Column Layout */}
@@ -248,10 +373,10 @@ export default function InvestmentPage({
                   {/* Per Provider Option */}
                   <button
                     onClick={() => setPricingModel("per_unit_monthly")}
-                    className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 ${
+                    className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 relative ${
                       pricingModel === "per_unit_monthly"
                         ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
-                        : "border-[#E5E7EB] bg-white hover:border-[#EA2C00]"
+                        : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
                     }`}
                     data-testid="pricing-per-unit"
                   >
@@ -262,10 +387,12 @@ export default function InvestmentPage({
                         Most flexible
                       </div>
                     </div>
-                    <p className="text-[14px] text-[#6B7280] mb-3">Pay per active {config.unitName}. Scale up or down as needed.</p>
-                    <div className="font-mono text-sm text-[#6B7280]">
-                      {units} {config.unitNamePlural} × ${costPerUnit}/month = <strong className="text-[#111827]">{formatCurrency(annualInvestment)}/year</strong>
-                    </div>
+                    <p className="text-[14px] text-[#6B7280]">Pay per active {config.unitName}. Scale up or down as needed.</p>
+                    {pricingModel === "per_unit_monthly" && costPerUnit !== "" && costPerUnit > 0 && (
+                      <div className="font-mono text-sm text-[#6B7280] mt-3">
+                        {units} {config.unitNamePlural} × ${costPerUnit}/month = <strong className="text-[#111827]">{formatCurrency(annualInvestment)}/year</strong>
+                      </div>
+                    )}
                     {pricingModel === "per_unit_monthly" && (
                       <div className="absolute top-5 right-5 w-6 h-6 rounded-full bg-[#EA2C00] flex items-center justify-center">
                         <Check className="w-4 h-4 text-white" strokeWidth={3} />
@@ -276,10 +403,10 @@ export default function InvestmentPage({
                   {/* Enterprise Option */}
                   <button
                     onClick={() => setPricingModel("enterprise_annual")}
-                    className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 ${
+                    className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 relative ${
                       pricingModel === "enterprise_annual"
                         ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
-                        : "border-[#E5E7EB] bg-white hover:border-[#EA2C00]"
+                        : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
                     }`}
                     data-testid="pricing-enterprise"
                   >
@@ -290,6 +417,11 @@ export default function InvestmentPage({
                       </div>
                     </div>
                     <p className="text-[14px] text-[#6B7280]">Fixed annual fee for unlimited {config.unitNamePlural} in scope.</p>
+                    {pricingModel === "enterprise_annual" && (
+                      <div className="absolute top-5 right-5 w-6 h-6 rounded-full bg-[#EA2C00] flex items-center justify-center">
+                        <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                      </div>
+                    )}
                   </button>
                 </div>
               </div>
@@ -306,8 +438,12 @@ export default function InvestmentPage({
                       <input
                         type="number"
                         value={costPerUnit}
-                        onChange={(e) => setCostPerUnit(Number(e.target.value) || 0)}
-                        className="w-full pl-8 pr-4 py-3 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)]"
+                        placeholder={config.defaultPrice.toString()}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCostPerUnit(val === "" ? "" : Number(val));
+                        }}
+                        className="w-full pl-8 pr-4 py-3 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] placeholder:text-[#9CA3AF] placeholder:font-normal"
                         data-testid="input-cost-per-unit"
                       />
                     </div>
@@ -326,12 +462,13 @@ export default function InvestmentPage({
                       <input
                         type="text"
                         inputMode="numeric"
-                        value={enterpriseAnnual.toLocaleString()}
+                        value={enterpriseAnnual === "" ? "" : enterpriseAnnual.toLocaleString()}
+                        placeholder="100,000"
                         onChange={(e) => {
                           const val = e.target.value.replace(/[^0-9]/g, '');
-                          setEnterpriseAnnual(val === "" ? 0 : parseInt(val, 10));
+                          setEnterpriseAnnual(val === "" ? "" : parseInt(val, 10));
                         }}
-                        className="w-full pl-8 pr-4 py-3 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)]"
+                        className="w-full pl-8 pr-4 py-3 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] placeholder:text-[#9CA3AF] placeholder:font-normal"
                         data-testid="input-enterprise-annual"
                       />
                     </div>
@@ -417,13 +554,19 @@ export default function InvestmentPage({
                 <div className="space-y-2 text-[15px]">
                   <div className="flex justify-between">
                     <span className="text-[#6B7280]">Model</span>
-                    <span className="font-medium text-[#111827]">{pricingModel === "per_unit_monthly" ? `Per ${config.unitName}/month` : "Enterprise annual"}</span>
+                    <span className="font-medium text-[#111827]">
+                      {pricingModel === "per_unit_monthly" 
+                        ? `Per ${config.unitName}/month` 
+                        : pricingModel === "enterprise_annual" 
+                          ? "Enterprise annual" 
+                          : <span className="text-[#9CA3AF]">Not selected</span>}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#6B7280]">{config.unitNamePlural.charAt(0).toUpperCase() + config.unitNamePlural.slice(1)}</span>
                     <span className="font-medium text-[#111827]">{units}</span>
                   </div>
-                  {pricingModel === "per_unit_monthly" && (
+                  {pricingModel === "per_unit_monthly" && costPerUnit !== "" && (
                     <div className="flex justify-between">
                       <span className="text-[#6B7280]">Price</span>
                       <span className="font-medium text-[#111827]">${costPerUnit}/{config.unitName}/month</span>
@@ -436,7 +579,9 @@ export default function InvestmentPage({
                   <div className="border-t border-[#E5E7EB] my-3" />
                   <div className="flex justify-between">
                     <span className="font-semibold text-[#111827]">Annual Investment</span>
-                    <span className="font-mono font-bold text-[#111827]" data-testid="annual-investment">{formatCurrency(annualInvestment)}</span>
+                    <span className="font-mono font-bold text-[#111827]" data-testid="annual-investment">
+                      {hasPricingEntered ? formatCurrency(annualInvestment) : <span className="text-[#9CA3AF] font-normal">—</span>}
+                    </span>
                   </div>
                   {includeImplementation && (
                     <div className="flex justify-between text-[#6B7280]">
