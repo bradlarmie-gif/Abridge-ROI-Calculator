@@ -30,6 +30,7 @@ export interface BaselineInfo {
   nursingFTEs?: number;
   nursingUnitType?: "med-surg" | "icu" | "mixed";
   nursingDocEventsPerBedPerYear?: number;
+  nursingOccupancyRate?: number;
 }
 
 interface BaselineSetupProps {
@@ -97,6 +98,7 @@ export default function BaselineSetup({
       baseline.nursingFTEs = numericNurseFTEs;
       baseline.nursingUnitType = unitType;
       baseline.nursingDocEventsPerBedPerYear = numericEventsPerPatientDay;
+      baseline.nursingOccupancyRate = occupancyRate;
     }
 
     onComplete(baseline);

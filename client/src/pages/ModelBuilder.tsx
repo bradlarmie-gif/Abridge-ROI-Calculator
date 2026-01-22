@@ -58,6 +58,7 @@ interface BaselineInfo {
   nursingFTEs?: number;
   nursingUnitType?: "med-surg" | "icu" | "mixed";
   nursingDocEventsPerBedPerYear?: number;
+  nursingOccupancyRate?: number;
 }
 
 interface ModelBuilderProps {
@@ -353,6 +354,10 @@ export default function ModelBuilder({
   const staffedBeds = initialBaseline?.nursingStaffedBeds ?? initialResults?.nursingStaffedBeds ?? 200;
   const nurseFTEs = initialBaseline?.nursingFTEs ?? initialResults?.nursingFTEs ?? 300;
   const unitType = initialBaseline?.nursingUnitType ?? initialResults?.nursingUnitType ?? "med-surg";
+  const nursingOccupancyRate = initialBaseline?.nursingOccupancyRate ?? 85;
+  const eventsPerPatientDay = initialBaseline?.nursingDocEventsPerBedPerYear ?? 3;
+  // Calculate patient days for formula display
+  const patientDaysPerYear = Math.round(staffedBeds * (nursingOccupancyRate / 100) * 365);
   const documentationEventsPerFTE = 500;
   const documentationEvents = nurseFTEs * documentationEventsPerFTE;
   const [costPerBedPerMonth, setCostPerBedPerMonth] = useState<number>(75);
@@ -6074,12 +6079,20 @@ export default function ModelBuilder({
                     eligible {isNursingSetting ? "documentation events" : isInpatientSetting ? "admissions" : "encounters"} per year
                   </p>
                 </div>
-                <p className="font-mono text-sm text-slate-500 mb-3">
-                  {isNursingSetting 
-                    ? `${nurseFTEs.toLocaleString()} nurse FTEs × ~500 events/FTE × ${utilizationRate}% utilization`
-                    : `${providers.toLocaleString()} ${isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} × ${encounters.toLocaleString()} ${isInpatientSetting ? "admissions" : "encounters"} × ${utilizationRate}% utilization`
-                  }
-                </p>
+                {isNursingSetting ? (
+                  <div className="font-mono text-sm text-slate-500 mb-3 space-y-1">
+                    <p>{staffedBeds.toLocaleString()} beds × {nursingOccupancyRate}% occupancy × 365 days = {patientDaysPerYear.toLocaleString()} patient days</p>
+                    <p>{patientDaysPerYear.toLocaleString()} patient days × {eventsPerPatientDay} events/day × {utilizationRate}% utilization</p>
+                    <p className="text-xs text-slate-400 italic mt-2">
+                      <Info className="w-3 h-3 inline mr-1" />
+                      This accounts for ~{Math.round(staffedBeds * 1.5).toLocaleString()} nurse FTEs (1.5 FTEs per bed)
+                    </p>
+                  </div>
+                ) : (
+                  <p className="font-mono text-sm text-slate-500 mb-3">
+                    {providers.toLocaleString()} {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} × {encounters.toLocaleString()} {isInpatientSetting ? "admissions" : "encounters"} × {utilizationRate}% utilization
+                  </p>
+                )}
                 <button
                   onClick={onBack}
                   className="inline-flex items-center gap-1 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
