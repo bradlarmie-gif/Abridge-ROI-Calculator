@@ -1,0 +1,447 @@
+STEP 1: Add Falls Prevention to the Strategic Priorities selection page
+htmlCopy<!-- In the QUALITY & SAFETY BENEFITS section -->
+
+<div class="value-driver-card" data-driver="falls-prevention">
+  <input type="checkbox" id="falls-prevention" name="priority" value="falls-prevention" />
+  <label for="falls-prevention">
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2v20M2 12h20"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    </div>
+    <div class="card-content">
+      <h3>Falls Prevention</h3>
+      <p>Reduce patient falls through real-time risk assessment</p>
+    </div>
+    <div class="card-checkmark">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+  </label>
+</div>
+Position it right after HAPI Prevention in the Quality & Safety section.
+
+STEP 2: Create the Falls Prevention value driver accordion
+htmlCopy<div class="driver-accordion" id="falls-prevention-driver">
+  <div class="driver-header" onclick="toggleDriver('falls-prevention')">
+    <div class="driver-header-left">
+      <div class="driver-icon quality">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M2 12h20"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <div class="driver-title-group">
+        <h3>Falls Prevention</h3>
+        <p>Reduce patient falls through real-time risk assessment</p>
+      </div>
+    </div>
+    
+    <div class="driver-header-right">
+      <div class="driver-value" id="falls-total-value">$180,000</div>
+      <button class="expand-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="driver-content">
+    
+    <!-- Your Calculation Header -->
+    <div class="calculation-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+      </svg>
+      <span>Your Calculation</span>
+    </div>
+
+    <!-- The Theory -->
+    <div class="theory-section">
+      <div class="theory-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span>The Theory</span>
+      </div>
+      <div class="theory-content">
+        <p>
+          Falls happen when risk assessments are missed or interventions are delayed. Real-time 
+          documentation ensures fall risk scores, mobility assessments, and environmental factors 
+          are captured as they're observed — enabling earlier intervention. We show this as POTENTIAL 
+          value because the causal link is indirect.
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 1: Current Falls Volume -->
+    <div class="calc-step">
+      <div class="step-label">STEP 1: CURRENT FALLS VOLUME</div>
+      <div class="step-question">How many falls occur today?</div>
+      
+      <div class="input-row">
+        <div class="input-group">
+          <label>Annual Admissions</label>
+          <input 
+            type="number" 
+            id="falls-annual-admissions" 
+            value="10000"
+            min="1000"
+            max="100000"
+            step="100"
+          />
+        </div>
+        
+        <span class="operator">×</span>
+        
+        <div class="input-group">
+          <label>Falls Rate</label>
+          <div class="input-with-unit">
+            <input 
+              type="number" 
+              id="falls-rate" 
+              value="3.5"
+              min="1"
+              max="10"
+              step="0.1"
+            />
+            <span class="unit">per 1,000 patient days</span>
+          </div>
+        </div>
+        
+        <span class="operator">=</span>
+        
+        <div class="result-box">
+          <div class="result-value" id="falls-per-year">350</div>
+          <div class="result-label">falls/year</div>
+        </div>
+      </div>
+      
+      <div class="context-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>National falls rates range 2.5-5 per 1,000 patient days. Higher in acute care and geriatric populations.</span>
+      </div>
+    </div>
+
+    <!-- Step 2: Documentation-Preventable -->
+    <div class="calc-step">
+      <div class="step-label">STEP 2: DOCUMENTATION-PREVENTABLE</div>
+      <div class="step-question">How many could better documentation help prevent?</div>
+      
+      <div class="input-row">
+        <div class="input-group">
+          <label>Current Falls</label>
+          <div class="locked-value" id="falls-current-display">350</div>
+        </div>
+        
+        <span class="operator">×</span>
+        
+        <div class="input-group">
+          <label>Prevention Rate</label>
+          <div class="input-with-unit">
+            <input 
+              type="number" 
+              id="falls-prevention-rate" 
+              value="8"
+              min="3"
+              max="15"
+              step="1"
+            />
+            <span class="unit">%</span>
+          </div>
+        </div>
+        
+        <span class="operator">=</span>
+        
+        <div class="result-box">
+          <div class="result-value" id="falls-prevented">28</div>
+          <div class="result-label">prevented</div>
+        </div>
+      </div>
+      
+      <div class="context-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>Not all falls are documentation-preventable. 8% is conservative — represents cases where real-time risk assessment would have triggered earlier intervention.</span>
+      </div>
+    </div>
+
+    <!-- Step 3: Cost Avoidance -->
+    <div class="calc-step">
+      <div class="step-label">STEP 3: COST AVOIDANCE</div>
+      <div class="step-question">What's the value?</div>
+      
+      <div class="input-row">
+        <div class="input-group">
+          <label>Prevented</label>
+          <div class="locked-value" id="falls-prevented-display">28</div>
+        </div>
+        
+        <span class="operator">×</span>
+        
+        <div class="input-group">
+          <label>Cost per Fall</label>
+          <div class="input-with-unit">
+            <span class="currency-symbol">$</span>
+            <input 
+              type="number" 
+              id="falls-cost-per-fall" 
+              value="6500"
+              min="3000"
+              max="20000"
+              step="500"
+            />
+          </div>
+        </div>
+        
+        <span class="operator">=</span>
+        
+        <div class="result-box highlight">
+          <div class="result-value" id="falls-potential-value">$182,000</div>
+          <div class="result-label">Potential Value</div>
+        </div>
+      </div>
+      
+      <!-- Benchmark Box -->
+      <div class="benchmark-box">
+        <div class="benchmark-label">BENCHMARK: COST PER FALL</div>
+        <div class="benchmark-grid">
+          <div class="benchmark-item">
+            <div class="benchmark-type">No injury fall</div>
+            <div class="benchmark-range">$3K - $5K</div>
+          </div>
+          <div class="benchmark-item">
+            <div class="benchmark-type">Minor injury</div>
+            <div class="benchmark-range">$5K - $8K</div>
+          </div>
+          <div class="benchmark-item">
+            <div class="benchmark-type">Major injury (fracture)</div>
+            <div class="benchmark-range">$15K - $30K</div>
+          </div>
+          <div class="benchmark-item current">
+            <div class="benchmark-type">Your input (blended)</div>
+            <div class="benchmark-range">$6,500</div>
+          </div>
+        </div>
+        <div class="benchmark-note">
+          CMS does NOT reimburse for hospital-acquired fall injuries. This is pure cost avoidance. 
+          We use $6,500 as blended average across injury severities.
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="driver-summary">
+      <div class="summary-label">Potential Value</div>
+      <div class="summary-formula">28 falls prevented × $6,500 cost per fall</div>
+      <div class="summary-value" id="falls-summary-value">$182,000</div>
+    </div>
+
+    <!-- Why This Is "Potential" -->
+    <div class="potential-value-callout">
+      <div class="callout-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span>WHY THIS IS "POTENTIAL" VALUE</span>
+      </div>
+      
+      <div class="callout-content">
+        <p>
+          Falls are prevented through clinical care — mobility assistance, environmental modifications, 
+          medication reviews. Documentation SUPPORTS this but doesn't REPLACE it.
+        </p>
+        
+        <p><strong>We show this separately because:</strong></p>
+        <ul>
+          <li>The causal link is indirect</li>
+          <li>Clinical practice matters more than documentation</li>
+          <li>We want to be intellectually honest</li>
+        </ul>
+        
+        <p>
+          That said — when risk assessments are documented in real-time, interventions happen faster. 
+          This value is REAL, just harder to attribute directly to Abridge.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+STEP 3: JavaScript calculation logic
+javascriptCopy// Falls Prevention Calculator
+function calculateFallsPrevention() {
+  // Step 1: Current falls volume
+  const annualAdmissions = parseInt(document.getElementById('falls-annual-admissions').value) || 10000;
+  const fallsRate = parseFloat(document.getElementById('falls-rate').value) || 3.5;
+  
+  // Estimate patient days (avg 4-day LOS)
+  const avgLOS = 4;
+  const patientDays = annualAdmissions * avgLOS;
+  const fallsPerYear = Math.round((patientDays / 1000) * fallsRate);
+  
+  // Step 2: Documentation-preventable
+  const preventionRate = parseFloat(document.getElementById('falls-prevention-rate').value) || 8;
+  const fallsPrevented = Math.round(fallsPerYear * (preventionRate / 100));
+  
+  // Step 3: Cost avoidance
+  const costPerFall = parseInt(document.getElementById('falls-cost-per-fall').value) || 6500;
+  const potentialValue = fallsPrevented * costPerFall;
+  
+  // Update displays
+  document.getElementById('falls-per-year').textContent = fallsPerYear.toLocaleString();
+  document.getElementById('falls-current-display').textContent = fallsPerYear;
+  document.getElementById('falls-prevented').textContent = fallsPrevented;
+  document.getElementById('falls-prevented-display').textContent = fallsPrevented;
+  document.getElementById('falls-potential-value').textContent = '$' + potentialValue.toLocaleString();
+  document.getElementById('falls-summary-value').textContent = '$' + potentialValue.toLocaleString();
+  document.getElementById('falls-total-value').textContent = '$' + Math.round(potentialValue / 1000) + 'K';
+  
+  // Update live model
+  updateLiveModel('falls-prevention', potentialValue);
+  
+  return {
+    fallsPerYear,
+    fallsPrevented,
+    potentialValue
+  };
+}
+
+// Add event listeners
+document.getElementById('falls-annual-admissions')?.addEventListener('input', calculateFallsPrevention);
+document.getElementById('falls-rate')?.addEventListener('input', calculateFallsPrevention);
+document.getElementById('falls-prevention-rate')?.addEventListener('input', calculateFallsPrevention);
+document.getElementById('falls-cost-per-fall')?.addEventListener('input', calculateFallsPrevention);
+
+STEP 4: Update the Live Model sidebar
+javascriptCopy// In your Live Model component
+function updateLiveModel(driver, value) {
+  const liveModelList = document.getElementById('live-model-list');
+  
+  // Check if Falls Prevention is in the list
+  let fallsItem = document.getElementById('live-model-falls');
+  
+  if (!fallsItem && value > 0) {
+    // Add it
+    fallsItem = document.createElement('div');
+    fallsItem.id = 'live-model-falls';
+    fallsItem.className = 'live-model-item potential';
+    fallsItem.innerHTML = `
+      <div class="item-left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        <span>Falls Prevention</span>
+        <span class="potential-badge">Potential</span>
+      </div>
+      <div class="item-value">$${Math.round(value / 1000)}K</div>
+    `;
+    liveModelList.appendChild(fallsItem);
+  } else if (fallsItem) {
+    // Update existing
+    fallsItem.querySelector('.item-value').textContent = '$' + Math.round(value / 1000) + 'K';
+  }
+  
+  // Recalculate total
+  updateTotalValue();
+}
+
+STEP 5: Add "Potential" badge styling
+cssCopy/* Potential value badge */
+.potential-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba(251, 191, 36, 0.1);
+  color: #F59E0B;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.live-model-item.potential {
+  opacity: 0.85;
+  border-left: 3px dashed #F59E0B;
+}
+
+/* Potential value callout */
+.potential-value-callout {
+  background: rgba(251, 191, 36, 0.05);
+  border: 2px solid #F59E0B;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 32px 0;
+}
+
+.potential-value-callout .callout-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #F59E0B;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.potential-value-callout .callout-header svg {
+  color: #F59E0B;
+}
+
+.potential-value-callout .callout-content p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.potential-value-callout .callout-content ul {
+  margin: 12px 0 12px 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #374151;
+}
+
+STEP 6: Update the Total Value display to show potential separately
+htmlCopy<!-- In your Live Model sidebar -->
+<div class="total-value-section">
+  <div class="total-direct">
+    <div class="total-label">Direct Value</div>
+    <div class="total-amount">$1,071,756</div>
+  </div>
+  
+  <div class="total-potential">
+    <div class="total-label">+ Potential Value</div>
+    <div class="total-amount potential">$182,000</div>
+    <div class="total-note">Indirect attribution</div>
+  </div>
+  
+  <div class="divider"></div>
+  
+  <div class="total-combined">
+    <div class="total-label">Combined Annual Value</div>
+    <div class="total-amount">$1,253,756</div>
+  </div>
+</div>

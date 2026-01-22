@@ -146,6 +146,17 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       warningText: "Shown as potential value—not included in main ROI total",
       isPotentialValue: true,
     },
+    {
+      id: "nursingFalls",
+      label: "Falls Prevention",
+      category: "qualitySafety",
+      description: "Reduce patient falls through real-time risk assessment",
+      driverSummary: "Potential value—indirect causal link",
+      keyMetric: "$150K-$300K for 200 beds (potential)",
+      hasWarning: true,
+      warningText: "Shown as potential value—not included in main ROI total",
+      isPotentialValue: true,
+    },
     // ✨ ADDITIONAL BENEFITS (Not quantified)
     {
       id: "nursingSurvey",

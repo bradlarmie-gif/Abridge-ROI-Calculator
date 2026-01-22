@@ -229,6 +229,13 @@ interface DriverInputs {
     preventionRate: number;    // % of HAPIs documentation can prevent (10%)
     costPerHAPI: number;       // Cost per HAPI ($20,000)
   };
+  nursingFalls: {
+    annualAdmissions: number;  // Total annual admissions (10,000)
+    fallsRate: number;         // Falls per 1,000 patient days (3.5)
+    avgLOS: number;            // Average length of stay in days (4)
+    preventionRate: number;    // % of falls documentation can prevent (8%)
+    costPerFall: number;       // Average cost per fall ($6,500)
+  };
   nursingAgency: {
     agencyFTEsPerBed: number;  // e.g., 0.15 = 15% agency utilization
     staffSalary: number;       // Staff RN fully loaded ($75K)
@@ -271,6 +278,7 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
   nursingAgency: Users,
   nursingRetention: Heart,
   nursingHAPI: Shield,
+  nursingFalls: Shield,
   nursingSurvey: CheckCircle,
   nursingCareCoordination: Link2,
 };
@@ -297,6 +305,7 @@ const DRIVER_NAMES: Record<string, string> = {
   nursingAgency: "Agency & Travel Nurse Reduction",
   nursingRetention: "Nurse Retention",
   nursingHAPI: "HAPI Prevention",
+  nursingFalls: "Falls Prevention",
   nursingSurvey: "Survey & Compliance Readiness",
   nursingCareCoordination: "Care Coordination",
 };
@@ -323,6 +332,7 @@ const DRIVER_THEORIES: Record<string, string> = {
   nursingAgency: "Improved retention and satisfaction reduces reliance on expensive agency nurses who cost 2-3x staff nurses. Agency → staff conversion is real budget savings.",
   nursingRetention: "Documentation burden is the top driver of nursing burnout. By reducing this burden, we help prevent burnout-related departures—each costing $40-60K to replace.",
   nursingHAPI: "Better documentation supports timely skin assessments and turning protocols. While the causal link is indirect, improved documentation correlates with reduced pressure injury rates.",
+  nursingFalls: "Falls happen when risk assessments are missed or interventions are delayed. Real-time documentation ensures fall risk scores, mobility assessments, and environmental factors are captured as they're observed — enabling earlier intervention. We show this as POTENTIAL value because the causal link is indirect.",
   nursingSurvey: "Real-time documentation supports audit confidence and survey readiness. This is qualitative value that strengthens the overall ROI narrative.",
   nursingCareCoordination: "Complete, timely documentation improves handoffs between shifts and departments. This is qualitative value that improves patient outcomes.",
 };
@@ -504,6 +514,13 @@ export default function ModelBuilder({
       hapiRate: 2.5,             // 2.5% HAPI rate
       preventionRate: 5,         // 5% documentation-preventable
       costPerHAPI: 20000,        // $20,000 cost per HAPI
+    },
+    nursingFalls: {
+      annualAdmissions: 10000,   // 10,000 annual admissions
+      fallsRate: 3.5,            // 3.5 falls per 1,000 patient days
+      avgLOS: 4,                 // 4 day average length of stay
+      preventionRate: 8,         // 8% documentation-preventable
+      costPerFall: 6500,         // $6,500 average cost per fall
     },
     nursingAgency: {
       agencyFTEsPerBed: 0.15,    // 15% agency utilization
@@ -857,6 +874,17 @@ export default function ModelBuilder({
         // Step 3: Cost avoidance = HAPIs Prevented × Cost per HAPI
         return Math.round(hapisPrevented * costPerHAPI);
       }
+      case "nursingFalls": {
+        const { annualAdmissions, fallsRate, avgLOS, preventionRate, costPerFall } = driverInputs.nursingFalls;
+        // Step 1: Calculate patient days (admissions × avg length of stay)
+        const patientDays = annualAdmissions * avgLOS;
+        // Step 2: Current falls volume = (Patient Days / 1000) × Falls Rate per 1000 patient days
+        const currentFalls = (patientDays / 1000) * fallsRate;
+        // Step 3: Documentation-preventable = Current Falls × Prevention Rate
+        const fallsPrevented = currentFalls * (preventionRate / 100);
+        // Step 4: Cost avoidance = Falls Prevented × Cost per Fall
+        return Math.round(fallsPrevented * costPerFall);
+      }
       case "nursingAgency": {
         const { agencyFTEsPerBed, staffSalary, agencyCost, retentionImpact } = driverInputs.nursingAgency;
         // Step 1: Current agency utilization = Staffed Beds × Agency FTEs per Bed
@@ -1208,6 +1236,8 @@ export default function ModelBuilder({
         return renderNursingOvertimeInputs();
       case "nursingHAPI":
         return renderNursingHAPIInputs();
+      case "nursingFalls":
+        return renderNursingFallsInputs();
       case "nursingAgency":
         return renderNursingAgencyInputs();
       case "nursingRetention":
@@ -5381,6 +5411,213 @@ export default function ModelBuilder({
               </ul>
               <p className="text-sm text-amber-800 leading-relaxed">
                 That said — when assessments are documented in real-time, interventions happen faster. This value is REAL, just harder to attribute directly to Abridge.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderNursingFallsInputs = () => {
+    const { annualAdmissions, fallsRate, avgLOS, preventionRate, costPerFall } = driverInputs.nursingFalls;
+    
+    // Step 1: Calculate patient days (admissions × avg length of stay)
+    const patientDays = annualAdmissions * avgLOS;
+    // Step 2: Current falls volume = (Patient Days / 1000) × Falls Rate per 1000 patient days
+    const currentFalls = (patientDays / 1000) * fallsRate;
+    // Step 3: Documentation-preventable = Current Falls × Prevention Rate
+    const fallsPrevented = currentFalls * (preventionRate / 100);
+    // Step 4: Cost avoidance = Falls Prevented × Cost per Fall
+    const potentialValue = Math.round(fallsPrevented * costPerFall);
+
+    const StepDivider = () => (
+      <div className="border-t border-dashed border-neutral-200 my-4" />
+    );
+    
+    return (
+      <div className="space-y-4">
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Falls happen when risk assessments are missed or interventions are delayed. Real-time documentation ensures fall risk scores, mobility assessments, and environmental factors are captured as they're observed — enabling earlier intervention. We show this as POTENTIAL value because the causal link is indirect.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 1: Current Falls Volume */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Falls Volume</p>
+          <p className="text-xs text-[#6B7280]">How many falls occur today?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Annual Admissions</label>
+              <FormattedNumberInput
+                value={annualAdmissions}
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingFalls: { ...prev.nursingFalls, annualAdmissions: val } }))}
+                className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                data-testid="nursing-falls-admissions-input"
+              />
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Falls Rate</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={fallsRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingFalls: { ...prev.nursingFalls, fallsRate: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  step="0.1"
+                  data-testid="nursing-falls-rate-input"
+                />
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Falls/Year</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(currentFalls)}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">
+            Falls rate is per 1,000 patient days. Calculated as: {annualAdmissions.toLocaleString()} admissions × {avgLOS} day avg LOS = {patientDays.toLocaleString()} patient days.
+          </p>
+          <p className="text-xs text-[#6B7280]">National falls rates range 2.5-5 per 1,000 patient days. Higher in acute care and geriatric populations.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 2: Documentation-Preventable */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Preventable</p>
+          <p className="text-xs text-[#6B7280]">How many could better documentation help prevent?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Current Falls</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(currentFalls)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Prevention Rate</label>
+              <div className="flex items-center">
+                <Input
+                  type="number"
+                  value={preventionRate}
+                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingFalls: { ...prev.nursingFalls, preventionRate: Number(e.target.value) || 0 } }))}
+                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  data-testid="nursing-falls-prevention-input"
+                />
+                <span className="ml-1 text-[#6B7280]">%</span>
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Prevented</label>
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(fallsPrevented)}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-2">Not all falls are documentation-preventable. 8% is conservative — represents cases where real-time risk assessment would have triggered earlier intervention.</p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 3: Cost Avoidance */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Cost Avoidance</p>
+          <p className="text-xs text-[#6B7280]">What's the value?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Prevented</label>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(fallsPrevented)}</div>
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Cost per Fall</label>
+              <div className="flex items-center justify-center">
+                <span className="mr-1 text-[#6B7280] text-xs">$</span>
+                <FormattedNumberInput
+                  value={costPerFall}
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingFalls: { ...prev.nursingFalls, costPerFall: val } }))}
+                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  data-testid="nursing-falls-cost-input"
+                />
+              </div>
+            </div>
+            <div className="text-neutral-400">=</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Potential Value</label>
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {formatCurrency(potentialValue)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benchmark callout */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: Cost Per Fall</p>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">No injury fall</span>
+              <span className="font-mono text-[#111827]">$3K - $5K</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">Minor injury</span>
+              <span className="font-mono text-[#111827]">$5K - $8K</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#6B7280]">Major injury (fracture)</span>
+              <span className="font-mono text-[#111827]">$15K - $30K</span>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-3">CMS does NOT reimburse for hospital-acquired fall injuries. This is pure cost avoidance.</p>
+          <p className="text-xs text-[#6B7280] mt-1">We use ${costPerFall.toLocaleString()} as blended average across injury severities.</p>
+        </div>
+
+        {/* Final Result */}
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <span className="font-medium text-[#111827]">Potential Value</span>
+              <p className="text-xs text-neutral-500 mt-0.5">{Math.round(fallsPrevented)} falls prevented × ${costPerFall.toLocaleString()} cost per fall</p>
+            </div>
+            <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="nursing-falls-result">
+              {formatCurrency(potentialValue)}
+            </span>
+          </div>
+        </div>
+
+        {/* Why This Is "Potential" Value */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-semibold text-amber-900 uppercase tracking-wide mb-2">Why This Is "Potential" Value</p>
+              <p className="text-sm text-amber-800 leading-relaxed mb-2">
+                Falls are prevented through clinical care — mobility assistance, environmental modifications, medication reviews. Documentation SUPPORTS this but doesn't REPLACE it.
+              </p>
+              <p className="text-sm text-amber-800 leading-relaxed mb-2">
+                We show this separately because:
+              </p>
+              <ul className="text-sm text-amber-800 list-disc list-inside space-y-1 mb-2">
+                <li>The causal link is indirect</li>
+                <li>Clinical practice matters more than documentation</li>
+                <li>We want to be intellectually honest</li>
+              </ul>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                That said — when risk assessments are documented in real-time, interventions happen faster. This value is REAL, just harder to attribute directly to Abridge.
               </p>
             </div>
           </div>
