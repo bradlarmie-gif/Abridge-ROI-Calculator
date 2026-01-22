@@ -2499,18 +2499,15 @@ export default function ObjectiveSelectionScreen({
         {/* PAGE 1 — CARE SETTING */}
         {currentPage === "setting" && (
           <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-12 md:py-16">
-            {/* Page Header */}
-            <div className="mb-12">
-              <h2 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4">
+            {/* Page Header with Benefits */}
+            <div className="mb-10">
+              <h2 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-3">
                 Select a care setting
               </h2>
-              <p className="text-[17px] leading-relaxed text-[#6B7280] max-w-[700px]">
+              <p className="text-[17px] leading-relaxed text-[#6B7280] max-w-[700px] mb-4">
                 Each care setting has unique documentation workflows and value drivers. Your selection determines the baseline assumptions throughout this calculator.
               </p>
-            </div>
-            
-            {/* Benefits Bar */}
-            <div className="flex flex-wrap gap-6 p-6 md:p-8 bg-[#F9FAFB] rounded-xl mb-16">
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
               <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
                 <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
                 Setting-specific ROI drivers
@@ -2527,6 +2524,7 @@ export default function ObjectiveSelectionScreen({
                 <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
                 Based on 200+ health system partners
               </span>
+              </div>
             </div>
 
             <div className="grid lg:grid-cols-[1fr_380px] gap-12 lg:gap-16">
