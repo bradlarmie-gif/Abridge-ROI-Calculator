@@ -497,7 +497,7 @@ export default function ModelBuilder({
     nursingHAPI: {
       annualAdmissions: 10000,   // 10,000 annual admissions
       hapiRate: 2.5,             // 2.5% HAPI rate
-      preventionRate: 10,        // 10% documentation-preventable
+      preventionRate: 5,         // 5% documentation-preventable
       costPerHAPI: 20000,        // $20,000 cost per HAPI
     },
     nursingAgency: {
@@ -5286,7 +5286,7 @@ export default function ModelBuilder({
               </div>
             </div>
           </div>
-          <p className="text-xs text-[#6B7280] mt-2">Not all HAPIs are documentation-preventable. 10% is conservative — represents cases where real-time assessment documentation would have triggered earlier intervention.</p>
+          <p className="text-xs text-[#6B7280] mt-2">Not all HAPIs are documentation-preventable. 5% is conservative — represents cases where real-time assessment documentation would have triggered earlier intervention.</p>
         </div>
 
         <StepDivider />
