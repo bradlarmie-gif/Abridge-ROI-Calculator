@@ -26,7 +26,10 @@ The application guides users through multi-step processes:
 -   **Expand Path**: A 6-step performance analysis flow for current Abridge customers with Simple/Detailed data entry modes:
     1. Setting Selection (ExpandSettingSelection.tsx)
     2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, Simple/Detailed mode selector, metric selection
-    3. Data Entry (ExpandDataEntry.tsx) - Simple mode: Before/After comparison; Detailed mode: Timeline data entry with dynamic columns based on months (1-3: 2 cols, 4-6: 3 cols, 7-12: 4 cols, 12+: 5 cols) and mini sparklines
+    3. Data Entry (ExpandDataEntry.tsx) - Three-tier entry approach:
+       - Simple mode (default): 2 inputs per metric (e.g., average before/after for Level of Service, same-day % for Chart Closure)
+       - Optional detailed entry: Expandable sections with full distributions (5 levels for LOS, 4 time buckets for closure)
+       - Helper text with benchmark references (LOS: 0.2-0.5 level increase, Closure: 5-15pp improvement)
     4. Performance Dashboard (ExpandPerformanceDashboard.tsx) - Three-phase journey overview (Before Abridge → Today → Full Scale), journey graph with actual (solid) vs projected (dashed) lines, "You are here" marker, value breakdown cards
     5. ROI Story (ExpandROIStory.tsx)
     6. Journey Expansion (ExpandJourneyExpansion.tsx)
