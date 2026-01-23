@@ -283,27 +283,50 @@ export default function SwitchFullAnalysis({
 
         <section className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 text-white mb-8">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="text-xl">💡</span> Why Small Gaps Compound
+            <span className="text-xl">💡</span> How Your Score is Calculated
           </h3>
           
           <p className="text-slate-300 mb-4">
-            Ambient AI value is <strong className="text-white">multiplicative</strong>. Small differences compound:
+            Each dimension contributes to your overall value realization score based on strategic importance:
           </p>
           
-          <div className="bg-slate-700/50 rounded-lg p-4 mb-4 text-center font-mono text-sm">
-            Utilization × Efficiency × Quality × Satisfaction = Total Value
-          </div>
-          
-          <div className="flex items-center justify-center gap-2 text-lg flex-wrap">
-            <span className="font-bold">{calculations.utilizationScore}%</span>
-            <span className="text-slate-400">×</span>
-            <span className="font-bold">{calculations.efficiencyScore}%</span>
-            <span className="text-slate-400">×</span>
-            <span className="font-bold">{calculations.qualityScore}%</span>
-            <span className="text-slate-400">×</span>
-            <span className="font-bold">{calculations.satisfactionScore}%</span>
-            <span className="text-slate-400">=</span>
-            <span className="font-bold text-[#EA2C00]">{calculations.realizationScore}% realized</span>
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-2">
+              <span className="text-slate-300">Utilization</span>
+              <div className="flex items-center gap-3">
+                <span className="font-bold">{calculations.utilizationScore}%</span>
+                <span className="text-slate-400">× 30%</span>
+                <span className="text-emerald-400 font-semibold">= {Math.round(calculations.utilizationScore * 0.30)}pts</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-2">
+              <span className="text-slate-300">Efficiency</span>
+              <div className="flex items-center gap-3">
+                <span className="font-bold">{calculations.efficiencyScore}%</span>
+                <span className="text-slate-400">× 30%</span>
+                <span className="text-emerald-400 font-semibold">= {Math.round(calculations.efficiencyScore * 0.30)}pts</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-2">
+              <span className="text-slate-300">Quality</span>
+              <div className="flex items-center gap-3">
+                <span className="font-bold">{calculations.qualityScore}%</span>
+                <span className="text-slate-400">× 25%</span>
+                <span className="text-emerald-400 font-semibold">= {Math.round(calculations.qualityScore * 0.25)}pts</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-2">
+              <span className="text-slate-300">Satisfaction</span>
+              <div className="flex items-center gap-3">
+                <span className="font-bold">{calculations.satisfactionScore}%</span>
+                <span className="text-slate-400">× 15%</span>
+                <span className="text-emerald-400 font-semibold">= {Math.round(calculations.satisfactionScore * 0.15)}pts</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between bg-emerald-600/30 border border-emerald-500/50 rounded-lg px-4 py-2">
+              <span className="font-semibold">Total Score</span>
+              <span className="text-xl font-bold text-emerald-400">{calculations.realizationScore}%</span>
+            </div>
           </div>
         </section>
 

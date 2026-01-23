@@ -271,25 +271,42 @@ export default function SwitchAssessment({
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-                <div className="text-center px-3 py-2 bg-slate-50 rounded-lg">
-                  <div className="font-bold text-[#111827]">{calculations.utilizationScore}%</div>
-                  <div className="text-xs text-[#6B7280]">Utilization</div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
+                  <span className="text-[#6B7280]">Utilization</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#111827]">{calculations.utilizationScore}%</span>
+                    <span className="text-[#6B7280]">× 30%</span>
+                    <span className="text-[#111827] font-semibold">= {Math.round(calculations.utilizationScore * 0.30)}pts</span>
+                  </div>
                 </div>
-                <span className="text-slate-400 font-bold">x</span>
-                <div className="text-center px-3 py-2 bg-slate-50 rounded-lg">
-                  <div className="font-bold text-[#111827]">{calculations.efficiencyScore}%</div>
-                  <div className="text-xs text-[#6B7280]">Efficiency</div>
+                <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
+                  <span className="text-[#6B7280]">Efficiency</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#111827]">{calculations.efficiencyScore}%</span>
+                    <span className="text-[#6B7280]">× 30%</span>
+                    <span className="text-[#111827] font-semibold">= {Math.round(calculations.efficiencyScore * 0.30)}pts</span>
+                  </div>
                 </div>
-                <span className="text-slate-400 font-bold">x</span>
-                <div className="text-center px-3 py-2 bg-slate-50 rounded-lg">
-                  <div className="font-bold text-[#111827]">{calculations.qualityScore}%</div>
-                  <div className="text-xs text-[#6B7280]">Quality</div>
+                <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
+                  <span className="text-[#6B7280]">Quality</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#111827]">{calculations.qualityScore}%</span>
+                    <span className="text-[#6B7280]">× 25%</span>
+                    <span className="text-[#111827] font-semibold">= {Math.round(calculations.qualityScore * 0.25)}pts</span>
+                  </div>
                 </div>
-                <span className="text-slate-400 font-bold">x</span>
-                <div className="text-center px-3 py-2 bg-slate-50 rounded-lg">
-                  <div className="font-bold text-[#111827]">{calculations.satisfactionScore}%</div>
-                  <div className="text-xs text-[#6B7280]">Satisfaction</div>
+                <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
+                  <span className="text-[#6B7280]">Satisfaction</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#111827]">{calculations.satisfactionScore}%</span>
+                    <span className="text-[#6B7280]">× 15%</span>
+                    <span className="text-[#111827] font-semibold">= {Math.round(calculations.satisfactionScore * 0.15)}pts</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <span className="font-semibold text-[#111827]">Total Score</span>
+                  <span className="font-bold text-emerald-600 text-lg">{calculations.realizationScore}%</span>
                 </div>
               </div>
             </div>
@@ -297,20 +314,20 @@ export default function SwitchAssessment({
             <div className="mb-6">
               <div className="relative h-8 rounded-lg overflow-hidden bg-gradient-to-r from-red-100 via-yellow-100 via-green-100 to-emerald-200">
                 <div className="absolute inset-0 flex">
-                  <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2">
-                    <span className="text-[10px] font-medium text-slate-600">Under 30%</span>
+                  <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2" style={{ flex: '0 0 40%' }}>
+                    <span className="text-[10px] font-medium text-slate-600">Under 40%</span>
                     <span className="text-[9px] text-slate-500">Early Stage</span>
                   </div>
-                  <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2">
-                    <span className="text-[10px] font-medium text-slate-600">30-60%</span>
+                  <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2" style={{ flex: '0 0 20%' }}>
+                    <span className="text-[10px] font-medium text-slate-600">40-60%</span>
                     <span className="text-[9px] text-slate-500">Developing</span>
                   </div>
-                  <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2">
-                    <span className="text-[10px] font-medium text-slate-600">60-85%</span>
+                  <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2" style={{ flex: '0 0 20%' }}>
+                    <span className="text-[10px] font-medium text-slate-600">60-80%</span>
                     <span className="text-[9px] text-slate-500">Optimized</span>
                   </div>
-                  <div className="flex-1 flex flex-col justify-center px-2">
-                    <span className="text-[10px] font-medium text-slate-600">85%+</span>
+                  <div className="flex-1 flex flex-col justify-center px-2" style={{ flex: '0 0 20%' }}>
+                    <span className="text-[10px] font-medium text-slate-600">80%+</span>
                     <span className="text-[9px] text-slate-500">Transformed</span>
                   </div>
                 </div>
@@ -327,9 +344,9 @@ export default function SwitchAssessment({
 
             <p className="text-center text-[#6B7280]">
               At <strong className="text-[#111827]">{calculations.realizationScore}%</strong> realization, you're in the <strong className="text-[#111827]">{calculations.maturityLevel}</strong> stage.
-              {calculations.realizationScore < 60 && " Most organizations plateau here without focused optimization."}
-              {calculations.realizationScore >= 60 && calculations.realizationScore < 85 && " You're above average but there's significant room to grow."}
-              {calculations.realizationScore >= 85 && " You're among top performers in ambient AI value realization."}
+              {calculations.realizationScore < 40 && " Most organizations plateau here without focused optimization."}
+              {calculations.realizationScore >= 40 && calculations.realizationScore < 80 && " You're making progress but there's significant room to grow."}
+              {calculations.realizationScore >= 80 && " You're among top performers in ambient AI value realization."}
             </p>
           </section>
 
@@ -440,15 +457,36 @@ function DimensionCard({
   const fillWidth = Math.min(100, (value / maxValue) * 100);
   const benchmarkPosition = (benchmark / maxValue) * 100;
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseFloat(e.target.value) || 0;
+    onChange(Math.min(maxValue, Math.max(minValue, newValue)));
+  };
+
   return (
     <div className="bg-slate-50 rounded-xl p-5">
-      <div className="flex items-start gap-3 mb-4">
-        <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
-          {icon}
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-start gap-3">
+          <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
+            {icon}
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#111827] text-sm">{title}</h3>
+            <p className="text-xs text-[#6B7280]">{description}</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-[#111827] text-sm">{title}</h3>
-          <p className="text-xs text-[#6B7280]">{description}</p>
+        
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            min={minValue}
+            max={maxValue}
+            step={step}
+            value={value}
+            onChange={handleInputChange}
+            className="w-16 px-2 py-1.5 text-center text-base font-semibold border border-slate-200 rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none"
+            data-testid={`${testId}-input`}
+          />
+          <span className="text-xs text-[#6B7280]">{unit.trim()}</span>
         </div>
       </div>
 

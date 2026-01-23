@@ -121,19 +121,20 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const qualityScore = Math.min(100, Math.round((wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100));
   const satisfactionScore = Math.min(100, Math.round((satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100));
 
-  // === REALIZATION SCORE (multiplicative) ===
+  // === REALIZATION SCORE (weighted average) ===
+  // Weights: Utilization 30%, Efficiency 30%, Quality 25%, Satisfaction 15%
   const realizationScore = Math.round(
-    (utilizationScore / 100) * 
-    (efficiencyScore / 100) * 
-    (qualityScore / 100) * 
-    (satisfactionScore / 100) * 100
+    (utilizationScore * 0.30) +
+    (efficiencyScore * 0.30) +
+    (qualityScore * 0.25) +
+    (satisfactionScore * 0.15)
   );
 
-  // Maturity level based on realization score
+  // Maturity level based on realization score (adjusted thresholds)
   let maturityLevel: string;
-  if (realizationScore < 30) maturityLevel = 'Early Stage';
+  if (realizationScore < 40) maturityLevel = 'Early Stage';
   else if (realizationScore < 60) maturityLevel = 'Developing';
-  else if (realizationScore < 85) maturityLevel = 'Optimized';
+  else if (realizationScore < 80) maturityLevel = 'Optimized';
   else maturityLevel = 'Transformed';
 
   // Encounters documented

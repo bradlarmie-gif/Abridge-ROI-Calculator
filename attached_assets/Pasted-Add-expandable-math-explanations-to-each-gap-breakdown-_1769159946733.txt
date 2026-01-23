@@ -1,0 +1,348 @@
+Add expandable math explanations to each gap breakdown item in the Value Realization Assessment. Users should be able to click to see step-by-step logic behind each calculation.
+
+## Current State (Keep as Default - Collapsed)
+
+The current one-line math is fine as the collapsed/summary view:
+Utilization Gap: $120K
+55% → 75% = +20pp = +30,000 enc × $4/enc
+Copy
+## Add Expandable Detail
+
+Add a "See calculation" or "How we calculated this" toggle that expands to show step-by-step logic.
+
+### Update the breakdown card component:
+
+```jsx
+function GapBreakdownCard({ type, yourValue, benchmark, gapValue, encounters, ... }) {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <div className="breakdown-card">
+      <div className="breakdown-header">
+        <div className="breakdown-title">
+          <span className="breakdown-icon">{icon}</span>
+          <span>{title}</span>
+        </div>
+        <span className="breakdown-value">${gapValue.toLocaleString()}</span>
+      </div>
+      
+      {/* Summary bar */}
+      <div className="breakdown-bar">
+        <div className="bar-fill you" style={{width: `${(yourValue/benchmark)*100}%`}}>
+          You: {yourValue}{unit}
+        </div>
+        <div className="bar-gap">Gap</div>
+        <div className="bar-benchmark">Abridge: {benchmark}{unit}</div>
+      </div>
+      
+      {/* One-line summary (always visible) */}
+      <div className="breakdown-summary">
+        {yourValue}{unit} → {benchmark}{unit} = {summaryMath}
+      </div>
+      
+      {/* Expandable toggle */}
+      <button 
+        className="expand-toggle"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <span className="toggle-icon">{expanded ? '▼' : '▶'}</span>
+        <span className="toggle-text">
+          {expanded ? 'Hide calculation' : 'How we calculated this'}
+        </span>
+      </button>
+      
+      {/* Expanded detail */}
+      {expanded && (
+        <div className="breakdown-detail">
+          {/* Render step-by-step based on type */}
+          {type === 'utilization' && <UtilizationCalcDetail {...props} />}
+          {type === 'efficiency' && <EfficiencyCalcDetail {...props} />}
+          {type === 'quality' && <QualityCalcDetail {...props} />}
+        </div>
+      )}
+    </div>
+  );
+}
+Utilization Gap Detail:
+jsxCopyfunction UtilizationCalcDetail({ yourUtilization, benchmark, encounters, gapEncounters, gapValue }) {
+  return (
+    <div className="calc-detail">
+      <div className="calc-step">
+        <span className="step-number">1</span>
+        <div className="step-content">
+          <span className="step-label">Your utilization gap</span>
+          <span className="step-math">{benchmark}% − {yourUtilization}% = <strong>{benchmark - yourUtilization}pp</strong></span>
+          <span className="step-note">pp = percentage points</span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">2</span>
+        <div className="step-content">
+          <span className="step-label">Encounters not being documented</span>
+          <span className="step-math">{encounters.toLocaleString()} total × {benchmark - yourUtilization}% = <strong>{gapEncounters.toLocaleString()} encounters</strong></span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">3</span>
+        <div className="step-content">
+          <span className="step-label">Value per undocumented encounter</span>
+          <span className="step-math"><strong>$4/encounter</strong></span>
+          <span className="step-note">Based on time cost + documentation quality value</span>
+        </div>
+      </div>
+      
+      <div className="calc-step result">
+        <span className="step-number">✓</span>
+        <div className="step-content">
+          <span className="step-label">Annual utilization gap</span>
+          <span className="step-math">{gapEncounters.toLocaleString()} enc × $4 = <strong>${gapValue.toLocaleString()}</strong></span>
+        </div>
+      </div>
+    </div>
+  );
+}
+Efficiency Gap Detail:
+jsxCopyfunction EfficiencyCalcDetail({ yourEfficiency, benchmark, encountersAtBenchmark, gapHours, gapValue }) {
+  const gapMinutes = benchmark - yourEfficiency;
+  
+  return (
+    <div className="calc-detail">
+      <div className="calc-step">
+        <span className="step-number">1</span>
+        <div className="step-content">
+          <span className="step-label">Your efficiency gap</span>
+          <span className="step-math">{benchmark} min − {yourEfficiency} min = <strong>{gapMinutes} min/encounter</strong></span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">2</span>
+        <div className="step-content">
+          <span className="step-label">Encounters at Abridge utilization</span>
+          <span className="step-math">{encountersAtBenchmark.toLocaleString()} encounters</span>
+          <span className="step-note">Using 75% utilization benchmark</span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">3</span>
+        <div className="step-content">
+          <span className="step-label">Total time gap</span>
+          <span className="step-math">{gapMinutes} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 = <strong>{gapHours.toLocaleString()} hours/year</strong></span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">4</span>
+        <div className="step-content">
+          <span className="step-label">Value of provider time</span>
+          <span className="step-math"><strong>$150/hour</strong></span>
+          <span className="step-note">Fully-loaded provider cost</span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">5</span>
+        <div className="step-content">
+          <span className="step-label">Conversion rate</span>
+          <span className="step-math"><strong>20%</strong></span>
+          <span className="step-note">Conservative estimate — not all saved time converts to value</span>
+        </div>
+      </div>
+      
+      <div className="calc-step result">
+        <span className="step-number">✓</span>
+        <div className="step-content">
+          <span className="step-label">Annual efficiency gap</span>
+          <span className="step-math">{gapHours.toLocaleString()} hrs × $150 × 20% = <strong>${gapValue.toLocaleString()}</strong></span>
+        </div>
+      </div>
+    </div>
+  );
+}
+Quality (wRVU) Gap Detail:
+jsxCopyfunction QualityCalcDetail({ yourWRVU, benchmark, encountersAtBenchmark, gapValue }) {
+  const gapPercent = benchmark - yourWRVU;
+  
+  return (
+    <div className="calc-detail">
+      <div className="calc-step">
+        <span className="step-number">1</span>
+        <div className="step-content">
+          <span className="step-label">Your wRVU lift gap</span>
+          <span className="step-math">+{benchmark}% − +{yourWRVU}% = <strong>+{gapPercent}% gap</strong></span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">2</span>
+        <div className="step-content">
+          <span className="step-label">Value per wRVU</span>
+          <span className="step-math"><strong>$33/wRVU</strong></span>
+          <span className="step-note">Medicare blended conversion factor</span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">3</span>
+        <div className="step-content">
+          <span className="step-label">Encounters at Abridge utilization</span>
+          <span className="step-math">{encountersAtBenchmark.toLocaleString()} encounters</span>
+        </div>
+      </div>
+      
+      <div className="calc-step">
+        <span className="step-number">4</span>
+        <div className="step-content">
+          <span className="step-label">Attribution rate</span>
+          <span className="step-math"><strong>50%</strong></span>
+          <span className="step-note">Conservative — other factors affect wRVU</span>
+        </div>
+      </div>
+      
+      <div className="calc-step result">
+        <span className="step-number">✓</span>
+        <div className="step-content">
+          <span className="step-label">Annual quality gap</span>
+          <span className="step-math">{gapPercent}% × $33 × {encountersAtBenchmark.toLocaleString()} enc × 50% = <strong>${gapValue.toLocaleString()}</strong></span>
+        </div>
+      </div>
+    </div>
+  );
+}
+Styling:
+cssCopy.expand-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  font-size: 13px;
+  color: #6B7280;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.expand-toggle:hover {
+  color: #E85A4F;
+}
+
+.toggle-icon {
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.breakdown-detail {
+  margin-top: 16px;
+  padding: 16px;
+  background: #F9FAFB;
+  border-radius: 8px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.calc-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calc-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  background: #E5E7EB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.calc-step.result .step-number {
+  background: #10B981;
+  color: white;
+}
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step-label {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.step-math {
+  font-size: 14px;
+  color: #111827;
+  font-family: 'SF Mono', 'Monaco', monospace;
+}
+
+.step-math strong {
+  color: #E85A4F;
+}
+
+.step-note {
+  font-size: 12px;
+  color: #9CA3AF;
+  font-style: italic;
+}
+
+.calc-step.result {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.calc-step.result .step-math {
+  font-size: 16px;
+  font-weight: 600;
+}
+Also add a tooltip/info icon for key assumptions
+In the Methodology section, make each assumption clickable or hoverable for more context:
+jsxCopy<div className="methodology-item">
+  <span className="methodology-label">Utilization gap valued at</span>
+  <span className="methodology-value">$4/encounter</span>
+  <button className="info-tooltip" aria-label="More info">
+    <span className="info-icon">ⓘ</span>
+    <div className="tooltip-content">
+      $4/encounter represents the combined value of:
+      • Time cost of manual documentation (~$2)
+      • Documentation quality/completeness (~$2)
+      
+      This is a conservative blended estimate.
+    </div>
+  </button>
+</div>
+Summary
+
+Add "How we calculated this" toggle to each gap breakdown card
+Show step-by-step logic when expanded (numbered steps)
+Explain each assumption inline (what's $4/enc? what's 20%?)
+Highlight the result at the end of each calculation
+Keep the dense one-liner as the collapsed summary for power users
+Animate the expansion for polish
