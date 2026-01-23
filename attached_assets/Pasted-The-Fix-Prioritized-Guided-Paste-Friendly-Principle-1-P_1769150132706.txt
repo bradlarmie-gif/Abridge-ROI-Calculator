@@ -1,0 +1,441 @@
+The Fix: Prioritized, Guided, Paste-Friendly
+Principle 1: Prioritize the Metrics
+Show them PRIMARY metrics first (the ones that drive ROI), then optional SECONDARY metrics.
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  What metrics do you have data for?                                        │
+│                                                                             │
+│  PRIMARY METRICS (Recommended)                                             │
+│  These have the strongest ROI impact                                       │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ✓  wRVU per Encounter                              Source: Clarity  │   │
+│  │    Revenue capture improvement                                      │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ✓  Time in Notes                                   Source: Clarity  │   │
+│  │    Documentation efficiency                                         │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ✓  Chart Closure (Same-Day %)                      Source: Clarity  │   │
+│  │    Revenue cycle acceleration                                       │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  SECONDARY METRICS (Optional)                                              │
+│  Additional evidence of impact                                             │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ○  Average E&M Level                               Source: Clarity  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ○  Work Outside of Work                            Source: Clarity  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ○  Clinician Satisfaction                          Source: Survey   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Principle 2: Match the Data Format They Actually Have
+When they run your SQL query, what does the output look like? Probably a table like:
+CopyMonth       | wRVU/Enc | Avg E&M | Time in Notes | Same-Day Close %
+------------|----------|---------|---------------|------------------
+2024-07     | 1.42     | 3.19    | 10.2          | 78%
+2024-08     | 1.48     | 3.24    | 9.1           | 80%
+2024-09     | 1.55     | 3.31    | 8.2           | 82%
+2024-10     | 1.62     | 3.38    | 7.4           | 85%
+2024-11     | 1.71     | 3.45    | 6.8           | 88%
+2024-12     | 1.78     | 3.52    | 6.3           | 90%
+2025-01     | 1.81     | 3.58    | 6.1           | 92%
+So let them paste a table, not enter field by field.
+
+Principle 3: Two Entry Modes Per Metric
+Quick Mode: Before/After only (2 numbers)
+Trend Mode: Monthly data (paste or enter table)
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  💰 wRVU per Encounter                                                     │
+│                                                                             │
+│  How would you like to enter this data?                                    │
+│                                                                             │
+│  ┌─────────────────────────┐  ┌─────────────────────────┐                  │
+│  │                         │  │                         │                  │
+│  │  📊 Quick               │  │  📈 With Trend          │                  │
+│  │                         │  │                         │                  │
+│  │  Just before & after    │  │  Monthly data points    │                  │
+│  │  (2 numbers)            │  │  (shows trajectory)     │                  │
+│  │                         │  │                         │                  │
+│  │  ● Selected             │  │                         │                  │
+│  └─────────────────────────┘  └─────────────────────────┘                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Quick Mode (Simple Before/After):
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  💰 wRVU per Encounter                                                     │
+│                                                                             │
+│     BEFORE ABRIDGE              AFTER ABRIDGE              CHANGE          │
+│     ┌──────────────┐            ┌──────────────┐     ┌──────────────┐      │
+│     │    1.42      │     →      │    1.81      │  =  │   +27.5%     │      │
+│     │  wRVU/enc    │            │  wRVU/enc    │     │    lift      │      │
+│     └──────────────┘            └──────────────┘     └──────────────┘      │
+│                                                                             │
+│     📊 Benchmark: Abridge customers typically see 3-7% lift                │
+│     Your result: 27.5% — Above typical range                               │
+│                                                                             │
+│     [Switch to Trend Mode →]                                               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Trend Mode (Monthly Data):
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  💰 wRVU per Encounter — Trend View                                        │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  Paste your monthly data, or enter manually below                   │   │
+│  │                                                                     │   │
+│  │  ┌─────────────────────────────────────────────────────────────┐   │   │
+│  │  │  Paste here...                                              │   │   │
+│  │  │                                                             │   │   │
+│  │  │  Format: Month, Value (one per line)                        │   │   │
+│  │  │  Example:                                                   │   │   │
+│  │  │  Jul 2024, 1.42                                             │   │   │
+│  │  │  Aug 2024, 1.48                                             │   │   │
+│  │  │  ...                                                        │   │   │
+│  │  └─────────────────────────────────────────────────────────────┘   │   │
+│  │                                                                     │   │
+│  │  Or enter manually:                                                 │   │
+│  │                                                                     │   │
+│  │  ┌─────────────────────────────────────────────────────────────┐   │   │
+│  │  │  MONTH        VALUE                                         │   │   │
+│  │  │  ──────────   ──────                                        │   │   │
+│  │  │  Baseline     [ 1.42 ]  ← Before Abridge                    │   │   │
+│  │  │  Month 1      [ 1.48 ]                                      │   │   │
+│  │  │  Month 2      [ 1.55 ]                                      │   │   │
+│  │  │  Month 3      [ 1.62 ]                                      │   │   │
+│  │  │  Month 4      [ 1.71 ]                                      │   │   │
+│  │  │  Month 5      [ 1.78 ]                                      │   │   │
+│  │  │  Month 6      [ 1.81 ]  ← Current                           │   │   │
+│  │  │                                                             │   │   │
+│  │  │  [+ Add Month]                                              │   │   │
+│  │  └─────────────────────────────────────────────────────────────┘   │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                      YOUR TREND                                     │   │
+│  │                                                                     │   │
+│  │   1.9 │                                              ●              │   │
+│  │       │                                    ●    ●                   │   │
+│  │   1.7 │                          ●    ●                             │   │
+│  │       │                ●    ●                                       │   │
+│  │   1.5 │      ●    ●                                                 │   │
+│  │       │  ●                                                          │   │
+│  │   1.3 │                                                             │   │
+│  │       └─────────────────────────────────────────────────────────    │   │
+│  │        Base  M1   M2   M3   M4   M5   M6                            │   │
+│  │                                                                     │   │
+│  │   Baseline: 1.42  →  Current: 1.81  =  +27.5%                      │   │
+│  │   Trend: 📈 Consistent improvement                                  │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│     [Switch to Quick Mode →]                                               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Simplified Metrics (The Hard Ones)
+Level of Service — Just Ask for the Average
+Instead of 10 inputs, ask for ONE:
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  📋 Average E&M Level                                                      │
+│                                                                             │
+│  What's your weighted average E&M level?                                   │
+│                                                                             │
+│  💡 This is usually in your billing/productivity report as                 │
+│     "Average Level of Service" or "Weighted E&M Average"                   │
+│                                                                             │
+│     BEFORE ABRIDGE              AFTER ABRIDGE              CHANGE          │
+│     ┌──────────────┐            ┌──────────────┐     ┌──────────────┐      │
+│     │    3.19      │     →      │    3.58      │  =  │   +12.2%     │      │
+│     │   average    │            │   average    │     │    lift      │      │
+│     └──────────────┘            └──────────────┘     └──────────────┘      │
+│                                                                             │
+│     Don't have the average? [Calculate from distribution →]                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+Only if they click "Calculate from distribution" do you show the 5-level breakdown.
+
+Chart Closure — Just Ask for Same-Day %
+Instead of 8 inputs, ask for ONE:
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  📄 Same-Day Chart Closure                                                 │
+│                                                                             │
+│  What % of charts are closed within 24 hours?                              │
+│                                                                             │
+│     BEFORE ABRIDGE              AFTER ABRIDGE              CHANGE          │
+│     ┌──────────────┐            ┌──────────────┐     ┌──────────────┐      │
+│     │     78%      │     →      │     92%      │  =  │   +14pp      │      │
+│     │  same-day    │            │  same-day    │     │              │      │
+│     └──────────────┘            └──────────────┘     └──────────────┘      │
+│                                                                             │
+│     Want to enter full breakdown? [Enter 24h/48h/72h+ →]                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+The Redesigned Flow
+CopySTEP 1: Deployment Basics
+────────────────────────────
+- Providers using Abridge: [150]
+- Total annual encounters: [70,000]
+- Utilization rate: [65%]
+- Months on Abridge: [6]
+
+STEP 2: Select Your Metrics
+────────────────────────────
+PRIMARY (Recommended):
+☑ wRVU per Encounter
+☑ Time in Notes
+☑ Same-Day Chart Closure
+
+SECONDARY (Optional):
+☐ Average E&M Level
+☐ Work Outside of Work
+☐ Clinician Satisfaction
+
+STEP 3: Enter Your Data
+────────────────────────────
+For each selected metric:
+- Choose: Quick (before/after) or Trend (monthly)
+- Enter the numbers
+- See the calculated change + benchmark comparison
+
+STEP 4: Your Results Dashboard
+────────────────────────────
+- Headline metrics with trend graphs (if entered)
+- Calculated ROI
+- Expansion potential
+
+Replit Prompt
+Here's the prompt to paste:
+CopyRedesign the Expand data entry flow to be simpler, prioritized, and support both quick entry and trend entry.
+
+## KEY CHANGES
+
+### 1. Metric Selection: Primary vs Secondary
+
+On the metric selection screen, split metrics into two groups:
+
+PRIMARY METRICS (pre-selected by default):
+- wRVU per Encounter — "Revenue capture improvement"
+- Time in Notes — "Documentation efficiency"  
+- Same-Day Chart Closure — "Revenue cycle acceleration"
+
+SECONDARY METRICS (optional, not selected by default):
+- Average E&M Level — "Coding accuracy"
+- Work Outside of Work — "After-hours burden"
+- Clinician Satisfaction — "Provider experience"
+
+Style primary metrics with a subtle green left border or highlight.
+Style secondary metrics as more muted/gray until selected.
+
+### 2. Entry Mode Toggle Per Metric
+
+For each metric, add a toggle at the top:
+
+```jsx
+<div className="entry-mode-toggle">
+  <button className={mode === 'quick' ? 'active' : ''} onClick={() => setMode('quick')}>
+    <span className="icon">📊</span>
+    <span className="label">Quick</span>
+    <span className="description">Before & after only</span>
+  </button>
+  <button className={mode === 'trend' ? 'active' : ''} onClick={() => setMode('trend')}>
+    <span className="icon">📈</span>
+    <span className="label">Trend</span>
+    <span className="description">Monthly data points</span>
+  </button>
+</div>
+Default to "Quick" mode.
+3. Quick Mode (Simplified)
+Show just two input fields side by side:
+jsxCopy<div className="quick-entry">
+  <div className="entry-column">
+    <label>BEFORE ABRIDGE</label>
+    <input type="number" step="0.01" value={before} onChange={...} />
+    <span className="unit">{metric.unit}</span>
+  </div>
+  
+  <div className="entry-arrow">→</div>
+  
+  <div className="entry-column">
+    <label>AFTER ABRIDGE</label>
+    <input type="number" step="0.01" value={after} onChange={...} />
+    <span className="unit">{metric.unit}</span>
+  </div>
+  
+  <div className="entry-column result">
+    <label>CHANGE</label>
+    <div className="change-value positive">+{changePercent}%</div>
+  </div>
+</div>
+4. Trend Mode (Monthly Data)
+Show a paste area + manual entry table:
+jsxCopy<div className="trend-entry">
+  {/* Paste area */}
+  <div className="paste-area">
+    <label>Paste your monthly data</label>
+    <textarea 
+      placeholder="Format: Month, Value (one per line)&#10;Example:&#10;Jul 2024, 1.42&#10;Aug 2024, 1.48"
+      onChange={handlePaste}
+    />
+  </div>
+  
+  <div className="divider">or enter manually</div>
+  
+  {/* Manual entry table */}
+  <div className="manual-entry-table">
+    <div className="table-header">
+      <span>MONTH</span>
+      <span>VALUE</span>
+    </div>
+    
+    <div className="table-row baseline">
+      <span>Baseline</span>
+      <input type="number" value={baseline} onChange={...} />
+      <span className="row-note">Before Abridge</span>
+    </div>
+    
+    {months.map((month, i) => (
+      <div className="table-row" key={i}>
+        <span>Month {i + 1}</span>
+        <input type="number" value={month.value} onChange={...} />
+      </div>
+    ))}
+    
+    <button className="add-month-btn">+ Add Month</button>
+  </div>
+  
+  {/* Mini trend chart */}
+  {dataPoints.length > 1 && (
+    <div className="mini-trend-chart">
+      <TrendSparkline data={dataPoints} />
+      <div className="trend-summary">
+        <span>Baseline: {baseline}</span>
+        <span>→</span>
+        <span>Current: {current}</span>
+        <span>=</span>
+        <span className="change">{changePercent}%</span>
+      </div>
+      <div className="trend-status">
+        {getTrendStatus(dataPoints)} {/* "📈 Consistent improvement" etc */}
+      </div>
+    </div>
+  )}
+</div>
+5. Simplify Complex Metrics
+Average E&M Level:
+
+Default: Ask for ONE number (the weighted average)
+Optional: "Calculate from distribution" expands to show 5-level breakdown
+If they enter the breakdown, auto-calculate the weighted average
+
+Same-Day Chart Closure:
+
+Default: Ask for ONE number (% closed within 24h)
+Optional: "Enter full breakdown" expands to show 24h/48h/72h/72h+ breakdown
+
+6. Accordion Layout on Entry Page
+Show one metric expanded at a time. Collapsed metrics show their summary:
+jsxCopy<div className="metrics-accordion">
+  {selectedMetrics.map(metric => (
+    <div 
+      className={`metric-accordion-item ${expanded === metric.id ? 'expanded' : ''} ${metric.isComplete ? 'complete' : ''}`}
+    >
+      <div className="accordion-header" onClick={() => toggle(metric.id)}>
+        <span className="status-icon">
+          {metric.isComplete ? '✓' : expanded === metric.id ? '●' : '○'}
+        </span>
+        <span className="metric-name">{metric.name}</span>
+        <span className="metric-summary">
+          {metric.isComplete ? `${metric.before} → ${metric.after} (${metric.changeText})` : 'Not entered'}
+        </span>
+        <span className="expand-icon">{expanded === metric.id ? '▼' : '▶'}</span>
+      </div>
+      
+      {expanded === metric.id && (
+        <div className="accordion-content">
+          {/* Entry mode toggle + entry UI */}
+        </div>
+      )}
+    </div>
+  ))}
+</div>
+7. Results Dashboard with Trends
+On the results page, if a metric has trend data, show a sparkline:
+jsxCopy<div className="metric-result-card">
+  <div className="metric-header">
+    <span className="metric-icon">{metric.icon}</span>
+    <span className="metric-name">{metric.name}</span>
+  </div>
+  
+  <div className="metric-main-value">
+    <span className="value">{metric.changeText}</span>
+    <span className="description">{metric.changeDescription}</span>
+  </div>
+  
+  <div className="metric-before-after">
+    <span>{metric.before} {metric.unit}</span>
+    <span>→</span>
+    <span>{metric.after} {metric.unit}</span>
+  </div>
+  
+  {metric.hasTrendData && (
+    <div className="metric-trend">
+      <TrendSparkline data={metric.trendData} />
+      <span className="trend-label">{metric.trendStatus}</span>
+    </div>
+  )}
+</div>
+STYLING
+Completed accordion items:
+
+Light green left border (#10B981)
+Green checkmark
+Summary text visible in header
+
+In-progress accordion items:
+
+Coral left border (#E85A4F)
+Coral filled circle
+Expanded content visible
+
+Incomplete accordion items:
+
+Gray left border (#E2E8F0)
+Gray empty circle
+Just header visible
+
+Entry mode toggle:
+
+Pills style, side by side
+Active pill has coral background
+Inactive pill has gray background
+
+Trend sparklines:
+
+Small (40px height)
+Green line
+Subtle gray area fill under line
+No axis labels (just the shape)
+
+METRIC SIMPLIFICATION SUMMARY
+MetricCurrentRedesignedwRVU2 inputs2 inputs (unchanged)Time in Notes2 inputs2 inputs (unchanged)Work Outside Work2 inputs2 inputs (unchanged)Satisfaction2 inputs + optional2 inputs (unchanged)E&M Level10 inputs2 inputs (optional 10)Chart Closure8 inputs2 inputs (optional 8)
+Total inputs: ~30 → ~12 (with optional expansion)
