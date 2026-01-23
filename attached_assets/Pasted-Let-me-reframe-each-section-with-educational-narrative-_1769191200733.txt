@@ -1,0 +1,433 @@
+Let me reframe each section with educational narrative:
+Page 1: The Story
+CopyWHAT THIS ASSESSMENT SHOWS
+───────────────────────────
+This assessment measures how much value you're extracting from your 
+ambient AI investment across four dimensions: Utilization, Efficiency, 
+Quality, and Satisfaction. 
+
+Most organizations capture 40-60% of potential value — not because 
+the technology doesn't work, but because value realization requires 
+optimization across all four dimensions.
+
+WHY THE GAP EXISTS
+──────────────────
+Ambient AI value is multiplicative, not additive. Small gaps in each 
+dimension compound into large overall gaps:
+
+- If you're at 60% of utilization potential
+- And 50% of efficiency potential  
+- And 40% of quality potential
+- And 76% of satisfaction potential
+
+You're not at (60+50+40+76)/4 = 57% of total value.
+You're capturing the interaction of all four — and gaps compound.
+
+THE FOUR DIMENSIONS EXPLAINED
+─────────────────────────────
+UTILIZATION: What % of encounters actually get documented with the tool?
+→ Low utilization = you're paying for capacity you're not using
+
+EFFICIENCY: How much time does it actually save per encounter?
+→ Low efficiency = the tool isn't integrated into workflow properly
+
+QUALITY: Is documentation improving coding accuracy and revenue capture?
+→ Low quality = you're missing the revenue optimization opportunity
+
+SATISFACTION: Do providers actually like using it?
+→ Low satisfaction = utilization will decline over time
+Page 2: The Gap Breakdown (with educational context)
+CopyUNDERSTANDING YOUR UTILIZATION GAP
+──────────────────────────────────
+You're documenting 45% of encounters with your ambient AI solution.
+Top-performing organizations document 75%+.
+
+WHY THIS MATTERS:
+Every encounter not documented is:
+- Time your providers spend on notes that could be automated
+- An opportunity for documentation quality improvement missed
+- Investment in ambient AI that isn't being utilized
+
+WHAT DRIVES UTILIZATION:
+- Provider adoption and training
+- Workflow integration
+- Technical reliability
+- Specialty-specific optimization
+
+YOUR GAP: 30 percentage points = 45,000 encounters/year
+ESTIMATED VALUE: $68K annually
+
+───────────────────────────────────
+
+UNDERSTANDING YOUR EFFICIENCY GAP
+─────────────────────────────────
+Your solution saves 2 minutes per encounter.
+Top-performing organizations see 4+ minutes.
+
+WHY THIS MATTERS:
+Time savings is the core value proposition. If providers aren't 
+seeing meaningful time back, they won't sustain adoption.
+
+WHAT DRIVES EFFICIENCY:
+- Note quality and accuracy (less editing needed)
+- EHR integration depth
+- Template and workflow optimization
+- Provider trust in the output
+
+YOUR GAP: 2 minutes per encounter × 112,500 encounters = 3,750 hours
+ESTIMATED VALUE: $113K annually
+
+───────────────────────────────────
+
+UNDERSTANDING YOUR QUALITY GAP
+──────────────────────────────
+Your wRVU lift is +2%.
+Top-performing organizations see +5% or more.
+
+WHY THIS MATTERS:
+Better documentation → more accurate coding → appropriate reimbursement.
+This is often the largest financial lever in ambient AI.
+
+WHAT DRIVES QUALITY:
+- Documentation completeness
+- HCC and chronic condition capture
+- Accurate level of service coding
+- Denial reduction
+
+YOUR GAP: 3 percentage points of wRVU lift potential
+ESTIMATED VALUE: $84K annually
+The Question (Educational, Not Salesy)
+CopyTHE QUESTION FOR YOUR ORGANIZATION
+──────────────────────────────────
+You're capturing 57% of potential value from your ambient AI investment.
+
+This isn't unusual — most organizations land in the "Developing" stage 
+without focused optimization. But the gap represents real dollars:
+
+- $264K this year
+- $791K over three years
+- $22K every month you stay at current performance
+
+The path to closing this gap involves:
+1. Understanding which dimension has the largest opportunity (for you: Efficiency)
+2. Diagnosing the root causes of underperformance
+3. Implementing targeted optimization strategies
+4. Measuring progress and iterating
+
+This assessment gives you the baseline. The next step is understanding 
+what's driving your gaps and what it would take to close them.
+
+Replit Prompt: Add Educational Narrative
+CopyEnhance the Ambient AI PDF export with educational narrative that helps the reader understand WHY gaps exist and WHAT drives each dimension. The goal is displacement — they should finish reading this and think "I need to do something about this."
+
+## KEY CHANGES
+
+### 1. Add "What This Assessment Shows" intro on Page 1
+
+After the metric strip, before the executive summary, add:
+
+```jsx
+<View style={styles.introBox}>
+  <Text style={styles.introTitle}>WHAT THIS ASSESSMENT SHOWS</Text>
+  <Text style={styles.introText}>
+    This assessment measures how much value you're extracting from your ambient AI 
+    investment across four dimensions: Utilization, Efficiency, Quality, and Satisfaction.
+  </Text>
+  <Text style={styles.introText}>
+    Most organizations capture 40-60% of potential value — not because the technology 
+    doesn't work, but because value realization requires optimization across all four 
+    dimensions simultaneously.
+  </Text>
+</View>
+2. Add "Why Gaps Compound" explanation on Page 1
+After the performance grid, add:
+jsxCopy<View style={styles.compoundBox}>
+  <Text style={styles.compoundTitle}>💡 WHY SMALL GAPS COMPOUND</Text>
+  <Text style={styles.compoundText}>
+    Ambient AI value is multiplicative. If you're at 60% of utilization potential, 
+    50% of efficiency potential, 40% of quality potential, and 76% of satisfaction 
+    potential — you're not at 57% of total value. The gaps compound because each 
+    dimension affects the others.
+  </Text>
+</View>
+3. Enhance each gap card on Page 2 with "Why This Matters" and "What Drives This"
+For each gap breakdown card, add educational context:
+jsxCopy{/* UTILIZATION GAP */}
+<View style={styles.gapCard}>
+  <View style={styles.gapCardHeader}>
+    <Text style={styles.gapCardTitle}>UTILIZATION GAP</Text>
+    <Text style={styles.gapCardValue}>{formatCurrency(utilizationGapValue)}</Text>
+  </View>
+  
+  {/* Bar visualization */}
+  <View style={styles.gapCardBar}>
+    {/* ... existing bar ... */}
+  </View>
+  
+  {/* NEW: Why This Matters */}
+  <View style={styles.gapContext}>
+    <Text style={styles.contextTitle}>Why This Matters:</Text>
+    <Text style={styles.contextText}>
+      Every encounter not documented is time your providers spend on notes that could be 
+      automated, an opportunity for quality improvement missed, and investment not being utilized.
+    </Text>
+  </View>
+  
+  {/* NEW: What Drives This */}
+  <View style={styles.gapDrivers}>
+    <Text style={styles.driversTitle}>What Drives Utilization:</Text>
+    <Text style={styles.driverItem}>• Provider adoption and training</Text>
+    <Text style={styles.driverItem}>• Workflow integration</Text>
+    <Text style={styles.driverItem}>• Technical reliability</Text>
+    <Text style={styles.driverItem}>• Specialty-specific optimization</Text>
+  </View>
+  
+  {/* Existing math section */}
+  <View style={styles.gapCardMath}>
+    <Text style={styles.gapMathTitle}>The Math:</Text>
+    {/* ... existing math ... */}
+  </View>
+</View>
+
+{/* EFFICIENCY GAP */}
+<View style={styles.gapCard}>
+  {/* ... header and bar ... */}
+  
+  <View style={styles.gapContext}>
+    <Text style={styles.contextTitle}>Why This Matters:</Text>
+    <Text style={styles.contextText}>
+      Time savings is the core value proposition. If providers aren't seeing meaningful 
+      time back, they won't sustain adoption — and utilization will decline.
+    </Text>
+  </View>
+  
+  <View style={styles.gapDrivers}>
+    <Text style={styles.driversTitle}>What Drives Efficiency:</Text>
+    <Text style={styles.driverItem}>• Note quality and accuracy (less editing)</Text>
+    <Text style={styles.driverItem}>• EHR integration depth</Text>
+    <Text style={styles.driverItem}>• Template and workflow optimization</Text>
+    <Text style={styles.driverItem}>• Provider trust in the output</Text>
+  </View>
+  
+  {/* ... math ... */}
+</View>
+
+{/* QUALITY GAP */}
+<View style={styles.gapCard}>
+  {/* ... header and bar ... */}
+  
+  <View style={styles.gapContext}>
+    <Text style={styles.contextTitle}>Why This Matters:</Text>
+    <Text style={styles.contextText}>
+      Better documentation → more accurate coding → appropriate reimbursement. 
+      This is often the largest financial lever in ambient AI.
+    </Text>
+  </View>
+  
+  <View style={styles.gapDrivers}>
+    <Text style={styles.driversTitle}>What Drives Quality:</Text>
+    <Text style={styles.driverItem}>• Documentation completeness</Text>
+    <Text style={styles.driverItem}>• HCC and chronic condition capture</Text>
+    <Text style={styles.driverItem}>• Accurate level of service coding</Text>
+    <Text style={styles.driverItem}>• Denial reduction</Text>
+  </View>
+  
+  {/* ... math ... */}
+</View>
+4. Replace generic "Key Takeaways" with "The Path Forward"
+jsxCopy<View style={styles.pathForward}>
+  <Text style={styles.pathTitle}>THE PATH FORWARD</Text>
+  <Text style={styles.pathText}>
+    You're capturing {realizationScore}% of potential value from your ambient AI investment. 
+    This is common — most organizations land in the "{maturityStage}" stage without focused optimization.
+  </Text>
+  <Text style={styles.pathText}>
+    But the gap represents real dollars: <Text style={styles.bold}>{formatCurrency(annualGap)}</Text> this year, 
+    <Text style={styles.bold}> {formatCurrency(threeYearGap)}</Text> over three years.
+  </Text>
+  <Text style={styles.pathSteps}>The path to closing this gap involves:</Text>
+  <Text style={styles.pathStep}>1. Understanding which dimension has the largest opportunity (for you: {lowestDimension.name})</Text>
+  <Text style={styles.pathStep}>2. Diagnosing the root causes of underperformance</Text>
+  <Text style={styles.pathStep}>3. Implementing targeted optimization strategies</Text>
+  <Text style={styles.pathStep}>4. Measuring progress and iterating</Text>
+  <Text style={styles.pathConclusion}>
+    This assessment gives you the baseline. The next step is understanding what's driving 
+    your gaps and what it would take to close them.
+  </Text>
+</View>
+5. Add "The Question" box at the end (like scribe export)
+jsxCopy<View style={styles.questionBox}>
+  <Text style={styles.questionText}>
+    The question: What would it take to move from {realizationScore}% to 75%+ value realization — 
+    and capture the {formatCurrency(annualGap)} annual opportunity?
+  </Text>
+</View>
+NEW STYLES
+javascriptCopy// Intro box
+introBox: {
+  backgroundColor: colors.backgroundGray,
+  padding: 12,
+  borderRadius: 4,
+  marginBottom: 12,
+},
+introTitle: {
+  fontSize: 8,
+  fontWeight: 'bold',
+  color: colors.coral,
+  letterSpacing: 0.5,
+  marginBottom: 6,
+},
+introText: {
+  fontSize: 8,
+  color: colors.darkGray,
+  lineHeight: 1.5,
+  marginBottom: 4,
+},
+
+// Compound explanation
+compoundBox: {
+  backgroundColor: colors.coralLight,
+  padding: 10,
+  borderRadius: 4,
+  marginTop: 8,
+  marginBottom: 8,
+},
+compoundTitle: {
+  fontSize: 8,
+  fontWeight: 'bold',
+  color: colors.coral,
+  marginBottom: 4,
+},
+compoundText: {
+  fontSize: 8,
+  color: colors.darkGray,
+  lineHeight: 1.4,
+},
+
+// Gap context (Why This Matters)
+gapContext: {
+  padding: 8,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.borderGray,
+},
+contextTitle: {
+  fontSize: 7,
+  fontWeight: 'bold',
+  color: colors.darkGray,
+  marginBottom: 2,
+},
+contextText: {
+  fontSize: 7,
+  color: colors.mediumGray,
+  lineHeight: 1.4,
+},
+
+// Gap drivers (What Drives This)
+gapDrivers: {
+  padding: 8,
+  backgroundColor: colors.backgroundGray,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.borderGray,
+},
+driversTitle: {
+  fontSize: 7,
+  fontWeight: 'bold',
+  color: colors.darkGray,
+  marginBottom: 4,
+},
+driverItem: {
+  fontSize: 7,
+  color: colors.mediumGray,
+  marginBottom: 1,
+  paddingLeft: 4,
+},
+
+// Path forward
+pathForward: {
+  marginTop: 12,
+  marginBottom: 12,
+},
+pathTitle: {
+  fontSize: 9,
+  fontWeight: 'bold',
+  color: colors.black,
+  marginBottom: 8,
+},
+pathText: {
+  fontSize: 8,
+  color: colors.darkGray,
+  lineHeight: 1.5,
+  marginBottom: 6,
+},
+pathSteps: {
+  fontSize: 8,
+  fontWeight: 'bold',
+  color: colors.darkGray,
+  marginTop: 8,
+  marginBottom: 4,
+},
+pathStep: {
+  fontSize: 8,
+  color: colors.darkGray,
+  marginBottom: 2,
+  paddingLeft: 8,
+},
+pathConclusion: {
+  fontSize: 8,
+  color: colors.darkGray,
+  marginTop: 8,
+  fontStyle: 'italic',
+},
+
+// Question box
+questionBox: {
+  backgroundColor: colors.coralLight,
+  padding: 12,
+  borderRadius: 4,
+  borderWidth: 1,
+  borderColor: colors.coral,
+  marginTop: 12,
+},
+questionText: {
+  fontSize: 9,
+  color: colors.coral,
+  fontWeight: 'bold',
+  fontStyle: 'italic',
+  textAlign: 'center',
+  lineHeight: 1.4,
+},
+PAGE STRUCTURE (Revised)
+Page 1:
+
+Header + Metrics
+NEW: "What This Assessment Shows" intro
+Executive Summary (shorter, punchier)
+Performance vs Benchmarks grid
+NEW: "Why Small Gaps Compound" explanation
+Cost Over Time graph/table + monthly callout
+
+Page 2:
+
+Header
+"How the Gap Breaks Down" intro
+ENHANCED: Utilization Gap (with Why + Drivers + Math)
+ENHANCED: Efficiency Gap (with Why + Drivers + Math)
+ENHANCED: Quality Gap (with Why + Drivers + Math)
+Total Annual Gap
+NEW: "The Path Forward" (replaces Key Takeaways)
+NEW: "The Question" box
+Methodology (condensed)
+
+THE DISPLACEMENT FEELING
+By the end, the reader should:
+
+✅ Understand what the four dimensions are and why they matter
+✅ See exactly where their gaps are
+✅ Understand WHY those gaps exist (drivers)
+✅ Know the dollar impact
+✅ Have a mental model for how to close the gaps
+✅ Feel urgency without feeling sold to
+✅ Have a clear next step in mind ("diagnose root causes")
+
+This is EDUCATION that leads to DISPLACEMENT, not sales that pushes displacement.
+Copy
