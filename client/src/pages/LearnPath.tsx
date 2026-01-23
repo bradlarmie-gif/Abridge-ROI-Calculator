@@ -1241,7 +1241,7 @@ function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: 
                 )}
                 <div className="text-center">
                   <div className="text-xs text-[#6B7280] mb-1">{input.label}</div>
-                  <div className="font-mono text-[#111827] font-medium border-b-2 border-[#E5E7EB] pb-1 px-2">
+                  <div className="font-mono text-[#111827] font-medium text-base border-b-2 border-[#E5E7EB] pb-1.5 px-3 min-w-[70px]">
                     {input.value}
                   </div>
                 </div>
@@ -1252,7 +1252,7 @@ function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: 
           
           <div className="text-right">
             <div className="text-xs text-[#6B7280] mb-1">{step.output.label}</div>
-            <div className="font-mono text-emerald-600 font-bold text-lg border-b-2 border-emerald-600 pb-1 px-2">
+            <div className="font-mono text-emerald-600 font-bold text-lg border-b-2 border-emerald-600 pb-1.5 px-3 min-w-[90px]">
               {step.output.value}
             </div>
           </div>
