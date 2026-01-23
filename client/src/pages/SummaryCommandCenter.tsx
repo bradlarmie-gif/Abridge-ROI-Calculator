@@ -493,14 +493,6 @@ export default function SummaryCommandCenter({
               <Pencil className="w-4 h-4" />
               <span className="hidden sm:inline">Edit Model</span>
             </Button>
-            <Button
-              size="sm"
-              className="gap-2 bg-[#EA2C00] hover:bg-[#d12700] text-white"
-              data-testid="button-export"
-            >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export & Share</span>
-            </Button>
           </div>
         </div>
       </div>
