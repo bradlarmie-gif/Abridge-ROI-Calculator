@@ -1,0 +1,162 @@
+Make these final refinements to the Scribe Program Analysis PDF:
+
+## 1. Add Disclaimer About "No Documentation Support"
+
+On Page 1, where it says "185 of your 200 providers have no documentation support", add an asterisk and footnote:
+
+Change the text to:
+"At 8% coverage, 185 of your 200 providers have no scribe documentation support.*"
+
+Add footnote at the bottom of Page 1 (above the page number):
+"* This analysis focuses on human scribe support. Providers may have access to other documentation tools (transcription services, templates, voice recognition, etc.) not captured in this analysis."
+
+## 2. Add "The Two-Tier Reality" Visual on Page 1
+
+After "Our Findings" and before the strategic question, add a simple comparison to fill the white space and reinforce the disparity:
+
+```jsx
+<View style={styles.twoTierSection}>
+  <Text style={styles.twoTierTitle}>THE TWO-TIER REALITY</Text>
+  
+  <View style={styles.twoTierComparison}>
+    <View style={styles.tierCard}>
+      <Text style={styles.tierHeader}>WITH SCRIBE</Text>
+      <Text style={styles.tierCount}>15 providers (8%)</Text>
+      <View style={styles.tierBenefits}>
+        <Text style={styles.tierItem}>✓ Documentation handled in real-time</Text>
+        <Text style={styles.tierItem}>✓ Focus remains on patient care</Text>
+        <Text style={styles.tierItem}>✓ Minimal after-hours documentation</Text>
+        <Text style={styles.tierItem}>✓ Reduced administrative burden</Text>
+      </View>
+      <Text style={styles.tierCost}>Cost: $33K/provider/year</Text>
+    </View>
+    
+    <View style={styles.tierCardAlert}>
+      <Text style={styles.tierHeader}>WITHOUT SCRIBE</Text>
+      <Text style={styles.tierCount}>185 providers (92%)</Text>
+      <View style={styles.tierBenefits}>
+        <Text style={styles.tierItemAlert}>✗ 400 hours/year on documentation</Text>
+        <Text style={styles.tierItemAlert}>✗ ~8 hours/week of note writing</Text>
+        <Text style={styles.tierItemAlert}>✗ 25% occurs after clinic hours</Text>
+        <Text style={styles.tierItemAlert}>✗ Contributing to burnout risk</Text>
+      </View>
+      <Text style={styles.tierCost}>Cost: Provider time + burnout</Text>
+    </View>
+  </View>
+</View>
+Styling:
+javascriptCopytwoTierSection: {
+  marginTop: 16,
+  marginBottom: 16,
+},
+twoTierTitle: {
+  fontSize: 10,
+  fontWeight: 'bold',
+  color: '#111827',
+  marginBottom: 10,
+},
+twoTierComparison: {
+  flexDirection: 'row',
+  gap: 12,
+},
+tierCard: {
+  flex: 1,
+  backgroundColor: '#ECFDF5',
+  borderWidth: 1,
+  borderColor: '#10B981',
+  borderRadius: 6,
+  padding: 12,
+},
+tierCardAlert: {
+  flex: 1,
+  backgroundColor: '#FEF2F2',
+  borderWidth: 1,
+  borderColor: '#F87171',
+  borderRadius: 6,
+  padding: 12,
+},
+tierHeader: {
+  fontSize: 9,
+  fontWeight: 'bold',
+  color: '#111827',
+  marginBottom: 2,
+},
+tierCount: {
+  fontSize: 8,
+  color: '#6B7280',
+  marginBottom: 8,
+},
+tierBenefits: {
+  marginBottom: 8,
+},
+tierItem: {
+  fontSize: 8,
+  color: '#059669',
+  marginBottom: 3,
+},
+tierItemAlert: {
+  fontSize: 8,
+  color: '#DC2626',
+  marginBottom: 3,
+},
+tierCost: {
+  fontSize: 8,
+  fontWeight: 'bold',
+  color: '#374151',
+  borderTopWidth: 1,
+  borderTopColor: '#E5E7EB',
+  paddingTop: 6,
+  marginTop: 4,
+},
+3. Add Key Takeaways to Page 3 (Before Methodology)
+Before the "METHODOLOGY & ASSUMPTIONS" section on Page 3, add a Key Takeaways summary:
+jsxCopy<View style={styles.takeawaysSection}>
+  <Text style={styles.takeawaysTitle}>KEY TAKEAWAYS</Text>
+  
+  <View style={styles.takeawaysList}>
+    <Text style={styles.takeawayItem}>• Your scribe investment covers {coveragePercent}% of providers at ${costPerProvider} per covered provider</Text>
+    <Text style={styles.takeawayItem}>• {unsupportedProviders} providers ({100-coveragePercent}%) document without scribe support — {formatNumber(totalDocHours)} hours annually</Text>
+    <Text style={styles.takeawayItem}>• Each unsupported provider spends ~{hoursPerWeek} hours/week on documentation, with {afterHoursPercent}% after clinic hours</Text>
+    <Text style={styles.takeawayItem}>• Scaling to full coverage would require {scalingMultiplier}× your current investment (${formatCurrency(additionalCost)} additional)</Text>
+    <Text style={styles.takeawayItem}>• Linear scaling means no efficiency gains at scale — each new provider costs the same as the first</Text>
+  </View>
+  
+  <View style={styles.questionBox}>
+    <Text style={styles.questionText}>
+      How can you extend documentation support to all {totalProviders} providers without a {scalingMultiplier}× increase in cost?
+    </Text>
+  </View>
+</View>
+Styling:
+javascriptCopytakeawaysSection: {
+  marginBottom: 16,
+},
+takeawaysTitle: {
+  fontSize: 10,
+  fontWeight: 'bold',
+  color: '#111827',
+  marginBottom: 8,
+},
+takeawaysList: {
+  marginBottom: 12,
+},
+takeawayItem: {
+  fontSize: 8,
+  color: '#374151',
+  marginBottom: 4,
+  lineHeight: 1.4,
+},
+questionBox: {
+  backgroundColor: '#FEF2F2',
+  padding: 10,
+  borderRadius: 4,
+  borderLeftWidth: 3,
+  borderLeftColor: '#E85A4F',
+},
+questionText: {
+  fontSize: 9,
+  color: '#991B1B',
+  fontStyle: 'italic',
+  lineHeight: 1.4,
+},
+SUMMARY OF CHANGES
