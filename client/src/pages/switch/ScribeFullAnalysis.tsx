@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { ArrowLeft, ArrowRight, Download, Share2, Timer, Moon, BarChart3, Info, Sparkles, Check, ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Download, Share2, Timer, Moon, BarChart3, Info, Sparkles, Check, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, Legend } from "recharts";
@@ -10,6 +10,8 @@ import {
   getScalingDataPoints,
   SCRIBE_ASSUMPTIONS,
 } from "@/lib/scribeGapCalculator";
+import { generateScribePDF } from "@/components/switch/ScribePDFExport";
+import { useToast } from "@/hooks/use-toast";
 
 interface ScribeFullAnalysisProps {
   inputs: ScribeInputs;
@@ -26,6 +28,28 @@ export default function ScribeFullAnalysis({
 }: ScribeFullAnalysisProps) {
   const calculations = useMemo(() => calculateScribeGap(inputs), [inputs]);
   const scalingData = useMemo(() => getScalingDataPoints(inputs, calculations), [inputs, calculations]);
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateScribePDF(inputs, calculations);
+      toast({
+        title: "PDF Generated",
+        description: "Your Scribe Program Analysis has been downloaded.",
+      });
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      toast({
+        title: "Export Failed",
+        description: "Unable to generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -495,9 +519,19 @@ export default function ScribeFullAnalysis({
         {/* Section 8: Export */}
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center">
-            <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-export-pdf">
-              <Download className="w-4 h-4 mr-2" />
-              Export as PDF
+            <Button 
+              variant="outline" 
+              className="h-11 md:h-12 px-4 md:px-6" 
+              data-testid="button-export-pdf"
+              onClick={handleExportPDF}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              {isExporting ? "Generating..." : "Export as PDF"}
             </Button>
             <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-share">
               <Share2 className="w-4 h-4 mr-2" />
