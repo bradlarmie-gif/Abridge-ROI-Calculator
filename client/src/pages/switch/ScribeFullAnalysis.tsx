@@ -329,9 +329,9 @@ export default function ScribeFullAnalysis({
           </div>
         </section>
 
-        {/* Section 5: How Scribe Programs Scale */}
+        {/* Section 5: What Scaling Your Scribe Program Would Cost */}
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">How Scribe Programs Scale</h2>
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">What Scaling Your Scribe Program Would Cost</h2>
 
           <div className="bg-slate-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-[#374151]">
