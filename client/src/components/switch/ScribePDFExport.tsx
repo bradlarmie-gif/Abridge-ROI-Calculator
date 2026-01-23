@@ -17,10 +17,10 @@ import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png
 import { SCRIBE_ASSUMPTIONS } from "@/lib/scribeGapCalculator";
 
 const colors = {
-  coral: "#E85A4F",
-  coralLight: "#FEF2F2",
-  coralDark: "#991B1B",
-  coralBorder: "#FECACA",
+  primary: "#EA2C00",
+  primaryLight: "#FEF2F0",
+  primaryDark: "#C42400",
+  primaryBorder: "#FDCDC5",
   black: "#111827",
   darkGray: "#374151",
   mediumGray: "#6B7280",
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 10,
     borderBottomWidth: 2,
-    borderBottomColor: colors.coral,
+    borderBottomColor: colors.primary,
   },
   headerRight: {
     textAlign: "right",
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderLeftWidth: 3,
-    borderLeftColor: colors.coral,
+    borderLeftColor: colors.primary,
   },
   comparisonLabel: {
     fontSize: 7,
@@ -235,12 +235,12 @@ const styles = StyleSheet.create({
   comparisonIncrease: {
     fontSize: 9,
     fontWeight: "bold",
-    color: colors.coral,
+    color: colors.primary,
     marginTop: 2,
   },
 
   whyMattersBox: {
-    backgroundColor: colors.coralLight,
+    backgroundColor: colors.primaryLight,
     padding: 10,
     borderRadius: 4,
     marginBottom: 10,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   whyMattersTitle: {
     fontSize: 8,
     fontWeight: "bold",
-    color: colors.coral,
+    color: colors.primary,
     marginBottom: 4,
   },
   whyMattersText: {
@@ -370,16 +370,16 @@ const styles = StyleSheet.create({
   },
 
   questionBox: {
-    backgroundColor: colors.coralLight,
+    backgroundColor: colors.primaryLight,
     padding: 12,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.coralBorder,
+    borderColor: colors.primaryBorder,
     marginBottom: 12,
   },
   questionText: {
     fontSize: 10,
-    color: colors.coralDark,
+    color: colors.primaryDark,
     fontWeight: "bold",
     fontStyle: "italic",
     textAlign: "center",
@@ -461,9 +461,9 @@ const CoverageBar = ({ coveragePercent }: { coveragePercent: number }) => {
   
   return (
     <Svg width={barWidth} height={20}>
-      <Rect x={0} y={6} width={barWidth} height={8} fill={colors.coralLight} rx={4} />
-      <Rect x={0} y={6} width={markerPosition} height={8} fill={colors.coral} rx={4} />
-      <Rect x={markerPosition - 1} y={0} width={3} height={20} fill={colors.coralDark} rx={1} />
+      <Rect x={0} y={6} width={barWidth} height={8} fill={colors.primaryLight} rx={4} />
+      <Rect x={0} y={6} width={markerPosition} height={8} fill={colors.primary} rx={4} />
+      <Rect x={markerPosition - 1} y={0} width={3} height={20} fill={colors.primaryDark} rx={1} />
     </Svg>
   );
 };
@@ -489,14 +489,14 @@ const ScalingGraph = ({
   return (
     <View style={styles.graphBox}>
       <Svg width={graphWidth} height={graphHeight}>
-        <Line x1={padding} y1={graphHeight - 5} x2={xFull} y2={yFull} stroke={colors.coral} strokeWidth={2} />
+        <Line x1={padding} y1={graphHeight - 5} x2={xFull} y2={yFull} stroke={colors.primary} strokeWidth={2} />
         
         <Circle cx={padding} cy={graphHeight - 5} r={4} fill={colors.borderGray} />
-        <Circle cx={xCurrent} cy={yCurrent} r={5} fill={colors.coral} />
-        <Circle cx={xFull} cy={yFull} r={4} fill={colors.coral} />
+        <Circle cx={xCurrent} cy={yCurrent} r={5} fill={colors.primary} />
+        <Circle cx={xFull} cy={yFull} r={4} fill={colors.primary} />
       </Svg>
       <View style={{ position: "absolute", top: 6, right: 30 }}>
-        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.coral }}>{formatCurrency(fullCost)}</Text>
+        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{formatCurrency(fullCost)}</Text>
       </View>
       <View style={{ position: "absolute", top: yCurrent - 16, left: xCurrent - 20 }}>
         <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.darkGray }}>YOU</Text>
@@ -600,7 +600,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           <View style={styles.spectrumBarContainer}>
             <CoverageBar coveragePercent={calculations.coveragePercent} />
           </View>
-          <Text style={{ fontSize: 8, color: colors.coral, textAlign: "center", fontWeight: "bold", marginTop: 4 }}>
+          <Text style={{ fontSize: 8, color: colors.primary, textAlign: "center", fontWeight: "bold", marginTop: 4 }}>
             YOU: {calculations.coveragePercent}% ({inputs.providersWithScribes} providers)
           </Text>
           <Text style={styles.spectrumExplanation}>

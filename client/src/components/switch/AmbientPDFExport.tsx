@@ -17,8 +17,9 @@ import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS } from "@/lib/switchGapCalculator
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 const colors = {
-  coral: "#E85A4F",
-  coralLight: "#FEF2F2",
+  primary: "#EA2C00",
+  primaryLight: "#FEF2F0",
+  primaryDark: "#C42400",
   green: "#059669",
   greenLight: "#ECFDF5",
   black: "#111827",
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 10,
     borderBottomWidth: 2,
-    borderBottomColor: colors.coral,
+    borderBottomColor: colors.primary,
   },
   headerRight: {
     textAlign: "right",
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
   dimensionScore: {
     fontSize: 10,
     fontWeight: "bold",
-    color: colors.coral,
+    color: colors.primary,
   },
   dimensionQuestion: {
     fontSize: 7,
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
   },
   dimensionBarFill: {
     height: 8,
-    backgroundColor: colors.coral,
+    backgroundColor: colors.primary,
     borderRadius: 4,
   },
   dimensionWhy: {
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
   },
 
   compoundBox: {
-    backgroundColor: colors.coralLight,
+    backgroundColor: colors.primaryLight,
     padding: 8,
     borderRadius: 4,
     marginBottom: 10,
@@ -288,7 +289,7 @@ const styles = StyleSheet.create({
   compoundTitle: {
     fontSize: 9,
     fontWeight: "bold",
-    color: colors.coral,
+    color: colors.primary,
     marginBottom: 4,
   },
   compoundText: {
@@ -319,16 +320,16 @@ const styles = StyleSheet.create({
   },
 
   monthlyCallout: {
-    backgroundColor: colors.coralLight,
+    backgroundColor: colors.primaryLight,
     borderWidth: 1,
-    borderColor: colors.coral,
+    borderColor: colors.primary,
     padding: 8,
     borderRadius: 4,
     marginTop: 6,
   },
   monthlyText: {
     fontSize: 8,
-    color: colors.coral,
+    color: colors.primary,
     textAlign: "center",
     fontWeight: "bold",
   },
@@ -531,7 +532,7 @@ const SpectrumBar = ({ score }: { score: number }) => {
       <Rect x={barWidth * 0.8} y={6} width={barWidth * 0.2} height={8} fill="#A7F3D0" rx={4} />
       <Rect x={0} y={6} width={4} height={8} fill="#FEE2E2" rx={4} />
       
-      <Rect x={markerPosition - 1} y={0} width={3} height={20} fill={colors.coral} rx={1} />
+      <Rect x={markerPosition - 1} y={0} width={3} height={20} fill={colors.primary} rx={1} />
     </Svg>
   );
 };
@@ -552,16 +553,16 @@ const CostGraph = ({ year1, year2, year3 }: { year1: number; year2: number; year
   return (
     <View style={styles.graphBox}>
       <Svg width={graphWidth} height={graphHeight}>
-        <Line x1={padding} y1={graphHeight - 5} x2={points[1].x} y2={points[1].y} stroke={colors.coral} strokeWidth={2} />
-        <Line x1={points[1].x} y1={points[1].y} x2={points[2].x} y2={points[2].y} stroke={colors.coral} strokeWidth={2} />
-        <Line x1={points[2].x} y1={points[2].y} x2={points[3].x} y2={points[3].y} stroke={colors.coral} strokeWidth={2} />
+        <Line x1={padding} y1={graphHeight - 5} x2={points[1].x} y2={points[1].y} stroke={colors.primary} strokeWidth={2} />
+        <Line x1={points[1].x} y1={points[1].y} x2={points[2].x} y2={points[2].y} stroke={colors.primary} strokeWidth={2} />
+        <Line x1={points[2].x} y1={points[2].y} x2={points[3].x} y2={points[3].y} stroke={colors.primary} strokeWidth={2} />
         
         {points.map((point, i) => (
-          <Circle key={i} cx={point.x} cy={point.y} r={4} fill={colors.coral} />
+          <Circle key={i} cx={point.x} cy={point.y} r={4} fill={colors.primary} />
         ))}
       </Svg>
       <View style={{ position: "absolute", top: 8, right: 30 }}>
-        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.coral }}>{formatCurrency(year3)}</Text>
+        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{formatCurrency(year3)}</Text>
       </View>
       <View style={{ position: "absolute", top: 22, left: graphWidth * 0.28 }}>
         <Text style={{ fontSize: 8, color: colors.darkGray }}>{formatCurrency(year1)}</Text>
@@ -676,7 +677,7 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           <View style={styles.spectrumBarContainer}>
             <SpectrumBar score={calculations.realizationScore} />
           </View>
-          <Text style={{ fontSize: 8, color: colors.coral, textAlign: "center", fontWeight: "bold", marginTop: 4 }}>
+          <Text style={{ fontSize: 8, color: colors.primary, textAlign: "center", fontWeight: "bold", marginTop: 4 }}>
             YOU: {calculations.realizationScore}%
           </Text>
           <Text style={styles.spectrumExplanation}>
