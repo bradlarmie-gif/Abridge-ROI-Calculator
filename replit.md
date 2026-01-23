@@ -21,8 +21,26 @@ The application guides users through multi-step processes:
     4. Value Drivers (ModelBuilder.tsx) - ROI driver cards with Live Model sidebar
     5. Investment (InvestmentPage.tsx) - pricing configuration
     6. Summary (SummaryCommandCenter.tsx) - final ROI results with waterfall chart
--   **Switch Path (Ambient AI)**: A streamlined 3-page flow (after Solution Selection) for prospects switching from other ambient AI solutions. Pages: Setup (provider range chips, utilization/efficiency sliders with Abridge benchmarks, live gap visualization showing YOU vs ABRIDGE) → Analysis (annual gap hero with monthly/daily breakdown, Value Breakdown tab with expandable driver cards, Over Time tab with 3-year chart and cost of waiting) → Conclusion (situation summary, context about benchmarks, 3-year value highlight, CTAs). Uses slider-based inputs with real-time gap calculations.
--   **Switch Path (Human Scribes)**: A 5-step cost-focused flow for prospects switching from human scribes to Abridge. Pages: Setup (organization info, scribe coverage, hourly costs) → Coverage Reality (current vs full coverage visualization) → Hidden Costs (turnover/training, management overhead) → Full Picture (total investment summary with breakdown) → Comparison (3-year side-by-side scribes vs Abridge with savings). Uses editable inline inputs and real-time calculations with coral (#EA2C00) CTAs and emerald for positive savings values.
+-   **Switch Path (Unified)**: A 2-page "You vs. Your Potential" displacement calculator for prospects switching from other ambient AI solutions or scribes:
+    1. **Assessment Page** (SwitchAssessment.tsx) - Data collection with live visualization:
+       - Solution type selector (Ambient AI, Scribes)
+       - Provider count and annual encounters inputs
+       - Utilization gauge (ceiling: 65%) with slider showing YOU vs CEILING with GAP zone
+       - Efficiency gauge (ceiling: 4 min) with same pattern
+       - "The Multiplier Effect" section: utilization % × efficiency % = combined capture %
+       - Live-updating "Your Annual Gap" card with monthly/daily/hourly breakdown
+    2. **Full Analysis Page** (SwitchFullAnalysis.tsx) - Comprehensive gap analysis:
+       - 3 headline cards (Annual Gap, Capture Rate %, 3-Year Gap)
+       - "Cost of Gap Over Time" line chart (current trajectory vs ceiling trajectory)
+       - "How the Gap Breaks Down" with visual bar charts for utilization/efficiency
+       - "Why This Gap Exists" multiplier explanation
+       - "The Cost of Waiting" (close now vs wait 6mo vs wait 12mo)
+       - "What Closing the Gap Looks Like" 4-step timeline
+       - "Methodology & Assumptions" with conservative benchmarks
+       - CTAs: Schedule Demo, Export PDF, Share with Team
+    - **Key Benchmarks**: Utilization ceiling 65%, Efficiency ceiling 4 min/encounter
+    - **Value Assumptions**: $4/encounter (utilization), $150/hr × 20% conversion (efficiency)
+    - **Calculation Engine**: switchGapCalculator.ts with tiered gap breakdown and 3-year projections
 -   **Expand Path**: A 5-step performance analysis flow for current Abridge customers with tiered ROI calculations:
     1. Setting Selection (ExpandSettingSelection.tsx)
     2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection
