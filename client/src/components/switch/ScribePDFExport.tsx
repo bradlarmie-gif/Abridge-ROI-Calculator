@@ -646,11 +646,50 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
   },
 
-  takeawaysSection: {
+  conceptGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 10,
   },
-  takeawaysList: {
-    marginBottom: 8,
+  conceptCardCompact: {
+    width: "48%",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 8,
+    marginRight: "2%",
+    marginBottom: 6,
+  },
+  conceptNameCompact: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  conceptValueCompact: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 3,
+  },
+  conceptDescCompact: {
+    fontSize: 6.5,
+    color: colors.darkGray,
+    lineHeight: 1.4,
+  },
+  conceptSummary: {
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#F59E0B",
+    borderRadius: 4,
+    padding: 8,
+    marginBottom: 10,
+  },
+  conceptSummaryText: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.4,
   },
 });
 
@@ -1048,113 +1087,49 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
         </View>
 
         <Text style={styles.sectionTitle}>UNDERSTANDING THE KEY CONCEPTS</Text>
-        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 6 }}>
-          Scribe economics involve several interconnected factors:
-        </Text>
 
-        {/* COVERAGE CARD */}
-        <View style={styles.conceptCard}>
-          <View style={styles.conceptHeader}>
-            <Text style={styles.conceptName}>COVERAGE</Text>
-            <Text style={styles.conceptValue}>You: {calculations.coveragePercent}%</Text>
+        {/* 2x2 COMPACT CONCEPT GRID */}
+        <View style={styles.conceptGrid}>
+          <View style={styles.conceptCardCompact}>
+            <Text style={styles.conceptNameCompact}>COVERAGE</Text>
+            <Text style={styles.conceptValueCompact}>{calculations.coveragePercent}%</Text>
+            <Text style={styles.conceptDescCompact}>
+              {calculations.providersWithoutSupport} of {inputs.totalProviders} providers handle documentation alone, creating a two-tier system.
+            </Text>
           </View>
-          <Text style={styles.conceptDefinition}>
-            What it measures: The percentage of your provider base that has access to scribe support for documentation.
-          </Text>
-          <View style={styles.conceptEducation}>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>Why it matters: </Text>
-              Coverage determines who bears the documentation burden. At {calculations.coveragePercent}% coverage, {calculations.providersWithoutSupport} of your {inputs.totalProviders} providers handle documentation entirely alone. This creates a two-tier system that can affect morale, equity, and retention.
+          <View style={styles.conceptCardCompact}>
+            <Text style={styles.conceptNameCompact}>LINEAR SCALING</Text>
+            <Text style={styles.conceptValueCompact}>1:{calculations.scribeRatio}</Text>
+            <Text style={styles.conceptDescCompact}>
+              Each additional provider costs {formatCurrency(costPerAdditionalProvider)}. No volume discounts at scale.
             </Text>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>What drives it: </Text>
-              Budget constraints, scribe availability, specialty priorities, and strategic decisions about which providers "need" scribes most.
+          </View>
+          <View style={styles.conceptCardCompact}>
+            <Text style={styles.conceptNameCompact}>DOCUMENTATION BURDEN</Text>
+            <Text style={styles.conceptValueCompact}>{calculations.docTimePerUnsupportedProvider} hrs/yr</Text>
+            <Text style={styles.conceptDescCompact}>
+              ~{Math.round(calculations.docTimePerUnsupportedProvider/50)} hrs/week per provider. {afterHoursPercent}% occurs after clinic hours ("pajama time").
             </Text>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>The trade-off: </Text>
-              Higher coverage = higher cost (linear scaling). Organizations must choose between depth (excellent support for few) and breadth (some support for many).
+          </View>
+          <View style={styles.conceptCardCompact}>
+            <Text style={styles.conceptNameCompact}>HIDDEN COSTS</Text>
+            <Text style={styles.conceptValueCompact}>30-50%</Text>
+            <Text style={styles.conceptDescCompact}>
+              Annual turnover rate. Plus training (4-8 weeks), coverage gaps, and productivity loss.
             </Text>
           </View>
         </View>
 
-        {/* LINEAR SCALING CARD */}
-        <View style={styles.conceptCard}>
-          <View style={styles.conceptHeader}>
-            <Text style={styles.conceptName}>LINEAR SCALING</Text>
-            <Text style={styles.conceptValue}>1:{calculations.scribeRatio} ratio</Text>
-          </View>
-          <Text style={styles.conceptDefinition}>
-            What it means: The cost of scribe coverage increases in direct proportion to the number of providers covered — no volume discounts, no efficiency gains at scale.
+        <View style={styles.conceptSummary}>
+          <Text style={styles.conceptSummaryText}>
+            <Text style={styles.bold}>The core constraint: </Text>
+            Scribe programs have high marginal costs — unlike technology where costs decrease with scale, each new provider costs the same. Scaling from {calculations.coveragePercent}% to 100% requires {scaleMultiplier}x your current investment.
           </Text>
-          <View style={styles.conceptEducation}>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>Why it matters: </Text>
-              Unlike technology solutions that have high fixed costs but low marginal costs, scribes have low fixed costs but high marginal costs. Each additional provider requires roughly the same incremental investment as the first.
-            </Text>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>The math: </Text>
-              At your ratio of 1:{calculations.scribeRatio}, covering one more provider costs approximately {formatCurrency(costPerAdditionalProvider)} per additional provider covered.
-            </Text>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>The implication: </Text>
-              Scaling from {calculations.coveragePercent}% to 100% coverage isn't incrementally more expensive — it's {scaleMultiplier}x more expensive.
-            </Text>
-          </View>
         </View>
 
-        {/* DOCUMENTATION BURDEN CARD */}
-        <View style={styles.conceptCard}>
-          <View style={styles.conceptHeader}>
-            <Text style={styles.conceptName}>DOCUMENTATION BURDEN</Text>
-            <Text style={styles.conceptValue}>{calculations.docTimePerUnsupportedProvider} hrs/provider/yr</Text>
-          </View>
-          <Text style={styles.conceptDefinition}>
-            What it measures: The time unsupported providers spend on clinical documentation — writing notes, completing charts, handling inbox messages.
-          </Text>
-          <View style={styles.conceptEducation}>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>Why it matters: </Text>
-              {calculations.docTimePerUnsupportedProvider} hours per year translates to roughly {Math.round(calculations.docTimePerUnsupportedProvider/50)} hours per week. For many providers, this means 1-2 hours of documentation for every hour of patient care.
-            </Text>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>The "pajama time" problem: </Text>
-              An estimated {afterHoursPercent}% of documentation occurs outside clinic hours. This after-hours work is a leading contributor to physician burnout and dissatisfaction.
-            </Text>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>The scale: </Text>
-              Across your {calculations.providersWithoutSupport} unsupported providers, this represents {formatNumber(calculations.unsupportedDocTimeHours)} hours annually — equivalent to {fteEquivalents} full-time employees doing nothing but documentation.
-            </Text>
-          </View>
-        </View>
-
-        {/* HIDDEN COSTS CARD */}
-        <View style={styles.conceptCard}>
-          <View style={styles.conceptHeader}>
-            <Text style={styles.conceptName}>HIDDEN COSTS OF SCRIBES</Text>
-            <Text style={styles.conceptValue}>Beyond salary</Text>
-          </View>
-          <Text style={styles.conceptDefinition}>
-            What's not captured: The direct scribe cost (salary × hours) is only part of the total cost of ownership.
-          </Text>
-          <View style={styles.conceptEducation}>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>Turnover: </Text>
-              Scribe turnover typically runs 30-50% annually. Each departure means recruiting, hiring, and training costs — often $3,000-5,000 per replacement — plus productivity loss during ramp-up.
-            </Text>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>Training: </Text>
-              New scribes require 4-8 weeks to reach full productivity, during which the provider is essentially working without support.
-            </Text>
-            <Text style={styles.conceptText}>
-              <Text style={styles.bold}>Coverage gaps: </Text>
-              PTO, sick days, and turnover create coverage gaps. When a scribe is out, the provider goes back to self-documenting — the burden returns unpredictably.
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.takeawaysSection}>
+        <View style={styles.takeawaysBox}>
           <Text style={styles.takeawaysTitle}>KEY TAKEAWAYS</Text>
-          <View style={styles.takeawaysList}>
+          <View>
             <Text style={styles.takeawayItem}>• Your scribe investment covers {calculations.coveragePercent}% of providers at {formatCurrency(calculations.costPerProviderCovered)} per covered provider</Text>
             <Text style={styles.takeawayItem}>• {calculations.providersWithoutSupport} providers ({100 - calculations.coveragePercent}%) document without scribe support — {formatNumber(calculations.unsupportedDocTimeHours)} hours annually</Text>
             <Text style={styles.takeawayItem}>• Each unsupported provider spends ~{Math.round(calculations.docTimePerUnsupportedProvider / 50)} hours/week on documentation, with {afterHoursPercent}% after clinic hours</Text>

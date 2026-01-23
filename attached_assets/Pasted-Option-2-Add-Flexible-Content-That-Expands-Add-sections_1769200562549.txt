@@ -1,0 +1,85 @@
+Option 2: Add Flexible Content That Expands
+Add sections that can expand to fill available space when other content is shorter.
+For example, after "The Linear Scaling Problem" on Page 2, if there's extra space, add more educational content:
+jsxCopy{/* Only show if there's room on the page */}
+<View style={styles.additionalInsight}>
+  <Text style={styles.insightTitle}>WHY LINEAR SCALING MATTERS FOR STRATEGY</Text>
+  <Text style={styles.insightText}>
+    Linear scaling creates a fundamental strategic constraint. Unlike technology investments 
+    where marginal costs decrease with scale, scribe programs have constant marginal costs. 
+    This means:
+  </Text>
+  <Text style={styles.insightBullet}>
+    • There's no "tipping point" where scribes become more economical
+  </Text>
+  <Text style={styles.insightBullet}>
+    • Budget increases translate directly to coverage increases (and vice versa)
+  </Text>
+  <Text style={styles.insightBullet}>
+    • The ROI calculation is the same whether you have 10% or 90% coverage
+  </Text>
+</View>
+Option 3: Consolidate Key Takeaways and Methodology onto Page 3
+The "Understanding the Key Concepts" section, "Key Takeaways", and "Methodology" should all be on the same page (Page 3). If they're splitting, it's because there's a page break being forced.
+jsxCopy// Ensure these sections flow together without breaks
+<View>
+  {/* Understanding the Key Concepts - 4 cards */}
+  <KeyConceptsSection data={data} />
+  
+  {/* Key Takeaways - right after concepts, no break */}
+  <KeyTakeawaysSection data={data} />
+  
+  {/* Methodology - right after takeaways, no break */}
+  <MethodologySection data={data} />
+</View>
+SPECIFIC FIX
+Review the PDF component and:
+
+Remove all break props from View components except where truly needed
+Ensure Key Takeaways and Methodology are NOT on a separate page — they should follow directly after Understanding the Key Concepts
+Fix page numbering to reflect actual page count
+
+Target Structure:
+Page 1: (Full)
+
+Understanding Scribe Program Economics
+Your Program at a Glance
+The Coverage Spectrum
+Our Findings
+The Two-Tier Reality
+Footnote
+
+Page 2: (Full)
+
+How Scribe Programs Scale
+The Burden on Unsupported Providers
+The Linear Scaling Problem
+[If room: Additional insight about linear scaling]
+
+Page 3: (Full)
+
+Understanding the Key Concepts (4 cards)
+Key Takeaways
+Methodology & Assumptions
+
+Total: 3 pages, all full
+CODE CHANGES
+Find where the page breaks are being inserted and remove unnecessary ones:
+jsxCopy// Look for patterns like this and remove the break prop:
+<View break style={styles.section}>
+
+// Change to:
+<View style={styles.section}>
+Also check for any wrap={false} props that might be forcing content to new pages:
+jsxCopy// This can cause issues:
+<View wrap={false}>
+
+// Consider removing or making conditional
+TESTING
+After making changes, test with multiple input scenarios:
+
+Very low coverage (8%)
+Medium coverage (40%)
+High coverage (75%)
+
+Each should produce a well-filled PDF without excessive white space.
