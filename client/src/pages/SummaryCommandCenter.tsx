@@ -200,8 +200,11 @@ export default function SummaryCommandCenter({
   const [encountersPerUnit, setEncountersPerUnit] = useState(Math.round(initialEncountersPerUnit));
   const [pilotUtilization, setPilotUtilization] = useState(initialUtilization);
   
-  const [fullScaleUnits, setFullScaleUnits] = useState<number>(Math.round(initialUnits * 3)); 
+  const [fullScaleUnits, setFullScaleUnits] = useState<number | "">(Math.round(initialUnits * 3)); 
   const [fullScaleUtilization, setFullScaleUtilization] = useState<number>(Math.min(initialUtilization + 15, 85));
+  
+  // Safe getters for calculations (use minimum when empty)
+  const safeFullScaleUnits = fullScaleUnits === "" ? pilotUnits + 1 : fullScaleUnits;
   const [selectedPace, setSelectedPace] = useState<"measured" | "steady" | "aggressive">("steady");
   
   const totalAnnualValue = modelResults.totalBenefit;
@@ -273,7 +276,7 @@ export default function SummaryCommandCenter({
     const pilotUtil = pilotUtilization;
     
     // Scale multiplier
-    const bedMultiplier = fullScaleUnits / pilotBeds;
+    const bedMultiplier = safeFullScaleUnits / pilotBeds;
     const linearFullScale = pilotValue * bedMultiplier;
     const utilizationBoost = fullScaleUtilization / pilotUtil;
     const baseFullScale = linearFullScale * utilizationBoost;
@@ -283,7 +286,7 @@ export default function SummaryCommandCenter({
       const progress = month / totalMonths;
       
       // Beds scale linearly over time
-      const beds = Math.round(pilotBeds + (fullScaleUnits - pilotBeds) * progress);
+      const beds = Math.round(pilotBeds + (safeFullScaleUnits - pilotBeds) * progress);
       
       // Utilization ramps up (slightly curved - faster early gains)
       const utilizationProgress = Math.pow(progress, 0.8);
@@ -319,7 +322,7 @@ export default function SummaryCommandCenter({
     });
     
     return points;
-  }, [pilotUnits, fullScaleUnits, pilotUtilization, fullScaleUtilization, pricePerUnit, totalAnnualValue, currentPace]);
+  }, [pilotUnits, safeFullScaleUnits, pilotUtilization, fullScaleUtilization, pricePerUnit, totalAnnualValue, currentPace]);
   
   const pilot = chartData[0];
   const fullScale = chartData[chartData.length - 1];
@@ -402,10 +405,10 @@ export default function SummaryCommandCenter({
       threeYearValue,
       threeYearCost,
       threeYearNet,
-      fullScaleProviders: fullScaleUnits,
+      fullScaleProviders: safeFullScaleUnits,
       fullScaleUtil: fullScaleUtilization,
       fullScaleValue: fullScale.value,
-      fullScaleROI: annualInvestment > 0 ? fullScale.value / (fullScaleUnits * pricePerUnit * 12) : 0,
+      fullScaleROI: annualInvestment > 0 ? fullScale.value / (safeFullScaleUnits * pricePerUnit * 12) : 0,
       networkEffect,
       qualitativeDrivers,
     };
@@ -1084,7 +1087,19 @@ export default function SummaryCommandCenter({
                       <input 
                         type="number" 
                         value={fullScaleUnits}
-                        onChange={(e) => setFullScaleUnits(Math.max(pilotUnits + 1, Number(e.target.value) || pilotUnits + 1))}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "") {
+                            setFullScaleUnits("");
+                          } else {
+                            setFullScaleUnits(Number(val));
+                          }
+                        }}
+                        onBlur={() => {
+                          if (fullScaleUnits === "" || fullScaleUnits < pilotUnits + 1) {
+                            setFullScaleUnits(pilotUnits + 1);
+                          }
+                        }}
                         min={pilotUnits + 1}
                         className="flex-1 px-4 py-2.5 rounded-lg border border-[#E2E8F0] font-mono text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all"
                         data-testid="input-fullscale-units"
@@ -1092,7 +1107,7 @@ export default function SummaryCommandCenter({
                       <span className="text-sm text-[#64748B]">{config.unitNamePlural}</span>
                     </div>
                     <p className="text-[13px] text-[#64748B] mt-2">
-                      At {encountersPerUnit.toLocaleString()} {config.encounterName}/{config.unitName} = <span className="font-semibold">{(fullScaleUnits * encountersPerUnit).toLocaleString()} {config.encounterName}/year</span>
+                      At {encountersPerUnit.toLocaleString()} {config.encounterName}/{config.unitName} = <span className="font-semibold">{(safeFullScaleUnits * encountersPerUnit).toLocaleString()} {config.encounterName}/year</span>
                     </p>
                   </div>
                   
