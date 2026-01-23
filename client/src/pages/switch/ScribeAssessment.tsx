@@ -358,12 +358,16 @@ function InputCard({ icon, iconBg, label, value, onChange, unit, hint, testId, l
   const [localValue, setLocalValue] = useState(String(value));
   const [isFocused, setIsFocused] = useState(false);
 
+  // Format with commas when not focused
+  const displayValue = isFocused ? localValue : value.toLocaleString();
+
   if (!isFocused && localValue !== String(value)) {
     setLocalValue(String(value));
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
+    // Remove commas before parsing
+    const inputValue = e.target.value.replace(/,/g, "");
     setLocalValue(inputValue);
     const parsed = parseFloat(inputValue);
     if (!isNaN(parsed) && parsed >= 0) {
@@ -373,7 +377,7 @@ function InputCard({ icon, iconBg, label, value, onChange, unit, hint, testId, l
 
   const handleBlur = () => {
     setIsFocused(false);
-    const parsed = parseFloat(localValue);
+    const parsed = parseFloat(localValue.replace(/,/g, ""));
     if (isNaN(parsed) || localValue === "" || parsed < 0) {
       setLocalValue("0");
       onChange(0);
@@ -393,7 +397,7 @@ function InputCard({ icon, iconBg, label, value, onChange, unit, hint, testId, l
         <input
           type="text"
           inputMode="decimal"
-          value={localValue}
+          value={displayValue}
           onChange={handleChange}
           onFocus={() => setIsFocused(true)}
           onBlur={handleBlur}
