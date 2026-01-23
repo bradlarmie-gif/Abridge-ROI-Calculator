@@ -89,9 +89,9 @@ export const ABRIDGE_BENCHMARKS = {
 
 // Value assumptions (conservative)
 export const VALUE_ASSUMPTIONS = {
-  encounterValue: 4, // $4 per additional encounter documented
   hourlyRate: 150, // $150/hr provider time
-  timeConversionRate: 0.20, // 20% of saved time converts to value (conservative)
+  utilizationTimeConversionRate: 0.15, // 15% of saved time converts to value for utilization gap (conservative)
+  efficiencyTimeConversionRate: 0.20, // 20% of saved time converts to value for efficiency gap (conservative)
   wrvuDollarValue: 33, // $33 per wRVU
   wrvuAttribution: 0.5, // 50% attribution
   avgWRVUPerEncounter: 1.5, // Assume 1.5 wRVU/encounter baseline
@@ -121,13 +121,9 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const qualityScore = Math.min(100, Math.round((wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100));
   const satisfactionScore = Math.min(100, Math.round((satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100));
 
-  // === REALIZATION SCORE (weighted average) ===
-  // Weights: Utilization 30%, Efficiency 30%, Quality 25%, Satisfaction 15%
+  // === REALIZATION SCORE (simple average of all dimensions) ===
   const realizationScore = Math.round(
-    (utilizationScore * 0.30) +
-    (efficiencyScore * 0.30) +
-    (qualityScore * 0.25) +
-    (satisfactionScore * 0.15)
+    (utilizationScore + efficiencyScore + qualityScore + satisfactionScore) / 4
   );
 
   // Maturity level based on realization score (adjusted thresholds)
@@ -149,16 +145,19 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
 
   // === GAP CALCULATIONS ===
   
-  // 1. Utilization gap (now vs 75%)
+  // 1. Utilization gap (now vs 75%) - tied to time savings logic
+  // If those encounters got documented at Abridge efficiency (4 min saved):
   const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - utilization);
   const utilizationGapEncounters = Math.round(annualEncounters * (utilizationGapPP / 100));
-  const utilizationGapValue = utilizationGapEncounters * VALUE_ASSUMPTIONS.encounterValue;
+  const utilizationPotentialTimeSavedMinutes = utilizationGapEncounters * ABRIDGE_BENCHMARKS.timeSavedAvg;
+  const utilizationPotentialTimeSavedHours = utilizationPotentialTimeSavedMinutes / 60;
+  const utilizationGapValue = Math.round(utilizationPotentialTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.utilizationTimeConversionRate);
 
   // 2. Efficiency gap
   const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - timeSavedPerEncounter);
   const encountersAtBenchmark = Math.round(annualEncounters * (ABRIDGE_BENCHMARKS.utilization / 100));
   const efficiencyGapHours = Math.round((encountersAtBenchmark * efficiencyGapMin) / 60);
-  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
+  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.efficiencyTimeConversionRate);
 
   // 3. wRVU gap (Quality)
   const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - wrvuLift);
@@ -170,8 +169,10 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const threeYearGap = annualGap * 3;
   const monthlyGap = Math.round(annualGap / 12);
 
-  const yourAnnualValue = yourEncountersDocumented * VALUE_ASSUMPTIONS.encounterValue + 
-    yourHoursReturned * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate;
+  // Calculate your annual value based on time savings
+  const yourTimeSavedMinutes = yourEncountersDocumented * timeSavedPerEncounter;
+  const yourTimeSavedHours = yourTimeSavedMinutes / 60;
+  const yourAnnualValue = yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.efficiencyTimeConversionRate;
   const abridgeAnnualValue = yourAnnualValue + annualGap;
 
   // Cost of waiting calculations

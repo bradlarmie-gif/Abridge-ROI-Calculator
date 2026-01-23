@@ -274,38 +274,23 @@ export default function SwitchAssessment({
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                   <span className="text-[#6B7280]">Utilization</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#111827]">{calculations.utilizationScore}%</span>
-                    <span className="text-[#6B7280]">× 30%</span>
-                    <span className="text-[#111827] font-semibold">= {Math.round(calculations.utilizationScore * 0.30)}pts</span>
-                  </div>
+                  <span className="text-lg font-bold text-[#111827]">{calculations.utilizationScore}%</span>
                 </div>
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                   <span className="text-[#6B7280]">Efficiency</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#111827]">{calculations.efficiencyScore}%</span>
-                    <span className="text-[#6B7280]">× 30%</span>
-                    <span className="text-[#111827] font-semibold">= {Math.round(calculations.efficiencyScore * 0.30)}pts</span>
-                  </div>
+                  <span className="text-lg font-bold text-[#111827]">{calculations.efficiencyScore}%</span>
                 </div>
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                   <span className="text-[#6B7280]">Quality</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#111827]">{calculations.qualityScore}%</span>
-                    <span className="text-[#6B7280]">× 25%</span>
-                    <span className="text-[#111827] font-semibold">= {Math.round(calculations.qualityScore * 0.25)}pts</span>
-                  </div>
+                  <span className="text-lg font-bold text-[#111827]">{calculations.qualityScore}%</span>
                 </div>
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                   <span className="text-[#6B7280]">Satisfaction</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#111827]">{calculations.satisfactionScore}%</span>
-                    <span className="text-[#6B7280]">× 15%</span>
-                    <span className="text-[#111827] font-semibold">= {Math.round(calculations.satisfactionScore * 0.15)}pts</span>
-                  </div>
+                  <span className="text-lg font-bold text-[#111827]">{calculations.satisfactionScore}%</span>
                 </div>
+                <div className="border-t border-slate-200 my-2"></div>
                 <div className="flex items-center justify-between px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <span className="font-semibold text-[#111827]">Total Score</span>
+                  <span className="font-semibold text-[#111827]">Average Score</span>
                   <span className="font-bold text-emerald-600 text-lg">{calculations.realizationScore}%</span>
                 </div>
               </div>
@@ -521,12 +506,12 @@ function DimensionCard({
         </div>
       </div>
 
-      <div className="relative h-7 bg-slate-200 rounded-lg overflow-hidden mb-2">
+      <div className="relative h-8 bg-slate-200 rounded-lg overflow-hidden mb-2">
         <div 
           className="absolute top-0 left-0 h-full bg-slate-500 transition-all flex items-center px-2"
           style={{ width: `${fillWidth}%` }}
         >
-          <span className="text-[10px] font-semibold text-white truncate">
+          <span className="text-sm font-semibold text-white truncate">
             {prefix}{value}{unit}
           </span>
         </div>
@@ -535,7 +520,7 @@ function DimensionCard({
           style={{ left: `${benchmarkPosition}%` }}
         />
         <div 
-          className="absolute top-1/2 -translate-y-1/2 text-[9px] font-semibold text-[#EA2C00] bg-white/90 px-1 rounded"
+          className="absolute top-1/2 -translate-y-1/2 text-xs font-semibold text-[#EA2C00] bg-white/90 px-1 rounded"
           style={{ left: `${benchmarkPosition + 1}%` }}
         >
           {prefix}{benchmark}{unit}

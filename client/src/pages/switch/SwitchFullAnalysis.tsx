@@ -196,44 +196,29 @@ export default function SwitchFullAnalysis({
           </h3>
           
           <p className="text-slate-300 mb-4">
-            Each dimension contributes to your overall value realization score based on strategic importance:
+            Your realization score is a simple average of how you perform across all four dimensions:
           </p>
           
           <div className="space-y-2 mb-4">
             <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-2">
               <span className="text-slate-300">Utilization</span>
-              <div className="flex items-center gap-3">
-                <span className="font-bold">{calculations.utilizationScore}%</span>
-                <span className="text-slate-400">× 30%</span>
-                <span className="text-emerald-400 font-semibold">= {Math.round(calculations.utilizationScore * 0.30)}pts</span>
-              </div>
+              <span className="text-lg font-bold">{calculations.utilizationScore}%</span>
             </div>
             <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-2">
               <span className="text-slate-300">Efficiency</span>
-              <div className="flex items-center gap-3">
-                <span className="font-bold">{calculations.efficiencyScore}%</span>
-                <span className="text-slate-400">× 30%</span>
-                <span className="text-emerald-400 font-semibold">= {Math.round(calculations.efficiencyScore * 0.30)}pts</span>
-              </div>
+              <span className="text-lg font-bold">{calculations.efficiencyScore}%</span>
             </div>
             <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-2">
               <span className="text-slate-300">Quality</span>
-              <div className="flex items-center gap-3">
-                <span className="font-bold">{calculations.qualityScore}%</span>
-                <span className="text-slate-400">× 25%</span>
-                <span className="text-emerald-400 font-semibold">= {Math.round(calculations.qualityScore * 0.25)}pts</span>
-              </div>
+              <span className="text-lg font-bold">{calculations.qualityScore}%</span>
             </div>
             <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-2">
               <span className="text-slate-300">Satisfaction</span>
-              <div className="flex items-center gap-3">
-                <span className="font-bold">{calculations.satisfactionScore}%</span>
-                <span className="text-slate-400">× 15%</span>
-                <span className="text-emerald-400 font-semibold">= {Math.round(calculations.satisfactionScore * 0.15)}pts</span>
-              </div>
+              <span className="text-lg font-bold">{calculations.satisfactionScore}%</span>
             </div>
+            <div className="border-t border-slate-600 my-2"></div>
             <div className="flex items-center justify-between bg-emerald-600/30 border border-emerald-500/50 rounded-lg px-4 py-2">
-              <span className="font-semibold">Total Score</span>
+              <span className="font-semibold">Average Score</span>
               <span className="text-xl font-bold text-emerald-400">{calculations.realizationScore}%</span>
             </div>
           </div>
@@ -301,11 +286,11 @@ export default function SwitchFullAnalysis({
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span>Utilization gap valued at <strong className="text-[#111827]">${VALUE_ASSUMPTIONS.encounterValue}/encounter</strong></span>
+              <span>Utilization gap valued at <strong className="text-[#111827]">${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}%</strong> conversion (conservative)</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span>Efficiency gap valued at <strong className="text-[#111827]">${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.timeConversionRate * 100}%</strong> conversion (conservative)</span>
+              <span>Efficiency gap valued at <strong className="text-[#111827]">${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}%</strong> conversion (conservative)</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
@@ -369,6 +354,8 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
   const [expanded, setExpanded] = useState(false);
   const benchmark = ABRIDGE_BENCHMARKS.utilization;
   const gapPP = benchmark - utilization;
+  const potentialTimeSavedMinutes = gapEncounters * ABRIDGE_BENCHMARKS.timeSavedAvg;
+  const potentialHours = Math.round(potentialTimeSavedMinutes / 60);
 
   return (
     <div className="border border-slate-200 rounded-lg p-6">
@@ -377,7 +364,7 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
           <BarChart3 className="w-5 h-5 text-blue-600" />
           <span className="font-semibold text-[#111827]">Utilization Gap</span>
         </div>
-        <span className="text-xl font-bold text-[#111827]">
+        <span className="text-xl font-bold text-emerald-600">
           {formatCurrency(gapValue)}
         </span>
       </div>
@@ -387,7 +374,7 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
           className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
           style={{ width: `${(utilization / benchmark) * 100}%` }}
         >
-          <span className="text-xs font-semibold text-white truncate">You: {utilization}%</span>
+          <span className="text-sm font-semibold text-white truncate">You: {utilization}%</span>
         </div>
         <div 
           className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
@@ -396,15 +383,15 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
             width: `${Math.max(0, 100 - (utilization / benchmark) * 100)}%`
           }}
         >
-          <span className="text-xs font-semibold text-slate-600">Gap</span>
+          <span className="text-sm font-semibold text-slate-600">Gap</span>
         </div>
         <div className="absolute top-0 right-0 h-full flex items-center px-2">
-          <span className="text-xs font-semibold text-[#EA2C00]">Abridge: {benchmark}%</span>
+          <span className="text-sm font-semibold text-[#EA2C00]">Abridge: {benchmark}%</span>
         </div>
       </div>
       
       <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded mb-2">
-        {utilization}% → {benchmark}% = +{gapPP}pp = +{gapEncounters.toLocaleString()} enc × ${VALUE_ASSUMPTIONS.encounterValue}/enc
+        +{gapEncounters.toLocaleString()} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min/enc = {potentialHours.toLocaleString()} hrs → ${gapValue.toLocaleString()}
       </div>
 
       <button 
@@ -421,24 +408,30 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
           <CalcStep 
             number={1}
             label="Your utilization gap"
-            math={<>{benchmark}% - {utilization}% = <strong className="text-[#EA2C00]">{gapPP}pp</strong></>}
+            math={<>{benchmark}% - {utilization}% = <strong className="text-emerald-600">{gapPP}pp</strong></>}
             note="pp = percentage points"
           />
           <CalcStep 
             number={2}
-            label="Encounters not being documented"
-            math={<>{encounters.toLocaleString()} total × {gapPP}% = <strong className="text-[#EA2C00]">{gapEncounters.toLocaleString()} encounters</strong></>}
+            label="Encounters not getting ambient documentation"
+            math={<>{encounters.toLocaleString()} total × {gapPP}% = <strong className="text-emerald-600">{gapEncounters.toLocaleString()} encounters</strong></>}
           />
           <CalcStep 
             number={3}
-            label="Value per undocumented encounter"
-            math={<strong className="text-[#EA2C00]">${VALUE_ASSUMPTIONS.encounterValue}/encounter</strong>}
-            note="Based on time cost + documentation quality value"
+            label="Potential time savings if documented at Abridge efficiency"
+            math={<>{gapEncounters.toLocaleString()} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min = <strong className="text-emerald-600">{potentialHours.toLocaleString()} hours</strong></>}
+            note={`Using Abridge benchmark of ${ABRIDGE_BENCHMARKS.timeSavedAvg} min saved per encounter`}
+          />
+          <CalcStep 
+            number={4}
+            label="Value conversion (conservative)"
+            math={<>{potentialHours.toLocaleString()} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% = <strong className="text-emerald-600">${gapValue.toLocaleString()}</strong></>}
+            note={`${VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% conversion rate — not all saved time converts to value`}
           />
           <CalcStep 
             number="✓"
             label="Annual utilization gap"
-            math={<>{gapEncounters.toLocaleString()} enc × ${VALUE_ASSUMPTIONS.encounterValue} = <strong className="text-[#EA2C00]">${gapValue.toLocaleString()}</strong></>}
+            math={<strong className="text-emerald-600">${gapValue.toLocaleString()}</strong>}
             isResult
           />
         </div>
@@ -464,7 +457,7 @@ function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapVal
           <Clock className="w-5 h-5 text-purple-600" />
           <span className="font-semibold text-[#111827]">Efficiency Gap</span>
         </div>
-        <span className="text-xl font-bold text-[#111827]">
+        <span className="text-xl font-bold text-emerald-600">
           {formatCurrency(gapValue)}
         </span>
       </div>
@@ -474,7 +467,7 @@ function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapVal
           className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
           style={{ width: `${(efficiency / benchmark) * 100}%` }}
         >
-          <span className="text-xs font-semibold text-white truncate">You: {efficiency} min</span>
+          <span className="text-sm font-semibold text-white truncate">You: {efficiency} min</span>
         </div>
         <div 
           className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
@@ -483,15 +476,15 @@ function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapVal
             width: `${Math.max(0, 100 - (efficiency / benchmark) * 100)}%`
           }}
         >
-          <span className="text-xs font-semibold text-slate-600">Gap</span>
+          <span className="text-sm font-semibold text-slate-600">Gap</span>
         </div>
         <div className="absolute top-0 right-0 h-full flex items-center px-2">
-          <span className="text-xs font-semibold text-[#EA2C00]">Abridge: {benchmark} min</span>
+          <span className="text-sm font-semibold text-[#EA2C00]">Abridge: {benchmark} min</span>
         </div>
       </div>
       
       <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded mb-2">
-        {efficiency} min → {benchmark} min = +{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.timeConversionRate * 100}%
+        +{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}%
       </div>
 
       <button 
@@ -508,35 +501,29 @@ function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapVal
           <CalcStep 
             number={1}
             label="Your efficiency gap"
-            math={<>{benchmark} min - {efficiency} min = <strong className="text-[#EA2C00]">{gapMin.toFixed(1)} min/encounter</strong></>}
+            math={<>{benchmark} min - {efficiency} min = <strong className="text-emerald-600">{gapMin.toFixed(1)} min/encounter</strong></>}
           />
           <CalcStep 
             number={2}
             label="Encounters at Abridge utilization"
-            math={<strong className="text-[#EA2C00]">{encountersAtBenchmark.toLocaleString()} encounters</strong>}
+            math={<strong className="text-emerald-600">{encountersAtBenchmark.toLocaleString()} encounters</strong>}
             note="Using 75% utilization benchmark"
           />
           <CalcStep 
             number={3}
             label="Total time gap"
-            math={<>{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 = <strong className="text-[#EA2C00]">{gapHours.toLocaleString()} hours/year</strong></>}
+            math={<>{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 = <strong className="text-emerald-600">{gapHours.toLocaleString()} hours/year</strong></>}
           />
           <CalcStep 
             number={4}
-            label="Value of provider time"
-            math={<strong className="text-[#EA2C00]">${VALUE_ASSUMPTIONS.hourlyRate}/hour</strong>}
-            note="Fully-loaded provider cost"
-          />
-          <CalcStep 
-            number={5}
-            label="Conversion rate"
-            math={<strong className="text-[#EA2C00]">{VALUE_ASSUMPTIONS.timeConversionRate * 100}%</strong>}
-            note="Conservative estimate — not all saved time converts to value"
+            label="Value conversion"
+            math={<>{gapHours.toLocaleString()} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% = <strong className="text-emerald-600">${gapValue.toLocaleString()}</strong></>}
+            note={`${VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% conversion rate — not all saved time converts to value`}
           />
           <CalcStep 
             number="✓"
             label="Annual efficiency gap"
-            math={<>{gapHours.toLocaleString()} hrs × ${VALUE_ASSUMPTIONS.hourlyRate} × {VALUE_ASSUMPTIONS.timeConversionRate * 100}% = <strong className="text-[#EA2C00]">${gapValue.toLocaleString()}</strong></>}
+            math={<strong className="text-emerald-600">${gapValue.toLocaleString()}</strong>}
             isResult
           />
         </div>
@@ -561,7 +548,7 @@ function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
           <DollarSign className="w-5 h-5 text-emerald-600" />
           <span className="font-semibold text-[#111827]">Quality Gap</span>
         </div>
-        <span className="text-xl font-bold text-[#111827]">
+        <span className="text-xl font-bold text-emerald-600">
           {formatCurrency(gapValue)}
         </span>
       </div>
@@ -571,7 +558,7 @@ function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
           className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
           style={{ width: `${(wrvuLift / benchmark) * 100}%` }}
         >
-          <span className="text-xs font-semibold text-white truncate">You: +{wrvuLift}%</span>
+          <span className="text-sm font-semibold text-white truncate">You: +{wrvuLift}%</span>
         </div>
         <div 
           className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
@@ -580,10 +567,10 @@ function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
             width: `${Math.max(0, 100 - (wrvuLift / benchmark) * 100)}%`
           }}
         >
-          <span className="text-xs font-semibold text-slate-600">Gap</span>
+          <span className="text-sm font-semibold text-slate-600">Gap</span>
         </div>
         <div className="absolute top-0 right-0 h-full flex items-center px-2">
-          <span className="text-xs font-semibold text-[#EA2C00]">Abridge: +{benchmark}%</span>
+          <span className="text-sm font-semibold text-[#EA2C00]">Abridge: +{benchmark}%</span>
         </div>
       </div>
       
@@ -605,29 +592,29 @@ function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
           <CalcStep 
             number={1}
             label="Your wRVU lift gap"
-            math={<>+{benchmark}% - +{wrvuLift}% = <strong className="text-[#EA2C00]">+{gapPercent.toFixed(1)}% gap</strong></>}
+            math={<>+{benchmark}% - +{wrvuLift}% = <strong className="text-emerald-600">+{gapPercent.toFixed(1)}% gap</strong></>}
           />
           <CalcStep 
             number={2}
             label="Value per wRVU"
-            math={<strong className="text-[#EA2C00]">${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU</strong>}
+            math={<strong className="text-emerald-600">${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU</strong>}
             note="Medicare blended conversion factor"
           />
           <CalcStep 
             number={3}
             label="Encounters at Abridge utilization"
-            math={<strong className="text-[#EA2C00]">{encountersAtBenchmark.toLocaleString()} encounters</strong>}
+            math={<strong className="text-emerald-600">{encountersAtBenchmark.toLocaleString()} encounters</strong>}
           />
           <CalcStep 
             number={4}
             label="Attribution rate"
-            math={<strong className="text-[#EA2C00]">{VALUE_ASSUMPTIONS.wrvuAttribution * 100}%</strong>}
+            math={<strong className="text-emerald-600">{VALUE_ASSUMPTIONS.wrvuAttribution * 100}%</strong>}
             note="Conservative — other factors affect wRVU"
           />
           <CalcStep 
             number="✓"
             label="Annual quality gap"
-            math={<>{gapPercent.toFixed(1)}% × ${VALUE_ASSUMPTIONS.wrvuDollarValue} × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% = <strong className="text-[#EA2C00]">${gapValue.toLocaleString()}</strong></>}
+            math={<>{gapPercent.toFixed(1)}% × ${VALUE_ASSUMPTIONS.wrvuDollarValue} × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% = <strong className="text-emerald-600">${gapValue.toLocaleString()}</strong></>}
             isResult
           />
         </div>

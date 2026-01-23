@@ -1,0 +1,121 @@
+Fix two issues in the Value Realization Assessment:
+
+## Issue 1: Remove Confusing Weights from Score Calculation
+
+The current weighted score (30%, 30%, 25%, 15%) is confusing and arbitrary.
+
+Replace with a simple average:
+
+```javascript
+// OLD (confusing weights)
+const realizationScore = Math.round(
+  (utilizationScore * 0.30) +
+  (efficiencyScore * 0.30) +
+  (qualityScore * 0.25) +
+  (satisfactionScore * 0.15)
+);
+
+// NEW (simple average)
+const realizationScore = Math.round(
+  (utilizationScore + efficiencyScore + qualityScore + satisfactionScore) / 4
+);
+Update the score display to show a simple average, not weighted contributions:
+jsxCopy<div className="score-breakdown">
+  <div className="breakdown-row">
+    <span>Utilization</span>
+    <span>{utilizationScore}%</span>
+  </div>
+  <div className="breakdown-row">
+    <span>Efficiency</span>
+    <span>{efficiencyScore}%</span>
+  </div>
+  <div className="breakdown-row">
+    <span>Quality</span>
+    <span>{qualityScore}%</span>
+  </div>
+  <div className="breakdown-row">
+    <span>Satisfaction</span>
+    <span>{satisfactionScore}%</span>
+  </div>
+  <div className="breakdown-divider" />
+  <div className="breakdown-row total">
+    <span>Average Score</span>
+    <span>{realizationScore}%</span>
+  </div>
+</div>
+Remove all references to "× 30%" or "= 18pts" style calculations.
+Issue 2: Fix the Utilization Gap Dollar Calculation
+The current "$4/encounter" is arbitrary and indefensible.
+Replace with logic that ties utilization gap to time savings:
+javascriptCopy// OLD (arbitrary $4/encounter)
+const utilizationGapValue = utilizationGapEncounters * 4;
+
+// NEW (tied to efficiency logic)
+// If those encounters got documented at Abridge efficiency (4 min saved):
+const potentialTimeSavedMinutes = utilizationGapEncounters * BENCHMARKS.efficiency; // 4 min
+const potentialTimeSavedHours = potentialTimeSavedMinutes / 60;
+const utilizationGapValue = Math.round(potentialTimeSavedHours * 150 * 0.15); // Same conversion as efficiency
+Update the expandable math explanation:
+jsxCopy<div className="calc-detail">
+  <div className="calc-step">
+    <span className="step-number">1</span>
+    <div className="step-content">
+      <span className="step-label">Your utilization gap</span>
+      <span className="step-math">{benchmark}% − {yourUtilization}% = <strong>{gapPP}pp</strong></span>
+    </div>
+  </div>
+  
+  <div className="calc-step">
+    <span className="step-number">2</span>
+    <div className="step-content">
+      <span className="step-label">Encounters not getting ambient documentation</span>
+      <span className="step-math">{encounters.toLocaleString()} × {gapPP}% = <strong>{gapEncounters.toLocaleString()} encounters</strong></span>
+    </div>
+  </div>
+  
+  <div className="calc-step">
+    <span className="step-number">3</span>
+    <div className="step-content">
+      <span className="step-label">Potential time savings if documented at Abridge efficiency</span>
+      <span className="step-math">{gapEncounters.toLocaleString()} enc × 4 min = <strong>{potentialHours.toLocaleString()} hours</strong></span>
+      <span className="step-note">Using Abridge benchmark of 4 min saved per encounter</span>
+    </div>
+  </div>
+  
+  <div className="calc-step">
+    <span className="step-number">4</span>
+    <div className="step-content">
+      <span className="step-label">Value conversion (conservative)</span>
+      <span className="step-math">{potentialHours.toLocaleString()} hrs × $150/hr × 15% = <strong>${utilizationGapValue.toLocaleString()}</strong></span>
+      <span className="step-note">15% conversion rate — not all saved time converts to value</span>
+    </div>
+  </div>
+</div>
+Issue 3: Change Final Dollar Color from Red to Green
+The final dollar amounts in the calculation steps are showing in Abridge coral/red, which looks negative.
+Change to green (#10B981) for positive value amounts:
+cssCopy.calc-step.result .step-math strong,
+.gap-value-amount {
+  color: #10B981; /* Green, not coral */
+}
+Or use a neutral dark color (#111827) if green feels too "salesy."
+Issue 4: Make Bar Numbers Bigger
+Increase the font size for numbers on the gauge bars:
+cssCopy.gauge-fill span,
+.benchmark-label {
+  font-size: 14px; /* Was 12px */
+  font-weight: 600;
+}
+
+.dimension-insight .insight-percent {
+  font-size: 24px; /* Was 20px */
+  font-weight: 700;
+}
+Summary of Changes
+
+Score calculation: Simple average instead of weighted
+Score display: Remove "× 30% = 18pts" style, just show the four percentages and average
+Utilization gap: Tie to time savings logic, not arbitrary $4/encounter
+Dollar colors: Green or neutral, not red
+Bar numbers: Bigger font size
+
