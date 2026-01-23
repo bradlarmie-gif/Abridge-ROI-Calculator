@@ -1,0 +1,264 @@
+I need you to rebuild the "Your Journey with Abridge" section on the ROI results page. This section has two parts:
+
+1. A beautiful interactive line graph showing value growth over time
+2. A "Model Your Scenario" section where users can explore their full-scale potential
+
+The design should feel like Stripe—premium, clean, lots of whitespace, subtle animations, and accessible to non-technical users. Think "the most beautiful ROI calculator in healthcare."
+
+## PART 1: THE JOURNEY GRAPH
+
+### What it shows:
+- X-axis: Time (Today → 6 months → 12 months → 18 months → 24 months → 36 months)
+- Y-axis: Annual Value in dollars
+- Two lines:
+  1. Dashed gray line = "Linear projection" (just scaling, nothing else)
+  2. Solid green line = "Actual value" (with compounding effects)
+- The GAP between the lines represents the compounding bonus
+- A subtle gradient fill under the solid green line
+- Red dot marker at "Today" (pilot)
+- Green dot marker at the end (full scale)
+
+### Interactive tooltips:
+When hovering on any point, show a dark tooltip with:
+- Phase name (e.g., "Expansion")
+- Time label (e.g., "12 months")
+- Scale at that point (e.g., "350 beds")
+- Utilization at that point (e.g., "72%")
+- Divider line
+- Linear Value (grayed out)
+- Actual Value (green, highlighted)
+- Compounding Effect (gold/yellow, the difference)
+- Divider line
+- ROI at that point (e.g., "2.4x ROI")
+
+### The graph header:
+Title: "Your Journey with Abridge"
+Subtitle: "Start with a pilot. Prove the value. Scale across your organization."
+
+### Legend below the graph:
+- Red dot: "Pilot (Today)"
+- Solid green line: "Actual value (with compounding)"
+- Dashed gray line: "Linear projection"
+- Green dot: "Full Scale"
+
+### Below the graph, add an explanation box:
+Light background, with header "💡 THE COMPOUNDING EFFECT"
+Text: "The gap between the lines represents value that compounds as you scale—not just more of the same:"
+Three bullet points:
+- "↗ Utilization: 65% → 80% as adoption matures"
+- "🔄 Retention: Benefits materialize after 6-12 months"
+- "⚡ Efficiency: Shared learnings, optimized workflows"
+
+---
+
+## PART 2: MODEL YOUR SCENARIO
+
+This section lets users explore "what if" by adjusting their full-scale potential.
+
+### Layout: Two-column input area
+
+**LEFT COLUMN: "YOUR STARTING POINT"**
+- Card with light gray background
+- Icon: 📍
+- Title: "YOUR STARTING POINT"
+- Subtitle: "From your ROI model"
+- Three bullet points showing locked values:
+  - "• [X] staffed beds"
+  - "• [X]% utilization"  
+  - "• $[X]/year"
+- Footer badge: "✓ Locked from your model" (green text)
+- This card is NOT editable—it pulls from their ROI model
+
+**RIGHT COLUMN: "YOUR FULL SCALE POTENTIAL"**
+- Card with white background and subtle border
+- Icon: 🎯
+- Title: "YOUR FULL SCALE POTENTIAL"
+- Subtitle: "Where could this go?"
+
+Two inputs:
+
+1. **Total staffed beds in your organization**
+   - Number input field
+   - Default: 3x their pilot beds
+   - Unit label "beds" to the right of input
+
+2. **Target utilization at full scale**
+   - Horizontal slider (range input)
+   - Min: their current utilization
+   - Max: 95%
+   - Default: 80%
+   - Show current value to the right (e.g., "80%")
+   - Hint text below: "💡 Most organizations reach 75-85% at maturity"
+
+---
+
+### PACE SELECTOR
+
+Below the two columns, add a pace selector:
+
+Header: "HOW FAST DO YOU WANT TO SCALE?"
+
+Three cards in a row, selectable (radio-button style):
+
+**Card 1: MEASURED**
+- "36 months to full scale"
+- "Lower risk, slower ROI"
+
+**Card 2: STEADY** (default selected)
+- "24 months to full scale"
+- "Recommended balance"
+- Badge: "✓ Recommended" (coral color)
+
+**Card 3: AGGRESSIVE**
+- "18 months to full scale"
+- "Fast ROI, higher lift"
+
+When a card is selected, it should have a coral/red border and light coral background.
+
+---
+
+### RESULTS CARDS
+
+Below the pace selector, show three result cards in a row:
+
+**Card 1: PILOT (TODAY)**
+- Light gray background
+- Label: "PILOT (TODAY)"
+- Large value: "$452,500" (pulls from their model)
+- Sublabel: "annual value"
+- ROI badge: "1.9x ROI" (green background)
+
+**Arrow between cards:** → (or a subtle arrow icon)
+
+**Card 2: FULL SCALE**
+- Light gray background
+- Label: "FULL SCALE"
+- Large value: "$1.8M" (calculated based on inputs)
+- Sublabel: "annual value"
+- ROI badge: "3.3x ROI" (green background)
+
+**Card 3: COMPOUNDING BONUS** (highlighted)
+- Dark green gradient background
+- White text
+- Label: "COMPOUNDING BONUS"
+- Large value: "+$443,798"
+- Sublabel: "over 24 months" (updates based on pace)
+- Description: "Beyond linear projection"
+
+All three cards should update in REAL-TIME as the user changes inputs.
+
+---
+
+## CALCULATION LOGIC
+
+Here's how to calculate the values:
+
+```javascript
+function calculateScenario(pilot, fullScaleBeds, targetUtilization, pace) {
+  // Pilot values (locked from their model)
+  const pilotValue = pilot.annualValue;
+  const pilotBeds = pilot.beds;
+  const pilotUtilization = pilot.utilization;
+  const pilotInvestment = pilot.annualInvestment;
+  
+  // Scale multiplier
+  const bedMultiplier = fullScaleBeds / pilotBeds;
+  
+  // Linear projection (just scaling)
+  const linearFullScale = pilotValue * bedMultiplier;
+  
+  // Utilization boost
+  const utilizationBoost = targetUtilization / pilotUtilization;
+  
+  // Base full scale (beds + utilization)
+  const baseFullScale = linearFullScale * utilizationBoost;
+  
+  // Pace affects maturity bonus
+  const paceConfig = {
+    measured: { months: 36, maturityMultiplier: 1.15 },
+    steady: { months: 24, maturityMultiplier: 1.20 },
+    aggressive: { months: 18, maturityMultiplier: 1.25 }
+  };
+  
+  const { months, maturityMultiplier } = paceConfig[pace];
+  
+  // Final full scale value with maturity effects
+  const fullScaleValue = baseFullScale * maturityMultiplier;
+  
+  // Compounding bonus (everything above linear)
+  const compoundingBonus = fullScaleValue - linearFullScale;
+  
+  // Full scale investment
+  const pricePerBed = pilotInvestment / pilotBeds / 12; // monthly price per bed
+  const fullScaleInvestment = fullScaleBeds * pricePerBed * 12;
+  
+  // ROI calculations
+  const pilotROI = pilotValue / pilotInvestment;
+  const fullScaleROI = fullScaleValue / fullScaleInvestment;
+  
+  return {
+    pilot: {
+      value: pilotValue,
+      roi: pilotROI
+    },
+    fullScale: {
+      value: fullScaleValue,
+      roi: fullScaleROI
+    },
+    compounding: {
+      value: compoundingBonus,
+      months: months
+    },
+    // Data points for the graph
+    graphData: generateGraphData(pilot, fullScaleBeds, targetUtilization, months)
+  };
+}
+
+function generateGraphData(pilot, fullScaleBeds, targetUtilization, totalMonths) {
+  const points = [];
+  const milestones = [0, 6, 12, 18, 24, 36].filter(m => m <= totalMonths || m === 0);
+  
+  // Make sure we include the final point
+  if (!milestones.includes(totalMonths)) {
+    milestones.push(totalMonths);
+  }
+  
+  milestones.forEach(month => {
+    const progress = month / totalMonths; // 0 to 1
+    
+    // Beds scale linearly over time
+    const beds = Math.round(pilot.beds + (fullScaleBeds - pilot.beds) * progress);
+    
+    // Utilization ramps up (slightly curved)
+    const utilizationProgress = Math.pow(progress, 0.8); // Faster early gains
+    const utilization = pilot.utilization + (targetUtilization - pilot.utilization) * utilizationProgress;
+    
+    // Linear value (just bed scaling)
+    const linearValue = pilot.annualValue * (beds / pilot.beds);
+    
+    // Actual value (beds + utilization + maturity)
+    const utilizationBoost = utilization / pilot.utilization;
+    const maturityBoost = 1 + (0.2 * Math.pow(progress, 1.5)); // Compounds over time
+    const actualValue = linearValue * utilizationBoost * maturityBoost;
+    
+    points.push({
+      month,
+      label: month === 0 ? 'Today' : month === totalMonths ? 'Full Scale' : `${month} mo`,
+      beds: Math.round(beds),
+      utilization: Math.round(utilization),
+      linearValue: Math.round(linearValue),
+      actualValue: Math.round(actualValue),
+      phase: getPhase(progress)
+    });
+  });
+  
+  return points;
+}
+
+function getPhase(progress) {
+  if (progress === 0) return 'Pilot';
+  if (progress < 0.3) return 'Early Expansion';
+  if (progress < 0.6) return 'Expansion';
+  if (progress < 0.9) return 'Scale';
+  return 'Full Scale';
+}

@@ -1,0 +1,455 @@
+jsxCopy// JourneyGraph.jsx
+
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, ReferenceDot } from 'recharts';
+
+function JourneyGraph({ pilotData, fullScaleData }) {
+  // Generate the journey data points
+  const journeyData = [
+    {
+      month: 0,
+      label: 'Today',
+      beds: pilotData.beds,
+      utilization: pilotData.utilization,
+      linearValue: pilotData.annualValue,
+      actualValue: pilotData.annualValue,
+      phase: 'Pilot'
+    },
+    {
+      month: 6,
+      label: '6 months',
+      beds: Math.round(pilotData.beds * 1.25),
+      utilization: Math.min(pilotData.utilization + 5, 85),
+      linearValue: pilotData.annualValue * 1.25,
+      actualValue: pilotData.annualValue * 1.35, // +utilization boost
+      phase: 'Early Expansion'
+    },
+    {
+      month: 12,
+      label: '1 year',
+      beds: Math.round(pilotData.beds * 1.5),
+      utilization: Math.min(pilotData.utilization + 10, 85),
+      linearValue: pilotData.annualValue * 1.5,
+      actualValue: pilotData.annualValue * 1.75, // +maturity effects
+      phase: 'Expansion'
+    },
+    {
+      month: 18,
+      label: '18 months',
+      beds: Math.round(pilotData.beds * 2),
+      utilization: Math.min(pilotData.utilization + 12, 85),
+      linearValue: pilotData.annualValue * 2,
+      actualValue: pilotData.annualValue * 2.5, // +network effects
+      phase: 'Scale'
+    },
+    {
+      month: 24,
+      label: '2 years',
+      beds: Math.round(pilotData.beds * 2.5),
+      utilization: Math.min(pilotData.utilization + 15, 85),
+      linearValue: pilotData.annualValue * 2.5,
+      actualValue: pilotData.annualValue * 3.3,
+      phase: 'Maturity'
+    },
+    {
+      month: 36,
+      label: '3 years',
+      beds: fullScaleData?.beds || Math.round(pilotData.beds * 3),
+      utilization: fullScaleData?.utilization || 80,
+      linearValue: pilotData.annualValue * 3,
+      actualValue: pilotData.annualValue * 4.2,
+      phase: 'Full Scale'
+    }
+  ];
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload || !payload.length) return null;
+    
+    const data = payload[0].payload;
+    const compoundingValue = data.actualValue - data.linearValue;
+    
+    return (
+      <div className="journey-tooltip">
+        <div className="tooltip-header">
+          <span className="tooltip-phase">{data.phase}</span>
+          <span className="tooltip-time">{data.label}</span>
+        </div>
+        
+        <div className="tooltip-metrics">
+          <div className="tooltip-row">
+            <span className="metric-label">Scale</span>
+            <span className="metric-value">{data.beds} beds</span>
+          </div>
+          <div className="tooltip-row">
+            <span className="metric-label">Utilization</span>
+            <span className="metric-value">{data.utilization}%</span>
+          </div>
+        </div>
+        
+        <div className="tooltip-divider" />
+        
+        <div className="tooltip-values">
+          <div className="tooltip-row">
+            <span className="metric-label">Linear Value</span>
+            <span className="metric-value muted">
+              {formatCurrency(data.linearValue)}
+            </span>
+          </div>
+          <div className="tooltip-row">
+            <span className="metric-label">Actual Value</span>
+            <span className="metric-value highlight">
+              {formatCurrency(data.actualValue)}
+            </span>
+          </div>
+          {compoundingValue > 0 && (
+            <div className="tooltip-row compounding">
+              <span className="metric-label">Compounding Effect</span>
+              <span className="metric-value bonus">
+                +{formatCurrency(compoundingValue)}
+              </span>
+            </div>
+          )}
+        </div>
+        
+        <div className="tooltip-roi">
+          <span className="roi-value">
+            {(data.actualValue / pilotData.investment).toFixed(1)}x ROI
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="journey-graph-container">
+      <div className="journey-header">
+        <h3>Your Journey with Abridge</h3>
+        <p>Start with a pilot. Prove the value. Scale across your organization.</p>
+      </div>
+      
+      <div className="journey-chart">
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={journeyData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <defs>
+              <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
+            
+            <XAxis 
+              dataKey="label" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748b', fontSize: 12 }}
+            />
+            
+            <YAxis 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748b', fontSize: 12 }}
+              tickFormatter={(value) => formatCurrencyShort(value)}
+            />
+            
+            <Tooltip content={<CustomTooltip />} />
+            
+            {/* Area under the actual value line */}
+            <Area
+              type="monotone"
+              dataKey="actualValue"
+              stroke="none"
+              fill="url(#actualGradient)"
+            />
+            
+            {/* Linear projection (dashed) */}
+            <Line
+              type="monotone"
+              dataKey="linearValue"
+              stroke="#94a3b8"
+              strokeWidth={2}
+              strokeDasharray="8 4"
+              dot={false}
+              name="Linear projection"
+            />
+            
+            {/* Actual value (solid) */}
+            <Line
+              type="monotone"
+              dataKey="actualValue"
+              stroke="#10b981"
+              strokeWidth={3}
+              dot={false}
+              name="Actual value"
+            />
+            
+            {/* Pilot marker */}
+            <ReferenceDot
+              x="Today"
+              y={journeyData[0].actualValue}
+              r={6}
+              fill="#ef4444"
+              stroke="white"
+              strokeWidth={2}
+            />
+            
+            {/* Full scale marker */}
+            <ReferenceDot
+              x="3 years"
+              y={journeyData[journeyData.length - 1].actualValue}
+              r={6}
+              fill="#10b981"
+              stroke="white"
+              strokeWidth={2}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      
+      <div className="journey-legend">
+        <div className="legend-item">
+          <span className="legend-dot pilot" />
+          <span>Pilot (Today)</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-line solid" />
+          <span>Actual value (with compounding)</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-line dashed" />
+          <span>Linear projection</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-dot full-scale" />
+          <span>Full Scale</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Helper functions
+function formatCurrency(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
+}
+
+function formatCurrencyShort(value) {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}K`;
+  }
+  return `$${value}`;
+}
+cssCopy/* Journey Graph Styles */
+
+.journey-graph-container {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+}
+
+.journey-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.journey-header p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 24px 0;
+}
+
+.journey-chart {
+  margin-bottom: 16px;
+}
+
+/* Tooltip Styles */
+.journey-tooltip {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 200px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tooltip-phase {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.tooltip-time {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.tooltip-metrics {
+  margin-bottom: 12px;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.metric-value {
+  font-size: 13px;
+  color: white;
+  font-weight: 500;
+}
+
+.metric-value.muted {
+  color: #64748b;
+}
+
+.metric-value.highlight {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.metric-value.bonus {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.tooltip-divider {
+  height: 1px;
+  background: #334155;
+  margin: 8px 0;
+}
+
+.tooltip-row.compounding {
+  background: rgba(251, 191, 36, 0.1);
+  margin: 8px -12px -4px -12px;
+  padding: 8px 12px;
+  border-radius: 0 0 8px 8px;
+}
+
+.tooltip-roi {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #334155;
+  text-align: center;
+}
+
+.roi-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #10b981;
+}
+
+/* Legend Styles */
+.journey-legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.pilot {
+  background: #ef4444;
+}
+
+.legend-dot.full-scale {
+  background: #10b981;
+}
+
+.legend-line {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-line.solid {
+  background: #10b981;
+}
+
+.legend-line.dashed {
+  background: repeating-linear-gradient(
+    90deg,
+    #94a3b8 0px,
+    #94a3b8 6px,
+    transparent 6px,
+    transparent 10px
+  );
+}
+
+The Key Insight for the Tooltip
+When someone hovers over a point, they should see:
+Copy┌─────────────────────────────────┐
+│  EXPANSION                      │
+│  12 months                      │
+│  ─────────────────────          │
+│  Scale           350 beds       │
+│  Utilization     72%            │
+│  ─────────────────────          │
+│  Linear Value    $680,000       │  ← What you'd get just by adding beds
+│  Actual Value    $914,000       │  ← What you actually get
+│  ─────────────────────          │
+│  Compounding     +$234,000      │  ← THE GAP (this is the magic)
+│  ─────────────────────          │
+│           2.4x ROI              │
+└─────────────────────────────────┘
+The "Compounding Effect" line is the punchline. It answers: "Why is the solid line higher than the dashed line?"
+
+One More Addition: Explain the Gap
+Below the graph, add a simple explanation:
+jsxCopy<div className="compounding-explanation">
+  <div className="explanation-header">
+    <span className="icon">💡</span>
+    <span className="title">THE COMPOUNDING EFFECT</span>
+  </div>
+  <p>
+    The gap between the lines represents value that compounds as you scale—not just more of the same:
+  </p>
+  <ul>
+    <li>
+      <span className="bullet">↗</span>
+      <strong>Utilization:</strong> 65% → 80% as adoption matures
+    </li>
+    <li>
+      <span className="bullet">🔄</span>
+      <strong>Retention:</strong> Benefits materialize after 6-12 months
+    </li>
+    <li>
+      <span className="bullet">⚡</span>
+      <strong>Efficiency:</strong> Shared learnings, optimized workflows
+    </li>
+  </ul>
+</div>

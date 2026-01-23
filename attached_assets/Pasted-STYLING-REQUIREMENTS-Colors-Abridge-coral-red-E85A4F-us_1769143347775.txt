@@ -1,0 +1,76 @@
+STYLING REQUIREMENTS
+Colors:
+
+Abridge coral/red: #E85A4F (use for selected states, accents)
+Success green: #10B981 (use for positive values, actual value line)
+Muted gray: #64748B (use for labels, secondary text)
+Dark gray: #1E293B (use for primary text, tooltip backgrounds)
+Light backgrounds: #F8FAFC, #F1F5F9
+Borders: #E2E8F0
+
+Typography:
+
+Large values: 28-32px, font-weight 700
+Section headers: 14px uppercase, letter-spacing 0.05em, color #64748B
+Body text: 14px, color #475569
+Hints: 13px, color #64748B
+
+Spacing:
+
+Card padding: 24px
+Section gaps: 24-32px
+Generous whitespace everywhere
+
+Interactions:
+
+Smooth transitions on hover (0.2s ease)
+Cards should have subtle lift on hover (transform: translateY(-2px))
+Selected pace card should have coral border and light coral background
+Inputs should have coral focus ring
+Slider thumb should be coral colored
+All number changes should animate smoothly (consider using a number animation library)
+
+Graph specific:
+
+Use Recharts library
+Smooth curves (type="monotone")
+Tooltip should have rounded corners (12px), shadow, dark background
+Area fill under actual line should be a subtle gradient (green at 30% opacity fading to 5%)
+Dots on the line should only appear at start and end points
+Graph should be responsive (use ResponsiveContainer)
+
+Accessibility:
+
+All interactive elements should be keyboard navigable
+Inputs should have proper labels
+Color is not the only indicator (use patterns/icons too)
+Sufficient color contrast
+
+
+MOBILE RESPONSIVENESS
+On screens smaller than 768px:
+
+Stack the two input columns vertically
+Stack the three pace options vertically
+Stack the three result cards vertically
+The arrow between result cards should rotate 90 degrees (point down)
+Graph should remain full width but can be shorter
+
+
+INTEGRATION
+This section should:
+
+Pull pilot data from the existing ROI model state
+Update the graph in real-time when inputs change
+Be placed on the ROI results page, after the "Value Breakdown" section
+Maintain the same card/section styling as the rest of the page
+
+
+FINAL NOTES
+
+This should feel magical and premium
+Non-technical users (CNOs, CFOs) should immediately understand it
+The compounding effect should be the "aha moment"
+Everything should feel responsive and alive
+No jarring movements—smooth, professional transitions
+When in doubt, add more whitespace
