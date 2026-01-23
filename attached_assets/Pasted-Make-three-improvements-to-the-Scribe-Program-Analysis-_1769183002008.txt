@@ -1,0 +1,231 @@
+Make three improvements to the Scribe Program Analysis:
+
+## 1. Add Ambient AI Curve to the Scaling Graph
+
+Add a second line to the "How Scribe Programs Scale" graph showing how ambient AI scales differently. This line should NOT have dollar amounts — just show the shape.
+
+```jsx
+<div className="scaling-graph-section">
+  <h2>How Scribe Programs Scale</h2>
+  <p>
+    Scribe programs scale <strong>linearly</strong> — to cover more providers, 
+    you need more scribes. Ambient AI uses a per-provider model that scales differently.
+  </p>
+  
+  <div className="graph-container">
+    {/* Graph with TWO lines:
+    
+    LINE 1: Scribes (solid gray #6B7280)
+    - Linear scaling
+    - Y-axis has dollar labels ($0, $2M, $4M, $6M, $8M)
+    - Goes from $0 at 0% to their calculated fullScribeCost at 100%
+    
+    LINE 2: Ambient AI (dotted coral #E85A4F, 50% opacity)
+    - Logarithmic/flattening curve
+    - NO Y-axis labels for this line
+    - Starts near scribe line at low coverage, then flattens/diverges
+    - The gap between lines widens as coverage increases
+    
+    X-axis: Coverage % (0% to 100%)
+    
+    MARKER: Their current position (8% in this example) as a dot on the scribe line
+    */}
+    
+    <ScalingComparisonGraph 
+      currentCoverage={coveragePercent}
+      currentCost={totalScribeCost}
+      fullScribeCost={fullScribeCost}
+      showAmbientLine={true}
+    />
+  </div>
+  
+  <div className="graph-legend">
+    <div className="legend-item">
+      <span className="legend-line solid gray" />
+      <span>Scribes (linear — cost per scribe)</span>
+    </div>
+    <div className="legend-item">
+      <span className="legend-line dotted coral" />
+      <span>Ambient AI (per-provider model)</span>
+    </div>
+    <div className="legend-item">
+      <span className="legend-dot coral" />
+      <span>Your current position: {coveragePercent}% coverage</span>
+    </div>
+  </div>
+  
+  <div className="graph-note">
+    <span className="note-icon">ℹ️</span>
+    <span>
+      Ambient AI pricing varies by organization. 
+      The curve illustrates the per-provider model vs. per-scribe linear scaling.
+    </span>
+  </div>
+</div>
+The Ambient AI Curve Shape
+The ambient AI line should show a curve that:
+
+Starts relatively close to the scribe line at low coverage
+Flattens as coverage increases (economies of scale)
+Creates a widening gap compared to the linear scribe line
+
+Use a logarithmic or square-root curve shape:
+javascriptCopy// Scribe cost at coverage X%
+const scribeCostAtCoverage = (coverage) => {
+  return (coverage / 100) * fullScribeCost;
+};
+
+// Ambient AI curve shape (NO actual dollar values — just relative shape)
+// This is for visualization only — shows the per-provider model flattening
+const ambientAIShape = (coverage) => {
+  // Use square root curve to show diminishing per-unit cost
+  // Scale it relative to scribe cost but with significant divergence
+  const scaleFactor = 0.4; // Ambient AI ends up at ~40% of scribe cost at full coverage
+  const curveShape = Math.sqrt(coverage / 100); // Flattening curve
+  return curveShape * fullScribeCost * scaleFactor;
+};
+Styling the Lines
+cssCopy/* Scribe line */
+.scribe-line {
+  stroke: #6B7280;
+  stroke-width: 3;
+  fill: none;
+}
+
+/* Ambient AI line */
+.ambient-line {
+  stroke: #E85A4F;
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  stroke-opacity: 0.6;
+  fill: none;
+}
+
+/* Current position marker */
+.current-marker {
+  fill: #E85A4F;
+  r: 8;
+}
+2. Add "Explore Ambient AI" CTA at the End
+After the Methodology section, add a transition to the Explore flow:
+jsxCopy<div className="explore-section">
+  <div className="explore-card">
+    <div className="explore-content">
+      <h3>Explore Your Options</h3>
+      <p>
+        Now that you understand your scribe program economics, 
+        see what ambient AI value realization could look like 
+        for your organization.
+      </p>
+      <ul className="explore-benefits">
+        <li>Model different coverage scenarios</li>
+        <li>Understand the four dimensions of ambient AI value</li>
+        <li>See how utilization, efficiency, quality, and satisfaction compound</li>
+      </ul>
+    </div>
+    <button 
+      className="explore-btn"
+      onClick={() => navigate('/explore', { 
+        state: { 
+          providers: totalProviders,
+          encounters: encounters,
+          fromScribeAnalysis: true 
+        }
+      })}
+    >
+      Explore Ambient AI for {totalProviders} Providers →
+    </button>
+  </div>
+</div>
+Styling the Explore Section
+cssCopy.explore-section {
+  margin-top: 48px;
+  padding-top: 48px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.explore-card {
+  background: linear-gradient(135deg, #FEF2F2 0%, #FFF 100%);
+  border: 1px solid #FECACA;
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+}
+
+.explore-content h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.explore-content p {
+  color: #6B7280;
+  margin-bottom: 16px;
+}
+
+.explore-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.explore-benefits li {
+  padding: 4px 0;
+  padding-left: 24px;
+  position: relative;
+  color: #374151;
+  font-size: 14px;
+}
+
+.explore-benefits li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #10B981;
+}
+
+.explore-btn {
+  background: #E85A4F;
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.explore-btn:hover {
+  background: #D14B40;
+  transform: translateY(-1px);
+}
+3. Consolidate Into Single Scrollable Page (Optional)
+Consider removing the "See Full Analysis" button and just showing everything on one page. The flow would be:
+
+Input section (collapsible after filled)
+Coverage gap
+Scaling comparison (Current vs Full)
+The Math (expandable)
+Burden on unsupported providers
+How scribe programs scale (graph with both lines)
+Factors that affect costs
+Methodology
+Explore ambient AI CTA
+Export buttons
+
+This eliminates the extra click and makes it feel more like a continuous analysis.
+If keeping two pages, at least make the transition instant (no loading state) so it feels seamless.
+Summary
+
+Add ambient AI curve to scaling graph (dotted coral, no dollar labels, just shape)
+Add disclaimer that ambient AI pricing varies
+Add "Explore Ambient AI" CTA at the end that flows to the Explore path
+Pass context (providers, encounters) to Explore so they don't re-enter
+(Optional) Consolidate to single scrollable page
+

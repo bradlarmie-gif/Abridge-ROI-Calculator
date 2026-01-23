@@ -27,20 +27,21 @@ The application guides users through multi-step processes:
          - Solution type selector (Ambient AI, Human Scribes)
          - Provider count and annual encounters inputs
          - 2x2 grid of dimension cards with sliders + editable number inputs: Utilization (75%), Efficiency (4 min), Quality/wRVU (+5%), Satisfaction (85%)
-         - Value Realization Score using weighted average (Utilization 30%, Efficiency 30%, Quality 25%, Satisfaction 15%)
+         - Value Realization Score using simple average of all 4 dimensions
          - Maturity spectrum bar (Early Stage <40%, Developing 40-60%, Optimized 60-80%, Transformed 80%+)
          - Live-updating "Your Annual Gap" card with gap components
       2. **Full Analysis Page** (SwitchFullAnalysis.tsx) - Comprehensive gap analysis:
          - 3 headline cards (Annual Gap, Realization Score %, 3-Year Gap)
          - "Cost of Gap Over Time" line chart (current vs Abridge trajectory)
          - "How the Gap Breaks Down" with expandable step-by-step calculation details for each dimension
-         - "How Your Score is Calculated" with weighted formula breakdown
+         - "How Your Score is Calculated" with simple average formula
          - "The Cost of Waiting" (close now vs wait 6mo vs wait 12mo)
          - "Methodology" with all four Abridge benchmarks
          - CTAs: Export PDF, Share with Team
       - **Key Benchmarks**: Utilization 75%, Efficiency 4 min/encounter, Quality +5% wRVU, Satisfaction 85%
-      - **Value Assumptions**: $4/encounter (utilization), $150/hr × 20% conversion (efficiency), $33/wRVU × 50% attribution
-      - **Calculation Engine**: switchGapCalculator.ts with weighted realization score
+      - **Value Assumptions**: $150/hr × 15% conversion (utilization gap tied to time savings), $150/hr × 20% conversion (efficiency gap), $33/wRVU × 50% attribution (quality gap)
+      - **Calculation Engine**: switchGapCalculator.ts with simple average realization score
+      - **UI Styling**: Dollar amounts in gap cards shown in emerald-600 (green), bar text sizes increased for readability
     - **Human Scribes Path** (Scribe Program Analysis - purely educational):
       1. **Assessment Page** (ScribeAssessment.tsx) - Scribe program cost/coverage analysis:
          - Scribe program inputs: scribe count, cost per hour, hours per week
