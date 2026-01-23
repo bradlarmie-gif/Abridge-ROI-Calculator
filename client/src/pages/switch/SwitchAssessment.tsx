@@ -289,9 +289,9 @@ export default function SwitchAssessment({
                   <span className="text-lg font-bold text-[#111827]">{calculations.satisfactionScore}%</span>
                 </div>
                 <div className="border-t border-slate-200 my-2"></div>
-                <div className="flex items-center justify-between px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="flex items-center justify-between gap-4 px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
                   <span className="font-semibold text-[#111827]">Average Score</span>
-                  <span className="font-bold text-emerald-600 text-lg">{calculations.realizationScore}%</span>
+                  <span className="font-bold text-emerald-600 text-lg whitespace-nowrap">{calculations.realizationScore}%</span>
                 </div>
               </div>
             </div>
