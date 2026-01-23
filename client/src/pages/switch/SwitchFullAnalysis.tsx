@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Smile } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
@@ -163,120 +163,29 @@ export default function SwitchFullAnalysis({
 
           <div className="space-y-6">
             {calculations.utilizationGapValue > 0 && (
-              <div className="border border-slate-200 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <BarChart3 className="w-5 h-5 text-blue-600" />
-                    <span className="font-semibold text-[#111827]">Utilization Gap</span>
-                  </div>
-                  <span className="text-xl font-bold text-[#111827]">
-                    {formatCurrency(calculations.utilizationGapValue)}
-                  </span>
-                </div>
-                
-                <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
-                  <div 
-                    className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
-                    style={{ width: `${(inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%` }}
-                  >
-                    <span className="text-xs font-semibold text-white truncate">You: {inputs.utilization}%</span>
-                  </div>
-                  <div 
-                    className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
-                    style={{ 
-                      left: `${(inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`,
-                      width: `${Math.max(0, 100 - (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100)}%`
-                    }}
-                  >
-                    <span className="text-xs font-semibold text-slate-600">Gap</span>
-                  </div>
-                  <div className="absolute top-0 right-0 h-full flex items-center px-2">
-                    <span className="text-xs font-semibold text-[#EA2C00]">Abridge: {ABRIDGE_BENCHMARKS.utilization}%</span>
-                  </div>
-                </div>
-                
-                <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
-                  {inputs.utilization}% → {ABRIDGE_BENCHMARKS.utilization}% = +{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp = +{calculations.encounterGap.toLocaleString()} enc × ${VALUE_ASSUMPTIONS.encounterValue}/enc
-                </div>
-              </div>
+              <UtilizationGapCard 
+                utilization={inputs.utilization}
+                encounters={inputs.annualEncounters || 150000}
+                gapEncounters={calculations.encounterGap}
+                gapValue={calculations.utilizationGapValue}
+              />
             )}
 
             {calculations.efficiencyGapValue > 0 && (
-              <div className="border border-slate-200 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-purple-600" />
-                    <span className="font-semibold text-[#111827]">Efficiency Gap</span>
-                  </div>
-                  <span className="text-xl font-bold text-[#111827]">
-                    {formatCurrency(calculations.efficiencyGapValue)}
-                  </span>
-                </div>
-                
-                <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
-                  <div 
-                    className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
-                    style={{ width: `${(inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%` }}
-                  >
-                    <span className="text-xs font-semibold text-white truncate">You: {inputs.timeSavedPerEncounter} min</span>
-                  </div>
-                  <div 
-                    className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
-                    style={{ 
-                      left: `${(inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`,
-                      width: `${Math.max(0, 100 - (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100)}%`
-                    }}
-                  >
-                    <span className="text-xs font-semibold text-slate-600">Gap</span>
-                  </div>
-                  <div className="absolute top-0 right-0 h-full flex items-center px-2">
-                    <span className="text-xs font-semibold text-[#EA2C00]">Abridge: {ABRIDGE_BENCHMARKS.timeSavedAvg} min</span>
-                  </div>
-                </div>
-                
-                <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
-                  {inputs.timeSavedPerEncounter} min → {ABRIDGE_BENCHMARKS.timeSavedAvg} min = +{(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.timeConversionRate * 100}%
-                </div>
-              </div>
+              <EfficiencyGapCard 
+                efficiency={inputs.timeSavedPerEncounter}
+                encountersAtBenchmark={encountersAtBenchmark}
+                gapHours={calculations.efficiencyGapHours}
+                gapValue={calculations.efficiencyGapValue}
+              />
             )}
 
             {calculations.wrvuGapValue > 0 && (
-              <div className="border border-slate-200 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
-                    <span className="font-semibold text-[#111827]">Quality Gap</span>
-                  </div>
-                  <span className="text-xl font-bold text-[#111827]">
-                    {formatCurrency(calculations.wrvuGapValue)}
-                  </span>
-                </div>
-                
-                <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
-                  <div 
-                    className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
-                    style={{ width: `${(inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%` }}
-                  >
-                    <span className="text-xs font-semibold text-white truncate">You: +{inputs.wrvuLift}%</span>
-                  </div>
-                  <div 
-                    className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
-                    style={{ 
-                      left: `${(inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%`,
-                      width: `${Math.max(0, 100 - (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100)}%`
-                    }}
-                  >
-                    <span className="text-xs font-semibold text-slate-600">Gap</span>
-                  </div>
-                  <div className="absolute top-0 right-0 h-full flex items-center px-2">
-                    <span className="text-xs font-semibold text-[#EA2C00]">Abridge: +{ABRIDGE_BENCHMARKS.wrvuLift}%</span>
-                  </div>
-                </div>
-                
-                <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
-                  +{inputs.wrvuLift}% → +{ABRIDGE_BENCHMARKS.wrvuLift}% = +{(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% gap × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%
-                </div>
-              </div>
+              <QualityGapCard 
+                wrvuLift={inputs.wrvuLift}
+                encountersAtBenchmark={encountersAtBenchmark}
+                gapValue={calculations.wrvuGapValue}
+              />
             )}
           </div>
         </section>
@@ -422,6 +331,307 @@ export default function SwitchFullAnalysis({
           </div>
         </section>
       </main>
+    </div>
+  );
+}
+
+function CalcStep({ number, label, math, note, isResult = false }: {
+  number: string | number;
+  label: string;
+  math: React.ReactNode;
+  note?: string;
+  isResult?: boolean;
+}) {
+  return (
+    <div className={`flex gap-3 ${isResult ? 'mt-3 pt-3 border-t border-slate-200' : ''}`}>
+      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
+        isResult ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'
+      }`}>
+        {number}
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs text-[#6B7280]">{label}</span>
+        <span className={`font-mono ${isResult ? 'text-base font-semibold' : 'text-sm'} text-[#111827]`}>
+          {math}
+        </span>
+        {note && <span className="text-xs text-slate-400 italic">{note}</span>}
+      </div>
+    </div>
+  );
+}
+
+function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }: {
+  utilization: number;
+  encounters: number;
+  gapEncounters: number;
+  gapValue: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const benchmark = ABRIDGE_BENCHMARKS.utilization;
+  const gapPP = benchmark - utilization;
+
+  return (
+    <div className="border border-slate-200 rounded-lg p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <BarChart3 className="w-5 h-5 text-blue-600" />
+          <span className="font-semibold text-[#111827]">Utilization Gap</span>
+        </div>
+        <span className="text-xl font-bold text-[#111827]">
+          {formatCurrency(gapValue)}
+        </span>
+      </div>
+      
+      <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+        <div 
+          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+          style={{ width: `${(utilization / benchmark) * 100}%` }}
+        >
+          <span className="text-xs font-semibold text-white truncate">You: {utilization}%</span>
+        </div>
+        <div 
+          className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
+          style={{ 
+            left: `${(utilization / benchmark) * 100}%`,
+            width: `${Math.max(0, 100 - (utilization / benchmark) * 100)}%`
+          }}
+        >
+          <span className="text-xs font-semibold text-slate-600">Gap</span>
+        </div>
+        <div className="absolute top-0 right-0 h-full flex items-center px-2">
+          <span className="text-xs font-semibold text-[#EA2C00]">Abridge: {benchmark}%</span>
+        </div>
+      </div>
+      
+      <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded mb-2">
+        {utilization}% → {benchmark}% = +{gapPP}pp = +{gapEncounters.toLocaleString()} enc × ${VALUE_ASSUMPTIONS.encounterValue}/enc
+      </div>
+
+      <button 
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#EA2C00] transition-colors"
+        data-testid="button-expand-utilization"
+      >
+        {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+        <span>{expanded ? 'Hide calculation' : 'How we calculated this'}</span>
+      </button>
+
+      {expanded && (
+        <div className="mt-4 p-4 bg-slate-50 rounded-lg space-y-3 animate-in slide-in-from-top-2 duration-200">
+          <CalcStep 
+            number={1}
+            label="Your utilization gap"
+            math={<>{benchmark}% - {utilization}% = <strong className="text-[#EA2C00]">{gapPP}pp</strong></>}
+            note="pp = percentage points"
+          />
+          <CalcStep 
+            number={2}
+            label="Encounters not being documented"
+            math={<>{encounters.toLocaleString()} total × {gapPP}% = <strong className="text-[#EA2C00]">{gapEncounters.toLocaleString()} encounters</strong></>}
+          />
+          <CalcStep 
+            number={3}
+            label="Value per undocumented encounter"
+            math={<strong className="text-[#EA2C00]">${VALUE_ASSUMPTIONS.encounterValue}/encounter</strong>}
+            note="Based on time cost + documentation quality value"
+          />
+          <CalcStep 
+            number="✓"
+            label="Annual utilization gap"
+            math={<>{gapEncounters.toLocaleString()} enc × ${VALUE_ASSUMPTIONS.encounterValue} = <strong className="text-[#EA2C00]">${gapValue.toLocaleString()}</strong></>}
+            isResult
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapValue }: {
+  efficiency: number;
+  encountersAtBenchmark: number;
+  gapHours: number;
+  gapValue: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const benchmark = ABRIDGE_BENCHMARKS.timeSavedAvg;
+  const gapMin = benchmark - efficiency;
+
+  return (
+    <div className="border border-slate-200 rounded-lg p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <Clock className="w-5 h-5 text-purple-600" />
+          <span className="font-semibold text-[#111827]">Efficiency Gap</span>
+        </div>
+        <span className="text-xl font-bold text-[#111827]">
+          {formatCurrency(gapValue)}
+        </span>
+      </div>
+      
+      <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+        <div 
+          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+          style={{ width: `${(efficiency / benchmark) * 100}%` }}
+        >
+          <span className="text-xs font-semibold text-white truncate">You: {efficiency} min</span>
+        </div>
+        <div 
+          className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
+          style={{ 
+            left: `${(efficiency / benchmark) * 100}%`,
+            width: `${Math.max(0, 100 - (efficiency / benchmark) * 100)}%`
+          }}
+        >
+          <span className="text-xs font-semibold text-slate-600">Gap</span>
+        </div>
+        <div className="absolute top-0 right-0 h-full flex items-center px-2">
+          <span className="text-xs font-semibold text-[#EA2C00]">Abridge: {benchmark} min</span>
+        </div>
+      </div>
+      
+      <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded mb-2">
+        {efficiency} min → {benchmark} min = +{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.timeConversionRate * 100}%
+      </div>
+
+      <button 
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#EA2C00] transition-colors"
+        data-testid="button-expand-efficiency"
+      >
+        {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+        <span>{expanded ? 'Hide calculation' : 'How we calculated this'}</span>
+      </button>
+
+      {expanded && (
+        <div className="mt-4 p-4 bg-slate-50 rounded-lg space-y-3 animate-in slide-in-from-top-2 duration-200">
+          <CalcStep 
+            number={1}
+            label="Your efficiency gap"
+            math={<>{benchmark} min - {efficiency} min = <strong className="text-[#EA2C00]">{gapMin.toFixed(1)} min/encounter</strong></>}
+          />
+          <CalcStep 
+            number={2}
+            label="Encounters at Abridge utilization"
+            math={<strong className="text-[#EA2C00]">{encountersAtBenchmark.toLocaleString()} encounters</strong>}
+            note="Using 75% utilization benchmark"
+          />
+          <CalcStep 
+            number={3}
+            label="Total time gap"
+            math={<>{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 = <strong className="text-[#EA2C00]">{gapHours.toLocaleString()} hours/year</strong></>}
+          />
+          <CalcStep 
+            number={4}
+            label="Value of provider time"
+            math={<strong className="text-[#EA2C00]">${VALUE_ASSUMPTIONS.hourlyRate}/hour</strong>}
+            note="Fully-loaded provider cost"
+          />
+          <CalcStep 
+            number={5}
+            label="Conversion rate"
+            math={<strong className="text-[#EA2C00]">{VALUE_ASSUMPTIONS.timeConversionRate * 100}%</strong>}
+            note="Conservative estimate — not all saved time converts to value"
+          />
+          <CalcStep 
+            number="✓"
+            label="Annual efficiency gap"
+            math={<>{gapHours.toLocaleString()} hrs × ${VALUE_ASSUMPTIONS.hourlyRate} × {VALUE_ASSUMPTIONS.timeConversionRate * 100}% = <strong className="text-[#EA2C00]">${gapValue.toLocaleString()}</strong></>}
+            isResult
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
+  wrvuLift: number;
+  encountersAtBenchmark: number;
+  gapValue: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const benchmark = ABRIDGE_BENCHMARKS.wrvuLift;
+  const gapPercent = benchmark - wrvuLift;
+
+  return (
+    <div className="border border-slate-200 rounded-lg p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <DollarSign className="w-5 h-5 text-emerald-600" />
+          <span className="font-semibold text-[#111827]">Quality Gap</span>
+        </div>
+        <span className="text-xl font-bold text-[#111827]">
+          {formatCurrency(gapValue)}
+        </span>
+      </div>
+      
+      <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+        <div 
+          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+          style={{ width: `${(wrvuLift / benchmark) * 100}%` }}
+        >
+          <span className="text-xs font-semibold text-white truncate">You: +{wrvuLift}%</span>
+        </div>
+        <div 
+          className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
+          style={{ 
+            left: `${(wrvuLift / benchmark) * 100}%`,
+            width: `${Math.max(0, 100 - (wrvuLift / benchmark) * 100)}%`
+          }}
+        >
+          <span className="text-xs font-semibold text-slate-600">Gap</span>
+        </div>
+        <div className="absolute top-0 right-0 h-full flex items-center px-2">
+          <span className="text-xs font-semibold text-[#EA2C00]">Abridge: +{benchmark}%</span>
+        </div>
+      </div>
+      
+      <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded mb-2">
+        +{wrvuLift}% → +{benchmark}% = +{gapPercent.toFixed(1)}% gap × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%
+      </div>
+
+      <button 
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#EA2C00] transition-colors"
+        data-testid="button-expand-quality"
+      >
+        {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+        <span>{expanded ? 'Hide calculation' : 'How we calculated this'}</span>
+      </button>
+
+      {expanded && (
+        <div className="mt-4 p-4 bg-slate-50 rounded-lg space-y-3 animate-in slide-in-from-top-2 duration-200">
+          <CalcStep 
+            number={1}
+            label="Your wRVU lift gap"
+            math={<>+{benchmark}% - +{wrvuLift}% = <strong className="text-[#EA2C00]">+{gapPercent.toFixed(1)}% gap</strong></>}
+          />
+          <CalcStep 
+            number={2}
+            label="Value per wRVU"
+            math={<strong className="text-[#EA2C00]">${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU</strong>}
+            note="Medicare blended conversion factor"
+          />
+          <CalcStep 
+            number={3}
+            label="Encounters at Abridge utilization"
+            math={<strong className="text-[#EA2C00]">{encountersAtBenchmark.toLocaleString()} encounters</strong>}
+          />
+          <CalcStep 
+            number={4}
+            label="Attribution rate"
+            math={<strong className="text-[#EA2C00]">{VALUE_ASSUMPTIONS.wrvuAttribution * 100}%</strong>}
+            note="Conservative — other factors affect wRVU"
+          />
+          <CalcStep 
+            number="✓"
+            label="Annual quality gap"
+            math={<>{gapPercent.toFixed(1)}% × ${VALUE_ASSUMPTIONS.wrvuDollarValue} × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% = <strong className="text-[#EA2C00]">${gapValue.toLocaleString()}</strong></>}
+            isResult
+          />
+        </div>
+      )}
     </div>
   );
 }
