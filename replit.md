@@ -41,22 +41,23 @@ The application guides users through multi-step processes:
       - **Key Benchmarks**: Utilization 75%, Efficiency 4 min/encounter, Quality +5% wRVU, Satisfaction 85%
       - **Value Assumptions**: $4/encounter (utilization), $150/hr × 20% conversion (efficiency), $33/wRVU × 50% attribution
       - **Calculation Engine**: switchGapCalculator.ts with weighted realization score
-    - **Human Scribes Path** (for prospects using human scribes):
+    - **Human Scribes Path** (Scribe Program Analysis - purely educational):
       1. **Assessment Page** (ScribeAssessment.tsx) - Scribe program cost/coverage analysis:
          - Scribe program inputs: scribe count, cost per hour, hours per week
          - Provider coverage inputs: providers with scribes, total providers, annual encounters
          - "Your Coverage Gap" visualization bar showing supported vs unsupported providers
-         - "The Scaling Problem" with 3 comparison cards (Current, Full Scribes, Abridge)
-         - "Cost of Unsupported Providers" with documentation time, pajama time, opportunity cost
+         - "What Full Scribe Coverage Would Cost" with 2 comparison cards (Current State, Full Coverage)
+         - "The Burden on Unsupported Providers" with documentation time, pajama time, time per provider
       2. **Full Analysis Page** (ScribeFullAnalysis.tsx):
-         - 3 headline cards (Current Coverage %, Coverage Gap count, Cost to Scale)
-         - "The Scaling Comparison" line chart showing Scribes vs Abridge cost curves
-         - "Why Ambient AI Scales Differently" comparison table
-         - "The Hybrid Opportunity" section for keeping scribes + adding Abridge
-         - "Your Path Forward" with value metrics and savings
+         - 3 headline cards (Your Investment, Your Coverage %, Cost Per Covered Provider)
+         - "Your Coverage Gap" visualization and stats
+         - "What Full Scribe Coverage Would Cost" with step-by-step math breakdown
+         - "The Burden on Unsupported Providers" documentation time analysis
+         - "How Scribe Programs Scale" with linear scaling chart and educational content
+         - "Methodology & Assumptions" showing user inputs and industry assumptions
          - CTAs: Export PDF, Share with Team
-      - **Key Frame**: "Scribes don't scale" - focusing on coverage gaps and cost comparison
-      - **Calculation Engine**: scribeGapCalculator.ts with coverage and scaling math
+      - **Key Frame**: Educational analysis - no Abridge pricing, savings, or value claims
+      - **Calculation Engine**: scribeGapCalculator.ts with coverage and scaling math (no Abridge calculations)
 -   **Expand Path**: A 5-step performance analysis flow for current Abridge customers with tiered ROI calculations:
     1. Setting Selection (ExpandSettingSelection.tsx)
     2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection
