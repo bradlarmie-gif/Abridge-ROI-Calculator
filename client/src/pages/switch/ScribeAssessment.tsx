@@ -1,0 +1,409 @@
+import { useMemo, useState } from "react";
+import { ArrowRight, ArrowLeft, Users, DollarSign, Clock, Building2, UserCheck, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { GlobalHeader } from "@/components/GlobalHeader";
+import {
+  type ScribeInputs,
+  calculateScribeGap,
+  formatCurrency,
+  SCRIBE_ASSUMPTIONS,
+} from "@/lib/scribeGapCalculator";
+
+interface ScribeAssessmentProps {
+  inputs: ScribeInputs;
+  setInputs: React.Dispatch<React.SetStateAction<ScribeInputs>>;
+  onNext: () => void;
+  onBack: () => void;
+  onBackToJourney?: () => void;
+}
+
+export default function ScribeAssessment({
+  inputs,
+  setInputs,
+  onNext,
+  onBack,
+  onBackToJourney,
+}: ScribeAssessmentProps) {
+  const calculations = useMemo(() => calculateScribeGap(inputs), [inputs]);
+
+  const updateInput = <K extends keyof ScribeInputs>(key: K, value: ScribeInputs[K]) => {
+    setInputs((prev) => ({ ...prev, [key]: value }));
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <GlobalHeader pageName="Value Realization Assessment" currentStep={1} totalSteps={2} />
+
+      <main className="pt-[88px] pb-8 px-4 md:px-8 max-w-5xl mx-auto">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="text-[#6B7280] hover:text-[#111827] -ml-2"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Back
+          </Button>
+        </div>
+
+        <div className="text-center mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2">
+            Your Scribe Program
+          </h1>
+          <p className="text-[#6B7280]">
+            Let's understand your current scribe coverage and costs
+          </p>
+        </div>
+
+        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
+          <h2 className="text-lg font-bold text-[#111827] mb-6">Scribe Program Details</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputCard
+              icon={<Users className="w-4 h-4 text-purple-600" />}
+              iconBg="bg-purple-100"
+              label="How many scribes do you have?"
+              value={inputs.scribeCount}
+              onChange={(v) => updateInput("scribeCount", v)}
+              unit="scribes"
+              testId="input-scribe-count"
+            />
+
+            <InputCard
+              icon={<DollarSign className="w-4 h-4 text-emerald-600" />}
+              iconBg="bg-emerald-100"
+              label="Average cost per scribe"
+              value={inputs.scribeCostPerHour}
+              onChange={(v) => updateInput("scribeCostPerHour", v)}
+              unit="$/hour"
+              hint="Include benefits, overhead if known"
+              testId="input-scribe-cost"
+            />
+
+            <InputCard
+              icon={<Clock className="w-4 h-4 text-blue-600" />}
+              iconBg="bg-blue-100"
+              label="Hours per week (per scribe)"
+              value={inputs.scribeHoursPerWeek}
+              onChange={(v) => updateInput("scribeHoursPerWeek", v)}
+              unit="hrs/week"
+              testId="input-scribe-hours"
+            />
+
+            <InputCard
+              icon={<UserCheck className="w-4 h-4 text-orange-600" />}
+              iconBg="bg-orange-100"
+              label="Providers supported by scribes"
+              value={inputs.providersWithScribes}
+              onChange={(v) => updateInput("providersWithScribes", v)}
+              unit="providers"
+              hint="How many providers have scribe support?"
+              testId="input-providers-with-scribes"
+            />
+
+            <InputCard
+              icon={<Building2 className="w-4 h-4 text-slate-600" />}
+              iconBg="bg-slate-100"
+              label="Total providers in your organization"
+              value={inputs.totalProviders}
+              onChange={(v) => updateInput("totalProviders", v)}
+              unit="providers"
+              testId="input-total-providers"
+            />
+
+            <InputCard
+              icon={<Calendar className="w-4 h-4 text-indigo-600" />}
+              iconBg="bg-indigo-100"
+              label="Annual encounters (all providers)"
+              value={inputs.annualEncounters}
+              onChange={(v) => updateInput("annualEncounters", v)}
+              unit="encounters/year"
+              testId="input-annual-encounters"
+              large
+            />
+          </div>
+        </section>
+
+        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
+          <h2 className="text-lg font-bold text-[#111827] mb-6">Your Coverage Gap</h2>
+
+          <div className="mb-6">
+            <div className="relative h-12 bg-slate-100 rounded-lg overflow-hidden">
+              <div
+                className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-3 transition-all"
+                style={{ width: `${calculations.coveragePercent}%` }}
+              >
+                <span className="text-xs font-semibold text-white truncate">
+                  {inputs.providersWithScribes} with scribes
+                </span>
+              </div>
+              <div
+                className="absolute top-0 h-full bg-amber-100 flex items-center justify-center transition-all"
+                style={{
+                  left: `${calculations.coveragePercent}%`,
+                  width: `${100 - calculations.coveragePercent}%`,
+                }}
+              >
+                <span className="text-xs font-semibold text-amber-700">
+                  {calculations.providersWithoutSupport} without support
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-slate-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-[#111827]">{calculations.coveragePercent}%</div>
+              <div className="text-xs text-[#6B7280]">have scribe support</div>
+            </div>
+            <div className="bg-amber-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-amber-700">
+                {100 - calculations.coveragePercent}%
+              </div>
+              <div className="text-xs text-amber-600">documenting alone</div>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3">
+            <div className="text-amber-500 text-xl flex-shrink-0">⚠️</div>
+            <p className="text-sm text-amber-800">
+              <strong>{calculations.providersWithoutSupport} providers</strong> have no documentation
+              support. They're spending 10-15+ minutes per encounter on notes, contributing to burnout
+              and after-hours work.
+            </p>
+          </div>
+        </section>
+
+        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
+          <h2 className="text-lg font-bold text-[#111827] mb-2">The Scaling Problem</h2>
+          <p className="text-sm text-[#6B7280] mb-6">
+            What would it cost to give everyone a scribe?
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-slate-50 rounded-xl p-5">
+              <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+                Current State
+              </div>
+              <div className="text-base font-semibold text-[#111827] mb-4">Your Scribe Program</div>
+
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">{inputs.scribeCount}</div>
+                  <div className="text-[10px] text-[#6B7280]">scribes</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">{inputs.providersWithScribes}</div>
+                  <div className="text-[10px] text-[#6B7280]">covered</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">{calculations.coveragePercent}%</div>
+                  <div className="text-[10px] text-[#6B7280]">coverage</div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 pt-3">
+                <div className="text-xs text-[#6B7280]">Annual cost</div>
+                <div className="text-xl font-bold text-[#111827]">
+                  {formatCurrency(calculations.totalScribeCost)}
+                </div>
+                <div className="text-[10px] text-[#6B7280]">
+                  {formatCurrency(calculations.costPerProviderCovered)}/provider covered
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-100 rounded-xl p-5">
+              <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+                If You Scaled Scribes
+              </div>
+              <div className="text-base font-semibold text-[#111827] mb-4">Full Scribe Coverage</div>
+
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">
+                    {calculations.scribesNeededForFullCoverage}
+                  </div>
+                  <div className="text-[10px] text-[#6B7280]">scribes needed</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">{inputs.totalProviders}</div>
+                  <div className="text-[10px] text-[#6B7280]">covered</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">100%</div>
+                  <div className="text-[10px] text-[#6B7280]">coverage</div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 pt-3">
+                <div className="text-xs text-[#6B7280]">Annual cost</div>
+                <div className="text-xl font-bold text-[#111827]">
+                  {formatCurrency(calculations.fullScribeCost)}
+                </div>
+                <div className="text-xs text-red-600 font-medium">
+                  ↑ +{formatCurrency(calculations.costToScale)} to scale
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-5 border-2 border-emerald-500 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase">
+                Recommended
+              </div>
+              <div className="text-xs font-medium text-emerald-700 uppercase tracking-wide mb-1">
+                With Abridge
+              </div>
+              <div className="text-base font-semibold text-[#111827] mb-4">Universal Coverage</div>
+
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">{inputs.totalProviders}</div>
+                  <div className="text-[10px] text-[#6B7280]">enabled</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">75%</div>
+                  <div className="text-[10px] text-[#6B7280]">utilization</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#111827]">4 min</div>
+                  <div className="text-[10px] text-[#6B7280]">saved/enc</div>
+                </div>
+              </div>
+
+              <div className="border-t border-emerald-200 pt-3">
+                <div className="text-xs text-emerald-700">Annual cost</div>
+                <div className="text-xl font-bold text-emerald-700">
+                  {formatCurrency(calculations.abridgeCost)}
+                </div>
+                <div className="text-xs text-emerald-600 font-medium">
+                  Save {formatCurrency(calculations.savingsVsFullScribe)} vs full scribes
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
+          <h2 className="text-lg font-bold text-[#111827] mb-2">
+            The Cost of Unsupported Providers
+          </h2>
+          <p className="text-sm text-[#6B7280] mb-6">
+            Your {calculations.providersWithoutSupport} providers without scribe support are:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-slate-50 rounded-lg p-5 text-center">
+              <div className="text-2xl mb-2">⏱️</div>
+              <div className="text-xl font-bold text-[#111827]">
+                {calculations.unsupportedDocTimeHours.toLocaleString()} hrs/year
+              </div>
+              <div className="text-xs text-[#6B7280] mb-2">spent on documentation</div>
+              <div className="text-[10px] text-slate-400 font-mono">
+                {calculations.providersWithoutSupport} × {calculations.encountersPerProvider} enc × 12
+                min ÷ 60
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-5 text-center">
+              <div className="text-2xl mb-2">🌙</div>
+              <div className="text-xl font-bold text-[#111827]">
+                {calculations.pajamaTimeHours.toLocaleString()} hrs/year
+              </div>
+              <div className="text-xs text-[#6B7280] mb-2">of after-hours "pajama time"</div>
+              <div className="text-[10px] text-slate-400 font-mono">40% of documentation done outside clinic</div>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-5 text-center">
+              <div className="text-2xl mb-2">💰</div>
+              <div className="text-xl font-bold text-[#111827]">
+                {formatCurrency(calculations.opportunityCost)}
+              </div>
+              <div className="text-xs text-[#6B7280] mb-2">in opportunity cost</div>
+              <div className="text-[10px] text-slate-400 font-mono">
+                Time that could be spent seeing patients
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="flex justify-center">
+          <Button
+            onClick={onNext}
+            className="h-12 px-8 bg-[#EA2C00] hover:bg-[#d12700] text-white font-semibold"
+            data-testid="button-see-full-analysis"
+          >
+            See Full Analysis
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+interface InputCardProps {
+  icon: React.ReactNode;
+  iconBg: string;
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  unit: string;
+  hint?: string;
+  testId: string;
+  large?: boolean;
+}
+
+function InputCard({ icon, iconBg, label, value, onChange, unit, hint, testId, large }: InputCardProps) {
+  const [localValue, setLocalValue] = useState(String(value));
+  const [isFocused, setIsFocused] = useState(false);
+
+  if (!isFocused && localValue !== String(value)) {
+    setLocalValue(String(value));
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    setLocalValue(inputValue);
+    const parsed = parseFloat(inputValue);
+    if (!isNaN(parsed) && parsed >= 0) {
+      onChange(parsed);
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    const parsed = parseFloat(localValue);
+    if (isNaN(parsed) || localValue === "" || parsed < 0) {
+      setLocalValue("0");
+      onChange(0);
+    } else {
+      setLocalValue(String(parsed));
+      onChange(parsed);
+    }
+  };
+
+  return (
+    <div className={`bg-slate-50 rounded-lg p-4 ${large ? "md:col-span-2" : ""}`}>
+      <div className="flex items-center gap-2 mb-3">
+        <div className={`w-7 h-7 rounded-md ${iconBg} flex items-center justify-center`}>{icon}</div>
+        <label className="text-sm font-medium text-[#111827]">{label}</label>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          inputMode="decimal"
+          value={localValue}
+          onChange={handleChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={handleBlur}
+          className="flex-1 px-3 py-2 text-base font-semibold border border-slate-200 rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none bg-white"
+          data-testid={testId}
+        />
+        <span className="text-sm text-[#6B7280] whitespace-nowrap">{unit}</span>
+      </div>
+      {hint && <p className="text-[10px] text-slate-400 mt-1.5">{hint}</p>}
+    </div>
+  );
+}
