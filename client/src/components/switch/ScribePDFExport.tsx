@@ -4,10 +4,12 @@ import {
   Text,
   View,
   StyleSheet,
+  Image,
   pdf,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import type { ScribeInputs, ScribeCalculations } from "@/lib/scribeGapCalculator";
+import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import { SCRIBE_ASSUMPTIONS } from "@/lib/scribeGapCalculator";
 
 const colors = {
@@ -393,9 +395,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.coral }}>
-            ABRIDGE
-          </Text>
+          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
           <View style={{ alignItems: "flex-end" }}>
             <Text style={styles.headerTitle}>Scribe Program Analysis</Text>
             <Text style={styles.headerDate}>{today}</Text>
