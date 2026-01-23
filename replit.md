@@ -23,16 +23,18 @@ The application guides users through multi-step processes:
     6. Summary (SummaryCommandCenter.tsx) - final ROI results with waterfall chart
 -   **Switch Path (Ambient AI)**: A streamlined 3-page flow (after Solution Selection) for prospects switching from other ambient AI solutions. Pages: Setup (provider range chips, utilization/efficiency sliders with Abridge benchmarks, live gap visualization showing YOU vs ABRIDGE) → Analysis (annual gap hero with monthly/daily breakdown, Value Breakdown tab with expandable driver cards, Over Time tab with 3-year chart and cost of waiting) → Conclusion (situation summary, context about benchmarks, 3-year value highlight, CTAs). Uses slider-based inputs with real-time gap calculations.
 -   **Switch Path (Human Scribes)**: A 5-step cost-focused flow for prospects switching from human scribes to Abridge. Pages: Setup (organization info, scribe coverage, hourly costs) → Coverage Reality (current vs full coverage visualization) → Hidden Costs (turnover/training, management overhead) → Full Picture (total investment summary with breakdown) → Comparison (3-year side-by-side scribes vs Abridge with savings). Uses editable inline inputs and real-time calculations with coral (#EA2C00) CTAs and emerald for positive savings values.
--   **Expand Path**: A 6-step performance analysis flow for current Abridge customers with per-metric Quick vs Trend data entry:
+-   **Expand Path**: A 7-step performance analysis flow for current Abridge customers with tiered ROI calculations:
     1. Setting Selection (ExpandSettingSelection.tsx)
-    2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection with PRIMARY (wRVU Capture, Time in Notes, Chart Closure - pre-selected) vs SECONDARY (E&M Level, Work Outside Work, Satisfaction - optional) categories
-    3. Data Entry (ExpandDataEntry.tsx) - Per-metric entry mode selection:
-       - Quick mode (default): Simple before/after entry with calculated change, percentage lift, and benchmark comparison
-       - Trend mode: Paste area for monthly data + manual entry table (Baseline + Month 1-N) + mini trend chart with "You are here" marker
-       - Special handling: Level of Service uses average E&M level with optional distribution expansion; Chart Closure uses same-day % with optional bucket breakdown
-    4. Performance Dashboard (ExpandPerformanceDashboard.tsx) - Three-phase journey overview (Before Abridge → Today → Full Scale), journey graph with actual (solid) vs projected (dashed) lines, "You are here" marker, value breakdown cards with sparkline trends
-    5. ROI Story (ExpandROIStory.tsx)
-    6. Journey Expansion (ExpandJourneyExpansion.tsx)
+    2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection
+    3. Data Entry (ExpandDataEntry.tsx) - Per-metric Quick/Trend entry modes with before/after values
+    4. Value Configuration (ExpandValueConfiguration.tsx) - NEW: Tiered value model configuration:
+       - Revenue Capture: wRVU always valued ($33/wRVU, 50% attribution)
+       - Time Efficiency: Conversion method selection (None/Patient Access/Overtime)
+       - Quality of Life: Optional retention estimation
+       - Live preview sidebar with running totals and sanity check warnings
+    5. Performance Dashboard (ExpandPerformanceDashboard.tsx) - Three-phase journey (Before Abridge → Today → Full Scale), uses tiered calculations with partial-year scaling
+    6. ROI Story (ExpandROIStory.tsx) - Value breakdown with transparent calculation methodology
+    7. Journey Expansion (ExpandJourneyExpansion.tsx) - Expansion planning with tiered projections
 -   **Care Setting Selection**: Users choose a healthcare environment.
 -   **Strategic Priorities Selection**: Users identify relevant ROI levers.
 -   **Baseline Assumptions Wizard**: Defines adoption rates, value posture, and investment details.
