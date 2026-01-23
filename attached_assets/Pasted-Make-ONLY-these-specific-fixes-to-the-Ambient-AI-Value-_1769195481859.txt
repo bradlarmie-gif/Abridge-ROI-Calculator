@@ -1,0 +1,158 @@
+Make ONLY these specific fixes to the Ambient AI Value Realization Assessment PDF. Do NOT compress or restructure anything else — the current layout and content are correct.
+
+## FIX 1: Remove page references from Page 1
+
+Delete the "WHAT THIS ASSESSMENT COVERS" section entirely from Page 1:
+
+Remove this:
+WHAT THIS ASSESSMENT COVERS
+Page 2: Your performance across the four value dimensions and how the gap compounds over time
+Page 3: Detailed breakdown of each gap with transparent math and methodology you can verify
+Copy
+Just delete it. The report speaks for itself.
+
+## FIX 2: Fix the orphaned content issue
+
+The "Every month at current performance = $22K in unrealized value" callout should be on the SAME page as the graph, not orphaned on its own page.
+
+Adjust spacing so that the graph AND the monthly callout both fit on the same page. If needed, slightly reduce the graph height or margins — but do NOT compress other sections.
+
+## DO NOT CHANGE ANYTHING ELSE
+
+- Keep the 5-page structure if that's what it takes
+- Keep all the educational framing
+- Keep the breathing room / white space
+- Keep the "Why it matters" sections
+- Keep the full step-by-step math
+- Keep the methodology section as-is
+
+The only changes are:
+1. Delete "What this assessment covers" section
+2. Fix the orphan (monthly callout on same page as graph)
+
+That's it. Minimal changes to preserve what was working.
+Now for the Scribe export — you want me to bring it UP to the same level as the Ambient AI one (the good 5-page version), not compress it. Let me write that prompt properly:
+
+CopyUpgrade the Scribe Program Analysis PDF to match the educational quality and structure of the Ambient AI Value Realization Assessment. The goal is a proper report that TEACHES the reader how to think about scribe economics.
+
+## REFERENCE: What the Ambient AI PDF does well
+
+1. Opens with "UNDERSTANDING VALUE REALIZATION" — explains the concept before showing numbers
+2. "YOUR RESULTS AT A GLANCE" — 4 key metrics with explanatory subtitles
+3. "THE VALUE REALIZATION SPECTRUM" — shows where they stand visually
+4. "YOUR PERFORMANCE ACROSS FOUR DIMENSIONS" — each dimension has "Why it matters"
+5. "WHY GAPS COMPOUND" — educational explanation
+6. "THE COST OF THE GAP OVER TIME" — graph showing accumulation
+7. "HOW EACH GAP IS CALCULATED" — step-by-step transparent math
+8. "KEY TAKEAWAYS" — summary bullets
+9. Full "METHODOLOGY & ASSUMPTIONS" section
+
+## APPLY THE SAME STRUCTURE TO SCRIBES
+
+### Page 1: The Frame
+
+**UNDERSTANDING SCRIBE PROGRAM ECONOMICS**
+(New section — educational intro)
+
+"Scribe programs provide valuable documentation support, but they operate under a fundamental economic constraint: linear scaling. To cover more providers, you need proportionally more scribes — each requiring salary, benefits, training, and management overhead.
+
+Most organizations can only afford to provide scribes to a fraction of their providers, creating a two-tier system: some providers receive documentation support while the majority handle the full burden alone.
+
+This analysis examines your scribe program economics — what you're investing, who's covered, what the gap means for your unsupported providers, and what scaling would actually cost."
+
+**YOUR PROGRAM AT A GLANCE**
+(Keep the 4 metrics but add explanatory subtitles like the Ambient AI version)
+
+- $500K / Investment / "Annual scribe program cost"
+- 8% / Coverage / "15 of 200 providers have support"  
+- $33K / Per Provider / "Cost per covered provider annually"
+- 13× / To Scale / "Investment multiplier for full coverage"
+
+**THE COVERAGE SPECTRUM**
+(New section — visual showing where they stand)
+
+Show a 0% to 100% bar with their position marked at 8%.
+
+"At 8% coverage, 185 of your 200 providers have no documentation support. This raises a strategic question: is partial coverage sustainable, or does the gap create problems that offset the benefits?"
+
+### Page 2: The Evidence
+
+**HOW SCRIBE PROGRAMS SCALE**
+
+(Keep the Current State vs Full Coverage comparison)
+
+Add "Why it matters" after:
+"Every additional provider you want to cover requires a proportional increase in scribes. There are no economies of scale — just linear cost growth. This is the fundamental constraint of the scribe model."
+
+**THE BURDEN ON UNSUPPORTED PROVIDERS**
+
+(Keep the 3 metrics: 74,000 hrs, 18,500 after-hours, 400 per provider)
+
+Add "Why it matters" after:
+"400 hours per year is approximately 8 hours per week spent on documentation. Much of this occurs outside clinic hours, contributing to burnout, reduced satisfaction, and work-life imbalance. This represents 37 FTE-equivalents of documentation time across your unsupported providers."
+
+**THE LINEAR SCALING PROBLEM**
+(Add a graph showing cost vs coverage — straight line from 0% to 100%)
+
+Mark their current position (8%, $500K) and the full coverage point (100%, $6.7M).
+
+"Why it matters: The cost curve is linear. There's no point where scribes become more efficient at scale — every step up in coverage costs proportionally more."
+
+### Page 3: The Math
+
+**HOW THE NUMBERS ARE CALCULATED**
+
+Show step-by-step math for:
+
+1. SCRIBE PROGRAM COST ($500K)
+   - 10 scribes × $25/hr × 40 hrs/week × 50 weeks = $500,000
+
+2. COST TO SCALE TO 100% ($6.7M)
+   - Step 1: Current ratio: 10 scribes ÷ 15 providers = 1:1.5
+   - Step 2: Scribes needed: 200 providers ÷ 1.5 = 134 scribes
+   - Step 3: Annual cost: 134 × $50K = $6.7M
+   - Step 4: Additional investment: $6.7M - $500K = $6.2M (13×)
+
+3. DOCUMENTATION BURDEN (74,000 hrs)
+   - Step 1: Encounters per provider: 400,000 ÷ 200 = 2,000
+   - Step 2: Doc time per provider: 2,000 × 12 min = 400 hrs
+   - Step 3: Total for unsupported: 185 × 400 = 74,000 hrs
+   - Step 4: After-hours: 74,000 × 25% = 18,500 hrs
+
+### Page 4: Takeaways + Methodology
+
+**KEY TAKEAWAYS**
+- Your scribe investment covers 8% of providers at $33K per provider
+- 185 providers (92%) document without support — 74,000 hours annually
+- Scaling to full coverage would require 13× your current investment
+- The linear cost model means no efficiency gains at scale
+
+**THE QUESTION**
+(Boxed callout)
+"How can you extend documentation support to all 200 providers without a 13× increase in cost?"
+
+**METHODOLOGY & ASSUMPTIONS**
+
+YOUR INPUTS:
+- 10 scribes
+- $25/hour per scribe
+- 40 hours/week
+- 15 providers with scribes
+- 200 total providers
+- 400,000 annual encounters
+
+INDUSTRY ASSUMPTIONS:
+- Documentation time without scribe: 12 min/encounter
+- After-hours documentation: ~25% of total
+- Working weeks per year: 50
+
+"Assumptions based on industry research on physician documentation patterns and scribe program benchmarks."
+
+## KEY PRINCIPLES
+
+1. **Educational, not just informative** — Explain WHY things matter, not just what they are
+2. **Breathing room** — Don't compress. Let it be 4-5 pages if needed.
+3. **"Why it matters" after each section** — Just like the Ambient AI version
+4. **Step-by-step math** — Transparent and verifiable
+5. **Ends with a question** — Not a sales pitch
+6. **Consistent structure** — Mirrors the Ambient AI report flow

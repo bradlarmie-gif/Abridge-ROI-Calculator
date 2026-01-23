@@ -194,30 +194,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 
-  tocSection: {
-    marginTop: 12,
-  },
-  tocTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  tocItem: {
-    fontSize: 9,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 4,
-    paddingLeft: 8,
-  },
-
   dimensionCard: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 8,
     overflow: "hidden",
   },
   dimensionHeader: {
@@ -284,9 +265,9 @@ const styles = StyleSheet.create({
 
   scoreCalculation: {
     backgroundColor: colors.backgroundGray,
-    padding: 10,
+    padding: 8,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   scoreText: {
     fontSize: 8,
@@ -300,9 +281,9 @@ const styles = StyleSheet.create({
 
   compoundBox: {
     backgroundColor: colors.coralLight,
-    padding: 10,
+    padding: 8,
     borderRadius: 4,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   compoundTitle: {
     fontSize: 9,
@@ -317,14 +298,14 @@ const styles = StyleSheet.create({
   },
 
   graphContainer: {
-    marginBottom: 10,
+    marginBottom: 6,
   },
   graphBox: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 12,
-    height: 90,
+    padding: 10,
+    height: 80,
     position: "relative",
   },
   graphLabels: {
@@ -343,7 +324,7 @@ const styles = StyleSheet.create({
     borderColor: colors.coral,
     padding: 8,
     borderRadius: 4,
-    marginTop: 8,
+    marginTop: 6,
   },
   monthlyText: {
     fontSize: 8,
@@ -700,18 +681,6 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </Text>
           <Text style={styles.spectrumExplanation}>
             At {calculations.realizationScore}% realization, you're in the "{calculations.maturityLevel}" stage. This is where most organizations plateau without focused optimization. The gap between where you are and where you could be represents {formatCurrency(calculations.annualGap)} annually in unrealized value.
-          </Text>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.tocSection}>
-          <Text style={styles.tocTitle}>WHAT THIS ASSESSMENT COVERS</Text>
-          <Text style={styles.tocItem}>
-            <Text style={{ fontWeight: "bold" }}>Page 2:</Text> Your performance across the four value dimensions and how the gap compounds over time
-          </Text>
-          <Text style={styles.tocItem}>
-            <Text style={{ fontWeight: "bold" }}>Page 3:</Text> Detailed breakdown of each gap with transparent math and methodology you can verify
           </Text>
         </View>
 
