@@ -151,10 +151,21 @@ export default function ExpandPerformanceDashboard({
     return Math.round((calculateValueRealized / (months / 12)) * (100 / utilRate));
   }, [calculateValueRealized, months, deploymentData.utilizationRate]);
 
+  // Journey graph data point type
+  interface JourneyDataPoint {
+    time: string;
+    label: string;
+    value: number;
+    isActual: boolean;
+    month: number;
+    isToday?: boolean;
+    isFullScale?: boolean;
+  }
+
   // Journey graph data
-  const journeyData = useMemo(() => {
+  const journeyData = useMemo((): JourneyDataPoint[] => {
     const annualValue = calculateValueRealized / (months / 12);
-    const data = [
+    const data: JourneyDataPoint[] = [
       { time: "Before", label: "Baseline", value: 0, isActual: true, month: 0 },
     ];
     

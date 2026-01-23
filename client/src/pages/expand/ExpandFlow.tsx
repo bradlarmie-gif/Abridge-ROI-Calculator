@@ -11,6 +11,7 @@ import ExpandJourneyExpansion from "./ExpandJourneyExpansion";
 // ============================================================================
 
 export type DataEntryMode = "simple" | "detailed";
+export type MetricEntryMode = "quick" | "trend";
 
 export interface DeploymentData {
   setting: "outpatient" | "ed" | "inpatient" | "nursing";
@@ -19,6 +20,22 @@ export interface DeploymentData {
   utilizationRate: number | null;
   monthsOnAbridge: number | null;
   dataEntryMode: DataEntryMode;
+}
+
+// Per-metric entry modes (quick = before/after, trend = monthly data)
+export interface MetricEntryModes {
+  wrvuCapture: MetricEntryMode;
+  timeSavings: MetricEntryMode;
+  chartClosure: MetricEntryMode;
+  levelOfService: MetricEntryMode;
+  workOutsideWork: MetricEntryMode;
+  clinicianSatisfaction: MetricEntryMode;
+}
+
+// Trend data entry for monthly values
+export interface TrendDataEntry {
+  baseline: number | null;
+  monthlyData: (number | null)[];
 }
 
 export interface TimelineDataPoint {
@@ -118,8 +135,12 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     clinicianSatisfaction: [],
   });
   
-  // Selected metrics to analyze - NOTHING pre-selected
-  const [selectedMetrics, setSelectedMetrics] = useState<MetricType[]>([]);
+  // Selected metrics to analyze - PRIMARY metrics pre-selected by default
+  const [selectedMetrics, setSelectedMetrics] = useState<MetricType[]>([
+    "wrvuCapture", 
+    "timeSavings", 
+    "chartClosure"
+  ]);
   
   // Actual metrics data (before/after) - all blank
   // Using Level 1-5 IDs instead of CPT codes for Level of Service

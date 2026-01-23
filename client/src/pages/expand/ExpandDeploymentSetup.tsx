@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, Lightbulb, BarChart3, TrendingUp } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import type { DeploymentData, MetricType, DataEntryMode } from "./ExpandFlow";
+import type { DeploymentData, MetricType } from "./ExpandFlow";
 
 interface ExpandDeploymentSetupProps {
   deploymentData: DeploymentData;
@@ -15,56 +15,58 @@ interface ExpandDeploymentSetupProps {
   onBackToJourney?: () => void;
 }
 
-const METRICS_CONFIG = [
+// PRIMARY metrics - strongest ROI impact, pre-selected by default
+const PRIMARY_METRICS = [
+  {
+    id: "wrvuCapture" as MetricType,
+    name: "wRVU per Encounter",
+    description: "Revenue capture improvement",
+    source: "Clarity",
+    icon: DollarSign,
+  },
   {
     id: "timeSavings" as MetricType,
-    name: "Time Savings",
-    description: "Time in notes per appointment",
-    source: "Clarity data",
+    name: "Time in Notes",
+    description: "Documentation efficiency",
+    source: "Clarity",
     icon: Clock,
-    recommended: true,
+  },
+  {
+    id: "chartClosure" as MetricType,
+    name: "Same-Day Chart Closure",
+    description: "Revenue cycle acceleration",
+    source: "Clarity",
+    icon: FileCheck,
+  },
+];
+
+// SECONDARY metrics - additional evidence, optional
+const SECONDARY_METRICS = [
+  {
+    id: "levelOfService" as MetricType,
+    name: "Average E&M Level",
+    description: "Coding accuracy",
+    source: "Clarity",
+    icon: FileText,
   },
   {
     id: "workOutsideWork" as MetricType,
     name: "Work Outside of Work",
-    description: "Hours worked outside scheduled time",
-    source: "Clarity data",
+    description: "After-hours burden",
+    source: "Clarity",
     icon: Moon,
-    recommended: true,
-  },
-  {
-    id: "levelOfService" as MetricType,
-    name: "Level of Service",
-    description: "E/M code distribution (99211-99215)",
-    source: "Clarity data",
-    icon: FileText,
-    recommended: true,
-  },
-  {
-    id: "wrvuCapture" as MetricType,
-    name: "wRVU Capture",
-    description: "wRVUs per encounter",
-    source: "Clarity data",
-    icon: DollarSign,
-    recommended: true,
-  },
-  {
-    id: "chartClosure" as MetricType,
-    name: "Chart Closure Time",
-    description: "% of charts closed within 24h, 48h, 72h+",
-    source: "Clarity data",
-    icon: FileCheck,
-    recommended: false,
   },
   {
     id: "clinicianSatisfaction" as MetricType,
     name: "Clinician Satisfaction",
-    description: "Satisfaction scores, burnout indicators",
-    source: "Survey data",
+    description: "Provider experience",
+    source: "Survey",
     icon: Smile,
-    recommended: false,
   },
 ];
+
+// Combined for backward compatibility
+const METRICS_CONFIG = [...PRIMARY_METRICS, ...SECONDARY_METRICS];
 
 export default function ExpandDeploymentSetup({
   deploymentData,
@@ -214,138 +216,127 @@ export default function ExpandDeploymentSetup({
 
         {/* Metrics Selection */}
         <section className="mb-10">
-          <div className="mb-4">
+          <div className="mb-6">
             <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-1">
-              WHAT DO YOU WANT TO MEASURE?
+              WHAT METRICS DO YOU HAVE DATA FOR?
             </h2>
-            <p className="text-sm text-[#6B7280]">Select the metrics you have data for</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {METRICS_CONFIG.map((metric) => {
-              const isSelected = selectedMetrics.includes(metric.id);
-              const Icon = metric.icon;
-              
-              return (
-                <div
-                  key={metric.id}
-                  className={`flex items-start gap-4 p-5 bg-white border rounded-xl cursor-pointer transition-all ${
-                    isSelected
-                      ? "border-[#EA2C00] bg-[#FEF0EC]"
-                      : "border-neutral-200 hover:border-neutral-300"
-                  }`}
-                  onClick={() => toggleMetric(metric.id)}
-                  data-testid={`metric-${metric.id}`}
-                >
-                  {/* Checkbox */}
+          {/* PRIMARY METRICS */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">PRIMARY METRICS</span>
+              <span className="text-xs text-[#6B7280]">(Recommended)</span>
+            </div>
+            <p className="text-xs text-[#6B7280] mb-3">These have the strongest ROI impact</p>
+            
+            <div className="space-y-2">
+              {PRIMARY_METRICS.map((metric) => {
+                const isSelected = selectedMetrics.includes(metric.id);
+                const Icon = metric.icon;
+                
+                return (
                   <div
-                    className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                    key={metric.id}
+                    className={`flex items-center gap-4 p-4 bg-white border-l-4 border rounded-lg cursor-pointer transition-all ${
                       isSelected
-                        ? "bg-[#EA2C00] border-[#EA2C00]"
-                        : "border-neutral-300 bg-white"
+                        ? "border-l-emerald-500 border-emerald-200 bg-emerald-50/30"
+                        : "border-l-transparent border-neutral-200 hover:border-neutral-300"
                     }`}
+                    onClick={() => toggleMetric(metric.id)}
+                    data-testid={`metric-${metric.id}`}
                   >
-                    {isSelected && (
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path
-                          d="M10 3L4.5 8.5L2 6"
-                          stroke="white"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </div>
-
-                  {/* Icon */}
-                  <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-neutral-500" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-[#111827]">{metric.name}</h3>
+                    {/* Checkbox */}
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                        isSelected
+                          ? "bg-emerald-500 border-emerald-500"
+                          : "border-neutral-300 bg-white"
+                      }`}
+                    >
+                      {isSelected && (
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                          <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
                     </div>
-                    <p className="text-sm text-[#6B7280]">{metric.description}</p>
-                    <p className="text-xs text-neutral-400 mt-1">Source: {metric.source}</p>
+
+                    {/* Icon */}
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      isSelected ? "bg-emerald-100" : "bg-neutral-100"
+                    }`}>
+                      <Icon className={`w-4 h-4 ${isSelected ? "text-emerald-600" : "text-neutral-500"}`} />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-[#111827]">{metric.name}</h3>
+                      <p className="text-sm text-[#6B7280]">{metric.description}</p>
+                    </div>
+
+                    {/* Source */}
+                    <span className="text-xs text-neutral-400 flex-shrink-0">Source: {metric.source}</span>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 mt-4 p-3 bg-neutral-50 rounded-lg">
-            <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0" />
-            <p className="text-sm text-[#6B7280]">
-              Select at least one metric to continue. More metrics = more complete picture.
-            </p>
-          </div>
-        </section>
-
-        {/* Data Entry Mode Selection */}
-        <section className="mb-10">
+          {/* SECONDARY METRICS */}
           <div className="mb-4">
-            <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-1">
-              HOW WOULD YOU LIKE TO ENTER YOUR DATA?
-            </h2>
-          </div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase">SECONDARY METRICS</span>
+              <span className="text-xs text-neutral-400">(Optional)</span>
+            </div>
+            <p className="text-xs text-[#6B7280] mb-3">Additional evidence of impact</p>
+            
+            <div className="space-y-2">
+              {SECONDARY_METRICS.map((metric) => {
+                const isSelected = selectedMetrics.includes(metric.id);
+                const Icon = metric.icon;
+                
+                return (
+                  <div
+                    key={metric.id}
+                    className={`flex items-center gap-4 p-4 bg-white border rounded-lg cursor-pointer transition-all ${
+                      isSelected
+                        ? "border-[#EA2C00] bg-[#FEF0EC]"
+                        : "border-neutral-200 hover:border-neutral-300 opacity-70"
+                    }`}
+                    onClick={() => toggleMetric(metric.id)}
+                    data-testid={`metric-${metric.id}`}
+                  >
+                    {/* Radio-style circle */}
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        isSelected
+                          ? "border-[#EA2C00]"
+                          : "border-neutral-300"
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]" />
+                      )}
+                    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Simple Mode */}
-            <button
-              type="button"
-              onClick={() => setDeploymentData({ ...deploymentData, dataEntryMode: "simple" })}
-              className={`flex items-start gap-4 p-5 bg-white border rounded-xl cursor-pointer transition-all text-left ${
-                deploymentData.dataEntryMode === "simple"
-                  ? "border-[#EA2C00] bg-[#FEF0EC]"
-                  : "border-neutral-200 hover:border-neutral-300"
-              }`}
-              data-testid="mode-simple"
-            >
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                deploymentData.dataEntryMode === "simple" ? "bg-[#EA2C00]/10" : "bg-neutral-100"
-              }`}>
-                <BarChart3 className={`w-6 h-6 ${
-                  deploymentData.dataEntryMode === "simple" ? "text-[#EA2C00]" : "text-neutral-500"
-                }`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className={`font-semibold mb-1 ${
-                  deploymentData.dataEntryMode === "simple" ? "text-[#EA2C00]" : "text-[#111827]"
-                }`}>Simple</h3>
-                <p className="text-sm text-[#6B7280] mb-1">Before Abridge vs. Today</p>
-                <p className="text-xs text-neutral-400">Quick comparison—just two data points</p>
-              </div>
-            </button>
+                    {/* Icon */}
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      isSelected ? "bg-[#EA2C00]/10" : "bg-neutral-100"
+                    }`}>
+                      <Icon className={`w-4 h-4 ${isSelected ? "text-[#EA2C00]" : "text-neutral-400"}`} />
+                    </div>
 
-            {/* Detailed Mode */}
-            <button
-              type="button"
-              onClick={() => setDeploymentData({ ...deploymentData, dataEntryMode: "detailed" })}
-              className={`flex items-start gap-4 p-5 bg-white border rounded-xl cursor-pointer transition-all text-left ${
-                deploymentData.dataEntryMode === "detailed"
-                  ? "border-[#EA2C00] bg-[#FEF0EC]"
-                  : "border-neutral-200 hover:border-neutral-300"
-              }`}
-              data-testid="mode-detailed"
-            >
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                deploymentData.dataEntryMode === "detailed" ? "bg-[#EA2C00]/10" : "bg-neutral-100"
-              }`}>
-                <TrendingUp className={`w-6 h-6 ${
-                  deploymentData.dataEntryMode === "detailed" ? "text-[#EA2C00]" : "text-neutral-500"
-                }`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className={`font-semibold mb-1 ${
-                  deploymentData.dataEntryMode === "detailed" ? "text-[#EA2C00]" : "text-[#111827]"
-                }`}>Detailed</h3>
-                <p className="text-sm text-[#6B7280] mb-1">Track progress over time</p>
-                <p className="text-xs text-neutral-400">Enter monthly data to see your trend</p>
-              </div>
-            </button>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-medium ${isSelected ? "text-[#111827]" : "text-neutral-600"}`}>{metric.name}</h3>
+                    </div>
+
+                    {/* Source */}
+                    <span className="text-xs text-neutral-400 flex-shrink-0">Source: {metric.source}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
