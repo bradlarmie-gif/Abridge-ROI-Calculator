@@ -1,0 +1,780 @@
+Build a world-class displacement calculator for Abridge that makes prospects feel "holy shit, I need to do something" without ever attacking their current vendor. The frame is: "You vs. Your Potential" not "Them vs. Us."
+
+## THE PSYCHOLOGY
+
+This tool is for someone who:
+- Already uses a competitor (DAX, Ambience, Suki, scribes)
+- Is defensive about their choice
+- Is skeptical of competitor marketing
+- Fears the disruption of switching
+
+We win by:
+- Being objective and mathematical
+- Showing them vs. a ceiling, not vs. Abridge
+- Being more conservative than they expect
+- Making the gap feel visceral and urgent
+- Never attacking their current choice
+
+## THE NARRATIVE STRUCTURE
+
+The tool takes them through 5 psychological stages:
+
+1. NEUTRAL DATA COLLECTION — "Let's see where you are"
+2. THE CEILING — "Here's what's possible with best-in-class ambient AI"
+3. THE GAP — "Here's what you're leaving on the table"
+4. THE COST — "Here's what that gap costs over time"
+5. THE PATH — "Here's what closing the gap looks like"
+
+## PAGE STRUCTURE
+
+### PAGE 1: THE ASSESSMENT
+
+One page that collects their info AND shows live visualization of where they stand.
+
+---
+
+**HEADER**
+
+```jsx
+<div className="assessment-header">
+  <h1>The Ambient AI Value Assessment</h1>
+  <p className="subtitle">
+    See how your results compare to what's possible — 
+    and what that gap might be costing you.
+  </p>
+  <p className="reassurance">
+    This isn't about vendors. It's about understanding your position 
+    relative to the ceiling of ambient AI value.
+  </p>
+</div>
+
+SECTION 1: YOUR SITUATION
+Clean, non-judgmental data collection.
+jsxCopy<div className="section situation">
+  <h2>Your Current Situation</h2>
+  
+  <div className="input-grid">
+    <div className="input-card">
+      <label>What solution are you using today?</label>
+      <div className="solution-selector">
+        <button className={solution === 'ambient' ? 'selected' : ''}>
+          <span className="icon">🎙️</span>
+          <span>Ambient AI</span>
+          <span className="examples">DAX, Ambience, Suki, etc.</span>
+        </button>
+        <button className={solution === 'scribes' ? 'selected' : ''}>
+          <span className="icon">👤</span>
+          <span>Scribes</span>
+          <span className="examples">In-person or virtual</span>
+        </button>
+        <button className={solution === 'nothing' ? 'selected' : ''}>
+          <span className="icon">📝</span>
+          <span>Self-documentation</span>
+          <span className="examples">No assistance</span>
+        </button>
+      </div>
+    </div>
+    
+    <div className="input-row">
+      <div className="input-card">
+        <label>How many providers use this solution?</label>
+        <input 
+          type="number" 
+          value={providers}
+          onChange={(e) => setProviders(Number(e.target.value))}
+          placeholder="75"
+        />
+        <span className="unit">providers</span>
+      </div>
+      
+      <div className="input-card">
+        <label>Total annual encounters for these providers?</label>
+        <input 
+          type="number"
+          value={encounters}
+          onChange={(e) => setEncounters(Number(e.target.value))}
+          placeholder="150000"
+        />
+        <span className="unit">encounters/year</span>
+        <span className="hint">~2,000/provider is typical for primary care</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+SECTION 2: YOUR RESULTS (The Key Visualization)
+This is where the magic happens. Two dimensions, each showing:
+
+The theoretical ceiling (Abridge benchmark as proxy for "best-in-class")
+Where they are
+The gap
+
+jsxCopy<div className="section results">
+  <h2>Your Results vs. The Ceiling</h2>
+  <p className="section-subtitle">
+    Best-in-class ambient AI achieves certain benchmarks. 
+    Where do your results stand?
+  </p>
+  
+  {/* UTILIZATION GAUGE */}
+  <div className="gauge-card">
+    <div className="gauge-header">
+      <div className="gauge-title">
+        <span className="icon">📊</span>
+        <div>
+          <h3>Utilization</h3>
+          <p>What % of encounters are documented with your solution?</p>
+        </div>
+      </div>
+    </div>
+    
+    <div className="gauge-visualization">
+      {/* The ceiling bar */}
+      <div className="ceiling-bar">
+        <div className="ceiling-fill" style={{width: '100%'}}>
+          <span className="ceiling-label">CEILING: 65%</span>
+          <span className="ceiling-note">Best-in-class benchmark</span>
+        </div>
+      </div>
+      
+      {/* Your position bar */}
+      <div className="your-bar">
+        <div 
+          className="your-fill" 
+          style={{width: `${(utilization/65)*100}%`}}
+        >
+          <span className="your-label">YOU: {utilization}%</span>
+        </div>
+        <div 
+          className="gap-zone"
+          style={{
+            left: `${(utilization/65)*100}%`,
+            width: `${100 - (utilization/65)*100}%`
+          }}
+        >
+          <span className="gap-label">GAP</span>
+        </div>
+      </div>
+      
+      {/* Slider */}
+      <div className="slider-container">
+        <input 
+          type="range"
+          min="10"
+          max="80"
+          value={utilization}
+          onChange={(e) => setUtilization(Number(e.target.value))}
+        />
+        <div className="slider-labels">
+          <span>10%</span>
+          <span>80%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="gauge-insight">
+      {utilization < 65 ? (
+        <div className="insight gap">
+          <span className="insight-icon">⚠️</span>
+          <div className="insight-content">
+            <span className="insight-headline">
+              You're at {Math.round((utilization/65)*100)}% of ceiling
+            </span>
+            <span className="insight-detail">
+              {65 - utilization}pp below best-in-class = {utilizationGapEncounters.toLocaleString()} encounters/year not captured
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="insight good">
+          <span className="insight-icon">✓</span>
+          <span className="insight-headline">
+            You're at or above best-in-class utilization
+          </span>
+        </div>
+      )}
+    </div>
+  </div>
+  
+  {/* EFFICIENCY GAUGE - Same pattern */}
+  <div className="gauge-card">
+    <div className="gauge-header">
+      <div className="gauge-title">
+        <span className="icon">⏱️</span>
+        <div>
+          <h3>Efficiency</h3>
+          <p>How much time does your solution save per encounter?</p>
+        </div>
+      </div>
+    </div>
+    
+    <div className="gauge-visualization">
+      <div className="ceiling-bar">
+        <div className="ceiling-fill" style={{width: '100%'}}>
+          <span className="ceiling-label">CEILING: 4 min</span>
+          <span className="ceiling-note">Best-in-class benchmark</span>
+        </div>
+      </div>
+      
+      <div className="your-bar">
+        <div 
+          className="your-fill" 
+          style={{width: `${(timeSaved/4)*100}%`}}
+        >
+          <span className="your-label">YOU: {timeSaved} min</span>
+        </div>
+        <div 
+          className="gap-zone"
+          style={{
+            left: `${(timeSaved/4)*100}%`,
+            width: `${100 - (timeSaved/4)*100}%`
+          }}
+        >
+          <span className="gap-label">GAP</span>
+        </div>
+      </div>
+      
+      <div className="slider-container">
+        <input 
+          type="range"
+          min="0"
+          max="5"
+          step="0.5"
+          value={timeSaved}
+          onChange={(e) => setTimeSaved(Number(e.target.value))}
+        />
+        <div className="slider-labels">
+          <span>0 min</span>
+          <span>5 min</span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="gauge-insight">
+      {timeSaved < 4 ? (
+        <div className="insight gap">
+          <span className="insight-icon">⚠️</span>
+          <div className="insight-content">
+            <span className="insight-headline">
+              You're at {Math.round((timeSaved/4)*100)}% of ceiling
+            </span>
+            <span className="insight-detail">
+              {4 - timeSaved} min below best-in-class = {efficiencyGapHours.toLocaleString()} hours/year left on table
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="insight good">
+          <span className="insight-icon">✓</span>
+          <span className="insight-headline">
+            You're at or above best-in-class efficiency
+          </span>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
+SECTION 3: THE MULTIPLIER EFFECT
+This is the "aha" moment. Show how small gaps compound.
+jsxCopy<div className="section multiplier">
+  <div className="multiplier-card">
+    <h3>💡 The Multiplier Effect</h3>
+    <p>
+      Ambient AI value isn't additive — it's <strong>multiplicative</strong>.
+      Small gaps in each dimension compound into large gaps overall.
+    </p>
+    
+    <div className="multiplier-equation">
+      <div className="equation-term">
+        <span className="term-value">{Math.round((utilization/65)*100)}%</span>
+        <span className="term-label">of utilization<br/>potential</span>
+      </div>
+      <span className="equation-operator">×</span>
+      <div className="equation-term">
+        <span className="term-value">{Math.round((timeSaved/4)*100)}%</span>
+        <span className="term-label">of efficiency<br/>potential</span>
+      </div>
+      <span className="equation-operator">=</span>
+      <div className="equation-term result">
+        <span className="term-value">{captureRate}%</span>
+        <span className="term-label">of total<br/>potential</span>
+      </div>
+    </div>
+    
+    <div className="multiplier-insight">
+      <p>
+        You're capturing <strong>{captureRate}%</strong> of the value 
+        that best-in-class ambient AI can deliver.
+      </p>
+      <p className="gap-statement">
+        The other <strong>{100 - captureRate}%</strong> is your gap.
+      </p>
+    </div>
+  </div>
+</div>
+
+SECTION 4: THE GAP IN DOLLARS (Live Updating)
+jsxCopy<div className="section gap-dollars">
+  <div className="gap-hero-card">
+    <div className="gap-hero-header">
+      <h3>Your Annual Gap</h3>
+      <span className="live-indicator">
+        <span className="pulse" />
+        LIVE
+      </span>
+    </div>
+    
+    <div className="gap-hero-value">
+      <span className="currency">$</span>
+      <span className="amount">{annualGap.toLocaleString()}</span>
+      <span className="period">/year</span>
+    </div>
+    
+    <div className="gap-hero-breakdown">
+      <span>{formatCurrency(annualGap/12)}/month</span>
+      <span className="divider">·</span>
+      <span>{formatCurrency(annualGap/365)}/day</span>
+      <span className="divider">·</span>
+      <span>{formatCurrency(annualGap/8760)}/hour</span>
+    </div>
+    
+    <div className="gap-hero-message">
+      This is value that exists but isn't being captured.
+    </div>
+    
+    <div className="gap-components">
+      <div className="component">
+        <div className="component-icon">📊</div>
+        <div className="component-content">
+          <span className="component-name">Utilization Gap</span>
+          <span className="component-detail">
+            +{utilizationGapEncounters.toLocaleString()} encounters
+          </span>
+        </div>
+        <span className="component-value">{formatCurrency(utilizationGapValue)}</span>
+      </div>
+      
+      <div className="component">
+        <div className="component-icon">⏱️</div>
+        <div className="component-content">
+          <span className="component-name">Efficiency Gap</span>
+          <span className="component-detail">
+            +{efficiencyGapHours.toLocaleString()} hours
+          </span>
+        </div>
+        <span className="component-value">{formatCurrency(efficiencyGapValue)}</span>
+      </div>
+    </div>
+    
+    <button className="cta-button" onClick={goToFullAnalysis}>
+      See what this means over 3 years →
+    </button>
+  </div>
+</div>
+
+PAGE 2: THE FULL ANALYSIS
+A comprehensive single page that shows everything.
+
+HEADER
+jsxCopy<div className="analysis-header">
+  <button className="back-button" onClick={goBack}>← Back to assessment</button>
+  
+  <h1>Your Gap Analysis</h1>
+  <p className="subtitle">
+    {providers} providers · {encounters.toLocaleString()} encounters · Using {solutionLabel}
+  </p>
+</div>
+
+SECTION 1: HEADLINE CARDS
+jsxCopy<div className="headline-cards">
+  <div className="headline-card">
+    <span className="card-label">ANNUAL GAP</span>
+    <span className="card-value">{formatCurrency(annualGap)}</span>
+    <span className="card-sublabel">unrealized value</span>
+  </div>
+  
+  <div className="headline-card highlighted">
+    <span className="card-label">CAPTURE RATE</span>
+    <span className="card-value">{captureRate}%</span>
+    <span className="card-sublabel">of potential</span>
+    <div className="capture-bar">
+      <div className="capture-fill" style={{width: `${captureRate}%`}} />
+    </div>
+  </div>
+  
+  <div className="headline-card">
+    <span className="card-label">3-YEAR GAP</span>
+    <span className="card-value">{formatCurrency(threeYearGap)}</span>
+    <span className="card-sublabel">cumulative</span>
+  </div>
+</div>
+
+SECTION 2: THE COST OF THE GAP OVER TIME (Graph)
+jsxCopy<div className="section cost-over-time">
+  <div className="section-header">
+    <h2>The Cost of the Gap Over Time</h2>
+    <p>
+      Cumulative unrealized value if you stay at current performance 
+      vs. close the gap to best-in-class
+    </p>
+  </div>
+  
+  <div className="graph-container">
+    {/* 
+      TWO LINES:
+      - Green solid: "Close the gap" trajectory (reaching ceiling)
+      - Gray dashed: "Stay at current" trajectory (flat)
+      
+      The AREA between them is the gap, shaded in light red/coral
+      
+      X-axis: Today, 6 mo, Year 1, Year 2, Year 3
+      Y-axis: Cumulative value
+    */}
+    <GapComparisonGraph 
+      currentTrajectory={currentTrajectoryData}
+      ceilingTrajectory={ceilingTrajectoryData}
+    />
+  </div>
+  
+  <div className="graph-callout">
+    <span className="callout-icon">↕</span>
+    <span className="callout-value">{formatCurrency(threeYearGap)}</span>
+    <span className="callout-label">3-year gap</span>
+  </div>
+  
+  <div className="graph-legend">
+    <div className="legend-item">
+      <span className="legend-line solid green" />
+      <span>Close the gap (reach ceiling)</span>
+    </div>
+    <div className="legend-item">
+      <span className="legend-line dashed gray" />
+      <span>Stay at current performance</span>
+    </div>
+    <div className="legend-item">
+      <span className="legend-area coral" />
+      <span>Unrealized value</span>
+    </div>
+  </div>
+</div>
+
+SECTION 3: GAP BREAKDOWN
+jsxCopy<div className="section gap-breakdown">
+  <h2>How the Gap Breaks Down</h2>
+  
+  <div className="breakdown-card">
+    <div className="breakdown-item">
+      <div className="breakdown-header">
+        <span className="breakdown-name">Utilization Gap</span>
+        <span className="breakdown-value">{formatCurrency(utilizationGapValue)}</span>
+      </div>
+      <div className="breakdown-bar">
+        <div className="bar-you" style={{width: `${(utilization/65)*100}%`}}>
+          <span>You: {utilization}%</span>
+        </div>
+        <div className="bar-gap" style={{width: `${((65-utilization)/65)*100}%`}}>
+          <span>Gap</span>
+        </div>
+        <div className="bar-ceiling">
+          <span>Ceiling: 65%</span>
+        </div>
+      </div>
+      <div className="breakdown-math">
+        {utilization}% → 65% = +{65-utilization}pp = +{utilizationGapEncounters.toLocaleString()} encounters × $4/enc
+      </div>
+    </div>
+    
+    <div className="breakdown-item">
+      <div className="breakdown-header">
+        <span className="breakdown-name">Efficiency Gap</span>
+        <span className="breakdown-value">{formatCurrency(efficiencyGapValue)}</span>
+      </div>
+      <div className="breakdown-bar">
+        <div className="bar-you" style={{width: `${(timeSaved/4)*100}%`}}>
+          <span>You: {timeSaved} min</span>
+        </div>
+        <div className="bar-gap" style={{width: `${((4-timeSaved)/4)*100}%`}}>
+          <span>Gap</span>
+        </div>
+        <div className="bar-ceiling">
+          <span>Ceiling: 4 min</span>
+        </div>
+      </div>
+      <div className="breakdown-math">
+        {timeSaved} min → 4 min = +{4-timeSaved} min × {encountersAtCeiling.toLocaleString()} enc ÷ 60 × $150/hr × 20%
+      </div>
+    </div>
+  </div>
+</div>
+
+SECTION 4: WHY THE GAP EXISTS
+jsxCopy<div className="section why-gap">
+  <div className="why-gap-card">
+    <h3>💡 Why This Gap Exists</h3>
+    
+    <p>
+      This gap doesn't mean your current solution is bad. 
+      It means ambient AI value is <strong>multiplicative</strong>, 
+      and small differences compound:
+    </p>
+    
+    <div className="formula-display">
+      <code>Utilization × Efficiency = Captured Value</code>
+    </div>
+    
+    <div className="your-equation">
+      <span className="eq-term">{utilization}%</span>
+      <span className="eq-operator">×</span>
+      <span className="eq-term">{timeSaved} min</span>
+      <span className="eq-operator">=</span>
+      <span className="eq-result">{captureRate}% captured</span>
+    </div>
+    
+    <p>
+      At {captureRate}% capture, you're leaving {100-captureRate}% of potential value 
+      unrealized. Over 3 years, that's <strong>{formatCurrency(threeYearGap)}</strong>.
+    </p>
+    
+    <p className="key-insight">
+      <strong>The question isn't whether your vendor is good.</strong><br/>
+      It's whether you're reaching the ceiling of what ambient AI can deliver.
+    </p>
+  </div>
+</div>
+
+SECTION 5: THE COST OF WAITING
+jsxCopy<div className="section cost-waiting">
+  <h2>The Cost of Waiting</h2>
+  <p>Every month at current performance = unrealized value</p>
+  
+  <div className="waiting-cards">
+    <div className="waiting-card recommended">
+      <span className="card-badge">RECOMMENDED</span>
+      <span className="card-title">Close the gap now</span>
+      <span className="card-value">{formatCurrency(threeYearGap)}</span>
+      <span className="card-sublabel">3-year value captured</span>
+    </div>
+    
+    <div className="waiting-card">
+      <span className="card-title">Wait 6 months</span>
+      <span className="card-value">{formatCurrency(threeYearGap - wait6MonthsLoss)}</span>
+      <span className="card-sublabel">3-year value</span>
+      <span className="card-loss">Lost: {formatCurrency(wait6MonthsLoss)}</span>
+    </div>
+    
+    <div className="waiting-card">
+      <span className="card-title">Wait 12 months</span>
+      <span className="card-value">{formatCurrency(threeYearGap - wait12MonthsLoss)}</span>
+      <span className="card-sublabel">3-year value</span>
+      <span className="card-loss">Lost: {formatCurrency(wait12MonthsLoss)}</span>
+    </div>
+  </div>
+  
+  <div className="monthly-callout">
+    <span className="callout-icon">⏰</span>
+    <span className="callout-text">
+      Every month at current state = <strong>{formatCurrency(monthlyGap)}</strong> in unrealized value
+    </span>
+  </div>
+</div>
+
+SECTION 6: WHAT CLOSING THE GAP LOOKS LIKE
+jsxCopy<div className="section closing-gap">
+  <h2>What Closing the Gap Looks Like</h2>
+  
+  <div className="timeline">
+    <div className="timeline-item">
+      <div className="timeline-marker">1</div>
+      <div className="timeline-content">
+        <h4>Assessment & Planning</h4>
+        <p>2-4 weeks</p>
+        <span className="timeline-note">Understand your workflows, plan rollout</span>
+      </div>
+    </div>
+    
+    <div className="timeline-item">
+      <div className="timeline-marker">2</div>
+      <div className="timeline-content">
+        <h4>Implementation</h4>
+        <p>4-6 weeks</p>
+        <span className="timeline-note">Technical setup, EHR integration, training</span>
+      </div>
+    </div>
+    
+    <div className="timeline-item">
+      <div className="timeline-marker">3</div>
+      <div className="timeline-content">
+        <h4>Ramp to Ceiling</h4>
+        <p>2-3 months</p>
+        <span className="timeline-note">Adoption grows, utilization reaches 65%+</span>
+      </div>
+    </div>
+    
+    <div className="timeline-item highlight">
+      <div className="timeline-marker">✓</div>
+      <div className="timeline-content">
+        <h4>Full Value</h4>
+        <p>Month 4+</p>
+        <span className="timeline-note">Capturing {formatCurrency(annualGap)}/year in previously unrealized value</span>
+      </div>
+    </div>
+  </div>
+  
+  <div className="breakeven-note">
+    <span className="icon">💡</span>
+    <span>
+      Based on typical ramp, you'd reach full ceiling value by <strong>month 4</strong> 
+      and recover any switching investment by <strong>month {breakevenMonth}</strong>.
+    </span>
+  </div>
+</div>
+
+SECTION 7: METHODOLOGY
+jsxCopy<div className="section methodology">
+  <h3>📊 Methodology & Assumptions</h3>
+  
+  <div className="methodology-content">
+    <ul>
+      <li>
+        <strong>Ceiling benchmarks</strong> based on aggregate performance data 
+        from 200+ health system partners using best-in-class ambient AI
+      </li>
+      <li>
+        <strong>Utilization ceiling: 65%</strong> — top quartile of ambient AI deployments
+      </li>
+      <li>
+        <strong>Efficiency ceiling: 4 min/encounter</strong> — average across high-performing deployments
+      </li>
+      <li>
+        <strong>Utilization gap</strong> valued at $4/encounter (documentation completeness + time)
+      </li>
+      <li>
+        <strong>Efficiency gap</strong> valued at $150/hr × 20% conversion (conservative)
+      </li>
+      <li>
+        <strong>3-year projection</strong> includes 3-month ramp period in year 1
+      </li>
+    </ul>
+    
+    <p className="methodology-note">
+      These are conservative estimates. Actual value may be higher depending on 
+      your specialty mix, payer contracts, and operational capacity.
+    </p>
+  </div>
+</div>
+
+SECTION 8: ACTIONS
+jsxCopy<div className="section actions">
+  <div className="actions-card">
+    <h3>Ready to close the gap?</h3>
+    <p>Share this analysis with your team or talk to us about next steps.</p>
+    
+    <div className="action-buttons">
+      <button className="action-btn primary">
+        <span className="icon">📄</span>
+        Export as PDF
+      </button>
+      <button className="action-btn secondary">
+        <span className="icon">📧</span>
+        Share with Team
+      </button>
+      <button className="action-btn secondary">
+        <span className="icon">📅</span>
+        Schedule a Conversation
+      </button>
+    </div>
+  </div>
+</div>
+
+STYLING
+Use the same design language as the rest of the app:
+
+Abridge coral (#E85A4F) for highlights and CTAs
+Dark backgrounds (#1E293B) for hero sections
+Clean white cards with subtle shadows
+Generous whitespace
+Clear typography hierarchy
+
+Key visual elements:
+
+The gauge bars should feel like "meters" showing you vs ceiling
+The gap zones should be highlighted in a soft coral/red
+The live indicator should pulse subtly
+The graph should have a clear shaded "gap area" between the two lines
+The cost of waiting cards should create urgency without being aggressive
+
+
+CALCULATIONS
+javascriptCopyconst CEILING = {
+  utilization: 65,      // 65% is best-in-class
+  timeSaved: 4,         // 4 min is best-in-class
+  encounterValue: 4,    // $4/encounter for utilization gap
+  hourlyRate: 150,      // $150/hr for time
+  timeConversion: 0.20, // 20% of time converts to $ (conservative)
+};
+
+function calculateGap(providers, encounters, utilization, timeSaved) {
+  // Capture rates
+  const utilizationCapture = Math.min(100, Math.round((utilization / CEILING.utilization) * 100));
+  const efficiencyCapture = Math.min(100, Math.round((timeSaved / CEILING.timeSaved) * 100));
+  const captureRate = Math.round((utilizationCapture / 100) * (efficiencyCapture / 100) * 100);
+  
+  // Utilization gap
+  const utilizationGapPP = Math.max(0, CEILING.utilization - utilization);
+  const utilizationGapEncounters = Math.round(encounters * (utilizationGapPP / 100));
+  const utilizationGapValue = utilizationGapEncounters * CEILING.encounterValue;
+  
+  // Efficiency gap
+  const efficiencyGapMin = Math.max(0, CEILING.timeSaved - timeSaved);
+  const encountersAtCeiling = encounters * (CEILING.utilization / 100);
+  const efficiencyGapTotalMin = encountersAtCeiling * efficiencyGapMin;
+  const efficiencyGapHours = Math.round(efficiencyGapTotalMin / 60);
+  const efficiencyGapValue = Math.round(efficiencyGapHours * CEILING.hourlyRate * CEILING.timeConversion);
+  
+  // Totals
+  const annualGap = utilizationGapValue + efficiencyGapValue;
+  const monthlyGap = Math.round(annualGap / 12);
+  const threeYearGap = Math.round(annualGap * 2.75); // Year 1 partial due to ramp
+  
+  // Cost of waiting
+  const wait6MonthsLoss = monthlyGap * 6;
+  const wait12MonthsLoss = annualGap;
+  
+  return {
+    utilizationCapture,
+    efficiencyCapture,
+    captureRate,
+    utilizationGapPP,
+    utilizationGapEncounters,
+    utilizationGapValue,
+    efficiencyGapMin,
+    efficiencyGapHours,
+    efficiencyGapValue,
+    annualGap,
+    monthlyGap,
+    threeYearGap,
+    wait6MonthsLoss,
+    wait12MonthsLoss,
+    encountersAtCeiling,
+  };
+}
+
+KEY LANGUAGE CHOICES
+DO say:
+
+"The ceiling" (not "Abridge benchmarks")
+"Best-in-class ambient AI" (not "Abridge")
+"Unrealized value" (not "money you're losing")
+"Close the gap" (not "switch to us")
+"Your capture rate" (not "your vendor's failure")
+
+DON'T say:
+
+"Your vendor is underperforming"
+"You made a bad choice"
+"Abridge is better"
+"You're losing money"
+"You need to switch"
+
+The tone is: Helpful consultant showing you math, not salesperson pushing a product.
