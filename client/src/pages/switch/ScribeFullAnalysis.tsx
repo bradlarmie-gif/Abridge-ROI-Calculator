@@ -371,7 +371,8 @@ export default function ScribeFullAnalysis({
                   dataKey="scribeCost"
                   name="Scribes (linear scaling)"
                   stroke="#6B7280"
-                  strokeWidth={3}
+                  strokeWidth={2}
+                  strokeDasharray="6 4"
                   dot={false}
                 />
                 <ReferenceDot
@@ -388,7 +389,7 @@ export default function ScribeFullAnalysis({
 
           <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm mb-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-0.5 bg-[#6B7280]"></div>
+              <div className="w-8 border-t-2 border-dashed border-[#6B7280]"></div>
               <span className="text-[#6B7280]">Scribe program cost (linear scaling)</span>
             </div>
             <div className="flex items-center gap-2">
