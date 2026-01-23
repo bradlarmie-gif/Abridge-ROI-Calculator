@@ -110,8 +110,8 @@ export function getScalingDataPoints(inputs: ScribeInputs, calculations: ScribeC
   const costPerScribe = inputs.scribeCostPerHour * inputs.scribeHoursPerWeek * SCRIBE_ASSUMPTIONS.weeksPerYear;
   const currentCoverage = calculations.coveragePercent;
   
-  // Generate points every 2% to show the staircase pattern clearly
-  for (let coverage = 0; coverage <= 100; coverage += 2) {
+  // Generate points every 10% for clean axis display
+  for (let coverage = 0; coverage <= 100; coverage += 10) {
     const providersAtCoverage = Math.round(inputs.totalProviders * (coverage / 100));
     const scribesNeeded = Math.ceil(providersAtCoverage / calculations.scribeRatio);
     const scribeCostAtCoverage = scribesNeeded * costPerScribe;
@@ -123,8 +123,8 @@ export function getScalingDataPoints(inputs: ScribeInputs, calculations: ScribeC
     });
   }
   
-  // Add current position if not already included
-  if (currentCoverage > 0 && currentCoverage < 100 && currentCoverage % 2 !== 0) {
+  // Add current position if not already included at a 10% interval
+  if (currentCoverage > 0 && currentCoverage < 100 && currentCoverage % 10 !== 0) {
     const providersAtCoverage = Math.round(inputs.totalProviders * (currentCoverage / 100));
     const scribesNeeded = Math.ceil(providersAtCoverage / calculations.scribeRatio);
     const scribeCostAtCoverage = scribesNeeded * costPerScribe;
