@@ -45,10 +45,13 @@ export default function ExpandValueConfiguration({
   const wrvuAfter = metricsData.wrvuCapture.after;
   const wrvuLift = wrvuBefore && wrvuAfter ? Math.max(0, wrvuAfter - wrvuBefore) : 0;
   
+  // Eligible encounters = total encounters × utilization rate
+  const eligibleEncounters = Math.round(encounters * (utilizationRate / 100));
+  
   const timeBefore = metricsData.timeSavings.before;
   const timeAfter = metricsData.timeSavings.after;
   const minutesSaved = timeBefore && timeAfter ? Math.max(0, timeBefore - timeAfter) : 0;
-  const totalHoursSaved = Math.round((minutesSaved * encounters) / 60);
+  const totalHoursSaved = Math.round((minutesSaved * eligibleEncounters) / 60);
   
   const wowBefore = metricsData.workOutsideWork.before;
   const wowAfter = metricsData.workOutsideWork.after;
@@ -144,7 +147,7 @@ export default function ExpandValueConfiguration({
                     <span className="font-bold text-lg text-emerald-600">{formatCurrency(wrvuValue)}</span>
                   </div>
                   <div className="text-xs font-mono text-[#6B7280] bg-neutral-100 p-2 rounded">
-                    +{wrvuLift.toFixed(2)} wRVU x {encounters.toLocaleString()} enc x ${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU x 50% attribution
+                    +{wrvuLift.toFixed(2)} wRVU x {encounters.toLocaleString()} enc x {utilizationRate}% util x ${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU x 50% attribution
                   </div>
                 </div>
               ) : (

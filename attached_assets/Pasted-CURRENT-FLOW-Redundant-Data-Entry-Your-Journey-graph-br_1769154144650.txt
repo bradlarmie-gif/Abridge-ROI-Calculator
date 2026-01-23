@@ -1,0 +1,132 @@
+CURRENT FLOW (Redundant):
+─────────────────────────
+Data Entry → Your Journey (graph + breakdown) → ROI Story (headline + breakdown) → Expand Journey (old graph + expansion)
+
+4 pages, lots of redundancy
+
+
+SIMPLIFIED FLOW:
+─────────────────────────
+Data Entry → Your Results (ONE page with everything)
+
+1 results page that has:
+├── Headline metrics (value + ROI)
+├── Journey graph (time-based)
+├── Value breakdown (tiered)
+├── Expansion modeling (inline)
+└── Export/Share
+
+Replit Prompt to Fix This
+CopyConsolidate the Expand results into ONE comprehensive page and fix the issues. Currently there are 3 redundant pages (Your Journey, ROI Story, Expand Journey). Merge them into a single "Your Results" page.
+
+## PAGES TO REMOVE
+- "Your ROI Story" page (redundant)
+- "Expand Journey" page (uses old graph)
+
+## SINGLE RESULTS PAGE STRUCTURE
+
+Create one page called "Your Abridge Results" with these sections in order:
+
+### Section 1: Headline Metrics
+Three cards in a row:
+- CURRENT VALUE: $330,000 (their proven Tier 1 value)
+- ROI: 3.2x (value / investment)
+- EXPANSION POTENTIAL: $X (calculated from expansion inputs below)
+
+### Section 2: Journey Graph
+The TIME-BASED graph we already built:
+- X-axis: Before → Mo 3 → Today → Mo 12 → Mo 24 → Full Scale
+- Shows actual (solid) vs projected (dashed)
+- "You are here" marker at Today
+
+DO NOT use the old provider-based graph.
+
+### Section 3: Value Breakdown
+Tiered value display:
+- Tier 1: Hard Value (wRVU, Patient Access if enabled)
+- Tier 2: Efficiency Gains (time saved, pajama time - NOT dollarized)
+- Tier 3: Leading Indicators (satisfaction - qualitative)
+
+### Section 4: Model Your Expansion (Inline)
+Move the expansion modeling ONTO this page, not a separate page:
+
+```jsx
+<div className="expansion-section">
+  <h3>Model Your Expansion</h3>
+  <p>Based on your proven results, here's what full-scale could look like</p>
+  
+  <div className="expansion-inputs">
+    <div className="current-state">
+      <h4>CURRENT STATE</h4>
+      <div className="state-row">
+        <span>Providers</span>
+        <span>50</span>
+      </div>
+      <div className="state-row">
+        <span>Utilization</span>
+        <span>60%</span>
+      </div>
+      <div className="state-row">
+        <span>Annual Value</span>
+        <span>$330,000</span>
+      </div>
+    </div>
+    
+    <div className="expansion-arrow">→</div>
+    
+    <div className="expansion-target">
+      <h4>EXPANSION TARGET</h4>
+      <div className="input-row">
+        <label>Total providers</label>
+        <input type="number" value={targetProviders} onChange={...} placeholder="e.g., 150" />
+      </div>
+      <div className="input-row">
+        <label>Target utilization</label>
+        <div className="slider-with-value">
+          <input type="range" min="60" max="85" value={targetUtilization} onChange={...} />
+          <span>{targetUtilization}%</span>
+        </div>
+        <span className="hint">Most organizations reach 75-85% at maturity</span>
+      </div>
+      <div className="input-row">
+        <label>Investment ($/provider/month)</label>
+        <input type="number" value={investmentPerProvider} onChange={...} placeholder="250" />
+      </div>
+    </div>
+  </div>
+  
+  {/* Show expansion result when inputs are filled */}
+  {targetProviders > 0 && (
+    <div className="expansion-result">
+      <div className="result-row">
+        <span>Projected Annual Value</span>
+        <span className="result-value">{formatCurrency(projectedValue)}</span>
+      </div>
+      <div className="result-row">
+        <span>Expansion Value</span>
+        <span className="result-value highlight">+{formatCurrency(projectedValue - currentValue)}</span>
+      </div>
+      <div className="result-row">
+        <span>Projected ROI</span>
+        <span className="result-value">{projectedROI.toFixed(1)}x</span>
+      </div>
+      
+      <div className="calculation-note">
+        <strong>How we calculated this:</strong>
+        <ul>
+          <li>Your value per provider: {formatCurrency(valuePerProvider)}</li>
+          <li>× {targetProviders} providers = {formatCurrency(baseExpansion)}</li>
+          <li>× {(targetUtilization/currentUtilization).toFixed(2)}x utilization boost ({currentUtilization}% → {targetUtilization}%)</li>
+          <li>× 1.15x maturity effects</li>
+          <li>= {formatCurrency(projectedValue)}</li>
+        </ul>
+      </div>
+    </div>
+  )}
+</div>
+Section 5: Export & Share
+Buttons at the bottom:
+
+Export as PDF
+Share via Email
+Copy Link

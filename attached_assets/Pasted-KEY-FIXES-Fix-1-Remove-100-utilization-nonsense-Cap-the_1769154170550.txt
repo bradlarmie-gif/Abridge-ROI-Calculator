@@ -1,0 +1,102 @@
+KEY FIXES
+Fix 1: Remove "100% utilization" nonsense
+Cap the utilization slider at 85% max.
+Change any copy that says "100% utilization" to "full adoption (80% utilization)" or similar.
+Fix 2: Make Investment Editable
+Add an input field for investment per provider per month.
+Default to $250 but allow the sales team to enter the actual contract value.
+Recalculate ROI when this changes.
+jsxCopy<div className="investment-input">
+  <label>Investment ($/provider/month)</label>
+  <input 
+    type="number" 
+    value={investmentPerProvider}
+    onChange={(e) => setInvestmentPerProvider(Number(e.target.value))}
+    placeholder="250"
+  />
+  <span className="calculated">
+    = {formatCurrency(investmentPerProvider * providers * 12)}/year
+  </span>
+</div>
+Fix 3: Use the Correct Graph
+Use the TIME-BASED journey graph, not the provider-based one.
+
+X-axis: Time (Before, Mo 3, Today, Mo 12, Mo 24, Full Scale)
+NOT X-axis: Providers (50, 65, 80, 95, 110, 125)
+
+The graph should update when expansion inputs change:
+
+"Full Scale" point should reflect the targetProviders and targetUtilization
+
+Fix 4: Single Source of Truth for Value
+The headline "CURRENT VALUE" card, the "You are here" point on the graph, and the "Annual Value" in Current State should ALL show the same number - the Tier 1 hard value.
+NAVIGATION UPDATE
+Update the step indicator:
+CopyOLD: Data Entry → Your Journey → ROI Story → Expand Journey (4 steps)
+NEW: Data Entry → Your Results (2 steps)
+Remove the intermediate pages from the navigation.
+FINAL PAGE LAYOUT
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│  ← Back                                          [Export & Share]           │
+│                                                                             │
+│                        Your Abridge Results                                 │
+│              50 providers · 5 months on Abridge · 60% utilization          │
+│                                                                             │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                │
+│  │ CURRENT VALUE  │  │ ROI            │  │ EXPANSION      │                │
+│  │ $330,000       │  │ 3.2x           │  │ +$670,000      │                │
+│  │ Proven results │  │                │  │ At 150 provs   │                │
+│  └────────────────┘  └────────────────┘  └────────────────┘                │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  YOUR VALUE JOURNEY                                                 │   │
+│  │  [TIME-BASED GRAPH: Before → Today → Full Scale]                   │   │
+│  │                                                                     │   │
+│  │  ───── Actual results  ----- Projected growth                      │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  VALUE BREAKDOWN                                                    │   │
+│  │                                                                     │   │
+│  │  TIER 1: HARD VALUE                              $330,000          │   │
+│  │  └─ wRVU Lift: +0.20 × 60K enc × $33 × 50%                         │   │
+│  │                                                                     │   │
+│  │  TIER 2: EFFICIENCY GAINS (not dollarized)                         │   │
+│  │  └─ Time saved: 5,000 hours/year                                   │   │
+│  │  └─ Pajama time: -5 hrs/week                                       │   │
+│  │                                                                     │   │
+│  │  TIER 3: LEADING INDICATORS                                        │   │
+│  │  └─ Satisfaction: 7 → 8.5 (+1.5 points)                            │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  MODEL YOUR EXPANSION                                               │   │
+│  │                                                                     │   │
+│  │  CURRENT STATE          →       EXPANSION TARGET                   │   │
+│  │  ───────────────────            ─────────────────                  │   │
+│  │  50 providers                   [ 150 ] providers                  │   │
+│  │  60% utilization                [===●===] 80%                      │   │
+│  │  $330,000/year                  $250/prov/mo investment            │   │
+│  │                                                                     │   │
+│  │  PROJECTED: $1,000,000/year · 2.2x ROI · +$670,000 expansion      │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  📊 METHODOLOGY                                                     │   │
+│  │  • wRVU at $33 (Medicare blended)                                  │   │
+│  │  • 50% attribution to Abridge                                      │   │
+│  │  • Investment: $250/provider/month [Edit]                          │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│            [Export as PDF]  [Share via Email]  [Copy Link]                 │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+UTILIZATION CAP
+In all calculations and UI:
+
+Max utilization slider: 85%
+If someone enters >85%, cap it at 85%
+Never show "100% utilization" anywhere
+Use language like "full adoption" or "mature deployment" instead of implying 100%
+
+javascriptCopyconst targetUtilization = Math.min(inputUtilization, 85);

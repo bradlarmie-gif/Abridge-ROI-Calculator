@@ -234,8 +234,11 @@ function calculateWRVU(
   const lift = Math.max(0, after - before);
   const liftPercent = before > 0 ? (lift / before) * 100 : 0;
   
+  // Eligible encounters = total encounters × utilization rate
+  const eligibleEncounters = Math.round(inputs.encounters * (inputs.utilizationRate / 100));
+  
   const annualValue = Math.round(
-    lift * inputs.encounters * defaults.dollarPerWRVU * defaults.wrvuAttribution
+    lift * eligibleEncounters * defaults.dollarPerWRVU * defaults.wrvuAttribution
   );
   
   return {
@@ -244,7 +247,7 @@ function calculateWRVU(
     afterValue: inputs.wrvuAfter,
     liftPerEncounter: lift,
     liftPercent,
-    encounters: inputs.encounters,
+    encounters: eligibleEncounters,
     dollarPerWRVU: defaults.dollarPerWRVU,
     attribution: defaults.wrvuAttribution,
     annualValue,
@@ -258,7 +261,9 @@ function calculateTimeEfficiency(
   const before = inputs.timeSavingsBefore ?? 0;
   const after = inputs.timeSavingsAfter ?? 0;
   const minutesSaved = Math.max(0, before - after);
-  const totalHoursSaved = Math.round((minutesSaved * inputs.encounters) / 60);
+  // Apply utilization rate to get eligible encounters
+  const eligibleEncounters = Math.round(inputs.encounters * (inputs.utilizationRate / 100));
+  const totalHoursSaved = Math.round((minutesSaved * eligibleEncounters) / 60);
   
   const config = inputs.valueConfig;
   const isPatientAccess = config.timeConversionMethod === "patientAccess";
@@ -323,7 +328,9 @@ function calculateEfficiencyMetrics(inputs: CalculationInputs): EfficiencyMetric
   const timeBefore = inputs.timeSavingsBefore ?? 0;
   const timeAfter = inputs.timeSavingsAfter ?? 0;
   const minutesSaved = Math.max(0, timeBefore - timeAfter);
-  const hoursSaved = Math.round((minutesSaved * inputs.encounters) / 60);
+  // Apply utilization rate to get eligible encounters
+  const eligibleEncounters = Math.round(inputs.encounters * (inputs.utilizationRate / 100));
+  const hoursSaved = Math.round((minutesSaved * eligibleEncounters) / 60);
   
   const wowBefore = inputs.workOutsideWorkBefore ?? 0;
   const wowAfter = inputs.workOutsideWorkAfter ?? 0;
