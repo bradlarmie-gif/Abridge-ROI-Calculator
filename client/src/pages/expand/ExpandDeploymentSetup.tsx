@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, Lightbulb } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, Lightbulb, BarChart3, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import type { DeploymentData, MetricType } from "./ExpandFlow";
+import type { DeploymentData, MetricType, DataEntryMode } from "./ExpandFlow";
 
 interface ExpandDeploymentSetupProps {
   deploymentData: DeploymentData;
@@ -281,6 +281,71 @@ export default function ExpandDeploymentSetup({
             <p className="text-sm text-[#6B7280]">
               Select at least one metric to continue. More metrics = more complete picture.
             </p>
+          </div>
+        </section>
+
+        {/* Data Entry Mode Selection */}
+        <section className="mb-10">
+          <div className="mb-4">
+            <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-1">
+              HOW WOULD YOU LIKE TO ENTER YOUR DATA?
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Simple Mode */}
+            <button
+              type="button"
+              onClick={() => setDeploymentData({ ...deploymentData, dataEntryMode: "simple" })}
+              className={`flex items-start gap-4 p-5 bg-white border rounded-xl cursor-pointer transition-all text-left ${
+                deploymentData.dataEntryMode === "simple"
+                  ? "border-[#EA2C00] bg-[#FEF0EC]"
+                  : "border-neutral-200 hover:border-neutral-300"
+              }`}
+              data-testid="mode-simple"
+            >
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                deploymentData.dataEntryMode === "simple" ? "bg-[#EA2C00]/10" : "bg-neutral-100"
+              }`}>
+                <BarChart3 className={`w-6 h-6 ${
+                  deploymentData.dataEntryMode === "simple" ? "text-[#EA2C00]" : "text-neutral-500"
+                }`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className={`font-semibold mb-1 ${
+                  deploymentData.dataEntryMode === "simple" ? "text-[#EA2C00]" : "text-[#111827]"
+                }`}>Simple</h3>
+                <p className="text-sm text-[#6B7280] mb-1">Before Abridge vs. Today</p>
+                <p className="text-xs text-neutral-400">Quick comparison—just two data points</p>
+              </div>
+            </button>
+
+            {/* Detailed Mode */}
+            <button
+              type="button"
+              onClick={() => setDeploymentData({ ...deploymentData, dataEntryMode: "detailed" })}
+              className={`flex items-start gap-4 p-5 bg-white border rounded-xl cursor-pointer transition-all text-left ${
+                deploymentData.dataEntryMode === "detailed"
+                  ? "border-[#EA2C00] bg-[#FEF0EC]"
+                  : "border-neutral-200 hover:border-neutral-300"
+              }`}
+              data-testid="mode-detailed"
+            >
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                deploymentData.dataEntryMode === "detailed" ? "bg-[#EA2C00]/10" : "bg-neutral-100"
+              }`}>
+                <TrendingUp className={`w-6 h-6 ${
+                  deploymentData.dataEntryMode === "detailed" ? "text-[#EA2C00]" : "text-neutral-500"
+                }`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className={`font-semibold mb-1 ${
+                  deploymentData.dataEntryMode === "detailed" ? "text-[#EA2C00]" : "text-[#111827]"
+                }`}>Detailed</h3>
+                <p className="text-sm text-[#6B7280] mb-1">Track progress over time</p>
+                <p className="text-xs text-neutral-400">Enter monthly data to see your trend</p>
+              </div>
+            </button>
           </div>
         </section>
 

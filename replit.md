@@ -23,7 +23,13 @@ The application guides users through multi-step processes:
     6. Summary (SummaryCommandCenter.tsx) - final ROI results with waterfall chart
 -   **Switch Path (Ambient AI)**: A streamlined 3-page flow (after Solution Selection) for prospects switching from other ambient AI solutions. Pages: Setup (provider range chips, utilization/efficiency sliders with Abridge benchmarks, live gap visualization showing YOU vs ABRIDGE) → Analysis (annual gap hero with monthly/daily breakdown, Value Breakdown tab with expandable driver cards, Over Time tab with 3-year chart and cost of waiting) → Conclusion (situation summary, context about benchmarks, 3-year value highlight, CTAs). Uses slider-based inputs with real-time gap calculations.
 -   **Switch Path (Human Scribes)**: A 5-step cost-focused flow for prospects switching from human scribes to Abridge. Pages: Setup (organization info, scribe coverage, hourly costs) → Coverage Reality (current vs full coverage visualization) → Hidden Costs (turnover/training, management overhead) → Full Picture (total investment summary with breakdown) → Comparison (3-year side-by-side scribes vs Abridge with savings). Uses editable inline inputs and real-time calculations with coral (#EA2C00) CTAs and emerald for positive savings values.
--   **Expand Path**: A 5-step performance analysis flow for current Abridge customers (Setting Selection → Deployment Setup → Performance Dashboard → ROI Story → Journey Expansion).
+-   **Expand Path**: A 6-step performance analysis flow for current Abridge customers with Simple/Detailed data entry modes:
+    1. Setting Selection (ExpandSettingSelection.tsx)
+    2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, Simple/Detailed mode selector, metric selection
+    3. Data Entry (ExpandDataEntry.tsx) - Simple mode: Before/After comparison; Detailed mode: Timeline data entry with dynamic columns based on months (1-3: 2 cols, 4-6: 3 cols, 7-12: 4 cols, 12+: 5 cols) and mini sparklines
+    4. Performance Dashboard (ExpandPerformanceDashboard.tsx) - Three-phase journey overview (Before Abridge → Today → Full Scale), journey graph with actual (solid) vs projected (dashed) lines, "You are here" marker, value breakdown cards
+    5. ROI Story (ExpandROIStory.tsx)
+    6. Journey Expansion (ExpandJourneyExpansion.tsx)
 -   **Care Setting Selection**: Users choose a healthcare environment.
 -   **Strategic Priorities Selection**: Users identify relevant ROI levers.
 -   **Baseline Assumptions Wizard**: Defines adoption rates, value posture, and investment details.

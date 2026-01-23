@@ -1,0 +1,398 @@
+The Problem: Too Manual, Too Complex
+Looking at your current data entry, here's what feels off:
+Level of Service Entry
+You're asking them to enter 10 separate fields (5 levels × Before + After):
+CopyLevel 5: Before [5%] After [10%]
+Level 4: Before [35%] After [45%]
+Level 3: Before [42%] After [38%]
+Level 2: Before [10%] After [7%]
+Level 1: Before [8%] After [0%]
+This is painful because:
+
+They have to pull this from a report
+They have to enter it twice (before AND after)
+The math has to add to 100% (error-prone)
+Most users won't have this granular data readily available
+
+Chart Closure Time Entry
+Same issue—8 separate fields:
+CopyWithin 24h: Before [78%] After [85%]
+24-48h: Before [10%] After [15%]
+48-72h: Before [10%] After [0%]
+72+ hours: Before [2%] After [0%]
+The Real Question:
+Do they actually HAVE this data? And if so, in what format?
+
+What Data Do Customers Actually Have?
+Let me think about what's realistic:
+MetricWhat They Likely HaveWhat You're Asking ForTime Savings"Providers say they save 3-5 min" or Clarity report showing avgBefore: X, After: Y ✅ SimpleWork Outside WorkSurvey results or Clarity "pajama time" reportBefore: X hrs, After: Y hrs ✅ SimpleLevel of ServiceE&M code distribution report from billingFull distribution × 2 ❌ ComplexwRVU CapturewRVU/encounter reportBefore: X, After: Y ✅ SimpleChart ClosureReport showing % closed in 24/48/72hFull distribution × 2 ❌ ComplexSatisfactionSurvey scoresBefore: X, After: Y ✅ Simple
+
+Reframe: Three Tiers of Data Entry
+Tier 1: Simple Metrics (What Most People Have)
+Single number before, single number after:
+
+Time per note
+Work outside work
+wRVU per encounter
+Satisfaction score
+
+Tier 2: Summary Metrics (Derived from Complex Data)
+Instead of asking for the full distribution, ask for the summary stat:
+
+Level of Service: "What's your average E&M level?" (weighted average)
+Chart Closure: "What % of charts close same-day?"
+
+Tier 3: Detailed Entry (Optional, for Power Users)
+Full distribution entry—but make it OPTIONAL and hidden by default.
+
+Redesigned Data Entry
+Here's how I'd restructure each metric:
+Time Savings (Keep Simple)
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  🕐 Time Savings                                                           │
+│     Average time spent on documentation per encounter                       │
+│                                                                             │
+│     BEFORE ABRIDGE              AFTER ABRIDGE                              │
+│     ┌──────────────┐            ┌──────────────┐         CHANGE            │
+│     │     10       │     →      │      6       │    =    -4 min            │
+│     │     min      │            │     min      │         40% reduction     │
+│     └──────────────┘            └──────────────┘                           │
+│                                                                             │
+│     📊 Benchmark: Abridge customers typically see 3-5 min reduction        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+✅ This is fine. Keep it.
+
+Level of Service (Simplify Dramatically)
+Current (Too Complex):
+CopyEnter distribution for all 5 levels × before and after = 10 inputs
+Redesigned (Simple Default):
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  📋 Level of Service                                                       │
+│     E&M code distribution                                                   │
+│                                                                             │
+│     What's your average E&M level?                                         │
+│                                                                             │
+│     BEFORE ABRIDGE              AFTER ABRIDGE                              │
+│     ┌──────────────┐            ┌──────────────┐         CHANGE            │
+│     │    3.19      │     →      │    3.58      │    =   +0.39 levels       │
+│     │   average    │            │   average    │        +12.2% lift        │
+│     └──────────────┘            └──────────────┘                           │
+│                                                                             │
+│     💡 Calculate your average: (% at each level × level number)            │
+│        Example: 5% L5 + 35% L4 + 42% L3 + 10% L2 + 8% L1                   │
+│        = (0.05×5) + (0.35×4) + (0.42×3) + (0.10×2) + (0.08×1) = 3.19      │
+│                                                                             │
+│     ▸ I want to enter the full distribution (optional)                     │
+│                                                                             │
+│     📊 Benchmark: Abridge customers typically see 0.2-0.5 level increase  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+If they click "I want to enter the full distribution":
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  ▾ Full E&M Distribution                                                   │
+│                                                                             │
+│     Paste or enter your distribution. We'll calculate the average.         │
+│                                                                             │
+│     ┌─────────────────────────────────────────────────────────────────┐    │
+│     │  LEVEL    BEFORE ABRIDGE    AFTER ABRIDGE    CHANGE             │    │
+│     │  ─────    ──────────────    ─────────────    ──────             │    │
+│     │  L5       [  5  ] %         [ 10  ] %        ↑ 5pp              │    │
+│     │  L4       [ 35  ] %         [ 45  ] %        ↑ 10pp             │    │
+│     │  L3       [ 42  ] %         [ 38  ] %        ↓ 4pp              │    │
+│     │  L2       [ 10  ] %         [  7  ] %        ↓ 3pp              │    │
+│     │  L1       [  8  ] %         [  0  ] %        ↓ 8pp              │    │
+│     │  ─────    ──────────────    ─────────────                       │    │
+│     │  TOTAL    100%              100%                                │    │
+│     │                                                                 │    │
+│     │  CALCULATED AVERAGE: 3.19 → 3.58 (+12.2%)                      │    │
+│     └─────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+Even better—let them paste from a report:
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  📋 Paste from your E&M report                                             │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  Paste your E&M distribution here...                                │   │
+│  │                                                                     │   │
+│  │  We accept formats like:                                            │   │
+│  │  • "99215: 45%, 99214: 35%, 99213: 15%, 99212: 5%"                 │   │
+│  │  • Tab-separated from Excel                                         │   │
+│  │  • CSV format                                                       │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  Or enter manually below...                                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Chart Closure Time (Simplify)
+Current (Too Complex):
+CopyEnter distribution for 4 time buckets × before and after = 8 inputs
+Redesigned (Simple Default):
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  📄 Chart Closure                                                          │
+│     How quickly are charts being closed?                                    │
+│                                                                             │
+│     What % of charts close same-day (within 24 hours)?                     │
+│                                                                             │
+│     BEFORE ABRIDGE              AFTER ABRIDGE                              │
+│     ┌──────────────┐            ┌──────────────┐         CHANGE            │
+│     │     78%      │     →      │     85%      │    =    +7pp              │
+│     │  same-day    │            │  same-day    │                           │
+│     └──────────────┘            └──────────────┘                           │
+│                                                                             │
+│     ▸ I want to enter the full breakdown (24h, 48h, 72h+)                  │
+│                                                                             │
+│     📊 Benchmark: Abridge customers typically see 5-15pp improvement       │
+│                                                                             │
+│     💡 WHY THIS MATTERS                                                    │
+│     Same-day closure accelerates billing and improves cash flow.           │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+wRVU Capture (Keep Simple, Add Context)
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  💰 wRVU Capture                                                           │
+│     Average wRVUs per encounter                                             │
+│                                                                             │
+│     BEFORE ABRIDGE              AFTER ABRIDGE                              │
+│     ┌──────────────┐            ┌──────────────┐         CHANGE            │
+│     │    1.4       │     →      │    1.8       │    =   +0.4 wRVU          │
+│     │  wRVU/enc    │            │  wRVU/enc    │        +28.6% lift        │
+│     └──────────────┘            └──────────────┘                           │
+│                                                                             │
+│     💡 Don't have this? It's typically in your productivity dashboard.     │
+│        Formula: Total wRVUs ÷ Total Encounters                             │
+│                                                                             │
+│     📊 Benchmark: Abridge customers typically see 3-7% wRVU lift          │
+│                                                                             │
+│     ⚠️ Your result (28.6%) is above typical range.                        │
+│        This may reflect better documentation of complexity.                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+New Page Layout: Progressive Disclosure
+Instead of showing all metrics at once with full complexity, use progressive disclosure:
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  Enter Your Results                                                        │
+│  150 providers · 6 months on Abridge · 6 metrics selected                  │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ✓ Time Savings                              -4 min (40% reduction)  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ✓ Work Outside of Work                      -6 hrs/week            │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ● Level of Service                          ← Currently editing    │▼  │
+│  │                                                                     │   │
+│  │   What's your average E&M level?                                   │   │
+│  │                                                                     │   │
+│  │   BEFORE          AFTER           CHANGE                           │   │
+│  │   [ 3.19 ]   →    [ 3.58 ]   =    +0.39 (+12.2%)                  │   │
+│  │                                                                     │   │
+│  │   ▸ Enter full distribution instead                                │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ○ wRVU Capture                              Not entered yet        │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ○ Chart Closure Time                        Not entered yet        │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ ○ Clinician Satisfaction                    Not entered yet        │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│                                                    [See Your Results →]    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+Key changes:
+
+Accordion-style—one metric expanded at a time
+Completed metrics show summary in collapsed state
+Simple input by default, "Enter full distribution" as optional expansion
+Progress indicator (✓ done, ● in progress, ○ not started)
+
+
+Replit Prompt for Simplified Data Entry
+CopyRedesign the Expand data entry flow to be simpler and more progressive. The current approach asks for too much detail upfront. Most users want quick entry with the option for detail.
+
+## PRINCIPLES
+
+1. **Simple by default**: Ask for ONE number before and ONE number after
+2. **Progressive disclosure**: Hide complexity behind "I want to enter more detail"
+3. **Accordion layout**: One metric expanded at a time, collapsed ones show summary
+4. **Smart defaults**: Pre-fill with benchmarks where possible
+5. **Paste-friendly**: Let users paste from reports when possible
+
+## METRIC SIMPLIFICATIONS
+
+### Time Savings
+Keep as-is. Simple before/after works.
+- Before: [X] minutes
+- After: [Y] minutes
+
+### Work Outside of Work
+Keep as-is. Simple before/after works.
+- Before: [X] hours/week
+- After: [Y] hours/week
+
+### Level of Service (SIMPLIFY)
+Default to asking for the AVERAGE E&M level, not the full distribution.
+
+Simple mode (default):
+- Before average: [3.19]
+- After average: [3.58]
+
+Include helper text:
+"Calculate your average: Sum of (% at each level × level number)"
+"Example: 5% L5 + 35% L4 + 42% L3 + 10% L2 + 8% L1 = 3.19"
+
+Optional expansion: "▸ Enter full distribution instead"
+When expanded, show the 5-level breakdown with Before/After columns.
+Auto-calculate the average from their inputs.
+
+### wRVU Capture
+Keep as-is. Simple before/after works.
+- Before: [X] wRVU/encounter
+- After: [Y] wRVU/encounter
+
+### Chart Closure Time (SIMPLIFY)
+Default to asking for ONE number: same-day closure rate.
+
+Simple mode (default):
+- Before: [X]% same-day closure
+- After: [Y]% same-day closure
+
+Optional expansion: "▸ Enter full breakdown (24h, 48h, 72h+)"
+When expanded, show the 4-bucket breakdown.
+
+### Clinician Satisfaction
+Keep as-is. Simple before/after works.
+- Before: [X] / 10
+- After: [Y] / 10
+
+Optional: "% who would recommend Abridge"
+
+## PAGE LAYOUT
+
+Use accordion-style layout:
+- Show all metrics as collapsed rows
+- One metric expanded at a time
+- Clicking a row expands it and collapses the previous one
+- Completed metrics show a checkmark and summary value
+- Incomplete metrics show an empty circle
+
+```jsx
+<div className="metric-accordion">
+  {metrics.map(metric => (
+    <div 
+      key={metric.id}
+      className={`metric-row ${expanded === metric.id ? 'expanded' : ''} ${metric.completed ? 'completed' : ''}`}
+      onClick={() => setExpanded(metric.id)}
+    >
+      <div className="metric-row-header">
+        <span className="status-icon">
+          {metric.completed ? '✓' : expanded === metric.id ? '●' : '○'}
+        </span>
+        <span className="metric-name">{metric.name}</span>
+        <span className="metric-summary">
+          {metric.completed ? metric.summaryText : 'Not entered yet'}
+        </span>
+        <span className="expand-icon">{expanded === metric.id ? '▼' : '▶'}</span>
+      </div>
+      
+      {expanded === metric.id && (
+        <div className="metric-row-content">
+          {/* Simple input by default */}
+          <div className="simple-entry">
+            <div className="entry-columns">
+              <div className="entry-column">
+                <label>BEFORE ABRIDGE</label>
+                <input type="number" value={metric.before} onChange={...} />
+                <span className="unit">{metric.unit}</span>
+              </div>
+              <div className="entry-arrow">→</div>
+              <div className="entry-column">
+                <label>AFTER ABRIDGE</label>
+                <input type="number" value={metric.after} onChange={...} />
+                <span className="unit">{metric.unit}</span>
+              </div>
+              <div className="entry-column change">
+                <label>CHANGE</label>
+                <div className="change-value">{metric.changeText}</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Optional detailed entry */}
+          {metric.hasDetailedEntry && (
+            <button className="detailed-toggle" onClick={() => setShowDetailed(!showDetailed)}>
+              {showDetailed ? '▾ Hide detailed entry' : '▸ Enter detailed breakdown'}
+            </button>
+          )}
+          
+          {showDetailed && (
+            <div className="detailed-entry">
+              {/* Metric-specific detailed entry UI */}
+            </div>
+          )}
+          
+          {/* Benchmark */}
+          <div className="benchmark-note">
+            📊 Benchmark: {metric.benchmarkText}
+          </div>
+        </div>
+      )}
+    </div>
+  ))}
+</div>
+STYLING
+Completed metrics:
+
+Light green left border
+Checkmark icon in green
+Summary text visible
+
+In-progress metrics:
+
+Coral left border
+Filled circle icon
+Expanded content visible
+
+Incomplete metrics:
+
+Gray left border
+Empty circle icon
+Just the header visible
+
+Transitions:
+
+Smooth expand/collapse animation
+Change values should animate when calculated
+
+VALIDATION
+
+If Before > After for time metrics, show as improvement (green)
+If After > Before for value metrics (wRVU, LOS), show as improvement (green)
+Flag if values seem outside normal range (with explanation, not error)
+Allow proceeding even with incomplete metrics (calculate what you can)
+
+Copy

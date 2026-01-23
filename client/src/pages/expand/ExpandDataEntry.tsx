@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -15,20 +16,106 @@ import {
   Lightbulb, 
   AlertTriangle,
   Info,
-  CheckCircle
+  CheckCircle,
+  TrendingDown,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
-import type { DeploymentData, MetricType, MetricsData } from "./ExpandFlow";
+import type { DeploymentData, MetricType, MetricsData, TimelineData, TimelineDataPoint } from "./ExpandFlow";
 
 interface ExpandDataEntryProps {
   deploymentData: DeploymentData;
   selectedMetrics: MetricType[];
   metricsData: MetricsData;
   setMetricsData: (data: MetricsData) => void;
+  timelineData: TimelineData;
+  setTimelineData: (data: TimelineData) => void;
   onNext: () => void;
   onBack: () => void;
   onBackToJourney?: () => void;
+}
+
+// Generate timeline columns based on months on Abridge
+function getTimelineColumns(monthsOnAbridge: number): { month: number; label: string; isToday: boolean }[] {
+  const months = monthsOnAbridge || 6;
+  
+  if (months <= 3) {
+    return [
+      { month: 0, label: "Baseline", isToday: false },
+      { month: months, label: `Today (Mo ${months})`, isToday: true },
+    ];
+  } else if (months <= 6) {
+    return [
+      { month: 0, label: "Baseline", isToday: false },
+      { month: 3, label: "Month 3", isToday: false },
+      { month: months, label: `Today (Mo ${months})`, isToday: true },
+    ];
+  } else if (months <= 12) {
+    return [
+      { month: 0, label: "Baseline", isToday: false },
+      { month: 3, label: "Month 3", isToday: false },
+      { month: 6, label: "Month 6", isToday: false },
+      { month: months, label: `Today (Mo ${months})`, isToday: true },
+    ];
+  } else {
+    return [
+      { month: 0, label: "Baseline", isToday: false },
+      { month: 3, label: "Month 3", isToday: false },
+      { month: 6, label: "Month 6", isToday: false },
+      { month: 12, label: "Month 12", isToday: false },
+      { month: months, label: `Today (Mo ${months})`, isToday: true },
+    ];
+  }
+}
+
+// Mini sparkline component
+function MiniSparkline({ data, isPositiveGood = false }: { data: (number | null)[]; isPositiveGood?: boolean }) {
+  const validData = data.filter((d): d is number => d !== null);
+  if (validData.length < 2) return null;
+  
+  const min = Math.min(...validData);
+  const max = Math.max(...validData);
+  const range = max - min || 1;
+  
+  const width = 100;
+  const height = 32;
+  const padding = 4;
+  
+  const points = validData.map((value, i) => {
+    const x = padding + (i / (validData.length - 1)) * (width - padding * 2);
+    const y = height - padding - ((value - min) / range) * (height - padding * 2);
+    return `${x},${y}`;
+  }).join(" ");
+  
+  const trend = validData[validData.length - 1] - validData[0];
+  const isGood = isPositiveGood ? trend > 0 : trend < 0;
+  
+  return (
+    <svg width={width} height={height} className="overflow-visible">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={isGood ? "#10B981" : "#EF4444"}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {validData.map((value, i) => {
+        const x = padding + (i / (validData.length - 1)) * (width - padding * 2);
+        const y = height - padding - ((value - min) / range) * (height - padding * 2);
+        return (
+          <circle
+            key={i}
+            cx={x}
+            cy={y}
+            r="3"
+            fill={isGood ? "#10B981" : "#EF4444"}
+          />
+        );
+      })}
+    </svg>
+  );
 }
 
 // Level of Service - using Level 1-5 instead of CPT codes
@@ -66,16 +153,93 @@ export default function ExpandDataEntry({
   selectedMetrics,
   metricsData,
   setMetricsData,
+  timelineData,
+  setTimelineData,
   onNext,
   onBack,
   onBackToJourney,
 }: ExpandDataEntryProps) {
+  
+  const isDetailedMode = deploymentData.dataEntryMode === "detailed";
+  
+  // Generate timeline columns based on months on Abridge
+  const timelineColumns = useMemo(() => 
+    getTimelineColumns(deploymentData.monthsOnAbridge || 6),
+    [deploymentData.monthsOnAbridge]
+  );
   
   const updateMetric = <T extends keyof MetricsData>(
     metricKey: T,
     value: MetricsData[T]
   ) => {
     setMetricsData({ ...metricsData, [metricKey]: value });
+  };
+  
+  // Update timeline data for a specific metric
+  const updateTimelineValue = (
+    metricKey: keyof TimelineData,
+    month: number,
+    value: number | null,
+    label: string
+  ) => {
+    const currentTimeline = timelineData[metricKey] || [];
+    const existingIndex = currentTimeline.findIndex(p => p.month === month);
+    
+    const newPoint: TimelineDataPoint = { month, value, label };
+    
+    let newTimeline: TimelineDataPoint[];
+    if (existingIndex >= 0) {
+      newTimeline = [...currentTimeline];
+      newTimeline[existingIndex] = newPoint;
+    } else {
+      newTimeline = [...currentTimeline, newPoint].sort((a, b) => a.month - b.month);
+    }
+    
+    setTimelineData({ ...timelineData, [metricKey]: newTimeline });
+    
+    // Also update the simple metricsData for compatibility
+    if (month === 0 || month === (deploymentData.monthsOnAbridge || 6)) {
+      const isBaseline = month === 0;
+      const currentMetric = metricsData[metricKey as keyof MetricsData] as { before: number | null; after: number | null };
+      if (typeof currentMetric === "object" && "before" in currentMetric) {
+        setMetricsData({
+          ...metricsData,
+          [metricKey]: {
+            ...currentMetric,
+            [isBaseline ? "before" : "after"]: value,
+          },
+        });
+      }
+    }
+  };
+  
+  // Get timeline value for a specific month
+  const getTimelineValue = (metricKey: keyof TimelineData, month: number): number | null => {
+    const timeline = timelineData[metricKey] || [];
+    const point = timeline.find(p => p.month === month);
+    return point?.value ?? null;
+  };
+  
+  // Calculate trend summary for a metric
+  const getTrendSummary = (metricKey: keyof TimelineData, unit: string, isPositiveGood: boolean = false) => {
+    const timeline = timelineData[metricKey] || [];
+    const values = timeline.map(p => p.value).filter((v): v is number => v !== null);
+    if (values.length < 2) return null;
+    
+    const first = values[0];
+    const last = values[values.length - 1];
+    const change = last - first;
+    const percentChange = first !== 0 ? Math.round((change / first) * 100) : 0;
+    const isGood = isPositiveGood ? change > 0 : change < 0;
+    
+    return {
+      first,
+      last,
+      change,
+      percentChange,
+      isGood,
+      unit,
+    };
   };
 
   // Time Savings calculations
@@ -179,50 +343,125 @@ export default function ExpandDataEntry({
               </div>
             </div>
 
-            <div className="flex items-end gap-6 p-6 bg-neutral-50 rounded-xl">
-              <div className="flex-1">
-                <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">BEFORE ABRIDGE</span>
-                <div className="flex items-center gap-2">
+            {/* Detailed Mode - Timeline Entry */}
+            {isDetailedMode ? (
+              <div className="space-y-4">
+                <div className="p-6 bg-neutral-50 rounded-xl">
+                  {/* Timeline Labels */}
+                  <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: `repeat(${timelineColumns.length}, 1fr) 120px` }}>
+                    {timelineColumns.map((col) => (
+                      <span 
+                        key={col.month} 
+                        className={`text-xs font-semibold tracking-wider uppercase text-center ${
+                          col.isToday ? "text-[#EA2C00]" : "text-[#6B7280]"
+                        }`}
+                      >
+                        {col.label}
+                      </span>
+                    ))}
+                    <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase text-center">TREND</span>
+                  </div>
+                  
+                  {/* Timeline Inputs */}
+                  <div className="grid gap-3 items-center" style={{ gridTemplateColumns: `repeat(${timelineColumns.length}, 1fr) 120px` }}>
+                    {timelineColumns.map((col) => (
+                      <div key={col.month} className="relative">
+                        <input
+                          type="number"
+                          placeholder="—"
+                          value={getTimelineValue("timeSavings", col.month) ?? ""}
+                          onChange={(e) => updateTimelineValue(
+                            "timeSavings",
+                            col.month,
+                            e.target.value ? Number(e.target.value) : null,
+                            col.label
+                          )}
+                          className={`w-full px-3 py-3 text-lg font-bold text-center border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] ${
+                            col.isToday ? "border-[#EA2C00]" : "border-neutral-200"
+                          }`}
+                          data-testid={`input-time-mo${col.month}`}
+                        />
+                        <span className="text-[10px] text-[#6B7280] text-center block mt-1">min</span>
+                      </div>
+                    ))}
+                    
+                    {/* Sparkline + Summary */}
+                    <div className="flex flex-col items-center">
+                      <MiniSparkline 
+                        data={timelineColumns.map(col => getTimelineValue("timeSavings", col.month))} 
+                        isPositiveGood={false}
+                      />
+                      {(() => {
+                        const trend = getTrendSummary("timeSavings", "min", false);
+                        if (!trend) return null;
+                        return (
+                          <div className="text-center mt-1">
+                            <span className={`text-xs font-semibold ${trend.isGood ? "text-emerald-600" : "text-red-500"}`}>
+                              {trend.change > 0 ? "+" : ""}{trend.change} {trend.unit}
+                            </span>
+                            <div className="flex items-center justify-center gap-1 mt-0.5">
+                              {trend.isGood ? (
+                                <TrendingDown className="w-3 h-3 text-emerald-600" />
+                              ) : (
+                                <TrendingUp className="w-3 h-3 text-red-500" />
+                              )}
+                              <span className={`text-[10px] ${trend.isGood ? "text-emerald-600" : "text-red-500"}`}>
+                                {Math.abs(trend.percentChange)}%
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Simple Mode - Before/After */
+              <div className="flex items-end gap-6 p-6 bg-neutral-50 rounded-xl">
+                <div className="flex-1">
+                  <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">BEFORE ABRIDGE</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      placeholder="—"
+                      value={timeSavings.before ?? ""}
+                      onChange={(e) => updateMetric("timeSavings", {
+                        ...timeSavings,
+                        before: e.target.value ? Number(e.target.value) : null,
+                      })}
+                      className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                      data-testid="input-time-before"
+                    />
+                  </div>
+                  <span className="text-xs text-[#6B7280] text-center block mt-2">minutes</span>
+                </div>
+
+                <div className="text-2xl text-neutral-300 pb-8">→</div>
+
+                <div className="flex-1">
+                  <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">AFTER ABRIDGE</span>
                   <input
                     type="number"
+                    step="0.1"
                     placeholder="—"
-                    value={timeSavings.before ?? ""}
+                    value={timeSavings.after ?? ""}
                     onChange={(e) => updateMetric("timeSavings", {
                       ...timeSavings,
-                      before: e.target.value ? Number(e.target.value) : null,
+                      after: e.target.value ? Number(e.target.value) : null,
                     })}
                     className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                    data-testid="input-time-before"
+                    data-testid="input-time-after"
                   />
+                  <span className="text-xs text-[#6B7280] text-center block mt-2">minutes</span>
                 </div>
-                <span className="text-xs text-[#6B7280] text-center block mt-2">minutes</span>
-              </div>
 
-              <div className="text-2xl text-neutral-300 pb-8">→</div>
+                <div className="text-xl text-neutral-300 pb-8">=</div>
 
-              <div className="flex-1">
-                <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">AFTER ABRIDGE</span>
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="—"
-                  value={timeSavings.after ?? ""}
-                  onChange={(e) => updateMetric("timeSavings", {
-                    ...timeSavings,
-                    after: e.target.value ? Number(e.target.value) : null,
-                  })}
-                  className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                  data-testid="input-time-after"
-                />
-                <span className="text-xs text-[#6B7280] text-center block mt-2">minutes</span>
-              </div>
-
-              <div className="text-xl text-neutral-300 pb-8">=</div>
-
-              <div className="flex-1">
-                <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">CHANGE</span>
-                {timeSavingsChange !== null ? (
-                  <div className="px-4 py-4 bg-emerald-50 rounded-lg text-center">
+                <div className="flex-1">
+                  <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">CHANGE</span>
+                  {timeSavingsChange !== null ? (
+                    <div className="px-4 py-4 bg-emerald-50 rounded-lg text-center">
                     <span className="text-xl font-bold text-emerald-600 block">-{timeSavingsChange} min/enc</span>
                     <span className="text-sm text-emerald-700">{timeSavingsPercent}% reduction</span>
                   </div>
@@ -231,9 +470,11 @@ export default function ExpandDataEntry({
                     <span className="text-sm text-neutral-400">Enter data</span>
                   </div>
                 )}
+                </div>
               </div>
-            </div>
+            )}
 
+            {/* Benchmark - show for both modes when data exists */}
             {timeSavingsChange !== null && (
               <div className="flex items-start gap-3 mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg">
                 <BarChart3 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -271,56 +512,127 @@ export default function ExpandDataEntry({
               </div>
             </div>
 
-            <div className="flex items-end gap-6 p-6 bg-neutral-50 rounded-xl">
-              <div className="flex-1">
-                <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">BEFORE ABRIDGE</span>
-                <input
-                  type="number"
-                  placeholder="—"
-                  value={workOutside.before ?? ""}
-                  onChange={(e) => updateMetric("workOutsideWork", {
-                    ...workOutside,
-                    before: e.target.value ? Number(e.target.value) : null,
-                  })}
-                  className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                  data-testid="input-wow-before"
-                />
-                <span className="text-xs text-[#6B7280] text-center block mt-2">hours/week</span>
-              </div>
-
-              <div className="text-2xl text-neutral-300 pb-8">→</div>
-
-              <div className="flex-1">
-                <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">AFTER ABRIDGE</span>
-                <input
-                  type="number"
-                  placeholder="—"
-                  value={workOutside.after ?? ""}
-                  onChange={(e) => updateMetric("workOutsideWork", {
-                    ...workOutside,
-                    after: e.target.value ? Number(e.target.value) : null,
-                  })}
-                  className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                  data-testid="input-wow-after"
-                />
-                <span className="text-xs text-[#6B7280] text-center block mt-2">hours/week</span>
-              </div>
-
-              <div className="text-xl text-neutral-300 pb-8">=</div>
-
-              <div className="flex-1">
-                <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">CHANGE</span>
-                {workOutsideChange !== null ? (
-                  <div className="px-4 py-4 bg-emerald-50 rounded-lg text-center">
-                    <span className="text-xl font-bold text-emerald-600 block">-{workOutsideChange} hrs/week</span>
+            {/* Detailed Mode - Timeline Entry */}
+            {isDetailedMode ? (
+              <div className="p-6 bg-neutral-50 rounded-xl">
+                <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: `repeat(${timelineColumns.length}, 1fr) 120px` }}>
+                  {timelineColumns.map((col) => (
+                    <span 
+                      key={col.month} 
+                      className={`text-xs font-semibold tracking-wider uppercase text-center ${
+                        col.isToday ? "text-[#EA2C00]" : "text-[#6B7280]"
+                      }`}
+                    >
+                      {col.label}
+                    </span>
+                  ))}
+                  <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase text-center">TREND</span>
+                </div>
+                
+                <div className="grid gap-3 items-center" style={{ gridTemplateColumns: `repeat(${timelineColumns.length}, 1fr) 120px` }}>
+                  {timelineColumns.map((col) => (
+                    <div key={col.month} className="relative">
+                      <input
+                        type="number"
+                        placeholder="—"
+                        value={getTimelineValue("workOutsideWork", col.month) ?? ""}
+                        onChange={(e) => updateTimelineValue(
+                          "workOutsideWork",
+                          col.month,
+                          e.target.value ? Number(e.target.value) : null,
+                          col.label
+                        )}
+                        className={`w-full px-3 py-3 text-lg font-bold text-center border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] ${
+                          col.isToday ? "border-[#EA2C00]" : "border-neutral-200"
+                        }`}
+                        data-testid={`input-wow-mo${col.month}`}
+                      />
+                      <span className="text-[10px] text-[#6B7280] text-center block mt-1">hrs/wk</span>
+                    </div>
+                  ))}
+                  
+                  <div className="flex flex-col items-center">
+                    <MiniSparkline 
+                      data={timelineColumns.map(col => getTimelineValue("workOutsideWork", col.month))} 
+                      isPositiveGood={false}
+                    />
+                    {(() => {
+                      const trend = getTrendSummary("workOutsideWork", "hrs", false);
+                      if (!trend) return null;
+                      return (
+                        <div className="text-center mt-1">
+                          <span className={`text-xs font-semibold ${trend.isGood ? "text-emerald-600" : "text-red-500"}`}>
+                            {trend.change > 0 ? "+" : ""}{trend.change} {trend.unit}
+                          </span>
+                          <div className="flex items-center justify-center gap-1 mt-0.5">
+                            {trend.isGood ? (
+                              <TrendingDown className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <TrendingUp className="w-3 h-3 text-red-500" />
+                            )}
+                            <span className={`text-[10px] ${trend.isGood ? "text-emerald-600" : "text-red-500"}`}>
+                              {Math.abs(trend.percentChange)}%
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
-                ) : (
-                  <div className="px-4 py-4 bg-neutral-100 rounded-lg text-center">
-                    <span className="text-sm text-neutral-400">Enter data</span>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Simple Mode */
+              <div className="flex items-end gap-6 p-6 bg-neutral-50 rounded-xl">
+                <div className="flex-1">
+                  <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">BEFORE ABRIDGE</span>
+                  <input
+                    type="number"
+                    placeholder="—"
+                    value={workOutside.before ?? ""}
+                    onChange={(e) => updateMetric("workOutsideWork", {
+                      ...workOutside,
+                      before: e.target.value ? Number(e.target.value) : null,
+                    })}
+                    className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                    data-testid="input-wow-before"
+                  />
+                  <span className="text-xs text-[#6B7280] text-center block mt-2">hours/week</span>
+                </div>
+
+                <div className="text-2xl text-neutral-300 pb-8">→</div>
+
+                <div className="flex-1">
+                  <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">AFTER ABRIDGE</span>
+                  <input
+                    type="number"
+                    placeholder="—"
+                    value={workOutside.after ?? ""}
+                    onChange={(e) => updateMetric("workOutsideWork", {
+                      ...workOutside,
+                      after: e.target.value ? Number(e.target.value) : null,
+                    })}
+                    className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                    data-testid="input-wow-after"
+                  />
+                  <span className="text-xs text-[#6B7280] text-center block mt-2">hours/week</span>
+                </div>
+
+                <div className="text-xl text-neutral-300 pb-8">=</div>
+
+                <div className="flex-1">
+                  <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">CHANGE</span>
+                  {workOutsideChange !== null ? (
+                    <div className="px-4 py-4 bg-emerald-50 rounded-lg text-center">
+                      <span className="text-xl font-bold text-emerald-600 block">-{workOutsideChange} hrs/week</span>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-4 bg-neutral-100 rounded-lg text-center">
+                      <span className="text-sm text-neutral-400">Enter data</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Why This Matters Callout */}
             <div className="mt-5 p-5 bg-amber-50 border border-amber-200 rounded-xl">

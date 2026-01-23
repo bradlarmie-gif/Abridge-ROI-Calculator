@@ -10,12 +10,28 @@ import ExpandJourneyExpansion from "./ExpandJourneyExpansion";
 // TYPES
 // ============================================================================
 
+export type DataEntryMode = "simple" | "detailed";
+
 export interface DeploymentData {
   setting: "outpatient" | "ed" | "inpatient" | "nursing";
   providers: number | null;
   annualEncounters: number | null;
   utilizationRate: number | null;
   monthsOnAbridge: number | null;
+  dataEntryMode: DataEntryMode;
+}
+
+export interface TimelineDataPoint {
+  month: number;
+  value: number | null;
+  label: string;
+}
+
+export interface TimelineData {
+  timeSavings: TimelineDataPoint[];
+  workOutsideWork: TimelineDataPoint[];
+  wrvuCapture: TimelineDataPoint[];
+  clinicianSatisfaction: TimelineDataPoint[];
 }
 
 export interface TimeSavingsData {
@@ -85,6 +101,15 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     annualEncounters: null,
     utilizationRate: null,
     monthsOnAbridge: null,
+    dataEntryMode: "simple",
+  });
+  
+  // Timeline data for detailed mode
+  const [timelineData, setTimelineData] = useState<TimelineData>({
+    timeSavings: [],
+    workOutsideWork: [],
+    wrvuCapture: [],
+    clinicianSatisfaction: [],
   });
   
   // Selected metrics to analyze - NOTHING pre-selected
@@ -148,6 +173,8 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             selectedMetrics={selectedMetrics}
             metricsData={metricsData}
             setMetricsData={setMetricsData}
+            timelineData={timelineData}
+            setTimelineData={setTimelineData}
             onNext={goNext}
             onBack={goBack}
             onBackToJourney={goBackToJourney}
@@ -159,6 +186,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             deploymentData={deploymentData}
             selectedMetrics={selectedMetrics}
             metricsData={metricsData}
+            timelineData={timelineData}
             onNext={goNext}
             onBack={goBack}
             onBackToJourney={goBackToJourney}
