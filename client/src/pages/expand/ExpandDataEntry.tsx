@@ -661,7 +661,7 @@ export default function ExpandDataEntry({
           </section>
         )}
 
-        {/* Level of Service */}
+        {/* Level of Service - SIMPLIFIED */}
         {selectedMetrics.includes("levelOfService") && (
           <section className="mb-8 p-6 bg-white border border-neutral-200 rounded-xl">
             <div className="flex items-center gap-3 mb-6">
@@ -674,143 +674,211 @@ export default function ExpandDataEntry({
               </div>
             </div>
 
-            {/* Blend Note */}
-            <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg mb-5">
-              <Info className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-slate-600">
-                Enter your blended distribution across new and established patient visits. 
-                Level 5 = highest complexity, Level 1 = lowest.
-              </span>
-            </div>
+            {/* Simple Entry - Average E/M Level */}
+            {!losData.useDetailed && (
+              <div className="space-y-4">
+                <div className="flex items-end gap-6 p-6 bg-neutral-50 rounded-xl">
+                  <div className="flex-1">
+                    <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">BEFORE ABRIDGE</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      max="5"
+                      placeholder="3.19"
+                      value={losData.averageBefore ?? ""}
+                      onChange={(e) => updateMetric("levelOfService", {
+                        ...losData,
+                        averageBefore: e.target.value ? Number(e.target.value) : null,
+                      })}
+                      className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                      data-testid="input-los-avg-before"
+                    />
+                    <span className="text-xs text-[#6B7280] text-center block mt-2">average level</span>
+                  </div>
 
-            {/* Averages Summary - Prominent */}
-            {losBeforeAvg !== null && losAfterAvg !== null && losBeforeTotal === 100 && losAfterTotal === 100 && (
-              <div className="p-6 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl mb-6" data-testid="los-averages-summary">
-                <div className="flex items-center justify-center gap-8 flex-wrap">
-                  <div className="text-center">
-                    <span className="block text-xs font-semibold text-slate-500 tracking-wider uppercase mb-1">AVERAGE BEFORE</span>
-                    <span className="text-3xl font-bold text-slate-400" data-testid="text-los-avg-before">{losBeforeAvg.toFixed(2)}</span>
+                  <div className="text-2xl text-neutral-300 pb-8">→</div>
+
+                  <div className="flex-1">
+                    <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">AFTER ABRIDGE</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      max="5"
+                      placeholder="3.58"
+                      value={losData.averageAfter ?? ""}
+                      onChange={(e) => updateMetric("levelOfService", {
+                        ...losData,
+                        averageAfter: e.target.value ? Number(e.target.value) : null,
+                      })}
+                      className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                      data-testid="input-los-avg-after"
+                    />
+                    <span className="text-xs text-[#6B7280] text-center block mt-2">average level</span>
                   </div>
-                  <div className="text-2xl text-slate-300">→</div>
-                  <div className="text-center">
-                    <span className="block text-xs font-semibold text-slate-500 tracking-wider uppercase mb-1">AVERAGE AFTER</span>
-                    <span className="text-3xl font-bold text-slate-700" data-testid="text-los-avg-after">{losAfterAvg.toFixed(2)}</span>
-                  </div>
-                  <div className="text-center bg-white px-6 py-4 rounded-lg border border-emerald-200">
-                    <span className="block text-xs font-semibold text-slate-500 tracking-wider uppercase mb-1">CHANGE</span>
-                    <span className="text-3xl font-bold text-emerald-600" data-testid="text-los-avg-change">
-                      {losAvgChange !== null && losAvgChange > 0 ? "+" : ""}{losAvgChange !== null ? losAvgChange.toFixed(1) : "0.0"}%
-                    </span>
+
+                  <div className="text-xl text-neutral-300 pb-8">=</div>
+
+                  <div className="flex-1">
+                    <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">CHANGE</span>
+                    {losData.averageBefore && losData.averageAfter ? (
+                      <div className="px-4 py-4 bg-emerald-50 rounded-lg text-center">
+                        <span className="text-xl font-bold text-emerald-600 block">
+                          +{(losData.averageAfter - losData.averageBefore).toFixed(2)}
+                        </span>
+                        <span className="text-sm text-emerald-700">levels</span>
+                      </div>
+                    ) : (
+                      <div className="px-4 py-4 bg-neutral-100 rounded-lg text-center">
+                        <span className="text-sm text-neutral-400">Enter data</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <p className="text-center text-xs text-slate-500 mt-4">
-                  Weighted average where Level 1 = 1, Level 2 = 2, etc.
-                </p>
+
+                {/* Helper to calculate average */}
+                <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Lightbulb className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-800">
+                    <strong>Calculate your average:</strong> (% at each level × level number)
+                    <div className="mt-1 text-xs text-blue-700 font-mono">
+                      Example: 5% L5 + 35% L4 + 42% L3 + 10% L2 + 8% L1<br/>
+                      = (0.05×5) + (0.35×4) + (0.42×3) + (0.10×2) + (0.08×1) = <strong>3.19</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Toggle to detailed */}
+                <button
+                  type="button"
+                  onClick={() => updateMetric("levelOfService", { ...losData, useDetailed: true })}
+                  className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 font-medium"
+                  data-testid="button-los-show-detailed"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  I want to enter the full distribution (optional)
+                </button>
+
+                {/* Benchmark */}
+                <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg">
+                  <BarChart3 className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-slate-600">
+                    <strong>Benchmark:</strong> Abridge customers typically see 0.2-0.5 level increase
+                  </span>
+                </div>
               </div>
             )}
 
-            <div className="border border-neutral-200 rounded-lg overflow-hidden">
-              {/* Header */}
-              <div className="grid grid-cols-4 gap-4 p-4 bg-neutral-50 border-b border-neutral-200 text-xs font-semibold text-[#6B7280] tracking-wider uppercase">
-                <div>LEVEL</div>
-                <div>BEFORE ABRIDGE</div>
-                <div>AFTER ABRIDGE</div>
-                <div>CHANGE</div>
-              </div>
+            {/* Detailed Entry - Full Distribution */}
+            {losData.useDetailed && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-[#6B7280]">Full E/M Distribution</span>
+                  <button
+                    type="button"
+                    onClick={() => updateMetric("levelOfService", { ...losData, useDetailed: false })}
+                    className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                    data-testid="button-los-hide-detailed"
+                  >
+                    ← Use simple entry
+                  </button>
+                </div>
 
-              {/* Rows */}
-              {LEVEL_OF_SERVICE.map((level) => {
-                const beforeVal = losData.before[level.id] || 0;
-                const afterVal = losData.after[level.id] || 0;
-                const change = afterVal - beforeVal;
-
-                return (
-                  <div key={level.id} className="grid grid-cols-4 gap-4 p-4 border-b border-neutral-100 items-center">
-                    <div>
-                      <span className="font-semibold text-[#111827]">{level.label}</span>
-                      <span className="text-xs text-slate-500 block">{level.description}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="0"
-                          value={beforeVal || ""}
-                          onChange={(e) => updateMetric("levelOfService", {
-                            ...losData,
-                            before: { ...losData.before, [level.id]: Number(e.target.value) || 0 },
-                          })}
-                          className="w-16 px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                          data-testid={`input-los-before-${level.id}`}
-                        />
-                        <span className="text-xs text-[#6B7280]">%</span>
-                      </div>
-                      <div className="h-2 bg-neutral-200 rounded-full mt-2 overflow-hidden">
-                        <div className="h-full bg-neutral-400 rounded-full" style={{ width: `${beforeVal}%` }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="0"
-                          value={afterVal || ""}
-                          onChange={(e) => updateMetric("levelOfService", {
-                            ...losData,
-                            after: { ...losData.after, [level.id]: Number(e.target.value) || 0 },
-                          })}
-                          className="w-16 px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                          data-testid={`input-los-after-${level.id}`}
-                        />
-                        <span className="text-xs text-[#6B7280]">%</span>
-                      </div>
-                      <div className="h-2 bg-neutral-200 rounded-full mt-2 overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${afterVal}%` }} />
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      {change !== 0 ? (
-                        <span className={`font-semibold ${change > 0 ? "text-emerald-600" : "text-orange-500"}`}>
-                          {change > 0 ? "↑" : "↓"} {Math.abs(change)}pp
-                        </span>
-                      ) : (
-                        <span className="text-neutral-400">—</span>
-                      )}
-                    </div>
+                <div className="border border-neutral-200 rounded-lg overflow-hidden">
+                  <div className="grid grid-cols-4 gap-4 p-4 bg-neutral-50 border-b border-neutral-200 text-xs font-semibold text-[#6B7280] tracking-wider uppercase">
+                    <div>LEVEL</div>
+                    <div>BEFORE ABRIDGE</div>
+                    <div>AFTER ABRIDGE</div>
+                    <div>CHANGE</div>
                   </div>
-                );
-              })}
 
-              {/* Totals */}
-              <div className="grid grid-cols-4 gap-4 p-4 bg-neutral-50 text-sm font-semibold">
-                <div>TOTAL</div>
-                <div className={losBeforeTotal === 100 ? "text-emerald-600" : "text-red-500"}>
-                  {losBeforeTotal}% {losBeforeTotal !== 100 && "(must = 100%)"}
-                </div>
-                <div className={losAfterTotal === 100 ? "text-emerald-600" : "text-red-500"}>
-                  {losAfterTotal}% {losAfterTotal !== 100 && "(must = 100%)"}
-                </div>
-                <div></div>
-              </div>
-            </div>
+                  {LEVEL_OF_SERVICE.map((level) => {
+                    const beforeVal = losData.before[level.id] || 0;
+                    const afterVal = losData.after[level.id] || 0;
+                    const change = afterVal - beforeVal;
 
-            {/* Insight */}
-            {losAvgChange !== null && losAvgChange > 0 && (
-              <div className="mt-5 p-5 bg-emerald-50 border border-emerald-200 rounded-xl" data-testid="los-insight-callout">
-                <div className="flex items-start gap-3">
-                  <Lightbulb className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-emerald-800" data-testid="text-los-shift">+{losAvgChange.toFixed(1)}% shift in average level of service</strong>
-                    <p className="text-sm text-emerald-700 mt-1">
-                      This suggests more complete documentation of clinical complexity. 
-                      Better documentation captures work already being done — not upcoding.
-                    </p>
+                    return (
+                      <div key={level.id} className="grid grid-cols-4 gap-4 p-4 border-b border-neutral-100 items-center">
+                        <div>
+                          <span className="font-semibold text-[#111827]">{level.label}</span>
+                          <span className="text-xs text-slate-500 block">{level.description}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              placeholder="0"
+                              value={beforeVal || ""}
+                              onChange={(e) => updateMetric("levelOfService", {
+                                ...losData,
+                                before: { ...losData.before, [level.id]: Number(e.target.value) || 0 },
+                              })}
+                              className="w-16 px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                              data-testid={`input-los-before-${level.id}`}
+                            />
+                            <span className="text-xs text-[#6B7280]">%</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              placeholder="0"
+                              value={afterVal || ""}
+                              onChange={(e) => updateMetric("levelOfService", {
+                                ...losData,
+                                after: { ...losData.after, [level.id]: Number(e.target.value) || 0 },
+                              })}
+                              className="w-16 px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                              data-testid={`input-los-after-${level.id}`}
+                            />
+                            <span className="text-xs text-[#6B7280]">%</span>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          {change !== 0 ? (
+                            <span className={`font-semibold ${change > 0 ? "text-emerald-600" : "text-orange-500"}`}>
+                              {change > 0 ? "↑" : "↓"} {Math.abs(change)}pp
+                            </span>
+                          ) : (
+                            <span className="text-neutral-400">—</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  <div className="grid grid-cols-4 gap-4 p-4 bg-neutral-50 text-sm font-semibold">
+                    <div>TOTAL</div>
+                    <div className={losBeforeTotal === 100 ? "text-emerald-600" : "text-red-500"}>
+                      {losBeforeTotal}% {losBeforeTotal !== 100 && "(must = 100%)"}
+                    </div>
+                    <div className={losAfterTotal === 100 ? "text-emerald-600" : "text-red-500"}>
+                      {losAfterTotal}% {losAfterTotal !== 100 && "(must = 100%)"}
+                    </div>
+                    <div></div>
                   </div>
                 </div>
+
+                {/* Calculated averages from distribution */}
+                {losBeforeTotal === 100 && losAfterTotal === 100 && losBeforeAvg !== null && losAfterAvg !== null && (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <span className="text-xs font-semibold text-emerald-800 tracking-wider uppercase block mb-2">CALCULATED AVERAGE</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-lg font-bold text-slate-600">{losBeforeAvg.toFixed(2)}</span>
+                      <span className="text-neutral-400">→</span>
+                      <span className="text-lg font-bold text-slate-800">{losAfterAvg.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-emerald-600">
+                        (+{(losAfterAvg - losBeforeAvg).toFixed(2)} levels)
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </section>
@@ -901,7 +969,7 @@ export default function ExpandDataEntry({
           </section>
         )}
 
-        {/* Chart Closure */}
+        {/* Chart Closure - SIMPLIFIED */}
         {selectedMetrics.includes("chartClosure") && (
           <section className="mb-8 p-6 bg-white border border-neutral-200 rounded-xl">
             <div className="flex items-center gap-3 mb-6">
@@ -909,136 +977,204 @@ export default function ExpandDataEntry({
                 <FileCheck className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-[#111827]">Chart Closure Time</h2>
-                <p className="text-sm text-[#6B7280]">What % of charts are closed within each time window?</p>
+                <h2 className="text-lg font-semibold text-[#111827]">Chart Closure</h2>
+                <p className="text-sm text-[#6B7280]">How quickly are charts being closed?</p>
               </div>
             </div>
 
-            <div className="border border-neutral-200 rounded-lg overflow-hidden">
-              {/* Header */}
-              <div className="grid grid-cols-4 gap-4 p-4 bg-neutral-50 border-b border-neutral-200 text-xs font-semibold text-[#6B7280] tracking-wider uppercase">
-                <div>TIME BUCKET</div>
-                <div>BEFORE ABRIDGE</div>
-                <div>AFTER ABRIDGE</div>
-                <div>CHANGE</div>
-              </div>
+            {/* Simple Entry - Same-day closure % */}
+            {!closureData.useDetailed && (
+              <div className="space-y-4">
+                <div className="flex items-end gap-6 p-6 bg-neutral-50 rounded-xl">
+                  <div className="flex-1">
+                    <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">BEFORE ABRIDGE</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder="78"
+                      value={closureData.sameDayBefore ?? ""}
+                      onChange={(e) => updateMetric("chartClosure", {
+                        ...closureData,
+                        sameDayBefore: e.target.value ? Number(e.target.value) : null,
+                      })}
+                      className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                      data-testid="input-closure-sameday-before"
+                    />
+                    <span className="text-xs text-[#6B7280] text-center block mt-2">% same-day</span>
+                  </div>
 
-              {/* Rows */}
-              {CLOSURE_BUCKETS.map((bucket) => {
-                const beforeVal = closureData.before[bucket.id] || 0;
-                const afterVal = closureData.after[bucket.id] || 0;
-                const change = afterVal - beforeVal;
-                const isGood = (bucket.id === "within24" && change > 0) || (bucket.id !== "within24" && change < 0);
+                  <div className="text-2xl text-neutral-300 pb-8">→</div>
 
-                const BucketIcon = bucket.Icon;
-                return (
-                  <div key={bucket.id} className="grid grid-cols-4 gap-4 p-4 border-b border-neutral-100 items-center">
-                    <div className="flex items-center gap-2">
-                      <BucketIcon className="w-4 h-4 text-neutral-500" />
-                      <span className="font-medium text-[#111827]">{bucket.label}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="0"
-                          value={beforeVal || ""}
-                          onChange={(e) => updateMetric("chartClosure", {
-                            ...closureData,
-                            before: { ...closureData.before, [bucket.id]: Number(e.target.value) || 0 },
-                          })}
-                          className="w-16 px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                          data-testid={`input-closure-before-${bucket.id}`}
-                        />
-                        <span className="text-xs text-[#6B7280]">%</span>
-                      </div>
-                      <div className="h-2 bg-neutral-200 rounded-full mt-2 overflow-hidden">
-                        <div className="h-full bg-neutral-400 rounded-full" style={{ width: `${Math.min(beforeVal, 100)}%` }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="0"
-                          value={afterVal || ""}
-                          onChange={(e) => updateMetric("chartClosure", {
-                            ...closureData,
-                            after: { ...closureData.after, [bucket.id]: Number(e.target.value) || 0 },
-                          })}
-                          className="w-16 px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                          data-testid={`input-closure-after-${bucket.id}`}
-                        />
-                        <span className="text-xs text-[#6B7280]">%</span>
-                      </div>
-                      <div className="h-2 bg-neutral-200 rounded-full mt-2 overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(afterVal, 100)}%` }} />
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      {change !== 0 ? (
-                        <span className={`font-semibold ${isGood ? "text-emerald-600" : "text-orange-500"}`}>
-                          {change > 0 ? "↑" : "↓"} {Math.abs(change)}pp
+                  <div className="flex-1">
+                    <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">AFTER ABRIDGE</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder="85"
+                      value={closureData.sameDayAfter ?? ""}
+                      onChange={(e) => updateMetric("chartClosure", {
+                        ...closureData,
+                        sameDayAfter: e.target.value ? Number(e.target.value) : null,
+                      })}
+                      className="w-full px-4 py-4 text-2xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                      data-testid="input-closure-sameday-after"
+                    />
+                    <span className="text-xs text-[#6B7280] text-center block mt-2">% same-day</span>
+                  </div>
+
+                  <div className="text-xl text-neutral-300 pb-8">=</div>
+
+                  <div className="flex-1">
+                    <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">CHANGE</span>
+                    {closureData.sameDayBefore !== null && closureData.sameDayAfter !== null ? (
+                      <div className="px-4 py-4 bg-emerald-50 rounded-lg text-center">
+                        <span className="text-xl font-bold text-emerald-600 block">
+                          +{closureData.sameDayAfter - closureData.sameDayBefore}pp
                         </span>
-                      ) : (
-                        <span className="text-neutral-400">—</span>
-                      )}
-                    </div>
+                        <span className="text-sm text-emerald-700">improvement</span>
+                      </div>
+                    ) : (
+                      <div className="px-4 py-4 bg-neutral-100 rounded-lg text-center">
+                        <span className="text-sm text-neutral-400">Enter data</span>
+                      </div>
+                    )}
                   </div>
-                );
-              })}
+                </div>
 
-              {/* Totals */}
-              <div className="grid grid-cols-4 gap-4 p-4 bg-neutral-50 text-sm font-semibold">
-                <div>TOTAL</div>
-                <div className={closureBeforeTotal === 100 ? "text-emerald-600" : "text-red-500"}>
-                  {closureBeforeTotal}%
+                {/* Toggle to detailed */}
+                <button
+                  type="button"
+                  onClick={() => updateMetric("chartClosure", { ...closureData, useDetailed: true })}
+                  className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 font-medium"
+                  data-testid="button-closure-show-detailed"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  I want to enter the full breakdown (24h, 48h, 72h+)
+                </button>
+
+                {/* Benchmark */}
+                <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg">
+                  <BarChart3 className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-slate-600">
+                    <strong>Benchmark:</strong> Abridge customers typically see 5-15pp improvement in same-day closure
+                  </span>
                 </div>
-                <div className={closureAfterTotal === 100 ? "text-emerald-600" : "text-red-500"}>
-                  {closureAfterTotal}%
-                </div>
-                <div></div>
               </div>
-            </div>
+            )}
 
-            {/* Revenue Cycle Impact */}
-            {closureBeforeTotal === 100 && closureAfterTotal === 100 && sameDayImprovement > 0 && (
-              <div className="mt-5 p-5 bg-emerald-50 border border-emerald-200 rounded-xl" data-testid="revenue-cycle-impact-callout">
-                <div className="flex items-center gap-2 mb-3">
-                  <DollarSign className="w-5 h-5 text-emerald-600" />
-                  <span className="text-xs font-semibold text-emerald-800 tracking-wider uppercase">REVENUE CYCLE IMPACT</span>
+            {/* Detailed Entry - Full Breakdown */}
+            {closureData.useDetailed && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-[#6B7280]">Full Closure Breakdown</span>
+                  <button
+                    type="button"
+                    onClick={() => updateMetric("chartClosure", { ...closureData, useDetailed: false })}
+                    className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+                    data-testid="button-closure-hide-detailed"
+                  >
+                    ← Use simple entry
+                  </button>
                 </div>
-                <div className="text-sm text-emerald-900">
-                  <p className="mb-4">
-                    Faster chart closure accelerates billing and improves cash flow.
-                  </p>
-                  <div className="space-y-3 mb-4">
-                    <div className="flex justify-between items-center p-3 bg-white rounded-lg">
-                      <span className="text-emerald-700">Same-day closure improvement</span>
-                      <span className="font-semibold text-emerald-600" data-testid="text-sameday-improvement">+{sameDayImprovement}pp</span>
-                    </div>
-                    {sameDayImprovement >= 20 && (
-                      <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <span className="text-emerald-700">Estimated impact on days in A/R</span>
-                        <span className="font-semibold text-emerald-600" data-testid="text-ar-days-impact">-2 to -5 days</span>
-                      </div>
-                    )}
-                    {sameDayImprovement >= 40 && (
-                      <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <span className="text-emerald-700">Potential days cash on hand improvement</span>
-                        <span className="font-semibold text-emerald-600" data-testid="text-cash-days-improvement">+1 to +3 days</span>
-                      </div>
-                    )}
+
+                <div className="border border-neutral-200 rounded-lg overflow-hidden">
+                  <div className="grid grid-cols-4 gap-4 p-4 bg-neutral-50 border-b border-neutral-200 text-xs font-semibold text-[#6B7280] tracking-wider uppercase">
+                    <div>TIME BUCKET</div>
+                    <div>BEFORE ABRIDGE</div>
+                    <div>AFTER ABRIDGE</div>
+                    <div>CHANGE</div>
                   </div>
-                  <p className="text-xs text-emerald-700 italic">
-                    Organizations with high same-day closure rates typically see reduced A/R aging 
-                    and improved cash position. Actual impact depends on payer mix and billing workflows.
-                  </p>
+
+                  {CLOSURE_BUCKETS.map((bucket) => {
+                    const beforeVal = closureData.before[bucket.id] || 0;
+                    const afterVal = closureData.after[bucket.id] || 0;
+                    const change = afterVal - beforeVal;
+                    const isGood = (bucket.id === "within24" && change > 0) || (bucket.id !== "within24" && change < 0);
+
+                    const BucketIcon = bucket.Icon;
+                    return (
+                      <div key={bucket.id} className="grid grid-cols-4 gap-4 p-4 border-b border-neutral-100 items-center">
+                        <div className="flex items-center gap-2">
+                          <BucketIcon className="w-4 h-4 text-neutral-500" />
+                          <span className="font-medium text-[#111827]">{bucket.label}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              placeholder="0"
+                              value={beforeVal || ""}
+                              onChange={(e) => updateMetric("chartClosure", {
+                                ...closureData,
+                                before: { ...closureData.before, [bucket.id]: Number(e.target.value) || 0 },
+                              })}
+                              className="w-16 px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                              data-testid={`input-closure-before-${bucket.id}`}
+                            />
+                            <span className="text-xs text-[#6B7280]">%</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              placeholder="0"
+                              value={afterVal || ""}
+                              onChange={(e) => updateMetric("chartClosure", {
+                                ...closureData,
+                                after: { ...closureData.after, [bucket.id]: Number(e.target.value) || 0 },
+                              })}
+                              className="w-16 px-2 py-1 text-sm border border-neutral-200 rounded focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                              data-testid={`input-closure-after-${bucket.id}`}
+                            />
+                            <span className="text-xs text-[#6B7280]">%</span>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          {change !== 0 ? (
+                            <span className={`font-semibold ${isGood ? "text-emerald-600" : "text-orange-500"}`}>
+                              {change > 0 ? "↑" : "↓"} {Math.abs(change)}pp
+                            </span>
+                          ) : (
+                            <span className="text-neutral-400">—</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  <div className="grid grid-cols-4 gap-4 p-4 bg-neutral-50 text-sm font-semibold">
+                    <div>TOTAL</div>
+                    <div className={closureBeforeTotal === 100 ? "text-emerald-600" : "text-red-500"}>
+                      {closureBeforeTotal}%
+                    </div>
+                    <div className={closureAfterTotal === 100 ? "text-emerald-600" : "text-red-500"}>
+                      {closureAfterTotal}%
+                    </div>
+                    <div></div>
+                  </div>
                 </div>
+
+                {/* Calculated same-day from distribution */}
+                {closureBeforeTotal === 100 && closureAfterTotal === 100 && sameDayImprovement > 0 && (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <span className="text-xs font-semibold text-emerald-800 tracking-wider uppercase block mb-2">SAME-DAY IMPROVEMENT</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-lg font-bold text-slate-600">{closureData.before.within24}%</span>
+                      <span className="text-neutral-400">→</span>
+                      <span className="text-lg font-bold text-slate-800">{closureData.after.within24}%</span>
+                      <span className="text-lg font-bold text-emerald-600">
+                        (+{sameDayImprovement}pp)
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </section>

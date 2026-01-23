@@ -93,7 +93,10 @@ export default function ExpandPerformanceDashboard({
     : null;
 
   const losData = metricsData.levelOfService;
-  const losShift = (losData.after["level5"] || 0) - (losData.before["level5"] || 0);
+  // Use simplified average if available, otherwise calculate from detailed distribution
+  const losBeforeAvg = losData.averageBefore ?? null;
+  const losAfterAvg = losData.averageAfter ?? null;
+  const losChange = losBeforeAvg && losAfterAvg ? (losAfterAvg - losBeforeAvg) : null;
 
   const wrvuData = metricsData.wrvuCapture;
   const wrvuChange = wrvuData.before && wrvuData.after
@@ -101,7 +104,10 @@ export default function ExpandPerformanceDashboard({
     : null;
 
   const closureData = metricsData.chartClosure;
-  const sameDayImprovement = closureData.after.within24 - closureData.before.within24;
+  // Use simplified same-day if available, otherwise use detailed distribution
+  const sameDayBefore = closureData.sameDayBefore ?? closureData.before.within24;
+  const sameDayAfter = closureData.sameDayAfter ?? closureData.after.within24;
+  const sameDayImprovement = (sameDayAfter || 0) - (sameDayBefore || 0);
 
   const satData = metricsData.clinicianSatisfaction;
   const satChange = satData.before && satData.after ? satData.after - satData.before : null;
@@ -193,9 +199,9 @@ export default function ExpandPerformanceDashboard({
     switch (m) {
       case "timeSavings": return timeSavingsChange !== null;
       case "workOutsideWork": return workOutsideChange !== null;
-      case "levelOfService": return losShift !== 0;
+      case "levelOfService": return losChange !== null && losChange > 0;
       case "wrvuCapture": return wrvuChange !== null;
-      case "chartClosure": return sameDayImprovement !== 0;
+      case "chartClosure": return sameDayImprovement > 0;
       case "clinicianSatisfaction": return satChange !== null;
       default: return false;
     }
@@ -434,7 +440,7 @@ export default function ExpandPerformanceDashboard({
           )}
 
           {/* Level of Service Card */}
-          {selectedMetrics.includes("levelOfService") && losShift > 0 && (
+          {selectedMetrics.includes("levelOfService") && losChange !== null && losChange > 0 && (
             <div className="bg-white border border-neutral-200 rounded-xl p-5" data-testid="card-los">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
@@ -443,8 +449,11 @@ export default function ExpandPerformanceDashboard({
                 <h3 className="font-semibold text-[#111827]">Level of Service</h3>
               </div>
               <div className="mb-2">
-                <span className="text-2xl font-bold text-emerald-600">+{losShift}pp</span>
-                <span className="text-sm text-[#6B7280] ml-2">shift to Level 5</span>
+                <span className="text-2xl font-bold text-emerald-600">+{losChange.toFixed(2)}</span>
+                <span className="text-sm text-[#6B7280] ml-2">avg level increase</span>
+              </div>
+              <div className="text-xs text-[#6B7280]">
+                {losBeforeAvg?.toFixed(2)} → {losAfterAvg?.toFixed(2)}
               </div>
             </div>
           )}
@@ -487,7 +496,7 @@ export default function ExpandPerformanceDashboard({
                 <span className="text-sm text-[#6B7280] ml-2">same-day closure</span>
               </div>
               <div className="text-xs text-[#6B7280]">
-                {closureData.before.within24}% → {closureData.after.within24}%
+                {sameDayBefore}% → {sameDayAfter}%
               </div>
             </div>
           )}

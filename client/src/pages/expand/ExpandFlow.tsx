@@ -47,6 +47,9 @@ export interface WorkOutsideWorkData {
 export interface LevelOfServiceData {
   before: { [code: string]: number };
   after: { [code: string]: number };
+  averageBefore: number | null;
+  averageAfter: number | null;
+  useDetailed: boolean;
 }
 
 export interface WrvuCaptureData {
@@ -57,6 +60,9 @@ export interface WrvuCaptureData {
 export interface ChartClosureData {
   before: { within24: number; "24to48": number; "48to72": number; over72: number };
   after: { within24: number; "24to48": number; "48to72": number; over72: number };
+  sameDayBefore: number | null;
+  sameDayAfter: number | null;
+  useDetailed: boolean;
 }
 
 export interface ClinicianSatisfactionData {
@@ -123,11 +129,17 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     levelOfService: {
       before: { level5: 0, level4: 0, level3: 0, level2: 0, level1: 0 },
       after: { level5: 0, level4: 0, level3: 0, level2: 0, level1: 0 },
+      averageBefore: null,
+      averageAfter: null,
+      useDetailed: false,
     },
     wrvuCapture: { before: null, after: null },
     chartClosure: { 
       before: { within24: 0, "24to48": 0, "48to72": 0, over72: 0 },
       after: { within24: 0, "24to48": 0, "48to72": 0, over72: 0 },
+      sameDayBefore: null,
+      sameDayAfter: null,
+      useDetailed: false,
     },
     clinicianSatisfaction: { before: null, after: null, recommendRate: null },
   });
