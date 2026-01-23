@@ -1,0 +1,301 @@
+Completely rebuild the Scribe Program Analysis to be purely educational about scribe economics. Remove ALL references to Abridge pricing, savings, or value claims. This tool helps people understand their scribe program — nothing more.
+
+## THE NEW FRAME
+
+"Understand your scribe program economics: what it costs, who it covers, and what the gap looks like."
+
+No sales. No Abridge pitch. Just math they can verify from their own inputs.
+
+## PAGE 1: SCRIBE PROGRAM INPUT
+
+Keep the current inputs — these are good:
+- How many scribes?
+- Cost per scribe (hourly or annual)
+- Hours per week per scribe
+- Providers supported by scribes
+- Total providers
+- Annual encounters
+
+## PAGE 2: YOUR SCRIBE PROGRAM ANALYSIS
+
+### Section 1: Your Program at a Glance
+
+Three headline cards showing ONLY their data:
+
+```jsx
+<div className="headline-cards">
+  <div className="headline-card">
+    <span className="card-label">YOUR INVESTMENT</span>
+    <span className="card-value">${totalScribeCost.toLocaleString()}</span>
+    <span className="card-sublabel">annual scribe program cost</span>
+  </div>
+  
+  <div className="headline-card highlighted">
+    <span className="card-label">YOUR COVERAGE</span>
+    <span className="card-value">{coveragePercent}%</span>
+    <span className="card-sublabel">{providersWithScribes} of {totalProviders} providers</span>
+  </div>
+  
+  <div className="headline-card">
+    <span className="card-label">COST PER COVERED PROVIDER</span>
+    <span className="card-value">${costPerCoveredProvider.toLocaleString()}</span>
+    <span className="card-sublabel">annual</span>
+  </div>
+</div>
+Section 2: Your Coverage Gap
+Visual showing who has support and who doesn't:
+jsxCopy<div className="coverage-section">
+  <h2>Your Coverage Gap</h2>
+  
+  <div className="coverage-bar">
+    <div className="covered-segment" style={{width: `${coveragePercent}%`}}>
+      <span>{providersWithScribes} with scribes</span>
+    </div>
+    <div className="gap-segment" style={{width: `${100 - coveragePercent}%`}}>
+      <span>{unsupportedProviders} without support</span>
+    </div>
+  </div>
+  
+  <div className="coverage-stats">
+    <div className="stat">
+      <span className="stat-value">{coveragePercent}%</span>
+      <span className="stat-label">have scribe support</span>
+    </div>
+    <div className="stat">
+      <span className="stat-value">{100 - coveragePercent}%</span>
+      <span className="stat-label">documenting alone</span>
+    </div>
+  </div>
+</div>
+Section 3: The Scaling Math
+Show what it would cost to give everyone a scribe — pure math, no Abridge comparison:
+jsxCopy<div className="scaling-section">
+  <h2>What Full Scribe Coverage Would Cost</h2>
+  <p className="section-subtitle">If you wanted to give every provider scribe support</p>
+  
+  <div className="scaling-comparison">
+    <div className="scaling-card current">
+      <span className="card-label">CURRENT STATE</span>
+      <div className="card-stats">
+        <div className="stat-row">
+          <span>Scribes</span>
+          <span>{scribeCount}</span>
+        </div>
+        <div className="stat-row">
+          <span>Providers covered</span>
+          <span>{providersWithScribes}</span>
+        </div>
+        <div className="stat-row">
+          <span>Coverage</span>
+          <span>{coveragePercent}%</span>
+        </div>
+        <div className="stat-row">
+          <span>Scribe:Provider ratio</span>
+          <span>1:{scribeRatio}</span>
+        </div>
+      </div>
+      <div className="card-total">
+        <span>Annual cost</span>
+        <span>${totalScribeCost.toLocaleString()}</span>
+      </div>
+    </div>
+    
+    <div className="scaling-arrow">→</div>
+    
+    <div className="scaling-card full">
+      <span className="card-label">FULL COVERAGE</span>
+      <div className="card-stats">
+        <div className="stat-row">
+          <span>Scribes needed</span>
+          <span>{scribesNeeded}</span>
+        </div>
+        <div className="stat-row">
+          <span>Providers covered</span>
+          <span>{totalProviders}</span>
+        </div>
+        <div className="stat-row">
+          <span>Coverage</span>
+          <span>100%</span>
+        </div>
+        <div className="stat-row">
+          <span>Scribe:Provider ratio</span>
+          <span>1:{scribeRatio}</span>
+        </div>
+      </div>
+      <div className="card-total">
+        <span>Annual cost</span>
+        <span>${fullScribeCost.toLocaleString()}</span>
+      </div>
+      <div className="card-increase">
+        +${(fullScribeCost - totalScribeCost).toLocaleString()} to scale
+      </div>
+    </div>
+  </div>
+  
+  <div className="scaling-math">
+    <h4>The Math</h4>
+    <div className="math-step">
+      <span>Additional providers to cover:</span>
+      <span>{totalProviders} - {providersWithScribes} = {unsupportedProviders}</span>
+    </div>
+    <div className="math-step">
+      <span>Additional scribes needed (at 1:{scribeRatio} ratio):</span>
+      <span>{unsupportedProviders} ÷ {scribeRatio} = {additionalScribesNeeded}</span>
+    </div>
+    <div className="math-step">
+      <span>Additional annual cost:</span>
+      <span>{additionalScribesNeeded} × ${scribeSalary.toLocaleString()} = ${additionalCost.toLocaleString()}</span>
+    </div>
+  </div>
+</div>
+Section 4: The Burden on Unsupported Providers
+Show time burden ONLY — no dollar claims:
+jsxCopy<div className="burden-section">
+  <h2>The Burden on Unsupported Providers</h2>
+  <p className="section-subtitle">
+    Your {unsupportedProviders} providers without scribe support are handling documentation alone
+  </p>
+  
+  <div className="burden-cards">
+    <div className="burden-card">
+      <span className="burden-icon">⏱️</span>
+      <span className="burden-value">{documentationHours.toLocaleString()}</span>
+      <span className="burden-label">hours/year on documentation</span>
+      <span className="burden-math">
+        {unsupportedProviders} providers × {encountersPerProvider.toLocaleString()} encounters × 12 min ÷ 60
+      </span>
+    </div>
+    
+    <div className="burden-card">
+      <span className="burden-icon">🌙</span>
+      <span className="burden-value">{pajamaTimeHours.toLocaleString()}</span>
+      <span className="burden-label">hours/year after clinic hours</span>
+      <span className="burden-math">
+        ~40% of documentation time occurs outside clinic hours*
+      </span>
+    </div>
+    
+    <div className="burden-card">
+      <span className="burden-icon">📊</span>
+      <span className="burden-value">{Math.round(documentationHours / unsupportedProviders)}</span>
+      <span className="burden-label">hours/year per unsupported provider</span>
+      <span className="burden-math">
+        Average documentation burden per provider
+      </span>
+    </div>
+  </div>
+  
+  <div className="burden-footnote">
+    * Based on industry research on physician documentation patterns
+  </div>
+</div>
+Section 5: How Scribe Programs Scale
+Educational content about scribe economics — no Abridge comparison:
+jsxCopy<div className="economics-section">
+  <h2>How Scribe Programs Scale</h2>
+  
+  <div className="economics-insight">
+    <p>
+      Scribe programs scale <strong>linearly</strong> — to cover more providers, 
+      you need more scribes. Each additional provider requires a proportional 
+      investment in scribe resources.
+    </p>
+  </div>
+  
+  <div className="economics-graph">
+    {/* Graph showing ONLY:
+        X-axis: Coverage % (0% to 100%)
+        Y-axis: Annual cost
+        
+        ONE line: Scribe cost (linear increase)
+        ONE marker: Their current position
+        
+        NO Abridge line. NO comparison.
+    */}
+    <ScribeScalingGraph 
+      currentCoverage={coveragePercent}
+      currentCost={totalScribeCost}
+      fullCost={fullScribeCost}
+    />
+  </div>
+  
+  <div className="economics-factors">
+    <h4>Factors That Affect Scribe Program Costs</h4>
+    <ul>
+      <li><strong>Scribe:Provider ratio</strong> — Ranges from 1:1 to 1:3 depending on specialty and volume</li>
+      <li><strong>Scribe compensation</strong> — Varies by market, experience, and employment model</li>
+      <li><strong>Turnover</strong> — Scribe turnover averages 30-50% annually, creating ongoing training costs</li>
+      <li><strong>Coverage hours</strong> — Evening/weekend coverage requires additional scribes</li>
+    </ul>
+  </div>
+</div>
+Section 6: Methodology
+Only defensible assumptions:
+jsxCopy<div className="methodology-section">
+  <h2>Methodology & Assumptions</h2>
+  
+  <div className="methodology-content">
+    <h4>From Your Inputs</h4>
+    <ul>
+      <li>Scribe count: {scribeCount}</li>
+      <li>Cost per scribe: ${scribeSalary.toLocaleString()}/year</li>
+      <li>Providers with scribes: {providersWithScribes}</li>
+      <li>Total providers: {totalProviders}</li>
+      <li>Annual encounters: {encounters.toLocaleString()}</li>
+    </ul>
+    
+    <h4>Calculated Values</h4>
+    <ul>
+      <li>Scribe:Provider ratio: 1:{scribeRatio} (from your inputs)</li>
+      <li>Encounters per provider: {encountersPerProvider.toLocaleString()}/year</li>
+    </ul>
+    
+    <h4>Industry Assumptions</h4>
+    <ul>
+      <li>Documentation time without scribe: 12 min/encounter (industry average)</li>
+      <li>After-hours documentation: ~40% of total (based on physician workflow research)</li>
+    </ul>
+  </div>
+</div>
+Section 7: Export
+Simple export, no sales CTA:
+jsxCopy<div className="export-section">
+  <div className="export-buttons">
+    <button className="export-btn">
+      <span className="icon">📄</span>
+      Export as PDF
+    </button>
+    <button className="export-btn">
+      <span className="icon">📧</span>
+      Share with Team
+    </button>
+  </div>
+</div>
+REMOVE ENTIRELY
+
+"WITH ABRIDGE" card — Gone
+"Your Path Forward" section — Gone
+Any savings claims — Gone
+"The Hybrid Opportunity" section — Gone (this is salesy)
+"Why Ambient AI Scales Differently" comparison table — Gone (this is Abridge marketing)
+Abridge line on the graph — Gone
+Any dollar opportunity cost — Gone
+Any "contact us" or "schedule a conversation" CTAs — Gone
+
+WHAT REMAINS
+A pure, educational analysis of their scribe program:
+
+What they're spending
+Who's covered and who isn't
+What full coverage would cost
+The time burden on unsupported providers
+How scribe economics work (linear scaling)
+
+That's it. No pitch. No comparison. Just their numbers, laid out clearly.
+TITLE CHANGE
+Change from "Value Realization Assessment" to just:
+"Scribe Program Analysis"
+The subtitle should be:
+"Understand your scribe program economics"
+Not "See what you're missing" or "Find the gap" — just neutral, educational.
+Copy

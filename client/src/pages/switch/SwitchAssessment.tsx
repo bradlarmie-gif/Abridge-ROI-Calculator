@@ -511,6 +511,9 @@ function DimensionCard({
             onChange={handleInputChange}
             onFocus={() => setIsFocused(true)}
             onBlur={handleBlur}
+            autoComplete="off"
+            data-lpignore="true"
+            data-form-type="other"
             className="w-16 px-2 py-1.5 text-center text-base font-semibold border border-slate-200 rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none"
             data-testid={`${testId}-input`}
           />

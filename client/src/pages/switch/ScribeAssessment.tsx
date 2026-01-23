@@ -404,6 +404,9 @@ function InputCard({ icon, iconBg, label, value, onChange, unit, hint, testId, l
           onChange={handleChange}
           onFocus={() => setIsFocused(true)}
           onBlur={handleBlur}
+          autoComplete="off"
+          data-lpignore="true"
+          data-form-type="other"
           className="flex-1 px-3 py-2 text-base font-semibold border border-slate-200 rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none bg-white"
           data-testid={testId}
         />
