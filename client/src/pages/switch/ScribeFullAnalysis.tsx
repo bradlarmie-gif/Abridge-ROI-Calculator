@@ -336,7 +336,7 @@ export default function ScribeFullAnalysis({
           <div className="bg-slate-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-[#374151]">
               Scribe programs scale <strong>linearly</strong> — to cover more providers, 
-              you need more scribes. Ambient AI uses a per-provider model that scales differently.
+              you need more scribes. This chart shows how your costs would grow to achieve full coverage.
             </p>
           </div>
 
@@ -358,12 +358,7 @@ export default function ScribeFullAnalysis({
                   width={80}
                 />
                 <Tooltip
-                  formatter={(value: number, name: string) => {
-                    if (name === "Ambient AI (per-provider model)") {
-                      return ["Varies by organization", name];
-                    }
-                    return [formatCurrency(value), name];
-                  }}
+                  formatter={(value: number, name: string) => [formatCurrency(value), name]}
                   labelFormatter={(v) => `${v}% coverage`}
                   contentStyle={{
                     backgroundColor: "#fff",
@@ -377,16 +372,6 @@ export default function ScribeFullAnalysis({
                   name="Scribes (linear scaling)"
                   stroke="#6B7280"
                   strokeWidth={3}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="ambientAICost"
-                  name="Ambient AI (per-provider model)"
-                  stroke="#EA2C00"
-                  strokeWidth={2}
-                  strokeDasharray="8 4"
-                  strokeOpacity={0.6}
                   dot={false}
                 />
                 <ReferenceDot
@@ -404,25 +389,11 @@ export default function ScribeFullAnalysis({
           <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm mb-6">
             <div className="flex items-center gap-2">
               <div className="w-8 h-0.5 bg-[#6B7280]"></div>
-              <span className="text-[#6B7280]">Scribes (linear — cost per scribe)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-0.5 bg-[#EA2C00] opacity-60" style={{ borderBottom: "2px dashed #EA2C00" }}></div>
-              <span className="text-[#6B7280]">Ambient AI (per-provider model)</span>
+              <span className="text-[#6B7280]">Scribe program cost (linear scaling)</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-[#EA2C00]"></div>
               <span className="text-[#6B7280]">Your current position: {calculations.coveragePercent}%</span>
-            </div>
-          </div>
-
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <Info className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-amber-800">
-                Ambient AI pricing varies by organization. The curve illustrates the per-provider 
-                model vs. per-scribe linear scaling — not actual costs.
-              </p>
             </div>
           </div>
 
