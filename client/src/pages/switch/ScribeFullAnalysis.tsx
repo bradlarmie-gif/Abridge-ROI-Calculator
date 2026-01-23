@@ -335,8 +335,8 @@ export default function ScribeFullAnalysis({
 
           <div className="bg-slate-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-[#374151]">
-              Scribe programs scale <strong>linearly</strong> — to cover more providers, 
-              you need more scribes. This chart shows how your costs would grow to achieve full coverage.
+              Scribe programs scale in <strong>steps</strong> — each new scribe adds fixed capacity. 
+              The staircase pattern shows how costs jump as you cross thresholds requiring additional hires.
             </p>
           </div>
 
