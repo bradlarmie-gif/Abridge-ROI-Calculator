@@ -1,5 +1,5 @@
 export const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-export const HIDDEN_TAB_TIMEOUT = 10 * 60 * 1000; // 10 minutes when tab is hidden
+export const HIDDEN_TAB_TIMEOUT = 30 * 60 * 1000; // 30 minutes when tab is hidden
 
 export function sanitizeNumber(value: string | number, min = 0, max = Infinity): number | null {
   const num = typeof value === 'string' ? parseFloat(value) : value;

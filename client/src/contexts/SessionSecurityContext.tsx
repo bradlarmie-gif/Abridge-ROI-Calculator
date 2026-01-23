@@ -83,6 +83,9 @@ export function SessionSecurityProvider({ children, onSessionClear }: SessionSec
           const elapsed = Date.now() - parseInt(hiddenAt);
           if (elapsed > HIDDEN_TAB_TIMEOUT) {
             clearSession();
+          } else {
+            // User returned before timeout - reset the inactivity timer
+            resetInactivityTimer();
           }
           sessionStorage.removeItem('hiddenAt');
         }
@@ -96,7 +99,7 @@ export function SessionSecurityProvider({ children, onSessionClear }: SessionSec
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [clearSession]);
+  }, [clearSession, resetInactivityTimer]);
 
   return (
     <SessionSecurityContext.Provider value={{
