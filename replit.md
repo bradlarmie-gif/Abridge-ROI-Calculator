@@ -25,22 +25,20 @@ The application guides users through multi-step processes:
     1. **Assessment Page** (SwitchAssessment.tsx) - Data collection with live visualization:
        - Solution type selector (Ambient AI, Scribes)
        - Provider count and annual encounters inputs
-       - Utilization gauge (ceiling: 65%) with slider showing YOU vs CEILING with GAP zone
-       - Efficiency gauge (ceiling: 4 min) with same pattern
-       - "The Multiplier Effect" section: utilization % × efficiency % = combined capture %
-       - Live-updating "Your Annual Gap" card with monthly/daily/hourly breakdown
+       - Three gauges with Abridge benchmarks: Utilization (75%), Efficiency (4 min), Revenue/wRVU (+5%)
+       - "Why Small Gaps Compound" section: utilization × efficiency × revenue = combined capture %
+       - Live-updating "Your Annual Gap" card with three gap components
     2. **Full Analysis Page** (SwitchFullAnalysis.tsx) - Comprehensive gap analysis:
        - 3 headline cards (Annual Gap, Capture Rate %, 3-Year Gap)
-       - "Cost of Gap Over Time" line chart (current trajectory vs ceiling trajectory)
-       - "How the Gap Breaks Down" with visual bar charts for utilization/efficiency
-       - "Why This Gap Exists" multiplier explanation
+       - "Cost of Gap Over Time" line chart (current vs Abridge trajectory)
+       - "How the Gap Breaks Down" with 3 visual bar charts (utilization/efficiency/wRVU)
+       - "Why Small Gaps Compound" short multiplier explanation
        - "The Cost of Waiting" (close now vs wait 6mo vs wait 12mo)
-       - "What Closing the Gap Looks Like" 4-step timeline
-       - "Methodology & Assumptions" with conservative benchmarks
+       - "Methodology" with Abridge benchmarks
        - CTAs: Schedule Demo, Export PDF, Share with Team
-    - **Key Benchmarks**: Utilization ceiling 65%, Efficiency ceiling 4 min/encounter
-    - **Value Assumptions**: $4/encounter (utilization), $150/hr × 20% conversion (efficiency)
-    - **Calculation Engine**: switchGapCalculator.ts with tiered gap breakdown and 3-year projections
+    - **Key Benchmarks**: Utilization 75%, Efficiency 4 min/encounter, wRVU lift +5%
+    - **Value Assumptions**: $4/encounter (utilization), $150/hr × 20% conversion (efficiency), $33/wRVU × 50% attribution
+    - **Calculation Engine**: switchGapCalculator.ts with three-dimensional gap breakdown and 3-year projections
 -   **Expand Path**: A 5-step performance analysis flow for current Abridge customers with tiered ROI calculations:
     1. Setting Selection (ExpandSettingSelection.tsx)
     2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection

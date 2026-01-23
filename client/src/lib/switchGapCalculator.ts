@@ -12,11 +12,7 @@ export interface SwitchInputs {
   currentCostPerProvider: number;
   utilization: number;
   timeSavedPerEncounter: number;
-  hasWRVU: boolean;
-  wrvuBefore: number | null;
-  wrvuAfter: number | null;
-  hasSatisfaction: boolean;
-  satisfactionScore: number | null;
+  wrvuLift: number; // Now always tracked (percentage lift)
 }
 
 export interface GapTier {
@@ -53,6 +49,11 @@ export interface SwitchCalculations {
   threeYearGap: number;
   monthlyGap: number;
   
+  // Individual gap values
+  utilizationGapValue: number;
+  efficiencyGapValue: number;
+  wrvuGapValue: number;
+  
   // Tiered breakdown
   tier1: GapTier; // Quantifiable
   tier2: GapTier; // Probable
@@ -60,6 +61,7 @@ export interface SwitchCalculations {
   // Capture rates
   utilizationCapture: number;
   efficiencyCapture: number;
+  wrvuCapture: number;
   combinedCapture: number;
   
   // Cost of waiting
@@ -81,15 +83,13 @@ export interface SwitchCalculations {
   abridgeAnnualInvestment: number;
 }
 
-// Abridge benchmarks (conservative, based on aggregate data)
+// Abridge benchmarks (based on aggregate data)
 export const ABRIDGE_BENCHMARKS = {
-  utilization: 65, // 65% average utilization
+  utilization: 75, // 75% average utilization
   timeSavedMin: 3, // 3 min minimum
   timeSavedMax: 5, // 5 min maximum
   timeSavedAvg: 4, // 4 min average
-  wrvuLiftMin: 3, // 3% minimum lift
-  wrvuLiftMax: 7, // 7% maximum lift
-  wrvuLiftAvg: 5, // 5% average lift
+  wrvuLift: 5, // 5% wRVU lift average
   satisfactionTarget: 85, // 85% satisfaction target
   costPerProviderMonth: 250, // Abridge cost estimate
 };
@@ -98,11 +98,11 @@ export const ABRIDGE_BENCHMARKS = {
 export const VALUE_ASSUMPTIONS = {
   encounterValue: 4, // $4 per additional encounter documented
   hourlyRate: 150, // $150/hr provider time
-  timeConversionRate: 0.25, // 25% of saved time converts to value (conservative)
+  timeConversionRate: 0.20, // 20% of saved time converts to value (conservative)
   wrvuDollarValue: 33, // $33 per wRVU
   wrvuAttribution: 0.5, // 50% attribution
+  avgWRVUPerEncounter: 1.5, // Assume 1.5 wRVU/encounter baseline
   retentionCostPerProvider: 250000, // Cost to replace a provider
-  satisfactionRetentionImpact: 0.02, // 2% retention impact per 10% satisfaction gap
 };
 
 // Implementation timeline
@@ -119,114 +119,99 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     currentCostPerProvider,
     utilization,
     timeSavedPerEncounter,
-    hasWRVU,
-    wrvuBefore,
-    wrvuAfter,
+    wrvuLift,
   } = inputs;
 
   // Encounters documented
   const yourEncountersDocumented = Math.round(annualEncounters * (utilization / 100));
   const abridgeEncountersDocumented = Math.round(annualEncounters * (ABRIDGE_BENCHMARKS.utilization / 100));
-  const encounterGap = abridgeEncountersDocumented - yourEncountersDocumented;
+  const encounterGap = Math.max(0, abridgeEncountersDocumented - yourEncountersDocumented);
 
   // Hours returned
   const yourHoursReturned = Math.round((yourEncountersDocumented * timeSavedPerEncounter) / 60);
   const abridgeHoursReturned = Math.round((abridgeEncountersDocumented * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60);
-  const hoursGap = abridgeHoursReturned - yourHoursReturned;
+  const hoursGap = Math.max(0, abridgeHoursReturned - yourHoursReturned);
+
+  // === GAP CALCULATIONS ===
+  
+  // 1. Utilization gap (now vs 75%)
+  const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - utilization);
+  const utilizationGapEncounters = Math.round(annualEncounters * (utilizationGapPP / 100));
+  const utilizationGapValue = utilizationGapEncounters * VALUE_ASSUMPTIONS.encounterValue;
+
+  // 2. Efficiency gap
+  const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - timeSavedPerEncounter);
+  const encountersAtBenchmark = Math.round(annualEncounters * (ABRIDGE_BENCHMARKS.utilization / 100));
+  const efficiencyGapHours = Math.round((encountersAtBenchmark * efficiencyGapMin) / 60);
+  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
+
+  // 3. wRVU gap
+  const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - wrvuLift);
+  const wrvuGapPerEncounter = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * (wrvuGapPercent / 100);
+  const wrvuGapValue = Math.round(wrvuGapPerEncounter * encountersAtBenchmark * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuAttribution);
+
+  // Capture rates
+  const utilizationCapture = Math.min(100, Math.round((utilization / ABRIDGE_BENCHMARKS.utilization) * 100));
+  const efficiencyCapture = Math.min(100, Math.round((timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100));
+  const wrvuCapture = Math.min(100, Math.round((wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100));
+  const combinedCapture = Math.round((utilizationCapture / 100) * (efficiencyCapture / 100) * (wrvuCapture / 100) * 100);
 
   // Tier 1: Quantifiable Gaps
   const tier1Items: GapItem[] = [];
   let tier1Total = 0;
 
-  // Utilization gap
-  const utilizationGapValue = Math.max(0, encounterGap * VALUE_ASSUMPTIONS.encounterValue);
   if (utilizationGapValue > 0) {
     tier1Items.push({
       name: "Utilization Gap",
       yourValue: `${utilization}%`,
       abridgeValue: `${ABRIDGE_BENCHMARKS.utilization}%`,
-      gap: `+${encounterGap.toLocaleString()} encounters`,
+      gap: `+${utilizationGapEncounters.toLocaleString()} encounters`,
       annualValue: utilizationGapValue,
-      calculation: `${encounterGap.toLocaleString()} encounters × $${VALUE_ASSUMPTIONS.encounterValue}/enc`,
+      calculation: `${utilizationGapEncounters.toLocaleString()} encounters × $${VALUE_ASSUMPTIONS.encounterValue}/enc`,
       icon: "chart",
     });
     tier1Total += utilizationGapValue;
   }
 
-  // Efficiency gap
-  const efficiencyGapMinutes = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - timeSavedPerEncounter);
-  const totalEfficiencyGapMinutes = abridgeEncountersDocumented * efficiencyGapMinutes;
-  const efficiencyGapHours = totalEfficiencyGapMinutes / 60;
-  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
-  
   if (efficiencyGapValue > 0) {
     tier1Items.push({
       name: "Efficiency Gap",
       yourValue: `${timeSavedPerEncounter} min`,
       abridgeValue: `${ABRIDGE_BENCHMARKS.timeSavedAvg} min`,
-      gap: `+${efficiencyGapMinutes.toFixed(1)} min/encounter`,
+      gap: `+${efficiencyGapMin.toFixed(1)} min/encounter`,
       annualValue: efficiencyGapValue,
-      calculation: `${Math.round(efficiencyGapHours).toLocaleString()} hrs × $${VALUE_ASSUMPTIONS.hourlyRate}/hr × ${VALUE_ASSUMPTIONS.timeConversionRate * 100}%`,
+      calculation: `${efficiencyGapHours.toLocaleString()} hrs × $${VALUE_ASSUMPTIONS.hourlyRate}/hr × ${VALUE_ASSUMPTIONS.timeConversionRate * 100}%`,
       icon: "clock",
     });
     tier1Total += efficiencyGapValue;
   }
 
-  // Tier 2: Probable Gaps (wRVU, Satisfaction)
-  const tier2Items: GapItem[] = [];
-  let tier2Total = 0;
-
-  // wRVU gap (if provided)
-  if (hasWRVU && wrvuBefore && wrvuAfter) {
-    const theirLift = wrvuAfter - wrvuBefore;
-    const theirLiftPercent = (theirLift / wrvuBefore) * 100;
-    
-    if (theirLiftPercent < ABRIDGE_BENCHMARKS.wrvuLiftMin) {
-      const gapPercent = ABRIDGE_BENCHMARKS.wrvuLiftMin - theirLiftPercent;
-      const gapWRVU = wrvuBefore * (gapPercent / 100);
-      const wrvuGapValue = Math.round(
-        gapWRVU * abridgeEncountersDocumented * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuAttribution
-      );
-      
-      if (wrvuGapValue > 0) {
-        tier2Items.push({
-          name: "Revenue Capture Gap",
-          yourValue: `${theirLiftPercent.toFixed(1)}% lift`,
-          abridgeValue: `${ABRIDGE_BENCHMARKS.wrvuLiftMin}%+ lift`,
-          gap: `+${gapPercent.toFixed(1)}% wRVU`,
-          annualValue: wrvuGapValue,
-          calculation: `${gapWRVU.toFixed(2)} wRVU × ${abridgeEncountersDocumented.toLocaleString()} enc × $${VALUE_ASSUMPTIONS.wrvuDollarValue} × ${VALUE_ASSUMPTIONS.wrvuAttribution * 100}%`,
-          icon: "dollar",
-        });
-        tier2Total += wrvuGapValue;
-      }
-    }
-  } else if (!hasWRVU) {
-    tier2Items.push({
+  if (wrvuGapValue > 0) {
+    tier1Items.push({
       name: "Revenue Capture Gap",
-      yourValue: "Not provided",
-      abridgeValue: `${ABRIDGE_BENCHMARKS.wrvuLiftMin}-${ABRIDGE_BENCHMARKS.wrvuLiftMax}% lift`,
-      gap: "Unknown",
-      annualValue: 0,
-      calculation: "Add wRVU data to calculate",
+      yourValue: `+${wrvuLift}%`,
+      abridgeValue: `+${ABRIDGE_BENCHMARKS.wrvuLift}%`,
+      gap: `+${wrvuGapPercent.toFixed(1)}% wRVU`,
+      annualValue: wrvuGapValue,
+      calculation: `${wrvuGapPercent.toFixed(1)}% × ${VALUE_ASSUMPTIONS.avgWRVUPerEncounter} wRVU × ${encountersAtBenchmark.toLocaleString()} enc × $${VALUE_ASSUMPTIONS.wrvuDollarValue} × ${VALUE_ASSUMPTIONS.wrvuAttribution * 100}%`,
       icon: "dollar",
     });
+    tier1Total += wrvuGapValue;
   }
 
+  // Tier 2: empty for now (could add satisfaction etc.)
+  const tier2Items: GapItem[] = [];
+  const tier2Total = 0;
+
   // Total annual values
-  const yourAnnualValue = yourEncountersDocumented * VALUE_ASSUMPTIONS.encounterValue + yourHoursReturned * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate;
+  const yourAnnualValue = yourEncountersDocumented * VALUE_ASSUMPTIONS.encounterValue + 
+    yourHoursReturned * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate;
   const annualGap = tier1Total + tier2Total;
   const abridgeAnnualValue = yourAnnualValue + annualGap;
   const threeYearGap = annualGap * 3;
   const monthlyGap = Math.round(annualGap / 12);
 
-  // Capture rates
-  const utilizationCapture = Math.min(100, Math.round((utilization / ABRIDGE_BENCHMARKS.utilization) * 100));
-  const efficiencyCapture = Math.min(100, Math.round((timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100));
-  const combinedCapture = Math.round((utilizationCapture * efficiencyCapture) / 100);
-
   // Cost of waiting calculations
-  const monthlyValue = annualGap / 12;
   const switchNowValue = annualGap * 3; // Full 3 years
   const wait6MonthsValue = annualGap * 2.5; // Lose 6 months
   const wait12MonthsValue = annualGap * 2; // Lose 12 months
@@ -238,33 +223,31 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const abridgeAnnualInvestment = ABRIDGE_BENCHMARKS.costPerProviderMonth * providers * 12;
   const investmentDifference = abridgeAnnualInvestment - currentAnnualInvestment;
   const netAnnualBenefit = annualGap - investmentDifference;
-  const breakevenMonth = netAnnualBenefit > 0 ? Math.max(IMPLEMENTATION_TIMELINE.fullValueMonth, Math.ceil(Math.abs(investmentDifference) / (netAnnualBenefit / 12))) : 6;
+  const breakevenMonth = netAnnualBenefit > 0 
+    ? Math.max(IMPLEMENTATION_TIMELINE.fullValueMonth, Math.ceil(Math.abs(investmentDifference) / (netAnnualBenefit / 12))) 
+    : 6;
 
   // 3-year trajectories
   const currentTrajectory: { month: number; value: number }[] = [];
   const abridgeTrajectory: { month: number; value: number }[] = [];
   
   for (let month = 0; month <= 36; month++) {
-    // Current solution: linear value accumulation
     const currentMonthlyValue = yourAnnualValue / 12;
     currentTrajectory.push({
       month,
       value: Math.round(month * currentMonthlyValue),
     });
     
-    // Abridge: ramp period then full value
     let abridgeValue = 0;
     if (month === 0) {
       abridgeValue = 0;
     } else if (month <= IMPLEMENTATION_TIMELINE.rampMonths) {
-      // Ramp period: 25%, 50%, 75% of value
       const rampFraction = month / IMPLEMENTATION_TIMELINE.rampMonths;
       abridgeValue = currentTrajectory[month - 1]?.value || 0;
       abridgeValue += (abridgeAnnualValue / 12) * rampFraction;
     } else {
-      // Full value after ramp
       const fullMonths = month - IMPLEMENTATION_TIMELINE.rampMonths;
-      const rampValue = (abridgeAnnualValue / 12) * (0.25 + 0.5 + 0.75); // Sum of ramp months
+      const rampValue = (abridgeAnnualValue / 12) * (0.25 + 0.5 + 0.75);
       abridgeValue = rampValue + fullMonths * (abridgeAnnualValue / 12);
     }
     
@@ -286,10 +269,14 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     annualGap,
     threeYearGap,
     monthlyGap,
+    utilizationGapValue,
+    efficiencyGapValue,
+    wrvuGapValue,
     tier1: { label: "Quantifiable Gaps", items: tier1Items, total: tier1Total },
     tier2: { label: "Probable Gaps", items: tier2Items, total: tier2Total },
     utilizationCapture,
     efficiencyCapture,
+    wrvuCapture,
     combinedCapture,
     switchNowValue,
     wait6MonthsValue,

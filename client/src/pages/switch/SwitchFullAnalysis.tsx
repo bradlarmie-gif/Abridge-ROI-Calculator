@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, AlertCircle, CheckCircle, Info } from "lucide-react";
+import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
@@ -8,7 +8,6 @@ import {
   formatCurrency, 
   ABRIDGE_BENCHMARKS, 
   VALUE_ASSUMPTIONS,
-  IMPLEMENTATION_TIMELINE,
   type SwitchInputs 
 } from "@/lib/switchGapCalculator";
 
@@ -32,25 +31,21 @@ export default function SwitchFullAnalysis({
     });
   }, [inputs]);
 
-  const utilizationCapture = Math.min(100, Math.round((inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100));
-  const efficiencyCapture = Math.min(100, Math.round((inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100));
-  const combinedCapture = Math.round((utilizationCapture * efficiencyCapture) / 100);
-
   const solutionLabel = inputs.solution === "ambient-ai" ? "Ambient AI" : "Human Scribes";
 
   const graphData = useMemo(() => {
     const points = [
-      { month: "Today", current: 0, ceiling: 0 },
-      { month: "6 mo", current: calculations.yourAnnualValue / 2, ceiling: calculations.abridgeAnnualValue * 0.4 },
-      { month: "Year 1", current: calculations.yourAnnualValue, ceiling: calculations.abridgeAnnualValue * 0.9 },
-      { month: "Year 2", current: calculations.yourAnnualValue * 2, ceiling: calculations.abridgeAnnualValue * 1.9 },
-      { month: "Year 3", current: calculations.yourAnnualValue * 3, ceiling: calculations.abridgeAnnualValue * 2.9 },
+      { month: "Today", current: 0, abridge: 0 },
+      { month: "6 mo", current: calculations.yourAnnualValue / 2, abridge: calculations.abridgeAnnualValue * 0.4 },
+      { month: "Year 1", current: calculations.yourAnnualValue, abridge: calculations.abridgeAnnualValue * 0.9 },
+      { month: "Year 2", current: calculations.yourAnnualValue * 2, abridge: calculations.abridgeAnnualValue * 1.9 },
+      { month: "Year 3", current: calculations.yourAnnualValue * 3, abridge: calculations.abridgeAnnualValue * 2.9 },
     ];
     return points;
   }, [calculations]);
 
   const utilizationGapEncounters = calculations.encounterGap;
-  const encountersAtCeiling = Math.round((inputs.annualEncounters || 150000) * (ABRIDGE_BENCHMARKS.utilization / 100));
+  const encountersAtBenchmark = Math.round((inputs.annualEncounters || 150000) * (ABRIDGE_BENCHMARKS.utilization / 100));
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
@@ -91,12 +86,12 @@ export default function SwitchFullAnalysis({
 
           <div className="bg-[#EA2C00] rounded-xl p-6 text-center text-white" data-testid="card-capture-rate">
             <div className="text-xs font-semibold text-white/80 mb-2">CAPTURE RATE</div>
-            <div className="text-3xl font-bold">{combinedCapture}%</div>
+            <div className="text-3xl font-bold">{calculations.combinedCapture}%</div>
             <div className="text-xs text-white/80 mt-1">of potential</div>
             <div className="w-full h-2 bg-white/30 rounded-full mt-3">
               <div 
                 className="h-full bg-white rounded-full transition-all"
-                style={{ width: `${combinedCapture}%` }}
+                style={{ width: `${calculations.combinedCapture}%` }}
               />
             </div>
           </div>
@@ -111,7 +106,7 @@ export default function SwitchFullAnalysis({
         <section className="bg-white rounded-xl border border-slate-200 p-8 mb-8">
           <h2 className="text-xl font-bold text-[#111827] mb-2">The Cost of the Gap Over Time</h2>
           <p className="text-[#6B7280] mb-6">
-            Cumulative unrealized value if you stay at current performance vs. close the gap to best-in-class
+            Cumulative value if you stay at current performance vs. close the gap
           </p>
 
           <div className="h-80 mb-6">
@@ -130,19 +125,19 @@ export default function SwitchFullAnalysis({
                 <Legend />
                 <Area 
                   type="monotone" 
-                  dataKey="ceiling" 
+                  dataKey="abridge" 
                   stroke="none"
-                  fill="#EA2C00"
-                  fillOpacity={0.1}
+                  fill="#f1f5f9"
+                  fillOpacity={1}
                   name="Gap (unrealized value)"
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="ceiling" 
+                  dataKey="abridge" 
                   stroke="#10B981" 
                   strokeWidth={3}
                   dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
-                  name="Close the gap (reach ceiling)"
+                  name="Close the gap"
                 />
                 <Line 
                   type="monotone" 
@@ -157,9 +152,9 @@ export default function SwitchFullAnalysis({
             </ResponsiveContainer>
           </div>
 
-          <div className="flex items-center justify-center gap-3 p-4 bg-[#EA2C00]/5 rounded-lg border border-[#EA2C00]/20">
-            <span className="text-2xl">↕</span>
-            <span className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(calculations.threeYearGap)}</span>
+          <div className="flex items-center justify-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <span className="text-2xl text-slate-400">↕</span>
+            <span className="text-2xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</span>
             <span className="text-[#6B7280]">3-year gap</span>
           </div>
         </section>
@@ -168,115 +163,147 @@ export default function SwitchFullAnalysis({
           <h2 className="text-xl font-bold text-[#111827] mb-6">How the Gap Breaks Down</h2>
 
           <div className="space-y-6">
-            <div className="border border-slate-200 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <BarChart3 className="w-5 h-5 text-blue-600" />
-                  <span className="font-semibold text-[#111827]">Utilization Gap</span>
+            {calculations.utilizationGapValue > 0 && (
+              <div className="border border-slate-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <BarChart3 className="w-5 h-5 text-blue-600" />
+                    <span className="font-semibold text-[#111827]">Utilization Gap</span>
+                  </div>
+                  <span className="text-xl font-bold text-[#111827]">
+                    {formatCurrency(calculations.utilizationGapValue)}
+                  </span>
                 </div>
-                <span className="text-xl font-bold text-[#111827]">
-                  {formatCurrency(calculations.tier1.items.find(i => i.name === "Utilization Gap")?.annualValue || 0)}
-                </span>
+                
+                <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+                    style={{ width: `${(inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%` }}
+                  >
+                    <span className="text-xs font-semibold text-white truncate">You: {inputs.utilization}%</span>
+                  </div>
+                  <div 
+                    className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
+                    style={{ 
+                      left: `${(inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`,
+                      width: `${100 - (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`
+                    }}
+                  >
+                    <span className="text-xs font-semibold text-slate-600">Gap</span>
+                  </div>
+                  <div className="absolute top-0 right-0 h-full flex items-center px-2">
+                    <span className="text-xs font-semibold text-[#EA2C00]">Abridge: {ABRIDGE_BENCHMARKS.utilization}%</span>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
+                  {inputs.utilization}% → {ABRIDGE_BENCHMARKS.utilization}% = +{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp = +{utilizationGapEncounters.toLocaleString()} encounters × ${VALUE_ASSUMPTIONS.encounterValue}/enc
+                </div>
               </div>
-              
-              <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
-                <div 
-                  className="absolute top-0 left-0 h-full bg-slate-600 flex items-center px-2"
-                  style={{ width: `${(inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%` }}
-                >
-                  <span className="text-xs font-semibold text-white truncate">You: {inputs.utilization}%</span>
-                </div>
-                <div 
-                  className="absolute top-0 h-full bg-amber-400/50 flex items-center justify-center"
-                  style={{ 
-                    left: `${(inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`,
-                    width: `${100 - (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`
-                  }}
-                >
-                  <span className="text-xs font-semibold text-amber-800">Gap</span>
-                </div>
-                <div className="absolute top-0 right-0 h-full flex items-center px-2">
-                  <span className="text-xs font-semibold text-slate-600">Ceiling: {ABRIDGE_BENCHMARKS.utilization}%</span>
-                </div>
-              </div>
-              
-              <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
-                {inputs.utilization}% → {ABRIDGE_BENCHMARKS.utilization}% = +{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp = +{utilizationGapEncounters.toLocaleString()} encounters × ${VALUE_ASSUMPTIONS.encounterValue}/enc
-              </div>
-            </div>
+            )}
 
-            <div className="border border-slate-200 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-purple-600" />
-                  <span className="font-semibold text-[#111827]">Efficiency Gap</span>
+            {calculations.efficiencyGapValue > 0 && (
+              <div className="border border-slate-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-purple-600" />
+                    <span className="font-semibold text-[#111827]">Efficiency Gap</span>
+                  </div>
+                  <span className="text-xl font-bold text-[#111827]">
+                    {formatCurrency(calculations.efficiencyGapValue)}
+                  </span>
                 </div>
-                <span className="text-xl font-bold text-[#111827]">
-                  {formatCurrency(calculations.tier1.items.find(i => i.name === "Efficiency Gap")?.annualValue || 0)}
-                </span>
+                
+                <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+                    style={{ width: `${(inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%` }}
+                  >
+                    <span className="text-xs font-semibold text-white truncate">You: {inputs.timeSavedPerEncounter} min</span>
+                  </div>
+                  <div 
+                    className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
+                    style={{ 
+                      left: `${(inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`,
+                      width: `${100 - (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`
+                    }}
+                  >
+                    <span className="text-xs font-semibold text-slate-600">Gap</span>
+                  </div>
+                  <div className="absolute top-0 right-0 h-full flex items-center px-2">
+                    <span className="text-xs font-semibold text-[#EA2C00]">Abridge: {ABRIDGE_BENCHMARKS.timeSavedAvg} min</span>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
+                  {inputs.timeSavedPerEncounter} min → {ABRIDGE_BENCHMARKS.timeSavedAvg} min = +{(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.timeConversionRate * 100}%
+                </div>
               </div>
-              
-              <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
-                <div 
-                  className="absolute top-0 left-0 h-full bg-slate-600 flex items-center px-2"
-                  style={{ width: `${(inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%` }}
-                >
-                  <span className="text-xs font-semibold text-white truncate">You: {inputs.timeSavedPerEncounter} min</span>
+            )}
+
+            {calculations.wrvuGapValue > 0 && (
+              <div className="border border-slate-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                    <span className="font-semibold text-[#111827]">Revenue Capture Gap</span>
+                  </div>
+                  <span className="text-xl font-bold text-[#111827]">
+                    {formatCurrency(calculations.wrvuGapValue)}
+                  </span>
                 </div>
-                <div 
-                  className="absolute top-0 h-full bg-amber-400/50 flex items-center justify-center"
-                  style={{ 
-                    left: `${(inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`,
-                    width: `${100 - (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`
-                  }}
-                >
-                  <span className="text-xs font-semibold text-amber-800">Gap</span>
+                
+                <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+                    style={{ width: `${(inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%` }}
+                  >
+                    <span className="text-xs font-semibold text-white truncate">You: +{inputs.wrvuLift}%</span>
+                  </div>
+                  <div 
+                    className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
+                    style={{ 
+                      left: `${(inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%`,
+                      width: `${100 - (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%`
+                    }}
+                  >
+                    <span className="text-xs font-semibold text-slate-600">Gap</span>
+                  </div>
+                  <div className="absolute top-0 right-0 h-full flex items-center px-2">
+                    <span className="text-xs font-semibold text-[#EA2C00]">Abridge: +{ABRIDGE_BENCHMARKS.wrvuLift}%</span>
+                  </div>
                 </div>
-                <div className="absolute top-0 right-0 h-full flex items-center px-2">
-                  <span className="text-xs font-semibold text-slate-600">Ceiling: {ABRIDGE_BENCHMARKS.timeSavedAvg} min</span>
+                
+                <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
+                  +{inputs.wrvuLift}% → +{ABRIDGE_BENCHMARKS.wrvuLift}% = {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% gap × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {encountersAtBenchmark.toLocaleString()} enc
                 </div>
               </div>
-              
-              <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
-                {inputs.timeSavedPerEncounter} min → {ABRIDGE_BENCHMARKS.timeSavedAvg} min = +{(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min × {encountersAtCeiling.toLocaleString()} enc ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.timeConversionRate * 100}%
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
         <section className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 text-white mb-8">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="text-xl">💡</span> Why This Gap Exists
+            <span className="text-xl">💡</span> Why Small Gaps Compound
           </h3>
           
           <p className="text-slate-300 mb-4">
-            This gap doesn't mean your current solution is bad. 
-            It means ambient AI value is <strong className="text-white">multiplicative</strong>, 
-            and small differences compound:
+            Ambient AI value is <strong className="text-white">multiplicative</strong>. 
+            Small differences in each dimension compound:
           </p>
           
           <div className="bg-slate-700/50 rounded-lg p-4 mb-4 text-center font-mono">
-            Utilization × Efficiency = Captured Value
+            Utilization × Efficiency × Revenue = Total Value
           </div>
           
           <div className="flex items-center justify-center gap-3 text-lg mb-4">
-            <span className="font-bold">{inputs.utilization}%</span>
+            <span className="font-bold">{calculations.utilizationCapture}%</span>
             <span className="text-slate-400">×</span>
-            <span className="font-bold">{inputs.timeSavedPerEncounter} min</span>
+            <span className="font-bold">{calculations.efficiencyCapture}%</span>
+            <span className="text-slate-400">×</span>
+            <span className="font-bold">{calculations.wrvuCapture}%</span>
             <span className="text-slate-400">=</span>
-            <span className="font-bold text-[#EA2C00]">{combinedCapture}% captured</span>
-          </div>
-          
-          <p className="text-slate-300">
-            At {combinedCapture}% capture, you're leaving {100 - combinedCapture}% of potential value 
-            unrealized. Over 3 years, that's <strong className="text-white">{formatCurrency(calculations.threeYearGap)}</strong>.
-          </p>
-          
-          <div className="mt-6 p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-            <p className="text-sm">
-              <strong className="text-white">The question isn't whether your vendor is good.</strong><br />
-              It's whether you're reaching the ceiling of what ambient AI can deliver.
-            </p>
+            <span className="font-bold text-[#EA2C00]">{calculations.combinedCapture}% captured</span>
           </div>
         </section>
 
@@ -298,18 +325,18 @@ export default function SwitchFullAnalysis({
               <div className="text-sm font-medium text-[#6B7280] mb-2">Wait 6 months</div>
               <div className="text-2xl font-bold text-[#111827]">{formatCurrency(calculations.wait6MonthsValue)}</div>
               <div className="text-xs text-[#6B7280] mt-1">3-year value</div>
-              <div className="text-xs text-red-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait6MonthsLoss)}</div>
+              <div className="text-xs text-slate-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait6MonthsLoss)}</div>
             </div>
 
             <div className="border border-slate-200 rounded-xl p-6 text-center">
               <div className="text-sm font-medium text-[#6B7280] mb-2">Wait 12 months</div>
               <div className="text-2xl font-bold text-[#111827]">{formatCurrency(calculations.wait12MonthsValue)}</div>
               <div className="text-xs text-[#6B7280] mt-1">3-year value</div>
-              <div className="text-xs text-red-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait12MonthsLoss)}</div>
+              <div className="text-xs text-slate-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait12MonthsLoss)}</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
             <span className="text-2xl">⏰</span>
             <span className="text-[#111827]">
               Every month at current state = <strong>{formatCurrency(calculations.monthlyGap)}</strong> in unrealized value
@@ -317,90 +344,28 @@ export default function SwitchFullAnalysis({
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-8 mb-8">
-          <h2 className="text-xl font-bold text-[#111827] mb-6">What Closing the Gap Looks Like</h2>
-
-          <div className="relative">
-            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-slate-200" />
-            
-            <div className="space-y-8">
-              <div className="flex gap-6">
-                <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center font-bold text-slate-600 z-10">
-                  1
-                </div>
-                <div className="flex-1 pt-2">
-                  <h4 className="font-semibold text-[#111827]">Assessment & Planning</h4>
-                  <p className="text-sm text-[#6B7280]">2-4 weeks</p>
-                  <p className="text-xs text-slate-500 mt-1">Understand your workflows, plan rollout</p>
-                </div>
-              </div>
-
-              <div className="flex gap-6">
-                <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center font-bold text-slate-600 z-10">
-                  2
-                </div>
-                <div className="flex-1 pt-2">
-                  <h4 className="font-semibold text-[#111827]">Implementation</h4>
-                  <p className="text-sm text-[#6B7280]">4-6 weeks</p>
-                  <p className="text-xs text-slate-500 mt-1">Technical setup, EHR integration, training</p>
-                </div>
-              </div>
-
-              <div className="flex gap-6">
-                <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center font-bold text-slate-600 z-10">
-                  3
-                </div>
-                <div className="flex-1 pt-2">
-                  <h4 className="font-semibold text-[#111827]">Ramp to Ceiling</h4>
-                  <p className="text-sm text-[#6B7280]">2-3 months</p>
-                  <p className="text-xs text-slate-500 mt-1">Adoption grows, utilization reaches {ABRIDGE_BENCHMARKS.utilization}%+</p>
-                </div>
-              </div>
-
-              <div className="flex gap-6">
-                <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center z-10">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 pt-2">
-                  <h4 className="font-semibold text-emerald-600">Full Value</h4>
-                  <p className="text-sm text-[#6B7280]">Month 4+</p>
-                  <p className="text-xs text-slate-500 mt-1">Capturing {formatCurrency(calculations.annualGap)}/year in previously unrealized value</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200 flex items-start gap-3">
-            <span className="text-xl">💡</span>
-            <span className="text-sm text-blue-800">
-              Based on typical ramp, you'd reach full ceiling value by <strong>month 4</strong> 
-              and recover any switching investment by <strong>month {calculations.breakevenMonth}</strong>.
-            </span>
-          </div>
-        </section>
-
         <section className="bg-slate-50 rounded-xl border border-slate-200 p-8 mb-8">
           <h3 className="text-lg font-semibold text-[#111827] mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />
-            Methodology & Assumptions
+            Methodology
           </h3>
 
           <ul className="space-y-3 text-sm text-[#6B7280]">
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">Ceiling benchmarks</strong> based on aggregate performance data from 200+ health system partners using best-in-class ambient AI</span>
+              <span><strong className="text-[#111827]">Utilization benchmark: {ABRIDGE_BENCHMARKS.utilization}%</strong> — Abridge average across deployments</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">Utilization ceiling: {ABRIDGE_BENCHMARKS.utilization}%</strong> — top quartile of ambient AI deployments</span>
+              <span><strong className="text-[#111827]">Efficiency benchmark: {ABRIDGE_BENCHMARKS.timeSavedAvg} min/encounter</strong> — Abridge average time saved</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">Efficiency ceiling: {ABRIDGE_BENCHMARKS.timeSavedAvg} min/encounter</strong> — average across high-performing deployments</span>
+              <span><strong className="text-[#111827]">wRVU lift benchmark: +{ABRIDGE_BENCHMARKS.wrvuLift}%</strong> — Abridge average revenue lift</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">Utilization gap</strong> valued at ${VALUE_ASSUMPTIONS.encounterValue}/encounter (documentation completeness + time)</span>
+              <span><strong className="text-[#111827]">Utilization gap</strong> valued at ${VALUE_ASSUMPTIONS.encounterValue}/encounter</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
@@ -408,12 +373,12 @@ export default function SwitchFullAnalysis({
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">3-year projection</strong> includes 3-month ramp period in year 1</span>
+              <span><strong className="text-[#111827]">wRVU gap</strong> valued at ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% attribution</span>
             </li>
           </ul>
 
           <p className="mt-4 text-xs text-slate-500 italic">
-            These are conservative estimates. Actual value may be higher depending on your specialty mix, payer contracts, and operational capacity.
+            Conservative estimates. Actual value may vary based on specialty mix and payer contracts.
           </p>
         </section>
 

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, AlertTriangle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -40,13 +40,6 @@ export default function SwitchAssessment({
     });
   }, [inputs]);
 
-  const utilizationCapture = Math.min(100, Math.round((inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100));
-  const efficiencyCapture = Math.min(100, Math.round((inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100));
-  const combinedCapture = Math.round((utilizationCapture * efficiencyCapture) / 100);
-
-  const utilizationGapEncounters = Math.max(0, calculations.encounterGap);
-  const efficiencyGapHours = calculations.hoursGap;
-
   const canProceed = 
     inputs.solution && 
     inputs.providers && inputs.providers > 0 && 
@@ -76,13 +69,10 @@ export default function SwitchAssessment({
 
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
-            The Ambient AI Value Assessment
+            Ambient AI Value Assessment
           </h1>
-          <p className="text-lg text-[#6B7280] mb-2">
-            See how your results compare to what's possible — and what that gap might be costing you.
-          </p>
-          <p className="text-sm text-[#9CA3AF]">
-            This isn't about vendors. It's about understanding your position relative to the ceiling of ambient AI value.
+          <p className="text-lg text-[#6B7280]">
+            See how your current results compare to Abridge benchmarks.
           </p>
         </div>
 
@@ -125,8 +115,7 @@ export default function SwitchAssessment({
                   </button>
 
                   <button
-                    onClick={() => updateInput("solution", "ambient-ai")}
-                    className="p-4 rounded-lg border-2 border-slate-200 bg-white hover:border-slate-300 transition-all text-left opacity-50"
+                    className="p-4 rounded-lg border-2 border-slate-200 bg-white transition-all text-left opacity-50 cursor-not-allowed"
                     disabled
                   >
                     <FileText className="w-6 h-6 mb-2 text-slate-400" />
@@ -168,9 +157,9 @@ export default function SwitchAssessment({
           </section>
 
           <section className="bg-white rounded-xl border border-slate-200 p-8">
-            <h2 className="text-xl font-bold text-[#111827] mb-2">Your Results vs. The Ceiling</h2>
+            <h2 className="text-xl font-bold text-[#111827] mb-2">Your Results</h2>
             <p className="text-[#6B7280] mb-8">
-              Best-in-class ambient AI achieves certain benchmarks. Where do your results stand?
+              How do your current metrics compare to Abridge averages?
             </p>
 
             <div className="space-y-8">
@@ -188,17 +177,17 @@ export default function SwitchAssessment({
                 <div className="mb-4">
                   <div className="relative h-10 bg-slate-200 rounded-lg overflow-hidden mb-2">
                     <div 
-                      className="absolute top-0 left-0 h-full bg-emerald-500/20 border-r-2 border-emerald-600"
+                      className="absolute top-0 left-0 h-full bg-[#EA2C00]/20 border-r-2 border-[#EA2C00]"
                       style={{ width: "100%" }}
                     >
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-emerald-700">
-                        CEILING: {ABRIDGE_BENCHMARKS.utilization}%
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#EA2C00]">
+                        ABRIDGE AVG: {ABRIDGE_BENCHMARKS.utilization}%
                       </span>
                     </div>
                   </div>
                   <div className="relative h-10 bg-slate-200 rounded-lg overflow-hidden">
                     <div 
-                      className="absolute top-0 left-0 h-full bg-slate-600 transition-all"
+                      className="absolute top-0 left-0 h-full bg-slate-500 transition-all"
                       style={{ width: `${Math.min(100, (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100)}%` }}
                     >
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-white">
@@ -207,13 +196,13 @@ export default function SwitchAssessment({
                     </div>
                     {inputs.utilization < ABRIDGE_BENCHMARKS.utilization && (
                       <div 
-                        className="absolute top-0 h-full bg-amber-400/30 flex items-center justify-center"
+                        className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
                         style={{ 
                           left: `${(inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`,
                           width: `${100 - (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`
                         }}
                       >
-                        <span className="text-xs font-semibold text-amber-700">GAP</span>
+                        <span className="text-xs font-semibold text-slate-600">GAP</span>
                       </div>
                     )}
                   </div>
@@ -222,7 +211,7 @@ export default function SwitchAssessment({
                 <input
                   type="range"
                   min="10"
-                  max="80"
+                  max="90"
                   value={inputs.utilization}
                   onChange={(e) => updateInput("utilization", parseInt(e.target.value))}
                   className="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
@@ -230,25 +219,25 @@ export default function SwitchAssessment({
                 />
                 <div className="flex justify-between text-xs text-[#6B7280] mt-1">
                   <span>10%</span>
-                  <span>80%</span>
+                  <span>90%</span>
                 </div>
 
                 {inputs.utilization < ABRIDGE_BENCHMARKS.utilization ? (
-                  <div className="flex items-start gap-3 mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 mt-4 p-3 bg-slate-100 rounded-lg border border-slate-200">
+                    <AlertTriangle className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-semibold text-amber-800 text-sm">
-                        You're at {utilizationCapture}% of ceiling
+                      <div className="font-medium text-slate-700 text-sm">
+                        You're at {calculations.utilizationCapture}% vs. Abridge average
                       </div>
-                      <div className="text-xs text-amber-700">
-                        {ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp below best-in-class = {utilizationGapEncounters.toLocaleString()} encounters/year not captured
+                      <div className="text-xs text-slate-500">
+                        {ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp gap = {calculations.encounterGap.toLocaleString()} encounters/year
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                     <CheckCircle className="w-5 h-5 text-emerald-600" />
-                    <span className="font-semibold text-emerald-800 text-sm">You're at or above best-in-class utilization</span>
+                    <span className="font-medium text-emerald-700 text-sm">You're at or above Abridge average</span>
                   </div>
                 )}
               </div>
@@ -267,17 +256,17 @@ export default function SwitchAssessment({
                 <div className="mb-4">
                   <div className="relative h-10 bg-slate-200 rounded-lg overflow-hidden mb-2">
                     <div 
-                      className="absolute top-0 left-0 h-full bg-emerald-500/20 border-r-2 border-emerald-600"
+                      className="absolute top-0 left-0 h-full bg-[#EA2C00]/20 border-r-2 border-[#EA2C00]"
                       style={{ width: "100%" }}
                     >
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-emerald-700">
-                        CEILING: {ABRIDGE_BENCHMARKS.timeSavedAvg} min
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#EA2C00]">
+                        ABRIDGE AVG: {ABRIDGE_BENCHMARKS.timeSavedAvg} min
                       </span>
                     </div>
                   </div>
                   <div className="relative h-10 bg-slate-200 rounded-lg overflow-hidden">
                     <div 
-                      className="absolute top-0 left-0 h-full bg-slate-600 transition-all"
+                      className="absolute top-0 left-0 h-full bg-slate-500 transition-all"
                       style={{ width: `${Math.min(100, (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100)}%` }}
                     >
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-white">
@@ -286,13 +275,13 @@ export default function SwitchAssessment({
                     </div>
                     {inputs.timeSavedPerEncounter < ABRIDGE_BENCHMARKS.timeSavedAvg && (
                       <div 
-                        className="absolute top-0 h-full bg-amber-400/30 flex items-center justify-center"
+                        className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
                         style={{ 
                           left: `${(inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`,
                           width: `${100 - (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`
                         }}
                       >
-                        <span className="text-xs font-semibold text-amber-700">GAP</span>
+                        <span className="text-xs font-semibold text-slate-600">GAP</span>
                       </div>
                     )}
                   </div>
@@ -314,21 +303,101 @@ export default function SwitchAssessment({
                 </div>
 
                 {inputs.timeSavedPerEncounter < ABRIDGE_BENCHMARKS.timeSavedAvg ? (
-                  <div className="flex items-start gap-3 mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 mt-4 p-3 bg-slate-100 rounded-lg border border-slate-200">
+                    <AlertTriangle className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-semibold text-amber-800 text-sm">
-                        You're at {efficiencyCapture}% of ceiling
+                      <div className="font-medium text-slate-700 text-sm">
+                        You're at {calculations.efficiencyCapture}% vs. Abridge average
                       </div>
-                      <div className="text-xs text-amber-700">
-                        {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min below best-in-class = {Math.abs(efficiencyGapHours).toLocaleString()} hours/year left on table
+                      <div className="text-xs text-slate-500">
+                        {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min gap
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                     <CheckCircle className="w-5 h-5 text-emerald-600" />
-                    <span className="font-semibold text-emerald-800 text-sm">You're at or above best-in-class efficiency</span>
+                    <span className="font-medium text-emerald-700 text-sm">You're at or above Abridge average</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-slate-50 rounded-xl p-6">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-[#111827]">Revenue Capture</h3>
+                    <p className="text-sm text-[#6B7280]">What wRVU lift are you seeing vs. before your solution?</p>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <div className="relative h-10 bg-slate-200 rounded-lg overflow-hidden mb-2">
+                    <div 
+                      className="absolute top-0 left-0 h-full bg-[#EA2C00]/20 border-r-2 border-[#EA2C00]"
+                      style={{ width: "100%" }}
+                    >
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#EA2C00]">
+                        ABRIDGE AVG: +{ABRIDGE_BENCHMARKS.wrvuLift}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative h-10 bg-slate-200 rounded-lg overflow-hidden">
+                    <div 
+                      className="absolute top-0 left-0 h-full bg-slate-500 transition-all"
+                      style={{ width: `${Math.min(100, (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100)}%` }}
+                    >
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-white">
+                        YOU: +{inputs.wrvuLift}%
+                      </span>
+                    </div>
+                    {inputs.wrvuLift < ABRIDGE_BENCHMARKS.wrvuLift && (
+                      <div 
+                        className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
+                        style={{ 
+                          left: `${(inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%`,
+                          width: `${100 - (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%`
+                        }}
+                      >
+                        <span className="text-xs font-semibold text-slate-600">GAP</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <input
+                  type="range"
+                  min="0"
+                  max="8"
+                  step="0.5"
+                  value={inputs.wrvuLift}
+                  onChange={(e) => updateInput("wrvuLift", parseFloat(e.target.value))}
+                  className="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+                  data-testid="slider-wrvu"
+                />
+                <div className="flex justify-between text-xs text-[#6B7280] mt-1">
+                  <span>0%</span>
+                  <span>8%</span>
+                </div>
+
+                {inputs.wrvuLift < ABRIDGE_BENCHMARKS.wrvuLift ? (
+                  <div className="flex items-start gap-3 mt-4 p-3 bg-slate-100 rounded-lg border border-slate-200">
+                    <AlertTriangle className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-slate-700 text-sm">
+                        {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% below Abridge average
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        = {formatCurrency(calculations.wrvuGapValue)}/year in revenue gap
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <CheckCircle className="w-5 h-5 text-emerald-600" />
+                    <span className="font-medium text-emerald-700 text-sm">You're at or above Abridge average</span>
                   </div>
                 )}
               </div>
@@ -337,42 +406,37 @@ export default function SwitchAssessment({
 
           <section className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 text-white">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <span className="text-2xl">💡</span> The Multiplier Effect
+              <span className="text-2xl">💡</span> Why Small Gaps Compound
             </h3>
             <p className="text-slate-300 mb-6">
-              Ambient AI value isn't additive — it's <strong className="text-white">multiplicative</strong>. 
-              Small gaps in each dimension compound into large gaps overall.
+              Ambient AI value is <strong className="text-white">multiplicative</strong>. 
+              Small differences in each dimension compound:
             </p>
 
-            <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex items-center justify-center gap-3 flex-wrap mb-6">
               <div className="text-center">
-                <div className="text-3xl font-bold">{utilizationCapture}%</div>
-                <div className="text-xs text-slate-400">of utilization<br />potential</div>
+                <div className="text-2xl font-bold">{calculations.utilizationCapture}%</div>
+                <div className="text-xs text-slate-400">utilization</div>
               </div>
-              <div className="text-2xl text-slate-400">×</div>
+              <div className="text-xl text-slate-400">×</div>
               <div className="text-center">
-                <div className="text-3xl font-bold">{efficiencyCapture}%</div>
-                <div className="text-xs text-slate-400">of efficiency<br />potential</div>
+                <div className="text-2xl font-bold">{calculations.efficiencyCapture}%</div>
+                <div className="text-xs text-slate-400">efficiency</div>
               </div>
-              <div className="text-2xl text-slate-400">=</div>
+              <div className="text-xl text-slate-400">×</div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{calculations.wrvuCapture}%</div>
+                <div className="text-xs text-slate-400">revenue</div>
+              </div>
+              <div className="text-xl text-slate-400">=</div>
               <div className="text-center bg-[#EA2C00] rounded-lg px-4 py-2">
-                <div className="text-3xl font-bold">{combinedCapture}%</div>
-                <div className="text-xs text-white/80">of total<br />potential</div>
+                <div className="text-2xl font-bold">{calculations.combinedCapture}%</div>
+                <div className="text-xs text-white/80">captured</div>
               </div>
-            </div>
-
-            <div className="text-center text-sm">
-              <p className="text-slate-300">
-                You're capturing <strong className="text-white">{combinedCapture}%</strong> of the value 
-                that best-in-class ambient AI can deliver.
-              </p>
-              <p className="text-amber-400 font-semibold mt-2">
-                The other {100 - combinedCapture}% is your gap.
-              </p>
             </div>
           </section>
 
-          <section className="bg-white rounded-xl border-2 border-[#EA2C00]/20 p-8">
+          <section className="bg-white rounded-xl border-2 border-slate-200 p-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-[#111827]">Your Annual Gap</h3>
               <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full">
@@ -395,25 +459,49 @@ export default function SwitchAssessment({
               </div>
             </div>
 
-            <div className="text-center text-sm text-[#6B7280] mb-6">
-              This is value that exists but isn't being captured.
-            </div>
-
             <div className="space-y-3 mb-6">
-              {calculations.tier1.items.map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              {calculations.utilizationGapValue > 0 && (
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center">
-                      {item.icon === "chart" ? <BarChart3 className="w-4 h-4 text-slate-600" /> : <Clock className="w-4 h-4 text-slate-600" />}
+                    <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <BarChart3 className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <div className="font-medium text-[#111827] text-sm">{item.name}</div>
-                      <div className="text-xs text-[#6B7280]">{item.gap}</div>
+                      <div className="font-medium text-[#111827] text-sm">Utilization Gap</div>
+                      <div className="text-xs text-[#6B7280]">+{calculations.encounterGap.toLocaleString()} encounters</div>
                     </div>
                   </div>
-                  <div className="font-semibold text-[#111827]">{formatCurrency(item.annualValue)}</div>
+                  <div className="font-semibold text-[#111827]">{formatCurrency(calculations.utilizationGapValue)}</div>
                 </div>
-              ))}
+              )}
+              {calculations.efficiencyGapValue > 0 && (
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-[#111827] text-sm">Efficiency Gap</div>
+                      <div className="text-xs text-[#6B7280]">+{(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min/encounter</div>
+                    </div>
+                  </div>
+                  <div className="font-semibold text-[#111827]">{formatCurrency(calculations.efficiencyGapValue)}</div>
+                </div>
+              )}
+              {calculations.wrvuGapValue > 0 && (
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <DollarSign className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-[#111827] text-sm">Revenue Capture Gap</div>
+                      <div className="text-xs text-[#6B7280]">+{(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% wRVU</div>
+                    </div>
+                  </div>
+                  <div className="font-semibold text-[#111827]">{formatCurrency(calculations.wrvuGapValue)}</div>
+                </div>
+              )}
             </div>
 
             <Button
@@ -422,7 +510,7 @@ export default function SwitchAssessment({
               className="w-full bg-[#EA2C00] hover:bg-[#d12700] text-white h-12 text-base"
               data-testid="button-see-analysis"
             >
-              See what this means over 3 years
+              See full analysis
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </section>

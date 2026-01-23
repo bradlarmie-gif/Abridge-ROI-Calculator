@@ -1,0 +1,226 @@
+Fix the Switch flow with these specific changes:
+
+## 1. LANGUAGE CHANGES
+
+### Remove "ceiling" terminology everywhere
+Replace with "Abridge average" or "benchmark":
+- "CEILING: 65%" → "ABRIDGE AVG: 75%"
+- "You're at 57% of ceiling" → "You're at 57% vs. Abridge average"
+- "close the gap to best-in-class" → "close the gap"
+- "reach ceiling" → "reach Abridge benchmarks"
+
+### Update the benchmarks
+- Utilization: Change from 65% to 75%
+- Efficiency: Keep at 4 min (or change to 3-4 min range)
+- Add wRVU as a third dimension
+
+### Remove salesy language
+- Remove "This isn't about vendors" disclaimer — it's trying too hard
+- Remove "The question isn't whether your vendor is good" — too defensive
+- Remove "What Closing the Gap Looks Like" section entirely
+- Keep the tone neutral and mathematical
+
+## 2. ADD wRVU AS THIRD DIMENSION
+
+The formula should be:
+Utilization × Efficiency × Quality (wRVU) = Captured Value
+Copy
+Add a third gauge card for wRVU:
+
+```jsx
+<div className="gauge-card">
+  <div className="gauge-header">
+    <span className="icon">💰</span>
+    <div>
+      <h3>Revenue Capture</h3>
+      <p>What wRVU lift are you seeing vs. before your solution?</p>
+    </div>
+  </div>
+  
+  <div className="gauge-visualization">
+    <div className="benchmark-bar">
+      <div className="your-fill" style={{width: `${(wrvuLift/5)*100}%`}}>
+        <span>You: +{wrvuLift}%</span>
+      </div>
+      <div className="gap-zone">
+        <span>Gap</span>
+      </div>
+      <div className="benchmark-marker">
+        <span>Abridge avg: +5%</span>
+      </div>
+    </div>
+    
+    <input 
+      type="range"
+      min="0"
+      max="8"
+      step="0.5"
+      value={wrvuLift}
+      onChange={(e) => setWrvuLift(Number(e.target.value))}
+    />
+  </div>
+  
+  <div className="gauge-insight">
+    {wrvuLift < 5 ? (
+      <div className="insight gap">
+        <span className="insight-icon">⚠️</span>
+        <span>
+          {5 - wrvuLift}% below Abridge average = ${wrvuGapValue.toLocaleString()}/year in revenue gap
+        </span>
+      </div>
+    ) : (
+      <div className="insight good">
+        <span className="insight-icon">✓</span>
+        <span>You're at or above Abridge average</span>
+      </div>
+    )}
+  </div>
+</div>
+Update the multiplier effect to show three dimensions:
+jsxCopy<div className="multiplier-equation">
+  <div className="equation-term">
+    <span className="term-value">{utilizationCapture}%</span>
+    <span className="term-label">utilization</span>
+  </div>
+  <span className="equation-operator">×</span>
+  <div className="equation-term">
+    <span className="term-value">{efficiencyCapture}%</span>
+    <span className="term-label">efficiency</span>
+  </div>
+  <span className="equation-operator">×</span>
+  <div className="equation-term">
+    <span className="term-value">{wrvuCapture}%</span>
+    <span className="term-label">revenue</span>
+  </div>
+  <span className="equation-operator">=</span>
+  <div className="equation-term result">
+    <span className="term-value">{captureRate}%</span>
+    <span className="term-label">captured</span>
+  </div>
+</div>
+Add wRVU gap to the breakdown:
+jsxCopy<div className="breakdown-item">
+  <div className="breakdown-header">
+    <span className="breakdown-name">Revenue Capture Gap</span>
+    <span className="breakdown-value">${wrvuGapValue.toLocaleString()}</span>
+  </div>
+  <div className="breakdown-bar">
+    <div className="bar-you" style={{width: `${(wrvuLift/5)*100}%`}}>
+      <span>You: +{wrvuLift}%</span>
+    </div>
+    <div className="bar-gap">Gap</div>
+    <div className="bar-benchmark">Abridge: +5%</div>
+  </div>
+  <div className="breakdown-math">
+    +{wrvuLift}% → +5% = {5-wrvuLift}% gap × ${wrvuPerPoint.toLocaleString()}/point × {encounters.toLocaleString()} enc
+  </div>
+</div>
+3. UPDATE COLORS TO MATCH REST OF APP
+Remove the orange/red warning colors. Use the existing app palette:
+
+Abridge coral (#E85A4F) for the Abridge benchmark markers
+Green (#10B981) for positive/good states
+Gray (#6B7280) for "You" markers
+Light gray (#F3F4F6) for backgrounds
+Keep the dark section (#1E293B) for the multiplier effect card
+
+The gap zones should be subtle, not alarming:
+
+Use a light coral tint (#FEF2F2) instead of bright orange
+Or use a neutral gray gradient
+
+4. REMOVE SECTIONS
+Delete entirely:
+
+"What Closing the Gap Looks Like" section (the timeline)
+The disclaimer text "This isn't about vendors..."
+The box that says "The question isn't whether your vendor is good"
+
+5. UPDATE BENCHMARKS OBJECT
+javascriptCopyconst ABRIDGE_BENCHMARKS = {
+  utilization: 75,        // Changed from 65 to 75
+  timeSaved: 4,           // Keep at 4 min
+  wrvuLift: 5,            // 5% lift is Abridge average
+  encounterValue: 4,      // $4/encounter for utilization gap
+  hourlyRate: 150,        // $150/hr
+  timeConversion: 0.20,   // 20% conservative
+  wrvuPerPercent: 0.66,   // $0.66 per 1% wRVU lift per encounter (at $33/wRVU × 2% = ~$0.66)
+};
+6. UPDATE GAP CALCULATIONS
+javascriptCopyfunction calculateGap(providers, encounters, utilization, timeSaved, wrvuLift) {
+  // Utilization gap (now vs 75%)
+  const utilizationGapPP = Math.max(0, 75 - utilization);
+  const utilizationGapEncounters = Math.round(encounters * (utilizationGapPP / 100));
+  const utilizationGapValue = utilizationGapEncounters * 4;
+  
+  // Efficiency gap
+  const efficiencyGapMin = Math.max(0, 4 - timeSaved);
+  const encountersAtBenchmark = encounters * (75 / 100);
+  const efficiencyGapHours = Math.round((encountersAtBenchmark * efficiencyGapMin) / 60);
+  const efficiencyGapValue = Math.round(efficiencyGapHours * 150 * 0.20);
+  
+  // wRVU gap (NEW)
+  const wrvuGapPercent = Math.max(0, 5 - wrvuLift);
+  const avgWRVU = 1.5; // Assume 1.5 wRVU/encounter baseline
+  const wrvuGapPerEncounter = avgWRVU * (wrvuGapPercent / 100);
+  const wrvuGapValue = Math.round(wrvuGapPerEncounter * encountersAtBenchmark * 33 * 0.5);
+  
+  // Capture rates
+  const utilizationCapture = Math.min(100, Math.round((utilization / 75) * 100));
+  const efficiencyCapture = Math.min(100, Math.round((timeSaved / 4) * 100));
+  const wrvuCapture = Math.min(100, Math.round((wrvuLift / 5) * 100));
+  const captureRate = Math.round((utilizationCapture/100) * (efficiencyCapture/100) * (wrvuCapture/100) * 100);
+  
+  // Totals
+  const annualGap = utilizationGapValue + efficiencyGapValue + wrvuGapValue;
+  
+  return {
+    utilizationGapValue,
+    efficiencyGapValue,
+    wrvuGapValue,
+    utilizationCapture,
+    efficiencyCapture,
+    wrvuCapture,
+    captureRate,
+    annualGap,
+    // ... rest
+  };
+}
+7. SIMPLIFY THE "WHY THIS GAP EXISTS" SECTION
+Make it shorter and less preachy:
+jsxCopy<div className="why-gap-section">
+  <h3>💡 Why Small Gaps Compound</h3>
+  <p>
+    Ambient AI value is <strong>multiplicative</strong>. 
+    Small differences in each dimension compound:
+  </p>
+  
+  <div className="formula-display">
+    <code>Utilization × Efficiency × Revenue = Total Value</code>
+  </div>
+  
+  <div className="your-calculation">
+    {utilizationCapture}% × {efficiencyCapture}% × {wrvuCapture}% = <strong>{captureRate}% captured</strong>
+  </div>
+</div>
+Remove the preachy follow-up paragraphs.
+8. FINAL STRUCTURE
+Page 1 (Assessment):
+
+Your Current Situation (solution type, providers, encounters)
+Your Results (3 gauges: Utilization, Efficiency, wRVU)
+The Multiplier Effect (3-term equation)
+Your Annual Gap (live updating)
+CTA button
+
+Page 2 (Analysis):
+
+Headline cards (Annual Gap, Capture Rate, 3-Year Gap)
+The Cost of the Gap Over Time (graph)
+How the Gap Breaks Down (3 bars with math)
+Why Small Gaps Compound (short explanation)
+The Cost of Waiting (3 cards)
+Methodology
+Actions (Export, Share)
+
+NO "What Closing the Gap Looks Like" section.
