@@ -209,6 +209,7 @@ export default function SummaryCommandCenter({
   
   const totalAnnualValue = modelResults.totalBenefit;
   const annualInvestment = modelResults.investment || 0;
+  const implementationFee = modelResults.implementationFee || 0;
   const netValue = totalAnnualValue - annualInvestment;
   const roiMultiple = annualInvestment > 0 ? (totalAnnualValue / annualInvestment) : 0;
   const paybackMonths = totalAnnualValue > 0 ? Math.round((annualInvestment / totalAnnualValue) * 12) : 0;
@@ -360,7 +361,12 @@ export default function SummaryCommandCenter({
   const year2 = Math.round(totalAnnualValue * 1.10);
   const year3 = Math.round(totalAnnualValue * 1.21);
   const threeYearValue = year1 + year2 + year3;
-  const threeYearCost = annualInvestment * 3;
+  
+  // Implementation fee is one-time, only in Year 1
+  const year1Cost = annualInvestment + implementationFee;
+  const year2Cost = annualInvestment;
+  const year3Cost = annualInvestment;
+  const threeYearCost = year1Cost + year2Cost + year3Cost;
   const threeYearNet = threeYearValue - threeYearCost;
   
   const handleCopyLink = () => {
@@ -859,16 +865,16 @@ export default function SummaryCommandCenter({
                     </tr>
                     <tr>
                       <td className="py-2 text-[#6B7280]">Cost</td>
-                      <td className="py-2 text-right font-mono text-[#6B7280]">{formatCompactCurrency(annualInvestment)}</td>
-                      <td className="py-2 text-right font-mono text-[#6B7280]">{formatCompactCurrency(annualInvestment)}</td>
-                      <td className="py-2 text-right font-mono text-[#6B7280]">{formatCompactCurrency(annualInvestment)}</td>
+                      <td className="py-2 text-right font-mono text-[#6B7280]">{formatCompactCurrency(year1Cost)}</td>
+                      <td className="py-2 text-right font-mono text-[#6B7280]">{formatCompactCurrency(year2Cost)}</td>
+                      <td className="py-2 text-right font-mono text-[#6B7280]">{formatCompactCurrency(year3Cost)}</td>
                       <td className="py-2 text-right font-mono text-[#6B7280]">{formatCompactCurrency(threeYearCost)}</td>
                     </tr>
                     <tr className="border-t border-[#E5E7EB]">
                       <td className="py-3 font-semibold text-[#111827]">Net</td>
-                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year1 - annualInvestment)}</td>
-                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year2 - annualInvestment)}</td>
-                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year3 - annualInvestment)}</td>
+                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year1 - year1Cost)}</td>
+                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year2 - year2Cost)}</td>
+                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year3 - year3Cost)}</td>
                       <td className="py-3 text-right font-mono font-bold text-emerald-600">{formatCompactCurrency(threeYearNet)}</td>
                     </tr>
                   </tbody>

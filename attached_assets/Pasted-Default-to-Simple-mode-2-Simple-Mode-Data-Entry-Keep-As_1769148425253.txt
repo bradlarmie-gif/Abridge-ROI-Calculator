@@ -1,0 +1,212 @@
+Default to "Simple" mode.
+2. Simple Mode Data Entry (Keep As-Is)
+The current Before/After entry works well. Keep it.
+3. Detailed Mode Data Entry (New)
+For each metric in detailed mode, show a timeline entry:
+jsxCopy<div className="detailed-metric-entry">
+  <div className="metric-header">
+    <span className="metric-icon">🕐</span>
+    <div>
+      <h3>Time Savings</h3>
+      <p>Average time in notes per encounter</p>
+    </div>
+  </div>
+  
+  <div className="timeline-entry">
+    <div className="timeline-labels">
+      <span>Baseline</span>
+      {/* Generate labels based on months on Abridge */}
+      <span>Month 2</span>
+      <span>Month 4</span>
+      <span>Today (Mo 6)</span>
+    </div>
+    
+    <div className="timeline-inputs">
+      <input type="number" placeholder="10" /> {/* Baseline */}
+      <input type="number" placeholder="8" />  {/* Month 2 */}
+      <input type="number" placeholder="7" />  {/* Month 4 */}
+      <input type="number" placeholder="6" />  {/* Today */}
+    </div>
+    
+    <div className="mini-sparkline">
+      {/* Small inline chart showing the trend */}
+    </div>
+    
+    <div className="trend-summary">
+      <span className="change">-4 min (40% reduction)</span>
+      <span className="trend-status">📉 Improving</span>
+    </div>
+  </div>
+</div>
+The number of input columns should be dynamic based on "Months on Abridge":
+
+1-3 months: Baseline + Today (2 columns)
+4-6 months: Baseline + Month 3 + Today (3 columns)
+7-12 months: Baseline + Month 3 + Month 6 + Today (4 columns)
+12+ months: Baseline + Month 3 + Month 6 + Month 12 + Today (5 columns)
+
+4. Redesigned Results Dashboard
+The Performance Summary should now show the THREE phases prominently:
+jsxCopy<div className="journey-overview">
+  <h2>Your Abridge Journey</h2>
+  <p className="subtitle">150 providers · 6 months on Abridge · 65% utilization</p>
+  
+  {/* The Big Picture - Four Columns */}
+  <div className="big-picture-grid">
+    <div className="phase-card before">
+      <span className="phase-label">BEFORE ABRIDGE</span>
+      <span className="phase-value">Baseline</span>
+      <span className="phase-sublabel">Your starting point</span>
+    </div>
+    
+    <div className="phase-card today highlighted">
+      <span className="phase-label">TODAY</span>
+      <span className="phase-value">$705,400</span>
+      <span className="phase-sublabel">6 months of results</span>
+      <span className="phase-badge">You are here</span>
+    </div>
+    
+    <div className="phase-card change">
+      <span className="phase-label">VALUE REALIZED</span>
+      <span className="phase-value positive">+$705,400</span>
+      <span className="phase-sublabel">Proven ROI</span>
+    </div>
+    
+    <div className="phase-card future">
+      <span className="phase-label">FULL SCALE</span>
+      <span className="phase-value">$2.3M</span>
+      <span className="phase-sublabel">If you expand</span>
+    </div>
+  </div>
+</div>
+5. The Journey Graph (Critical Update)
+Replace the current expansion graph with a journey graph that shows all three phases:
+jsxCopy<div className="journey-graph-container">
+  <h3>Your Value Journey</h3>
+  
+  {/* The graph should show:
+      - X-axis: Time (Before → Month 1 → Month 3 → Month 6 → Month 12 → Month 24 → Full Scale)
+      - Y-axis: Value ($)
+      - Solid line from Before to Today (ACTUAL results)
+      - Dashed line from Today to Full Scale (PROJECTED)
+      - "You are here" marker at Today
+      - Green dot at Full Scale
+  */}
+  
+  <div className="graph-phases">
+    <div className="phase-indicator actual">
+      <span className="phase-line solid"></span>
+      <span>Your actual results</span>
+    </div>
+    <div className="phase-indicator projected">
+      <span className="phase-line dashed"></span>
+      <span>Projected growth</span>
+    </div>
+  </div>
+</div>
+The graph data should be structured as:
+javascriptCopyconst journeyData = [
+  // ACTUAL DATA (solid line)
+  { phase: 'actual', time: 'Before', label: 'Baseline', value: 0, isActual: true },
+  { phase: 'actual', time: 'Month 3', label: '3 mo', value: 350000, isActual: true },
+  { phase: 'actual', time: 'Month 6', label: 'Today', value: 705400, isActual: true, isToday: true },
+  
+  // PROJECTED DATA (dashed line, continues from Today)
+  { phase: 'projected', time: 'Month 12', label: '12 mo', value: 1200000, isActual: false },
+  { phase: 'projected', time: 'Month 24', label: '24 mo', value: 2100000, isActual: false },
+  { phase: 'projected', time: 'Full Scale', label: 'Full Scale', value: 2300000, isActual: false, isFullScale: true },
+];
+Use different stroke styles:
+
+Actual data: Solid green line (#10B981), thicker (3px)
+Projected data: Dashed green line, thinner (2px)
+Fill gradient only under the actual portion
+
+6. "You Are Here" Marker
+On the graph, add a prominent marker at Today:
+jsxCopy<div className="you-are-here-marker">
+  <div className="marker-dot pulse"></div>
+  <div className="marker-label">
+    <span className="marker-title">You are here</span>
+    <span className="marker-value">$705,400/year</span>
+    <span className="marker-time">6 months</span>
+  </div>
+</div>
+Style the marker with a pulsing animation to draw attention.
+7. Metric Cards with Trend (For Detailed Mode)
+If in Detailed mode, the metric summary cards should show mini sparklines:
+jsxCopy<div className="metric-card">
+  <div className="metric-header">
+    <span className="metric-icon">🕐</span>
+    <span className="metric-name">Time Savings</span>
+  </div>
+  
+  <div className="metric-main">
+    <span className="metric-value">-4 min</span>
+    <span className="metric-unit">per encounter</span>
+  </div>
+  
+  <div className="metric-trend">
+    <div className="sparkline">
+      {/* Mini line chart: 10 → 8 → 7 → 6 */}
+    </div>
+    <span className="trend-label">10 → 6 min</span>
+  </div>
+  
+  <div className="metric-status">
+    <span className="status-badge stable">📉 Stabilizing</span>
+  </div>
+</div>
+8. Value Breakdown (Keep, but Add Context)
+The current value breakdown is good. Add a small header that connects it to the journey:
+jsxCopy<div className="value-breakdown-section">
+  <div className="section-header">
+    <h3>Value Breakdown</h3>
+    <p>How your 6-month results translate to dollars</p>
+  </div>
+  
+  {/* Existing breakdown cards */}
+</div>
+9. Model Your Expansion (Keep, but Improve Header)
+Change the header to emphasize this is about the FUTURE:
+jsxCopy<div className="expansion-section">
+  <div className="section-header">
+    <span className="section-icon">🚀</span>
+    <div>
+      <h3>What's Next?</h3>
+      <p>Model what full-scale deployment could look like based on your proven results</p>
+    </div>
+  </div>
+  
+  {/* Existing expansion modeling */}
+</div>
+STYLING NOTES
+Phase Cards Colors:
+
+Before: Light gray background (#F8FAFC)
+Today: White with coral border, slight shadow (highlighted)
+Change: Light green background (#ECFDF5)
+Full Scale: Light blue background (#EFF6FF)
+
+Graph Colors:
+
+Actual line: Solid #10B981 (green)
+Projected line: Dashed #10B981 with 60% opacity
+Gradient fill: Only under actual portion
+"You are here" marker: Coral (#E85A4F) with pulse animation
+
+Animation:
+
+Numbers should animate when they change
+"You are here" marker should have a subtle pulse
+Graph should draw in from left to right on load
+
+SUMMARY
+The key changes are:
+
+Add Simple vs. Detailed mode selection
+Detailed mode allows month-by-month data entry
+Results dashboard prominently shows the THREE phases
+Journey graph shows actual + projected with clear "You are here"
+Better storytelling throughout: "Here's where you started → Here's where you are → Here's where you're going"
+

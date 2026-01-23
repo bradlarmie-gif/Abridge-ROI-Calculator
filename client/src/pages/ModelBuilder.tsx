@@ -79,6 +79,7 @@ export interface ModelResults {
   driverResults: Record<string, DriverResult>;
   totalBenefit: number;
   investment: number;
+  implementationFee?: number;
   netGain: number;
   roiMultiple: number;
   paybackMonths: number;

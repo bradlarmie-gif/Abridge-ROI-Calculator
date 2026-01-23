@@ -241,6 +241,7 @@ export default function InvestmentPage({
     onComplete({
       ...valueResults,
       investment: annualInvestment,
+      implementationFee: includeImplementation ? implementationFee : 0,
       netGain: netGainAnnual,
       roiMultiple,
       paybackMonths: monthsToPayback,
