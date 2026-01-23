@@ -1,7 +1,10 @@
 import { useState } from "react";
 import SwitchAssessment from "./SwitchAssessment";
 import SwitchFullAnalysis from "./SwitchFullAnalysis";
+import ScribeAssessment from "./ScribeAssessment";
+import ScribeFullAnalysis from "./ScribeFullAnalysis";
 import { type SwitchInputs, type SolutionType } from "@/lib/switchGapCalculator";
+import { type ScribeInputs } from "@/lib/scribeGapCalculator";
 
 interface SwitchUnifiedFlowProps {
   onBack: () => void;
@@ -10,8 +13,9 @@ interface SwitchUnifiedFlowProps {
 
 export default function SwitchUnifiedFlow({ onBack, onBackToJourney }: SwitchUnifiedFlowProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [solutionType, setSolutionType] = useState<SolutionType>("ambient-ai");
   
-  const [inputs, setInputs] = useState<SwitchInputs>({
+  const [ambientInputs, setAmbientInputs] = useState<SwitchInputs>({
     solution: "ambient-ai" as SolutionType,
     providers: 75,
     annualEncounters: 150000,
@@ -19,8 +23,27 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney }: SwitchUni
     utilization: 45,
     timeSavedPerEncounter: 2,
     wrvuLift: 2,
-    satisfaction: 65, // NEW: Start at 65%
+    satisfaction: 65,
   });
+
+  const [scribeInputs, setScribeInputs] = useState<ScribeInputs>({
+    scribeCount: 10,
+    scribeCostPerHour: 25,
+    scribeHoursPerWeek: 40,
+    providersWithScribes: 15,
+    totalProviders: 200,
+    annualEncounters: 400000,
+  });
+
+  const handleAmbientInputsChange = (newInputs: React.SetStateAction<SwitchInputs>) => {
+    setAmbientInputs(prev => {
+      const updated = typeof newInputs === 'function' ? newInputs(prev) : newInputs;
+      if (updated.solution !== solutionType) {
+        setSolutionType(updated.solution);
+      }
+      return updated;
+    });
+  };
 
   const goNext = () => {
     setCurrentStep(2);
@@ -36,10 +59,32 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney }: SwitchUni
     }
   };
 
+  if (solutionType === "human-scribes") {
+    if (currentStep === 2) {
+      return (
+        <ScribeFullAnalysis
+          inputs={scribeInputs}
+          onBack={goBack}
+          onBackToJourney={onBackToJourney}
+        />
+      );
+    }
+
+    return (
+      <ScribeAssessment
+        inputs={scribeInputs}
+        setInputs={setScribeInputs}
+        onNext={goNext}
+        onBack={goBack}
+        onBackToJourney={onBackToJourney}
+      />
+    );
+  }
+
   if (currentStep === 2) {
     return (
       <SwitchFullAnalysis
-        inputs={inputs}
+        inputs={ambientInputs}
         onBack={goBack}
         onBackToJourney={onBackToJourney}
       />
@@ -48,8 +93,8 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney }: SwitchUni
 
   return (
     <SwitchAssessment
-      inputs={inputs}
-      setInputs={setInputs}
+      inputs={ambientInputs}
+      setInputs={handleAmbientInputsChange}
       onNext={goNext}
       onBack={goBack}
       onBackToJourney={onBackToJourney}
