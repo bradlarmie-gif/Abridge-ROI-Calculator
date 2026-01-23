@@ -109,6 +109,19 @@ The application guides users through multi-step processes:
     - CTA buttons: Stack vertically on mobile with `flex-col sm:flex-row`
     - No emojis: Use lucide-react icons instead
 
+### Security & Privacy
+-   **Session Security Provider** (`SessionSecurityContext.tsx`): Wraps the application with automatic session management
+    - 30-minute inactivity timeout with automatic data clear
+    - 10-minute hidden tab timeout (when user switches tabs)
+    - Clears all sessionStorage on tab close (beforeunload event)
+    - Shows SessionExpiredModal when session times out
+-   **Privacy Notice**: Displayed on home page explaining client-side processing and data handling
+-   **Input Security**: All FormattedNumberInput components include `autoComplete="off"`, `data-lpignore="true"`, and `data-form-type="other"` to prevent browser/password manager autofill
+-   **Content Security Policy**: Meta tag in index.html restricting script/style sources
+-   **Data Sanitization**: Security utilities in `lib/security.ts` for sanitizing numbers, percentages, and text
+-   **Analytics Privacy**: Data bucketing functions for privacy-preserving analytics (providerBuckets, encounterBuckets, gapBuckets)
+-   **Clear Data Button** (`ClearDataButton.tsx`): Allows users to manually clear all entered data with confirmation dialog
+
 ### Directory Structure
 -   `/client/src/pages/`: Main application screens.
 -   `/client/src/components/`: Reusable UI elements.
