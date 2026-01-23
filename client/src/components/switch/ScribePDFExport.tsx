@@ -315,21 +315,22 @@ const styles = StyleSheet.create({
   },
   questionBox: {
     backgroundColor: colors.coralLight,
-    padding: 8,
+    padding: 12,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: colors.coralBorder,
+    marginTop: 8,
   },
   questionText: {
-    fontSize: 8,
+    fontSize: 10,
     color: colors.coralDark,
     fontWeight: "bold",
     fontStyle: "italic",
   },
 
   methodology: {
-    marginTop: "auto",
-    paddingTop: 8,
+    marginTop: 14,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
@@ -371,6 +372,11 @@ const formatCurrency = (num: number): string => {
 };
 
 const formatNumber = (num: number): string => num.toLocaleString();
+
+const getArticle = (num: number): string => {
+  const startsWithVowelSound = [8, 11, 18].includes(num) || (num >= 80 && num < 90);
+  return startsWithVowelSound ? "an" : "a";
+};
 
 const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
   const today = new Date().toLocaleDateString("en-US", {
@@ -434,18 +440,17 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
         <View style={styles.executiveSummary}>
           <Text style={styles.execSummaryTitle}>EXECUTIVE SUMMARY</Text>
           <Text style={styles.execSummaryText}>
-            Your organization invests {formatCurrency(calculations.totalScribeCost)} annually in a
-            scribe program that supports {inputs.providersWithScribes} of {inputs.totalProviders}{" "}
-            providers ({calculations.coveragePercent}%). The remaining{" "}
-            {calculations.providersWithoutSupport} providers have no documentation support and
-            spend an estimated {formatNumber(calculations.unsupportedDocTimeHours)} hours per year
+            Your organization invests <Text style={{ fontWeight: "bold" }}>{formatCurrency(calculations.totalScribeCost)}</Text> annually in a
+            scribe program that supports <Text style={{ fontWeight: "bold" }}>{inputs.providersWithScribes} of {inputs.totalProviders} providers ({calculations.coveragePercent}%)</Text>. The remaining{" "}
+            <Text style={{ fontWeight: "bold" }}>{calculations.providersWithoutSupport} providers</Text> have no documentation support and
+            spend an estimated <Text style={{ fontWeight: "bold" }}>{formatNumber(calculations.unsupportedDocTimeHours)} hours</Text> per year
             on clinical notes — approximately{" "}
             {formatNumber(calculations.docTimePerUnsupportedProvider)} hours per provider, much of
             it outside clinic hours.
           </Text>
           <Text style={styles.execSummaryText}>
             Scaling your scribe program to cover all providers would require an additional{" "}
-            {formatCurrency(calculations.costToScale)} annually — a {scaleMultiplier}x increase in
+            <Text style={{ fontWeight: "bold" }}>{formatCurrency(calculations.costToScale)}</Text> annually — {getArticle(scaleMultiplier)} <Text style={{ fontWeight: "bold" }}>{scaleMultiplier}x</Text> increase in
             investment. This analysis examines your current program economics and the implications
             of the coverage gap.
           </Text>
@@ -476,7 +481,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           </View>
           <View style={styles.coverageSegmentGap}>
             <Text style={styles.coverageSegmentGapText}>
-              {calculations.providersWithoutSupport} without support
+              {calculations.providersWithoutSupport} without support ({100 - calculations.coveragePercent}%)
             </Text>
           </View>
         </View>
@@ -591,7 +596,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
             <View style={styles.takeawayItem}>
               <Text style={styles.takeawayBullet}>•</Text>
               <Text style={styles.takeawayText}>
-                Extending scribe coverage to all providers would require a {scaleMultiplier}x
+                Extending scribe coverage to all providers would require {getArticle(scaleMultiplier)} {scaleMultiplier}x
                 increase in annual investment
               </Text>
             </View>
@@ -600,7 +605,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           <View style={styles.questionBox}>
             <Text style={styles.questionText}>
               The question: How can you extend documentation support to all{" "}
-              {inputs.totalProviders} providers without a {scaleMultiplier}x increase in cost?
+              {inputs.totalProviders} providers without {getArticle(scaleMultiplier)} {scaleMultiplier}x increase in cost?
             </Text>
           </View>
         </View>
