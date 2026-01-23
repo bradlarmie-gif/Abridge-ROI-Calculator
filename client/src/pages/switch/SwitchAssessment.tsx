@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
@@ -454,12 +454,40 @@ function DimensionCard({
   onChange,
   testId,
 }: DimensionCardProps) {
+  const [localValue, setLocalValue] = useState(String(value));
+  const [isFocused, setIsFocused] = useState(false);
+  
   const fillWidth = Math.min(100, (value / maxValue) * 100);
   const benchmarkPosition = (benchmark / maxValue) * 100;
 
+  // Sync local value when external value changes (e.g., from slider)
+  if (!isFocused && localValue !== String(value)) {
+    setLocalValue(String(value));
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseFloat(e.target.value) || 0;
-    onChange(Math.min(maxValue, Math.max(minValue, newValue)));
+    const inputValue = e.target.value;
+    setLocalValue(inputValue);
+    
+    // Only update parent if we have a valid number
+    const parsed = parseFloat(inputValue);
+    if (!isNaN(parsed)) {
+      onChange(Math.min(maxValue, Math.max(minValue, parsed)));
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    // On blur, ensure we have a valid value
+    const parsed = parseFloat(localValue);
+    if (isNaN(parsed) || localValue === '') {
+      setLocalValue(String(minValue));
+      onChange(minValue);
+    } else {
+      const clamped = Math.min(maxValue, Math.max(minValue, parsed));
+      setLocalValue(String(clamped));
+      onChange(clamped);
+    }
   };
 
   return (
@@ -477,12 +505,12 @@ function DimensionCard({
         
         <div className="flex items-center gap-1">
           <input
-            type="number"
-            min={minValue}
-            max={maxValue}
-            step={step}
-            value={value}
+            type="text"
+            inputMode="decimal"
+            value={localValue}
             onChange={handleInputChange}
+            onFocus={() => setIsFocused(true)}
+            onBlur={handleBlur}
             className="w-16 px-2 py-1.5 text-center text-base font-semibold border border-slate-200 rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none"
             data-testid={`${testId}-input`}
           />

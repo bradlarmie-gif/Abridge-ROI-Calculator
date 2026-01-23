@@ -1,0 +1,506 @@
+Add a separate flow for users who select "Human Scribes" on the Value Realization Assessment. This path has different inputs, different math, and a different value proposition.
+
+## The Frame for Scribes
+
+The key insight: Scribes don't scale. You're paying premium prices for limited coverage. The providers WITHOUT scribes are suffering. Ambient AI democratizes documentation support.
+
+## Different Input Collection
+
+When user selects "Human Scribes", show a different input section:
+
+```jsx
+{solution === 'scribes' && (
+  <div className="scribe-inputs">
+    <h3>Your Scribe Program</h3>
+    
+    <div className="input-grid">
+      {/* Scribe count and cost */}
+      <div className="input-card">
+        <label>How many scribes do you have?</label>
+        <input 
+          type="number" 
+          value={scribeCount}
+          onChange={(e) => setScribeCount(Number(e.target.value))}
+          placeholder="10"
+        />
+        <span className="unit">scribes</span>
+      </div>
+      
+      <div className="input-card">
+        <label>Average cost per scribe</label>
+        <div className="input-with-toggle">
+          <input 
+            type="number"
+            value={scribeCost}
+            onChange={(e) => setScribeCost(Number(e.target.value))}
+            placeholder={costType === 'hourly' ? '25' : '52000'}
+          />
+          <div className="toggle-group">
+            <button 
+              className={costType === 'hourly' ? 'active' : ''}
+              onClick={() => setCostType('hourly')}
+            >
+              $/hour
+            </button>
+            <button 
+              className={costType === 'annual' ? 'active' : ''}
+              onClick={() => setCostType('annual')}
+            >
+              $/year
+            </button>
+          </div>
+        </div>
+        <span className="hint">Include benefits, overhead if known</span>
+      </div>
+      
+      <div className="input-card">
+        <label>Hours per week (per scribe)</label>
+        <input 
+          type="number"
+          value={scribeHours}
+          onChange={(e) => setScribeHours(Number(e.target.value))}
+          placeholder="40"
+        />
+        <span className="unit">hrs/week</span>
+      </div>
+      
+      {/* Provider coverage */}
+      <div className="input-card">
+        <label>Providers supported by scribes</label>
+        <input 
+          type="number"
+          value={providersWithScribes}
+          onChange={(e) => setProvidersWithScribes(Number(e.target.value))}
+          placeholder="15"
+        />
+        <span className="unit">providers</span>
+        <span className="hint">How many providers have scribe support?</span>
+      </div>
+      
+      <div className="input-card">
+        <label>Total providers in your organization</label>
+        <input 
+          type="number"
+          value={totalProviders}
+          onChange={(e) => setTotalProviders(Number(e.target.value))}
+          placeholder="200"
+        />
+        <span className="unit">providers</span>
+      </div>
+      
+      <div className="input-card">
+        <label>Annual encounters (all providers)</label>
+        <input 
+          type="number"
+          value={encounters}
+          onChange={(e) => setEncounters(Number(e.target.value))}
+          placeholder="400000"
+        />
+        <span className="unit">encounters/year</span>
+      </div>
+    </div>
+  </div>
+)}
+The Scribe Coverage Visualization
+Show the coverage gap visually:
+jsxCopy<div className="coverage-section">
+  <h3>Your Coverage Gap</h3>
+  
+  <div className="coverage-visual">
+    <div className="coverage-bar">
+      <div 
+        className="coverage-filled scribed"
+        style={{width: `${(providersWithScribes/totalProviders)*100}%`}}
+      >
+        <span className="coverage-label">
+          {providersWithScribes} with scribes
+        </span>
+      </div>
+      <div 
+        className="coverage-gap"
+        style={{width: `${((totalProviders - providersWithScribes)/totalProviders)*100}%`}}
+      >
+        <span className="coverage-label">
+          {totalProviders - providersWithScribes} without support
+        </span>
+      </div>
+    </div>
+    
+    <div className="coverage-stats">
+      <div className="stat">
+        <span className="stat-value">{Math.round((providersWithScribes/totalProviders)*100)}%</span>
+        <span className="stat-label">have scribe support</span>
+      </div>
+      <div className="stat gap">
+        <span className="stat-value">{Math.round(((totalProviders - providersWithScribes)/totalProviders)*100)}%</span>
+        <span className="stat-label">documenting alone</span>
+      </div>
+    </div>
+  </div>
+  
+  <div className="coverage-insight">
+    <span className="insight-icon">⚠️</span>
+    <p>
+      <strong>{totalProviders - providersWithScribes} providers</strong> have no documentation support. 
+      They're spending 10-15+ minutes per encounter on notes, contributing to burnout and after-hours work.
+    </p>
+  </div>
+</div>
+The Cost Comparison
+Show what it would cost to scale scribes vs. Abridge:
+jsxCopy<div className="cost-comparison-section">
+  <h3>The Scaling Problem</h3>
+  
+  <div className="comparison-cards">
+    {/* Current State */}
+    <div className="comparison-card current">
+      <span className="card-label">CURRENT STATE</span>
+      <span className="card-title">Your Scribe Program</span>
+      
+      <div className="card-stats">
+        <div className="card-stat">
+          <span className="stat-value">{scribeCount}</span>
+          <span className="stat-label">scribes</span>
+        </div>
+        <div className="card-stat">
+          <span className="stat-value">{providersWithScribes}</span>
+          <span className="stat-label">providers covered</span>
+        </div>
+        <div className="card-stat">
+          <span className="stat-value">{Math.round((providersWithScribes/totalProviders)*100)}%</span>
+          <span className="stat-label">coverage</span>
+        </div>
+      </div>
+      
+      <div className="card-cost">
+        <span className="cost-label">Annual cost</span>
+        <span className="cost-value">${totalScribeCost.toLocaleString()}</span>
+      </div>
+      
+      <div className="card-per-provider">
+        ${Math.round(totalScribeCost / providersWithScribes).toLocaleString()}/provider covered
+      </div>
+    </div>
+    
+    {/* Full Scribe Coverage */}
+    <div className="comparison-card hypothetical">
+      <span className="card-label">IF YOU SCALED SCRIBES</span>
+      <span className="card-title">Full Scribe Coverage</span>
+      
+      <div className="card-stats">
+        <div className="card-stat">
+          <span className="stat-value">{Math.ceil(totalProviders / scribeRatio)}</span>
+          <span className="stat-label">scribes needed</span>
+        </div>
+        <div className="card-stat">
+          <span className="stat-value">{totalProviders}</span>
+          <span className="stat-label">providers covered</span>
+        </div>
+        <div className="card-stat">
+          <span className="stat-value">100%</span>
+          <span className="stat-label">coverage</span>
+        </div>
+      </div>
+      
+      <div className="card-cost">
+        <span className="cost-label">Annual cost</span>
+        <span className="cost-value">${fullScribeCost.toLocaleString()}</span>
+      </div>
+      
+      <div className="card-increase">
+        <span className="increase-icon">↑</span>
+        <span>{Math.round((fullScribeCost / totalScribeCost - 1) * 100)}% increase</span>
+        <span>(+${(fullScribeCost - totalScribeCost).toLocaleString()})</span>
+      </div>
+    </div>
+    
+    {/* Abridge Alternative */}
+    <div className="comparison-card abridge recommended">
+      <span className="card-badge">RECOMMENDED</span>
+      <span className="card-label">WITH ABRIDGE</span>
+      <span className="card-title">Universal Coverage</span>
+      
+      <div className="card-stats">
+        <div className="card-stat">
+          <span className="stat-value">{totalProviders}</span>
+          <span className="stat-label">providers enabled</span>
+        </div>
+        <div className="card-stat">
+          <span className="stat-value">75%</span>
+          <span className="stat-label">typical utilization</span>
+        </div>
+        <div className="card-stat">
+          <span className="stat-value">4 min</span>
+          <span className="stat-label">time saved/enc</span>
+        </div>
+      </div>
+      
+      <div className="card-cost">
+        <span className="cost-label">Annual cost</span>
+        <span className="cost-value">${abridgeCost.toLocaleString()}</span>
+      </div>
+      
+      <div className="card-savings">
+        <span className="savings-label">vs. full scribe coverage</span>
+        <span className="savings-value">Save ${(fullScribeCost - abridgeCost).toLocaleString()}/year</span>
+      </div>
+    </div>
+  </div>
+</div>
+The "Unsupported Providers" Impact
+Show the cost of providers documenting without help:
+jsxCopy<div className="unsupported-impact-section">
+  <h3>The Cost of Unsupported Providers</h3>
+  
+  <p className="section-subtitle">
+    Your {totalProviders - providersWithScribes} providers without scribe support are:
+  </p>
+  
+  <div className="impact-cards">
+    <div className="impact-card">
+      <span className="impact-icon">⏱️</span>
+      <span className="impact-value">{unsupportedDocTime.toLocaleString()} hours/year</span>
+      <span className="impact-label">spent on documentation</span>
+      <span className="impact-math">
+        {totalProviders - providersWithScribes} providers × {encountersPerProvider} enc × 12 min ÷ 60
+      </span>
+    </div>
+    
+    <div className="impact-card">
+      <span className="impact-icon">🌙</span>
+      <span className="impact-value">{pajamaTimeHours.toLocaleString()} hours/year</span>
+      <span className="impact-label">of after-hours "pajama time"</span>
+      <span className="impact-math">
+        Estimated 40% of documentation done outside clinic hours
+      </span>
+    </div>
+    
+    <div className="impact-card">
+      <span className="impact-icon">💰</span>
+      <span className="impact-value">${opportunityCost.toLocaleString()}</span>
+      <span className="impact-label">in opportunity cost</span>
+      <span className="impact-math">
+        Time that could be spent seeing patients or going home
+      </span>
+    </div>
+  </div>
+</div>
+The Scribe-Specific Analysis Page
+Different from the Ambient AI path — focus on:
+
+Coverage comparison (your scribes vs. Abridge universal)
+Cost comparison (cost to scale scribes vs. Abridge)
+The unsupported provider problem
+Quality/consistency (scribes vary, AI is consistent)
+
+jsxCopy<div className="scribe-analysis-page">
+  <div className="analysis-header">
+    <h1>Your Scribe Program Analysis</h1>
+    <p>{scribeCount} scribes · {providersWithScribes} providers covered · {totalProviders} total providers</p>
+  </div>
+  
+  {/* Headline Cards */}
+  <div className="headline-cards">
+    <div className="headline-card">
+      <span className="card-label">CURRENT COVERAGE</span>
+      <span className="card-value">{coveragePercent}%</span>
+      <span className="card-sublabel">of providers have support</span>
+    </div>
+    
+    <div className="headline-card highlighted">
+      <span className="card-label">COVERAGE GAP</span>
+      <span className="card-value">{totalProviders - providersWithScribes}</span>
+      <span className="card-sublabel">providers without support</span>
+    </div>
+    
+    <div className="headline-card">
+      <span className="card-label">COST TO SCALE</span>
+      <span className="card-value">${(fullScribeCost - totalScribeCost).toLocaleString()}</span>
+      <span className="card-sublabel">to give everyone a scribe</span>
+    </div>
+  </div>
+  
+  {/* The Scaling Graph */}
+  <div className="scaling-graph-section">
+    <h2>The Scaling Comparison</h2>
+    <p>Cost vs. coverage: Scribes vs. Abridge</p>
+    
+    {/* Graph showing:
+        X-axis: Coverage % (0% to 100%)
+        Y-axis: Annual cost
+        
+        Line 1 (gray): Scribes - linear increase (expensive)
+        Line 2 (green): Abridge - relatively flat (scales efficiently)
+        
+        Markers:
+        - Current state (your scribe coverage %)
+        - Full coverage points for both
+    */}
+    <ScalingComparisonGraph 
+      currentScribeCoverage={coveragePercent}
+      currentScribeCost={totalScribeCost}
+      fullScribeCost={fullScribeCost}
+      abridgeCost={abridgeCost}
+    />
+  </div>
+  
+  {/* Why Abridge Scales Better */}
+  <div className="why-abridge-section">
+    <h2>Why Ambient AI Scales Differently</h2>
+    
+    <div className="comparison-table">
+      <div className="table-header">
+        <span></span>
+        <span>Scribes</span>
+        <span>Abridge</span>
+      </div>
+      
+      <div className="table-row">
+        <span className="row-label">Cost model</span>
+        <span className="row-value scribes">Linear (more providers = more scribes)</span>
+        <span className="row-value abridge">Per-provider subscription</span>
+      </div>
+      
+      <div className="table-row">
+        <span className="row-label">To cover 100 more providers</span>
+        <span className="row-value scribes">Hire 50-100 more scribes (+$2.6M-$5.2M)</span>
+        <span className="row-value abridge">Add licenses (+$300K)</span>
+      </div>
+      
+      <div className="table-row">
+        <span className="row-label">Availability</span>
+        <span className="row-value scribes">Limited by scribe schedules</span>
+        <span className="row-value abridge">Every encounter, 24/7</span>
+      </div>
+      
+      <div className="table-row">
+        <span className="row-label">Consistency</span>
+        <span className="row-value scribes">Varies by scribe skill</span>
+        <span className="row-value abridge">Consistent quality</span>
+      </div>
+      
+      <div className="table-row">
+        <span className="row-label">Turnover risk</span>
+        <span className="row-value scribes">High (scribe turnover ~30-50%/year)</span>
+        <span className="row-value abridge">None</span>
+      </div>
+      
+      <div className="table-row">
+        <span className="row-label">Training</span>
+        <span className="row-value scribes">Ongoing for each new scribe</span>
+        <span className="row-value abridge">One-time provider onboarding</span>
+      </div>
+    </div>
+  </div>
+  
+  {/* The Recommendation */}
+  <div className="recommendation-section">
+    <div className="recommendation-card">
+      <h3>💡 Our Recommendation</h3>
+      
+      <p>
+        Instead of scaling your scribe program (which would cost an additional 
+        <strong> ${(fullScribeCost - totalScribeCost).toLocaleString()}/year</strong>), 
+        consider Abridge for your <strong>{totalProviders - providersWithScribes} unsupported providers</strong>.
+      </p>
+      
+      <div className="recommendation-math">
+        <div className="math-row">
+          <span>Abridge for unsupported providers</span>
+          <span>{totalProviders - providersWithScribes} × $250/mo × 12</span>
+          <span className="math-value">${abridgeForUnsupported.toLocaleString()}</span>
+        </div>
+        <div className="math-row">
+          <span>vs. Scribes for same coverage</span>
+          <span>{Math.ceil((totalProviders - providersWithScribes) / scribeRatio)} scribes × ${scribeSalary.toLocaleString()}</span>
+          <span className="math-value">${scribesForUnsupported.toLocaleString()}</span>
+        </div>
+        <div className="math-row savings">
+          <span>Annual savings</span>
+          <span></span>
+          <span className="math-value">${(scribesForUnsupported - abridgeForUnsupported).toLocaleString()}</span>
+        </div>
+      </div>
+      
+      <p className="recommendation-note">
+        Some organizations keep scribes for high-complexity providers and use Abridge for everyone else — 
+        a hybrid approach that optimizes cost and coverage.
+      </p>
+    </div>
+  </div>
+  
+  {/* Methodology */}
+  <div className="methodology-section">
+    <h3>📊 Methodology</h3>
+    <ul>
+      <li><strong>Scribe cost</strong>: Your input (${scribeCost}/{costType})</li>
+      <li><strong>Scribe:Provider ratio</strong>: {scribeRatio}:1 (based on your inputs)</li>
+      <li><strong>Abridge cost</strong>: $250/provider/month</li>
+      <li><strong>Abridge utilization</strong>: 75% (Abridge average)</li>
+      <li><strong>Documentation time without support</strong>: 12 min/encounter (industry average)</li>
+    </ul>
+  </div>
+</div>
+Calculations for Scribe Path
+javascriptCopyfunction calculateScribeAnalysis(inputs) {
+  const {
+    scribeCount,
+    scribeCost,
+    costType,
+    scribeHours,
+    providersWithScribes,
+    totalProviders,
+    encounters,
+  } = inputs;
+  
+  // Normalize scribe cost to annual
+  const scribeSalary = costType === 'hourly' 
+    ? scribeCost * scribeHours * 52 
+    : scribeCost;
+  
+  // Current scribe program cost
+  const totalScribeCost = scribeCount * scribeSalary;
+  
+  // Coverage
+  const coveragePercent = Math.round((providersWithScribes / totalProviders) * 100);
+  const unsupportedProviders = totalProviders - providersWithScribes;
+  
+  // Scribe ratio
+  const scribeRatio = Math.round(providersWithScribes / scribeCount * 10) / 10; // e.g., 1.5:1
+  
+  // Cost to scale scribes to full coverage
+  const scribesNeededForFull = Math.ceil(totalProviders / scribeRatio);
+  const fullScribeCost = scribesNeededForFull * scribeSalary;
+  
+  // Abridge costs
+  const abridgeCostPerProvider = 250 * 12; // $250/month
+  const abridgeCostForAll = totalProviders * abridgeCostPerProvider;
+  const abridgeCostForUnsupported = unsupportedProviders * abridgeCostPerProvider;
+  
+  // Scribes for unsupported (comparison)
+  const scribesForUnsupported = Math.ceil(unsupportedProviders / scribeRatio) * scribeSalary;
+  
+  // Unsupported provider impact
+  const encountersPerProvider = encounters / totalProviders;
+  const unsupportedEncounters = unsupportedProviders * encountersPerProvider;
+  const docTimePerEncounter = 12; // minutes, without help
+  const unsupportedDocTime = Math.round((unsupportedEncounters * docTimePerEncounter) / 60);
+  const pajamaTimeHours = Math.round(unsupportedDocTime * 0.4); // 40% done after hours
+  const opportunityCost = Math.round(unsupportedDocTime * 150 * 0.15); // $150/hr, 15% could convert
+  
+  return {
+    scribeSalary,
+    totalScribeCost,
+    coveragePercent,
+    unsupportedProviders,
+    scribeRatio,
+    scribesNeededForFull,
+    fullScribeCost,
+    abridgeCostForAll,
+    abridgeCostForUnsupported,
+    scribesForUnsupported,
+    unsupportedDocTime,
+    pajamaTimeHours,
+    opportunityCost,
+  };
+}
