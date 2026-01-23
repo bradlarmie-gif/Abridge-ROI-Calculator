@@ -306,7 +306,7 @@ export default function ScribeFullAnalysis({
               </div>
               <div className="text-xs text-[#6B7280] mb-2">hours/year after clinic hours</div>
               <div className="text-[10px] text-slate-400 font-mono">
-                ~40% of documentation time occurs outside clinic hours*
+                ~25% of documentation time occurs outside clinic hours*
               </div>
             </div>
 

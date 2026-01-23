@@ -28,7 +28,7 @@ export const SCRIBE_ASSUMPTIONS = {
   scribeToProviderRatio: 1.5,
   weeksPerYear: 50,
   minutesPerEncounterWithoutScribe: 12,
-  pajamaTimePercent: 0.4,
+  pajamaTimePercent: 0.25,
 };
 
 export function calculateScribeGap(inputs: ScribeInputs): ScribeCalculations {
