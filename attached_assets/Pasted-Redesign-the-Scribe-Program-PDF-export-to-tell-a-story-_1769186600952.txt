@@ -1,0 +1,323 @@
+Redesign the Scribe Program PDF export to tell a story, not just show data. Add narrative text that frames the analysis for an executive audience. Also fix the colors to match the Abridge brand.
+
+## COLOR FIXES
+
+Replace the current colors with Abridge brand palette:
+
+```javascript
+const colors = {
+  // Primary
+  coral: '#E85A4F',           // Abridge coral - use for accents, highlights
+  coralLight: '#FEF2F2',      // Light coral background
+  
+  // Neutrals
+  black: '#111827',           // Primary text
+  darkGray: '#374151',        // Secondary text
+  mediumGray: '#6B7280',      // Tertiary text
+  lightGray: '#9CA3AF',       // Muted text
+  borderGray: '#E5E7EB',      // Borders
+  backgroundGray: '#F9FAFB',  // Card backgrounds
+  
+  // Status (use sparingly)
+  green: '#059669',           // Positive/good
+  greenLight: '#ECFDF5',
+  amber: '#D97706',           // Warning/attention
+  amberLight: '#FEF3C7',
+  
+  // Remove these harsh colors:
+  // - Bright yellow backgrounds
+  // - Bright red text
+  // - High-saturation anything
+};
+Specific color changes:
+
+Metric strip background: #F9FAFB (light gray, not yellow)
+Coverage gap "without support" segment: #FEF2F2 (light coral) with #B91C1C text (dark red)
+Full coverage comparison box: #F9FAFB with #E85A4F left border (not yellow)
+Section number circles: #E85A4F (coral)
+Insight box: #F9FAFB background with #E85A4F left border
+"+$6.2M" text: #E85A4F (coral)
+
+ADD NARRATIVE SECTIONS
+1. Executive Summary at Top (After metrics)
+Replace "THE INSIGHT" with a proper executive summary:
+jsxCopy<View style={styles.executiveSummary}>
+  <Text style={styles.execSummaryTitle}>EXECUTIVE SUMMARY</Text>
+  <Text style={styles.execSummaryText}>
+    Your organization invests <Text style={styles.bold}>${formatCurrency(totalScribeCost)}</Text> annually 
+    in a scribe program that supports <Text style={styles.bold}>{providersWithScribes} of {totalProviders} providers ({coveragePercent}%)</Text>. 
+    The remaining <Text style={styles.bold}>{unsupportedProviders} providers</Text> have no documentation support and spend an 
+    estimated <Text style={styles.bold}>{formatNumber(documentationHours)} hours per year</Text> on clinical notes — 
+    approximately <Text style={styles.bold}>{Math.round(pajamaTimeHours / unsupportedProviders)} hours per provider</Text>, 
+    much of it outside clinic hours.
+  </Text>
+  <Text style={styles.execSummaryText}>
+    Scaling your scribe program to cover all providers would require an additional 
+    <Text style={styles.bold}> ${formatCurrency(additionalCostToScale)}</Text> annually — 
+    a <Text style={styles.bold}>{Math.round(fullScribeCost / totalScribeCost)}× increase</Text> in investment. 
+    This analysis examines your current program economics and the implications of the coverage gap.
+  </Text>
+</View>
+2. Add Context to Each Section
+Coverage Gap section — add explanatory text:
+jsxCopy<View style={styles.section}>
+  <View style={styles.sectionHeader}>
+    <View style={styles.sectionNumber}><Text style={styles.sectionNumberText}>1</Text></View>
+    <Text style={styles.sectionTitle}>COVERAGE GAP</Text>
+  </View>
+  
+  <Text style={styles.sectionContext}>
+    Of your {totalProviders} providers, only {providersWithScribes} ({coveragePercent}%) have scribe support. 
+    The remaining {unsupportedProviders} are documenting without assistance.
+  </Text>
+  
+  {/* Coverage bar visualization */}
+</View>
+Scaling Economics section — add the "why this matters":
+jsxCopy<View style={styles.section}>
+  <View style={styles.sectionHeader}>
+    <View style={styles.sectionNumber}><Text style={styles.sectionNumberText}>2</Text></View>
+    <Text style={styles.sectionTitle}>SCALING ECONOMICS</Text>
+  </View>
+  
+  <Text style={styles.sectionContext}>
+    Scribe programs scale linearly — more coverage requires proportionally more scribes. 
+    At your current scribe-to-provider ratio of 1:{scribeRatio}, achieving full coverage 
+    would require {scribesNeededForFull - scribeCount} additional scribes.
+  </Text>
+  
+  {/* Comparison boxes */}
+</View>
+Burden section — make it more impactful:
+jsxCopy<View style={styles.section}>
+  <View style={styles.sectionHeader}>
+    <View style={styles.sectionNumber}><Text style={styles.sectionNumberText}>3</Text></View>
+    <Text style={styles.sectionTitle}>BURDEN ON UNSUPPORTED PROVIDERS</Text>
+  </View>
+  
+  <Text style={styles.sectionContext}>
+    Your {unsupportedProviders} providers without scribe support spend significant time on documentation, 
+    contributing to administrative burden and after-hours work.
+  </Text>
+  
+  {/* Burden metrics */}
+  
+  <Text style={styles.sectionNote}>
+    This represents approximately {Math.round(documentationHours / 2000)} FTE-equivalents of documentation time, 
+    with an estimated {Math.round((pajamaTimeHours / documentationHours) * 100)}% occurring outside normal clinic hours.
+  </Text>
+</View>
+3. Add Concluding Frame
+Before methodology, add a "Key Takeaways" or "The Question" section:
+jsxCopy<View style={styles.keyTakeaways}>
+  <Text style={styles.takeawaysTitle}>KEY TAKEAWAYS</Text>
+  <View style={styles.takeawaysList}>
+    <View style={styles.takeawayItem}>
+      <Text style={styles.takeawayBullet}>•</Text>
+      <Text style={styles.takeawayText}>
+        Your current scribe investment provides documentation support to {coveragePercent}% of providers
+      </Text>
+    </View>
+    <View style={styles.takeawayItem}>
+      <Text style={styles.takeawayBullet}>•</Text>
+      <Text style={styles.takeawayText}>
+        {unsupportedProviders} providers ({100 - coveragePercent}%) handle documentation without assistance, 
+        totaling {formatNumber(documentationHours)} hours annually
+      </Text>
+    </View>
+    <View style={styles.takeawayItem}>
+      <Text style={styles.takeawayBullet}>•</Text>
+      <Text style={styles.takeawayText}>
+        Extending scribe coverage to all providers would require a {Math.round(fullScribeCost / totalScribeCost)}× 
+        increase in annual investment
+      </Text>
+    </View>
+  </View>
+  
+  <View style={styles.questionBox}>
+    <Text style={styles.questionText}>
+      The question: How can you extend documentation support to all {totalProviders} providers 
+      without a {Math.round(fullScribeCost / totalScribeCost)}× increase in cost?
+    </Text>
+  </View>
+</View>
+UPDATED STYLES
+javascriptCopy// Executive Summary
+executiveSummary: {
+  backgroundColor: '#F9FAFB',
+  padding: 14,
+  borderRadius: 4,
+  marginBottom: 16,
+  borderLeftWidth: 3,
+  borderLeftColor: '#E85A4F',
+},
+execSummaryTitle: {
+  fontSize: 8,
+  fontWeight: 700,
+  color: '#E85A4F',
+  letterSpacing: 0.5,
+  marginBottom: 8,
+},
+execSummaryText: {
+  fontSize: 9,
+  color: '#374151',
+  lineHeight: 1.5,
+  marginBottom: 6,
+},
+bold: {
+  fontWeight: 700,
+  color: '#111827',
+},
+
+// Section context text
+sectionContext: {
+  fontSize: 9,
+  color: '#374151',
+  lineHeight: 1.4,
+  marginBottom: 10,
+},
+sectionNote: {
+  fontSize: 8,
+  color: '#6B7280',
+  fontStyle: 'italic',
+  marginTop: 8,
+},
+
+// Key Takeaways
+keyTakeaways: {
+  marginTop: 12,
+  marginBottom: 12,
+},
+takeawaysTitle: {
+  fontSize: 8,
+  fontWeight: 700,
+  color: '#111827',
+  letterSpacing: 0.5,
+  marginBottom: 6,
+},
+takeawaysList: {
+  marginBottom: 10,
+},
+takeawayItem: {
+  flexDirection: 'row',
+  marginBottom: 4,
+},
+takeawayBullet: {
+  fontSize: 9,
+  color: '#E85A4F',
+  marginRight: 6,
+  fontWeight: 700,
+},
+takeawayText: {
+  fontSize: 8,
+  color: '#374151',
+  flex: 1,
+  lineHeight: 1.4,
+},
+questionBox: {
+  backgroundColor: '#FEF2F2',
+  padding: 10,
+  borderRadius: 4,
+  borderWidth: 1,
+  borderColor: '#FECACA',
+},
+questionText: {
+  fontSize: 9,
+  color: '#991B1B',
+  fontWeight: 500,
+  fontStyle: 'italic',
+},
+
+// Metric strip - neutral colors
+metricStrip: {
+  flexDirection: 'row',
+  backgroundColor: '#F9FAFB',
+  borderRadius: 4,
+  marginBottom: 14,
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+},
+
+// Coverage bar segments
+coverageSegmentCovered: {
+  backgroundColor: '#E85A4F',
+  // ...
+},
+coverageSegmentGap: {
+  backgroundColor: '#FEF2F2',
+  borderWidth: 1,
+  borderColor: '#FECACA',
+  // ...
+},
+coverageSegmentGapText: {
+  color: '#991B1B',  // Dark red, not bright
+  // ...
+},
+
+// Comparison boxes
+comparisonBoxCurrent: {
+  backgroundColor: '#F9FAFB',
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+  // ...
+},
+comparisonBoxFull: {
+  backgroundColor: '#F9FAFB',
+  borderLeftWidth: 3,
+  borderLeftColor: '#E85A4F',
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+  // ...
+},
+
+// Section numbers - coral
+sectionNumber: {
+  backgroundColor: '#E85A4F',
+  // ...
+},
+PAGE STRUCTURE (Revised)
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│ ABRIDGE                                     Scribe Program Analysis        │
+│                                             January 23, 2025               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │  $500K     │     8%      │    $33K     │     13×      │                │ │
+│ │  Investment│   Coverage  │ Per Provider│  To Scale    │                │ │
+│ └─────────────────────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ EXECUTIVE SUMMARY                                                          │
+│ Your organization invests $500K annually in a scribe program that          │
+│ supports 15 of your 200 providers (8%). The remaining 185 providers        │
+│ have no documentation support and spend an estimated 74,000 hours          │
+│ per year on clinical notes...                                              │
+│                                                                            │
+│ Scaling your scribe program to cover all providers would require an        │
+│ additional $6.2M annually — a 13× increase in investment.                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 1  COVERAGE GAP                                                            │
+│ Of your 200 providers, only 15 (8%) have scribe support...                │
+│ [Coverage bar]                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 2  SCALING ECONOMICS                                                       │
+│ Scribe programs scale linearly — more coverage requires more scribes...   │
+│ [Comparison boxes]                                                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 3  BURDEN ON UNSUPPORTED PROVIDERS                                         │
+│ Your 185 providers without scribe support spend significant time...       │
+│ [Burden metrics]                                                           │
+│ This represents approximately 37 FTE-equivalents of documentation time.   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ KEY TAKEAWAYS                                                              │
+│ • Your current scribe investment provides support to 8% of providers      │
+│ • 185 providers handle documentation without assistance                   │
+│ • Extending coverage would require a 13× increase in investment           │
+│                                                                            │
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ The question: How can you extend documentation support to all 200      ││
+│ │ providers without a 13× increase in cost?                              ││
+│ └─────────────────────────────────────────────────────────────────────────┘│
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Methodology: [condensed single line]                                       │
+│ Generated by Abridge                                              Page 1  │
+└─────────────────────────────────────────────────────────────────────────────┘
+WHAT THIS ACHIEVES
