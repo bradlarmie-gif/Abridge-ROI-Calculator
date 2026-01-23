@@ -136,6 +136,7 @@ export default function App() {
             initialSelectedSettings={selectionState.selectedSettings}
             initialSelectedLevers={selectionState.selectedLevers}
             onBackToJourney={handleBackToJourney}
+            initialSeedInputs={seedInputs}
           />
         )}
 
@@ -147,6 +148,7 @@ export default function App() {
             onComplete={handleBaselineComplete}
             initialBaseline={baselineInfo}
             onBackToJourney={handleBackToJourney}
+            seedInputs={seedInputs}
           />
         )}
 
@@ -191,7 +193,16 @@ export default function App() {
           )}
 
           {currentView === "switch" && (
-            <SwitchFlow onBackToJourney={handleBackToJourney} />
+            <SwitchFlow 
+              onBackToJourney={handleBackToJourney} 
+              onExploreAmbientAI={(providers, encounters) => {
+                setSeedInputs({ 
+                  numberOfProviders: providers, 
+                  annualOutpatientEncounters: encounters 
+                });
+                navigateTo("explore");
+              }}
+            />
           )}
 
           {currentView === "learn" && (

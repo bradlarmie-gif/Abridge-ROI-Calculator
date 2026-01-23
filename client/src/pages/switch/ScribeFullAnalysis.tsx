@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { ArrowLeft, ArrowRight, Download, Share2, Timer, Moon, BarChart3, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Share2, Timer, Moon, BarChart3, Info, Sparkles, Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, Legend } from "recharts";
 import {
   type ScribeInputs,
   calculateScribeGap,
@@ -15,12 +15,14 @@ interface ScribeFullAnalysisProps {
   inputs: ScribeInputs;
   onBack: () => void;
   onBackToJourney?: () => void;
+  onExploreAmbientAI?: (providers: number, encounters: number) => void;
 }
 
 export default function ScribeFullAnalysis({
   inputs,
   onBack,
   onBackToJourney,
+  onExploreAmbientAI,
 }: ScribeFullAnalysisProps) {
   const calculations = useMemo(() => calculateScribeGap(inputs), [inputs]);
   const scalingData = useMemo(() => getScalingDataPoints(inputs, calculations), [inputs, calculations]);
@@ -310,8 +312,7 @@ export default function ScribeFullAnalysis({
           <div className="bg-slate-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-[#374151]">
               Scribe programs scale <strong>linearly</strong> — to cover more providers, 
-              you need more scribes. Each additional provider requires a proportional 
-              investment in scribe resources.
+              you need more scribes. Ambient AI uses a per-provider model that scales differently.
             </p>
           </div>
 
@@ -333,7 +334,12 @@ export default function ScribeFullAnalysis({
                   width={80}
                 />
                 <Tooltip
-                  formatter={(value: number) => [formatCurrency(value), "Scribe Cost"]}
+                  formatter={(value: number, name: string) => {
+                    if (name === "Ambient AI (per-provider model)") {
+                      return ["Varies by organization", name];
+                    }
+                    return [formatCurrency(value), name];
+                  }}
                   labelFormatter={(v) => `${v}% coverage`}
                   contentStyle={{
                     backgroundColor: "#fff",
@@ -344,9 +350,19 @@ export default function ScribeFullAnalysis({
                 <Line
                   type="monotone"
                   dataKey="scribeCost"
-                  name="Scribe Cost"
+                  name="Scribes (linear scaling)"
                   stroke="#6B7280"
                   strokeWidth={3}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="ambientAICost"
+                  name="Ambient AI (per-provider model)"
+                  stroke="#EA2C00"
+                  strokeWidth={2}
+                  strokeDasharray="8 4"
+                  strokeOpacity={0.6}
                   dot={false}
                 />
                 <ReferenceDot
@@ -361,11 +377,29 @@ export default function ScribeFullAnalysis({
             </ResponsiveContainer>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-sm mb-6">
-            <div className="w-4 h-4 rounded-full bg-[#EA2C00]"></div>
-            <span className="text-[#6B7280]">
-              Your current position: {calculations.coveragePercent}% coverage
-            </span>
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-0.5 bg-[#6B7280]"></div>
+              <span className="text-[#6B7280]">Scribes (linear — cost per scribe)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-0.5 bg-[#EA2C00] opacity-60" style={{ borderBottom: "2px dashed #EA2C00" }}></div>
+              <span className="text-[#6B7280]">Ambient AI (per-provider model)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#EA2C00]"></div>
+              <span className="text-[#6B7280]">Your current position: {calculations.coveragePercent}%</span>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <Info className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-amber-800">
+                Ambient AI pricing varies by organization. The curve illustrates the per-provider 
+                model vs. per-scribe linear scaling — not actual costs.
+              </p>
+            </div>
           </div>
 
           <div className="bg-slate-50 rounded-lg p-4">
@@ -415,7 +449,50 @@ export default function ScribeFullAnalysis({
           </div>
         </section>
 
-        {/* Section 7: Export */}
+        {/* Section 7: Explore Ambient AI CTA */}
+        <section className="mb-6 md:mb-8 pt-6 md:pt-8 border-t border-slate-200">
+          <div className="bg-gradient-to-br from-red-50 to-white border border-red-200 rounded-xl p-5 md:p-8">
+            <div className="flex flex-col lg:flex-row gap-6 lg:items-center lg:justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-5 h-5 text-[#EA2C00]" />
+                  <h3 className="text-lg md:text-xl font-semibold text-[#111827]">Explore Your Options</h3>
+                </div>
+                <p className="text-sm md:text-base text-[#6B7280] mb-4">
+                  Now that you understand your scribe program economics, 
+                  see what ambient AI value realization could look like 
+                  for your organization.
+                </p>
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2 text-sm text-[#374151]">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span>Model different coverage scenarios</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-[#374151]">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span>Understand the four dimensions of ambient AI value</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-[#374151]">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span>See how utilization, efficiency, quality, and satisfaction compound</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex-shrink-0">
+                <Button 
+                  className="w-full lg:w-auto bg-[#EA2C00] hover:bg-[#d12700] text-white h-12 px-6 text-base font-semibold"
+                  onClick={() => onExploreAmbientAI?.(inputs.totalProviders, inputs.annualEncounters)}
+                  data-testid="button-explore-ambient"
+                >
+                  Explore Ambient AI for {inputs.totalProviders} Providers
+                  <ChevronRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 8: Export */}
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center">
             <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-export-pdf">

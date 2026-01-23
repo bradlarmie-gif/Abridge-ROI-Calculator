@@ -9,9 +9,10 @@ import { type ScribeInputs } from "@/lib/scribeGapCalculator";
 interface SwitchUnifiedFlowProps {
   onBack: () => void;
   onBackToJourney?: () => void;
+  onExploreAmbientAI?: (providers: number, encounters: number) => void;
 }
 
-export default function SwitchUnifiedFlow({ onBack, onBackToJourney }: SwitchUnifiedFlowProps) {
+export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAmbientAI }: SwitchUnifiedFlowProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [solutionType, setSolutionType] = useState<SolutionType>("ambient-ai");
   
@@ -66,6 +67,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney }: SwitchUni
           inputs={scribeInputs}
           onBack={goBack}
           onBackToJourney={onBackToJourney}
+          onExploreAmbientAI={onExploreAmbientAI}
         />
       );
     }

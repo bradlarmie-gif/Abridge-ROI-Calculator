@@ -76,6 +76,7 @@ interface ObjectiveSelectionScreenProps {
   initialSelectedSettings?: CareSettingType[];
   initialSelectedLevers?: SelectedLever[];
   onBackToJourney?: () => void;
+  initialSeedInputs?: Partial<RoiInputs>;
 }
 
 const SETTING_ICONS: Record<AllSettingType, typeof Stethoscope> = {
@@ -1126,6 +1127,7 @@ export default function ObjectiveSelectionScreen({
   initialSelectedSettings = [],
   initialSelectedLevers = [],
   onBackToJourney,
+  initialSeedInputs = {},
 }: ObjectiveSelectionScreenProps) {
   // If returning from calculator with existing selections, go directly to priorities page
   // Otherwise, skip orientation and go directly to care setting selection
@@ -1155,10 +1157,13 @@ export default function ObjectiveSelectionScreen({
   const [modelSetupStep, setModelSetupStep] = useState<1 | 2 | 3>(1);
 
   // Baseline step state - using number | "" to allow empty field while typing
-  const [cliniciansInScope, setCliniciansInScope] = useState<number | "">("");
+  // Initialize from initialSeedInputs if coming from Switch path CTA
+  const [cliniciansInScope, setCliniciansInScope] = useState<number | "">(
+    initialSeedInputs?.numberOfProviders ?? ""
+  );
   const [annualEncountersInScope, setAnnualEncountersInScope] = useState<
     number | ""
-  >("");
+  >(initialSeedInputs?.annualOutpatientEncounters ?? "");
 
   // Adoption step state
   const [utilizationPercent, setUtilizationPercent] = useState<number | null>(
@@ -2179,7 +2184,8 @@ export default function ObjectiveSelectionScreen({
       leverId: id,
       active: true,
     }));
-    onComplete([selectedSetting], selectedLevers);
+    // Pass through any initial seed inputs (e.g., from Switch path CTA)
+    onComplete([selectedSetting], selectedLevers, initialSeedInputs);
   };
 
   const handleBackToPage2 = () => {
@@ -2307,7 +2313,9 @@ export default function ObjectiveSelectionScreen({
         enterpriseAnnualCost / (effectiveClinicians * 12);
     }
 
-    onComplete([selectedSetting], levers, seedInputs);
+    // Merge with any initial seed inputs (e.g., from Switch path CTA)
+    const mergedSeedInputs = { ...initialSeedInputs, ...seedInputs };
+    onComplete([selectedSetting], levers, mergedSeedInputs);
   };
 
   // ============================================

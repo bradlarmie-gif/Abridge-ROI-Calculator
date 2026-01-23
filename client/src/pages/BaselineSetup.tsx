@@ -5,6 +5,7 @@ import {
   type CareSettingType,
   CARE_SETTING_LABELS,
 } from "@/lib/SETTING_CONFIG";
+import { type RoiInputs } from "@/lib/roi-types";
 import {
   ArrowLeft,
   ChevronRight,
@@ -40,6 +41,7 @@ interface BaselineSetupProps {
   onComplete: (baseline: BaselineInfo) => void;
   initialBaseline?: BaselineInfo | null;
   onBackToJourney?: () => void;
+  seedInputs?: Partial<RoiInputs>;
 }
 
 export default function BaselineSetup({
@@ -49,15 +51,20 @@ export default function BaselineSetup({
   onComplete,
   initialBaseline,
   onBackToJourney,
+  seedInputs = {},
 }: BaselineSetupProps) {
   const primarySetting = selectedSettings[0] || "outpatient";
   const isNursingSetting = primarySetting === "nursing";
   const isEDSetting = primarySetting === "ed";
   const isInpatientSetting = primarySetting === "inpatient";
 
-  // State for provider/encounter inputs - start empty unless returning with data
-  const [providers, setProviders] = useState<number | "">(initialBaseline?.providers || "");
-  const [encounters, setEncounters] = useState<number | "">(initialBaseline?.encounters || "");
+  // State for provider/encounter inputs - start with seed values, then initialBaseline, then empty
+  const [providers, setProviders] = useState<number | "">(
+    initialBaseline?.providers || seedInputs?.numberOfProviders || ""
+  );
+  const [encounters, setEncounters] = useState<number | "">(
+    initialBaseline?.encounters || seedInputs?.annualOutpatientEncounters || ""
+  );
   const [utilizationRate, setUtilizationRate] = useState(initialBaseline?.utilizationRate || 65);
 
   // Nursing-specific state
