@@ -1,0 +1,187 @@
+Patient Experience (HCAHPS) — Qualitative Driver
+Here's the content specification for the component:
+Copy┌─────────────────────────────────────────────────────────────┐
+│ 😊  Patient Experience (HCAHPS)                        $0  ∨│
+└─────────────────────────────────────────────────────────────┘
+
+WHEN EXPANDED:
+┌─────────────────────────────────────────────────────────────┐
+│ 😊  Patient Experience (HCAHPS)                        $0  ∧│
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  📋 Your Calculation                                        │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ 💡 The Theory                                       │    │
+│  │                                                     │    │
+│  │ Patients notice when nurses are fully present       │    │
+│  │ versus distracted by documentation. Ambient         │    │
+│  │ charting eliminates the divided attention that      │    │
+│  │ comes from typing during patient interactions—      │    │
+│  │ improving how patients perceive nurse               │    │
+│  │ communication, a key HCAHPS domain tied to VBP      │    │
+│  │ reimbursement.                                      │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ ⓘ Not Quantified                                   │    │
+│  │                                                     │    │
+│  │ This driver adds to the narrative value of Abridge │    │
+│  │ but is not included in the ROI total. The value is │    │
+│  │ qualitative—improving patient perception of nurse  │    │
+│  │ attentiveness and communication quality.           │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ 📊 Qualitative Value Examples                       │    │
+│  │                                                     │    │
+│  │ ✓ Improved "nurse listened carefully" scores       │    │
+│  │ ✓ Better "nurse explained things" ratings          │    │
+│  │ ✓ More meaningful bedside interactions             │    │
+│  │ ✓ Reduced perception of rushed care                │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ Qualitative Value              Not Quantified       │    │
+│  │ Adds to narrative, not included in ROI total       │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+Replit-Ready Code
+Here's what you'd add to your nursing value drivers configuration:
+javascriptCopy// Add to your nursing value drivers array/config
+
+{
+  id: 'patient-experience-hcahps',
+  name: 'Patient Experience (HCAHPS)',
+  icon: '😊', // or use a proper icon component like HeartHandshake, Users, etc.
+  category: 'quality-safety', // or create new category 'patient-experience'
+  quantified: false,
+  value: 0,
+  
+  theory: {
+    title: 'The Theory',
+    content: `Patients notice when nurses are fully present versus distracted by documentation. Ambient charting eliminates the divided attention that comes from typing during patient interactions—improving how patients perceive nurse communication, a key HCAHPS domain tied to VBP reimbursement.`
+  },
+  
+  notQuantifiedExplanation: {
+    title: 'Not Quantified',
+    content: `This driver adds to the narrative value of Abridge but is not included in the ROI total. The value is qualitative—improving patient perception of nurse attentiveness and communication quality.`
+  },
+  
+  qualitativeExamples: {
+    title: 'Qualitative Value Examples',
+    items: [
+      'Improved "nurse listened carefully" scores',
+      'Better "nurse explained things" ratings', 
+      'More meaningful bedside interactions',
+      'Reduced perception of rushed care'
+    ]
+  },
+  
+  footer: {
+    label: 'Qualitative Value',
+    value: 'Not Quantified',
+    subtext: 'Adds to narrative, not included in ROI total'
+  }
+}
+
+If You Want the React Component
+jsxCopy// QualitativeDriverCard.jsx (or add to existing driver component)
+
+function PatientExperienceDriver({ isExpanded, onToggle }) {
+  return (
+    <div className={`driver-card ${isExpanded ? 'expanded' : ''}`}>
+      {/* Header - always visible */}
+      <button 
+        className="driver-header"
+        onClick={onToggle}
+      >
+        <div className="driver-header-left">
+          <span className="driver-icon">😊</span>
+          <span className="driver-name">Patient Experience (HCAHPS)</span>
+        </div>
+        <div className="driver-header-right">
+          <span className="driver-value qualitative">$0</span>
+          <span className="chevron">{isExpanded ? '∧' : '∨'}</span>
+        </div>
+      </button>
+      
+      {/* Expanded content */}
+      {isExpanded && (
+        <div className="driver-content">
+          
+          <div className="calculation-label">
+            <span className="icon">📋</span>
+            <span>Your Calculation</span>
+          </div>
+          
+          {/* The Theory */}
+          <div className="theory-box">
+            <div className="theory-header">
+              <span className="icon">💡</span>
+              <span className="theory-title">The Theory</span>
+            </div>
+            <p className="theory-content">
+              Patients notice when nurses are fully present versus distracted 
+              by documentation. Ambient charting eliminates the divided attention 
+              that comes from typing during patient interactions—improving how 
+              patients perceive nurse communication, a key HCAHPS domain tied 
+              to VBP reimbursement.
+            </p>
+          </div>
+          
+          {/* Not Quantified Notice */}
+          <div className="not-quantified-box">
+            <div className="not-quantified-header">
+              <span className="icon">ⓘ</span>
+              <span className="not-quantified-title">Not Quantified</span>
+            </div>
+            <p className="not-quantified-content">
+              This driver adds to the narrative value of Abridge but is not 
+              included in the ROI total. The value is qualitative—improving 
+              patient perception of nurse attentiveness and communication quality.
+            </p>
+          </div>
+          
+          {/* Qualitative Examples */}
+          <div className="qualitative-examples-box">
+            <div className="examples-header">
+              <span className="icon">📊</span>
+              <span className="examples-title">Qualitative Value Examples</span>
+            </div>
+            <ul className="examples-list">
+              <li>
+                <span className="checkmark">✓</span>
+                Improved "nurse listened carefully" scores
+              </li>
+              <li>
+                <span className="checkmark">✓</span>
+                Better "nurse explained things" ratings
+              </li>
+              <li>
+                <span className="checkmark">✓</span>
+                More meaningful bedside interactions
+              </li>
+              <li>
+                <span className="checkmark">✓</span>
+                Reduced perception of rushed care
+              </li>
+            </ul>
+          </div>
+          
+          {/* Footer */}
+          <div className="qualitative-footer">
+            <span className="footer-label">Qualitative Value</span>
+            <span className="footer-value">Not Quantified</span>
+          </div>
+          <p className="footer-subtext">
+            Adds to narrative, not included in ROI total
+          </p>
+          
+        </div>
+      )}
+    </div>
+  );
+}

@@ -176,6 +176,15 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       keyMetric: "Qualitative",
       isNotQuantified: true,
     },
+    {
+      id: "nursingPatientExperience",
+      label: "Patient Experience (HCAHPS)",
+      category: "additional",
+      description: "Improve nurse communication scores through presence",
+      driverSummary: "Not quantified—qualitative value",
+      keyMetric: "Qualitative",
+      isNotQuantified: true,
+    },
   ],
 
   inpatient: [

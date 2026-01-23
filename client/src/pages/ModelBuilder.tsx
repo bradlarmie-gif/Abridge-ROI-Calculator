@@ -254,6 +254,9 @@ interface DriverInputs {
   nursingCareCoordination: {
     enabled: boolean;  // Not quantified - qualitative value
   };
+  nursingPatientExperience: {
+    enabled: boolean;  // Not quantified - qualitative value
+  };
 }
 
 const DRIVER_ICONS: Record<string, typeof Clock> = {
@@ -281,6 +284,7 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
   nursingFalls: Shield,
   nursingSurvey: CheckCircle,
   nursingCareCoordination: Link2,
+  nursingPatientExperience: Heart,
 };
 
 const DRIVER_NAMES: Record<string, string> = {
@@ -308,6 +312,7 @@ const DRIVER_NAMES: Record<string, string> = {
   nursingFalls: "Falls Prevention",
   nursingSurvey: "Survey & Compliance Readiness",
   nursingCareCoordination: "Care Coordination",
+  nursingPatientExperience: "Patient Experience (HCAHPS)",
 };
 
 const DRIVER_THEORIES: Record<string, string> = {
@@ -335,6 +340,7 @@ const DRIVER_THEORIES: Record<string, string> = {
   nursingFalls: "Falls happen when risk assessments are missed or interventions are delayed. Real-time documentation ensures fall risk scores, mobility assessments, and environmental factors are captured as they're observed — enabling earlier intervention. We show this as POTENTIAL value because the causal link is indirect.",
   nursingSurvey: "Real-time documentation supports audit confidence and survey readiness. This is qualitative value that strengthens the overall ROI narrative.",
   nursingCareCoordination: "Complete, timely documentation improves handoffs between shifts and departments. This is qualitative value that improves patient outcomes.",
+  nursingPatientExperience: "Patients notice when nurses are fully present versus distracted by documentation. Ambient charting improves how patients perceive nurse communication—a key HCAHPS domain.",
 };
 
 export default function ModelBuilder({
@@ -538,6 +544,9 @@ export default function ModelBuilder({
       enabled: false,  // Not quantified - qualitative value
     },
     nursingCareCoordination: {
+      enabled: false,  // Not quantified - qualitative value
+    },
+    nursingPatientExperience: {
       enabled: false,  // Not quantified - qualitative value
     },
   });
@@ -908,7 +917,8 @@ export default function ModelBuilder({
         return Math.round(departuresAvoided * replacementCost);
       }
       case "nursingSurvey":
-      case "nursingCareCoordination": {
+      case "nursingCareCoordination":
+      case "nursingPatientExperience": {
         // Not quantified - qualitative value only
         return 0;
       }
@@ -1246,6 +1256,8 @@ export default function ModelBuilder({
         return renderNursingSurveyInputs();
       case "nursingCareCoordination":
         return renderNursingCareCoordinationInputs();
+      case "nursingPatientExperience":
+        return renderNursingPatientExperienceInputs();
       default:
         return null;
     }
@@ -6184,6 +6196,73 @@ export default function ModelBuilder({
             <li className="flex items-start gap-2">
               <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
               <span>Faster access to complete patient information</span>
+            </li>
+          </ul>
+        </div>
+        
+        {/* Final Result */}
+        <div className="p-4 bg-slate-100 rounded-lg border border-slate-200">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Qualitative Value</span>
+            <span className="font-mono font-medium text-slate-600 text-sm">
+              Not Quantified
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Adds to narrative, not included in ROI total
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderNursingPatientExperienceInputs = () => {
+    return (
+      <div className="space-y-6">
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Patients notice when nurses are fully present versus distracted by documentation. Ambient charting eliminates the divided attention that comes from typing during patient interactions—improving how patients perceive nurse communication, a key HCAHPS domain tied to VBP reimbursement.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Not Quantified Notice */}
+        <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <Info className="h-4 w-4 text-slate-600 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-slate-800">
+            <p className="font-medium mb-1">Not Quantified</p>
+            <p>This driver adds to the narrative value of Abridge but is not included in the ROI total. The value is qualitative—improving patient perception of nurse attentiveness and communication quality.</p>
+          </div>
+        </div>
+        
+        {/* Value Examples */}
+        <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+            <span className="text-xs font-semibold text-[#6B7280]">Qualitative Value Examples</span>
+          </div>
+          <ul className="space-y-2 text-xs text-[#6B7280]">
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Improved "nurse listened carefully" scores</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Better "nurse explained things" ratings</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>More meaningful bedside interactions</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Reduced perception of rushed care</span>
             </li>
           </ul>
         </div>
