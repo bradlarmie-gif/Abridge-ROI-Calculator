@@ -643,3 +643,66 @@
     box-shadow: 0 0 0 6px rgba(234, 44, 0, 0.15);
   }
 }
+
+/* ========================================
+   GLOBAL RESPONSIVE STYLES
+   ======================================== */
+
+/* Prevent horizontal scroll */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Mobile touch target utility class - apply via component */
+@media (max-width: 767px) {
+  .touch-target-mobile {
+    min-height: 44px;
+  }
+}
+
+/* Chart container - horizontal scroll on mobile */
+@media (max-width: 767px) {
+  .recharts-responsive-container {
+    min-width: 100%;
+  }
+  
+  .recharts-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Slider touch-friendly */
+@media (max-width: 767px) {
+  input[type="range"] {
+    height: 8px;
+    -webkit-appearance: none;
+    background: transparent;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+    -webkit-appearance: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -10px;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+}
+
+/* Table horizontal scroll on mobile */
+@media (max-width: 767px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

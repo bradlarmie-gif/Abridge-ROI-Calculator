@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, Coins } from "lucide-react";
+import { ArrowRight, ArrowLeft, ArrowUp, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import {
@@ -34,7 +34,7 @@ export default function ScribeAssessment({
     <div className="min-h-screen bg-slate-50">
       <GlobalHeader pageName="Value Realization Assessment" currentStep={1} totalSteps={2} />
 
-      <main className="pt-[88px] pb-8 px-4 md:px-8 max-w-5xl mx-auto">
+      <main className="pt-[88px] pb-8 px-4 md:px-6 lg:px-8 max-w-5xl mx-auto">
         <div className="mb-6">
           <Button
             variant="ghost"
@@ -47,19 +47,19 @@ export default function ScribeAssessment({
           </Button>
         </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2">
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#111827] mb-2">
             Your Scribe Program
           </h1>
-          <p className="text-[#6B7280]">
+          <p className="text-sm md:text-base text-[#6B7280]">
             Let's understand your current scribe coverage and costs
           </p>
         </div>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
-          <h2 className="text-lg font-bold text-[#111827] mb-6">Scribe Program Details</h2>
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-4 md:mb-6">Scribe Program Details</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <InputCard
               icon={<Users className="w-4 h-4 text-purple-600" />}
               iconBg="bg-purple-100"
@@ -125,8 +125,8 @@ export default function ScribeAssessment({
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
-          <h2 className="text-lg font-bold text-[#111827] mb-6">Your Coverage Gap</h2>
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-4 md:mb-6">Your Coverage Gap</h2>
 
           <div className="mb-6">
             <div className="relative h-12 bg-slate-100 rounded-lg overflow-hidden">
@@ -175,13 +175,13 @@ export default function ScribeAssessment({
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
-          <h2 className="text-lg font-bold text-[#111827] mb-2">The Scaling Problem</h2>
-          <p className="text-sm text-[#6B7280] mb-6">
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-2">The Scaling Problem</h2>
+          <p className="text-xs md:text-sm text-[#6B7280] mb-4 md:mb-6">
             What would it cost to give everyone a scribe?
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="bg-slate-50 rounded-xl p-5">
               <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
                 Current State
@@ -242,8 +242,8 @@ export default function ScribeAssessment({
                 <div className="text-xl font-bold text-[#111827]">
                   {formatCurrency(calculations.fullScribeCost)}
                 </div>
-                <div className="text-xs text-red-600 font-medium">
-                  ↑ +{formatCurrency(calculations.costToScale)} to scale
+                <div className="text-xs text-red-600 font-medium flex items-center gap-1">
+                  <ArrowUp className="w-3 h-3" /> +{formatCurrency(calculations.costToScale)} to scale
                 </div>
               </div>
             </div>
@@ -285,15 +285,15 @@ export default function ScribeAssessment({
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
-          <h2 className="text-lg font-bold text-[#111827] mb-2">
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-2">
             The Cost of Unsupported Providers
           </h2>
-          <p className="text-sm text-[#6B7280] mb-6">
+          <p className="text-xs md:text-sm text-[#6B7280] mb-4 md:mb-6">
             Your {calculations.providersWithoutSupport} providers without scribe support are:
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
             <div className="bg-slate-50 rounded-lg p-5 text-center">
               <div className="flex justify-center mb-2">
                 <Timer className="w-6 h-6 text-slate-500" />

@@ -42,49 +42,49 @@ export default function ScribeFullAnalysis({
           </Button>
         </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2">
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#111827] mb-2">
             Your Scribe Program Analysis
           </h1>
-          <p className="text-[#6B7280]">
+          <p className="text-xs md:text-sm text-[#6B7280]">
             {inputs.scribeCount} scribes · {inputs.providersWithScribes} providers covered ·{" "}
             {inputs.totalProviders} total providers
           </p>
         </div>
 
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
-            <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 text-center">
+            <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
               Current Coverage
             </div>
-            <div className="text-4xl font-bold text-[#111827]">{calculations.coveragePercent}%</div>
-            <div className="text-sm text-[#6B7280]">of providers have support</div>
+            <div className="text-2xl md:text-4xl font-bold text-[#111827]">{calculations.coveragePercent}%</div>
+            <div className="text-xs md:text-sm text-[#6B7280]">of providers have support</div>
           </div>
 
-          <div className="bg-amber-50 rounded-xl border-2 border-amber-400 p-6 text-center">
-            <div className="text-xs font-medium text-amber-600 uppercase tracking-wide mb-1">
+          <div className="bg-amber-50 rounded-xl border-2 border-amber-400 p-4 md:p-6 text-center">
+            <div className="text-[10px] md:text-xs font-medium text-amber-600 uppercase tracking-wide mb-1">
               Coverage Gap
             </div>
-            <div className="text-4xl font-bold text-amber-700">{calculations.providersWithoutSupport}</div>
-            <div className="text-sm text-amber-600">providers without support</div>
+            <div className="text-2xl md:text-4xl font-bold text-amber-700">{calculations.providersWithoutSupport}</div>
+            <div className="text-xs md:text-sm text-amber-600">providers without support</div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
-            <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 text-center">
+            <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
               Cost to Scale
             </div>
-            <div className="text-4xl font-bold text-[#111827]">
+            <div className="text-2xl md:text-4xl font-bold text-[#111827]">
               {formatCurrency(calculations.costToScale)}
             </div>
-            <div className="text-sm text-[#6B7280]">to give everyone a scribe</div>
+            <div className="text-xs md:text-sm text-[#6B7280]">to give everyone a scribe</div>
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
-          <h2 className="text-xl font-bold text-[#111827] mb-2">The Scaling Comparison</h2>
-          <p className="text-sm text-[#6B7280] mb-6">Cost vs. coverage: Scribes vs. Abridge</p>
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Scaling Comparison</h2>
+          <p className="text-xs md:text-sm text-[#6B7280] mb-4 md:mb-6">Cost vs. coverage: Scribes vs. Abridge</p>
 
-          <div className="h-80">
+          <div className="h-64 md:h-80 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={scalingData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -144,11 +144,11 @@ export default function ScribeFullAnalysis({
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
-          <h2 className="text-xl font-bold text-[#111827] mb-6">Why Ambient AI Scales Differently</h2>
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">Why Ambient AI Scales Differently</h2>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <table className="w-full text-xs md:text-sm min-w-[400px]">
               <thead>
                 <tr className="border-b border-slate-200">
                   <th className="text-left py-3 pr-4 text-[#6B7280] font-medium"></th>
@@ -192,14 +192,14 @@ export default function ScribeFullAnalysis({
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
-          <h2 className="text-xl font-bold text-[#111827] mb-6">The Hybrid Opportunity</h2>
-          <p className="text-sm text-[#6B7280] mb-6">
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">The Hybrid Opportunity</h2>
+          <p className="text-xs md:text-sm text-[#6B7280] mb-4 md:mb-6">
             You don't have to choose one or the other. Many organizations use Abridge to extend
             their scribe coverage while keeping scribes for complex cases.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div className="bg-slate-50 rounded-lg p-5">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center">
@@ -254,34 +254,34 @@ export default function ScribeFullAnalysis({
           </div>
         </section>
 
-        <section className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 md:p-8 text-white mb-8">
-          <h2 className="text-xl font-bold mb-4">Your Path Forward</h2>
+        <section className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 md:p-6 lg:p-8 text-white mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Your Path Forward</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white/10 rounded-lg p-4 text-center">
-              <div className="text-3xl font-bold">{calculations.providersWithoutSupport}</div>
-              <div className="text-sm text-emerald-100">providers to enable</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
+            <div className="bg-white/10 rounded-lg p-3 md:p-4 text-center">
+              <div className="text-2xl md:text-3xl font-bold">{calculations.providersWithoutSupport}</div>
+              <div className="text-xs md:text-sm text-emerald-100">providers to enable</div>
             </div>
-            <div className="bg-white/10 rounded-lg p-4 text-center">
-              <div className="text-3xl font-bold">{formatCurrency(calculations.abridgeValueCreated)}</div>
-              <div className="text-sm text-emerald-100">potential annual value</div>
+            <div className="bg-white/10 rounded-lg p-3 md:p-4 text-center">
+              <div className="text-2xl md:text-3xl font-bold">{formatCurrency(calculations.abridgeValueCreated)}</div>
+              <div className="text-xs md:text-sm text-emerald-100">potential annual value</div>
             </div>
-            <div className="bg-white/10 rounded-lg p-4 text-center">
-              <div className="text-3xl font-bold">{formatCurrency(calculations.savingsVsFullScribe)}</div>
-              <div className="text-sm text-emerald-100">savings vs. full scribes</div>
+            <div className="bg-white/10 rounded-lg p-3 md:p-4 text-center">
+              <div className="text-2xl md:text-3xl font-bold">{formatCurrency(calculations.savingsVsFullScribe)}</div>
+              <div className="text-xs md:text-sm text-emerald-100">savings vs. full scribes</div>
             </div>
           </div>
 
-          <p className="text-emerald-100 text-sm mb-6">
+          <p className="text-emerald-100 text-xs md:text-sm mb-4 md:mb-6">
             By adding Abridge for your {calculations.providersWithoutSupport} unsupported providers,
             you can achieve universal coverage at a fraction of the cost of scaling your scribe
             program.
           </p>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 mb-8">
-          <h2 className="text-lg font-bold text-[#111827] mb-4">Methodology</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-3 md:mb-4">Methodology</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
             <div className="bg-slate-50 rounded-lg p-4">
               <div className="font-medium text-[#111827] mb-1">Scribe Assumptions</div>
               <ul className="text-[#6B7280] space-y-1">
@@ -301,13 +301,13 @@ export default function ScribeFullAnalysis({
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border-2 border-[#EA2C00] p-8">
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Button variant="outline" className="h-12 px-6" data-testid="button-export-pdf">
+        <section className="bg-white rounded-xl border-2 border-[#EA2C00] p-4 md:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center">
+            <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-export-pdf">
               <Download className="w-4 h-4 mr-2" />
               Export as PDF
             </Button>
-            <Button variant="outline" className="h-12 px-6" data-testid="button-share">
+            <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-share">
               <Share2 className="w-4 h-4 mr-2" />
               Share with Team
             </Button>

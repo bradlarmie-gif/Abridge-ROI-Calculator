@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Lightbulb, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlobalHeader } from '@/components/GlobalHeader';
 import { ComposedChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
@@ -163,7 +163,7 @@ export default function SwitchAmbientConclusion({
               </div>
               
               <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-slate-100">
-                <span className="text-2xl text-emerald-600">↕</span>
+                <ArrowUpDown className="w-6 h-6 text-emerald-600" />
                 <div>
                   <span className="text-2xl font-bold text-emerald-600">{formatCurrency(threeYearGap)}</span>
                   <span className="text-sm text-slate-500 ml-2">3-year gap</span>
@@ -174,7 +174,7 @@ export default function SwitchAmbientConclusion({
             {/* Understanding the Gap */}
             <section className="bg-amber-50 border border-amber-200 rounded-2xl p-8">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-lg">💡</span>
+                <Lightbulb className="w-5 h-5 text-amber-600" />
                 <h2 className="text-xs font-semibold text-amber-800 tracking-wide">UNDERSTANDING THE GAP</h2>
               </div>
               

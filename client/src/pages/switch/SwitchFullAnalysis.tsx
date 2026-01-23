@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info } from "lucide-react";
+import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info, Lightbulb, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
@@ -55,39 +55,39 @@ export default function SwitchFullAnalysis({
         onLogoClick={onBackToJourney} 
       />
 
-      <main className="max-w-5xl mx-auto px-6 pt-[96px] pb-16">
+      <main className="max-w-5xl mx-auto px-4 md:px-6 pt-[88px] pb-12 md:pb-16">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-6 -ml-2"
+          className="text-slate-500 flex items-center gap-1 mb-4 md:mb-6 -ml-2"
           data-testid="button-back"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to assessment
         </Button>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
             Your Gap Analysis
           </h1>
-          <p className="text-[#6B7280]">
+          <p className="text-sm md:text-base text-[#6B7280]">
             {inputs.providers || 75} providers · {(inputs.annualEncounters || 150000).toLocaleString()} encounters · {solutionLabel}
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-10">
-          <div className="bg-white rounded-xl border border-slate-200 p-6 text-center" data-testid="card-annual-gap">
-            <div className="text-xs font-semibold text-[#6B7280] mb-2">ANNUAL GAP</div>
-            <div className="text-3xl font-bold text-[#111827]">{formatCurrency(calculations.annualGap)}</div>
-            <div className="text-xs text-[#6B7280] mt-1">unrealized value</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-8 md:mb-10">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 text-center" data-testid="card-annual-gap">
+            <div className="text-[10px] md:text-xs font-semibold text-[#6B7280] mb-1 md:mb-2">ANNUAL GAP</div>
+            <div className="text-2xl md:text-3xl font-bold text-[#111827]">{formatCurrency(calculations.annualGap)}</div>
+            <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">unrealized value</div>
           </div>
 
-          <div className="bg-[#EA2C00] rounded-xl p-6 text-center text-white" data-testid="card-realization-score">
-            <div className="text-xs font-semibold text-white/80 mb-2">REALIZATION SCORE</div>
-            <div className="text-3xl font-bold">{calculations.realizationScore}%</div>
-            <div className="text-xs text-white/80 mt-1">of potential</div>
-            <div className="w-full h-2 bg-white/30 rounded-full mt-3">
+          <div className="bg-[#EA2C00] rounded-xl p-4 md:p-6 text-center text-white" data-testid="card-realization-score">
+            <div className="text-[10px] md:text-xs font-semibold text-white/80 mb-1 md:mb-2">REALIZATION SCORE</div>
+            <div className="text-2xl md:text-3xl font-bold">{calculations.realizationScore}%</div>
+            <div className="text-[10px] md:text-xs text-white/80 mt-1">of potential</div>
+            <div className="w-full h-1.5 md:h-2 bg-white/30 rounded-full mt-2 md:mt-3">
               <div 
                 className="h-full bg-white rounded-full transition-all"
                 style={{ width: `${calculations.realizationScore}%` }}
@@ -95,20 +95,20 @@ export default function SwitchFullAnalysis({
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6 text-center" data-testid="card-3year-gap">
-            <div className="text-xs font-semibold text-[#6B7280] mb-2">3-YEAR GAP</div>
-            <div className="text-3xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</div>
-            <div className="text-xs text-[#6B7280] mt-1">cumulative</div>
+          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 text-center" data-testid="card-3year-gap">
+            <div className="text-[10px] md:text-xs font-semibold text-[#6B7280] mb-1 md:mb-2">3-YEAR GAP</div>
+            <div className="text-2xl md:text-3xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</div>
+            <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">cumulative</div>
           </div>
         </div>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-8 mb-8">
-          <h2 className="text-xl font-bold text-[#111827] mb-2">The Cost of the Gap Over Time</h2>
-          <p className="text-[#6B7280] mb-6">
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Cost of the Gap Over Time</h2>
+          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">
             Cumulative value if you stay at current performance vs. reach Abridge benchmarks
           </p>
 
-          <div className="h-80 mb-6">
+          <div className="h-64 md:h-80 mb-4 md:mb-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={graphData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -151,15 +151,15 @@ export default function SwitchFullAnalysis({
             </ResponsiveContainer>
           </div>
 
-          <div className="flex items-center justify-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-2xl text-slate-400">↕</span>
-            <span className="text-2xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</span>
-            <span className="text-[#6B7280]">3-year gap</span>
+          <div className="flex items-center justify-center gap-2 md:gap-3 p-3 md:p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <ArrowUpDown className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
+            <span className="text-xl md:text-2xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</span>
+            <span className="text-sm md:text-base text-[#6B7280]">3-year gap</span>
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-8 mb-8">
-          <h2 className="text-xl font-bold text-[#111827] mb-6">How the Gap Breaks Down</h2>
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">How the Gap Breaks Down</h2>
 
           <div className="space-y-6">
             {calculations.utilizationGapValue > 0 && (
@@ -190,9 +190,9 @@ export default function SwitchFullAnalysis({
           </div>
         </section>
 
-        <section className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 text-white mb-8">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="text-xl">💡</span> How Your Score is Calculated
+        <section className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-4 md:p-6 lg:p-8 text-white mb-6 md:mb-8">
+          <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center gap-2">
+            <Lightbulb className="w-5 h-5 text-amber-400" /> How Your Score is Calculated
           </h3>
           
           <p className="text-slate-300 mb-4">
@@ -239,50 +239,50 @@ export default function SwitchFullAnalysis({
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 p-8 mb-8">
-          <h2 className="text-xl font-bold text-[#111827] mb-2">The Cost of Waiting</h2>
-          <p className="text-[#6B7280] mb-6">Every month at current performance = unrealized value</p>
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Cost of Waiting</h2>
+          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">Every month at current performance = unrealized value</p>
 
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="border-2 border-emerald-500 rounded-xl p-6 text-center relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
+            <div className="border-2 border-emerald-500 rounded-xl p-4 md:p-6 text-center relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500 text-white text-[10px] md:text-xs font-semibold rounded-full">
                 RECOMMENDED
               </div>
-              <div className="text-sm font-medium text-[#6B7280] mb-2">Close the gap now</div>
-              <div className="text-2xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearGap)}</div>
-              <div className="text-xs text-[#6B7280] mt-1">3-year value captured</div>
+              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Close the gap now</div>
+              <div className="text-xl md:text-2xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearGap)}</div>
+              <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">3-year value captured</div>
             </div>
 
-            <div className="border border-slate-200 rounded-xl p-6 text-center">
-              <div className="text-sm font-medium text-[#6B7280] mb-2">Wait 6 months</div>
-              <div className="text-2xl font-bold text-[#111827]">{formatCurrency(calculations.wait6MonthsValue)}</div>
-              <div className="text-xs text-[#6B7280] mt-1">3-year value</div>
-              <div className="text-xs text-slate-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait6MonthsLoss)}</div>
+            <div className="border border-slate-200 rounded-xl p-4 md:p-6 text-center">
+              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Wait 6 months</div>
+              <div className="text-xl md:text-2xl font-bold text-[#111827]">{formatCurrency(calculations.wait6MonthsValue)}</div>
+              <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">3-year value</div>
+              <div className="text-[10px] md:text-xs text-slate-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait6MonthsLoss)}</div>
             </div>
 
-            <div className="border border-slate-200 rounded-xl p-6 text-center">
-              <div className="text-sm font-medium text-[#6B7280] mb-2">Wait 12 months</div>
-              <div className="text-2xl font-bold text-[#111827]">{formatCurrency(calculations.wait12MonthsValue)}</div>
-              <div className="text-xs text-[#6B7280] mt-1">3-year value</div>
-              <div className="text-xs text-slate-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait12MonthsLoss)}</div>
+            <div className="border border-slate-200 rounded-xl p-4 md:p-6 text-center">
+              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Wait 12 months</div>
+              <div className="text-xl md:text-2xl font-bold text-[#111827]">{formatCurrency(calculations.wait12MonthsValue)}</div>
+              <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">3-year value</div>
+              <div className="text-[10px] md:text-xs text-slate-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait12MonthsLoss)}</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-2xl">⏰</span>
-            <span className="text-[#111827]">
+          <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <Clock className="w-5 h-5 md:w-6 md:h-6 text-slate-500 flex-shrink-0" />
+            <span className="text-sm md:text-base text-[#111827]">
               Every month at current state = <strong>{formatCurrency(calculations.monthlyGap)}</strong> in unrealized value
             </span>
           </div>
         </section>
 
-        <section className="bg-slate-50 rounded-xl border border-slate-200 p-8 mb-8">
-          <h3 className="text-lg font-semibold text-[#111827] mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
+        <section className="bg-slate-50 rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h3 className="text-base md:text-lg font-semibold text-[#111827] mb-3 md:mb-4 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 md:w-5 md:h-5" />
             Methodology
           </h3>
 
-          <ul className="space-y-3 text-sm text-[#6B7280]">
+          <ul className="space-y-2 md:space-y-3 text-xs md:text-sm text-[#6B7280]">
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
               <span><strong className="text-[#111827]">Utilization benchmark: {ABRIDGE_BENCHMARKS.utilization}%</strong> — Abridge average across deployments</span>
@@ -318,13 +318,13 @@ export default function SwitchFullAnalysis({
           </p>
         </section>
 
-        <section className="bg-white rounded-xl border-2 border-[#EA2C00] p-8">
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Button variant="outline" className="h-12 px-6" data-testid="button-export-pdf">
+        <section className="bg-white rounded-xl border-2 border-[#EA2C00] p-4 md:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center">
+            <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-export-pdf">
               <Download className="w-4 h-4 mr-2" />
               Export as PDF
             </Button>
-            <Button variant="outline" className="h-12 px-6" data-testid="button-share">
+            <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-share">
               <Share2 className="w-4 h-4 mr-2" />
               Share with Team
             </Button>

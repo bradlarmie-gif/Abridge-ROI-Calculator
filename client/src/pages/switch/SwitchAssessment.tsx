@@ -58,7 +58,7 @@ export default function SwitchAssessment({
         onLogoClick={onBackToJourney} 
       />
 
-      <main className="max-w-5xl mx-auto px-6 pt-[96px] pb-16">
+      <main className="max-w-5xl mx-auto px-4 md:px-6 pt-[88px] pb-12 md:pb-16">
         <Button
           variant="ghost"
           size="sm"
@@ -70,25 +70,25 @@ export default function SwitchAssessment({
           Back
         </Button>
 
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2 md:mb-3" data-testid="text-page-title">
             Value Realization Assessment
           </h1>
-          <p className="text-lg text-[#6B7280]">
+          <p className="text-base md:text-lg text-[#6B7280]">
             See where you stand on the ambient AI value spectrum — and what reaching your potential could mean.
           </p>
         </div>
 
         <div className="space-y-10">
-          <section className="bg-white rounded-xl border border-slate-200 p-8">
-            <h2 className="text-xl font-bold text-[#111827] mb-6">Your Current Situation</h2>
+          <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
+            <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">Your Current Situation</h2>
             
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
               <div>
                 <label className="block text-sm font-medium text-[#374151] mb-3">
                   What solution are you using today?
                 </label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                   <button
                     onClick={() => updateInput("solution", "ambient-ai")}
                     className={`p-4 rounded-lg border-2 transition-all text-left ${
@@ -128,7 +128,7 @@ export default function SwitchAssessment({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#374151] mb-2">
                     Providers using this solution
@@ -159,13 +159,13 @@ export default function SwitchAssessment({
             </div>
           </section>
 
-          <section className="bg-white rounded-xl border border-slate-200 p-8">
-            <h2 className="text-xl font-bold text-[#111827] mb-2">Your Results</h2>
-            <p className="text-[#6B7280] mb-8">
+          <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
+            <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">Your Results</h2>
+            <p className="text-[#6B7280] mb-6 md:mb-8 text-sm md:text-base">
               How do your metrics compare to Abridge benchmarks?
             </p>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <DimensionCard
                 icon={<BarChart3 className="w-5 h-5 text-blue-600" />}
                 iconBg="bg-blue-100"
@@ -233,14 +233,14 @@ export default function SwitchAssessment({
             </div>
           </section>
 
-          <section className="bg-white rounded-xl border border-slate-200 p-8">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-[#111827] mb-2">Your Value Realization Score</h3>
-              <p className="text-[#6B7280]">How much of ambient AI's potential value are you capturing?</p>
+          <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
+            <div className="text-center mb-4 md:mb-6">
+              <h3 className="text-lg md:text-xl font-bold text-[#111827] mb-2">Your Value Realization Score</h3>
+              <p className="text-sm md:text-base text-[#6B7280]">How much of ambient AI's potential value are you capturing?</p>
             </div>
 
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-8 mb-8">
-              <div className="relative w-48 h-48">
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 md:gap-8 mb-6 md:mb-8">
+              <div className="relative w-36 h-36 md:w-48 md:h-48">
                 <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
                   <circle 
                     cx="50" 

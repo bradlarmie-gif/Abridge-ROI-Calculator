@@ -98,8 +98,16 @@ The application guides users through multi-step processes:
 -   **Pure Functions**: ROI calculation logic in `roi-calculator.ts`.
 -   **Reusable Components**: Extensive use of reusable UI components.
 -   **Eligible Encounters Foundation**: All driver calculations derived from `eligible encounters`.
--   **UI/UX**: Adheres to Material Design principles for enterprise data applications. Uses Inter and JetBrains Mono fonts. Color palette includes Abridge Cadmium Red (#EA2C00) for CTAs with #d12700 hover, muted grays, and emerald-600 for positive financial indicators. Responsive design using Tailwind's breakpoints.
+-   **UI/UX**: Adheres to Material Design principles for enterprise data applications. Uses Inter and JetBrains Mono fonts. Color palette includes Abridge Cadmium Red (#EA2C00) for CTAs with #d12700 hover, muted grays, and emerald-600 for positive financial indicators.
 -   **GlobalHeader Component**: Fixed 72px header used across Switch pages with: Abridge logo on left (clickable to home), "ROI Calculator · {pageName}" centered, progress dots on right. Back button placed in page content below header.
+-   **Mobile Responsiveness**: Full mobile support with:
+    - Responsive grids: `grid-cols-1 sm:grid-cols-2 md:grid-cols-3` pattern
+    - Responsive typography: `text-2xl md:text-3xl` scaling
+    - Responsive padding: `p-4 md:p-6 lg:p-8` per section
+    - Touch targets: 44px minimum for interactive elements
+    - Charts: Horizontally scrollable on mobile with `-mx-4 px-4` pattern
+    - CTA buttons: Stack vertically on mobile with `flex-col sm:flex-row`
+    - No emojis: Use lucide-react icons instead
 
 ### Directory Structure
 -   `/client/src/pages/`: Main application screens.
