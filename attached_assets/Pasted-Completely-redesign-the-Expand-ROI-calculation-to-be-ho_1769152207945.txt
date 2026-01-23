@@ -1,0 +1,569 @@
+Completely redesign the Expand ROI calculation to be honest, defensible, and tiered. The current approach double-counts and inflates numbers. This new approach separates hard value from soft value.
+
+## CORE PRINCIPLES
+
+1. **Don't double-count time metrics** — Time Savings, Work Outside Work, and Chart Closure all measure the same underlying improvement
+2. **Let users choose their conversion story** — Not everyone converts time to dollars
+3. **Tier the value clearly** — Hard value (dollars) vs. Soft value (metrics) vs. Leading indicators
+4. **Be conservative by default** — Better to under-promise and over-deliver
+5. **Show the math transparently** — Every dollar should be traceable
+
+## NEW DATA MODEL
+
+```javascript
+const expandROIModel = {
+  // ALWAYS VALUED (if they have the data)
+  revenueCapture: {
+    wrvuLift: {
+      enabled: true,
+      beforeValue: 1.92,
+      afterValue: 2.30,
+      liftPerEncounter: 0.38,
+      encounters: 65000,
+      dollarPerWRVU: 33,        // Medicare blended rate
+      attribution: 0.50,        // 50% attributed to Abridge
+      annualValue: 407355,      // Calculated
+    },
+    levelOfService: {
+      enabled: false,           // Don't enable if wRVU is enabled (overlapping)
+      // ...
+    }
+  },
+  
+  // USER CHOOSES HOW TO VALUE
+  timeEfficiency: {
+    timeSavings: {
+      beforeMinutes: 10,
+      afterMinutes: 5,
+      minutesSaved: 5,
+      encounters: 65000,
+      totalHoursSaved: 5417,
+      
+      // User selects conversion method:
+      conversionMethod: 'patientAccess', // or 'none' or 'overtime'
+      
+      patientAccess: {
+        enabled: true,
+        conversionPercent: 15,          // User can adjust, default 15%
+        hoursConverted: 813,
+        minutesPerVisit: 30,
+        additionalVisits: 1626,
+        revenuePerVisit: 200,
+        realizability: 0.50,            // 50% - requires demand/scheduling
+        annualValue: 162600,
+      },
+      
+      overtime: {
+        enabled: false,
+        // Only if they have OT data
+      },
+      
+      none: {
+        enabled: false,
+        // Just show hours, no dollar conversion
+      }
+    },
+    
+    workOutsideWork: {
+      beforeHours: 10,
+      afterHours: 5,
+      hoursSavedPerWeek: 5,
+      providers: 50,
+      weeksPerYear: 48,
+      totalHoursSaved: 12000,
+      
+      // This is NOT separately valued - it's the same time as timeSavings
+      // Just measured differently (when vs how much)
+      valuedSeparately: false,
+      note: "Included in time efficiency calculation above"
+    },
+    
+    chartClosure: {
+      beforePercent: 78,
+      afterPercent: 92,
+      improvement: 14,
+      
+      // This is NOT valued - it's a mechanism/result, not separate value
+      valuedSeparately: false,
+      note: "Faster closure improves cash flow but not separately quantified"
+    }
+  },
+  
+  // QUALITATIVE / LEADING INDICATORS
+  leadingIndicators: {
+    satisfaction: {
+      beforeScore: 8,
+      afterScore: 9,
+      improvement: 1.0,
+      
+      // User can optionally estimate retention value
+      estimateRetention: false,
+      departuresPrevented: 0,
+      replacementCost: 400000,
+      retentionValue: 0,
+      
+      note: "Retention impact typically measurable after 12-18 months"
+    }
+  },
+  
+  // CALCULATED TOTALS
+  totals: {
+    hardValue: 569955,          // wRVU + time conversion (if enabled)
+    investment: 150000,
+    netValue: 419955,
+    roi: 2.8,
+    
+    softValue: {
+      hoursSaved: 5417,
+      pajamaTimeEliminated: 12000,
+      chartClosureImprovement: 14,
+      satisfactionImprovement: 1.0,
+    }
+  }
+};
+NEW UI: VALUE CONFIGURATION PAGE
+After data entry, before showing results, add a new page:
+Page: "How Are You Capturing Value?"
+jsxCopy<div className="value-configuration">
+  <h2>How Are You Capturing Value?</h2>
+  <p>Different organizations realize value in different ways. Tell us how yours works.</p>
+  
+  {/* SECTION 1: Revenue Capture - Always On */}
+  <div className="value-section always-on">
+    <div className="section-header">
+      <span className="icon">💰</span>
+      <div>
+        <h3>Revenue Capture</h3>
+        <p>Better documentation = more accurate coding = more revenue</p>
+      </div>
+      <span className="badge">Always Valued</span>
+    </div>
+    
+    <div className="section-content">
+      <div className="metric-summary">
+        <span>Your wRVU lift: +{wrvuLift}/encounter</span>
+        <span>Annual value: {formatCurrency(wrvuValue)}</span>
+      </div>
+      
+      <div className="calculation-preview">
+        <code>
+          +{wrvuLift} wRVU × {encounters} encounters × ${dollarPerWRVU}/wRVU × 50% attribution
+        </code>
+      </div>
+    </div>
+  </div>
+  
+  {/* SECTION 2: Time Efficiency - User Chooses */}
+  <div className="value-section user-choice">
+    <div className="section-header">
+      <span className="icon">⏱️</span>
+      <div>
+        <h3>Time Efficiency</h3>
+        <p>You're saving {totalHoursSaved.toLocaleString()} hours annually. How is this being used?</p>
+      </div>
+    </div>
+    
+    <div className="section-content">
+      <div className="conversion-options">
+        
+        <label className="conversion-option">
+          <input 
+            type="radio" 
+            name="timeConversion" 
+            value="none"
+            checked={timeConversion === 'none'}
+            onChange={() => setTimeConversion('none')}
+          />
+          <div className="option-content">
+            <span className="option-title">Not converting to dollars yet</span>
+            <span className="option-description">
+              Show as hours saved, not $. This is the most conservative approach.
+            </span>
+          </div>
+        </label>
+        
+        <label className="conversion-option">
+          <input 
+            type="radio" 
+            name="timeConversion" 
+            value="patientAccess"
+            checked={timeConversion === 'patientAccess'}
+            onChange={() => setTimeConversion('patientAccess')}
+          />
+          <div className="option-content">
+            <span className="option-title">Some converting to additional patient visits</span>
+            <span className="option-description">
+              If providers are using saved time to see more patients
+            </span>
+            
+            {timeConversion === 'patientAccess' && (
+              <div className="option-details">
+                <div className="slider-input">
+                  <label>What % of saved time converts to patient access?</label>
+                  <input 
+                    type="range" 
+                    min="5" 
+                    max="30" 
+                    value={conversionPercent}
+                    onChange={(e) => setConversionPercent(e.target.value)}
+                  />
+                  <span className="slider-value">{conversionPercent}%</span>
+                </div>
+                
+                <div className="conversion-preview">
+                  <div className="calc-step">
+                    {totalHoursSaved.toLocaleString()} hours × {conversionPercent}% = {hoursConverted.toLocaleString()} hours
+                  </div>
+                  <div className="calc-step">
+                    → {additionalVisits.toLocaleString()} additional visits
+                  </div>
+                  <div className="calc-step">
+                    × ${revenuePerVisit}/visit × 50% realizability
+                  </div>
+                  <div className="calc-result">
+                    = {formatCurrency(patientAccessValue)}
+                  </div>
+                </div>
+                
+                <div className="warning-note">
+                  ⚠️ Requires scheduling capacity and patient demand to realize
+                </div>
+              </div>
+            )}
+          </div>
+        </label>
+        
+        <label className="conversion-option">
+          <input 
+            type="radio" 
+            name="timeConversion" 
+            value="overtime"
+            checked={timeConversion === 'overtime'}
+            onChange={() => setTimeConversion('overtime')}
+          />
+          <div className="option-content">
+            <span className="option-title">Reducing overtime/locum costs</span>
+            <span className="option-description">
+              If you're seeing reduced OT or locum spend
+            </span>
+            
+            {timeConversion === 'overtime' && (
+              <div className="option-details">
+                <div className="input-group">
+                  <label>Estimated annual OT/locum reduction</label>
+                  <input 
+                    type="number" 
+                    placeholder="e.g., 150000"
+                    value={overtimeReduction}
+                    onChange={(e) => setOvertimeReduction(e.target.value)}
+                  />
+                </div>
+                <div className="info-note">
+                  💡 Enter only if you have actual data showing reduced spend
+                </div>
+              </div>
+            )}
+          </div>
+        </label>
+        
+      </div>
+    </div>
+  </div>
+  
+  {/* SECTION 3: Quality of Life - Usually Qualitative */}
+  <div className="value-section qualitative">
+    <div className="section-header">
+      <span className="icon">😊</span>
+      <div>
+        <h3>Quality of Life & Retention</h3>
+        <p>These improvements support retention but are harder to quantify</p>
+      </div>
+    </div>
+    
+    <div className="section-content">
+      <div className="qualitative-metrics">
+        <div className="qual-metric">
+          <span className="metric-name">Pajama Time Eliminated</span>
+          <span className="metric-value">-{pajamaTimeHours} hrs/week</span>
+        </div>
+        <div className="qual-metric">
+          <span className="metric-name">Satisfaction Improvement</span>
+          <span className="metric-value">+{satisfactionImprovement} points</span>
+        </div>
+      </div>
+      
+      <label className="qualitative-option">
+        <input 
+          type="checkbox" 
+          checked={estimateRetention}
+          onChange={(e) => setEstimateRetention(e.target.checked)}
+        />
+        <span>Estimate potential retention value (speculative)</span>
+      </label>
+      
+      {estimateRetention && (
+        <div className="retention-estimate">
+          <p>
+            Based on satisfaction improvement, estimate departures prevented:
+          </p>
+          <div className="input-row">
+            <input 
+              type="number" 
+              min="0" 
+              max="5"
+              value={departuresPrevented}
+              onChange={(e) => setDeparturesPrevented(e.target.value)}
+            />
+            <span>departures prevented × ${replacementCost.toLocaleString()} = {formatCurrency(retentionValue)}</span>
+          </div>
+          <div className="warning-note">
+            ⚠️ This is speculative. Retention impact typically takes 12-18 months to measure.
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+  
+  {/* LIVE PREVIEW */}
+  <div className="value-preview">
+    <h3>Your Value Summary</h3>
+    <div className="preview-breakdown">
+      <div className="preview-row">
+        <span>Revenue Capture (wRVU)</span>
+        <span>{formatCurrency(wrvuValue)}</span>
+      </div>
+      {timeConversion === 'patientAccess' && (
+        <div className="preview-row">
+          <span>Patient Access ({conversionPercent}% conversion)</span>
+          <span>{formatCurrency(patientAccessValue)}</span>
+        </div>
+      )}
+      {timeConversion === 'overtime' && overtimeReduction > 0 && (
+        <div className="preview-row">
+          <span>Overtime Reduction</span>
+          <span>{formatCurrency(overtimeReduction)}</span>
+        </div>
+      )}
+      {estimateRetention && retentionValue > 0 && (
+        <div className="preview-row speculative">
+          <span>Retention (speculative)</span>
+          <span>{formatCurrency(retentionValue)}</span>
+        </div>
+      )}
+      <div className="preview-divider" />
+      <div className="preview-row total">
+        <span>Total Hard Value</span>
+        <span>{formatCurrency(totalHardValue)}</span>
+      </div>
+      <div className="preview-row">
+        <span>Investment</span>
+        <span>-{formatCurrency(investment)}</span>
+      </div>
+      <div className="preview-row net">
+        <span>Net Value</span>
+        <span>{formatCurrency(netValue)}</span>
+      </div>
+      <div className="preview-row roi">
+        <span>ROI</span>
+        <span>{roi.toFixed(1)}x</span>
+      </div>
+    </div>
+  </div>
+  
+  <button className="continue-btn" onClick={goToResults}>
+    See Your Full ROI Story →
+  </button>
+</div>
+NEW RESULTS PAGE: TIERED VALUE
+jsxCopy<div className="roi-results">
+  <h1>Your ROI Story</h1>
+  <p>Based on your actual Abridge data and value configuration</p>
+  
+  {/* HEADLINE */}
+  <div className="headline-cards">
+    <div className="headline-card">
+      <span className="label">PROVEN VALUE</span>
+      <span className="value">{formatCurrency(hardValue)}</span>
+      <span className="sublabel">Annual</span>
+    </div>
+    <div className="headline-card highlighted">
+      <span className="label">RETURN ON INVESTMENT</span>
+      <span className="value">{roi.toFixed(1)}x</span>
+    </div>
+  </div>
+  
+  {/* TIER 1: HARD VALUE */}
+  <div className="value-tier tier-1">
+    <div className="tier-header">
+      <h3>TIER 1: Hard Value</h3>
+      <span className="tier-total">{formatCurrency(tier1Total)}</span>
+    </div>
+    <p className="tier-description">Directly measurable, defensible financial impact</p>
+    
+    <div className="tier-items">
+      <div className="value-item">
+        <div className="item-header">
+          <span className="icon">💰</span>
+          <span className="name">Revenue Capture (wRVU Lift)</span>
+          <span className="value">{formatCurrency(wrvuValue)}</span>
+        </div>
+        <div className="item-calculation">
+          +{wrvuLift} wRVU/enc × {encounters.toLocaleString()} enc × ${dollarPerWRVU}/wRVU × 50% attribution
+        </div>
+        <div className="item-note success">
+          ✓ Directly measurable from billing data
+        </div>
+      </div>
+      
+      {timeConversion === 'patientAccess' && (
+        <div className="value-item">
+          <div className="item-header">
+            <span className="icon">🗓️</span>
+            <span className="name">Patient Access ({conversionPercent}% time conversion)</span>
+            <span className="value">{formatCurrency(patientAccessValue)}</span>
+          </div>
+          <div className="item-calculation">
+            {totalHoursSaved.toLocaleString()} hrs saved × {conversionPercent}% → {additionalVisits.toLocaleString()} visits × ${revenuePerVisit}/visit × 50%
+          </div>
+          <div className="item-note warning">
+            ⚠️ Requires scheduling capacity and demand to fully realize
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+  
+  {/* TIER 2: EFFICIENCY GAINS */}
+  <div className="value-tier tier-2">
+    <div className="tier-header">
+      <h3>TIER 2: Efficiency Gains</h3>
+      <span className="tier-badge">Not Dollarized</span>
+    </div>
+    <p className="tier-description">Real improvements, shown as metrics rather than dollars</p>
+    
+    <div className="efficiency-metrics">
+      <div className="efficiency-metric">
+        <span className="icon">⏱️</span>
+        <div className="metric-content">
+          <span className="metric-name">Time Returned to Providers</span>
+          <span className="metric-value">{totalHoursSaved.toLocaleString()} hours/year</span>
+          <span className="metric-detail">
+            {minutesSaved} min/encounter × {encounters.toLocaleString()} encounters
+          </span>
+        </div>
+      </div>
+      
+      <div className="efficiency-metric">
+        <span className="icon">🌙</span>
+        <div className="metric-content">
+          <span className="metric-name">Pajama Time Eliminated</span>
+          <span className="metric-value">{pajamaTimeTotal.toLocaleString()} hours/year</span>
+          <span className="metric-detail">
+            {pajamaTimeWeekly} hrs/week × {providers} providers × 48 weeks
+          </span>
+        </div>
+      </div>
+      
+      <div className="efficiency-metric">
+        <span className="icon">📄</span>
+        <div className="metric-content">
+          <span className="metric-name">Same-Day Chart Closure</span>
+          <span className="metric-value">{chartClosureBefore}% → {chartClosureAfter}%</span>
+          <span className="metric-detail">
+            +{chartClosureImprovement}pp improvement in same-day closure
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="tier-note">
+      💡 These metrics represent the same underlying improvement (documentation efficiency) measured in different ways. They're shown separately as evidence but not summed to avoid double-counting.
+    </div>
+  </div>
+  
+  {/* TIER 3: LEADING INDICATORS */}
+  <div className="value-tier tier-3">
+    <div className="tier-header">
+      <h3>TIER 3: Leading Indicators</h3>
+      <span className="tier-badge">Qualitative</span>
+    </div>
+    <p className="tier-description">Early signs of long-term value (retention, engagement)</p>
+    
+    <div className="leading-indicators">
+      <div className="indicator">
+        <span className="icon">😊</span>
+        <div className="indicator-content">
+          <span className="indicator-name">Clinician Satisfaction</span>
+          <span className="indicator-value">{satisfactionBefore}/10 → {satisfactionAfter}/10</span>
+          <span className="indicator-detail">+{satisfactionImprovement} point improvement</span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="tier-note">
+      💡 Higher satisfaction correlates with lower burnout and turnover. Retention impact typically measurable after 12-18 months of sustained improvement.
+    </div>
+  </div>
+  
+  {/* METHODOLOGY */}
+  <div className="methodology-section">
+    <h3>📊 About These Numbers</h3>
+    <ul>
+      <li>wRVU valued at <strong>$33</strong> (Medicare blended rate)</li>
+      <li>Revenue attribution at <strong>50%</strong> (other factors contribute to coding accuracy)</li>
+      {timeConversion === 'patientAccess' && (
+        <li>Time conversion at <strong>{conversionPercent}%</strong> (conservative estimate requiring capacity)</li>
+      )}
+      <li>Patient visits valued at <strong>$200</strong> (blended reimbursement)</li>
+      <li>Investment: <strong>${investmentPerProvider}/provider/month</strong> = {formatCurrency(investment)}/year</li>
+    </ul>
+  </div>
+</div>
+SANITY CHECK WARNINGS
+Add warnings when numbers seem too high:
+jsxCopy{roi > 5 && (
+  <div className="sanity-warning">
+    <span className="icon">⚠️</span>
+    <div>
+      <strong>This ROI seems high ({roi.toFixed(1)}x)</strong>
+      <p>Most Abridge customers see 2-4x ROI. Double-check your inputs or consider more conservative assumptions.</p>
+    </div>
+  </div>
+)}
+
+{wrvuLiftPercent > 10 && (
+  <div className="sanity-warning">
+    <span className="icon">⚠️</span>
+    <div>
+      <strong>Your wRVU lift ({wrvuLiftPercent.toFixed(1)}%) is above typical range</strong>
+      <p>Most customers see 3-7% lift. This may be accurate for your situation, but verify your baseline and current data.</p>
+    </div>
+  </div>
+)}
+
+{timeConversion === 'patientAccess' && conversionPercent > 25 && (
+  <div className="sanity-warning">
+    <span className="icon">⚠️</span>
+    <div>
+      <strong>High time conversion assumption ({conversionPercent}%)</strong>
+      <p>Converting more than 25% of saved time to patient visits requires significant scheduling capacity and demand. Consider a more conservative estimate.</p>
+    </div>
+  </div>
+)}
+DEFAULT VALUES
+javascriptCopyconst defaults = {
+  wrvuAttribution: 0.50,          // 50% of wRVU lift attributed to Abridge
+  dollarPerWRVU: 33,              // Medicare blended rate
+  timeConversionPercent: 15,      // Conservative default
+  revenuePerVisit: 200,           // Blended reimbursement
+  visitRealizability: 0.50,       // 50% - requires demand/capacity
+  investmentPerProvider: 250,     // $/provider/month
+};
+This creates a defensible, honest ROI calculation that:
+
+Clearly separates hard value from soft value
+Lets users choose how (or whether) to convert time to dollars
+Shows the math transparently
+Warns when numbers seem unrealistic
+Avoids double-counting
+

@@ -2,9 +2,11 @@ import { useState } from "react";
 import ExpandSettingSelection from "./ExpandSettingSelection";
 import ExpandDeploymentSetup from "./ExpandDeploymentSetup";
 import ExpandDataEntry from "./ExpandDataEntry";
+import ExpandValueConfiguration from "./ExpandValueConfiguration";
 import ExpandPerformanceDashboard from "./ExpandPerformanceDashboard";
 import ExpandROIStory from "./ExpandROIStory";
 import ExpandJourneyExpansion from "./ExpandJourneyExpansion";
+import { type ValueConfigData, EXPAND_ROI_DEFAULTS } from "@/lib/expandRoiCalculator";
 
 // ============================================================================
 // TYPES
@@ -111,7 +113,7 @@ export interface ExpandFlowProps {
 }
 
 // ============================================================================
-// EXPAND FLOW MAIN COMPONENT (6 Steps)
+// EXPAND FLOW MAIN COMPONENT (7 Steps)
 // ============================================================================
 
 export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlowProps = {}) {
@@ -142,6 +144,15 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     "chartClosure"
   ]);
   
+  // Value configuration for tiered ROI calculation
+  const [valueConfig, setValueConfig] = useState<ValueConfigData>({
+    timeConversionMethod: "none",
+    conversionPercent: EXPAND_ROI_DEFAULTS.timeConversionPercent,
+    overtimeReduction: null,
+    estimateRetention: false,
+    departuresPrevented: 0,
+  });
+  
   // Actual metrics data (before/after) - all blank
   // Using Level 1-5 IDs instead of CPT codes for Level of Service
   const [metricsData, setMetricsData] = useState<MetricsData>({
@@ -166,7 +177,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
   });
 
   const goNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 6));
+    setCurrentStep((prev) => Math.min(prev + 1, 7));
     window.scrollTo(0, 0);
   };
   const goBack = () => {
@@ -215,11 +226,12 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
         );
       case 4:
         return (
-          <ExpandPerformanceDashboard
+          <ExpandValueConfiguration
             deploymentData={deploymentData}
             selectedMetrics={selectedMetrics}
             metricsData={metricsData}
-            timelineData={timelineData}
+            valueConfig={valueConfig}
+            setValueConfig={setValueConfig}
             onNext={goNext}
             onBack={goBack}
             onBackToJourney={goBackToJourney}
@@ -227,10 +239,12 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
         );
       case 5:
         return (
-          <ExpandROIStory
+          <ExpandPerformanceDashboard
             deploymentData={deploymentData}
-            metricsData={metricsData}
             selectedMetrics={selectedMetrics}
+            metricsData={metricsData}
+            timelineData={timelineData}
+            valueConfig={valueConfig}
             onNext={goNext}
             onBack={goBack}
             onBackToJourney={goBackToJourney}
@@ -238,10 +252,23 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
         );
       case 6:
         return (
+          <ExpandROIStory
+            deploymentData={deploymentData}
+            metricsData={metricsData}
+            selectedMetrics={selectedMetrics}
+            valueConfig={valueConfig}
+            onNext={goNext}
+            onBack={goBack}
+            onBackToJourney={goBackToJourney}
+          />
+        );
+      case 7:
+        return (
           <ExpandJourneyExpansion
             deploymentData={deploymentData}
             metricsData={metricsData}
             selectedMetrics={selectedMetrics}
+            valueConfig={valueConfig}
             onBack={goBack}
             onBackToJourney={goBackToJourney}
           />

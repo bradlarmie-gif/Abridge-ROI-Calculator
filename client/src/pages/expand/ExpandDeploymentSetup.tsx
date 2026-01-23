@@ -102,7 +102,7 @@ export default function ExpandDeploymentSetup({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand Setup" currentStep={1} totalSteps={5} onLogoClick={onBackToJourney} />
+      <GlobalHeader pageName="Expand Setup" currentStep={2} totalSteps={7} onLogoClick={onBackToJourney} />
 
       <main className="max-w-4xl mx-auto px-6 pt-[96px] pb-10">
         <Button

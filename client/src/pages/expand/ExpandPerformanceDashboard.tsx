@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area, ComposedChart } from "recharts";
 import type { DeploymentData, MetricType, MetricsData, TimelineData } from "./ExpandFlow";
+import { type ValueConfigData, calculateTieredROI, type CalculationInputs, EXPAND_ROI_DEFAULTS } from "@/lib/expandRoiCalculator";
 
 interface ExpandPerformanceDashboardProps {
   deploymentData: DeploymentData;
   selectedMetrics: MetricType[];
   metricsData: MetricsData;
   timelineData: TimelineData;
+  valueConfig: ValueConfigData;
   onNext: () => void;
   onBack: () => void;
   onBackToJourney?: () => void;
@@ -63,6 +65,7 @@ export default function ExpandPerformanceDashboard({
   selectedMetrics,
   metricsData,
   timelineData,
+  valueConfig,
   onNext,
   onBack,
   onBackToJourney,
@@ -70,15 +73,37 @@ export default function ExpandPerformanceDashboard({
   
   const isDetailedMode = deploymentData.dataEntryMode === "detailed";
   const months = deploymentData.monthsOnAbridge || 6;
+  const providers = deploymentData.providers || 50;
+  const encounters = deploymentData.annualEncounters || 65000;
+  const utilizationRate = deploymentData.utilizationRate || 70;
   
   const abridgeEncounters = useMemo(() => {
-    if (deploymentData.annualEncounters && deploymentData.utilizationRate) {
-      return Math.round(deploymentData.annualEncounters * (deploymentData.utilizationRate / 100));
-    }
-    return 0;
-  }, [deploymentData]);
+    return Math.round(encounters * (utilizationRate / 100));
+  }, [encounters, utilizationRate]);
 
-  // Calculate metrics
+  // Build calculation inputs for tiered ROI
+  const calcInputs: CalculationInputs = useMemo(() => ({
+    providers,
+    encounters,
+    utilizationRate,
+    monthsOnAbridge: months,
+    wrvuBefore: metricsData.wrvuCapture.before,
+    wrvuAfter: metricsData.wrvuCapture.after,
+    timeSavingsBefore: metricsData.timeSavings.before,
+    timeSavingsAfter: metricsData.timeSavings.after,
+    workOutsideWorkBefore: metricsData.workOutsideWork.before,
+    workOutsideWorkAfter: metricsData.workOutsideWork.after,
+    chartClosureBefore: metricsData.chartClosure.sameDayBefore ?? metricsData.chartClosure.before.within24,
+    chartClosureAfter: metricsData.chartClosure.sameDayAfter ?? metricsData.chartClosure.after.within24,
+    satisfactionBefore: metricsData.clinicianSatisfaction.before,
+    satisfactionAfter: metricsData.clinicianSatisfaction.after,
+    valueConfig,
+  }), [providers, encounters, utilizationRate, months, metricsData, valueConfig]);
+
+  // Calculate tiered ROI using the new honest calculation
+  const roiResult = useMemo(() => calculateTieredROI(calcInputs), [calcInputs]);
+
+  // Extract metric changes for display cards
   const timeSavings = metricsData.timeSavings;
   const timeSavingsChange = timeSavings.before && timeSavings.after 
     ? timeSavings.before - timeSavings.after 
@@ -93,7 +118,6 @@ export default function ExpandPerformanceDashboard({
     : null;
 
   const losData = metricsData.levelOfService;
-  // Use simplified average if available, otherwise calculate from detailed distribution
   const losBeforeAvg = losData.averageBefore ?? null;
   const losAfterAvg = losData.averageAfter ?? null;
   const losChange = losBeforeAvg && losAfterAvg ? (losAfterAvg - losBeforeAvg) : null;
@@ -104,7 +128,6 @@ export default function ExpandPerformanceDashboard({
     : null;
 
   const closureData = metricsData.chartClosure;
-  // Use simplified same-day if available, otherwise use detailed distribution
   const sameDayBefore = closureData.sameDayBefore ?? closureData.before.within24;
   const sameDayAfter = closureData.sameDayAfter ?? closureData.after.within24;
   const sameDayImprovement = (sameDayAfter || 0) - (sameDayBefore || 0);
@@ -112,44 +135,15 @@ export default function ExpandPerformanceDashboard({
   const satData = metricsData.clinicianSatisfaction;
   const satChange = satData.before && satData.after ? satData.after - satData.before : null;
 
-  // Calculate total value realized based on metrics
-  const calculateValueRealized = useMemo(() => {
-    let totalValue = 0;
-    const providers = deploymentData.providers || 100;
-    const encounters = abridgeEncounters || 100000;
-    
-    // Time savings: 4 min saved × $75/hr × encounters
-    if (timeSavingsChange && timeSavingsChange > 0) {
-      const hourlyRate = 75;
-      const hoursSaved = (timeSavingsChange / 60) * encounters;
-      totalValue += hoursSaved * hourlyRate;
-    }
-    
-    // Work outside work: reduced hours × provider salary impact
-    if (workOutsideChange && workOutsideChange > 0) {
-      const weeklyValue = workOutsideChange * 100; // $100/hr
-      totalValue += weeklyValue * 48 * providers; // 48 work weeks
-    }
-    
-    // wRVU lift
-    if (wrvuChange && wrvuChange > 0) {
-      const avgWrvuValue = 50;
-      const baseWrvu = 2.0;
-      const additionalWrvu = baseWrvu * (wrvuChange / 100);
-      totalValue += additionalWrvu * encounters * avgWrvuValue;
-    }
-    
-    // Scale to partial year
-    const yearFraction = months / 12;
-    return Math.round(totalValue * yearFraction);
-  }, [timeSavingsChange, workOutsideChange, wrvuChange, months, abridgeEncounters, deploymentData.providers]);
+  // Use tiered values - scale by months for partial year "today" value
+  const yearFraction = months / 12;
+  const calculateValueRealized = Math.round(roiResult.tier1HardValue * yearFraction);
   
-  // Full scale projection (100% utilization)
+  // Full scale projection (100% utilization, full year)
   const fullScaleValue = useMemo(() => {
-    const utilRate = deploymentData.utilizationRate || 70;
-    if (utilRate === 0) return calculateValueRealized;
-    return Math.round((calculateValueRealized / (months / 12)) * (100 / utilRate));
-  }, [calculateValueRealized, months, deploymentData.utilizationRate]);
+    if (utilizationRate === 0) return roiResult.tier1HardValue;
+    return Math.round(roiResult.tier1HardValue * (100 / utilizationRate));
+  }, [roiResult.tier1HardValue, utilizationRate]);
 
   // Journey graph data point type
   interface JourneyDataPoint {
@@ -226,7 +220,7 @@ export default function ExpandPerformanceDashboard({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Your Journey" currentStep={3} totalSteps={5} onLogoClick={onBackToJourney} />
+      <GlobalHeader pageName="Your Journey" currentStep={5} totalSteps={7} onLogoClick={onBackToJourney} />
 
       <div className="max-w-5xl mx-auto px-6 pt-[96px]">
         <Button

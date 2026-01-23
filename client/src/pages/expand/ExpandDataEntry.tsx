@@ -953,7 +953,7 @@ export default function ExpandDataEntry({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Enter Your Data" currentStep={2} totalSteps={5} onLogoClick={onBackToJourney} />
+      <GlobalHeader pageName="Enter Your Data" currentStep={3} totalSteps={7} onLogoClick={onBackToJourney} />
 
       <div className="max-w-5xl mx-auto px-6 pt-[96px]">
         <Button

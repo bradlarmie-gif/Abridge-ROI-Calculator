@@ -3,11 +3,13 @@ import { ArrowRight, ArrowLeft, AlertTriangle, Clock, DollarSign, Moon, Clipboar
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import type { DeploymentData, MetricType, MetricsData } from "./ExpandFlow";
+import { type ValueConfigData, calculateTieredROI, type CalculationInputs, EXPAND_ROI_DEFAULTS, formatCurrency } from "@/lib/expandRoiCalculator";
 
 interface ExpandROIStoryProps {
   deploymentData: DeploymentData;
   metricsData: MetricsData;
   selectedMetrics: MetricType[];
+  valueConfig: ValueConfigData;
   onNext: () => void;
   onBack: () => void;
   onBackToJourney?: () => void;
@@ -17,76 +19,62 @@ export default function ExpandROIStory({
   deploymentData,
   metricsData,
   selectedMetrics,
+  valueConfig,
   onNext,
   onBack,
   onBackToJourney,
 }: ExpandROIStoryProps) {
   
+  const providers = deploymentData.providers || 50;
+  const encounters = deploymentData.annualEncounters || 65000;
+  const utilizationRate = deploymentData.utilizationRate || 70;
+  const months = deploymentData.monthsOnAbridge || 6;
+  
   const abridgeEncounters = useMemo(() => {
-    if (deploymentData.annualEncounters && deploymentData.utilizationRate) {
-      return Math.round(deploymentData.annualEncounters * (deploymentData.utilizationRate / 100));
-    }
-    return 0;
-  }, [deploymentData]);
+    return Math.round(encounters * (utilizationRate / 100));
+  }, [encounters, utilizationRate]);
 
-  // Calculate ROI values
+  // Build calculation inputs for tiered ROI
+  const calcInputs: CalculationInputs = useMemo(() => ({
+    providers,
+    encounters,
+    utilizationRate,
+    monthsOnAbridge: months,
+    wrvuBefore: metricsData.wrvuCapture.before,
+    wrvuAfter: metricsData.wrvuCapture.after,
+    timeSavingsBefore: metricsData.timeSavings.before,
+    timeSavingsAfter: metricsData.timeSavings.after,
+    workOutsideWorkBefore: metricsData.workOutsideWork.before,
+    workOutsideWorkAfter: metricsData.workOutsideWork.after,
+    chartClosureBefore: metricsData.chartClosure.sameDayBefore ?? metricsData.chartClosure.before.within24,
+    chartClosureAfter: metricsData.chartClosure.sameDayAfter ?? metricsData.chartClosure.after.within24,
+    satisfactionBefore: metricsData.clinicianSatisfaction.before,
+    satisfactionAfter: metricsData.clinicianSatisfaction.after,
+    valueConfig,
+  }), [providers, encounters, utilizationRate, months, metricsData, valueConfig]);
+
+  // Calculate tiered ROI using the new honest calculation
+  const roiResult = useMemo(() => calculateTieredROI(calcInputs), [calcInputs]);
+
+  // Map to old calculation structure for UI compatibility
   const calculations = useMemo(() => {
-    const providers = deploymentData.providers || 0;
-    const conversionRate = 0.50; // Conservative 50%
-    const wrvuConversionFactor = 33; // $/wRVU
-    
-    let timeSavingsValue = 0;
-    let wrvuValue = 0;
-    let workOutsideValue = 0;
-
-    // Time Savings Value
-    if (selectedMetrics.includes("timeSavings") && metricsData.timeSavings.before && metricsData.timeSavings.after) {
-      const minutesSaved = metricsData.timeSavings.before - metricsData.timeSavings.after;
-      const hoursSaved = (minutesSaved * abridgeEncounters) / 60;
-      const hourlyRate = 150; // Assumed hourly value
-      timeSavingsValue = hoursSaved * hourlyRate * conversionRate;
-    }
-
-    // wRVU Value
-    if (selectedMetrics.includes("wrvuCapture") && metricsData.wrvuCapture.before && metricsData.wrvuCapture.after) {
-      const wrvuLift = metricsData.wrvuCapture.after - metricsData.wrvuCapture.before;
-      const incrementalWrvus = wrvuLift * abridgeEncounters;
-      wrvuValue = incrementalWrvus * wrvuConversionFactor * conversionRate;
-    }
-
-    // Work Outside Work Value (Quality of Life)
-    if (selectedMetrics.includes("workOutsideWork") && metricsData.workOutsideWork.before && metricsData.workOutsideWork.after) {
-      const hoursReclaimed = metricsData.workOutsideWork.before - metricsData.workOutsideWork.after;
-      const weeksPerYear = 48;
-      workOutsideValue = hoursReclaimed * weeksPerYear * providers * 50 * conversionRate; // $50/hr value
-    }
-
-    const totalValue = timeSavingsValue + wrvuValue + workOutsideValue;
-    
-    // Investment (rough estimate based on providers)
-    const monthlyPerProvider = 250;
-    const annualInvestment = providers * monthlyPerProvider * 12;
-    
-    const netValue = totalValue - annualInvestment;
-    const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
-
     return {
-      timeSavingsValue,
-      wrvuValue,
-      workOutsideValue,
-      totalValue,
-      annualInvestment,
-      netValue,
-      roi,
+      timeSavingsValue: 0, // Not separately valued - shown in tier 2
+      wrvuValue: roiResult.tier1Breakdown.wrvuValue,
+      workOutsideValue: 0, // Not separately valued - shown in tier 2
+      totalValue: roiResult.tier1HardValue,
+      annualInvestment: roiResult.investment,
+      netValue: roiResult.netValue,
+      roi: roiResult.roi,
       providers,
-      conversionRate,
-      wrvuConversionFactor,
+      conversionRate: EXPAND_ROI_DEFAULTS.wrvuAttribution,
+      wrvuConversionFactor: EXPAND_ROI_DEFAULTS.dollarPerWRVU,
     };
-  }, [deploymentData, metricsData, selectedMetrics, abridgeEncounters]);
+  }, [roiResult, providers]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand ROI" currentStep={4} totalSteps={5} onLogoClick={onBackToJourney} />
+      <GlobalHeader pageName="ROI Story" currentStep={6} totalSteps={7} onLogoClick={onBackToJourney} />
 
       <main className="max-w-4xl mx-auto px-6 pt-[96px] pb-10">
         <Button
