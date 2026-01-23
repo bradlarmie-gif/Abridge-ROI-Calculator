@@ -1,0 +1,1052 @@
+Build a premium 2-page PDF export for the Ambient AI Value Realization Assessment. This is the flagship displacement tool — it needs to be exceptional. Page 1 is the executive overview, Page 2 is the detailed breakdown and methodology.
+
+## DESIGN PRINCIPLES
+
+1. **Two pages, both valuable** — Page 1 = Executive summary + key metrics. Page 2 = Deep dive + methodology
+2. **Story-driven** — Narrative that explains what the numbers mean
+3. **Graph included** — Show the cost of the gap over time visually
+4. **Transparent math** — Every calculation explained
+5. **Displacement-ready** — Someone can send this to their CFO to justify exploring alternatives
+
+## COLOR PALETTE
+
+```javascript
+const colors = {
+  coral: '#E85A4F',
+  coralLight: '#FEF2F2',
+  green: '#059669',
+  greenLight: '#ECFDF5',
+  black: '#111827',
+  darkGray: '#374151',
+  mediumGray: '#6B7280',
+  lightGray: '#9CA3AF',
+  backgroundGray: '#F9FAFB',
+  borderGray: '#E5E7EB',
+};
+PAGE 1: EXECUTIVE OVERVIEW
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  ABRIDGE                                    Value Realization Assessment   │
+│                                             January 23, 2025               │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  ┌────────────┬────────────┬────────────┬────────────┐                     │
+│  │  $376K     │    54%     │   $1.1M    │ Developing │                     │
+│  │ Annual Gap │  Realized  │ 3-Year Gap │   Stage    │                     │
+│  └────────────┴────────────┴────────────┴────────────┘                     │
+│                                                                             │
+│  EXECUTIVE SUMMARY                                                         │
+│  ─────────────────                                                         │
+│  Based on your inputs, your organization is capturing 54% of the           │
+│  potential value from ambient AI — leaving an estimated $376K per year     │
+│  unrealized. Over 3 years, this gap represents $1.1M in value that        │
+│  could be captured through improved utilization, efficiency, and           │
+│  documentation quality.                                                    │
+│                                                                             │
+│  You are in the "Developing" stage of ambient AI value realization.       │
+│  Most organizations plateau here without focused optimization.             │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  1  YOUR PERFORMANCE VS. BENCHMARKS                                        │
+│                                                                             │
+│  ┌─────────────────────────────┬─────────────────────────────┐             │
+│  │ UTILIZATION                 │ EFFICIENCY                  │             │
+│  │ You: 55%   Benchmark: 75%   │ You: 2min   Benchmark: 4min │             │
+│  │ ████████████░░░░░  73%      │ ██████░░░░░░░░░░  50%       │             │
+│  ├─────────────────────────────┼─────────────────────────────┤             │
+│  │ QUALITY (wRVU LIFT)         │ SATISFACTION                │             │
+│  │ You: +3%   Benchmark: +5%   │ You: 70%   Benchmark: 85%   │             │
+│  │ ████████████░░░░░  60%      │ █████████████░░░  82%       │             │
+│  └─────────────────────────────┴─────────────────────────────┘             │
+│                                                                             │
+│  Average Score: 54% realized — "Developing" stage                          │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  2  THE COST OF THE GAP OVER TIME                                          │
+│                                                                             │
+│  Cumulative unrealized value if gap persists:                              │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                              $1.1M  │   │
+│  │                                                         ●──────     │   │
+│  │                                                    ╱                │   │
+│  │                                               ╱        $752K       │   │
+│  │                                          ●──────                    │   │
+│  │                                     ╱                               │   │
+│  │                                ╱           $376K                    │   │
+│  │                           ●──────                                   │   │
+│  │                      ╱                                              │   │
+│  │  $0 ●───────────                                                    │   │
+│  │     Today      Year 1       Year 2       Year 3                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  Every month at current performance = $31K in unrealized value      │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  Generated by Abridge ROI Calculator                              Page 1/2 │
+└─────────────────────────────────────────────────────────────────────────────┘
+PAGE 2: DETAILED BREAKDOWN & METHODOLOGY
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  ABRIDGE                                    Value Realization Assessment   │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  3  HOW THE GAP BREAKS DOWN                                                │
+│                                                                             │
+│  Each gap below represents value that exists but isn't being captured.     │
+│  These gaps compound — small improvements in each area yield significant   │
+│  total value.                                                              │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ UTILIZATION GAP                                           $180K    │   │
+│  │ ████████████████████████████░░░░░░░░░░░░  You: 55%  Benchmark: 75% │   │
+│  │                                                                     │   │
+│  │ The Math:                                                          │   │
+│  │ • Your utilization: 55% of 150,000 encounters = 82,500 documented  │   │
+│  │ • At benchmark (75%): 112,500 would be documented                  │   │
+│  │ • Gap: 30,000 encounters not getting ambient documentation         │   │
+│  │ • These encounters could save 4 min each = 2,000 additional hours  │   │
+│  │ • Value: 2,000 hrs × $150/hr × 15% conversion = $180,000           │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ EFFICIENCY GAP                                            $113K    │   │
+│  │ █████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░  You: 2min  Benchmark: 4min│   │
+│  │                                                                     │   │
+│  │ The Math:                                                          │   │
+│  │ • You save 2 min/encounter, benchmark is 4 min                     │   │
+│  │ • Gap: 2 min/encounter × 112,500 encounters = 3,750 hours          │   │
+│  │ • Value: 3,750 hrs × $150/hr × 20% conversion = $112,500           │   │
+│  │ • Note: 20% conversion is conservative — not all time converts     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ QUALITY GAP (wRVU)                                         $84K    │   │
+│  │ ████████████████████░░░░░░░░░░░░░░░░░░░░  You: +3%  Benchmark: +5% │   │
+│  │                                                                     │   │
+│  │ The Math:                                                          │   │
+│  │ • Your wRVU lift: +3%, benchmark is +5%                            │   │
+│  │ • Gap: 2% additional wRVU lift potential                           │   │
+│  │ • At 112,500 encounters × avg 1.5 wRVU × 2% = 3,375 additional wRVU│   │
+│  │ • Value: 3,375 wRVU × $33/wRVU × 50% attribution = $84,000        │   │
+│  │ • Note: 50% attribution is conservative — other factors affect wRVU│   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ TOTAL ANNUAL GAP                                          $376K    │   │
+│  │ Utilization ($180K) + Efficiency ($113K) + Quality ($84K)          │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  KEY TAKEAWAYS                                                             │
+│  ─────────────                                                             │
+│  • You're capturing 54% of ambient AI's potential value                   │
+│  • The largest opportunity is in Efficiency (50% of benchmark)            │
+│  • Closing the gap could recover $376K annually / $1.1M over 3 years     │
+│  • All calculations use conservative assumptions (see methodology)        │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  METHODOLOGY & ASSUMPTIONS                                                 │
+│  ─────────────────────────                                                 │
+│                                                                             │
+│  YOUR INPUTS                          ABRIDGE BENCHMARKS                   │
+│  • 75 providers                       • 75% utilization (avg deployment)  │
+│  • 150,000 annual encounters          • 4 min saved/encounter (avg)       │
+│  • Current solution: Ambient AI       • +5% wRVU lift (avg)               │
+│  • 55% utilization                    • 85% satisfaction (avg)            │
+│  • 2 min time savings                                                      │
+│  • +3% wRVU lift                      VALUATION ASSUMPTIONS                │
+│  • 70% satisfaction                   • Provider time: $150/hr (loaded)   │
+│                                       • Time conversion: 15-20%           │
+│  CALCULATED VALUES                    • wRVU value: $33 (Medicare CF)     │
+│  • Encounters at benchmark: 112,500   • wRVU attribution: 50%             │
+│  • Score: (73+50+60+82)/4 = 54%      • 3-year multiplier: 3x annual      │
+│                                                                             │
+│  These benchmarks are based on aggregate performance data from 200+       │
+│  health system partners. Individual results may vary based on specialty   │
+│  mix, payer contracts, and operational factors.                           │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  Generated by Abridge ROI Calculator                              Page 2/2 │
+└─────────────────────────────────────────────────────────────────────────────┘
+IMPLEMENTATION
+Create/update AmbientAIPDFExport.jsx:
+jsxCopyimport React from 'react';
+import { 
+  Document, 
+  Page, 
+  Text, 
+  View, 
+  StyleSheet,
+  Svg,
+  Line,
+  Circle,
+  Path,
+  pdf
+} from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
+
+const colors = {
+  coral: '#E85A4F',
+  coralLight: '#FEF2F2',
+  green: '#059669',
+  greenLight: '#ECFDF5',
+  black: '#111827',
+  darkGray: '#374151',
+  mediumGray: '#6B7280',
+  lightGray: '#9CA3AF',
+  backgroundGray: '#F9FAFB',
+  borderGray: '#E5E7EB',
+};
+
+const styles = StyleSheet.create({
+  page: {
+    padding: 36,
+    fontFamily: 'Helvetica',
+    fontSize: 9,
+    color: colors.black,
+    backgroundColor: '#FFFFFF',
+  },
+  
+  // Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.coral,
+  },
+  logo: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.coral,
+    letterSpacing: 1,
+  },
+  headerRight: {
+    textAlign: 'right',
+  },
+  headerTitle: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: colors.black,
+  },
+  headerDate: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginTop: 1,
+  },
+  
+  // Metric strip
+  metricStrip: {
+    flexDirection: 'row',
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 4,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+  },
+  metricItem: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderRightColor: colors.borderGray,
+  },
+  metricItemLast: {
+    borderRightWidth: 0,
+  },
+  metricValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.black,
+  },
+  metricValueCoral: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.coral,
+  },
+  metricLabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginTop: 2,
+  },
+  
+  // Executive Summary
+  execSummary: {
+    marginBottom: 12,
+  },
+  execTitle: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: colors.black,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  execText: {
+    fontSize: 9,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 4,
+  },
+  bold: {
+    fontWeight: 'bold',
+    color: colors.black,
+  },
+  
+  // Section divider
+  divider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+    marginVertical: 10,
+  },
+  
+  // Section header
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sectionNumber: {
+    backgroundColor: colors.coral,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  sectionNumberText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  sectionTitle: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: colors.black,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  sectionSubtitle: {
+    fontSize: 8,
+    color: colors.darkGray,
+    marginBottom: 8,
+  },
+  
+  // Performance grid
+  perfGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+  },
+  perfCell: {
+    width: '50%',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderColor: colors.borderGray,
+  },
+  perfCellRight: {
+    borderRightWidth: 0,
+  },
+  perfCellBottom: {
+    borderBottomWidth: 0,
+  },
+  perfLabel: {
+    fontSize: 7,
+    fontWeight: 'bold',
+    color: colors.mediumGray,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  perfValues: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  perfYou: {
+    fontSize: 8,
+    color: colors.black,
+  },
+  perfBenchmark: {
+    fontSize: 8,
+    color: colors.mediumGray,
+  },
+  perfBar: {
+    height: 6,
+    backgroundColor: colors.borderGray,
+    borderRadius: 3,
+  },
+  perfBarFill: {
+    height: 6,
+    backgroundColor: colors.coral,
+    borderRadius: 3,
+  },
+  perfPercent: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: colors.black,
+    marginTop: 4,
+  },
+  
+  // Score summary
+  scoreSummary: {
+    backgroundColor: colors.coralLight,
+    padding: 8,
+    borderRadius: 4,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  scoreSummaryText: {
+    fontSize: 9,
+    color: colors.darkGray,
+  },
+  
+  // Graph container
+  graphContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  graphBox: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 12,
+    height: 120,
+    position: 'relative',
+  },
+  graphLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  graphLabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+  },
+  
+  // Monthly callout
+  monthlyCallout: {
+    backgroundColor: colors.coralLight,
+    padding: 8,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  monthlyText: {
+    fontSize: 8,
+    color: colors.coral,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  
+  // Gap breakdown card
+  gapCard: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  gapCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.backgroundGray,
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  gapCardTitle: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: colors.black,
+  },
+  gapCardValue: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: colors.green,
+  },
+  gapCardBar: {
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  gapBar: {
+    height: 8,
+    backgroundColor: colors.borderGray,
+    borderRadius: 4,
+    flexDirection: 'row',
+  },
+  gapBarFill: {
+    height: 8,
+    backgroundColor: colors.coral,
+    borderRadius: 4,
+  },
+  gapBarLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  gapBarLabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+  },
+  gapCardMath: {
+    padding: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  gapMathTitle: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: colors.darkGray,
+    marginBottom: 4,
+  },
+  gapMathItem: {
+    fontSize: 8,
+    color: colors.darkGray,
+    marginBottom: 2,
+    paddingLeft: 8,
+  },
+  
+  // Total card
+  totalCard: {
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+    borderRadius: 4,
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  totalLabel: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: colors.green,
+  },
+  totalValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.green,
+  },
+  totalBreakdown: {
+    fontSize: 8,
+    color: colors.green,
+    marginTop: 2,
+  },
+  
+  // Key takeaways
+  takeaways: {
+    marginBottom: 10,
+  },
+  takeawaysTitle: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: colors.black,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  takeawayItem: {
+    flexDirection: 'row',
+    marginBottom: 3,
+  },
+  takeawayBullet: {
+    fontSize: 9,
+    color: colors.coral,
+    marginRight: 6,
+  },
+  takeawayText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    flex: 1,
+  },
+  
+  // Methodology
+  methodology: {
+    marginTop: 10,
+  },
+  methodTitle: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: colors.black,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  methodGrid: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  methodColumn: {
+    flex: 1,
+  },
+  methodSubtitle: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: colors.darkGray,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  methodItem: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginBottom: 2,
+  },
+  methodNote: {
+    fontSize: 7,
+    color: colors.lightGray,
+    fontStyle: 'italic',
+    marginTop: 8,
+    lineHeight: 1.4,
+  },
+  
+  // Footer
+  footer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 36,
+    right: 36,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+    paddingTop: 8,
+  },
+  footerText: {
+    fontSize: 7,
+    color: colors.lightGray,
+  },
+});
+
+const AmbientAIPDFDocument = ({ data }) => {
+  const {
+    providers,
+    encounters,
+    solution,
+    utilization,
+    efficiency,
+    wrvuLift,
+    satisfaction,
+    utilizationScore,
+    efficiencyScore,
+    qualityScore,
+    satisfactionScore,
+    realizationScore,
+    maturityStage,
+    utilizationGapEncounters,
+    utilizationGapHours,
+    utilizationGapValue,
+    efficiencyGapHours,
+    efficiencyGapValue,
+    wrvuGapPercent,
+    wrvuGapValue,
+    annualGap,
+    threeYearGap,
+    monthlyGap,
+    encountersAtBenchmark,
+  } = data;
+  
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  const formatCurrency = (num) => {
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `$${Math.round(num / 1000)}K`;
+    return `$${num.toLocaleString()}`;
+  };
+  
+  const formatNumber = (num) => Math.round(num).toLocaleString();
+  
+  // Find lowest score dimension
+  const dimensions = [
+    { name: 'Utilization', score: utilizationScore },
+    { name: 'Efficiency', score: efficiencyScore },
+    { name: 'Quality', score: qualityScore },
+    { name: 'Satisfaction', score: satisfactionScore },
+  ];
+  const lowestDimension = dimensions.reduce((min, d) => d.score < min.score ? d : min);
+  
+  return (
+    <Document>
+      {/* PAGE 1: Executive Overview */}
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.logo}>ABRIDGE</Text>
+          <View style={styles.headerRight}>
+            <Text style={styles.headerTitle}>Value Realization Assessment</Text>
+            <Text style={styles.headerDate}>{today}</Text>
+          </View>
+        </View>
+        
+        {/* Metric Strip */}
+        <View style={styles.metricStrip}>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricValueCoral}>{formatCurrency(annualGap)}</Text>
+            <Text style={styles.metricLabel}>Annual Gap</Text>
+          </View>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricValue}>{realizationScore}%</Text>
+            <Text style={styles.metricLabel}>Realized</Text>
+          </View>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricValue}>{formatCurrency(threeYearGap)}</Text>
+            <Text style={styles.metricLabel}>3-Year Gap</Text>
+          </View>
+          <View style={[styles.metricItem, styles.metricItemLast]}>
+            <Text style={styles.metricValue}>{maturityStage}</Text>
+            <Text style={styles.metricLabel}>Stage</Text>
+          </View>
+        </View>
+        
+        {/* Executive Summary */}
+        <View style={styles.execSummary}>
+          <Text style={styles.execTitle}>Executive Summary</Text>
+          <Text style={styles.execText}>
+            Based on your inputs, your organization is capturing <Text style={styles.bold}>{realizationScore}%</Text> of 
+            the potential value from ambient AI — leaving an estimated <Text style={styles.bold}>{formatCurrency(annualGap)}</Text> per 
+            year unrealized. Over 3 years, this gap represents <Text style={styles.bold}>{formatCurrency(threeYearGap)}</Text> in 
+            value that could be captured through improved utilization, efficiency, and documentation quality.
+          </Text>
+          <Text style={styles.execText}>
+            You are in the "<Text style={styles.bold}>{maturityStage}</Text>" stage of ambient AI value realization. 
+            {maturityStage === 'Developing' && ' Most organizations plateau here without focused optimization.'}
+            {maturityStage === 'Early Stage' && ' There is significant opportunity to improve across all dimensions.'}
+            {maturityStage === 'Optimized' && ' You are above average but there is still meaningful value to capture.'}
+            {maturityStage === 'Transformed' && ' You are among top performers in ambient AI value realization.'}
+          </Text>
+        </View>
+        
+        <View style={styles.divider} />
+        
+        {/* Section 1: Performance */}
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionNumber}><Text style={styles.sectionNumberText}>1</Text></View>
+          <Text style={styles.sectionTitle}>Your Performance vs. Benchmarks</Text>
+        </View>
+        
+        <View style={styles.perfGrid}>
+          <View style={styles.perfCell}>
+            <Text style={styles.perfLabel}>Utilization</Text>
+            <View style={styles.perfValues}>
+              <Text style={styles.perfYou}>You: {utilization}%</Text>
+              <Text style={styles.perfBenchmark}>Benchmark: 75%</Text>
+            </View>
+            <View style={styles.perfBar}>
+              <View style={[styles.perfBarFill, { width: `${utilizationScore}%` }]} />
+            </View>
+            <Text style={styles.perfPercent}>{utilizationScore}% of benchmark</Text>
+          </View>
+          
+          <View style={[styles.perfCell, styles.perfCellRight]}>
+            <Text style={styles.perfLabel}>Efficiency</Text>
+            <View style={styles.perfValues}>
+              <Text style={styles.perfYou}>You: {efficiency} min</Text>
+              <Text style={styles.perfBenchmark}>Benchmark: 4 min</Text>
+            </View>
+            <View style={styles.perfBar}>
+              <View style={[styles.perfBarFill, { width: `${efficiencyScore}%` }]} />
+            </View>
+            <Text style={styles.perfPercent}>{efficiencyScore}% of benchmark</Text>
+          </View>
+          
+          <View style={[styles.perfCell, styles.perfCellBottom]}>
+            <Text style={styles.perfLabel}>Quality (wRVU Lift)</Text>
+            <View style={styles.perfValues}>
+              <Text style={styles.perfYou}>You: +{wrvuLift}%</Text>
+              <Text style={styles.perfBenchmark}>Benchmark: +5%</Text>
+            </View>
+            <View style={styles.perfBar}>
+              <View style={[styles.perfBarFill, { width: `${qualityScore}%` }]} />
+            </View>
+            <Text style={styles.perfPercent}>{qualityScore}% of benchmark</Text>
+          </View>
+          
+          <View style={[styles.perfCell, styles.perfCellRight, styles.perfCellBottom]}>
+            <Text style={styles.perfLabel}>Satisfaction</Text>
+            <View style={styles.perfValues}>
+              <Text style={styles.perfYou}>You: {satisfaction}%</Text>
+              <Text style={styles.perfBenchmark}>Benchmark: 85%</Text>
+            </View>
+            <View style={styles.perfBar}>
+              <View style={[styles.perfBarFill, { width: `${satisfactionScore}%` }]} />
+            </View>
+            <Text style={styles.perfPercent}>{satisfactionScore}% of benchmark</Text>
+          </View>
+        </View>
+        
+        <View style={styles.scoreSummary}>
+          <Text style={styles.scoreSummaryText}>
+            Average Score: <Text style={styles.bold}>{realizationScore}%</Text> realized — "{maturityStage}" stage
+          </Text>
+        </View>
+        
+        <View style={styles.divider} />
+        
+        {/* Section 2: Cost Over Time */}
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionNumber}><Text style={styles.sectionNumberText}>2</Text></View>
+          <Text style={styles.sectionTitle}>The Cost of the Gap Over Time</Text>
+        </View>
+        <Text style={styles.sectionSubtitle}>Cumulative unrealized value if gap persists:</Text>
+        
+        {/* Simple table instead of graph (react-pdf graphs are limited) */}
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <View style={{ flex: 1, padding: 12, backgroundColor: colors.backgroundGray, marginRight: 4, borderRadius: 4, alignItems: 'center' }}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, marginBottom: 2 }}>YEAR 1</Text>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: colors.black }}>{formatCurrency(annualGap)}</Text>
+          </View>
+          <View style={{ flex: 1, padding: 12, backgroundColor: colors.backgroundGray, marginRight: 4, borderRadius: 4, alignItems: 'center' }}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, marginBottom: 2 }}>YEAR 2</Text>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: colors.black }}>{formatCurrency(annualGap * 2)}</Text>
+          </View>
+          <View style={{ flex: 1, padding: 12, backgroundColor: colors.backgroundGray, borderRadius: 4, alignItems: 'center' }}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, marginBottom: 2 }}>YEAR 3</Text>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: colors.black }}>{formatCurrency(threeYearGap)}</Text>
+          </View>
+        </View>
+        
+        <View style={{ backgroundColor: colors.greenLight, padding: 10, borderRadius: 4, borderWidth: 1, borderColor: colors.green, alignItems: 'center' }}>
+          <Text style={{ fontSize: 7, color: colors.green, fontWeight: 'bold' }}>3-YEAR CUMULATIVE GAP</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.green }}>{formatCurrency(threeYearGap)}</Text>
+        </View>
+        
+        <View style={styles.monthlyCallout}>
+          <Text style={styles.monthlyText}>
+            Every month at current performance = {formatCurrency(monthlyGap)} in unrealized value
+          </Text>
+        </View>
+        
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
+          <Text style={styles.footerText}>Page 1 of 2</Text>
+        </View>
+      </Page>
+      
+      {/* PAGE 2: Detailed Breakdown */}
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.logo}>ABRIDGE</Text>
+          <View style={styles.headerRight}>
+            <Text style={styles.headerTitle}>Value Realization Assessment</Text>
+            <Text style={styles.headerDate}>Detailed Breakdown</Text>
+          </View>
+        </View>
+        
+        {/* Section 3: Gap Breakdown */}
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionNumber}><Text style={styles.sectionNumberText}>3</Text></View>
+          <Text style={styles.sectionTitle}>How the Gap Breaks Down</Text>
+        </View>
+        <Text style={styles.sectionSubtitle}>
+          Each gap below represents value that exists but isn't being captured. These gaps compound — small improvements in each area yield significant total value.
+        </Text>
+        
+        {/* Utilization Gap */}
+        <View style={styles.gapCard}>
+          <View style={styles.gapCardHeader}>
+            <Text style={styles.gapCardTitle}>UTILIZATION GAP</Text>
+            <Text style={styles.gapCardValue}>{formatCurrency(utilizationGapValue)}</Text>
+          </View>
+          <View style={styles.gapCardBar}>
+            <View style={styles.gapBar}>
+              <View style={[styles.gapBarFill, { width: `${utilizationScore}%` }]} />
+            </View>
+            <View style={styles.gapBarLabels}>
+              <Text style={styles.gapBarLabel}>You: {utilization}%</Text>
+              <Text style={styles.gapBarLabel}>Benchmark: 75%</Text>
+            </View>
+          </View>
+          <View style={styles.gapCardMath}>
+            <Text style={styles.gapMathTitle}>The Math:</Text>
+            <Text style={styles.gapMathItem}>• Your utilization: {utilization}% of {formatNumber(encounters)} encounters = {formatNumber(encounters * utilization / 100)} documented</Text>
+            <Text style={styles.gapMathItem}>• At benchmark (75%): {formatNumber(encountersAtBenchmark)} would be documented</Text>
+            <Text style={styles.gapMathItem}>• Gap: {formatNumber(utilizationGapEncounters)} encounters not getting ambient documentation</Text>
+            <Text style={styles.gapMathItem}>• These encounters could save 4 min each = {formatNumber(utilizationGapHours)} additional hours</Text>
+            <Text style={styles.gapMathItem}>• Value: {formatNumber(utilizationGapHours)} hrs × $150/hr × 15% conversion = {formatCurrency(utilizationGapValue)}</Text>
+          </View>
+        </View>
+        
+        {/* Efficiency Gap */}
+        <View style={styles.gapCard}>
+          <View style={styles.gapCardHeader}>
+            <Text style={styles.gapCardTitle}>EFFICIENCY GAP</Text>
+            <Text style={styles.gapCardValue}>{formatCurrency(efficiencyGapValue)}</Text>
+          </View>
+          <View style={styles.gapCardBar}>
+            <View style={styles.gapBar}>
+              <View style={[styles.gapBarFill, { width: `${efficiencyScore}%` }]} />
+            </View>
+            <View style={styles.gapBarLabels}>
+              <Text style={styles.gapBarLabel}>You: {efficiency} min</Text>
+              <Text style={styles.gapBarLabel}>Benchmark: 4 min</Text>
+            </View>
+          </View>
+          <View style={styles.gapCardMath}>
+            <Text style={styles.gapMathTitle}>The Math:</Text>
+            <Text style={styles.gapMathItem}>• You save {efficiency} min/encounter, benchmark is 4 min</Text>
+            <Text style={styles.gapMathItem}>• Gap: {4 - efficiency} min/encounter × {formatNumber(encountersAtBenchmark)} encounters = {formatNumber(efficiencyGapHours)} hours</Text>
+            <Text style={styles.gapMathItem}>• Value: {formatNumber(efficiencyGapHours)} hrs × $150/hr × 20% conversion = {formatCurrency(efficiencyGapValue)}</Text>
+            <Text style={styles.gapMathItem}>• Note: 20% conversion is conservative — not all saved time converts to value</Text>
+          </View>
+        </View>
+        
+        {/* Quality Gap */}
+        <View style={styles.gapCard}>
+          <View style={styles.gapCardHeader}>
+            <Text style={styles.gapCardTitle}>QUALITY GAP (wRVU)</Text>
+            <Text style={styles.gapCardValue}>{formatCurrency(wrvuGapValue)}</Text>
+          </View>
+          <View style={styles.gapCardBar}>
+            <View style={styles.gapBar}>
+              <View style={[styles.gapBarFill, { width: `${qualityScore}%` }]} />
+            </View>
+            <View style={styles.gapBarLabels}>
+              <Text style={styles.gapBarLabel}>You: +{wrvuLift}%</Text>
+              <Text style={styles.gapBarLabel}>Benchmark: +5%</Text>
+            </View>
+          </View>
+          <View style={styles.gapCardMath}>
+            <Text style={styles.gapMathTitle}>The Math:</Text>
+            <Text style={styles.gapMathItem}>• Your wRVU lift: +{wrvuLift}%, benchmark is +5%</Text>
+            <Text style={styles.gapMathItem}>• Gap: {wrvuGapPercent}% additional wRVU lift potential</Text>
+            <Text style={styles.gapMathItem}>• At {formatNumber(encountersAtBenchmark)} encounters × avg 1.5 wRVU × {wrvuGapPercent}% = additional wRVU</Text>
+            <Text style={styles.gapMathItem}>• Value: Additional wRVU × $33/wRVU × 50% attribution = {formatCurrency(wrvuGapValue)}</Text>
+            <Text style={styles.gapMathItem}>• Note: 50% attribution is conservative — other factors affect wRVU</Text>
+          </View>
+        </View>
+        
+        {/* Total */}
+        <View style={styles.totalCard}>
+          <View>
+            <Text style={styles.totalLabel}>TOTAL ANNUAL GAP</Text>
+            <Text style={styles.totalBreakdown}>
+              Utilization ({formatCurrency(utilizationGapValue)}) + Efficiency ({formatCurrency(efficiencyGapValue)}) + Quality ({formatCurrency(wrvuGapValue)})
+            </Text>
+          </View>
+          <Text style={styles.totalValue}>{formatCurrency(annualGap)}</Text>
+        </View>
+        
+        <View style={styles.divider} />
+        
+        {/* Key Takeaways */}
+        <View style={styles.takeaways}>
+          <Text style={styles.takeawaysTitle}>Key Takeaways</Text>
+          <View style={styles.takeawayItem}>
+            <Text style={styles.takeawayBullet}>•</Text>
+            <Text style={styles.takeawayText}>You're capturing {realizationScore}% of ambient AI's potential value</Text>
+          </View>
+          <View style={styles.takeawayItem}>
+            <Text style={styles.takeawayBullet}>•</Text>
+            <Text style={styles.takeawayText}>The largest opportunity is in {lowestDimension.name} ({lowestDimension.score}% of benchmark)</Text>
+          </View>
+          <View style={styles.takeawayItem}>
+            <Text style={styles.takeawayBullet}>•</Text>
+            <Text style={styles.takeawayText}>Closing the gap could recover {formatCurrency(annualGap)} annually / {formatCurrency(threeYearGap)} over 3 years</Text>
+          </View>
+          <View style={styles.takeawayItem}>
+            <Text style={styles.takeawayBullet}>•</Text>
+            <Text style={styles.takeawayText}>All calculations use conservative assumptions (see methodology below)</Text>
+          </View>
+        </View>
+        
+        <View style={styles.divider} />
+        
+        {/* Methodology */}
+        <View style={styles.methodology}>
+          <Text style={styles.methodTitle}>Methodology & Assumptions</Text>
+          <View style={styles.methodGrid}>
+            <View style={styles.methodColumn}>
+              <Text style={styles.methodSubtitle}>Your Inputs</Text>
+              <Text style={styles.methodItem}>• {providers} providers</Text>
+              <Text style={styles.methodItem}>• {formatNumber(encounters)} annual encounters</Text>
+              <Text style={styles.methodItem}>• Current solution: {solution}</Text>
+              <Text style={styles.methodItem}>• {utilization}% utilization</Text>
+              <Text style={styles.methodItem}>• {efficiency} min time savings</Text>
+              <Text style={styles.methodItem}>• +{wrvuLift}% wRVU lift</Text>
+              <Text style={styles.methodItem}>• {satisfaction}% satisfaction</Text>
+            </View>
+            <View style={styles.methodColumn}>
+              <Text style={styles.methodSubtitle}>Abridge Benchmarks</Text>
+              <Text style={styles.methodItem}>• 75% utilization (avg deployment)</Text>
+              <Text style={styles.methodItem}>• 4 min saved/encounter (avg)</Text>
+              <Text style={styles.methodItem}>• +5% wRVU lift (avg)</Text>
+              <Text style={styles.methodItem}>• 85% satisfaction (avg)</Text>
+              <Text style={styles.methodSubtitle}>Valuation Assumptions</Text>
+              <Text style={styles.methodItem}>• Provider time: $150/hr (loaded)</Text>
+              <Text style={styles.methodItem}>• Time conversion: 15-20%</Text>
+              <Text style={styles.methodItem}>• wRVU value: $33 (Medicare CF)</Text>
+              <Text style={styles.methodItem}>• wRVU attribution: 50%</Text>
+            </View>
+          </View>
+          <Text style={styles.methodNote}>
+            Benchmarks are based on aggregate performance data from 200+ health system partners. Individual results may vary based on specialty mix, payer contracts, and operational factors.
+          </Text>
+        </View>
+        
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
+          <Text style={styles.footerText}>Page 2 of 2</Text>
+        </View>
+      </Page>
+    </Document>
+  );
+};
+
+export const generateAmbientAIPDF = async (data) => {
+  const blob = await pdf(<AmbientAIPDFDocument data={data} />).toBlob();
+  saveAs(blob, `value-realization-assessment-${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
+export default AmbientAIPDFDocument;
+WIRE UP THE BUTTON
+Make sure the export button in your Value Assessment page calls this:
+jsxCopyimport { generateAmbientAIPDF } from './AmbientAIPDFExport';
+
+const handleExport = async () => {
+  await generateAmbientAIPDF({
+    providers,
+    encounters,
+    solution: 'Ambient AI',
+    utilization,
+    efficiency: timeSaved,
+    wrvuLift,
+    satisfaction,
+    utilizationScore,
+    efficiencyScore,
+    qualityScore,
+    satisfactionScore,
+    realizationScore,
+    maturityStage,
+    utilizationGapEncounters,
+    utilizationGapHours: utilizationGapEncounters * 4 / 60, // 4 min per enc
+    utilizationGapValue,
+    efficiencyGapHours,
+    efficiencyGapValue,
+    wrvuGapPercent: 5 - wrvuLift,
+    wrvuGapValue,
+    annualGap,
+    threeYearGap,
+    monthlyGap,
+    encountersAtBenchmark: encounters * 0.75,
+  });
+};
