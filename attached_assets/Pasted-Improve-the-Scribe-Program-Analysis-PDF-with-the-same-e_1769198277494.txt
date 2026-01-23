@@ -1,0 +1,364 @@
+Improve the Scribe Program Analysis PDF with the same educational depth as the Ambient AI assessment. Fix pagination issues and add expanded educational sections.
+
+## ISSUE 1: Fix Empty Page 2
+
+The strategic question is orphaned on Page 2 by itself. This should stay with "Our Findings" on Page 1.
+
+Fix pagination so content flows properly and no pages are nearly empty.
+
+## ISSUE 2: Add Educational Depth to Key Concepts
+
+The Scribe PDF needs expanded educational sections similar to the Ambient AI dimension cards. For scribes, the key concepts to explain are:
+
+1. **Coverage** - What it means and why it matters
+2. **Linear Scaling** - The fundamental economics constraint
+3. **Documentation Burden** - What unsupported providers experience
+4. **Hidden Costs** - What's not captured in the simple math
+
+### Add new section: "UNDERSTANDING THE KEY CONCEPTS"
+
+Place this after "HOW SCRIBE PROGRAMS SCALE" section. Create expanded educational cards for each concept:
+
+```jsx
+<View style={styles.conceptsSection}>
+  <Text style={styles.sectionTitle}>UNDERSTANDING THE KEY CONCEPTS</Text>
+  <Text style={styles.sectionSubtitle}>
+    Scribe economics involve several interconnected factors. Here's what you need to understand:
+  </Text>
+
+  {/* Coverage Card */}
+  <View style={styles.conceptCard}>
+    <View style={styles.conceptHeader}>
+      <Text style={styles.conceptName}>COVERAGE</Text>
+      <Text style={styles.conceptValue}>You: {coveragePercent}%</Text>
+    </View>
+    
+    <Text style={styles.conceptDefinition}>
+      What it measures: The percentage of your provider base that has access to scribe support for documentation.
+    </Text>
+    
+    <View style={styles.conceptEducation}>
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>Why it matters: </Text>
+        Coverage determines who bears the documentation burden. At {coveragePercent}% coverage, {unsupportedProviders} of your {totalProviders} providers handle documentation entirely alone. This creates a two-tier system that can affect morale, equity, and retention.
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>What drives it: </Text>
+        Budget constraints, scribe availability, specialty priorities, and strategic decisions about which providers "need" scribes most. Most organizations prioritize high-volume or high-revenue providers.
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>The trade-off: </Text>
+        Higher coverage = higher cost (linear scaling). There's no way to cover more providers without proportionally more scribes. Organizations must choose between depth (excellent support for few) and breadth (some support for many).
+      </Text>
+    </View>
+  </View>
+
+  {/* Linear Scaling Card */}
+  <View style={styles.conceptCard}>
+    <View style={styles.conceptHeader}>
+      <Text style={styles.conceptName}>LINEAR SCALING</Text>
+      <Text style={styles.conceptValue}>{scribeRatio} ratio</Text>
+    </View>
+    
+    <Text style={styles.conceptDefinition}>
+      What it means: The cost of scribe coverage increases in direct proportion to the number of providers covered — no volume discounts, no efficiency gains at scale.
+    </Text>
+    
+    <View style={styles.conceptEducation}>
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>Why it matters: </Text>
+        Unlike technology solutions that have high fixed costs but low marginal costs, scribes have low fixed costs but high marginal costs. Each additional provider requires roughly the same incremental investment as the first.
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>The math: </Text>
+        At your ratio of 1:{scribeRatio}, covering one more provider requires approximately {1/scribeRatio} additional scribes. At ${scribeCost}/year per scribe, that's ${Math.round(scribeCost/scribeRatio).toLocaleString()} per additional provider covered.
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>The implication: </Text>
+        Scaling from {coveragePercent}% to 100% coverage isn't incrementally more expensive — it's {scalingMultiplier}x more expensive. There's no point where scribes become more economical at scale.
+      </Text>
+    </View>
+  </View>
+
+  {/* Documentation Burden Card */}
+  <View style={styles.conceptCard}>
+    <View style={styles.conceptHeader}>
+      <Text style={styles.conceptName}>DOCUMENTATION BURDEN</Text>
+      <Text style={styles.conceptValue}>{hoursPerProvider} hrs/provider/year</Text>
+    </View>
+    
+    <Text style={styles.conceptDefinition}>
+      What it measures: The time unsupported providers spend on clinical documentation — writing notes, completing charts, handling inbox messages related to documentation.
+    </Text>
+    
+    <View style={styles.conceptEducation}>
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>Why it matters: </Text>
+        {hoursPerProvider} hours per year translates to roughly {Math.round(hoursPerProvider/50)} hours per week. For many providers, this means 1-2 hours of documentation for every hour of patient care — time that comes from lunch breaks, evenings, and weekends.
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>The "pajama time" problem: </Text>
+        An estimated {afterHoursPercent}% of documentation occurs outside clinic hours. This after-hours work is a leading contributor to physician burnout, dissatisfaction, and turnover. It's invisible in productivity metrics but very real in its impact.
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>The scale: </Text>
+        Across your {unsupportedProviders} unsupported providers, this represents {formatNumber(totalDocHours)} hours annually — equivalent to {fteEquivalent} full-time employees doing nothing but documentation.
+      </Text>
+    </View>
+  </View>
+
+  {/* Hidden Costs Card */}
+  <View style={styles.conceptCard}>
+    <View style={styles.conceptHeader}>
+      <Text style={styles.conceptName}>HIDDEN COSTS OF SCRIBES</Text>
+      <Text style={styles.conceptValue}>Beyond salary</Text>
+    </View>
+    
+    <Text style={styles.conceptDefinition}>
+      What's not captured: The direct scribe cost (salary × hours) is only part of the total cost of ownership. Several hidden costs affect the true economics.
+    </Text>
+    
+    <View style={styles.conceptEducation}>
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>Turnover: </Text>
+        Scribe turnover typically runs 30-50% annually. Each departure means recruiting, hiring, and training costs — often $3,000-5,000 per replacement — plus productivity loss during ramp-up.
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>Training: </Text>
+        New scribes require 4-8 weeks to reach full productivity, during which the provider is essentially working without support. For a 10-scribe program with 40% turnover, that's 4 scribes × 6 weeks = 24 scribe-weeks of reduced productivity annually.
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>Management overhead: </Text>
+        Scribe programs require supervision, scheduling, quality review, and HR management. This overhead typically adds 10-15% to direct costs but is often absorbed into existing staff time (and not tracked).
+      </Text>
+      
+      <Text style={styles.conceptText}>
+        <Text style={styles.bold}>Coverage gaps: </Text>
+        PTO, sick days, and turnover create coverage gaps. When a scribe is out, the provider goes back to self-documenting — the burden returns unpredictably.
+      </Text>
+    </View>
+  </View>
+</View>
+ISSUE 3: Fix the Linear Scaling Graph
+The graph looks broken. Replace with a cleaner table-based visualization:
+jsxCopy<View style={styles.scalingVisualization}>
+  <Text style={styles.sectionTitle}>THE LINEAR SCALING PROBLEM</Text>
+  <Text style={styles.sectionSubtitle}>
+    What it costs to reach different coverage levels:
+  </Text>
+  
+  <View style={styles.scalingTable}>
+    <View style={styles.scalingRow}>
+      <View style={styles.scalingCell}>
+        <Text style={styles.scalingCoverage}>25%</Text>
+        <Text style={styles.scalingCost}>${formatCurrency(fullCost * 0.25)}</Text>
+        <Text style={styles.scalingScribes}>{Math.round(totalScribesNeeded * 0.25)} scribes</Text>
+      </View>
+      <View style={styles.scalingArrow}>→</View>
+      <View style={styles.scalingCell}>
+        <Text style={styles.scalingCoverage}>50%</Text>
+        <Text style={styles.scalingCost}>${formatCurrency(fullCost * 0.50)}</Text>
+        <Text style={styles.scalingScribes}>{Math.round(totalScribesNeeded * 0.50)} scribes</Text>
+      </View>
+      <View style={styles.scalingArrow}>→</View>
+      <View style={styles.scalingCell}>
+        <Text style={styles.scalingCoverage}>75%</Text>
+        <Text style={styles.scalingCost}>${formatCurrency(fullCost * 0.75)}</Text>
+        <Text style={styles.scalingScribes}>{Math.round(totalScribesNeeded * 0.75)} scribes</Text>
+      </View>
+      <View style={styles.scalingArrow}>→</View>
+      <View style={styles.scalingCellHighlight}>
+        <Text style={styles.scalingCoverage}>100%</Text>
+        <Text style={styles.scalingCostLarge}>${formatCurrency(fullCost)}</Text>
+        <Text style={styles.scalingScribes}>{totalScribesNeeded} scribes</Text>
+      </View>
+    </View>
+  </View>
+  
+  <View style={styles.yourPosition}>
+    <Text style={styles.yourPositionText}>
+      You are currently at {coveragePercent}% coverage ({scribeCount} scribes, ${formatCurrency(currentCost)}/year)
+    </Text>
+  </View>
+  
+  <View style={styles.scalingInsight}>
+    <Text style={styles.insightText}>
+      Notice: Each step costs the same increment. Going from 25% to 50% costs the same as going from 75% to 100%. This is linear scaling — no efficiency at scale.
+    </Text>
+  </View>
+</View>
+STYLING FOR NEW SECTIONS
+javascriptCopyconceptsSection: {
+  marginTop: 20,
+},
+conceptCard: {
+  backgroundColor: '#FFFFFF',
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+  borderRadius: 6,
+  padding: 14,
+  marginBottom: 12,
+},
+conceptHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 8,
+},
+conceptName: {
+  fontSize: 11,
+  fontWeight: 'bold',
+  color: '#111827',
+},
+conceptValue: {
+  fontSize: 11,
+  fontWeight: 'bold',
+  color: '#E85A4F',
+},
+conceptDefinition: {
+  fontSize: 9,
+  color: '#6B7280',
+  fontStyle: 'italic',
+  marginBottom: 10,
+  lineHeight: 1.4,
+},
+conceptEducation: {
+  backgroundColor: '#F9FAFB',
+  padding: 10,
+  borderRadius: 4,
+},
+conceptText: {
+  fontSize: 8,
+  color: '#374151',
+  lineHeight: 1.5,
+  marginBottom: 8,
+},
+bold: {
+  fontWeight: 'bold',
+},
+
+// Scaling visualization
+scalingVisualization: {
+  marginTop: 16,
+},
+scalingTable: {
+  marginVertical: 12,
+},
+scalingRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+},
+scalingCell: {
+  flex: 1,
+  backgroundColor: '#F9FAFB',
+  padding: 10,
+  borderRadius: 4,
+  alignItems: 'center',
+  marginHorizontal: 2,
+},
+scalingCellHighlight: {
+  flex: 1,
+  backgroundColor: '#FEF2F2',
+  borderWidth: 1,
+  borderColor: '#FECACA',
+  padding: 10,
+  borderRadius: 4,
+  alignItems: 'center',
+  marginHorizontal: 2,
+},
+scalingArrow: {
+  fontSize: 12,
+  color: '#9CA3AF',
+},
+scalingCoverage: {
+  fontSize: 10,
+  fontWeight: 'bold',
+  color: '#111827',
+},
+scalingCost: {
+  fontSize: 12,
+  fontWeight: 'bold',
+  color: '#374151',
+  marginTop: 2,
+},
+scalingCostLarge: {
+  fontSize: 14,
+  fontWeight: 'bold',
+  color: '#E85A4F',
+  marginTop: 2,
+},
+scalingScribes: {
+  fontSize: 8,
+  color: '#6B7280',
+  marginTop: 2,
+},
+yourPosition: {
+  backgroundColor: '#E85A4F',
+  padding: 8,
+  borderRadius: 4,
+  marginTop: 8,
+},
+yourPositionText: {
+  fontSize: 9,
+  color: '#FFFFFF',
+  textAlign: 'center',
+  fontWeight: 'bold',
+},
+scalingInsight: {
+  backgroundColor: '#F9FAFB',
+  padding: 10,
+  borderRadius: 4,
+  marginTop: 8,
+  borderLeftWidth: 3,
+  borderLeftColor: '#E85A4F',
+},
+insightText: {
+  fontSize: 8,
+  color: '#374151',
+  lineHeight: 1.5,
+  fontStyle: 'italic',
+},
+TARGET PAGE STRUCTURE
+Page 1:
+
+Header
+Understanding Scribe Program Economics
+Your Program at a Glance
+The Coverage Spectrum
+Our Findings (with strategic question — keep together!)
+
+Page 2:
+
+How Scribe Programs Scale (current vs full comparison)
+The Burden on Unsupported Providers (3 metrics)
+The Linear Scaling Problem (fixed visualization)
+
+Page 3:
+
+Understanding the Key Concepts (all 4 expanded cards: Coverage, Linear Scaling, Documentation Burden, Hidden Costs)
+
+Page 4:
+
+How the Numbers are Calculated (step-by-step math)
+Key Takeaways
+Methodology & Assumptions
+
+4 pages total, all filled with meaningful educational content. No empty pages.
+SUMMARY OF CHANGES
+
+Fix pagination — Keep strategic question with Our Findings, eliminate empty pages
+Replace broken graph — Use table-based scaling visualization
+Add "Understanding the Key Concepts" section — 4 expanded educational cards
+Each concept card includes: Definition, Why it matters, What drives it, Specific insights
+Target 4 dense, educational pages
+
+The goal: Someone reading this report should think "I now understand scribe economics way better than I did before."

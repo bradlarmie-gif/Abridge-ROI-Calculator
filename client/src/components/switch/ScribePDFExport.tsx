@@ -6,8 +6,6 @@ import {
   StyleSheet,
   Image,
   Svg,
-  Line,
-  Circle,
   Rect,
   pdf,
 } from "@react-pdf/renderer";
@@ -63,43 +61,43 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 8,
-    marginTop: 12,
+    marginBottom: 6,
+    marginTop: 10,
   },
 
   divider: {
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
-    marginVertical: 10,
+    marginVertical: 8,
   },
 
   introBox: {
     backgroundColor: colors.backgroundGray,
-    padding: 14,
+    padding: 12,
     borderRadius: 4,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   introTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   introText: {
-    fontSize: 9,
+    fontSize: 8,
     color: colors.darkGray,
     lineHeight: 1.5,
-    marginBottom: 6,
+    marginBottom: 4,
   },
 
   metricsGrid: {
     flexDirection: "row",
-    marginBottom: 12,
+    marginBottom: 10,
   },
   metricCard: {
     flex: 1,
@@ -107,49 +105,47 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 10,
-    marginRight: 8,
+    padding: 8,
+    marginRight: 6,
     alignItems: "center",
   },
   metricCardLast: {
     marginRight: 0,
   },
   metricValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   metricLabel: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.mediumGray,
     textAlign: "center",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   metricDescription: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.lightGray,
     textAlign: "center",
     lineHeight: 1.3,
   },
 
-  spectrumContainer: {
-    marginBottom: 12,
-  },
   spectrumBox: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 12,
+    padding: 10,
+    marginBottom: 10,
   },
   spectrumLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 4,
   },
   spectrumLabel: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
     textAlign: "center",
     width: "20%",
@@ -159,33 +155,82 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   spectrumBarContainer: {
-    height: 20,
+    height: 16,
     position: "relative",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   spectrumExplanation: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
     lineHeight: 1.4,
+    marginTop: 4,
+  },
+
+  findingsSection: {
+    backgroundColor: colors.backgroundGray,
+    padding: 12,
+    borderRadius: 4,
+    marginBottom: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  findingsTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  findingsNarrative: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 10,
+  },
+  findingsSubsection: {
+    marginBottom: 8,
+  },
+  findingsSubtitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 3,
+  },
+  findingsText: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+  },
+  findingsStrategic: {
     marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+  },
+  findingsStrategicText: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    lineHeight: 1.5,
+    fontStyle: "italic",
   },
 
   comparisonContainer: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   comparisonBox: {
     flex: 1,
-    padding: 10,
+    padding: 8,
     backgroundColor: colors.backgroundGray,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    marginRight: 8,
+    marginRight: 6,
   },
   comparisonBoxHighlight: {
     flex: 1,
-    padding: 10,
+    padding: 8,
     backgroundColor: colors.backgroundGray,
     borderRadius: 4,
     borderWidth: 1,
@@ -194,68 +239,49 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
   },
   comparisonLabel: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
     letterSpacing: 0.3,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   comparisonTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   comparisonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 2,
+    paddingVertical: 1,
   },
   comparisonRowLabel: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.mediumGray,
   },
   comparisonRowValue: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.black,
   },
   comparisonTotal: {
-    marginTop: 6,
-    paddingTop: 6,
+    marginTop: 4,
+    paddingTop: 4,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
   comparisonTotalValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.black,
   },
   comparisonIncrease: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.primary,
     marginTop: 2,
-  },
-
-  whyMattersBox: {
-    backgroundColor: colors.primaryLight,
-    padding: 10,
-    borderRadius: 4,
-    marginBottom: 10,
-    marginTop: 6,
-  },
-  whyMattersTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.primary,
-    marginBottom: 4,
-  },
-  whyMattersText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
   },
 
   burdenContainer: {
@@ -265,54 +291,161 @@ const styles = StyleSheet.create({
   burdenCard: {
     flex: 1,
     backgroundColor: colors.backgroundGray,
-    padding: 10,
+    padding: 8,
     borderRadius: 4,
     alignItems: "center",
     borderWidth: 1,
     borderColor: colors.borderGray,
-    marginRight: 8,
+    marginRight: 6,
   },
   burdenCardLast: {
     marginRight: 0,
   },
   burdenValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   burdenLabel: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
     textAlign: "center",
   },
 
-  graphContainer: {
-    marginBottom: 8,
+  scalingTable: {
+    marginVertical: 8,
   },
-  graphBox: {
+  scalingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  scalingCell: {
+    flex: 1,
+    backgroundColor: colors.backgroundGray,
+    padding: 8,
+    borderRadius: 4,
+    alignItems: "center",
+    marginHorizontal: 2,
     borderWidth: 1,
     borderColor: colors.borderGray,
+  },
+  scalingCellHighlight: {
+    flex: 1,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder,
+    padding: 8,
     borderRadius: 4,
-    padding: 12,
-    height: 90,
-    position: "relative",
+    alignItems: "center",
+    marginHorizontal: 2,
   },
-  graphLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 4,
+  scalingArrow: {
+    fontSize: 10,
+    color: colors.lightGray,
+    paddingHorizontal: 1,
   },
-  graphLabel: {
+  scalingCoverage: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  scalingCost: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.darkGray,
+    marginTop: 2,
+  },
+  scalingCostLarge: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginTop: 2,
+  },
+  scalingScribes: {
     fontSize: 7,
     color: colors.mediumGray,
+    marginTop: 2,
+  },
+  yourPosition: {
+    backgroundColor: colors.primary,
+    padding: 6,
+    borderRadius: 4,
+    marginTop: 6,
+  },
+  yourPositionText: {
+    fontSize: 8,
+    color: colors.white,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  scalingInsight: {
+    backgroundColor: colors.backgroundGray,
+    padding: 8,
+    borderRadius: 4,
+    marginTop: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  insightText: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    fontStyle: "italic",
+  },
+
+  conceptCard: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 8,
+  },
+  conceptHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  conceptName: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  conceptValue: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.primary,
+  },
+  conceptDefinition: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    fontStyle: "italic",
+    marginBottom: 6,
+    lineHeight: 1.4,
+  },
+  conceptEducation: {
+    backgroundColor: colors.backgroundGray,
+    padding: 8,
+    borderRadius: 4,
+  },
+  conceptText: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 4,
+  },
+  bold: {
+    fontWeight: "bold",
   },
 
   gapCard: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 8,
     overflow: "hidden",
   },
   gapCardHeader: {
@@ -320,30 +453,30 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: colors.backgroundGray,
-    padding: 8,
+    padding: 6,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
   },
   gapCardTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
   },
   gapCardValue: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
   },
   gapCardSteps: {
-    padding: 10,
+    padding: 6,
     backgroundColor: colors.backgroundGray,
   },
   gapStep: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
     lineHeight: 1.5,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   gapStepLabel: {
     fontWeight: "bold",
@@ -351,34 +484,34 @@ const styles = StyleSheet.create({
   },
 
   takeawaysBox: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   takeawaysTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   takeawayItem: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
     lineHeight: 1.5,
-    marginBottom: 3,
+    marginBottom: 2,
     paddingLeft: 8,
   },
 
   questionBox: {
     backgroundColor: colors.primaryLight,
-    padding: 12,
+    padding: 10,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: colors.primaryBorder,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   questionText: {
-    fontSize: 10,
+    fontSize: 9,
     color: colors.primaryDark,
     fontWeight: "bold",
     fontStyle: "italic",
@@ -387,18 +520,18 @@ const styles = StyleSheet.create({
   },
 
   methodologySection: {
-    marginTop: 12,
-    paddingTop: 10,
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
   methodologyTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   methodologyGrid: {
     flexDirection: "row",
@@ -408,73 +541,23 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   methodologyColumnTitle: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   methodologyItem: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
     lineHeight: 1.4,
     marginBottom: 2,
   },
   methodologyNote: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.lightGray,
     lineHeight: 1.4,
-    marginTop: 8,
-    fontStyle: "italic",
-  },
-
-  findingsSection: {
-    backgroundColor: colors.backgroundGray,
-    padding: 14,
-    borderRadius: 4,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  findingsTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.primary,
-    marginBottom: 10,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  findingsNarrative: {
-    fontSize: 9,
-    color: colors.darkGray,
-    lineHeight: 1.6,
-    marginBottom: 12,
-  },
-  findingsSubsection: {
-    marginBottom: 10,
-  },
-  findingsSubtitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 4,
-  },
-  findingsText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-  },
-  findingsStrategic: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
-    fontStyle: "italic",
-  },
-  findingsStrategicText: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    lineHeight: 1.5,
+    marginTop: 6,
     fontStyle: "italic",
   },
 
@@ -529,41 +612,41 @@ const getScribeFindings = (data: {
   let strategicQuestion = '';
 
   if (coveragePercent < 15) {
-    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program supports a small fraction of your provider base. This creates a significant disparity: ${unsupportedProviders} providers handle documentation alone while a select few receive support. The question isn't whether your scribe program is valuable to those who have it — it's whether this partial coverage model is sustainable or equitable.`;
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program supports a small fraction of your provider base. This creates a significant disparity: ${unsupportedProviders} providers handle documentation alone while a select few receive support.`;
     
-    burdenStatement = `Your unsupported providers collectively spend ${formatNumber(documentationHours)} hours annually on documentation — that's ${hoursPerProvider} hours per provider per year, or roughly ${Math.round(hoursPerProvider/50)} hours per week. Much of this occurs outside clinic hours, contributing to burnout and dissatisfaction.`;
+    burdenStatement = `Your unsupported providers collectively spend ${formatNumber(documentationHours)} hours annually on documentation — that's ${hoursPerProvider} hours per provider per year, or roughly ${Math.round(hoursPerProvider/50)} hours per week.`;
     
-    scalingReality = `To extend scribe coverage to all ${totalProviders} providers would require ${formatCurrency(costToScale)} in additional annual investment. At your current scribe-to-provider ratio of 1:${scribeRatio}, there's no way around this math — scribes scale linearly.`;
+    scalingReality = `To extend scribe coverage to all ${totalProviders} providers would require ${formatCurrency(costToScale)} in additional annual investment. At your current scribe-to-provider ratio of 1:${scribeRatio}, there's no way around this math.`;
     
-    strategicQuestion = `The strategic question: Is it better to provide excellent support to ${coveragePercent}% of providers, or find a model that can provide meaningful support to 100%?`;
+    strategicQuestion = `Is it better to provide excellent support to ${coveragePercent}% of providers, or find a model that can provide meaningful support to 100%?`;
   } 
   else if (coveragePercent < 30) {
-    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program has grown beyond a pilot but still leaves the majority of providers unsupported. You've likely seen the value scribes provide — the question is how to extend that value without the linear cost scaling that comes with the scribe model.`;
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program has grown beyond a pilot but still leaves the majority of providers unsupported. You've likely seen the value scribes provide — the question is how to extend that value without the linear cost scaling.`;
     
     const fteEquivalents = Math.round(documentationHours / 2000);
-    burdenStatement = `The ${unsupportedProviders} providers without scribe support spend a combined ${formatNumber(documentationHours)} hours on documentation annually. That's ${fteEquivalents} FTE-equivalents of time that could be spent on patient care, research, or simply going home on time.`;
+    burdenStatement = `The ${unsupportedProviders} providers without scribe support spend a combined ${formatNumber(documentationHours)} hours on documentation annually. That's ${fteEquivalents} FTE-equivalents of time.`;
     
-    scalingReality = `Scaling from ${coveragePercent}% to 100% coverage with scribes would cost ${formatCurrency(costToScale)} more per year. This is the fundamental challenge of the scribe model: the cost curve is a straight line with no efficiency gains at scale.`;
+    scalingReality = `Scaling from ${coveragePercent}% to 100% coverage with scribes would cost ${formatCurrency(costToScale)} more per year. The cost curve is a straight line with no efficiency gains at scale.`;
     
-    strategicQuestion = `Many organizations at this stage face a choice: continue expanding scribes incrementally (expensive), hold at current coverage (creates inequity), or explore alternative models for the unsupported majority.`;
+    strategicQuestion = `Continue expanding scribes incrementally (expensive), hold at current coverage (creates inequity), or explore alternative models for the unsupported majority?`;
   } 
   else if (coveragePercent < 50) {
-    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program is substantial but still leaves ${unsupportedProviders} providers without support. You've invested significantly in documentation support — the question is whether doubling down on scribes or exploring complementary approaches makes more sense.`;
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program is substantial but still leaves ${unsupportedProviders} providers without support. You've invested significantly — the question is whether doubling down on scribes or exploring complementary approaches makes more sense.`;
     
-    burdenStatement = `Your unsupported providers still spend ${formatNumber(documentationHours)} hours annually on documentation. While this is fewer providers than organizations with lower coverage, the burden on each individual is the same: ${hoursPerProvider} hours per year of documentation work.`;
+    burdenStatement = `Your unsupported providers still spend ${formatNumber(documentationHours)} hours annually on documentation. The burden on each individual is the same: ${hoursPerProvider} hours per year.`;
     
-    scalingReality = `Completing the journey to 100% scribe coverage would require an additional ${formatCurrency(costToScale)} annually. At this investment level, the question of ROI becomes critical — are there more efficient ways to support the remaining ${100-coveragePercent}%?`;
+    scalingReality = `Completing the journey to 100% scribe coverage would require an additional ${formatCurrency(costToScale)} annually. At this investment level, the question of ROI becomes critical.`;
     
-    strategicQuestion = `Organizations with meaningful scribe coverage often find that a hybrid approach works best: scribes for high-complexity providers, alternative solutions for others. This maximizes value while controlling costs.`;
+    strategicQuestion = `Would a hybrid approach work best: scribes for high-complexity providers, alternative solutions for others?`;
   } 
   else {
     coverageNarrative = `At ${coveragePercent}% coverage, your scribe program is among the more comprehensive we see. You've made a significant commitment to documentation support. The question at this stage is optimization and sustainability.`;
     
-    burdenStatement = `The remaining ${unsupportedProviders} unsupported providers still spend ${formatNumber(documentationHours)} hours on documentation annually. Even at high coverage levels, there are gaps — and those gaps represent burden on specific providers.`;
+    burdenStatement = `The remaining ${unsupportedProviders} unsupported providers still spend ${formatNumber(documentationHours)} hours on documentation annually. Even at high coverage levels, there are gaps.`;
     
-    scalingReality = `Reaching 100% coverage would require an additional ${formatCurrency(costToScale)} annually. At your current coverage level, you may find that the remaining gaps are harder to fill — often they represent providers in settings or specialties where scribes are less practical.`;
+    scalingReality = `Reaching 100% coverage would require an additional ${formatCurrency(costToScale)} annually. The remaining gaps may be in settings or specialties where scribes are less practical.`;
     
-    strategicQuestion = `For organizations with high scribe coverage, the strategic questions shift: How do you maintain quality and reduce turnover? How do you fill gaps where scribes don't fit? And how do you prepare for the evolution of documentation technology?`;
+    strategicQuestion = `How do you maintain quality and reduce turnover? How do you fill gaps where scribes don't fit? How do you prepare for evolving documentation technology?`;
   }
 
   return {
@@ -579,51 +662,11 @@ const CoverageBar = ({ coveragePercent }: { coveragePercent: number }) => {
   const markerPosition = Math.max(10, (coveragePercent / 100) * barWidth);
   
   return (
-    <Svg width={barWidth} height={20}>
-      <Rect x={0} y={6} width={barWidth} height={8} fill={colors.primaryLight} rx={4} />
-      <Rect x={0} y={6} width={markerPosition} height={8} fill={colors.primary} rx={4} />
-      <Rect x={markerPosition - 1} y={0} width={3} height={20} fill={colors.primaryDark} rx={1} />
+    <Svg width={barWidth} height={16}>
+      <Rect x={0} y={4} width={barWidth} height={8} fill={colors.primaryLight} rx={4} />
+      <Rect x={0} y={4} width={markerPosition} height={8} fill={colors.primary} rx={4} />
+      <Rect x={markerPosition - 1} y={0} width={3} height={16} fill={colors.primaryDark} rx={1} />
     </Svg>
-  );
-};
-
-const ScalingGraph = ({ 
-  currentCoverage, 
-  currentCost, 
-  fullCost 
-}: { 
-  currentCoverage: number; 
-  currentCost: number; 
-  fullCost: number;
-}) => {
-  const graphWidth = 440;
-  const graphHeight = 65;
-  const padding = 25;
-  
-  const xCurrent = padding + ((currentCoverage / 100) * (graphWidth - padding * 2));
-  const yCurrent = graphHeight - ((currentCost / fullCost) * (graphHeight - 20));
-  const xFull = graphWidth - padding;
-  const yFull = 12;
-
-  return (
-    <View style={styles.graphBox}>
-      <Svg width={graphWidth} height={graphHeight}>
-        <Line x1={padding} y1={graphHeight - 5} x2={xFull} y2={yFull} stroke={colors.primary} strokeWidth={2} />
-        
-        <Circle cx={padding} cy={graphHeight - 5} r={4} fill={colors.borderGray} />
-        <Circle cx={xCurrent} cy={yCurrent} r={5} fill={colors.primary} />
-        <Circle cx={xFull} cy={yFull} r={4} fill={colors.primary} />
-      </Svg>
-      <View style={{ position: "absolute", top: 6, right: 30 }}>
-        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{formatCurrency(fullCost)}</Text>
-      </View>
-      <View style={{ position: "absolute", top: yCurrent - 16, left: xCurrent - 20 }}>
-        <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.darkGray }}>YOU</Text>
-      </View>
-      <View style={{ position: "absolute", bottom: 8, left: xCurrent - 20 }}>
-        <Text style={{ fontSize: 7, color: colors.mediumGray }}>{currentCoverage}%</Text>
-      </View>
-    </View>
   );
 };
 
@@ -643,11 +686,16 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
   const pajamaPercent = Math.round(
     (calculations.pajamaTimeHours / calculations.unsupportedDocTimeHours) * 100
   );
-  const additionalScribesNeeded =
-    calculations.scribesNeededForFullCoverage - inputs.scribeCount;
+  const afterHoursPercent = SCRIBE_ASSUMPTIONS.pajamaTimePercent * 100;
 
   const encountersPerProvider = Math.round(inputs.annualEncounters / inputs.totalProviders);
   const docTimePerProviderHours = Math.round((encountersPerProvider * SCRIBE_ASSUMPTIONS.minutesPerEncounterWithoutScribe) / 60);
+  
+  const totalScribesNeeded = calculations.scribesNeededForFullCoverage;
+  const fullCost = calculations.fullScribeCost;
+  const costPerAdditionalProvider = inputs.scribeCount > 0 && inputs.providersWithScribes > 0
+    ? Math.round(calculations.totalScribeCost / inputs.providersWithScribes)
+    : 0;
 
   const findings = getScribeFindings({
     coveragePercent: calculations.coveragePercent,
@@ -661,7 +709,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
 
   return (
     <Document>
-      {/* PAGE 1: THE FRAME */}
+      {/* PAGE 1: THE FRAME + FINDINGS */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
@@ -679,12 +727,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           <Text style={styles.introText}>
             Most organizations can only afford to provide scribes to a fraction of their providers, creating a two-tier system: some providers receive documentation support while the majority handle the full burden alone.
           </Text>
-          <Text style={styles.introText}>
-            This analysis examines your scribe program economics — what you're investing, who's covered, what the gap means for your unsupported providers, and what scaling would actually cost.
-          </Text>
         </View>
-
-        <View style={styles.divider} />
 
         <Text style={styles.sectionTitle}>YOUR PROGRAM AT A GLANCE</Text>
 
@@ -697,27 +740,21 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           <View style={styles.metricCard}>
             <Text style={styles.metricValue}>{calculations.coveragePercent}%</Text>
             <Text style={styles.metricLabel}>Coverage</Text>
-            <Text style={styles.metricDescription}>{inputs.providersWithScribes} of {inputs.totalProviders} providers have support</Text>
+            <Text style={styles.metricDescription}>{inputs.providersWithScribes} of {inputs.totalProviders} providers</Text>
           </View>
           <View style={styles.metricCard}>
             <Text style={styles.metricValue}>{formatCurrency(calculations.costPerProviderCovered)}</Text>
             <Text style={styles.metricLabel}>Per Provider</Text>
-            <Text style={styles.metricDescription}>Cost per covered provider annually</Text>
+            <Text style={styles.metricDescription}>Cost per covered provider</Text>
           </View>
           <View style={[styles.metricCard, styles.metricCardLast]}>
             <Text style={styles.metricValue}>{scaleMultiplier}x</Text>
             <Text style={styles.metricLabel}>To Scale</Text>
-            <Text style={styles.metricDescription}>Investment multiplier for full coverage</Text>
+            <Text style={styles.metricDescription}>Investment for full coverage</Text>
           </View>
         </View>
 
-        <View style={styles.divider} />
-
         <Text style={styles.sectionTitle}>THE COVERAGE SPECTRUM</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
-          Your scribe program covers {calculations.coveragePercent}% of your provider base:
-        </Text>
-
         <View style={styles.spectrumBox}>
           <View style={styles.spectrumLabels}>
             <Text style={styles.spectrumLabel}><Text style={styles.spectrumLabelBold}>0%</Text></Text>
@@ -729,11 +766,11 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           <View style={styles.spectrumBarContainer}>
             <CoverageBar coveragePercent={calculations.coveragePercent} />
           </View>
-          <Text style={{ fontSize: 8, color: colors.primary, textAlign: "center", fontWeight: "bold", marginTop: 4 }}>
+          <Text style={{ fontSize: 8, color: colors.primary, textAlign: "center", fontWeight: "bold", marginTop: 2 }}>
             YOU: {calculations.coveragePercent}% ({inputs.providersWithScribes} providers)
           </Text>
           <Text style={styles.spectrumExplanation}>
-            At {calculations.coveragePercent}% coverage, {calculations.providersWithoutSupport} of your {inputs.totalProviders} providers have no documentation support. This raises a strategic question: is partial coverage sustainable, or does the gap create problems that offset the benefits?
+            At {calculations.coveragePercent}% coverage, {calculations.providersWithoutSupport} of your {inputs.totalProviders} providers have no documentation support.
           </Text>
         </View>
 
@@ -755,6 +792,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
             </Text>
           </View>
           <View style={styles.findingsStrategic}>
+            <Text style={styles.findingsSubtitle}>Strategic Question</Text>
             <Text style={styles.findingsStrategicText}>
               {findings.strategicQuestion}
             </Text>
@@ -763,11 +801,11 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 1/4</Text>
+          <Text style={styles.footerText}>Page 1/3</Text>
         </View>
       </Page>
 
-      {/* PAGE 2: THE EVIDENCE */}
+      {/* PAGE 2: THE EVIDENCE + SCALING */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
@@ -777,8 +815,8 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
         </View>
 
         <Text style={styles.sectionTitle}>HOW SCRIBE PROGRAMS SCALE</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
-          At your current scribe-to-provider ratio of 1:{calculations.scribeRatio}, here's what coverage looks like:
+        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 6 }}>
+          At your current scribe-to-provider ratio of 1:{calculations.scribeRatio}:
         </Text>
 
         <View style={styles.comparisonContainer}>
@@ -790,7 +828,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
               <Text style={styles.comparisonRowValue}>{calculations.coveragePercent}%</Text>
             </View>
             <View style={styles.comparisonRow}>
-              <Text style={styles.comparisonRowLabel}>Scribe-to-Provider</Text>
+              <Text style={styles.comparisonRowLabel}>Ratio</Text>
               <Text style={styles.comparisonRowValue}>1:{calculations.scribeRatio}</Text>
             </View>
             <View style={styles.comparisonTotal}>
@@ -799,32 +837,25 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           </View>
           <View style={styles.comparisonBoxHighlight}>
             <Text style={styles.comparisonLabel}>Full Coverage</Text>
-            <Text style={styles.comparisonTitle}>{calculations.scribesNeededForFullCoverage} scribes → {inputs.totalProviders} providers</Text>
+            <Text style={styles.comparisonTitle}>{totalScribesNeeded} scribes → {inputs.totalProviders} providers</Text>
             <View style={styles.comparisonRow}>
               <Text style={styles.comparisonRowLabel}>Coverage</Text>
               <Text style={styles.comparisonRowValue}>100%</Text>
             </View>
             <View style={styles.comparisonRow}>
-              <Text style={styles.comparisonRowLabel}>Scribe-to-Provider</Text>
+              <Text style={styles.comparisonRowLabel}>Ratio</Text>
               <Text style={styles.comparisonRowValue}>1:{calculations.scribeRatio}</Text>
             </View>
             <View style={styles.comparisonTotal}>
-              <Text style={styles.comparisonTotalValue}>{formatCurrency(calculations.fullScribeCost)}/yr</Text>
+              <Text style={styles.comparisonTotalValue}>{formatCurrency(fullCost)}/yr</Text>
               <Text style={styles.comparisonIncrease}>+{formatCurrency(calculations.costToScale)} ({scaleMultiplier}x)</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.whyMattersBox}>
-          <Text style={styles.whyMattersTitle}>WHY IT MATTERS</Text>
-          <Text style={styles.whyMattersText}>
-            Every additional provider you want to cover requires a proportional increase in scribes. There are no economies of scale — just linear cost growth. This is the fundamental constraint of the scribe model.
-          </Text>
-        </View>
-
         <Text style={styles.sectionTitle}>THE BURDEN ON UNSUPPORTED PROVIDERS</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
-          Your {calculations.providersWithoutSupport} providers without scribe support spend significant time on documentation:
+        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 6 }}>
+          Your {calculations.providersWithoutSupport} providers without scribe support:
         </Text>
 
         <View style={styles.burdenContainer}>
@@ -845,43 +876,58 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           </View>
         </View>
 
-        <View style={styles.whyMattersBox}>
-          <Text style={styles.whyMattersTitle}>WHY IT MATTERS</Text>
-          <Text style={styles.whyMattersText}>
-            {formatNumber(calculations.docTimePerUnsupportedProvider)} hours per year is approximately {Math.round(calculations.docTimePerUnsupportedProvider / 50)} hours per week spent on documentation. Much of this occurs outside clinic hours, contributing to burnout, reduced satisfaction, and work-life imbalance. This represents {fteEquivalents} FTE-equivalents of documentation time across your unsupported providers.
-          </Text>
-        </View>
-
         <Text style={styles.sectionTitle}>THE LINEAR SCALING PROBLEM</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 8 }}>
-          The cost curve for scribe coverage is a straight line — no efficiencies at scale:
+        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 6 }}>
+          What it costs to reach different coverage levels:
         </Text>
 
-        <ScalingGraph 
-          currentCoverage={calculations.coveragePercent} 
-          currentCost={calculations.totalScribeCost} 
-          fullCost={calculations.fullScribeCost} 
-        />
-
-        <View style={styles.graphLabels}>
-          <Text style={styles.graphLabel}>0% Coverage</Text>
-          <Text style={styles.graphLabel}>100% Coverage</Text>
+        <View style={styles.scalingTable}>
+          <View style={styles.scalingRow}>
+            <View style={styles.scalingCell}>
+              <Text style={styles.scalingCoverage}>25%</Text>
+              <Text style={styles.scalingCost}>{formatCurrency(fullCost * 0.25)}</Text>
+              <Text style={styles.scalingScribes}>{Math.round(totalScribesNeeded * 0.25)} scribes</Text>
+            </View>
+            <Text style={styles.scalingArrow}>→</Text>
+            <View style={styles.scalingCell}>
+              <Text style={styles.scalingCoverage}>50%</Text>
+              <Text style={styles.scalingCost}>{formatCurrency(fullCost * 0.50)}</Text>
+              <Text style={styles.scalingScribes}>{Math.round(totalScribesNeeded * 0.50)} scribes</Text>
+            </View>
+            <Text style={styles.scalingArrow}>→</Text>
+            <View style={styles.scalingCell}>
+              <Text style={styles.scalingCoverage}>75%</Text>
+              <Text style={styles.scalingCost}>{formatCurrency(fullCost * 0.75)}</Text>
+              <Text style={styles.scalingScribes}>{Math.round(totalScribesNeeded * 0.75)} scribes</Text>
+            </View>
+            <Text style={styles.scalingArrow}>→</Text>
+            <View style={styles.scalingCellHighlight}>
+              <Text style={styles.scalingCoverage}>100%</Text>
+              <Text style={styles.scalingCostLarge}>{formatCurrency(fullCost)}</Text>
+              <Text style={styles.scalingScribes}>{totalScribesNeeded} scribes</Text>
+            </View>
+          </View>
         </View>
 
-        <View style={[styles.whyMattersBox, { marginTop: 8 }]}>
-          <Text style={styles.whyMattersTitle}>WHY IT MATTERS</Text>
-          <Text style={styles.whyMattersText}>
-            The cost curve is linear. There's no point where scribes become more efficient at scale — every step up in coverage costs proportionally more.
+        <View style={styles.yourPosition}>
+          <Text style={styles.yourPositionText}>
+            You are currently at {calculations.coveragePercent}% coverage ({inputs.scribeCount} scribes, {formatCurrency(calculations.totalScribeCost)}/year)
+          </Text>
+        </View>
+
+        <View style={styles.scalingInsight}>
+          <Text style={styles.insightText}>
+            Notice: Each step costs the same increment. Going from 25% to 50% costs the same as going from 75% to 100%. This is linear scaling — no efficiency at scale.
           </Text>
         </View>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 2/4</Text>
+          <Text style={styles.footerText}>Page 2/3</Text>
         </View>
       </Page>
 
-      {/* PAGE 3: THE MATH */}
+      {/* PAGE 3: KEY CONCEPTS + METHODOLOGY */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
@@ -890,85 +936,109 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>HOW THE NUMBERS ARE CALCULATED</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
-          Every number in this analysis can be traced back to your inputs and transparent assumptions. Here's the math:
+        <Text style={styles.sectionTitle}>UNDERSTANDING THE KEY CONCEPTS</Text>
+        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 6 }}>
+          Scribe economics involve several interconnected factors:
         </Text>
 
-        <View style={styles.gapCard}>
-          <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>SCRIBE PROGRAM COST</Text>
-            <Text style={styles.gapCardValue}>{formatCurrency(calculations.totalScribeCost)}</Text>
+        {/* COVERAGE CARD */}
+        <View style={styles.conceptCard}>
+          <View style={styles.conceptHeader}>
+            <Text style={styles.conceptName}>COVERAGE</Text>
+            <Text style={styles.conceptValue}>You: {calculations.coveragePercent}%</Text>
           </View>
-          <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Calculation:</Text></Text>
-            <Text style={styles.gapStep}>        {inputs.scribeCount} scribes × ${inputs.scribeCostPerHour}/hr × {inputs.scribeHoursPerWeek} hrs/week × {SCRIBE_ASSUMPTIONS.weeksPerYear} weeks</Text>
-            <Text style={styles.gapStep}>        = {formatCurrency(calculations.totalScribeCost)}/year</Text>
-          </View>
-        </View>
-
-        <View style={styles.gapCard}>
-          <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>COST TO SCALE TO 100%</Text>
-            <Text style={styles.gapCardValue}>{formatCurrency(calculations.fullScribeCost)}</Text>
-          </View>
-          <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Current scribe-to-provider ratio</Text>
-            <Text style={styles.gapStep}>        {inputs.scribeCount} scribes ÷ {inputs.providersWithScribes} providers = 1:{calculations.scribeRatio}</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Scribes needed for full coverage</Text>
-            <Text style={styles.gapStep}>        {inputs.totalProviders} providers ÷ {calculations.scribeRatio} = {calculations.scribesNeededForFullCoverage} scribes</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Annual cost at full scale</Text>
-            <Text style={styles.gapStep}>        {calculations.scribesNeededForFullCoverage} scribes × ${inputs.scribeCostPerHour}/hr × {inputs.scribeHoursPerWeek} hrs × {SCRIBE_ASSUMPTIONS.weeksPerYear} wks = {formatCurrency(calculations.fullScribeCost)}</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 4:</Text> Additional investment required</Text>
-            <Text style={styles.gapStep}>        {formatCurrency(calculations.fullScribeCost)} - {formatCurrency(calculations.totalScribeCost)} = {formatCurrency(calculations.costToScale)} ({scaleMultiplier}x current)</Text>
-          </View>
-        </View>
-
-        <View style={styles.gapCard}>
-          <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>DOCUMENTATION BURDEN</Text>
-            <Text style={styles.gapCardValue}>{formatNumber(calculations.unsupportedDocTimeHours)} hrs</Text>
-          </View>
-          <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Encounters per provider</Text>
-            <Text style={styles.gapStep}>        {formatNumber(inputs.annualEncounters)} encounters ÷ {inputs.totalProviders} providers = {formatNumber(encountersPerProvider)} encounters/provider</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Documentation time per unsupported provider</Text>
-            <Text style={styles.gapStep}>        {formatNumber(encountersPerProvider)} enc × {SCRIBE_ASSUMPTIONS.minutesPerEncounterWithoutScribe} min = {formatNumber(docTimePerProviderHours)} hours/year</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Total for all unsupported providers</Text>
-            <Text style={styles.gapStep}>        {calculations.providersWithoutSupport} providers × {formatNumber(calculations.docTimePerUnsupportedProvider)} hrs = {formatNumber(calculations.unsupportedDocTimeHours)} hours</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 4:</Text> After-hours ("pajama time")</Text>
-            <Text style={styles.gapStep}>        {formatNumber(calculations.unsupportedDocTimeHours)} hrs × {SCRIBE_ASSUMPTIONS.pajamaTimePercent * 100}% = {formatNumber(calculations.pajamaTimeHours)} hours</Text>
-          </View>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 3/4</Text>
-        </View>
-      </Page>
-
-      {/* PAGE 4: TAKEAWAYS + METHODOLOGY */}
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
-          <View style={styles.headerRight}>
-            <Text style={styles.headerTitle}>Scribe Program Analysis</Text>
-          </View>
-        </View>
-
-        <View style={styles.takeawaysBox}>
-          <Text style={styles.takeawaysTitle}>KEY TAKEAWAYS</Text>
-          <Text style={styles.takeawayItem}>• Your scribe investment covers {calculations.coveragePercent}% of providers at {formatCurrency(calculations.costPerProviderCovered)} per provider</Text>
-          <Text style={styles.takeawayItem}>• {calculations.providersWithoutSupport} providers ({100 - calculations.coveragePercent}%) document without support — {formatNumber(calculations.unsupportedDocTimeHours)} hours annually</Text>
-          <Text style={styles.takeawayItem}>• Each unsupported provider spends ~{Math.round(calculations.docTimePerUnsupportedProvider / 50)} hours/week on documentation, with {pajamaPercent}% after-hours</Text>
-          <Text style={styles.takeawayItem}>• Scaling to full coverage would require {scaleMultiplier}x your current investment ({formatCurrency(calculations.costToScale)} additional)</Text>
-          <Text style={styles.takeawayItem}>• The linear cost model means no efficiency gains at scale — each new provider costs the same</Text>
-        </View>
-
-        <View style={styles.questionBox}>
-          <Text style={styles.questionText}>
-            How can you extend documentation support to all {inputs.totalProviders} providers without a {scaleMultiplier}x increase in cost?
+          <Text style={styles.conceptDefinition}>
+            What it measures: The percentage of your provider base that has access to scribe support for documentation.
           </Text>
+          <View style={styles.conceptEducation}>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>Why it matters: </Text>
+              Coverage determines who bears the documentation burden. At {calculations.coveragePercent}% coverage, {calculations.providersWithoutSupport} of your {inputs.totalProviders} providers handle documentation entirely alone. This creates a two-tier system that can affect morale, equity, and retention.
+            </Text>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>What drives it: </Text>
+              Budget constraints, scribe availability, specialty priorities, and strategic decisions about which providers "need" scribes most.
+            </Text>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>The trade-off: </Text>
+              Higher coverage = higher cost (linear scaling). Organizations must choose between depth (excellent support for few) and breadth (some support for many).
+            </Text>
+          </View>
+        </View>
+
+        {/* LINEAR SCALING CARD */}
+        <View style={styles.conceptCard}>
+          <View style={styles.conceptHeader}>
+            <Text style={styles.conceptName}>LINEAR SCALING</Text>
+            <Text style={styles.conceptValue}>1:{calculations.scribeRatio} ratio</Text>
+          </View>
+          <Text style={styles.conceptDefinition}>
+            What it means: The cost of scribe coverage increases in direct proportion to the number of providers covered — no volume discounts, no efficiency gains at scale.
+          </Text>
+          <View style={styles.conceptEducation}>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>Why it matters: </Text>
+              Unlike technology solutions that have high fixed costs but low marginal costs, scribes have low fixed costs but high marginal costs. Each additional provider requires roughly the same incremental investment as the first.
+            </Text>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>The math: </Text>
+              At your ratio of 1:{calculations.scribeRatio}, covering one more provider costs approximately {formatCurrency(costPerAdditionalProvider)} per additional provider covered.
+            </Text>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>The implication: </Text>
+              Scaling from {calculations.coveragePercent}% to 100% coverage isn't incrementally more expensive — it's {scaleMultiplier}x more expensive.
+            </Text>
+          </View>
+        </View>
+
+        {/* DOCUMENTATION BURDEN CARD */}
+        <View style={styles.conceptCard}>
+          <View style={styles.conceptHeader}>
+            <Text style={styles.conceptName}>DOCUMENTATION BURDEN</Text>
+            <Text style={styles.conceptValue}>{calculations.docTimePerUnsupportedProvider} hrs/provider/yr</Text>
+          </View>
+          <Text style={styles.conceptDefinition}>
+            What it measures: The time unsupported providers spend on clinical documentation — writing notes, completing charts, handling inbox messages.
+          </Text>
+          <View style={styles.conceptEducation}>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>Why it matters: </Text>
+              {calculations.docTimePerUnsupportedProvider} hours per year translates to roughly {Math.round(calculations.docTimePerUnsupportedProvider/50)} hours per week. For many providers, this means 1-2 hours of documentation for every hour of patient care.
+            </Text>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>The "pajama time" problem: </Text>
+              An estimated {afterHoursPercent}% of documentation occurs outside clinic hours. This after-hours work is a leading contributor to physician burnout and dissatisfaction.
+            </Text>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>The scale: </Text>
+              Across your {calculations.providersWithoutSupport} unsupported providers, this represents {formatNumber(calculations.unsupportedDocTimeHours)} hours annually — equivalent to {fteEquivalents} full-time employees doing nothing but documentation.
+            </Text>
+          </View>
+        </View>
+
+        {/* HIDDEN COSTS CARD */}
+        <View style={styles.conceptCard}>
+          <View style={styles.conceptHeader}>
+            <Text style={styles.conceptName}>HIDDEN COSTS OF SCRIBES</Text>
+            <Text style={styles.conceptValue}>Beyond salary</Text>
+          </View>
+          <Text style={styles.conceptDefinition}>
+            What's not captured: The direct scribe cost (salary × hours) is only part of the total cost of ownership.
+          </Text>
+          <View style={styles.conceptEducation}>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>Turnover: </Text>
+              Scribe turnover typically runs 30-50% annually. Each departure means recruiting, hiring, and training costs — often $3,000-5,000 per replacement — plus productivity loss during ramp-up.
+            </Text>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>Training: </Text>
+              New scribes require 4-8 weeks to reach full productivity, during which the provider is essentially working without support.
+            </Text>
+            <Text style={styles.conceptText}>
+              <Text style={styles.bold}>Coverage gaps: </Text>
+              PTO, sick days, and turnover create coverage gaps. When a scribe is out, the provider goes back to self-documenting — the burden returns unpredictably.
+            </Text>
+          </View>
         </View>
 
         <View style={styles.methodologySection}>
@@ -976,17 +1046,15 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           <View style={styles.methodologyGrid}>
             <View style={styles.methodologyColumn}>
               <Text style={styles.methodologyColumnTitle}>Your Inputs</Text>
-              <Text style={styles.methodologyItem}>• {inputs.scribeCount} scribes</Text>
-              <Text style={styles.methodologyItem}>• ${inputs.scribeCostPerHour}/hour per scribe</Text>
-              <Text style={styles.methodologyItem}>• {inputs.scribeHoursPerWeek} hours/week</Text>
-              <Text style={styles.methodologyItem}>• {inputs.providersWithScribes} providers with scribes</Text>
-              <Text style={styles.methodologyItem}>• {inputs.totalProviders} total providers</Text>
+              <Text style={styles.methodologyItem}>• {inputs.scribeCount} scribes at ${inputs.scribeCostPerHour}/hr</Text>
+              <Text style={styles.methodologyItem}>• {inputs.scribeHoursPerWeek} hours/week per scribe</Text>
+              <Text style={styles.methodologyItem}>• {inputs.providersWithScribes} of {inputs.totalProviders} providers covered</Text>
               <Text style={styles.methodologyItem}>• {formatNumber(inputs.annualEncounters)} annual encounters</Text>
             </View>
             <View style={styles.methodologyColumn}>
               <Text style={styles.methodologyColumnTitle}>Industry Assumptions</Text>
-              <Text style={styles.methodologyItem}>• Documentation time without scribe: {SCRIBE_ASSUMPTIONS.minutesPerEncounterWithoutScribe} min/encounter</Text>
-              <Text style={styles.methodologyItem}>• After-hours documentation: ~{SCRIBE_ASSUMPTIONS.pajamaTimePercent * 100}% of total</Text>
+              <Text style={styles.methodologyItem}>• Doc time without scribe: {SCRIBE_ASSUMPTIONS.minutesPerEncounterWithoutScribe} min/encounter</Text>
+              <Text style={styles.methodologyItem}>• After-hours documentation: ~{afterHoursPercent}% of total</Text>
               <Text style={styles.methodologyItem}>• Working weeks per year: {SCRIBE_ASSUMPTIONS.weeksPerYear}</Text>
               <Text style={styles.methodologyItem}>• FTE calculation: 2,000 hrs/year</Text>
             </View>
@@ -998,7 +1066,7 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 4/4</Text>
+          <Text style={styles.footerText}>Page 3/3</Text>
         </View>
       </Page>
     </Document>
