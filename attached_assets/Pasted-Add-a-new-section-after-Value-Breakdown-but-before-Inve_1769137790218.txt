@@ -1,0 +1,42 @@
+Add a new section after Value Breakdown but before Investment Details that showcases qualitative value without polluting the math.
+Copy┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  💫  BEYOND THE NUMBERS                                                     │
+│      Additional value not included in ROI calculation                       │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │   😊 Patient Experience (HCAHPS)                                   │   │
+│  │   ─────────────────────────────────────────────────────────────    │   │
+│  │   Nurses who aren't charting are nurses who are present.           │   │
+│  │   Ambient documentation enables the kind of undivided              │   │
+│  │   attention that patients notice—and rate.                         │   │
+│  │                                                                     │   │
+│  │   HCAHPS domains impacted:                                         │   │
+│  │   • "Nurse listened carefully"                                     │   │
+│  │   • "Nurse explained things clearly"                               │   │
+│  │                                                                     │   │
+│  │   Your VBP exposure: ~$750K tied to patient experience             │   │
+│  │                                                                     │   │
+│  ├─────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                     │   │
+│  │   ✓ Survey & Compliance Readiness                                  │   │
+│  │   ─────────────────────────────────────────────────────────────    │   │
+│  │   Real-time documentation means charts are always audit-ready.     │   │
+│  │   Reduced survey anxiety, faster remediation.                      │   │
+│  │                                                                     │   │
+│  ├─────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                     │   │
+│  │   🔗 Care Coordination                                             │   │
+│  │   ─────────────────────────────────────────────────────────────    │   │
+│  │   Complete documentation enables better handoffs between           │   │
+│  │   shifts and departments.                                          │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  These benefits are real but difficult to quantify with precision. │   │
+│  │  We include them in the narrative, not the math.                   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘

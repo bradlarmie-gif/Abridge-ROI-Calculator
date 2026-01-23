@@ -39,6 +39,7 @@ export interface PremiumPDFData {
   fullScaleValue: number;
   fullScaleROI: number;
   networkEffect: number;
+  qualitativeDrivers?: string[];
 }
 
 const COLORS = {
@@ -425,6 +426,87 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
       doc.setFont('helvetica', 'normal');
       doc.text(` (${data.fullScaleROI.toFixed(1)}× ROI)`, margin + 60, yPos);
     }
+  }
+
+  // Add qualitative drivers section if any exist
+  if (data.qualitativeDrivers && data.qualitativeDrivers.length > 0) {
+    yPos += 25;
+    
+    // Check if we need a new page
+    if (yPos > pageHeight - 100) {
+      doc.addPage();
+      drawHeader(5);
+      yPos = 30;
+    }
+    
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.black);
+    doc.text('Additional Strategic Value', margin, yPos);
+    
+    yPos += 8;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...COLORS.gray);
+    doc.text('Not Quantified', margin, yPos);
+    
+    yPos += 12;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(71, 85, 105); // slate-600
+    const introText = doc.splitTextToSize(
+      'The following outcomes are expected but not included in the ROI calculation due to attribution complexity:',
+      pageWidth - 2 * margin
+    );
+    doc.text(introText, margin, yPos);
+    yPos += introText.length * 5 + 8;
+    
+    const qualitativeInfo: Record<string, { title: string; desc: string; impacts: string }> = {
+      nursingPatientExperience: {
+        title: 'Patient Experience (HCAHPS)',
+        desc: 'Improved nurse communication scores through increased bedside presence and attention quality',
+        impacts: 'HCAHPS nurse communication'
+      },
+      nursingSurvey: {
+        title: 'Survey & Compliance Readiness',
+        desc: 'Real-time documentation supports audit confidence',
+        impacts: 'Joint Commission, CMS'
+      },
+      nursingCareCoordination: {
+        title: 'Care Coordination',
+        desc: 'Better handoffs through complete documentation',
+        impacts: 'Safety, continuity'
+      }
+    };
+    
+    data.qualitativeDrivers.forEach((driverId) => {
+      const info = qualitativeInfo[driverId];
+      if (info) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...COLORS.black);
+        doc.text('\u2726 ' + info.title, margin + 5, yPos);
+        
+        yPos += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(71, 85, 105);
+        doc.setFontSize(9);
+        const descLines = doc.splitTextToSize(info.desc, pageWidth - 2 * margin - 15);
+        doc.text(descLines, margin + 10, yPos);
+        yPos += descLines.length * 4 + 8;
+      }
+    });
+    
+    yPos += 5;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...COLORS.gray);
+    const footerText = doc.splitTextToSize(
+      'These benefits strengthen the overall value proposition but are presented as qualitative outcomes rather than projected dollar values.',
+      pageWidth - 2 * margin
+    );
+    doc.text(footerText, margin, yPos);
+    yPos += footerText.length * 4;
   }
 
   doc.addPage();

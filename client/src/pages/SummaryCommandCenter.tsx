@@ -83,8 +83,9 @@ const DRIVER_CATEGORIES: Record<string, { category: "labor" | "revenue"; label: 
   hcc_capture: { category: "revenue", label: "HCC Capture" },
   denials: { category: "revenue", label: "Denial Prevention" },
   nursingHAPI: { category: "revenue", label: "HAPI Prevention" },
-  nursingSurvey: { category: "labor", label: "Staff Satisfaction" },
+  nursingSurvey: { category: "labor", label: "Survey & Compliance Readiness" },
   nursingCareCoordination: { category: "labor", label: "Care Coordination" },
+  nursingPatientExperience: { category: "labor", label: "Patient Experience (HCAHPS)" },
   edThroughput: { category: "labor", label: "Patient Throughput (LWBS Reduction)" },
   edScribe: { category: "labor", label: "Scribe Cost Reduction" },
   edRetention: { category: "labor", label: "Physician Retention" },
@@ -192,6 +193,12 @@ export default function SummaryCommandCenter({
   // Calculate additional metrics for quick stats
   const hoursReturnedAnnually = Math.round((totalAnnualValue / 85) * 0.6); // Estimate: $85/hr average * 60% time savings
   const additionalPatientVisits = Math.round((totalAnnualValue / 200) * 0.3); // Estimate: additional visits from efficiency
+  
+  // Identify qualitative drivers (not quantified, but selected)
+  const QUALITATIVE_DRIVER_IDS = ["nursingSurvey", "nursingCareCoordination", "nursingPatientExperience"];
+  const qualitativeDrivers = selectedLevers
+    .filter(lever => QUALITATIVE_DRIVER_IDS.includes(lever.leverId))
+    .map(lever => lever.leverId);
   
   // Check if valid full scale data is entered
   const hasValidFullScale = typeof fullScaleUnits === "number" && fullScaleUnits > pilotUnits && 
@@ -369,6 +376,7 @@ export default function SummaryCommandCenter({
       fullScaleValue: hasValidFullScale ? fullScale.value : 0,
       fullScaleROI: hasValidFullScale && typeof fullScaleUnits === "number" && annualInvestment > 0 ? fullScale.value / (fullScaleUnits * pricePerUnit * 12) : 0,
       networkEffect,
+      qualitativeDrivers,
     };
 
     await generatePremiumPDF(pdfData);
@@ -401,6 +409,7 @@ export default function SummaryCommandCenter({
     fullScaleUtilization,
     fullScale,
     networkEffect,
+    qualitativeDrivers,
   ]);
 
   return (
@@ -608,6 +617,99 @@ export default function SummaryCommandCenter({
             )}
           </div>
         </section>
+
+        {/* ============ THE FULL PICTURE ============ */}
+        {qualitativeDrivers.length > 0 && (
+          <section 
+            className="rounded-2xl p-8"
+            style={{
+              background: 'linear-gradient(135deg, #FAFBFC 0%, #F5F7FA 100%)',
+              border: '1px dashed #E2E8F0'
+            }}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <Lightbulb className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-[#111827] uppercase tracking-wide">The Full Picture</h2>
+              </div>
+            </div>
+            <p className="text-[15px] text-[#6B7280] mb-8">What else gets better</p>
+            
+            <p className="text-[15px] text-[#475569] mb-6 leading-relaxed">
+              Your ROI model captures the outcomes we can measure with confidence. But ambient documentation also improves areas that are harder to quantify—and often matter just as much to your organization:
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {qualitativeDrivers.includes("nursingPatientExperience") && (
+                <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
+                  <div className="text-2xl mb-3">
+                    <Users className="w-8 h-8 mx-auto text-[#64748B]" />
+                  </div>
+                  <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
+                    Patient Experience
+                  </h3>
+                  <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
+                    Nurses who aren't typing are nurses who are present
+                  </p>
+                  <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
+                    Impacts: HCAHPS nurse communication
+                  </p>
+                </div>
+              )}
+              
+              {qualitativeDrivers.includes("nursingSurvey") && (
+                <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
+                  <div className="text-2xl mb-3">
+                    <CheckCircle className="w-8 h-8 mx-auto text-[#64748B]" />
+                  </div>
+                  <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
+                    Survey Readiness
+                  </h3>
+                  <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
+                    Charts that are always complete and audit-ready
+                  </p>
+                  <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
+                    Impacts: Joint Commission, CMS
+                  </p>
+                </div>
+              )}
+              
+              {qualitativeDrivers.includes("nursingCareCoordination") && (
+                <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
+                  <div className="text-2xl mb-3">
+                    <Globe className="w-8 h-8 mx-auto text-[#64748B]" />
+                  </div>
+                  <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
+                    Care Coordination
+                  </h3>
+                  <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
+                    Handoffs that actually have the full picture
+                  </p>
+                  <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
+                    Impacts: Safety, continuity
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
+              <div className="flex items-start gap-3">
+                <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900 mb-2">Why we don't quantify these:</p>
+                  <p className="text-sm text-blue-800 leading-relaxed">
+                    Attribution is complex. Patient experience has many drivers. Survey outcomes depend on timing. We'd rather be conservative with your ROI than inflate it with assumptions we can't defend.
+                  </p>
+                  <p className="text-sm text-blue-800 leading-relaxed mt-2">
+                    That said—these outcomes are real, and they matter to your board, your CNO, and your patients.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ============ INVESTMENT DETAILS ============ */}
         <section className="bg-white rounded-2xl border border-[#E5E7EB] p-8">
