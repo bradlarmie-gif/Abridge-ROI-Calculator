@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Users, DollarSign, Clock, Building2, UserCheck, Calendar } from "lucide-react";
+import { ArrowRight, ArrowLeft, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import {
@@ -39,7 +39,7 @@ export default function ScribeAssessment({
           <Button
             variant="ghost"
             onClick={onBack}
-            className="text-[#6B7280] hover:text-[#111827] -ml-2"
+            className="-ml-2"
             data-testid="button-back"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
@@ -166,7 +166,7 @@ export default function ScribeAssessment({
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3">
-            <div className="text-amber-500 text-xl flex-shrink-0">⚠️</div>
+            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-amber-800">
               <strong>{calculations.providersWithoutSupport} providers</strong> have no documentation
               support. They're spending 10-15+ minutes per encounter on notes, contributing to burnout
@@ -295,7 +295,9 @@ export default function ScribeAssessment({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-slate-50 rounded-lg p-5 text-center">
-              <div className="text-2xl mb-2">⏱️</div>
+              <div className="flex justify-center mb-2">
+                <Timer className="w-6 h-6 text-slate-500" />
+              </div>
               <div className="text-xl font-bold text-[#111827]">
                 {calculations.unsupportedDocTimeHours.toLocaleString()} hrs/year
               </div>
@@ -307,7 +309,9 @@ export default function ScribeAssessment({
             </div>
 
             <div className="bg-slate-50 rounded-lg p-5 text-center">
-              <div className="text-2xl mb-2">🌙</div>
+              <div className="flex justify-center mb-2">
+                <Moon className="w-6 h-6 text-slate-500" />
+              </div>
               <div className="text-xl font-bold text-[#111827]">
                 {calculations.pajamaTimeHours.toLocaleString()} hrs/year
               </div>
@@ -316,7 +320,9 @@ export default function ScribeAssessment({
             </div>
 
             <div className="bg-slate-50 rounded-lg p-5 text-center">
-              <div className="text-2xl mb-2">💰</div>
+              <div className="flex justify-center mb-2">
+                <Coins className="w-6 h-6 text-slate-500" />
+              </div>
               <div className="text-xl font-bold text-[#111827]">
                 {formatCurrency(calculations.opportunityCost)}
               </div>

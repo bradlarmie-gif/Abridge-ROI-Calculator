@@ -40,18 +40,14 @@ export const SCRIBE_ASSUMPTIONS = {
 };
 
 export function calculateScribeGap(inputs: ScribeInputs): ScribeCalculations {
-  const {
-    scribeCount,
-    scribeCostPerHour,
-    scribeHoursPerWeek,
-    providersWithScribes,
-    totalProviders,
-    annualEncounters,
-  } = inputs;
+  const scribeCount = Math.max(0, inputs.scribeCount);
+  const scribeCostPerHour = Math.max(0, inputs.scribeCostPerHour);
+  const scribeHoursPerWeek = Math.max(0, inputs.scribeHoursPerWeek);
+  const totalProviders = Math.max(1, inputs.totalProviders);
+  const providersWithScribes = Math.min(Math.max(0, inputs.providersWithScribes), totalProviders);
+  const annualEncounters = Math.max(0, inputs.annualEncounters);
 
-  const coveragePercent = totalProviders > 0
-    ? Math.round((providersWithScribes / totalProviders) * 100)
-    : 0;
+  const coveragePercent = Math.round((providersWithScribes / totalProviders) * 100);
 
   const providersWithoutSupport = totalProviders - providersWithScribes;
 
@@ -68,10 +64,10 @@ export function calculateScribeGap(inputs: ScribeInputs): ScribeCalculations {
   const scribesNeededForFullCoverage = Math.ceil(totalProviders / scribeRatio);
   const fullScribeCost = scribesNeededForFullCoverage * scribeCostPerHour * scribeHoursPerWeek * SCRIBE_ASSUMPTIONS.weeksPerYear;
 
-  const costToScale = fullScribeCost - totalScribeCost;
+  const costToScale = Math.max(0, fullScribeCost - totalScribeCost);
 
   const abridgeCost = totalProviders * SCRIBE_ASSUMPTIONS.abridgeCostPerProvider;
-  const savingsVsFullScribe = fullScribeCost - abridgeCost;
+  const savingsVsFullScribe = Math.max(0, fullScribeCost - abridgeCost);
 
   const encountersPerProvider = totalProviders > 0
     ? Math.round(annualEncounters / totalProviders)

@@ -34,7 +34,7 @@ export default function ScribeFullAnalysis({
           <Button
             variant="ghost"
             onClick={onBack}
-            className="text-[#6B7280] hover:text-[#111827] -ml-2"
+            className="-ml-2"
             data-testid="button-back"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
